@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
@@ -258,7 +259,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             // TODO: FP and 64-bit formats.
             TextureFormat format = size == SuatomSize.Sd32 || size == SuatomSize.Sd64
-                ? (isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormatAtomic(imm))
+                ? (isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormatAtomic(context.Config.GpuAccessor, imm))
                 : GetTextureFormat(size);
 
             if (compareAndSwap)
@@ -388,7 +389,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     Array.Resize(ref dests, outputIndex);
                 }
 
-                TextureFormat format = isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormat(handle);
+                TextureFormat format = isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormat(context.Config.GpuAccessor, handle);
 
                 int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
                     Instruction.ImageLoad,
@@ -539,7 +540,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             // TODO: FP and 64-bit formats.
             TextureFormat format = size == SuatomSize.Sd32 || size == SuatomSize.Sd64
-                ? (isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormatAtomic(imm))
+                ? (isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormatAtomic(context.Config.GpuAccessor, imm))
                 : GetTextureFormat(size);
 
             sourcesList.Add(Rb());
@@ -647,7 +648,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (!isBindless)
                 {
-                    format = context.Config.GetTextureFormat(imm);
+                    format = ShaderProperties.GetTextureFormat(context.Config.GpuAccessor, imm);
                 }
             }
             else

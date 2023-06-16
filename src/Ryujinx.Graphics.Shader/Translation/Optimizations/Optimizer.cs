@@ -7,24 +7,30 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class Optimizer
     {
-        public static void RunPass(HelperFunctionManager hfm, BasicBlock[] blocks, ShaderConfig config)
+        public static void RunPass(
+            HelperFunctionManager hfm,
+            BasicBlock[] blocks,
+            ResourceManager resourceManager,
+            IGpuAccessor gpuAccessor,
+            TargetLanguage targetLanguage,
+            ShaderStage stage)
         {
-            RunOptimizationPasses(blocks, config);
+            RunOptimizationPasses(blocks, resourceManager);
 
             // TODO: Some of those are not optimizations and shouldn't be here.
 
-            GlobalToStorage.RunPass(hfm, blocks, config);
+            GlobalToStorage.RunPass(hfm, blocks, resourceManager, gpuAccessor, targetLanguage);
 
-            bool hostSupportsShaderFloat64 = config.GpuAccessor.QueryHostSupportsShaderFloat64();
+            bool hostSupportsShaderFloat64 = gpuAccessor.QueryHostSupportsShaderFloat64();
 
             // Those passes are looking for specific patterns and only needs to run once.
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
-                BindlessToIndexed.RunPass(blocks[blkIndex], config);
-                BindlessElimination.RunPass(blocks[blkIndex], config);
+                BindlessToIndexed.RunPass(blocks[blkIndex], resourceManager);
+                BindlessElimination.RunPass(blocks[blkIndex], resourceManager, gpuAccessor);
 
                 // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.
-                if (config.Definitions.Stage == ShaderStage.Fragment)
+                if (stage == ShaderStage.Fragment)
                 {
                     EliminateMultiplyByFragmentCoordW(blocks[blkIndex]);
                 }
@@ -37,10 +43,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
 
             // Run optimizations one last time to remove any code that is now optimizable after above passes.
-            RunOptimizationPasses(blocks, config);
+            RunOptimizationPasses(blocks, resourceManager);
         }
 
-        private static void RunOptimizationPasses(BasicBlock[] blocks, ShaderConfig config)
+        private static void RunOptimizationPasses(BasicBlock[] blocks, ResourceManager resourceManager)
         {
             bool modified;
 
@@ -79,7 +85,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.RunPass(config, operation);
+                        ConstantFolding.RunPass(resourceManager, operation);
                         Simplification.RunPass(operation);
 
                         if (DestIsLocalVar(operation))

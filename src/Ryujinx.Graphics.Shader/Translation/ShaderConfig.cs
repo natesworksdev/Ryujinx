@@ -262,49 +262,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return GpuAccessor.ConstantBuffer1Read(offset);
         }
 
-        public TextureFormat GetTextureFormat(int handle, int cbufSlot = -1)
-        {
-            // When the formatted load extension is supported, we don't need to
-            // specify a format, we can just declare it without a format and the GPU will handle it.
-            if (GpuAccessor.QueryHostSupportsImageLoadFormatted())
-            {
-                return TextureFormat.Unknown;
-            }
-
-            var format = GpuAccessor.QueryTextureFormat(handle, cbufSlot);
-
-            if (format == TextureFormat.Unknown)
-            {
-                GpuAccessor.Log($"Unknown format for texture {handle}.");
-
-                format = TextureFormat.R8G8B8A8Unorm;
-            }
-
-            return format;
-        }
-
-        private static bool FormatSupportsAtomic(TextureFormat format)
-        {
-            return format == TextureFormat.R32Sint || format == TextureFormat.R32Uint;
-        }
-
-        public TextureFormat GetTextureFormatAtomic(int handle, int cbufSlot = -1)
-        {
-            // Atomic image instructions do not support GL_EXT_shader_image_load_formatted,
-            // and must have a type specified. Default to R32Sint if not available.
-
-            var format = GpuAccessor.QueryTextureFormat(handle, cbufSlot);
-
-            if (!FormatSupportsAtomic(format))
-            {
-                GpuAccessor.Log($"Unsupported format for texture {handle}: {format}.");
-
-                format = TextureFormat.R32Sint;
-            }
-
-            return format;
-        }
-
         public void SizeAdd(int size)
         {
             Size += size;
@@ -363,7 +320,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             UsedFeatures |= flags;
         }
 
-        public ShaderProgramInfo CreateProgramInfo(ShaderIdentification identification = ShaderIdentification.None)
+        public ShaderProgramInfo CreateProgramInfo(ShaderIdentification identification = ShaderIdentification.None, int layerInputAttr = 0)
         {
             return new ShaderProgramInfo(
                 ResourceManager.GetConstantBufferDescriptors(),
@@ -371,7 +328,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 ResourceManager.GetTextureDescriptors(),
                 ResourceManager.GetImageDescriptors(),
                 identification,
-                GpLayerInputAttribute,
+                layerInputAttr,
                 Definitions.Stage,
                 UsedFeatures.HasFlag(FeatureFlags.FragCoordXY),
                 UsedFeatures.HasFlag(FeatureFlags.InstanceId),

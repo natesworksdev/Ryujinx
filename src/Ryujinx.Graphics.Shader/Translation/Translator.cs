@@ -61,6 +61,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 int inArgumentsCount = 0;
                 int outArgumentsCount = 0;
 
+                FeatureFlags usedFeatures = FeatureFlags.None;
+
                 if (i != 0)
                 {
                     var fru = frus[i];
@@ -78,18 +80,25 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Ssa.Rename(cfg.Blocks);
 
-                    Optimizer.RunPass(hfm, cfg.Blocks, config);
-                    Rewriter.RunPass(hfm, cfg.Blocks, config);
+                    Optimizer.RunPass(hfm, cfg.Blocks, config.ResourceManager, config.GpuAccessor, config.Options.TargetLanguage, config.Definitions.Stage);
+                    Rewriter.RunPass(hfm, cfg.Blocks, config.ResourceManager, config.GpuAccessor, config.Definitions.Stage, config.Options.TargetLanguage, ref usedFeatures);
                 }
+
+                config.SetUsedFeature(usedFeatures);
 
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
             }
 
-            var identification = ShaderIdentifier.Identify(funcs, config);
+            var identification = ShaderIdentifier.Identify(funcs, config.GpuAccessor, config.Definitions.Stage, out int layerInputAttr);
 
-            var sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
+            var sInfo = StructuredProgram.MakeStructuredProgram(
+                funcs,
+                config.AttributeUsage,
+                config.Definitions,
+                config.ResourceManager,
+                config.Options.Flags.HasFlag(TranslationFlags.DebugMode));
 
-            var info = config.CreateProgramInfo(identification);
+            var info = config.CreateProgramInfo(identification, layerInputAttr);
 
             return config.Options.TargetLanguage switch
             {

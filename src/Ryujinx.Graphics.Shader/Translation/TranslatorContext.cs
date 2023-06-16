@@ -254,7 +254,12 @@ namespace Ryujinx.Graphics.Shader.Translation
             var cfg = ControlFlowGraph.Create(operations);
             var function = new Function(cfg.Blocks, "main", false, 0, 0);
 
-            var sInfo = StructuredProgram.MakeStructuredProgram(new[] { function }, config);
+            var sInfo = StructuredProgram.MakeStructuredProgram(
+                new[] { function },
+                config.AttributeUsage,
+                config.Definitions,
+                config.ResourceManager,
+                config.Options.Flags.HasFlag(TranslationFlags.DebugMode));
 
             var info = config.CreateProgramInfo();
 

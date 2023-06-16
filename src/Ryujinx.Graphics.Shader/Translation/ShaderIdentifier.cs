@@ -5,18 +5,21 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     static class ShaderIdentifier
     {
-        public static ShaderIdentification Identify(IReadOnlyList<Function> functions, ShaderConfig config)
+        public static ShaderIdentification Identify(
+            IReadOnlyList<Function> functions,
+            IGpuAccessor gpuAccessor,
+            ShaderStage stage,
+            out int layerInputAttr)
         {
-            if (config.Definitions.Stage == ShaderStage.Geometry &&
-                config.GpuAccessor.QueryPrimitiveTopology() == InputTopology.Triangles &&
-                !config.GpuAccessor.QueryHostSupportsGeometryShader() &&
-                IsLayerPassthroughGeometryShader(functions, out int layerInputAttr))
+            if (stage == ShaderStage.Geometry &&
+                gpuAccessor.QueryPrimitiveTopology() == InputTopology.Triangles &&
+                !gpuAccessor.QueryHostSupportsGeometryShader() &&
+                IsLayerPassthroughGeometryShader(functions, out layerInputAttr))
             {
-                config.SetGeometryShaderLayerInputAttribute(layerInputAttr);
-
                 return ShaderIdentification.GeometryLayerPassthrough;
             }
 
+            layerInputAttr = 0;
             return ShaderIdentification.None;
         }
 
