@@ -604,7 +604,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                         await Task.Delay((int)(Math.Pow(2, retryCount) * 200));
                     }
 
-                    using FileStream sourceStream = File.Open(source, FileMode.Open);
+                    using FileStream sourceStream = File.Open(source, FileMode.Open, FileAccess.Read);
                     using FileStream destinationStream = File.Create(destination);
 
                     await sourceStream.CopyToAsync(destinationStream);

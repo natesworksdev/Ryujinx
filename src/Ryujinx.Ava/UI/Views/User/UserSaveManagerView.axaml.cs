@@ -256,10 +256,13 @@ namespace Ryujinx.Ava.UI.Views.User
                     ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed]
                     : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete];
 
-                Dispatcher.UIThread.Post(() =>
+                if (!string.IsNullOrWhiteSpace(ViewModel.Search))
                 {
-                    ViewModel.Sort();
-                });
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        ViewModel.Sort();
+                    });
+                }
 
                 NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
                     message,
