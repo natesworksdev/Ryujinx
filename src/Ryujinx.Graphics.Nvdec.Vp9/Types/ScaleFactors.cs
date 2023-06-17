@@ -38,7 +38,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             int h,
             int bd);
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16Y16 = {
+        private static readonly unsafe ConvolveFn[][][] PredictX16Y16 = new ConvolveFn[][][]
+        {
             new ConvolveFn[][]
             {
                 new ConvolveFn[]
@@ -67,7 +68,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16 = {
+        private static readonly unsafe ConvolveFn[][][] PredictX16 = new ConvolveFn[][][]
+        {
             new ConvolveFn[][]
             {
                 new ConvolveFn[]
@@ -96,7 +98,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictY16 = {
+        private static readonly unsafe ConvolveFn[][][] PredictY16 = new ConvolveFn[][][]
+        {
             new ConvolveFn[][]
             {
                 new ConvolveFn[]
@@ -125,7 +128,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] Predict = {
+        private static readonly unsafe ConvolveFn[][][] Predict = new ConvolveFn[][][]
+        {
             new ConvolveFn[][]
             {
                 new ConvolveFn[]
@@ -154,7 +158,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16Y16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16Y16 = new HighbdConvolveFn[][][]
+        {
             new HighbdConvolveFn[][]
             {
                 new HighbdConvolveFn[]
@@ -183,7 +188,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16 = new HighbdConvolveFn[][][]
+        {
             new HighbdConvolveFn[][]
             {
                 new HighbdConvolveFn[]
@@ -212,7 +218,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictY16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictY16 = new HighbdConvolveFn[][][]
+        {
             new HighbdConvolveFn[][]
             {
                 new HighbdConvolveFn[]
@@ -241,7 +248,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredict = {
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredict = new HighbdConvolveFn[][][]
+        {
             new HighbdConvolveFn[][]
             {
                 new HighbdConvolveFn[]

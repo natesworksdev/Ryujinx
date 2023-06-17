@@ -7,7 +7,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 {
     internal static class ReconIntra
     {
-        public static readonly TxType[] IntraModeToTxTypeLookup = {
+        public static readonly TxType[] IntraModeToTxTypeLookup = new TxType[]
+        {
             TxType.DctDct,    // DC
             TxType.AdstDct,   // V
             TxType.DctAdst,   // H
@@ -35,12 +36,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             NeedLeft | NeedAbove,  // D153
             NeedLeft,              // D207
             NeedAboveRight,        // D63
-            NeedLeft | NeedAbove // TM
+            NeedLeft | NeedAbove,  // TM
         };
 
         private unsafe delegate void IntraPredFn(byte* dst, int stride, byte* above, byte* left);
 
-        private static readonly unsafe IntraPredFn[][] _pred = {
+        private static readonly unsafe IntraPredFn[][] _pred = new IntraPredFn[][]
+        {
             new IntraPredFn[]
             {
                 null,
@@ -113,7 +115,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static readonly unsafe IntraPredFn[][][] _dcPred = {
+        private static readonly unsafe IntraPredFn[][][] _dcPred = new IntraPredFn[][][]
+        {
             new IntraPredFn[][]
             {
                 new IntraPredFn[]
@@ -152,7 +155,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private unsafe delegate void IntraHighPredFn(ushort* dst, int stride, ushort* above, ushort* left, int bd);
 
-        private static readonly unsafe IntraHighPredFn[][] _predHigh = {
+        private static readonly unsafe IntraHighPredFn[][] _predHigh = new IntraHighPredFn[][]
+        {
             new IntraHighPredFn[]
             {
                 null,
@@ -225,7 +229,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         };
 
-        private static readonly unsafe IntraHighPredFn[][][] _dcPredHigh = {
+        private static readonly unsafe IntraHighPredFn[][][] _dcPredHigh = new IntraHighPredFn[][][]
+        {
             new IntraHighPredFn[][]
             {
                 new IntraHighPredFn[]

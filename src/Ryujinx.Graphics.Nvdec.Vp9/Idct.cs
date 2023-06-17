@@ -32,7 +32,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly Transform2D[] Iht4 = {
+        private static readonly Transform2D[] Iht4 = new Transform2D[]
+        {
             new Transform2D(Idct4, Idct4),   // DCT_DCT  = 0
             new Transform2D(Iadst4, Idct4),  // ADST_DCT = 1
             new Transform2D(Idct4, Iadst4),  // DCT_ADST = 2
@@ -71,7 +72,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly Transform2D[] Iht8 = {
+        private static readonly Transform2D[] Iht8 = new Transform2D[]
+        {
             new Transform2D(Idct8, Idct8),   // DCT_DCT  = 0
             new Transform2D(Iadst8, Idct8),  // ADST_DCT = 1
             new Transform2D(Idct8, Iadst8),  // DCT_ADST = 2
@@ -111,7 +113,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly Transform2D[] Iht16 = {
+        private static readonly Transform2D[] Iht16 = new Transform2D[]
+        {
             new Transform2D(Idct16, Idct16),   // DCT_DCT  = 0
             new Transform2D(Iadst16, Idct16),  // ADST_DCT = 1
             new Transform2D(Idct16, Iadst16),  // DCT_ADST = 2
@@ -280,7 +283,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly HighbdTransform2D[] HighbdIht4 = {
+        private static readonly HighbdTransform2D[] HighbdIht4 = new HighbdTransform2D[]
+        {
             new HighbdTransform2D(HighbdIdct4, HighbdIdct4),   // DCT_DCT  = 0
             new HighbdTransform2D(HighbdIadst4, HighbdIdct4),  // ADST_DCT = 1
             new HighbdTransform2D(HighbdIdct4, HighbdIadst4),  // DCT_ADST = 2
@@ -319,7 +323,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly HighbdTransform2D[] HighIht8 = {
+        private static readonly HighbdTransform2D[] HighIht8 = new HighbdTransform2D[]
+        {
             new HighbdTransform2D(HighbdIdct8, HighbdIdct8),   // DCT_DCT  = 0
             new HighbdTransform2D(HighbdIadst8, HighbdIdct8),  // ADST_DCT = 1
             new HighbdTransform2D(HighbdIdct8, HighbdIadst8),  // DCT_ADST = 2
@@ -359,7 +364,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly HighbdTransform2D[] HighIht16 = {
+        private static readonly HighbdTransform2D[] HighIht16 = new HighbdTransform2D[]
+        {
             new HighbdTransform2D(HighbdIdct16, HighbdIdct16),   // DCT_DCT  = 0
             new HighbdTransform2D(HighbdIadst16, HighbdIdct16),  // ADST_DCT = 1
             new HighbdTransform2D(HighbdIdct16, HighbdIadst16),  // DCT_ADST = 2
