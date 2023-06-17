@@ -2,7 +2,8 @@
 {
     static class BC67Tables
     {
-        public static readonly BC7ModeInfo[] BC7ModeInfos = {
+        public static readonly BC7ModeInfo[] BC7ModeInfos = new BC7ModeInfo[]
+        {
             new BC7ModeInfo(3, 4, 6, 0, 0, 3, 0, 4, 0),
             new BC7ModeInfo(2, 6, 2, 0, 0, 3, 0, 6, 0),
             new BC7ModeInfo(3, 6, 0, 0, 0, 2, 0, 5, 0),
