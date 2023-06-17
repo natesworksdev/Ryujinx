@@ -123,7 +123,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 SampleFormat.PcmInt16 => AUDIO_S16,
                 SampleFormat.PcmInt32 => AUDIO_S32,
                 SampleFormat.PcmFloat => AUDIO_F32,
-                _ => throw new ArgumentException($"Unsupported sample format {format}")
+                _ => throw new ArgumentException($"Unsupported sample format {format}"),
             };
         }
 
