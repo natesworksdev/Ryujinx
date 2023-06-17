@@ -385,7 +385,7 @@ namespace Ryujinx.Ava.UI.Models
                         ButtonZl = (GamepadInputId)(object)ButtonZl,
                         ButtonSl = (GamepadInputId)(object)LeftButtonSl,
                         ButtonSr = (GamepadInputId)(object)LeftButtonSr,
-                        ButtonMinus = (GamepadInputId)(object)ButtonMinus
+                        ButtonMinus = (GamepadInputId)(object)ButtonMinus,
                     },
                     RightJoycon = new RightJoyconCommonConfig<GamepadInputId>()
                     {
@@ -397,7 +397,7 @@ namespace Ryujinx.Ava.UI.Models
                         ButtonSl = (GamepadInputId)(object)RightButtonSl,
                         ButtonSr = (GamepadInputId)(object)RightButtonSr,
                         ButtonR = (GamepadInputId)(object)ButtonR,
-                        ButtonZr = (GamepadInputId)(object)ButtonZr
+                        ButtonZr = (GamepadInputId)(object)ButtonZr,
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>()
                     {
@@ -405,7 +405,7 @@ namespace Ryujinx.Ava.UI.Models
                         InvertStickX = LeftInvertStickX,
                         InvertStickY = LeftInvertStickY,
                         Rotate90CW = LeftRotate90,
-                        StickButton = (GamepadInputId)(object)LeftControllerStickButton
+                        StickButton = (GamepadInputId)(object)LeftControllerStickButton,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>()
                     {
@@ -413,7 +413,7 @@ namespace Ryujinx.Ava.UI.Models
                         InvertStickX = RightInvertStickX,
                         InvertStickY = RightInvertStickY,
                         Rotate90CW = RightRotate90,
-                        StickButton = (GamepadInputId)(object)RightControllerStickButton
+                        StickButton = (GamepadInputId)(object)RightControllerStickButton,
                     },
                     Rumble = new RumbleConfigController()
                     {

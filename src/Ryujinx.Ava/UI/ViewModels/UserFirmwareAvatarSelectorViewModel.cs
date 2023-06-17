@@ -28,6 +28,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private Color _backgroundColor = Colors.White;
 
         private int _selectedIndex;
+        private byte[] _selectedImage;
 
         public UserFirmwareAvatarSelectorViewModel()
         {
@@ -77,7 +78,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public byte[] SelectedImage { get; private set; }
+        public byte[] SelectedImage
+        {
+            get => _selectedImage;
+            private set => _selectedImage = value;
+        }
 
         private void LoadImagesFromStore()
         {

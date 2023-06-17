@@ -338,7 +338,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Glyph.List => ListSelectedApplication,
                     Glyph.Grid => GridSelectedApplication,
-                    _ => null
+                    _ => null,
                 };
             }
         }
@@ -773,7 +773,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     2 => 100,
                     3 => 120,
                     4 => 140,
-                    _ => 16
+                    _ => 16,
                 };
             }
         }
@@ -788,7 +788,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     2 => ShowNames ? 210 : 150,
                     3 => ShowNames ? 240 : 180,
                     4 => ShowNames ? 280 : 220,
-                    _ => 16
+                    _ => 16,
                 };
             }
         }
@@ -832,7 +832,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     ApplicationSort.FileSize => LocaleManager.Instance[LocaleKeys.GameListHeaderFileSize],
                     ApplicationSort.Path => LocaleManager.Instance[LocaleKeys.GameListHeaderPath],
                     ApplicationSort.Favorite => LocaleManager.Instance[LocaleKeys.CommonFavorite],
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
             }
         }
