@@ -142,7 +142,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm64.UC_ARM64_REG_X27,
             Arm64.UC_ARM64_REG_X28,
             Arm64.UC_ARM64_REG_X29,
-            Arm64.UC_ARM64_REG_X30
+            Arm64.UC_ARM64_REG_X30,
         };
 
         private static readonly int[] QRegisters =
@@ -178,7 +178,7 @@ namespace Ryujinx.Tests.Unicorn
             Arm64.UC_ARM64_REG_Q28,
             Arm64.UC_ARM64_REG_Q29,
             Arm64.UC_ARM64_REG_Q30,
-            Arm64.UC_ARM64_REG_Q31
+            Arm64.UC_ARM64_REG_Q31,
         };
 
         public ulong GetX(int index)

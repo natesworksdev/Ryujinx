@@ -50,7 +50,7 @@ namespace Ryujinx.Tests.Unicorn
                 1 => (uint)(_e0 >> 32),
                 2 => (uint)(_e1 >> 0),
                 3 => (uint)(_e1 >> 32),
-                _ => throw new ArgumentOutOfRangeException(nameof(index))
+                _ => throw new ArgumentOutOfRangeException(nameof(index)),
             };
         }
 
@@ -60,7 +60,7 @@ namespace Ryujinx.Tests.Unicorn
             {
                 0 => _e0,
                 1 => _e1,
-                _ => throw new ArgumentOutOfRangeException(nameof(index))
+                _ => throw new ArgumentOutOfRangeException(nameof(index)),
             };
         }
 

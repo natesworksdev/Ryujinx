@@ -9,6 +9,6 @@ namespace Ryujinx.Tests.Unicorn
         Read = 1,
         Write = 2,
         Exec = 4,
-        All = 7
+        All = 7,
     }
 }
