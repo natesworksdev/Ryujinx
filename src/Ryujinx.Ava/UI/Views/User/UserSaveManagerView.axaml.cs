@@ -19,6 +19,8 @@ using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Helper;
+using Ryujinx.Ui.Common.SaveManager;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;

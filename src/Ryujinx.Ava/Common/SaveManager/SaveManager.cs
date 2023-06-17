@@ -10,6 +10,8 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Helper;
+using Ryujinx.Ui.Common.SaveManager;
 using System;
 using System.Collections.Generic;
 using System.IO;

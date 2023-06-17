@@ -21,6 +21,7 @@
     <None Remove="Resources\Logo_Patreon.png" />
     <None Remove="Resources\Logo_Ryujinx.png" />
     <None Remove="Resources\Logo_Twitter.png" />
+    <None Remove="SaveManager\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,4 +55,7 @@
     <ProjectReference Include="..\Ryujinx.HLE\Ryujinx.HLE.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SaveManager\" />
+  </ItemGroup>
 </Project>

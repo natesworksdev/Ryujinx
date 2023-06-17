@@ -4,36 +4,13 @@ using LibHac.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public record class LoadingBarData
-    {
-        public int Max { get; set; } = 0;
-        public int Curr { get; set; } = 0;
-        public bool IsVisible => Max > 0 && Curr < Max;
-
-        public void Reset()
-        {
-            Max = 0;
-            Curr = 0;
-        }
-    }
-
-    public class LoadingBarEventArgs : EventArgs
-    { 
-        public int Curr { get; set; }
-        public int Max { get; set; }
-    }
-
-    public class ImportSaveEventArgs : EventArgs
-    { 
-        public SaveDataInfo SaveInfo { get; init; }
-    }
-
     public class UserSaveManagerViewModel : BaseModel
     {
         private int _sortIndex;
