@@ -34,7 +34,8 @@ namespace Ryujinx.Horizon.Kernel.Generators
         private const string TypeResult = NamespaceHorizonCommon + "." + TypeResultName;
         private const string TypeExecutionContext = "IExecutionContext";
 
-        private static readonly string[] _expectedResults = {
+        private static readonly string[] _expectedResults = new string[]
+        {
             $"{TypeResultName}.Success",
             $"{TypeKernelResultName}.TimedOut",
             $"{TypeKernelResultName}.Cancelled",
