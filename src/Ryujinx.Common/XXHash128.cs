@@ -31,7 +31,8 @@ namespace Ryujinx.Common
         private const ulong Prime64_4 = 0x85EBCA77C2B2AE63UL;
         private const ulong Prime64_5 = 0x27D4EB2F165667C5UL;
 
-        private static readonly ulong[] Xxh3InitAcc = {
+        private static readonly ulong[] Xxh3InitAcc = new ulong[]
+        {
             Prime32_3,
             Prime64_1,
             Prime64_2,

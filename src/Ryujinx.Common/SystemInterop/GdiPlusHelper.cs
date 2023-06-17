@@ -42,7 +42,7 @@ namespace Ryujinx.Common.SystemInterop
                 DebugEventCallback = IntPtr.Zero,
                 SuppressBackgroundThread = 0,
                 SuppressExternalCodecs = 0,
-                StartupParameters = 0
+                StartupParameters = 0,
             };
         }
 

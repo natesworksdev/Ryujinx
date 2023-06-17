@@ -7,7 +7,7 @@ namespace Ryujinx.Common.GraphicsDriver.NVAPI
         NvdrsDwordType,
         NvdrsBinaryType,
         NvdrsStringType,
-        NvdrsWstringType
+        NvdrsWstringType,
     }
 
     enum NvdrsSettingLocation : uint
@@ -15,7 +15,7 @@ namespace Ryujinx.Common.GraphicsDriver.NVAPI
         NvdrsCurrentProfileLocation,
         NvdrsGlobalProfileLocation,
         NvdrsBaseProfileLocation,
-        NvdrsDefaultProfileLocation
+        NvdrsDefaultProfileLocation,
     }
 
     [StructLayout(LayoutKind.Explicit, Size = 0x3020)]

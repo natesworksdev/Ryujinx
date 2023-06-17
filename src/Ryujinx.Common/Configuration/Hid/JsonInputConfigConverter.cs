@@ -59,7 +59,7 @@ namespace Ryujinx.Common.Configuration.Hid
             {
                 InputBackendType.WindowKeyboard => JsonSerializer.Deserialize(ref reader, SerializerContext.StandardKeyboardInputConfig),
                 InputBackendType.GamepadSDL2 => JsonSerializer.Deserialize(ref reader, SerializerContext.StandardControllerInputConfig),
-                _ => throw new InvalidOperationException($"Unknown backend type {backendType}")
+                _ => throw new InvalidOperationException($"Unknown backend type {backendType}"),
             };
         }
 
