@@ -703,7 +703,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     XCI = Ui.ShownFileTypes.XCI,
                     NCA = Ui.ShownFileTypes.NCA,
                     NRO = Ui.ShownFileTypes.NRO,
-                    NSO = Ui.ShownFileTypes.NSO
+                    NSO = Ui.ShownFileTypes.NSO,
                 },
                 WindowStartup              = new WindowStartup
                 {
@@ -711,7 +711,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     WindowSizeHeight = Ui.WindowStartup.WindowSizeHeight,
                     WindowPositionX = Ui.WindowStartup.WindowPositionX,
                     WindowPositionY = Ui.WindowStartup.WindowPositionY,
-                    WindowMaximized = Ui.WindowStartup.WindowMaximized
+                    WindowMaximized = Ui.WindowStartup.WindowMaximized,
                 },
                 LanguageCode               = Ui.LanguageCode,
                 EnableCustomTheme          = Ui.EnableCustomTheme,
@@ -863,7 +863,7 @@ namespace Ryujinx.Ui.Common.Configuration
                             StickDown    = Key.S,
                             StickLeft    = Key.A,
                             StickRight   = Key.D,
-                            StickButton  = Key.F
+                            StickButton  = Key.F,
                         },
 
                         RightJoycon      = new RightJoyconCommonConfig<Key>
@@ -885,7 +885,7 @@ namespace Ryujinx.Ui.Common.Configuration
                             StickDown    = Key.K,
                             StickLeft    = Key.J,
                             StickRight   = Key.L,
-                            StickButton  = Key.H
+                            StickButton  = Key.H,
                         }
                  }
             };
@@ -1083,7 +1083,7 @@ namespace Ryujinx.Ui.Common.Configuration
                                 StickDown    = Key.S,
                                 StickLeft    = Key.A,
                                 StickRight   = Key.D,
-                                StickButton  = Key.F
+                                StickButton  = Key.F,
                             },
 
                             RightJoycon      = new RightJoyconCommonConfig<Key>
@@ -1105,7 +1105,7 @@ namespace Ryujinx.Ui.Common.Configuration
                                 StickDown    = Key.K,
                                 StickLeft    = Key.J,
                                 StickRight   = Key.L,
-                                StickButton  = Key.H
+                                StickButton  = Key.H,
                             }
                      }
                 };
@@ -1391,7 +1391,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     WindowPositionY = 0,
                     WindowSizeHeight = 760,
                     WindowSizeWidth = 1280,
-                    WindowMaximized = false
+                    WindowMaximized = false,
                 };
 
                 configurationFileUpdated = true;

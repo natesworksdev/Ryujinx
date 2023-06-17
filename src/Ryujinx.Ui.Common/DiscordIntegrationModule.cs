@@ -69,7 +69,7 @@ namespace Ryujinx.Ui.Common
                     LargeImageKey = "game",
                     LargeImageText = titleName,
                     SmallImageKey = "ryujinx",
-                    SmallImageText = Description
+                    SmallImageText = Description,
                 },
                 Details = $"Playing {titleName}",
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
