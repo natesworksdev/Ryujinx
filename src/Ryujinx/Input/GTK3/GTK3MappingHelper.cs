@@ -144,7 +144,7 @@ namespace Ryujinx.Input.GTK3
             GtkKey.backslash,
 
             // NOTE: invalid
-            GtkKey.blank
+            GtkKey.blank,
         };
 
         private static readonly Dictionary<GtkKey, Key> _gtkKeyMapping;

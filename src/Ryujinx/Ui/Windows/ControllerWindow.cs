@@ -612,7 +612,7 @@ namespace Ryujinx.Ui.Windows
                         StickDown = lStickDown,
                         StickLeft = lStickLeft,
                         StickRight = lStickRight,
-                        StickButton = lStickButton
+                        StickButton = lStickButton,
                     },
                     RightJoycon = new RightJoyconCommonConfig<Key>
                     {
@@ -632,8 +632,8 @@ namespace Ryujinx.Ui.Windows
                         StickDown = rStickDown,
                         StickLeft = rStickLeft,
                         StickRight = rStickRight,
-                        StickButton = rStickButton
-                    }
+                        StickButton = rStickButton,
+                    },
                 };
             }
 
@@ -691,7 +691,7 @@ namespace Ryujinx.Ui.Windows
                         MotionBackend = MotionInputBackendType.GamepadDriver,
                         EnableMotion = _enableMotion.Active,
                         Sensitivity = (int)_sensitivity.Value,
-                        GyroDeadzone = _gyroDeadzone.Value
+                        GyroDeadzone = _gyroDeadzone.Value,
                     };
                 }
 
@@ -725,7 +725,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick = lStick,
                         InvertStickY = _invertLStickY.Active,
                         StickButton = lStickButton,
-                        Rotate90CW = _rotateL90CW.Active
+                        Rotate90CW = _rotateL90CW.Active,
                     },
                     RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {
@@ -745,7 +745,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick = rStick,
                         InvertStickY = _invertRStickY.Active,
                         StickButton = rStickButton,
-                        Rotate90CW = _rotateR90CW.Active
+                        Rotate90CW = _rotateR90CW.Active,
                     },
                     Motion = motionConfig,
                     Rumble = new RumbleConfigController
@@ -1009,7 +1009,7 @@ namespace Ryujinx.Ui.Windows
                             StickDown = Key.S,
                             StickLeft = Key.A,
                             StickRight = Key.D,
-                            StickButton = Key.F
+                            StickButton = Key.F,
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<Key>
@@ -1031,7 +1031,7 @@ namespace Ryujinx.Ui.Windows
                             StickDown = Key.K,
                             StickLeft = Key.J,
                             StickRight = Key.L,
-                            StickButton = Key.H
+                            StickButton = Key.H,
                         }
                     };
                 }
@@ -1060,7 +1060,7 @@ namespace Ryujinx.Ui.Windows
                             ButtonL = ConfigGamepadInputId.LeftShoulder,
                             ButtonZl = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
-                            ButtonSr = ConfigGamepadInputId.Unbound
+                            ButtonSr = ConfigGamepadInputId.Unbound,
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -1069,7 +1069,7 @@ namespace Ryujinx.Ui.Windows
                             StickButton = ConfigGamepadInputId.LeftStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW = false
+                            Rotate90CW = false,
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
@@ -1082,7 +1082,7 @@ namespace Ryujinx.Ui.Windows
                             ButtonR = ConfigGamepadInputId.RightShoulder,
                             ButtonZr = ConfigGamepadInputId.RightTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,
-                            ButtonSr = ConfigGamepadInputId.Unbound
+                            ButtonSr = ConfigGamepadInputId.Unbound,
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -1091,7 +1091,7 @@ namespace Ryujinx.Ui.Windows
                             StickButton = ConfigGamepadInputId.RightStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW = false
+                            Rotate90CW = false,
                         },
 
                         Motion = new StandardMotionConfigController
@@ -1099,7 +1099,7 @@ namespace Ryujinx.Ui.Windows
                             MotionBackend = MotionInputBackendType.GamepadDriver,
                             EnableMotion = true,
                             Sensitivity = 100,
-                            GyroDeadzone = 1
+                            GyroDeadzone = 1,
                         },
                         Rumble = new RumbleConfigController
                         {
