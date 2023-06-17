@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 TextureComponent.Blue => SwizzleComponent.Blue,
                 TextureComponent.Alpha => SwizzleComponent.Alpha,
                 TextureComponent.OneSI or TextureComponent.OneF => SwizzleComponent.One,
-                _ => SwizzleComponent.Zero
+                _ => SwizzleComponent.Zero,
             };
         }
     }

@@ -10,7 +10,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     struct SamplerDescriptor
     {
-        private static readonly float[] _f5ToF32ConversionLut = {
+        private static readonly float[] _f5ToF32ConversionLut = new float[]
+        {
             0.0f,
             0.055555556f,
             0.1f,
@@ -45,7 +46,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             0.46666667f
         };
 
-        private static readonly float[] _maxAnisotropyLut = {
+        private static readonly float[] _maxAnisotropyLut = new float[]
+        {
             1, 2, 4, 6, 8, 10, 12, 16
         };
 

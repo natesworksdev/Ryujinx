@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     {
         LocalFb = 0,
         CoherentSysmem = 1,
-        NoncoherentSysmem = 2
+        NoncoherentSysmem = 2,
     }
 
     /// <summary>
@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     {
         None = 0,
         Pipelined = 1,
-        NonPipelined = 2
+        NonPipelined = 2,
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     {
         None = 0,
         ReleaseOneWordSemaphore = 1,
-        ReleaseFourWordSemaphore = 2
+        ReleaseFourWordSemaphore = 2,
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     {
         None = 0,
         Blocking = 1,
-        NonBlocking = 2
+        NonBlocking = 2,
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum LaunchDmaMemoryLayout
     {
         Blocklinear = 0,
-        Pitch = 1
+        Pitch = 1,
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum LaunchDmaType
     {
         Virtual = 0,
-        Physical = 1
+        Physical = 1,
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         Iadd = 5,
         Inc = 6,
         Dec = 7,
-        Fadd = 10
+        Fadd = 10,
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum LaunchDmaSemaphoreReductionSign
     {
         Signed = 0,
-        Unsigned = 1
+        Unsigned = 1,
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum LaunchDmaBypassL2
     {
         UsePteSetting = 0,
-        ForceVolatile = 1
+        ForceVolatile = 1,
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         SrcW = 3,
         ConstA = 4,
         ConstB = 5,
-        NoWrite = 6
+        NoWrite = 6,
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         One = 0,
         Two = 1,
         Three = 2,
-        Four = 3
+        Four = 3,
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         One = 0,
         Two = 1,
         Three = 2,
-        Four = 3
+        Four = 3,
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum SetBlockSizeWidth
     {
         QuarterGob = 14,
-        OneGob = 0
+        OneGob = 0,
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     enum SetBlockSizeGobHeight
     {
         GobHeightTesla4 = 0,
-        GobHeightFermi8 = 1
+        GobHeightFermi8 = 1,
     }
 
     /// <summary>

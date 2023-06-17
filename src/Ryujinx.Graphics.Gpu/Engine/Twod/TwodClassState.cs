@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum NotifyType
     {
         WriteOnly = 0,
-        WriteThenAwaken = 1
+        WriteThenAwaken = 1,
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Gn8rn8 = 235,
         Rn16 = 239,
         Rn8 = 244,
-        A8 = 247
+        A8 = 247,
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetDstMemoryLayoutV
     {
         Blocklinear = 0,
-        Pitch = 1
+        Pitch = 1,
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Gn8rn8 = 235,
         Rn16 = 239,
         Rn8 = 244,
-        A8 = 247
+        A8 = 247,
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetSrcMemoryLayoutV
     {
         Blocklinear = 0,
-        Pitch = 1
+        Pitch = 1,
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         L1Only = 0,
         L2Only = 1,
-        L1AndL2 = 2
+        L1AndL2 = 2,
     }
 
     /// <summary>
@@ -196,7 +196,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         NoPromotion = 0,
         PromoteTo2V = 1,
         PromoteTo2H = 2,
-        PromoteTo4 = 3
+        PromoteTo4 = 3,
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetNumProcessingClustersV
     {
         All = 0,
-        One = 1
+        One = 1,
     }
 
     /// <summary>
@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         A2r10g10b10 = 3,
         Y8 = 4,
         Y16 = 5,
-        Y32 = 6
+        Y32 = 6,
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Srccopy = 3,
         Rop = 4,
         SrccopyPremult = 5,
-        BlendPremult = 6
+        BlendPremult = 6,
     }
 
     /// <summary>
@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Monochrome8x8 = 0,
         Monochrome64x1 = 1,
         Monochrome1x64 = 2,
-        Color = 3
+        Color = 3,
     }
 
     /// <summary>
@@ -254,7 +254,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         UseRenderEnable = 0,
         AlwaysRender = 1,
-        NeverRender = 2
+        NeverRender = 2,
     }
 
     /// <summary>
@@ -264,7 +264,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         HwDecides = 0,
         LeftToRight = 1,
-        RightToLeft = 2
+        RightToLeft = 2,
     }
 
     /// <summary>
@@ -274,7 +274,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         HwDecides = 0,
         TopToBottom = 1,
-        BottomToTop = 2
+        BottomToTop = 2,
     }
 
     /// <summary>
@@ -288,7 +288,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         A8y8 = 3,
         A8x8y16 = 4,
         Y32 = 5,
-        ByteExpand = 6
+        ByteExpand = 6,
     }
 
     /// <summary>
@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetMonochromePatternFormatV
     {
         Cga6M1 = 0,
-        LeM1 = 1
+        LeM1 = 1,
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         RedDec = 4,
         RedAnd = 5,
         RedOr = 6,
-        RedXor = 7
+        RedXor = 7,
     }
 
     /// <summary>
@@ -321,7 +321,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum MmeDmaReductionReductionFormat
     {
         Unsigned = 0,
-        Signed = 1
+        Signed = 1,
     }
 
     /// <summary>
@@ -330,7 +330,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum MmeDmaReductionReductionSize
     {
         FourBytes = 0,
-        EightBytes = 1
+        EightBytes = 1,
     }
 
     /// <summary>
@@ -342,7 +342,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Size4kb = 1,
         Size8kb = 2,
         Size12kb = 3,
-        Size16kb = 4
+        Size16kb = 4,
     }
 
     /// <summary>
@@ -354,7 +354,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Lines = 1,
         Polyline = 2,
         Triangles = 3,
-        Rects = 4
+        Rects = 4,
     }
 
     /// <summary>
@@ -380,7 +380,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Z1r5g5b5 = 251,
         O1r5g5b5 = 252,
         Z8r8g8b8 = 253,
-        O8r8g8b8 = 254
+        O8r8g8b8 = 254,
     }
 
     /// <summary>
@@ -389,7 +389,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetPixelsFromCpuDataTypeV
     {
         Color = 0,
-        Index = 1
+        Index = 1,
     }
 
     /// <summary>
@@ -412,7 +412,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Z1r5g5b5 = 251,
         O1r5g5b5 = 252,
         Z8r8g8b8 = 253,
-        O8r8g8b8 = 254
+        O8r8g8b8 = 254,
     }
 
     /// <summary>
@@ -422,7 +422,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         I1 = 0,
         I4 = 1,
-        I8 = 2
+        I8 = 2,
     }
 
     /// <summary>
@@ -431,7 +431,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetPixelsFromCpuMonoFormatV
     {
         Cga6M1 = 0,
-        LeM1 = 1
+        LeM1 = 1,
     }
 
     /// <summary>
@@ -441,7 +441,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         WrapPixel = 0,
         WrapByte = 1,
-        WrapDword = 2
+        WrapDword = 2,
     }
 
     /// <summary>
@@ -450,7 +450,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetPixelsFromCpuMonoOpacityV
     {
         Transparent = 0,
-        Opaque = 1
+        Opaque = 1,
     }
 
     /// <summary>
@@ -460,7 +460,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     {
         Auto = 0,
         Shape8x8 = 1,
-        Shape16x4 = 2
+        Shape16x4 = 2,
     }
 
     /// <summary>
@@ -469,7 +469,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetPixelsFromMemorySampleModeOrigin
     {
         Center = 0,
-        Corner = 1
+        Corner = 1,
     }
 
     /// <summary>
@@ -478,7 +478,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     enum SetPixelsFromMemorySampleModeFilter
     {
         Point = 0,
-        Bilinear = 1
+        Bilinear = 1,
     }
 
     /// <summary>

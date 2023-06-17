@@ -1324,7 +1324,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Target.Texture2DMultisample or Target.Texture2DMultisampleArray => target == Target.Texture2DMultisample ||
                                            target == Target.Texture2DMultisampleArray,
                 Target.Texture3D => target == Target.Texture3D,
-                _ => false
+                _ => false,
             };
         }
 

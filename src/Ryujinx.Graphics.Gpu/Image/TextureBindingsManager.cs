@@ -226,7 +226,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             break;
 
                         case ShaderStage.Vertex:
-                            const int fragmentIndex = (int)ShaderStage.Fragment - 1;
+                            int fragmentIndex = (int)ShaderStage.Fragment - 1;
                             index += _textureBindings[fragmentIndex].Length + _imageBindings[fragmentIndex].Length;
 
                             result = texture.ScaleFactor;
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Stage 0 total: Compute or Vertex.
             int total = _textureBindings[0].Length + _imageBindings[0].Length;
 
-            const int fragmentIndex = (int)ShaderStage.Fragment - 1;
+            int fragmentIndex = (int)ShaderStage.Fragment - 1;
             int fragmentTotal = _isCompute ? 0 : (_textureBindings[fragmentIndex].Length + _imageBindings[fragmentIndex].Length);
 
             if (total != 0 && fragmentTotal != _lastFragmentTotal && VertexRequiresScale())

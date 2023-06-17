@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Astc2D10x10UnormSrgb             = Astc2D10x10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4945
             Astc2D12x10UnormSrgb             = Astc2D12x10       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4954
             Astc2D12x12UnormSrgb             = Astc2D12x12       | RUnorm | GUnorm | BUnorm | AUnorm | Srgb, // 0xa4946
-            A5B5G5R1Unorm                    = A5B5G5R1          | RUnorm | GUnorm | BUnorm | AUnorm // 0x24913
+            A5B5G5R1Unorm                    = A5B5G5R1          | RUnorm | GUnorm | BUnorm | AUnorm,        // 0x24913
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             A2B10G10R10Snorm    = (A2B10G10R10 << 21)  | (Snorm << 27),   // 0x0e000000
             A2B10G10R10Sint     = (A2B10G10R10 << 21)  | (Sint << 27),    // 0x1e000000
             A2B10G10R10Uscaled  = (A2B10G10R10 << 21)  | (Uscaled << 27), // 0x2e000000
-            A2B10G10R10Sscaled  = (A2B10G10R10 << 21)  | (Sscaled << 27) // 0x36000000
+            A2B10G10R10Sscaled  = (A2B10G10R10 << 21)  | (Sscaled << 27), // 0x36000000
         }
 
         private static readonly Dictionary<TextureFormat, FormatInfo> _textureFormats = new()

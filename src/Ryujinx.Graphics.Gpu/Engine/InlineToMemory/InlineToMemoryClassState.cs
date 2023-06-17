@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     enum NotifyType
     {
         WriteOnly = 0,
-        WriteThenAwaken = 1
+        WriteThenAwaken = 1,
     }
 
     /// <summary>
@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     /// </summary>
     enum SetDstBlockSizeWidth
     {
-        OneGob = 0
+        OneGob = 0,
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         FourGobs = 2,
         EightGobs = 3,
         SixteenGobs = 4,
-        ThirtytwoGobs = 5
+        ThirtytwoGobs = 5,
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     enum LaunchDmaDstMemoryLayout
     {
         Blocklinear = 0,
-        Pitch = 1
+        Pitch = 1,
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     {
         FlushDisable = 0,
         FlushOnly = 1,
-        ReleaseSemaphore = 2
+        ReleaseSemaphore = 2,
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     enum LaunchDmaInterruptType
     {
         None = 0,
-        Interrupt = 1
+        Interrupt = 1,
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     enum LaunchDmaSemaphoreStructSize
     {
         FourWords = 0,
-        OneWord = 1
+        OneWord = 1,
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         RedDec = 4,
         RedAnd = 5,
         RedOr = 6,
-        RedXor = 7
+        RedXor = 7,
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
     enum LaunchDmaReductionFormat
     {
         Unsigned32 = 0,
-        Signed32 = 1
+        Signed32 = 1,
     }
 
     /// <summary>

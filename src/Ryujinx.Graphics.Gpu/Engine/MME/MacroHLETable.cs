@@ -44,7 +44,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             }
         }
 
-        private static readonly TableEntry[] _table = {
+        private static readonly TableEntry[] _table = new TableEntry[]
+        {
             new TableEntry(MacroHLEFunctionName.ClearColor, new Hash128(0xA9FB28D1DC43645A, 0xB177E5D2EAE67FB0), 0x28),
             new TableEntry(MacroHLEFunctionName.ClearDepthStencil, new Hash128(0x1B96CB77D4879F4F, 0x8557032FE0C965FB), 0x24),
             new TableEntry(MacroHLEFunctionName.DrawArraysInstanced, new Hash128(0x197FB416269DBC26, 0x34288C01DDA82202), 0x48),

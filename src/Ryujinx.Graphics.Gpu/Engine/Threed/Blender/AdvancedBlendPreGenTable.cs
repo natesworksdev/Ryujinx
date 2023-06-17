@@ -267,7 +267,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
             { new Hash128(0x65A7B01FDC73A46C, 0x297E096ED5CC4D8A), new AdvancedBlendEntry(AdvancedBlendOp.HslHue, AdvancedBlendOverlap.Conjoint, false, new[] { new RgbFloat(0.3f, 0.59f, 0.11f) }, new FixedFunctionAlpha(BlendUcodeEnable.EnableRGB, BlendOp.MaximumGl, BlendFactor.OneGl, BlendFactor.OneGl)) },
             { new Hash128(0xD9C99BA4A6CDC13B, 0x3CFF0ACEDC2EE150), new AdvancedBlendEntry(AdvancedBlendOp.HslSaturation, AdvancedBlendOverlap.Conjoint, false, new[] { new RgbFloat(0.3f, 0.59f, 0.11f) }, new FixedFunctionAlpha(BlendUcodeEnable.EnableRGB, BlendOp.MaximumGl, BlendFactor.OneGl, BlendFactor.OneGl)) },
             { new Hash128(0x6BC00DA6EB922BD1, 0x5FD4C11F2A685234), new AdvancedBlendEntry(AdvancedBlendOp.HslColor, AdvancedBlendOverlap.Conjoint, false, new[] { new RgbFloat(0.3f, 0.59f, 0.11f) }, new FixedFunctionAlpha(BlendUcodeEnable.EnableRGB, BlendOp.MaximumGl, BlendFactor.OneGl, BlendFactor.OneGl)) },
-            { new Hash128(0x8652300E32D93050, 0x9460E7B449132371), new AdvancedBlendEntry(AdvancedBlendOp.HslLuminosity, AdvancedBlendOverlap.Conjoint, false, new[] { new RgbFloat(0.3f, 0.59f, 0.11f) }, new FixedFunctionAlpha(BlendUcodeEnable.EnableRGB, BlendOp.MaximumGl, BlendFactor.OneGl, BlendFactor.OneGl)) }
+            { new Hash128(0x8652300E32D93050, 0x9460E7B449132371), new AdvancedBlendEntry(AdvancedBlendOp.HslLuminosity, AdvancedBlendOverlap.Conjoint, false, new[] { new RgbFloat(0.3f, 0.59f, 0.11f) }, new FixedFunctionAlpha(BlendUcodeEnable.EnableRGB, BlendOp.MaximumGl, BlendFactor.OneGl, BlendFactor.OneGl)) },
         };
     }
 }

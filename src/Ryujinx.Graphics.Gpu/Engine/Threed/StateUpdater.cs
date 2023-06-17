@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.RtDepthStencilState),
                     nameof(ThreedClassState.RtControl),
                     nameof(ThreedClassState.RtDepthStencilSize),
-                    nameof(ThreedClassState.RtDepthStencilEnable))
+                    nameof(ThreedClassState.RtDepthStencilEnable)),
             });
         }
 

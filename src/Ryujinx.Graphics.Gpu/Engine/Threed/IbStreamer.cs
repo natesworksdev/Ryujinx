@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private BufferHandle _inlineIndexBuffer;
         private int _inlineIndexBufferSize;
+        private int _inlineIndexCount;
         private uint[] _buffer;
 #pragma warning disable IDE0051 // Remove unused private member
         private readonly int _bufferOffset;
@@ -22,18 +23,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <summary>
         /// Indicates if any index buffer data has been pushed.
         /// </summary>
-        public readonly bool HasInlineIndexData => InlineIndexCount != 0;
+        public bool HasInlineIndexData => _inlineIndexCount != 0;
 
         /// <summary>
         /// Total numbers of indices that have been pushed.
         /// </summary>
-        public int InlineIndexCount { get; private set; }
+        public int InlineIndexCount => _inlineIndexCount;
 
         /// <summary>
         /// Gets the handle for the host buffer currently holding the inline index buffer data.
         /// </summary>
         /// <returns>Host buffer handle</returns>
-        public readonly BufferHandle GetInlineIndexBuffer()
+        public BufferHandle GetInlineIndexBuffer()
         {
             return _inlineIndexBuffer;
         }
@@ -47,8 +48,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public int GetAndResetInlineIndexCount(IRenderer renderer)
         {
             UpdateRemaining(renderer);
-            int temp = InlineIndexCount;
-            InlineIndexCount = 0;
+            int temp = _inlineIndexCount;
+            _inlineIndexCount = 0;
             return temp;
         }
 
@@ -64,14 +65,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             byte i2 = (byte)(argument >> 16);
             byte i3 = (byte)(argument >> 24);
 
-            int offset = InlineIndexCount;
+            int offset = _inlineIndexCount;
 
             PushData(renderer, offset, i0);
             PushData(renderer, offset + 1, i1);
             PushData(renderer, offset + 2, i2);
             PushData(renderer, offset + 3, i3);
 
-            InlineIndexCount += 4;
+            _inlineIndexCount += 4;
         }
 
         /// <summary>
@@ -84,12 +85,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             ushort i0 = (ushort)argument;
             ushort i1 = (ushort)(argument >> 16);
 
-            int offset = InlineIndexCount;
+            int offset = _inlineIndexCount;
 
             PushData(renderer, offset, i0);
             PushData(renderer, offset + 1, i1);
 
-            InlineIndexCount += 2;
+            _inlineIndexCount += 2;
         }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             uint i0 = (uint)argument;
 
-            int offset = InlineIndexCount++;
+            int offset = _inlineIndexCount++;
 
             PushData(renderer, offset, i0);
         }
@@ -137,7 +138,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="renderer">Host renderer</param>
         private void UpdateRemaining(IRenderer renderer)
         {
-            int offset = InlineIndexCount;
+            int offset = _inlineIndexCount;
             if (offset == 0)
             {
                 return;

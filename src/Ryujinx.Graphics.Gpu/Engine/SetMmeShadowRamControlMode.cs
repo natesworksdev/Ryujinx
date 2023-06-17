@@ -8,6 +8,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         MethodTrack = 0,
         MethodTrackWithFilter = 1,
         MethodPassthrough = 2,
-        MethodReplay = 3
+        MethodReplay = 3,
     }
 }

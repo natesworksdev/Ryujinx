@@ -5,25 +5,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum Entry0Fetch
     {
         Unconditional = 0,
-        Conditional = 1
+        Conditional = 1,
     }
 
     enum Entry1Priv
     {
         User = 0,
-        Kernel = 1
+        Kernel = 1,
     }
 
     enum Entry1Level
     {
         Main = 0,
-        Subroutine = 1
+        Subroutine = 1,
     }
 
     enum Entry1Sync
     {
         Proceed = 0,
-        Wait = 1
+        Wait = 1,
     }
 
     enum Entry1Opcode
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         Nop = 0,
         Illegal = 1,
         Crc = 2,
-        PbCrc = 3
+        PbCrc = 3,
     }
 
     struct GPEntry

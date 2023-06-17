@@ -110,11 +110,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         }
 
         private Bucket[] _buckets;
+        private int _count;
 
         /// <summary>
         /// Total amount of entries on the hash table.
         /// </summary>
-        public int Count { get; private set; }
+        public int Count => _count;
 
         /// <summary>
         /// Creates a new instance of the partitioned hash table.
@@ -209,7 +210,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// <param name="entry">Entry</param>
         private void AddToBucket(uint dataHash, ref Entry entry)
         {
-            int pow2Count = GetPow2Count(++Count);
+            int pow2Count = GetPow2Count(++_count);
             if (pow2Count != _buckets.Length)
             {
                 Rebuild(pow2Count);
@@ -287,7 +288,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// <returns>True if an item was found, false otherwise</returns>
         private bool TryFindItem(uint dataHash, ReadOnlySpan<byte> data, out T item)
         {
-            if (Count == 0)
+            if (_count == 0)
             {
                 item = default;
                 return false;
@@ -351,7 +352,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         /// <returns>Table lookup result</returns>
         public SearchResult TryFindItem(scoped ref SmartDataAccessor dataAccessor, int size, scoped ref T item, scoped ref byte[] data)
         {
-            if (Count == 0)
+            if (_count == 0)
             {
                 return SearchResult.NotFound;
             }
