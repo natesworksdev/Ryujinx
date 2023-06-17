@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private const int QueueCount = 10000;
 
         private readonly int _elementSize;
+        private readonly IRenderer _baseRenderer;
         private Thread _gpuThread;
         private Thread _backendThread;
         private bool _running;
@@ -67,13 +68,13 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public IPipeline Pipeline { get; }
         public IWindow Window { get; }
 
-        public IRenderer BaseRenderer { get; }
+        public IRenderer BaseRenderer => _baseRenderer;
 
-        public bool PreferThreading => BaseRenderer.PreferThreading;
+        public bool PreferThreading => _baseRenderer.PreferThreading;
 
         public ThreadedRenderer(IRenderer renderer)
         {
-            BaseRenderer = renderer;
+            _baseRenderer = renderer;
 
             renderer.ScreenCaptured += (sender, info) => ScreenCaptured?.Invoke(this, info);
             renderer.SetInterruptAction(Interrupt);
@@ -140,7 +141,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
                     // Run the command.
 
-                    CommandHelper.RunCommand(command, this, BaseRenderer);
+                    CommandHelper.RunCommand(command, this, _baseRenderer);
 
                     if (Interlocked.CompareExchange(ref _invokePtr, -1, commandPtr) == commandPtr)
                     {
@@ -258,7 +259,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
             else
             {
-                BaseRenderer.BackgroundContextAction(action, true);
+                _baseRenderer.BackgroundContextAction(action, true);
             }
         }
 
@@ -333,7 +334,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 var texture = new ThreadedTexture(this, info, scale)
                 {
-                    Base = BaseRenderer.CreateTexture(info, scale)
+                    Base = _baseRenderer.CreateTexture(info, scale)
                 };
 
                 return texture;
@@ -358,7 +359,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
             else
             {
-                return BaseRenderer.GetBufferData(Buffers.MapBufferBlocking(buffer), offset, size);
+                return _baseRenderer.GetBufferData(Buffers.MapBufferBlocking(buffer), offset, size);
             }
         }
 
@@ -373,12 +374,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public ulong GetCurrentSync()
         {
-            return BaseRenderer.GetCurrentSync();
+            return _baseRenderer.GetCurrentSync();
         }
 
         public HardwareInfo GetHardwareInfo()
         {
-            return BaseRenderer.GetHardwareInfo();
+            return _baseRenderer.GetHardwareInfo();
         }
 
         /// <summary>
@@ -387,7 +388,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         /// <param name="logLevel">Log level to use</param>
         public void Initialize(GraphicsDebugLevel logLevel)
         {
-            BaseRenderer.Initialize(logLevel);
+            _baseRenderer.Initialize(logLevel);
         }
 
         public IProgram LoadProgramBinary(byte[] programBinary, bool hasFragmentShader, ShaderInfo info)
@@ -432,7 +433,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void Screenshot()
         {
-            BaseRenderer.Screenshot();
+            _baseRenderer.Screenshot();
         }
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
@@ -451,7 +452,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             Sync.WaitSyncAvailability(id);
 
-            BaseRenderer.WaitSync(id);
+            _baseRenderer.WaitSync(id);
         }
 
         private void Interrupt(Action action)
@@ -485,7 +486,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public bool PrepareHostMapping(nint address, ulong size)
         {
-            return BaseRenderer.PrepareHostMapping(address, size);
+            return _baseRenderer.PrepareHostMapping(address, size);
         }
 
         public void FlushThreadedCommands()
@@ -514,7 +515,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
 
             // Dispose the renderer.
-            BaseRenderer.Dispose();
+            _baseRenderer.Dispose();
 
             // Dispose events.
             _frameComplete.Dispose();

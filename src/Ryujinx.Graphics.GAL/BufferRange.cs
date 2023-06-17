@@ -2,7 +2,9 @@ namespace Ryujinx.Graphics.GAL
 {
     public readonly struct BufferRange
     {
-        public static BufferRange Empty { get; } = new(BufferHandle.Null, 0, 0);
+        private static readonly BufferRange _empty = new(BufferHandle.Null, 0, 0);
+
+        public static BufferRange Empty => _empty;
 
         public BufferHandle Handle { get; }
 
