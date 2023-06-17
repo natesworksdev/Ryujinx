@@ -10,15 +10,16 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private unsafe delegate void WriteCallbackDelegate(IntPtr ctx, int frameCountMin, int frameCountMax);
 
+        private IntPtr _context;
         private IntPtr _nameStored;
         private Action<int, int> _writeCallback;
         private WriteCallbackDelegate _writeCallbackNative;
 
-        public IntPtr Context { get; private set; }
+        public IntPtr Context => _context;
 
         internal SoundIoOutStreamContext(IntPtr context)
         {
-            Context = context;
+            _context = context;
             _nameStored = IntPtr.Zero;
             _writeCallback = null;
             _writeCallbackNative = null;
@@ -28,7 +29,7 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
         {
             unsafe
             {
-                return ref Unsafe.AsRef<SoundIoOutStream>((SoundIoOutStream*)Context);
+                return ref Unsafe.AsRef<SoundIoOutStream>((SoundIoOutStream*)_context);
             }
         }
 
@@ -113,13 +114,13 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
             }
         }
 
-        public void Open() => CheckError(soundio_outstream_open(Context));
+        public void Open() => CheckError(soundio_outstream_open(_context));
 
-        public void Start() => CheckError(soundio_outstream_start(Context));
+        public void Start() => CheckError(soundio_outstream_start(_context));
 
-        public void Pause(bool pause) => CheckError(soundio_outstream_pause(Context, pause));
+        public void Pause(bool pause) => CheckError(soundio_outstream_pause(_context, pause));
 
-        public void SetVolume(double volume) => CheckError(soundio_outstream_set_volume(Context, volume));
+        public void SetVolume(double volume) => CheckError(soundio_outstream_set_volume(_context, volume));
 
         public Span<SoundIoChannelArea> BeginWrite(ref int frameCount)
         {
@@ -130,7 +131,7 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
             {
                 var frameCountPtr = &nativeFrameCount;
                 var arenasPtr = &arenas;
-                CheckError(soundio_outstream_begin_write(Context, (IntPtr)arenasPtr, (IntPtr)frameCountPtr));
+                CheckError(soundio_outstream_begin_write(_context, (IntPtr)arenasPtr, (IntPtr)frameCountPtr));
 
                 frameCount = *frameCountPtr;
 
@@ -138,14 +139,14 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
             }
         }
 
-        public void EndWrite() => CheckError(soundio_outstream_end_write(Context));
+        public void EndWrite() => CheckError(soundio_outstream_end_write(_context));
 
         protected virtual void Dispose(bool disposing)
         {
-            if (Context != IntPtr.Zero)
+            if (_context != IntPtr.Zero)
             {
-                soundio_outstream_destroy(Context);
-                Context = IntPtr.Zero;
+                soundio_outstream_destroy(_context);
+                _context = IntPtr.Zero;
             }
         }
 

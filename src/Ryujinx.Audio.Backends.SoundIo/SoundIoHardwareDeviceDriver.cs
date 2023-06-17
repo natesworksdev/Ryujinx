@@ -162,7 +162,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
                 SampleFormat.PcmInt24 => SoundIoFormat.S24LE,
                 SampleFormat.PcmInt32 => SoundIoFormat.S32LE,
                 SampleFormat.PcmFloat => SoundIoFormat.Float32LE,
-                _ => throw new ArgumentException($"Unsupported sample format {format}")
+                _ => throw new ArgumentException($"Unsupported sample format {format}"),
             };
         }
 

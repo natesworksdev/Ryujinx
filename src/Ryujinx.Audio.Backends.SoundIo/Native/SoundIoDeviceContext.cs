@@ -7,18 +7,20 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
 {
     public class SoundIoDeviceContext
     {
-        public IntPtr Context { get; }
+        private readonly IntPtr _context;
+
+        public IntPtr Context => _context;
 
         internal SoundIoDeviceContext(IntPtr context)
         {
-            Context = context;
+            _context = context;
         }
 
         private ref SoundIoDevice GetDeviceContext()
         {
             unsafe
             {
-                return ref Unsafe.AsRef<SoundIoDevice>((SoundIoDevice*)Context);
+                return ref Unsafe.AsRef<SoundIoDevice>((SoundIoDevice*)_context);
             }
         }
 
@@ -26,15 +28,15 @@ namespace Ryujinx.Audio.Backends.SoundIo.Native
 
         public string Id => Marshal.PtrToStringAnsi(GetDeviceContext().Id);
 
-        public bool SupportsSampleRate(int sampleRate) => soundio_device_supports_sample_rate(Context, sampleRate);
+        public bool SupportsSampleRate(int sampleRate) => soundio_device_supports_sample_rate(_context, sampleRate);
 
-        public bool SupportsFormat(SoundIoFormat format) => soundio_device_supports_format(Context, format);
+        public bool SupportsFormat(SoundIoFormat format) => soundio_device_supports_format(_context, format);
 
-        public bool SupportsChannelCount(int channelCount) => soundio_device_supports_layout(Context, SoundIoChannelLayout.GetDefault(channelCount));
+        public bool SupportsChannelCount(int channelCount) => soundio_device_supports_layout(_context, SoundIoChannelLayout.GetDefault(channelCount));
 
         public SoundIoOutStreamContext CreateOutStream()
         {
-            IntPtr context = soundio_outstream_create(Context);
+            IntPtr context = soundio_outstream_create(_context);
 
             if (context == IntPtr.Zero)
             {

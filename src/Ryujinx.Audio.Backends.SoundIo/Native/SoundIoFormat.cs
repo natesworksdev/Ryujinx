@@ -20,6 +20,6 @@
         Float32LE = 15,
         Float32BE = 16,
         Float64LE = 17,
-        Float64BE = 18
+        Float64BE = 18,
     }
 }
