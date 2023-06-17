@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg
                 return;
             }
 
-            const int lineSize = 1024;
+            int lineSize = 1024;
             byte* lineBuffer = stackalloc byte[lineSize];
             int printPrefix = 1;
 
