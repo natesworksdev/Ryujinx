@@ -27,7 +27,7 @@ namespace ARMeilleure.Decoders
             return RegisterSize switch
             {
                 RegisterSize.Simd128 or RegisterSize.Simd64 => index >> 1,
-                _ => throw new InvalidOperationException()
+                _ => throw new InvalidOperationException(),
             };
         }
 
@@ -37,7 +37,7 @@ namespace ARMeilleure.Decoders
             {
                 RegisterSize.Simd128 => 0,
                 RegisterSize.Simd64 => index & 1,
-                _ => throw new InvalidOperationException()
+                _ => throw new InvalidOperationException(),
             };
         }
 

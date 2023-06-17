@@ -24,7 +24,7 @@ namespace ARMeilleure.Instructions
                 RegisterSize.Simd128 => (index >> 1, 0),
                 RegisterSize.Simd64 or RegisterSize.Int64 => (index >> 1, index & 1),
                 RegisterSize.Int32 => (index >> 2, index & 3),
-                _ => throw new ArgumentException("Unrecognized Vector Register Size.")
+                _ => throw new ArgumentException("Unrecognized Vector Register Size."),
             };
         }
 
@@ -724,7 +724,7 @@ namespace ARMeilleure.Instructions
             Debug.Assert(target.Type == OperandType.V128 && value.Type == OperandType.V128);
 
             int targetSide = targetV & 1;
-            const int shuffleMask = 2;
+            int shuffleMask = 2;
 
             if (targetSide == 1)
             {
@@ -780,7 +780,7 @@ namespace ARMeilleure.Instructions
 
             if (doubleWidth)
             {
-                const int shuffleMask = 1; // Swap top and bottom. (b0 = 1, b1 = 0)
+                int shuffleMask = 1; // Swap top and bottom. (b0 = 1, b1 = 0)
                 return context.AddIntrinsic(Intrinsic.X86Shufpd, target, target, Const(shuffleMask));
             }
             else

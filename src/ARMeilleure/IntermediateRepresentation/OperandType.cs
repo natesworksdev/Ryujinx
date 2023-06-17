@@ -29,7 +29,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 OperandType.I32 => RegisterType.Integer,
                 OperandType.I64 => RegisterType.Integer,
                 OperandType.V128 => RegisterType.Vector,
-                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\".")
+                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\"."),
             };
         }
 
@@ -42,7 +42,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 OperandType.I32 => 4,
                 OperandType.I64 => 8,
                 OperandType.V128 => 16,
-                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\".")
+                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\"."),
             };
         }
 
@@ -55,7 +55,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 OperandType.I32 => 2,
                 OperandType.I64 => 3,
                 OperandType.V128 => 4,
-                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\".")
+                _ => throw new InvalidOperationException($"Invalid operand type \"{type}\"."),
             };
         }
     }

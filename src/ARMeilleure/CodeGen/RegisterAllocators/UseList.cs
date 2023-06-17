@@ -6,15 +6,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     {
         private int* _items;
         private int _capacity;
+        private int _count;
 
-        public int Count { get; private set; }
-
-        public readonly int FirstUse => Count > 0 ? _items[Count - 1] : LiveInterval.NotFound;
-        public readonly Span<int> Span => new(_items, Count);
+        public int Count => _count;
+        public int FirstUse => _count > 0 ? _items[_count - 1] : LiveInterval.NotFound;
+        public Span<int> Span => new(_items, _count);
 
         public void Add(int position)
         {
-            if (Count + 1 > _capacity)
+            if (_count + 1 > _capacity)
             {
                 var oldSpan = Span;
 
@@ -28,7 +28,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             // Use positions are usually inserted in descending order, so inserting in descending order is faster,
             // since the number of half exchanges is reduced.
-            int i = Count - 1;
+            int i = _count - 1;
 
             while (i >= 0 && _items[i] < position)
             {
@@ -36,19 +36,19 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             _items[i + 1] = position;
-            Count++;
+            _count++;
         }
 
-        public readonly int NextUse(int position)
+        public int NextUse(int position)
         {
             int index = NextUseIndex(position);
 
             return index != LiveInterval.NotFound ? _items[index] : LiveInterval.NotFound;
         }
 
-        public readonly int NextUseIndex(int position)
+        public int NextUseIndex(int position)
         {
-            int i = Count - 1;
+            int i = _count - 1;
 
             if (i == -1 || position > _items[0])
             {
@@ -71,14 +71,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             // list takes the back of the list.
             UseList result = new()
             {
-                Count = index + 1
+                _count = index + 1
             };
-            result._capacity = result.Count;
+            result._capacity = result._count;
             result._items = _items;
 
-            Count -= result.Count;
-            _capacity = Count;
-            _items += result.Count;
+            _count -= result._count;
+            _capacity = _count;
+            _items += result._count;
 
             return result;
         }

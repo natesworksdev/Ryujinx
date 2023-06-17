@@ -44,7 +44,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 0x31, 0xc9, // xor ecx, ecx
                 0xf, 0x01, 0xd0, // xgetbv
-                0xc3 // ret
+                0xc3, // ret
             };
 
             using MemoryBlock memGetXcr0 = new((ulong)asmGetXcr0.Length);
@@ -96,7 +96,7 @@ namespace ARMeilleure.CodeGen.X86
         [Flags]
         public enum FeatureFlags7Ecx
         {
-            Gfni = 1 << 8
+            Gfni = 1 << 8,
         }
 
         [Flags]

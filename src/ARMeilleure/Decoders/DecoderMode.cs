@@ -4,6 +4,6 @@
     {
         MultipleBlocks,
         SingleBlock,
-        SingleInstruction
+        SingleInstruction,
     }
 }

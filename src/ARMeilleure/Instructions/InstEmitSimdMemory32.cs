@@ -212,7 +212,7 @@ namespace ARMeilleure.Instructions
 
             int sReg = (op.DoubleWidth) ? (op.Vd << 1) : op.Vd;
             int offset = 0;
-            const int byteSize = 4;
+            int byteSize = 4;
 
             for (int num = 0; num < range; num++, sReg++)
             {
@@ -243,7 +243,7 @@ namespace ARMeilleure.Instructions
 
             int range = op.RegisterRange;
             int sReg = (op.DoubleWidth) ? (op.Vd << 1) : op.Vd;
-            const int byteSize = 4;
+            int byteSize = 4;
 
             for (int num = 0; num < range; num++, sReg++)
             {

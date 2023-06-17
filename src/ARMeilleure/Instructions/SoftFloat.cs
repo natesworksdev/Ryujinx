@@ -1600,7 +1600,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 uint notExp = (~op >> 23) & 0xFFu;
-                const uint maxExp = 0xFEu;
+                uint maxExp = 0xFEu;
 
                 result = BitConverter.Int32BitsToSingle(
                     (int)((sign ? 1u : 0u) << 31 | (notExp == 0xFFu ? maxExp : notExp) << 23));
@@ -3031,7 +3031,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 ulong notExp = (~op >> 52) & 0x7FFul;
-                const ulong maxExp = 0x7FEul;
+                ulong maxExp = 0x7FEul;
 
                 result = BitConverter.Int64BitsToDouble(
                     (long)((sign ? 1ul : 0ul) << 63 | (notExp == 0x7FFul ? maxExp : notExp) << 52));

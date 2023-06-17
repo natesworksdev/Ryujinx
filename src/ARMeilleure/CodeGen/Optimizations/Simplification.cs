@@ -175,7 +175,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 OperandType.I32 => ~0U,
                 OperandType.I64 => ~0UL,
-                _ => throw new ArgumentException("Invalid operand type \"" + type + "\".")
+                _ => throw new ArgumentException("Invalid operand type \"" + type + "\"."),
             };
         }
     }

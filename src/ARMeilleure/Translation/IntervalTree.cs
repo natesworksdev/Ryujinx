@@ -15,8 +15,9 @@ namespace ARMeilleure.Translation
         private const bool Black = true;
         private const bool Red = false;
         private IntervalTreeNode<K, V> _root = null;
+        private int _count = 0;
 
-        public int Count { get; private set; } = 0;
+        public int Count => _count;
 
         #region Public Methods
 
@@ -96,7 +97,7 @@ namespace ARMeilleure.Translation
         {
             int removed = Delete(key);
 
-            Count -= removed;
+            _count -= removed;
 
             return removed;
         }
@@ -325,7 +326,7 @@ namespace ARMeilleure.Translation
             }
 
             PropagateIncrease(newNode);
-            Count++;
+            _count++;
             RestoreBalanceAfterInsertion(newNode);
             outNode = newNode;
             return true;
@@ -696,7 +697,7 @@ namespace ARMeilleure.Translation
         public void Clear()
         {
             _root = null;
-            Count = 0;
+            _count = 0;
         }
     }
 
