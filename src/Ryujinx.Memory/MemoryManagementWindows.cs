@@ -55,14 +55,20 @@ namespace Ryujinx.Memory
             return ptr;
         }
 
-        public static bool Commit(IntPtr location, IntPtr size)
+        public static void Commit(IntPtr location, IntPtr size)
         {
-            return WindowsApi.VirtualAlloc(location, size, AllocationType.Commit, MemoryProtection.ReadWrite) != IntPtr.Zero;
+            if (WindowsApi.VirtualAlloc(location, size, AllocationType.Commit, MemoryProtection.ReadWrite) == IntPtr.Zero)
+            {
+                throw new SystemException(Marshal.GetLastPInvokeErrorMessage());
+            }
         }
 
-        public static bool Decommit(IntPtr location, IntPtr size)
+        public static void Decommit(IntPtr location, IntPtr size)
         {
-            return WindowsApi.VirtualFree(location, size, AllocationType.Decommit);
+            if (!WindowsApi.VirtualFree(location, size, AllocationType.Decommit))
+            {
+                throw new SystemException(Marshal.GetLastPInvokeErrorMessage());
+            }
         }
 
         public static void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size, MemoryBlock owner)

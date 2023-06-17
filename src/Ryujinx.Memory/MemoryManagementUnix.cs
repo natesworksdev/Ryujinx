@@ -68,7 +68,7 @@ namespace Ryujinx.Memory
             return ptr;
         }
 
-        public static bool Commit(IntPtr address, ulong size, bool forJit)
+        public static void Commit(IntPtr address, ulong size, bool forJit)
         {
             MmapProts prot = MmapProts.PROT_READ | MmapProts.PROT_WRITE;
 
@@ -81,11 +81,9 @@ namespace Ryujinx.Memory
             {
                 throw new SystemException(Marshal.GetLastPInvokeErrorMessage());
             }
-
-            return true;
         }
 
-        public static bool Decommit(IntPtr address, ulong size)
+        public static void Decommit(IntPtr address, ulong size)
         {
             // Must be writable for madvise to work properly.
             if (mprotect(address, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE) != 0)
@@ -102,8 +100,6 @@ namespace Ryujinx.Memory
             {
                 throw new SystemException(Marshal.GetLastPInvokeErrorMessage());
             }
-
-            return true;
         }
 
         public static bool Reprotect(IntPtr address, ulong size, MemoryPermission permission)
