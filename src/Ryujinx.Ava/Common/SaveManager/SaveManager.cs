@@ -5,13 +5,11 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ns;
 using Microsoft.IdentityModel.Tokens;
-using Ryujinx.Ava.Common;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +27,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         public string Message { get; init; }
     }
 
-    public class BackupManager : ISaveManager
+    public class SaveManager : ISaveManager
     {
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
@@ -39,7 +37,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         private readonly HorizonClient _horizonClient;
         private readonly AccountManager _accountManager;
 
-        public BackupManager(HorizonClient hzClient, AccountManager acctManager)
+        public SaveManager(HorizonClient hzClient, AccountManager acctManager)
         {
             _loadingEventArgs = new();
 
@@ -261,7 +259,7 @@ namespace Ryujinx.Ava.Common.SaveManager
             return false;
 
             #region LocalMethods
-            async Task WriteMetadataFile(string backupTempDir, 
+            async Task WriteMetadataFile(string backupTempDir,
                 LibHacUserId userId,
                 Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
             {
@@ -269,7 +267,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 {
                     var userProfile = _accountManager.GetAllUsers()
                         .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId);
-                    
+
                     var tagFile = Path.Combine(backupTempDir, "tag.json");
 
                     var completeMeta = System.Text.Json.JsonSerializer.Serialize(new UserFriendlySaveMetadata
@@ -601,7 +599,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                         await Task.Delay((int)(Math.Pow(2, retryCount) * 200));
                     }
 
-                    using FileStream sourceStream = File.Open(source, FileMode.Open);
+                    using FileStream sourceStream = File.Open(source, FileMode.Open, FileAccess.Read);
                     using FileStream destinationStream = File.Create(destination);
 
                     await sourceStream.CopyToAsync(destinationStream);
