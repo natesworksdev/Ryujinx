@@ -59,7 +59,7 @@ namespace Ryujinx.Cpu.AppleHv
         HV_REG_PC,
         HV_REG_FPCR,
         HV_REG_FPSR,
-        HV_REG_CPSR
+        HV_REG_CPSR,
     }
 
     enum hv_simd_fp_reg_t : uint
@@ -95,7 +95,7 @@ namespace Ryujinx.Cpu.AppleHv
         HV_SIMD_FP_REG_Q28,
         HV_SIMD_FP_REG_Q29,
         HV_SIMD_FP_REG_Q30,
-        HV_SIMD_FP_REG_Q31
+        HV_SIMD_FP_REG_Q31,
     }
 
     enum hv_sys_reg_t : ushort
@@ -211,7 +211,7 @@ namespace Ryujinx.Cpu.AppleHv
         HV_SYS_REG_TPIDRRO_EL0 = 0xde83,
         HV_SYS_REG_CNTV_CTL_EL0 = 0xdf19,
         HV_SYS_REG_CNTV_CVAL_EL0 = 0xdf1a,
-        HV_SYS_REG_SP_EL1 = 0xe208
+        HV_SYS_REG_SP_EL1 = 0xe208,
     }
 
     enum hv_memory_flags_t : ulong

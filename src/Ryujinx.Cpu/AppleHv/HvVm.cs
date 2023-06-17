@@ -36,7 +36,7 @@ namespace Ryujinx.Cpu.AppleHv
                 baseAddress = ipaAllocator.Allocate(block.Size, AsIpaAlignment);
             }
 
-            const hv_memory_flags_t rwx = hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_WRITE | hv_memory_flags_t.HV_MEMORY_EXEC;
+            var rwx = hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_WRITE | hv_memory_flags_t.HV_MEMORY_EXEC;
 
             HvApi.hv_vm_map((ulong)block.Pointer, baseAddress, block.Size, rwx).ThrowOnError();
 

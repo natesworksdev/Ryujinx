@@ -5,61 +5,62 @@ namespace Ryujinx.Cpu.Jit
 {
     class JitExecutionContext : IExecutionContext
     {
-        internal ExecutionContext Impl { get; }
+        private readonly ExecutionContext _impl;
+        internal ExecutionContext Impl => _impl;
 
         /// <inheritdoc/>
-        public ulong Pc => Impl.Pc;
+        public ulong Pc => _impl.Pc;
 
         /// <inheritdoc/>
         public long TpidrEl0
         {
-            get => Impl.TpidrEl0;
-            set => Impl.TpidrEl0 = value;
+            get => _impl.TpidrEl0;
+            set => _impl.TpidrEl0 = value;
         }
 
         /// <inheritdoc/>
         public long TpidrroEl0
         {
-            get => Impl.TpidrroEl0;
-            set => Impl.TpidrroEl0 = value;
+            get => _impl.TpidrroEl0;
+            set => _impl.TpidrroEl0 = value;
         }
 
         /// <inheritdoc/>
         public uint Pstate
         {
-            get => Impl.Pstate;
-            set => Impl.Pstate = value;
+            get => _impl.Pstate;
+            set => _impl.Pstate = value;
         }
 
         /// <inheritdoc/>
         public uint Fpcr
         {
-            get => (uint)Impl.Fpcr;
-            set => Impl.Fpcr = (FPCR)value;
+            get => (uint)_impl.Fpcr;
+            set => _impl.Fpcr = (FPCR)value;
         }
 
         /// <inheritdoc/>
         public uint Fpsr
         {
-            get => (uint)Impl.Fpsr;
-            set => Impl.Fpsr = (FPSR)value;
+            get => (uint)_impl.Fpsr;
+            set => _impl.Fpsr = (FPSR)value;
         }
 
         /// <inheritdoc/>
         public bool IsAarch32
         {
-            get => Impl.IsAarch32;
-            set => Impl.IsAarch32 = value;
+            get => _impl.IsAarch32;
+            set => _impl.IsAarch32 = value;
         }
 
         /// <inheritdoc/>
-        public bool Running => Impl.Running;
+        public bool Running => _impl.Running;
 
         private readonly ExceptionCallbacks _exceptionCallbacks;
 
         public JitExecutionContext(IJitMemoryAllocator allocator, ICounter counter, ExceptionCallbacks exceptionCallbacks)
         {
-            Impl = new ExecutionContext(
+            _impl = new ExecutionContext(
                 allocator,
                 counter,
                 InterruptHandler,
@@ -71,16 +72,16 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public ulong GetX(int index) => Impl.GetX(index);
+        public ulong GetX(int index) => _impl.GetX(index);
 
         /// <inheritdoc/>
-        public void SetX(int index, ulong value) => Impl.SetX(index, value);
+        public void SetX(int index, ulong value) => _impl.SetX(index, value);
 
         /// <inheritdoc/>
-        public V128 GetV(int index) => Impl.GetV(index);
+        public V128 GetV(int index) => _impl.GetV(index);
 
         /// <inheritdoc/>
-        public void SetV(int index, V128 value) => Impl.SetV(index, value);
+        public void SetV(int index, V128 value) => _impl.SetV(index, value);
 
         private void InterruptHandler(ExecutionContext context)
         {
@@ -105,18 +106,18 @@ namespace Ryujinx.Cpu.Jit
         /// <inheritdoc/>
         public void RequestInterrupt()
         {
-            Impl.RequestInterrupt();
+            _impl.RequestInterrupt();
         }
 
         /// <inheritdoc/>
         public void StopRunning()
         {
-            Impl.StopRunning();
+            _impl.StopRunning();
         }
 
         public void Dispose()
         {
-            Impl.Dispose();
+            _impl.Dispose();
         }
     }
 }

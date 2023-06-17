@@ -561,7 +561,7 @@ namespace Ryujinx.Cpu.Jit
 
                 ulong mask = startMask;
 
-                const ulong anyTrackingTag = (ulong)HostMappedPtBits.WriteTrackedReplicated;
+                ulong anyTrackingTag = (ulong)HostMappedPtBits.WriteTrackedReplicated;
 
                 while (pageIndex <= pageEndIndex)
                 {
@@ -630,7 +630,7 @@ namespace Ryujinx.Cpu.Jit
                 {
                     MemoryPermission.None => (ulong)HostMappedPtBits.Mapped,
                     MemoryPermission.Write => (ulong)HostMappedPtBits.WriteTracked,
-                    _ => (ulong)HostMappedPtBits.ReadWriteTracked
+                    _ => (ulong)HostMappedPtBits.ReadWriteTracked,
                 };
 
                 int bit = (int)((pageStart & 31) << 1);
@@ -663,7 +663,7 @@ namespace Ryujinx.Cpu.Jit
                 {
                     MemoryPermission.None => (ulong)HostMappedPtBits.MappedReplicated,
                     MemoryPermission.Write => (ulong)HostMappedPtBits.WriteTrackedReplicated,
-                    _ => (ulong)HostMappedPtBits.ReadWriteTrackedReplicated
+                    _ => (ulong)HostMappedPtBits.ReadWriteTrackedReplicated,
                 };
 
                 while (pageIndex <= pageEndIndex)

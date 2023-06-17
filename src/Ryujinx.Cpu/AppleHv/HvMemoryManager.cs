@@ -39,7 +39,9 @@ namespace Ryujinx.Cpu.AppleHv
 
         private readonly ulong _addressSpaceSize;
 
-        internal HvAddressSpace AddressSpace { get; }
+        private readonly HvAddressSpace _addressSpace;
+
+        internal HvAddressSpace AddressSpace => _addressSpace;
 
         private readonly MemoryBlock _backingMemory;
         private readonly PageTable<ulong> _pageTable;
@@ -80,7 +82,7 @@ namespace Ryujinx.Cpu.AppleHv
                 asBits++;
             }
 
-            AddressSpace = new HvAddressSpace(backingMemory, asSize);
+            _addressSpace = new HvAddressSpace(backingMemory, asSize);
 
             AddressSpaceBits = asBits;
 
@@ -145,7 +147,7 @@ namespace Ryujinx.Cpu.AppleHv
             AssertValidAddressAndSize(va, size);
 
             PtMap(va, pa, size);
-            AddressSpace.MapUser(va, pa, size, MemoryPermission.ReadWriteExecute);
+            _addressSpace.MapUser(va, pa, size, MemoryPermission.ReadWriteExecute);
             AddMapping(va, size);
 
             Tracking.Map(va, size);
@@ -178,7 +180,7 @@ namespace Ryujinx.Cpu.AppleHv
             Tracking.Unmap(va, size);
 
             RemoveMapping(va, size);
-            AddressSpace.UnmapUser(va, size);
+            _addressSpace.UnmapUser(va, size);
             PtUnmap(va, size);
         }
 
@@ -678,7 +680,7 @@ namespace Ryujinx.Cpu.AppleHv
 
                 ulong mask = startMask;
 
-                const ulong anyTrackingTag = (ulong)HostMappedPtBits.WriteTrackedReplicated;
+                ulong anyTrackingTag = (ulong)HostMappedPtBits.WriteTrackedReplicated;
 
                 while (pageIndex <= pageEndIndex)
                 {
@@ -747,7 +749,7 @@ namespace Ryujinx.Cpu.AppleHv
                 {
                     MemoryPermission.None => (ulong)HostMappedPtBits.Mapped,
                     MemoryPermission.Write => (ulong)HostMappedPtBits.WriteTracked,
-                    _ => (ulong)HostMappedPtBits.ReadWriteTracked
+                    _ => (ulong)HostMappedPtBits.ReadWriteTracked,
                 };
 
                 int bit = (int)((pageStart & 31) << 1);
@@ -780,7 +782,7 @@ namespace Ryujinx.Cpu.AppleHv
                 {
                     MemoryPermission.None => (ulong)HostMappedPtBits.MappedReplicated,
                     MemoryPermission.Write => (ulong)HostMappedPtBits.WriteTrackedReplicated,
-                    _ => (ulong)HostMappedPtBits.ReadWriteTrackedReplicated
+                    _ => (ulong)HostMappedPtBits.ReadWriteTrackedReplicated,
                 };
 
                 while (pageIndex <= pageEndIndex)
@@ -817,7 +819,7 @@ namespace Ryujinx.Cpu.AppleHv
                 _ => MemoryPermission.None
             };
 
-            AddressSpace.ReprotectUser(va, size, protection);
+            _addressSpace.ReprotectUser(va, size, protection);
         }
 
         /// <inheritdoc/>
@@ -938,7 +940,7 @@ namespace Ryujinx.Cpu.AppleHv
         /// </summary>
         protected override void Destroy()
         {
-            AddressSpace.Dispose();
+            _addressSpace.Dispose();
         }
 
         private static void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
