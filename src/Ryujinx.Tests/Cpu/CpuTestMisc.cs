@@ -58,9 +58,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt    = 2;
 
-        private const bool NoZeros = false;
-        private const bool NoInfs = false;
-        private const bool NoNaNs = false;
+        private static readonly bool NoZeros = false;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = false;
 
         #region "AluImm & Csel"
         [Test, Pairwise]
@@ -401,7 +401,7 @@ namespace Ryujinx.Tests.Cpu
         [TestCase(42ul)]
         public void SanityCheck(ulong a)
         {
-            const uint opcode = 0xD503201F; // NOP
+            uint opcode = 0xD503201F; // NOP
             ExecutionContext context = SingleOpcode(opcode, x0: a);
 
             Assert.That(context.GetX(0), Is.EqualTo(a));

@@ -312,7 +312,7 @@ namespace Ryujinx.Tests.Cpu
 
                 // I32
                 0b1100,
-                0b1101
+                0b1101,
             };
 
             uint opcode = 0xf2800030u; // VMVN.I32 D0, #0

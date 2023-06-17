@@ -8,9 +8,9 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void TestCheckFeature()
         {
-            const int latestRevision = BehaviourContext.BaseRevisionMagic + BehaviourContext.LastRevision;
-            const int previousRevision = BehaviourContext.BaseRevisionMagic + (BehaviourContext.LastRevision - 1);
-            const int invalidRevision = BehaviourContext.BaseRevisionMagic + (BehaviourContext.LastRevision + 1);
+            int latestRevision   = BehaviourContext.BaseRevisionMagic + BehaviourContext.LastRevision;
+            int previousRevision = BehaviourContext.BaseRevisionMagic + (BehaviourContext.LastRevision - 1);
+            int invalidRevision = BehaviourContext.BaseRevisionMagic + (BehaviourContext.LastRevision + 1);
 
             Assert.IsTrue(BehaviourContext.CheckFeatureSupported(latestRevision, latestRevision));
             Assert.IsFalse(BehaviourContext.CheckFeatureSupported(previousRevision, latestRevision));

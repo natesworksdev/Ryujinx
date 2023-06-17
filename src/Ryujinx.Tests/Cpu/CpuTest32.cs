@@ -294,7 +294,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 Instructions = test.Instructions,
                 StartRegs = test.StartRegs,
-                FinalRegs = test.FinalRegs
+                FinalRegs = test.FinalRegs,
             });
 
             foreach (var (Address, Value) in test.MemoryDelta)

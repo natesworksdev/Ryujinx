@@ -18,7 +18,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe1000080u, // SMLABB R0, R0, R0, R0
                 0xe10000C0u, // SMLABT R0, R0, R0, R0
                 0xe10000A0u, // SMLATB R0, R0, R0, R0
-                0xe10000E0u // SMLATT R0, R0, R0, R0
+                0xe10000E0u, // SMLATT R0, R0, R0, R0
             };
         }
 
@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0xe1200080u, // SMLAWB R0, R0, R0, R0
-                0xe12000C0u // SMLAWT R0, R0, R0, R0
+                0xe12000C0u, // SMLAWT R0, R0, R0, R0
             };
         }
 
@@ -38,7 +38,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe1600080u, // SMULBB R0, R0, R0
                 0xe16000C0u, // SMULBT R0, R0, R0
                 0xe16000A0u, // SMULTB R0, R0, R0
-                0xe16000E0u // SMULTT R0, R0, R0
+                0xe16000E0u, // SMULTT R0, R0, R0
             };
         }
 
@@ -47,7 +47,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0xe12000a0u, // SMULWB R0, R0, R0
-                0xe12000e0u // SMULWT R0, R0, R0
+                0xe12000e0u, // SMULWT R0, R0, R0
             };
         }
 #pragma warning restore IDE0051, IDE1006

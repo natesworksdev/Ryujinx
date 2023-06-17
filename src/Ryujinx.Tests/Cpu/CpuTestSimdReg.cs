@@ -584,9 +584,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private const bool NoZeros = false;
-        private const bool NoInfs = false;
-        private const bool NoNaNs = false;
+        private static readonly bool NoZeros = false;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = false;
 
         [Test, Pairwise, Description("ADD <V><d>, <V><n>, <V><m>")]
         public void Add_S_D([Values(0u)] uint rd,

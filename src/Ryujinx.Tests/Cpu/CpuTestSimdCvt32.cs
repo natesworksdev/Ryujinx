@@ -161,9 +161,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private const bool NoZeros = false;
-        private const bool NoInfs = false;
-        private const bool NoNaNs = false;
+        private static readonly bool NoZeros = false;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = false;
 
         [Explicit]
         [Test, Pairwise, Description("VCVT.<dt>.F32 <Sd>, <Sm>")]

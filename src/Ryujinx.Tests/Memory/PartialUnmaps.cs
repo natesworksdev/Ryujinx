@@ -22,7 +22,7 @@ namespace Ryujinx.Tests.Memory
 
         private static (MemoryBlock virt, MemoryBlock mirror, MemoryEhMeilleure exceptionHandler) GetVirtual(ulong asSize)
         {
-            const MemoryAllocationFlags asFlags = MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible;
+            MemoryAllocationFlags asFlags = MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible;
 
             var addressSpace = new MemoryBlock(asSize, asFlags);
             var addressSpaceMirror = new MemoryBlock(asSize, asFlags);
@@ -63,7 +63,7 @@ namespace Ryujinx.Tests.Memory
         {
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
-            const ulong vaSize = 0x100000;
+            ulong vaSize = 0x100000;
 
             // The first 0x100000 is mapped to start. It is replaced from the center with the 0x200000 mapping.
             var backing = new MemoryBlock(vaSize * 2, MemoryAllocationFlags.Mirrorable);
@@ -97,7 +97,7 @@ namespace Ryujinx.Tests.Memory
                     // It should not change.
                     testThread = new Thread(() =>
                     {
-                        const int i = 12345;
+                        int i = 12345;
                         backing.Write(vaSize - 0x1000, i);
 
                         while (shouldAccess)
@@ -136,9 +136,9 @@ namespace Ryujinx.Tests.Memory
                 // Immediately try to write to the part of the larger mapping that did not change.
                 // Do this a lot, with the smaller mapping gradually increasing in size. Should not crash, data should not be lost.
 
-                const ulong pageSize = 0x1000;
-                const int mappingExpandCount = (int)(vaSize / (pageSize * 2)) - 1;
-                const ulong vaCenter = vaSize / 2;
+                ulong pageSize = 0x1000;
+                int mappingExpandCount = (int)(vaSize / (pageSize * 2)) - 1;
+                ulong vaCenter = vaSize / 2;
 
                 for (int i = 1; i <= mappingExpandCount; i++)
                 {
@@ -208,7 +208,7 @@ namespace Ryujinx.Tests.Memory
 
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
-            const ulong vaSize = 0x100000;
+            ulong vaSize = 0x100000;
 
             // The first 0x100000 is mapped to start. It is replaced from the center with the 0x200000 mapping.
             var backing = new MemoryBlock(vaSize * 2, MemoryAllocationFlags.Mirrorable);
@@ -250,9 +250,9 @@ namespace Ryujinx.Tests.Memory
                 // Immediately try to write to the part of the larger mapping that did not change.
                 // Do this a lot, with the smaller mapping gradually increasing in size. Should not crash, data should not be lost.
 
-                const ulong pageSize = 0x1000;
-                const int mappingExpandCount = (int)(vaSize / (pageSize * 2)) - 1;
-                const ulong vaCenter = vaSize / 2;
+                ulong pageSize = 0x1000;
+                int mappingExpandCount = (int)(vaSize / (pageSize * 2)) - 1;
+                ulong vaCenter = vaSize / 2;
 
                 for (int i = 1; i <= mappingExpandCount; i++)
                 {
