@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Integration
             {
                 DataPointer = _currentBufferTag++,
                 Data = _buffer,
-                DataSize = (ulong)_buffer.Length
+                DataSize = (ulong)_buffer.Length,
             });
 
             _currentBufferTag %= 4;

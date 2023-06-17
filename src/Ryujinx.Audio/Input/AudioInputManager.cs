@@ -217,7 +217,7 @@ namespace Ryujinx.Audio.Input
                     ChannelCount = audioIn.ChannelCount,
                     SampleFormat = audioIn.SampleFormat,
                     SampleRate = audioIn.SampleRate,
-                    AudioOutState = audioIn.GetState()
+                    AudioOutState = audioIn.GetState(),
                 };
 
                 obj = audioIn;

@@ -195,7 +195,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)97861.0f,
                         4 => (uint)192520.0f,
                         6 => (uint)301760.0f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
                 else
@@ -206,7 +206,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)663.06f,
                         4 => (uint)703.98f,
                         6 => (uint)760.03f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
 
@@ -220,7 +220,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)25741.0f,
                     4 => (uint)47551.0f,
                     6 => (uint)81629.0f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
             else
@@ -231,7 +231,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)585.4f,
                     4 => (uint)629.88f,
                     6 => (uint)713.57f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
         }
@@ -250,7 +250,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)103280.0f,
                         4 => (uint)109580.0f,
                         6 => (uint)115070.0f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
                 else
@@ -261,7 +261,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)554.46f,
                         4 => (uint)595.86f,
                         6 => (uint)656.62f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
 
@@ -275,7 +275,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)145750.0f,
                     4 => (uint)154800.0f,
                     6 => (uint)161970.0f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
             else
@@ -286,7 +286,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)527.16f,
                     4 => (uint)598.75f,
                     6 => (uint)666.03f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
         }
@@ -305,7 +305,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)135430.0f,
                         4 => (uint)199180.0f,
                         6 => (uint)247350.0f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
                 else
@@ -316,7 +316,7 @@ namespace Ryujinx.Audio.Renderer.Server
                         2 => (uint)751.3f,
                         4 => (uint)797.46f,
                         6 => (uint)867.43f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
             }
@@ -329,7 +329,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)195200.0f,
                     4 => (uint)290580.0f,
                     6 => (uint)363490.0f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
             else
@@ -340,7 +340,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     2 => (uint)570.87f,
                     4 => (uint)660.93f,
                     6 => (uint)694.6f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}")
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
         }

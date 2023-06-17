@@ -281,7 +281,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
                     SampleFormat.PcmFloat => IsSampleOffsetInRangeForPcm<float>(),
                     SampleFormat.Adpcm => AdpcmHelper.GetAdpcmDataSize((int)StartSampleOffset) <= Size &&
                                           AdpcmHelper.GetAdpcmDataSize((int)EndSampleOffset) <= Size,
-                    _ => throw new NotImplementedException($"{format} not implemented!")
+                    _ => throw new NotImplementedException($"{format} not implemented!"),
                 };
                 return result;
             }

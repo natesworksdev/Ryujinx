@@ -13,10 +13,11 @@ namespace Ryujinx.Audio.Backends.Common
         private readonly object _lock = new();
 
         private byte[] _buffer;
+        private int _size;
         private int _headOffset;
         private int _tailOffset;
 
-        public int Length { get; private set; }
+        public int Length => _size;
 
         public DynamicRingBuffer(int initialCapacity = RingBufferAlignment)
         {
@@ -25,7 +26,7 @@ namespace Ryujinx.Audio.Backends.Common
 
         public void Clear()
         {
-            Length = 0;
+            _size = 0;
             _headOffset = 0;
             _tailOffset = 0;
         }
@@ -34,9 +35,9 @@ namespace Ryujinx.Audio.Backends.Common
         {
             lock (_lock)
             {
-                if (size > Length)
+                if (size > _size)
                 {
-                    size = Length;
+                    size = _size;
                 }
 
                 if (size == 0)
@@ -45,9 +46,9 @@ namespace Ryujinx.Audio.Backends.Common
                 }
 
                 _headOffset = (_headOffset + size) % _buffer.Length;
-                Length -= size;
+                _size -= size;
 
-                if (Length == 0)
+                if (_size == 0)
                 {
                     _headOffset = 0;
                     _tailOffset = 0;
@@ -59,11 +60,11 @@ namespace Ryujinx.Audio.Backends.Common
         {
             byte[] buffer = new byte[capacity];
 
-            if (Length > 0)
+            if (_size > 0)
             {
                 if (_headOffset < _tailOffset)
                 {
-                    Buffer.BlockCopy(_buffer, _headOffset, buffer, 0, Length);
+                    Buffer.BlockCopy(_buffer, _headOffset, buffer, 0, _size);
                 }
                 else
                 {
@@ -74,7 +75,7 @@ namespace Ryujinx.Audio.Backends.Common
 
             _buffer = buffer;
             _headOffset = 0;
-            _tailOffset = Length;
+            _tailOffset = _size;
         }
 
 
@@ -87,9 +88,9 @@ namespace Ryujinx.Audio.Backends.Common
 
             lock (_lock)
             {
-                if ((Length + count) > _buffer.Length)
+                if ((_size + count) > _buffer.Length)
                 {
-                    SetCapacityLocked(BitUtils.AlignUp(Length + count, RingBufferAlignment));
+                    SetCapacityLocked(BitUtils.AlignUp(_size + count, RingBufferAlignment));
                 }
 
                 if (_headOffset < _tailOffset)
@@ -111,7 +112,7 @@ namespace Ryujinx.Audio.Backends.Common
                     Buffer.BlockCopy(buffer, index, _buffer, _tailOffset, count);
                 }
 
-                Length += count;
+                _size += count;
                 _tailOffset = (_tailOffset + count) % _buffer.Length;
             }
         }
@@ -120,9 +121,9 @@ namespace Ryujinx.Audio.Backends.Common
         {
             lock (_lock)
             {
-                if (count > Length)
+                if (count > _size)
                 {
-                    count = Length;
+                    count = _size;
                 }
 
                 if (count == 0)
@@ -149,10 +150,10 @@ namespace Ryujinx.Audio.Backends.Common
                     }
                 }
 
-                Length -= count;
+                _size -= count;
                 _headOffset = (_headOffset + count) % _buffer.Length;
 
-                if (Length == 0)
+                if (_size == 0)
                 {
                     _headOffset = 0;
                     _tailOffset = 0;
