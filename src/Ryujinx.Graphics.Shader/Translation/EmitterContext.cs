@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public DecodedProgram Program { get; }
         public TranslatorContext TranslatorContext { get; }
+        public ResourceManager ResourceManager { get; }
 
         public bool IsNonMain { get; }
 
@@ -54,9 +55,14 @@ namespace Ryujinx.Graphics.Shader.Translation
             _labels = new Dictionary<ulong, BlockLabel>();
         }
 
-        public EmitterContext(TranslatorContext translatorContext, DecodedProgram program, bool isNonMain) : this()
+        public EmitterContext(
+            TranslatorContext translatorContext,
+            ResourceManager resourceManager,
+            DecodedProgram program,
+            bool isNonMain) : this()
         {
             TranslatorContext = translatorContext;
+            ResourceManager = resourceManager;
             Program = program;
             IsNonMain = isNonMain;
 

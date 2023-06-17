@@ -328,7 +328,12 @@ namespace Ryujinx.Graphics.Shader.Translation
             return header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
         }
 
-        internal static FunctionCode[] EmitShader(TranslatorContext translatorContext, DecodedProgram program, bool initializeOutputs, out int initializationOperations)
+        internal static FunctionCode[] EmitShader(
+            TranslatorContext translatorContext,
+            ResourceManager resourceManager,
+            DecodedProgram program,
+            bool initializeOutputs,
+            out int initializationOperations)
         {
             initializationOperations = 0;
 
@@ -343,7 +348,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             for (int index = 0; index < functions.Length; index++)
             {
-                EmitterContext context = new(translatorContext, program, index != 0);
+                EmitterContext context = new(translatorContext, resourceManager, program, index != 0);
 
                 if (initializeOutputs && index == 0)
                 {

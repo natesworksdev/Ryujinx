@@ -278,7 +278,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Bindless;
             }
 
-            int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageAtomic,
                 type,
                 format,
@@ -391,7 +391,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 TextureFormat format = isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormat(context.TranslatorContext.GpuAccessor, handle);
 
-                int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+                int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                     Instruction.ImageLoad,
                     type,
                     format,
@@ -434,7 +434,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 TextureFormat format = GetTextureFormat(size);
 
-                int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+                int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                     Instruction.ImageLoad,
                     type,
                     format,
@@ -554,7 +554,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Bindless;
             }
 
-            int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageAtomic,
                 type,
                 format,
@@ -681,7 +681,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Coherent;
             }
 
-            int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageStore,
                 type,
                 format,

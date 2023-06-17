@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 _ => AtomSize.U32,
             };
 
-            Operand id = Const(context.TranslatorContext.ResourceManager.SharedMemoryId);
+            Operand id = Const(context.ResourceManager.SharedMemoryId);
             Operand res = EmitAtomicOp(context, StorageKind.SharedMemory, op.AtomOp, size, id, offset, value);
 
             context.Copy(GetDest(op.Dest), res);
@@ -173,7 +173,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (slot.Type == OperandType.Constant)
             {
-                int binding = context.TranslatorContext.ResourceManager.GetConstantBufferBinding(slot.Value);
+                int binding = context.ResourceManager.GetConstantBufferBinding(slot.Value);
                 return context.Load(StorageKind.ConstantBuffer, binding, Const(0), vecIndex, elemIndex);
             }
             else
@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 while (cbUseMask != 0)
                 {
                     int cbIndex = BitOperations.TrailingZeroCount(cbUseMask);
-                    int binding = context.TranslatorContext.ResourceManager.GetConstantBufferBinding(cbIndex);
+                    int binding = context.ResourceManager.GetConstantBufferBinding(cbIndex);
 
                     Operand isCurrent = context.ICompareEqual(slot, Const(cbIndex));
                     Operand currentValue = context.Load(StorageKind.ConstantBuffer, binding, Const(0), vecIndex, elemIndex);
@@ -300,8 +300,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             int id = storageKind == StorageKind.LocalMemory
-                ? context.TranslatorContext.ResourceManager.LocalMemoryId
-                : context.TranslatorContext.ResourceManager.SharedMemoryId;
+                ? context.ResourceManager.LocalMemoryId
+                : context.ResourceManager.SharedMemoryId;
             bool isSmallInt = size < LsSize2.B32;
 
             int count = size switch
@@ -381,8 +381,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             int id = storageKind == StorageKind.LocalMemory
-                ? context.TranslatorContext.ResourceManager.LocalMemoryId
-                : context.TranslatorContext.ResourceManager.SharedMemoryId;
+                ? context.ResourceManager.LocalMemoryId
+                : context.ResourceManager.SharedMemoryId;
             bool isSmallInt = size < LsSize2.B32;
 
             int count = size switch

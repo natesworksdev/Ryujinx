@@ -884,7 +884,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(dest++, RegisterType.Gpr);
             }
 
-            int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.Lod,
                 type,
                 TextureFormat.Unknown,
@@ -1111,7 +1111,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = isBindless ? TextureFlags.Bindless : TextureFlags.None;
 
-            int binding = isBindless ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.TextureSize,
                 type,
                 TextureFormat.Unknown,
@@ -1147,7 +1147,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Operand[] dests,
             Operand[] sources)
         {
-            int binding = flags.HasFlag(TextureFlags.Bindless) ? 0 : context.TranslatorContext.ResourceManager.GetTextureOrImageBinding(
+            int binding = flags.HasFlag(TextureFlags.Bindless) ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.TextureSample,
                 type,
                 TextureFormat.Unknown,
