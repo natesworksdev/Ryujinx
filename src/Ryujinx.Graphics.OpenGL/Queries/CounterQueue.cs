@@ -153,7 +153,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 CounterType.SamplesPassed => QueryTarget.SamplesPassed,
                 CounterType.PrimitivesGenerated => QueryTarget.PrimitivesGenerated,
                 CounterType.TransformFeedbackPrimitivesWritten => QueryTarget.TransformFeedbackPrimitivesWritten,
-                _ => QueryTarget.SamplesPassed
+                _ => QueryTarget.SamplesPassed,
             };
         }
 

@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & 4) != 0,
                 (componentMask & 8) != 0);
 
-            float[] colors = { color.Red, color.Green, color.Blue, color.Alpha };
+            float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
 
             if (layer != 0 || layerCount != _framebuffer.GetColorLayerCount(index))
             {
