@@ -39,9 +39,9 @@ namespace Ryujinx.Audio.Backends.OpenAL
                     1 => ALFormat.Mono16,
                     2 => ALFormat.Stereo16,
                     6 => ALFormat.Multi51Chn16Ext,
-                    _ => throw new NotImplementedException($"Unsupported channel config {RequestedChannelCount}")
+                    _ => throw new NotImplementedException($"Unsupported channel config {RequestedChannelCount}"),
                 },
-                _ => throw new NotImplementedException($"Unsupported sample format {RequestedSampleFormat}")
+                _ => throw new NotImplementedException($"Unsupported sample format {RequestedSampleFormat}"),
             };
         }
 
