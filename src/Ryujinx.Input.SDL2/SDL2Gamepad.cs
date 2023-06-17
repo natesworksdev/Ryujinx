@@ -52,7 +52,7 @@ namespace Ryujinx.Input.SDL2
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
-            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
         };
 
         private readonly object _userMappingLock = new();
