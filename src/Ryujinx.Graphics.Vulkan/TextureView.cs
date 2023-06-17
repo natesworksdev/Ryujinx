@@ -20,7 +20,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageView2dArray;
         private Dictionary<GAL.Format, TextureView> _selfManagedViews;
 
-        public TextureCreateInfo Info { get; }
+        private readonly TextureCreateInfo _info;
+
+        public TextureCreateInfo Info => _info;
 
         public TextureStorage Storage { get; }
 
@@ -43,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _gd = gd;
             _device = device;
-            Info = info;
+            _info = info;
             Storage = storage;
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;

@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ComponentSwizzle.B,
                 ComponentSwizzle.A);
 
-            const ImageAspectFlags aspectFlags = ImageAspectFlags.ColorBit;
+            var aspectFlags = ImageAspectFlags.ColorBit;
 
             var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1);
 

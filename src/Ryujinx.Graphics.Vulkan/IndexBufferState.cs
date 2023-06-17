@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 IndexType.Uint32 => 4,
                 IndexType.Uint16 => 2,
-                _ => 1
+                _ => 1,
             };
         }
 

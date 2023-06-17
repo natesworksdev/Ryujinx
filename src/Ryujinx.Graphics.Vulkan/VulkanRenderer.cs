@@ -60,10 +60,12 @@ namespace Ryujinx.Graphics.Vulkan
         private VulkanDebugMessenger _debugMessenger;
         private Counters _counters;
 
-        internal HelperShader HelperShader { get; private set; }
-        internal PipelineFull PipelineInternal { get; private set; }
+        private PipelineFull _pipeline;
 
-        public IPipeline Pipeline => PipelineInternal;
+        internal HelperShader HelperShader { get; private set; }
+        internal PipelineFull PipelineInternal => _pipeline;
+
+        public IPipeline Pipeline => _pipeline;
 
         public IWindow Window => _window;
 
@@ -349,12 +351,12 @@ namespace Ryujinx.Graphics.Vulkan
             BufferManager = new BufferManager(this, _device);
 
             SyncManager = new SyncManager(this, _device);
-            PipelineInternal = new PipelineFull(this, _device);
-            PipelineInternal.Initialize();
+            _pipeline = new PipelineFull(this, _device);
+            _pipeline.Initialize();
 
             HelperShader = new HelperShader(this, _device);
 
-            _counters = new Counters(this, _device, PipelineInternal);
+            _counters = new Counters(this, _device, _pipeline);
         }
 
         private unsafe void SetupContext(GraphicsDebugLevel logLevel)
@@ -458,7 +460,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal void FlushAllCommands()
         {
-            PipelineInternal?.FlushCommandsImpl();
+            _pipeline?.FlushCommandsImpl();
         }
 
         internal void RegisterFlush()
@@ -473,11 +475,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe Capabilities GetCapabilities()
         {
-            const FormatFeatureFlags compressedFormatFeatureFlags = FormatFeatureFlags.SampledImageBit |
-                                                                    FormatFeatureFlags.SampledImageFilterLinearBit |
-                                                                    FormatFeatureFlags.BlitSrcBit |
-                                                                    FormatFeatureFlags.TransferSrcBit |
-                                                                    FormatFeatureFlags.TransferDstBit;
+            FormatFeatureFlags compressedFormatFeatureFlags =
+                FormatFeatureFlags.SampledImageBit |
+                FormatFeatureFlags.SampledImageFilterLinearBit |
+                FormatFeatureFlags.BlitSrcBit |
+                FormatFeatureFlags.TransferSrcBit |
+                FormatFeatureFlags.TransferDstBit;
 
             bool supportsBc123CompressionFormat = FormatCapabilities.OptimalFormatsSupport(compressedFormatFeatureFlags,
                 GAL.Format.Bc1RgbaSrgb,
@@ -762,7 +765,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
         {
-            BufferManager.SetData(buffer, offset, data, PipelineInternal.CurrentCommandBuffer, PipelineInternal.EndRenderPass);
+            BufferManager.SetData(buffer, offset, data, _pipeline.CurrentCommandBuffer, _pipeline.EndRenderPass);
         }
 
         public void UpdateCounters()
@@ -832,7 +835,7 @@ namespace Ryujinx.Graphics.Vulkan
             _counters.Dispose();
             _window.Dispose();
             HelperShader.Dispose();
-            PipelineInternal.Dispose();
+            _pipeline.Dispose();
             BufferManager.Dispose();
             DescriptorSetManager.Dispose();
             PipelineLayoutCache.Dispose();

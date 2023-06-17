@@ -335,7 +335,7 @@ namespace Ryujinx.Graphics.Vulkan
                 VkFormat.R32G32B32A32Sfloat => VkFormat.R32G32B32Sfloat,
                 VkFormat.R32G32B32A32Uint => VkFormat.R32G32B32Uint,
                 VkFormat.R32G32B32A32Sint => VkFormat.R32G32B32Sint,
-                _ => format
+                _ => format,
             };
         }
     }
