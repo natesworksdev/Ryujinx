@@ -339,7 +339,8 @@ namespace Ryujinx.HLE.HOS
 
                 ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
-                uint[] defaultCapabilities = {
+                uint[] defaultCapabilities = new uint[]
+                {
                     0x030363F7,
                     0x1FFFFFCF,
                     0x207FFFEF,

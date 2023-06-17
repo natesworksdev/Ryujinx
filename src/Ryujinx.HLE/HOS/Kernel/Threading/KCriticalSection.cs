@@ -5,19 +5,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
     class KCriticalSection
     {
         private readonly KernelContext _context;
+        private readonly object _lock;
         private int _recursionCount;
 
-        public object Lock { get; }
+        public object Lock => _lock;
 
         public KCriticalSection(KernelContext context)
         {
             _context = context;
-            Lock = new object();
+            _lock = new object();
         }
 
         public void Enter()
         {
-            Monitor.Enter(Lock);
+            Monitor.Enter(_lock);
 
             _recursionCount++;
         }
@@ -33,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             {
                 ulong scheduledCoresMask = KScheduler.SelectThreads(_context);
 
-                Monitor.Exit(Lock);
+                Monitor.Exit(_lock);
 
                 KThread currentThread = KernelStatic.GetCurrentThread();
                 bool isCurrentThreadSchedulable = currentThread != null && currentThread.IsSchedulable;
@@ -56,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
             else
             {
-                Monitor.Exit(Lock);
+                Monitor.Exit(_lock);
             }
         }
     }

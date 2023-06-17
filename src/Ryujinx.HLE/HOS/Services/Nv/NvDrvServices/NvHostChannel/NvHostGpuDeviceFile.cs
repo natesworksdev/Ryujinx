@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 0x1 => _smExceptionBptIntReportEventHandle,
                 0x2 => _smExceptionBptPauseReportEventHandle,
                 0x3 => _errorNotifierEventHandle,
-                _ => 0
+                _ => 0,
             };
             return eventHandle != 0 ? NvInternalResult.Success : NvInternalResult.InvalidInput;
         }

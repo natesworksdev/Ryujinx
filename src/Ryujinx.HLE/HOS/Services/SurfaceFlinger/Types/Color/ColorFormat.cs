@@ -233,6 +233,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         X2Bayer14GBRG                   = ColorSpace.BayerGBRG     | ColorSwizzle.Y000  | ColorComponent.Y2X14        | ColorDataType.Integer,
         X4Bayer12GBRG                   = ColorSpace.BayerGBRG     | ColorSwizzle.Y000  | ColorComponent.Y4X12        | ColorDataType.Integer,
         X6Bayer10GBRG                   = ColorSpace.BayerGBRG     | ColorSwizzle.Y000  | ColorComponent.Y6X10        | ColorDataType.Integer,
-        XYZ                             = ColorSpace.XYZ           | ColorSwizzle.XYZ1  | ColorComponent.X20Y20Z20    | ColorDataType.Float
+        XYZ                             = ColorSpace.XYZ           | ColorSwizzle.XYZ1  | ColorComponent.X20Y20Z20    | ColorDataType.Float,
     }
 }

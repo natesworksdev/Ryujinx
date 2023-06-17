@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             { "/dev/nvhost-vic",      typeof(NvHostChannelDeviceFile) },
             //{ "/dev/nvhost-display",  typeof(NvHostChannelDeviceFile) },
             { "/dev/nvhost-dbg-gpu",  typeof(NvHostDbgGpuDeviceFile)  },
-            { "/dev/nvhost-prof-gpu", typeof(NvHostProfGpuDeviceFile) }
+            { "/dev/nvhost-prof-gpu", typeof(NvHostProfGpuDeviceFile) },
         };
 
         public static IdDictionary DeviceFileIdRegistry = new();
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private bool _transferMemInitialized = false;
 
         // TODO: This should call set:sys::GetDebugModeFlag
-        private const bool DebugModeEnabled = false;
+        private readonly bool _debugModeEnabled = false;
 
         public INvDrvServices(ServiceCtx context) : base(context.Device.System.NvDrvServer)
         {
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         {
             fd = -1;
 
-            if (!DebugModeEnabled && _deviceFileDebugRegistry.Contains(path))
+            if (!_debugModeEnabled && _deviceFileDebugRegistry.Contains(path))
             {
                 return NvResult.NotSupported;
             }
@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 NvInternalResult.OutOfMemory => NvResult.InsufficientMemory,
                 NvInternalResult.DeviceNotFound => NvResult.ModuleNotPresent,
                 NvInternalResult.IoError => NvResult.ResourceError,
-                _ => NvResult.IoctlFailed
+                _ => NvResult.IoctlFailed,
             };
         }
 

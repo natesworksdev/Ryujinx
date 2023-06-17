@@ -6,6 +6,6 @@
         ScaleToWindow = 1,
         ScaleCrop     = 2,
         Unknown       = 3,
-        NoScaleCrop   = 4
+        NoScaleCrop   = 4,
     }
 }

@@ -8,6 +8,6 @@
         Rdm,
         Seqpacket,
 
-        TypeMask = 0xFFFFFFF
+        TypeMask = 0xFFFFFFF,
     }
 }

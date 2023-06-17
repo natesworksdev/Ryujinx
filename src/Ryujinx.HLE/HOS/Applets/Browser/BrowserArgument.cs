@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             { WebArgTLVType.MediaPlayerSpeedControlEnabled, typeof(bool) },
             { WebArgTLVType.OverrideWebAudioVolume,         typeof(float) },
             { WebArgTLVType.OverrideMediaAudioVolume,       typeof(float) },
-            { WebArgTLVType.MediaPlayerUiEnabled,           typeof(bool) }
+            { WebArgTLVType.MediaPlayerUiEnabled,           typeof(bool) },
         };
 
         public static (ShimKind, List<BrowserArgument>) ParseArguments(ReadOnlySpan<byte> data)

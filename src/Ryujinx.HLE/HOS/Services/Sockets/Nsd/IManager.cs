@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
         {
             // TODO: When sys:set service calls will be implemented use nn::settings::detail::GetServiceDiscoveryControlSettings()
 
-            const bool disabled = false;
+            bool disabled = false;
 
             context.ResponseData.Write(disabled);
 

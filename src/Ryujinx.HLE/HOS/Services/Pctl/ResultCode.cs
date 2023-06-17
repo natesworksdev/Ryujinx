@@ -11,6 +11,6 @@
         StereoVisionDenied                          = (104 << ErrorCodeShift) | ModuleId,
         InvalidPid                                  = (131 << ErrorCodeShift) | ModuleId,
         PermissionDenied                            = (133 << ErrorCodeShift) | ModuleId,
-        StereoVisionRestrictionConfigurableDisabled = (181 << ErrorCodeShift) | ModuleId
+        StereoVisionRestrictionConfigurableDisabled = (181 << ErrorCodeShift) | ModuleId,
     }
 }

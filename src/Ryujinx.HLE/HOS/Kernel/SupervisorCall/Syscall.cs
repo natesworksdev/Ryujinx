@@ -3007,7 +3007,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     => currentProcess.AddressArbiter.WaitForAddressIfLessThan(address, value, true, timeout),
                 ArbitrationType.WaitIfEqual
                     => currentProcess.AddressArbiter.WaitForAddressIfEqual(address, value, timeout),
-                _ => KernelResult.InvalidEnumValue
+                _ => KernelResult.InvalidEnumValue,
             };
         }
 

@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                 MemoryRegion.Alias => context.AliasAddress,
                 // Memory address is relative to the asrl region, which matches the code region.
                 MemoryRegion.Asrl => context.AslrAddress,
-                _ => throw new TamperCompilationException($"Invalid memory source {source} in Atmosphere cheat")
+                _ => throw new TamperCompilationException($"Invalid memory source {source} in Atmosphere cheat"),
             };
         }
 

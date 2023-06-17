@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 filter.IsSameAppPresenceOnly,
                 filter.IsSameAppPlayedOnly,
                 filter.IsArbitraryAppPlayedOnly,
-                filter.PresenceGroupId
+                filter.PresenceGroupId,
             });
 
             return ResultCode.Success;
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 filter.IsSameAppPresenceOnly,
                 filter.IsSameAppPlayedOnly,
                 filter.IsArbitraryAppPlayedOnly,
-                filter.PresenceGroupId
+                filter.PresenceGroupId,
             });
 
             return ResultCode.Success;

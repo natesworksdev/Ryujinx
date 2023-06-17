@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.Loaders.Executables
             MatchCollection sdkMwMatches = SdkMwRegex().Matches(rawTextBuffer);
             if (sdkMwMatches.Count != 0)
             {
-                const string libHeader = "    SDK Libraries: ";
+                string libHeader  = "    SDK Libraries: ";
                 string libContent = string.Join($"\n{new string(' ', libHeader.Length)}", sdkMwMatches);
 
                 stringBuilder.AppendLine($"{libHeader}{libContent}");

@@ -9,6 +9,6 @@
         ControllerAndKeyboard,
         KeyboardOnly,
         ControllerOnly,
-        Count
+        Count,
     }
 }

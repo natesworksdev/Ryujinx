@@ -12,7 +12,8 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
 #pragma warning restore IDE0052
         private uint       _clockRate;
 
-        private readonly DeviceCode[] allowedDeviceCodeTable = {
+        private readonly DeviceCode[] allowedDeviceCodeTable = new DeviceCode[]
+        {
             DeviceCode.Cpu,    DeviceCode.Gpu,      DeviceCode.Disp1,    DeviceCode.Disp2,
             DeviceCode.Tsec,   DeviceCode.Mselect,  DeviceCode.Sor1,     DeviceCode.Host1x,
             DeviceCode.Vic,    DeviceCode.Nvenc,    DeviceCode.Nvjpg,    DeviceCode.Nvdec,

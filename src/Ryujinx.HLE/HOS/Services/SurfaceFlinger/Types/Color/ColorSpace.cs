@@ -28,6 +28,6 @@
         BayerGRBG     = 0x12L << ColorShift.Space,
         BayerGBRG     = 0x13L << ColorShift.Space,
 
-        XYZ           = 0x14L << ColorShift.Space
+        XYZ           = 0x14L << ColorShift.Space,
     }
 }

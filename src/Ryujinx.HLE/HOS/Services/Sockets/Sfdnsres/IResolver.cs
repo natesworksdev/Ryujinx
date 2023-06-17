@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
-            const uint cancelHandleRequest = 0;
+            uint  cancelHandleRequest = 0;
 
             context.ResponseData.Write(cancelHandleRequest);
 
@@ -261,8 +261,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { unknown });
 
-            const NetDbError netDbErrorCode = NetDbError.Success;
-            const GaiError errno = GaiError.Success;
+            NetDbError netDbErrorCode = NetDbError.Success;
+            GaiError   errno          = GaiError.Success;
 
             context.ResponseData.Write((int)errno);
             context.ResponseData.Write((int)netDbErrorCode);

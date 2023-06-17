@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             {
                 WebCommonReturnValue result = new()
                 {
-                    ExitReason  = WebExitReason.ExitButton
+                    ExitReason  = WebExitReason.ExitButton,
                 };
 
                 _normalSession.Push(BuildResponseOld(result));

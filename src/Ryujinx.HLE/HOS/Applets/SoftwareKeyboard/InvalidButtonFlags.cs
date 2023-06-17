@@ -12,6 +12,6 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         AnalogStickL = 1 << 1,
         AnalogStickR = 1 << 2,
         ZL           = 1 << 3,
-        ZR           = 1 << 4
+        ZR           = 1 << 4,
     }
 }

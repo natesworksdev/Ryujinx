@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.FileSystem
                 { 0x0100000000000811, "FontStandard"           },
                 { 0x0100000000000812, "FontKorean"             },
                 { 0x0100000000000813, "FontChineseTraditional" },
-                { 0x0100000000000814, "FontChineseSimple"      }
+                { 0x0100000000000814, "FontChineseSimple"      },
             };
 
             _sharedFontFilenameDictionary = new Dictionary<string, string>

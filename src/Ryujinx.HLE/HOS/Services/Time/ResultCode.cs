@@ -22,6 +22,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
         TimeZoneNotFound          = (989  << ErrorCodeShift) | ModuleId,
         NotImplemented            = (990  << ErrorCodeShift) | ModuleId,
         NetworkTimeNotAvailable   = (1000 << ErrorCodeShift) | ModuleId,
-        NetworkTimeTaskCanceled   = (1003 << ErrorCodeShift) | ModuleId
+        NetworkTimeTaskCanceled   = (1003 << ErrorCodeShift) | ModuleId,
     }
 }

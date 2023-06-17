@@ -4,6 +4,6 @@
     {
         Invalid  = 0,
         WiFi     = 1,
-        Ethernet = 2
+        Ethernet = 2,
     }
 }

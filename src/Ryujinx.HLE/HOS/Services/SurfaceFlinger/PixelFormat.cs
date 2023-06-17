@@ -9,6 +9,6 @@
         Rgb565,
         Bgra8888,
         Rgba5551,
-        Rgba4444
+        Rgba4444,
     }
 }

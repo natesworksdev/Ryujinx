@@ -37,6 +37,6 @@
         X10Y10Z10W2  = (0x23 << ColorShift.Component) | ColorBytePerPixel.Bpp32,
         Y12X12       = (0x24 << ColorShift.Component) | ColorBytePerPixel.Bpp32,
         X20Y20Z20    = (0x26 << ColorShift.Component) | ColorBytePerPixel.Bpp64,
-        X16Y16Z16W16 = (0x27 << ColorShift.Component) | ColorBytePerPixel.Bpp64
+        X16Y16Z16W16 = (0x27 << ColorShift.Component) | ColorBytePerPixel.Bpp64,
     }
 }

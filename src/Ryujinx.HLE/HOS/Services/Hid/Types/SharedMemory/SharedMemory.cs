@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory
                 DebugPad = RingLifo<DebugPadState>.Create(),
                 TouchScreen = RingLifo<TouchScreenState>.Create(),
                 Mouse = RingLifo<MouseState>.Create(),
-                Keyboard = RingLifo<KeyboardState>.Create()
+                Keyboard = RingLifo<KeyboardState>.Create(),
             };
 
             for (int i = 0; i < result.Npads.Length; i++)

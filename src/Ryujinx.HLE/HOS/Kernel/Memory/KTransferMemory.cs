@@ -8,8 +8,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     class KTransferMemory : KAutoObject
     {
+        private KProcess _creator;
+
         // TODO: Remove when we no longer need to read it from the owner directly.
-        public KProcess Creator { get; private set; }
+        public KProcess Creator => _creator;
 
         private readonly KPageList _pageList;
 
@@ -39,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             KProcess creator = KernelStatic.GetCurrentProcess();
 
-            Creator = creator;
+            _creator = creator;
 
             Result result = creator.MemoryManager.BorrowTransferMemory(_pageList, address, size, permission);
 
@@ -115,13 +117,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             if (_hasBeenInitialized)
             {
-                if (!_isMapped && Creator.MemoryManager.UnborrowTransferMemory(Address, Size, _pageList) != Result.Success)
+                if (!_isMapped && _creator.MemoryManager.UnborrowTransferMemory(Address, Size, _pageList) != Result.Success)
                 {
                     throw new InvalidOperationException("Unexpected failure restoring transfer memory attributes.");
                 }
 
-                Creator.ResourceLimit?.Release(LimitableResource.TransferMemory, 1);
-                Creator.DecrementReferenceCount();
+                _creator.ResourceLimit?.Release(LimitableResource.TransferMemory, 1);
+                _creator.DecrementReferenceCount();
             }
         }
     }

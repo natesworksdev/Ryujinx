@@ -27,6 +27,6 @@
         Restart               = -85,
         InvalidAddress        = -99,
         TimedOut              = -110,
-        Unknown0x72           = -114
+        Unknown0x72           = -114,
     }
 }

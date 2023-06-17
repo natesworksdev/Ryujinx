@@ -22,6 +22,6 @@
         NotLoaded                = (1028 << ErrorCodeShift) | ModuleId,
         NotRegistered            = (1029 << ErrorCodeShift) | ModuleId,
         InvalidSession           = (1030 << ErrorCodeShift) | ModuleId,
-        InvalidProcess           = (1031 << ErrorCodeShift) | ModuleId
+        InvalidProcess           = (1031 << ErrorCodeShift) | ModuleId,
     }
 }

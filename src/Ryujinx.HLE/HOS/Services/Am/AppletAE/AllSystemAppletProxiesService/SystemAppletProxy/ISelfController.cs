@@ -21,9 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private int _fatalSectionCount;
 
         // TODO: Set this when the game goes in suspension (go back to home menu ect), we currently don't support that so we can keep it set to 0.
-#pragma warning disable IDE0051 // Remove unused private member
         private readonly ulong _accumulatedSuspendedTickValue = 0;
-#pragma warning restore IDE0051
 
         // TODO: Determine where those fields are used.
 #pragma warning disable IDE0052 // Remove unread private member

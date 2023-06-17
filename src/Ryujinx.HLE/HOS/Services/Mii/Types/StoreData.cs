@@ -10,12 +10,13 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public const int Size = 0x44;
 
         public  CoreData CoreData;
+        private CreateId _createId;
         public  ushort   DataCrc;
         public  ushort   DeviceCrc;
 
         public byte Type => CoreData.Type;
 
-        public CreateId CreateId { get; private set; }
+        public CreateId CreateId => _createId;
 
         public readonly ResultCode InvalidData => ResultCode.InvalidStoreData;
 
@@ -87,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             StoreData result = new()
             {
-                CreateId = UtilityImpl.MakeCreateId()
+                _createId = UtilityImpl.MakeCreateId()
             };
 
             CoreData coreData = new();
@@ -166,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             StoreData result = new()
             {
                 CoreData  = coreData,
-                CreateId = UtilityImpl.MakeCreateId()
+                _createId = UtilityImpl.MakeCreateId()
             };
 
             result.UpdateCrc();
