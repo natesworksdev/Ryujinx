@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Mux           = 0xca, // a ? b : c
             AndXor        = 0x78, // a ^ (b & c)
             OrXor         = 0x1e, // a ^ (b | c)
-            Xor3          = 0x96 // a ^ b ^ c
+            Xor3          = 0x96, // a ^ b ^ c
         }
 
         public static Operand GetFromTruthTable(EmitterContext context, Operand srcA, Operand srcB, Operand srcC, int imm)

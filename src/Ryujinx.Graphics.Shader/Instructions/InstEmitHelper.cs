@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         context.UnpackHalf2x16High(src),
                         context.UnpackHalf2x16High(src)
                     },
-                _ => throw new ArgumentException($"Invalid swizzle \"{swizzle}\".")
+                _ => throw new ArgumentException($"Invalid swizzle \"{swizzle}\"."),
             };
         }
 

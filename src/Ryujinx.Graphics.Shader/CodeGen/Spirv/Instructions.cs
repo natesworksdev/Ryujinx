@@ -613,7 +613,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     AggregateType.S32 => context.Constant(context.TypeS32(), 0),
                     AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
-                    _ => context.Constant(context.TypeFP32(), 0f)
+                    _ => context.Constant(context.TypeFP32(), 0f),
                 });
             }
 
@@ -692,7 +692,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 TextureFlags.BitwiseXor => context.AtomicXor(resultType, pointer, one, zero, value),
                 TextureFlags.Swap       => context.AtomicExchange(resultType, pointer, one, zero, value),
                 TextureFlags.CAS        => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType), value),
-                _                       => context.AtomicIAdd(resultType, pointer, one, zero, value)
+                _                       => context.AtomicIAdd(resultType, pointer, one, zero, value),
             };
 
             return new OperationResult(componentType, result);
@@ -842,7 +842,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     {
                         AggregateType.S32 => context.Constant(context.TypeS32(), 0),
                         AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
-                        _ => context.Constant(context.TypeFP32(), 0f)
+                        _ => context.Constant(context.TypeFP32(), 0f),
                     };
                 }
             }
@@ -2012,7 +2012,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 AggregateType.S32 => context.Constant(context.TypeS32(), 0),
                 AggregateType.U32 => context.Constant(context.TypeU32(), 0u),
-                _ => context.Constant(context.TypeFP32(), 0f)
+                _ => context.Constant(context.TypeFP32(), 0f),
             };
 
             if (isVector)

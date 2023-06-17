@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Shader
                 OutputTopology.LineStrip => "line_strip",
                 OutputTopology.PointList => "points",
                 OutputTopology.TriangleStrip => "triangle_strip",
-                _ => "points"
+                _ => "points",
             };
         }
     }

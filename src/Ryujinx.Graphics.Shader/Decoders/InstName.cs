@@ -183,6 +183,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Vsetp,
         Vshl,
         Vshr,
-        Xmad
+        Xmad,
     }
 }
