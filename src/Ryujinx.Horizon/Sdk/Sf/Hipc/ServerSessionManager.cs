@@ -196,7 +196,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             {
                 CommandType.Request or CommandType.RequestWithContext => DispatchRequest(session.ServiceObjectHolder, session, inMessage, outMessage),
                 CommandType.Control or CommandType.ControlWithContext => DispatchManagerRequest(session, inMessage, outMessage),
-                _ => HipcResult.UnknownCommandType
+                _ => HipcResult.UnknownCommandType,
             };
         }
 

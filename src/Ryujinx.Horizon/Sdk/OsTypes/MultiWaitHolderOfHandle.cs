@@ -2,11 +2,13 @@
 {
     class MultiWaitHolderOfHandle : MultiWaitHolder
     {
-        public override int Handle { get; }
+        private readonly int _handle;
+
+        public override int Handle => _handle;
 
         public MultiWaitHolderOfHandle(int handle)
         {
-            Handle = handle;
+            _handle = handle;
         }
     }
 }

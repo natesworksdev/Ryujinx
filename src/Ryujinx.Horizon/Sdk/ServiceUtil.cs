@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sdk
         public static Result SendRequest(out CmifResponse response, int sessionHandle, uint requestId, bool sendPid, scoped ReadOnlySpan<byte> data)
         {
             ulong tlsAddress = HorizonStatic.ThreadContext.TlsAddress;
-            const int tlsSize = Api.TlsMessageBufferSize;
+            int   tlsSize    = Api.TlsMessageBufferSize;
 
             using (var tlsRegion = HorizonStatic.AddressSpace.GetWritableRegion(tlsAddress, tlsSize))
             {
