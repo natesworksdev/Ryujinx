@@ -57,8 +57,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                     if (entry != null)
                     {
                         DebugUtil.Assert(entry.Owner == null);
+                        DebugUtil.Assert(entry.Obj == null);
                     }
-                    DebugUtil.Assert(entry.Obj == null);
                     _freeList.AddFirst(entry);
                 }
             }
@@ -121,17 +121,17 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                 var entry = _manager._entryManager.GetEntry(id);
                 DebugUtil.Assert(entry != null);
 
-                lock (_manager._entryOwnerLock)
+                if (entry != null)
                 {
-                    if (entry != null)
+                    lock (_manager._entryOwnerLock)
                     {
                         DebugUtil.Assert(entry.Owner == null);
+                        entry.Owner = this;
+                        entry.Node = _entries.AddLast(entry);
                     }
-                    entry.Owner = this;
-                    entry.Node = _entries.AddLast(entry);
-                }
 
-                entry.Obj = obj;
+                    entry.Obj = obj;
+                }
             }
 
             public override Result ReserveIds(Span<int> outIds)

@@ -474,7 +474,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
             }
 
-            tocFileStream.Seek(offset, SeekOrigin.Begin);
+            if (tocFileStream != null)
+            {
+                tocFileStream.Seek(offset, SeekOrigin.Begin);
+            }
 
             BinarySerializer tocReader = new(tocFileStream);
 
