@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class ResourceManager
     {
+        // Those values are used if the shader as local or shared memory access,
+        // but for some reason the supplied size was 0.
+        private const int DefaultLocalMemorySize = 128;
+        private const int DefaultSharedMemorySize = 4096;
+
         private static readonly string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private readonly IGpuAccessor _gpuAccessor;
@@ -21,6 +27,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         private readonly Dictionary<int, int> _sbSlotsReverse;
 
         private readonly HashSet<int> _usedConstantBufferBindings;
+
+        public int LocalMemoryId { get; private set; }
+        public int SharedMemoryId { get; private set; }
 
         public ShaderProperties Properties => _properties;
 
@@ -41,6 +50,47 @@ namespace Ryujinx.Graphics.Shader.Translation
             _usedConstantBufferBindings = new HashSet<int>();
 
             properties.AddConstantBuffer(0, new BufferDefinition(BufferLayout.Std140, 0, 0, "support_buffer", SupportBuffer.GetStructureType()));
+
+            LocalMemoryId = -1;
+            SharedMemoryId = -1;
+        }
+
+        public void SetCurrentLocalMemory(int size, bool isUsed)
+        {
+            if (isUsed)
+            {
+                if (size <= 0)
+                {
+                    size = DefaultLocalMemorySize;
+                }
+
+                var lmem = new MemoryDefinition("local_memory", AggregateType.Array | AggregateType.U32, BitUtils.DivRoundUp(size, sizeof(uint)));
+
+                LocalMemoryId = Properties.AddLocalMemory(lmem);
+            }
+            else
+            {
+                LocalMemoryId = -1;
+            }
+        }
+
+        public void SetCurrentSharedMemory(int size, bool isUsed)
+        {
+            if (isUsed)
+            {
+                if (size <= 0)
+                {
+                    size = DefaultSharedMemorySize;
+                }
+
+                var smem = new MemoryDefinition("shared_memory", AggregateType.Array | AggregateType.U32,  BitUtils.DivRoundUp(size, sizeof(uint)));
+
+                SharedMemoryId = Properties.AddSharedMemory(smem);
+            }
+            else
+            {
+                SharedMemoryId = -1;
+            }
         }
 
         public int GetConstantBufferBinding(int slot)

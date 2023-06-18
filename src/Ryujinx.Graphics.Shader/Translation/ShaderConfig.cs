@@ -124,11 +124,12 @@ namespace Ryujinx.Graphics.Shader.Translation
         private TextureDescriptor[] _cachedTextureDescriptors;
         private TextureDescriptor[] _cachedImageDescriptors;
 
-        public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options)
+        public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
-            Stage       = stage;
-            GpuAccessor = gpuAccessor;
-            Options     = options;
+            Stage           = stage;
+            GpuAccessor     = gpuAccessor;
+            Options         = options;
+            LocalMemorySize = localMemorySize;
 
             _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
 
@@ -176,25 +177,32 @@ namespace Ryujinx.Graphics.Shader.Translation
             OutputTopology outputTopology,
             int maxOutputVertices,
             IGpuAccessor gpuAccessor,
-            TranslationOptions options) : this(stage, gpuAccessor, options)
+            TranslationOptions options) : this(stage, gpuAccessor, options, 0)
         {
             ThreadsPerInputPrimitive = 1;
             OutputTopology           = outputTopology;
             MaxOutputVertices        = maxOutputVertices;
         }
 
-        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options) : this(header.Stage, gpuAccessor, options)
+        public ShaderConfig(
+            ShaderHeader header,
+            IGpuAccessor gpuAccessor,
+            TranslationOptions options) : this(header.Stage, gpuAccessor, options, GetLocalMemorySize(header))
         {
             GpPassthrough            = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
             ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
             OutputTopology           = header.OutputTopology;
             MaxOutputVertices        = header.MaxOutputVertexCount;
-            LocalMemorySize          = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
             ImapTypes                = header.ImapTypes;
             OmapTargets              = header.OmapTargets;
             OmapSampleMask           = header.OmapSampleMask;
             OmapDepth                = header.OmapDepth;
             LastInVertexPipeline     = header.Stage < ShaderStage.Fragment;
+        }
+
+        private static int GetLocalMemorySize(ShaderHeader header)
+        {
+            return header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
         }
 
         private void EnsureTransformFeedbackInitialized()
