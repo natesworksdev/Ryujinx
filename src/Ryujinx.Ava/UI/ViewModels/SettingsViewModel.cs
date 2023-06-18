@@ -19,13 +19,14 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
-using Silk.NET.Vulkan;
+using GAL = Ryujinx.Graphics.GAL;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -45,7 +46,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float _volume;
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged;
-        private List<string> _gpuIds = new();
+
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
@@ -307,28 +308,32 @@ namespace Ryujinx.Ava.UI.ViewModels
             IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
         }
 
-        private void LoadAvailableGpus()
+        private async void LoadAvailableGpus()
         {
-            _gpuIds = new List<string>();
-            List<string> names = new();
-            var devices = VulkanRenderer.GetPhysicalDevices();
+            List<string> _gpuIds = new();
+            List<string> _gpuNames = new();
 
-            if (devices.Length == 0)
+            await Task.Run(() =>
             {
-                IsVulkanAvailable = false;
-                GraphicsBackendIndex = 1;
-            }
-            else
-            {
-                foreach (var device in devices)
+                var devices = VulkanRenderer.GetPhysicalDevices();
+
+                if (devices.Length == 0)
                 {
-                    _gpuIds.Add(device.Id);
-                    names.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
+                    IsVulkanAvailable = false;
+                    GraphicsBackendIndex = 1;
                 }
-            }
+                else
+                {
+                    foreach (var device in devices)
+                    {
+                        _gpuIds.Add(device.Id);
+                        _gpuNames.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
+                    }
+                }
+            });
 
             AvailableGpus.Clear();
-            AvailableGpus.AddRange(names.Select(x => new ComboBoxItem { Content = x }));
+            AvailableGpus.AddRange(_gpuNames.Select(x => new ComboBoxItem { Content = x }));
         }
 
         public void LoadTimeZones()
