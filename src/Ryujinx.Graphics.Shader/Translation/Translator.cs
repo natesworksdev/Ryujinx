@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation.Optimizations;
+using Ryujinx.Graphics.Shader.Translation.Transforms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +89,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Ssa.Rename(cfg.Blocks);
 
                     Optimizer.RunPass(hfm, cfg.Blocks, resourceManager, gpuAccessor, options.TargetLanguage, definitions.Stage);
-                    Rewriter.RunPass(hfm, cfg.Blocks, resourceManager, gpuAccessor, options.TargetLanguage, definitions.Stage, ref usedFeatures);
+                    TransformPasses.RunPass(hfm, cfg.Blocks, resourceManager, gpuAccessor, options.TargetLanguage, definitions.Stage, ref usedFeatures);
                 }
 
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
