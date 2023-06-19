@@ -312,6 +312,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                 IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
                 IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
             });
+
+            OnPropertyChanged(nameof(IsOpenAlEnabled));
+            OnPropertyChanged(nameof(IsSoundIoEnabled));
+            OnPropertyChanged(nameof(IsSDL2Enabled));    
         }
 
         private async void LoadAvailableGpus()
@@ -337,6 +341,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             AvailableGpus.Clear();
             AvailableGpus.AddRange(_gpuNames.Select(x => new ComboBoxItem { Content = x }));
+
+            OnPropertyChanged(nameof(PreferredGpuIndex));
         }
 
         public async void LoadTimeZones()
@@ -373,6 +379,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                     _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
                 }
             });
+
+            OnPropertyChanged(nameof(NetworkInterfaceList));
         }
 
         public void ValidateAndSetTimeZone(string location)
