@@ -47,6 +47,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged;
 
+        private List<string> _gpuIds = new();
+        private List<string> _gpuNames = new();
+
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
@@ -301,18 +304,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public void CheckSoundBackends()
+        public async void CheckSoundBackends()
         {
-            IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
-            IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
-            IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
+            await Task.Run(() => 
+            {
+                IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
+                IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
+                IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
+            });
         }
 
         private async void LoadAvailableGpus()
         {
-            List<string> _gpuIds = new();
-            List<string> _gpuNames = new();
-
             await Task.Run(() =>
             {
                 var devices = VulkanRenderer.GetPhysicalDevices();
@@ -336,34 +339,40 @@ namespace Ryujinx.Ava.UI.ViewModels
             AvailableGpus.AddRange(_gpuNames.Select(x => new ComboBoxItem { Content = x }));
         }
 
-        public void LoadTimeZones()
+        public async void LoadTimeZones()
         {
-            _timeZoneContentManager = new TimeZoneContentManager();
-
-            _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
-
-            foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
+            await Task.Run(() =>
             {
-                int hours = Math.DivRem(offset, 3600, out int seconds);
-                int minutes = Math.Abs(seconds) / 60;
+                _timeZoneContentManager = new TimeZoneContentManager();
 
-                string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
+                _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
 
-                TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
+                foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
+                {
+                    int hours = Math.DivRem(offset, 3600, out int seconds);
+                    int minutes = Math.Abs(seconds) / 60;
 
-                _validTzRegions.Add(location);
-            }
+                    string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
+
+                    TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
+
+                    _validTzRegions.Add(location);
+                }
+            });
         }
 
-        private void PopulateNetworkInterfaces()
+        private async void PopulateNetworkInterfaces()
         {
-            _networkInterfaces.Clear();
-            _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
-
-            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            await Task.Run(() =>
             {
-                _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
-            }
+                _networkInterfaces.Clear();
+                _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
+
+                foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
+                }
+            });
         }
 
         public void ValidateAndSetTimeZone(string location)
