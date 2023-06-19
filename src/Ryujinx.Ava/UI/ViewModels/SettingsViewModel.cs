@@ -26,7 +26,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
-using GAL = Ryujinx.Graphics.GAL;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
