@@ -346,12 +346,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void LoadTimeZones()
         {
+            _timeZoneContentManager = new TimeZoneContentManager();
+
+            _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
+
             await Task.Run(() =>
             {
-                _timeZoneContentManager = new TimeZoneContentManager();
-
-                _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
-
                 foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
                 {
                     int hours = Math.DivRem(offset, 3600, out int seconds);
@@ -364,15 +364,17 @@ namespace Ryujinx.Ava.UI.ViewModels
                     _validTzRegions.Add(location);
                 }
             });
+
+            OnPropertyChanged(nameof(TimeZone));
         }
 
         private async void PopulateNetworkInterfaces()
         {
+            _networkInterfaces.Clear();
+            _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
+
             await Task.Run(() =>
             {
-                _networkInterfaces.Clear();
-                _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
-
                 foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
                 {
                     _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
