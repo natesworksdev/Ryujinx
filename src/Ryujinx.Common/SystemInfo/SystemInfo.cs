@@ -24,6 +24,7 @@ namespace Ryujinx.Common.SystemInfo
 
         public void Print()
         {
+            Logger.Notice.Print(LogClass.Application, $"Process ID: {Environment.ProcessId}");
             Logger.Notice.Print(LogClass.Application, $"Operating System: {OsDescription}");
             Logger.Notice.Print(LogClass.Application, $"CPU: {CpuName}");
             Logger.Notice.Print(LogClass.Application, $"RAM: Total {ToMiBString(RamTotal)} ; Available {ToMiBString(RamAvailable)}");
