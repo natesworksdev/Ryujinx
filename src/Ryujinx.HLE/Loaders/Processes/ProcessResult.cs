@@ -6,12 +6,14 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Horizon.Common;
+using System;
 using System.Linq;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
     public class ProcessResult
     {
+
         public static ProcessResult Failed => new(null, new BlitStruct<ApplicationControlProperty>(1), false, false, null, 0, 0, 0, TitleLanguage.AmericanEnglish);
 
         private readonly byte _mainThreadPriority;
@@ -90,6 +92,47 @@ namespace Ryujinx.HLE.Loaders.Processes
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {Name} v{version} [{ProgramIdText}] [{(Is64Bit ? "64-bit" : "32-bit")}]");
 
             return true;
+        }
+        
+        protected bool Equals(ProcessResult other)
+        {
+            return _mainThreadPriority == other._mainThreadPriority && _mainThreadStackSize == other._mainThreadStackSize && ProcessId == other.ProcessId && Name == other.Name && DisplayVersion == other.DisplayVersion && ProgramId == other.ProgramId && ProgramIdText == other.ProgramIdText && Is64Bit == other.Is64Bit && DiskCacheEnabled == other.DiskCacheEnabled && AllowCodeMemoryForJit == other.AllowCodeMemoryForJit;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((ProcessResult)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hashCode = new HashCode();
+            hashCode.Add(_mainThreadPriority);
+            hashCode.Add(_mainThreadStackSize);
+            hashCode.Add(ProcessId);
+            hashCode.Add(Name);
+            hashCode.Add(DisplayVersion);
+            hashCode.Add(ProgramId);
+            hashCode.Add(ProgramIdText);
+            hashCode.Add(Is64Bit);
+            hashCode.Add(DiskCacheEnabled);
+            hashCode.Add(AllowCodeMemoryForJit);
+            return hashCode.ToHashCode();
         }
     }
 }

@@ -30,6 +30,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Common;
@@ -427,9 +428,12 @@ namespace Ryujinx.Ava
 
             _isActive = false;
 
-            // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
-            // We only need to wait for all commands submitted during the main gpu loop to be processed.
-            _gpuDoneEvent.WaitOne();
+            if (_renderingStarted)
+            {
+                // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
+                // We only need to wait for all commands submitted during the main gpu loop to be processed.
+                _gpuDoneEvent.WaitOne();
+            }
             _gpuDoneEvent.Dispose();
 
             DisplaySleep.Restore();
@@ -445,7 +449,7 @@ namespace Ryujinx.Ava
 
         private void Dispose()
         {
-            if (Device.Processes != null)
+            if (!ProcessResult.Failed.Equals(Device?.Processes?.ActiveApplication))
             {
                 _viewModel.UpdateGameMetadata(Device.Processes.ActiveApplication.ProgramIdText);
             }

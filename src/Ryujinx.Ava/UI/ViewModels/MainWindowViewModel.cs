@@ -1488,15 +1488,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 catch (HorizonResultException ex)
                 {
                     // Apphost Cleanup
-                    AppHost = null;
                     SelectedIcon = null;
                 
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
                         await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogCorruptedGameError], ex.Message));
                     });
-                    
-                    return;
                 }
                 
                 if (!isApplicationLoaded)
