@@ -59,7 +59,6 @@ namespace Ryujinx.Common.Extensions
             }
         }
 
-
         /// <summary>
         /// Reads an <see cref="int"/> as little endian.
         /// </summary>

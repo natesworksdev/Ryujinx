@@ -2944,7 +2944,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <exception cref="Ryujinx.Memory.InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         protected abstract ReadOnlySpan<byte> GetSpan(ulong va, int size);
 
-
         /// <summary>
         /// Maps a new memory region with the contents of a existing memory region.
         /// </summary>
