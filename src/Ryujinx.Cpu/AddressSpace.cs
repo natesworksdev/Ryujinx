@@ -183,8 +183,10 @@ namespace Ryujinx.Cpu
 
             MemoryAllocationFlags asFlags = MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible;
 
+            ulong minAddressSpaceSize = Math.Min(asSize, 1UL << 36);
 
-            for (ulong addressSpaceSize = asSize; addressSpaceSize >= (1UL << 36); addressSpaceSize >>= 1)
+            // Attempt to create the address space with expected size or try to reduce it until it succeed.
+            for (ulong addressSpaceSize = asSize; addressSpaceSize >= minAddressSpaceSize; addressSpaceSize >>= 1)
             {
                 MemoryBlock baseMemory = null;
                 MemoryBlock mirrorMemory = null;
