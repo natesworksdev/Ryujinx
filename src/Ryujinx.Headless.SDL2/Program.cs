@@ -43,6 +43,7 @@ namespace Ryujinx.Headless.SDL2
     class Program
     {
         public static string Version { get; private set; }
+        public static bool StartFullscreen { get; private set; } = false;
 
         private static VirtualFileSystem _virtualFileSystem;
         private static ContentManager _contentManager;
@@ -438,6 +439,11 @@ namespace Ryujinx.Headless.SDL2
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
             GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
+
+            if (option.StartFullscreen)
+            {
+                StartFullscreen = true;
+            }
 
             while (true)
             {
