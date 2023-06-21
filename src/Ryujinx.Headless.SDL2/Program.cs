@@ -440,8 +440,6 @@ namespace Ryujinx.Headless.SDL2
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
             GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
 
-            StartFullscreen = option.StartFullscreen;
-
             while (true)
             {
                 LoadApplication(option);
@@ -602,6 +600,8 @@ namespace Ryujinx.Headless.SDL2
             IRenderer renderer = CreateRenderer(options, window);
 
             _window = window;
+
+            _window.IsFullscreen = options.IsFullscreen;
 
             _emulationContext = InitializeEmulationContext(window, renderer, options);
 

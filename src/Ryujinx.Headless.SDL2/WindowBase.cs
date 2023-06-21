@@ -53,6 +53,7 @@ namespace Ryujinx.Headless.SDL2
         public IHostUiTheme HostUiTheme { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public bool IsFullscreen { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
@@ -156,7 +157,8 @@ namespace Ryujinx.Headless.SDL2
             string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText) ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | GetFullscreenFlags() | GetWindowFlags());
+            SDL_WindowFlags fullscreenFlag =  IsFullscreen ? SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
 
             if (WindowHandle == IntPtr.Zero)
             {
@@ -210,14 +212,6 @@ namespace Ryujinx.Headless.SDL2
         protected abstract void FinalizeWindowRenderer();
 
         protected abstract void SwapBuffers();
-
-        private SDL_WindowFlags GetFullscreenFlags()
-        {
-            // NOTE: We default to 'borderless fullscreen windowed' mode.
-            // There's a case to be made to support a 'real' fullscreen mode. This would allow for things like Variable Refresh Rate support.
-            // Doing so would require additional cli options to pass in resolution parameters.
-            return (Program.StartFullscreen) ? SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
-        }
 
         public abstract SDL_WindowFlags GetWindowFlags();
 

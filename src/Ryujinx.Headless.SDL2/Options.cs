@@ -15,7 +15,7 @@ namespace Ryujinx.Headless.SDL2
         public string UserProfile { get; set; }
 
         [Option("fullscreen", Required = false, HelpText = "Launch the game in fullscreen mode.")]
-        public bool StartFullscreen { get; set; }
+        public bool IsFullscreen { get; set; }
 
         // Input
 
