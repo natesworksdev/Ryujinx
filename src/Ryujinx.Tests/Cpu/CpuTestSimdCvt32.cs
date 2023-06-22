@@ -429,7 +429,7 @@ namespace Ryujinx.Tests.Cpu
 
 
         [Test, Pairwise, Description("VCVT.I32.F32 <Vd>, <Vm>, #<fbits>")]
-        public void Vcvt_V2_F32_I32([Values(0u, 1u, 2u, 3u)] uint vd,
+        public void Vcvt_V_Fixed_F32_I32([Values(0u, 1u, 2u, 3u)] uint vd,
                                     [Values(0u, 1u, 2u, 3u)] uint vm,
                                     [ValueSource(nameof(_1S_F_))][Random(RndCnt)] ulong s0,
                                     [ValueSource(nameof(_1S_F_))][Random(RndCnt)] ulong s1,
@@ -469,7 +469,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VCVT.F32.I32 <Vd>, <Vm>, #<fbits>")]
-        public void Vcvt_V2_I32_F32([Values(0u, 1u, 2u, 3u)] uint vd,
+        public void Vcvt_V_Fixed_I32_F32([Values(0u, 1u, 2u, 3u)] uint vd,
                                     [Values(0u, 1u, 2u, 3u)] uint vm,
                                     [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s0,
                                     [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s1,
