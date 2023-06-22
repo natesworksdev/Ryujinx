@@ -917,7 +917,7 @@ namespace ARMeilleure.Decoders
             SetAsimd("111100111x11xx01xxxx0x100xx0xxxx", InstName.Vclt,        InstEmit32.Vclt_Z,       OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32);
             SetAsimd("111100111x110000xxxx01010xx0xxxx", InstName.Vcnt,        InstEmit32.Vcnt,         OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32);
             SetAsimd("111100111x111011xxxx011xxxx0xxxx", InstName.Vcvt,        InstEmit32.Vcvt_V,       OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32); // FP and integer, vector.
-            SetAsimd("1111001x1x>>>xxxxxxx111x0xx1xxxx", InstName.Vcvt,        InstEmit32.Vcvt_V_Fixed, OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32); // Between floating point and fixed point, vector.
+            SetAsimd("1111001x1x>>>xxxxxxx111x0xx1xxxx", InstName.Vcvt,        InstEmit32.Vcvt_V_Fixed, OpCode32SimdCvtFFixed.Create,   OpCode32SimdCvtFFixed.CreateT32); // Between floating point and fixed point, vector.
             SetAsimd("111100111x11xxxxxxxx11000xx0xxxx", InstName.Vdup,        InstEmit32.Vdup_1,       OpCode32SimdDupElem.Create,     OpCode32SimdDupElem.CreateT32);
             SetAsimd("111100110x00xxxxxxxx0001xxx1xxxx", InstName.Veor,        InstEmit32.Veor_I,       OpCode32SimdBinary.Create,      OpCode32SimdBinary.CreateT32);
             SetAsimd("111100101x11xxxxxxxxxxxxxxx0xxxx", InstName.Vext,        InstEmit32.Vext,         OpCode32SimdExt.Create,         OpCode32SimdExt.CreateT32);
