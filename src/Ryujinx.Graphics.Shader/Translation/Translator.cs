@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Ssa.Rename(cfg.Blocks);
 
-                    Optimizer.RunPass(cfg.Blocks, config);
+                    Optimizer.RunPass(hfm, cfg.Blocks, config);
                     Rewriter.RunPass(hfm, cfg.Blocks, config);
                 }
 
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (options.Flags.HasFlag(TranslationFlags.Compute))
             {
-                config = new ShaderConfig(ShaderStage.Compute, gpuAccessor, options);
+                config = new ShaderConfig(ShaderStage.Compute, gpuAccessor, options, gpuAccessor.QueryComputeLocalMemorySize());
 
                 program = Decoder.Decode(config, address);
             }
@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             FunctionMatch.RunPass(program);
 
-            foreach (DecodedFunction function in program.OrderBy(x => x.Address).Where(x => !x.IsCompilerGenerated))
+            foreach (DecodedFunction function in program.Where(x => !x.IsCompilerGenerated).OrderBy(x => x.Address))
             {
                 program.AddFunctionAndSetId(function);
             }

@@ -10,12 +10,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
 {
     static partial class InstEmit
     {
-        private enum MemoryRegion
-        {
-            Local,
-            Shared
-        }
-
         public static void Atom(EmitterContext context)
         {
             InstAtom op = context.GetOp<InstAtom>();
@@ -33,6 +27,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void Atoms(EmitterContext context)
         {
+            if (context.Config.Stage != ShaderStage.Compute)
+            {
+                context.Config.GpuAccessor.Log($"Atoms instruction is not valid on \"{context.Config.Stage}\" stage.");
+                return;
+            }
+
             InstAtoms op = context.GetOp<InstAtoms>();
 
             Operand offset = context.ShiftRightU32(GetSrcReg(context, op.SrcA), Const(2));
@@ -51,7 +51,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 _ => AtomSize.U32
             };
 
-            Operand res = EmitAtomicOp(context, StorageKind.SharedMemory, op.AtomOp, size, offset, Const(0), value);
+            Operand id = Const(context.Config.ResourceManager.SharedMemoryId);
+            Operand res = EmitAtomicOp(context, StorageKind.SharedMemory, op.AtomOp, size, id, offset, value);
 
             context.Copy(GetDest(op.Dest), res);
         }
@@ -114,14 +115,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstLdl op = context.GetOp<InstLdl>();
 
-            EmitLoad(context, MemoryRegion.Local, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
+            EmitLoad(context, StorageKind.LocalMemory, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
         }
 
         public static void Lds(EmitterContext context)
         {
+            if (context.Config.Stage != ShaderStage.Compute)
+            {
+                context.Config.GpuAccessor.Log($"Lds instruction is not valid on \"{context.Config.Stage}\" stage.");
+                return;
+            }
+
             InstLds op = context.GetOp<InstLds>();
 
-            EmitLoad(context, MemoryRegion.Shared, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
+            EmitLoad(context, StorageKind.SharedMemory, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
         }
 
         public static void Red(EmitterContext context)
@@ -144,14 +151,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstStl op = context.GetOp<InstStl>();
 
-            EmitStore(context, MemoryRegion.Local, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
+            EmitStore(context, StorageKind.LocalMemory, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
         }
 
         public static void Sts(EmitterContext context)
         {
+            if (context.Config.Stage != ShaderStage.Compute)
+            {
+                context.Config.GpuAccessor.Log($"Sts instruction is not valid on \"{context.Config.Stage}\" stage.");
+                return;
+            }
+
             InstSts op = context.GetOp<InstSts>();
 
-            EmitStore(context, MemoryRegion.Shared, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
+            EmitStore(context, StorageKind.SharedMemory, op.LsSize, GetSrcReg(context, op.SrcA), op.Dest, Imm24ToSInt(op.Imm24));
         }
 
         private static Operand EmitLoadConstant(EmitterContext context, Operand slot, Operand offset)
@@ -192,8 +205,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             StorageKind storageKind,
             AtomOp op,
             AtomSize type,
-            Operand addrLow,
-            Operand addrHigh,
+            Operand e0,
+            Operand e1,
             Operand value)
         {
             Operand res = Const(0);
@@ -203,7 +216,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.Add:
                     if (type == AtomSize.S32 || type == AtomSize.U32)
                     {
-                        res = context.AtomicAdd(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicAdd(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -213,7 +226,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.And:
                     if (type == AtomSize.S32 || type == AtomSize.U32)
                     {
-                        res = context.AtomicAnd(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicAnd(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -223,7 +236,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.Xor:
                     if (type == AtomSize.S32 || type == AtomSize.U32)
                     {
-                        res = context.AtomicXor(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicXor(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -233,7 +246,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.Or:
                     if (type == AtomSize.S32 || type == AtomSize.U32)
                     {
-                        res = context.AtomicOr(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicOr(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -243,11 +256,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.Max:
                     if (type == AtomSize.S32)
                     {
-                        res = context.AtomicMaxS32(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicMaxS32(storageKind, e0, e1, value);
                     }
                     else if (type == AtomSize.U32)
                     {
-                        res = context.AtomicMaxU32(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicMaxU32(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -257,11 +270,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case AtomOp.Min:
                     if (type == AtomSize.S32)
                     {
-                        res = context.AtomicMinS32(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicMinS32(storageKind, e0, e1, value);
                     }
                     else if (type == AtomSize.U32)
                     {
-                        res = context.AtomicMinU32(storageKind, addrLow, addrHigh, value);
+                        res = context.AtomicMinU32(storageKind, e0, e1, value);
                     }
                     else
                     {
@@ -275,7 +288,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static void EmitLoad(
             EmitterContext context,
-            MemoryRegion region,
+            StorageKind storageKind,
             LsSize2 size,
             Operand srcA,
             int rd,
@@ -287,19 +300,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
+            int id = storageKind == StorageKind.LocalMemory
+                ? context.Config.ResourceManager.LocalMemoryId
+                : context.Config.ResourceManager.SharedMemoryId;
             bool isSmallInt = size < LsSize2.B32;
 
-            int count = 1;
-
-            switch (size)
+            int count = size switch
             {
-                case LsSize2.B64: count = 2; break;
-                case LsSize2.B128: count = 4; break;
-            }
+                LsSize2.B64 => 2,
+                LsSize2.B128 => 4,
+                _ => 1
+            };
 
-            Operand baseOffset = context.IAdd(srcA, Const(offset));
-            Operand wordOffset = context.ShiftRightU32(baseOffset, Const(2)); // Word offset = byte offset / 4 (one word = 4 bytes).
-            Operand bitOffset = GetBitOffset(context, baseOffset);
+            Operand baseOffset = context.Copy(srcA);
 
             for (int index = 0; index < count; index++)
             {
@@ -310,14 +323,10 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand elemOffset = context.IAdd(wordOffset, Const(index));
-                Operand value = null;
-
-                switch (region)
-                {
-                    case MemoryRegion.Local: value = context.LoadLocal(elemOffset); break;
-                    case MemoryRegion.Shared: value = context.LoadShared(elemOffset); break;
-                }
+                Operand byteOffset = context.IAdd(baseOffset, Const(offset + index * 4));
+                Operand wordOffset = context.ShiftRightU32(byteOffset, Const(2)); // Word offset = byte offset / 4 (one word = 4 bytes).
+                Operand bitOffset = GetBitOffset(context, byteOffset);
+                Operand value = context.Load(storageKind, id, wordOffset);
 
                 if (isSmallInt)
                 {
@@ -336,13 +345,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
             int offset,
             bool extended)
         {
-            bool isSmallInt = size < LsSize.B32;
-
             int count = GetVectorCount(size);
+            StorageKind storageKind = GetStorageKind(size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
-            Operand bitOffset = GetBitOffset(context, addrLow);
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -353,12 +361,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand value = context.LoadGlobal(context.IAdd(addrLow, Const(index * 4)), addrHigh);
-
-                if (isSmallInt)
-                {
-                    value = ExtractSmallInt(context, size, bitOffset, value);
-                }
+                Operand value = context.Load(storageKind, context.IAdd(srcA, Const(offset + index * 4)), addrHigh);
 
                 context.Copy(Register(dest), value);
             }
@@ -366,7 +369,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static void EmitStore(
             EmitterContext context,
-            MemoryRegion region,
+            StorageKind storageKind,
             LsSize2 size,
             Operand srcA,
             int rd,
@@ -378,52 +381,54 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
+            int id = storageKind == StorageKind.LocalMemory
+                ? context.Config.ResourceManager.LocalMemoryId
+                : context.Config.ResourceManager.SharedMemoryId;
             bool isSmallInt = size < LsSize2.B32;
 
-            int count = 1;
-
-            switch (size)
+            int count = size switch
             {
-                case LsSize2.B64: count = 2; break;
-                case LsSize2.B128: count = 4; break;
-            }
+                LsSize2.B64 => 2,
+                LsSize2.B128 => 4,
+                _ => 1
+            };
 
-            Operand baseOffset = context.IAdd(srcA, Const(offset));
-            Operand wordOffset = context.ShiftRightU32(baseOffset, Const(2));
-            Operand bitOffset = GetBitOffset(context, baseOffset);
+            Operand baseOffset = context.Copy(srcA);
 
             for (int index = 0; index < count; index++)
             {
                 bool isRz = rd + index >= RegisterConsts.RegisterZeroIndex;
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
-                Operand elemOffset = context.IAdd(wordOffset, Const(index));
+                Operand byteOffset = context.IAdd(baseOffset, Const(offset + index * 4));
+                Operand wordOffset = context.ShiftRightU32(byteOffset, Const(2));
+                Operand bitOffset = GetBitOffset(context, byteOffset);
 
-                if (isSmallInt && region == MemoryRegion.Local)
+                if (isSmallInt && storageKind == StorageKind.LocalMemory)
                 {
-                    Operand word = context.LoadLocal(elemOffset);
+                    Operand word = context.Load(storageKind, id, wordOffset);
 
                     value = InsertSmallInt(context, (LsSize)size, bitOffset, word, value);
                 }
 
-                if (region == MemoryRegion.Local)
+                if (storageKind == StorageKind.LocalMemory)
                 {
-                    context.StoreLocal(elemOffset, value);
+                    context.Store(storageKind, id, wordOffset, value);
                 }
-                else if (region == MemoryRegion.Shared)
+                else if (storageKind == StorageKind.SharedMemory)
                 {
                     switch (size)
                     {
                         case LsSize2.U8:
                         case LsSize2.S8:
-                            context.StoreShared8(baseOffset, value);
+                            context.Store(StorageKind.SharedMemory8, id, byteOffset, value);
                             break;
                         case LsSize2.U16:
                         case LsSize2.S16:
-                            context.StoreShared16(baseOffset, value);
+                            context.Store(StorageKind.SharedMemory16, id, byteOffset, value);
                             break;
                         default:
-                            context.StoreShared(elemOffset, value);
+                            context.Store(storageKind, id, wordOffset, value);
                             break;
                     }
                 }
@@ -445,10 +450,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
 
             int count = GetVectorCount((LsSize)size);
+            StorageKind storageKind = GetStorageKind((LsSize)size);
 
-            (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
+            (_, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
 
-            Operand bitOffset = GetBitOffset(context, addrLow);
+            Operand srcA = context.Copy(new Operand(new Register(ra, RegisterType.Gpr)));
 
             for (int index = 0; index < count; index++)
             {
@@ -456,21 +462,22 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
 
-                Operand addrLowOffset = context.IAdd(addrLow, Const(index * 4));
+                Operand addrLowOffset = context.IAdd(srcA, Const(offset + index * 4));
 
-                if (size == LsSize2.U8 || size == LsSize2.S8)
-                {
-                    context.StoreGlobal8(addrLowOffset, addrHigh, value);
-                }
-                else if (size == LsSize2.U16 || size == LsSize2.S16)
-                {
-                    context.StoreGlobal16(addrLowOffset, addrHigh, value);
-                }
-                else
-                {
-                    context.StoreGlobal(addrLowOffset, addrHigh, value);
-                }
+                context.Store(storageKind, addrLowOffset, addrHigh, value);
             }
+        }
+
+        private static StorageKind GetStorageKind(LsSize size)
+        {
+            return size switch
+            {
+                LsSize.U8 => StorageKind.GlobalMemoryU8,
+                LsSize.S8 => StorageKind.GlobalMemoryS8,
+                LsSize.U16 => StorageKind.GlobalMemoryU16,
+                LsSize.S16 => StorageKind.GlobalMemoryS16,
+                _ => StorageKind.GlobalMemory
+            };
         }
 
         private static int GetVectorCount(LsSize size)

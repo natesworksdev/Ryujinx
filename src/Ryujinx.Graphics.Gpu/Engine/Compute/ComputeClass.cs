@@ -151,8 +151,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
 
             ShaderProgramInfo info = cs.Shaders[0].Info;
 
-            bool hasUnaligned = _channel.BufferManager.HasUnalignedStorageBuffers;
-
             for (int index = 0; index < info.SBuffers.Count; index++)
             {
                 BufferDescriptor sb = info.SBuffers[index];
@@ -177,38 +175,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 _channel.BufferManager.SetComputeStorageBuffer(sb.Slot, sbDescriptor.PackAddress(), size, sb.Flags);
             }
 
-            if ((_channel.BufferManager.HasUnalignedStorageBuffers) != hasUnaligned)
+            if (_channel.BufferManager.HasUnalignedStorageBuffers != computeState.HasUnalignedStorageBuffer)
             {
                 // Refetch the shader, as assumptions about storage buffer alignment have changed.
+                computeState = new GpuChannelComputeState(
+                    qmd.CtaThreadDimension0,
+                    qmd.CtaThreadDimension1,
+                    qmd.CtaThreadDimension2,
+                    localMemorySize,
+                    sharedMemorySize,
+                    _channel.BufferManager.HasUnalignedStorageBuffers);
+
                 cs = memoryManager.Physical.ShaderCache.GetComputeShader(_channel, poolState, computeState, shaderGpuVa);
 
                 _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
 
                 info = cs.Shaders[0].Info;
-            }
-
-            for (int index = 0; index < info.CBuffers.Count; index++)
-            {
-                BufferDescriptor cb = info.CBuffers[index];
-
-                // NVN uses the "hardware" constant buffer for anything that is less than 8,
-                // and those are already bound above.
-                // Anything greater than or equal to 8 uses the emulated constant buffers.
-                // They are emulated using global memory loads.
-                if (cb.Slot < 8)
-                {
-                    continue;
-                }
-
-                ulong cbDescAddress = _channel.BufferManager.GetComputeUniformBufferAddress(0);
-
-                int cbDescOffset = 0x260 + (cb.Slot - 8) * 0x10;
-
-                cbDescAddress += (ulong)cbDescOffset;
-
-                SbDescriptor cbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(cbDescAddress);
-
-                _channel.BufferManager.SetComputeUniformBuffer(cb.Slot, cbDescriptor.PackAddress(), (uint)cbDescriptor.Size);
             }
 
             _channel.BufferManager.SetComputeBufferBindings(cs.Bindings);

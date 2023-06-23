@@ -41,6 +41,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.Exceptions;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -474,11 +475,20 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = null;
             }
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent();
+            if (_rendererHost.EmbeddedWindow is EmbeddedWindowOpenGL openGlWindow)
+            {
+                // Try to bind the OpenGL context before calling the shutdown event.
+                openGlWindow.MakeCurrent(false, false);
 
-            Device.DisposeGpu();
+                Device.DisposeGpu();
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+                // Unbind context and destroy everything.
+                openGlWindow.MakeCurrent(true, false);
+            }
+            else
+            {
+                Device.DisposeGpu();
+            }
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
@@ -929,7 +939,7 @@ namespace Ryujinx.Ava
                 _gpuDoneEvent.Set();
             });
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
         }
 
         public void UpdateStatus()
@@ -1043,7 +1053,7 @@ namespace Ryujinx.Ava
                             ScreenshotRequested = true;
                             break;
                         case KeyboardHotkeyState.ShowUi:
-                            _viewModel.ShowMenuAndStatusBar = true;
+                            _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)

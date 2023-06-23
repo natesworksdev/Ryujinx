@@ -40,8 +40,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public ProcessState State { get; private set; }
 
-        private object _processLock;
-        private object _threadingLock;
+        private readonly object _processLock = new();
+        private readonly object _threadingLock = new();
 
         public KAddressArbiter AddressArbiter { get; private set; }
 
@@ -94,9 +94,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KProcess(KernelContext context, bool allowCodeMemoryForJit = false) : base(context)
         {
-            _processLock = new object();
-            _threadingLock = new object();
-
             AddressArbiter = new KAddressArbiter(context);
 
             _fullTlsPages = new SortedDictionary<ulong, KTlsPageInfo>();
@@ -1085,7 +1082,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             Context = _contextFactory.Create(KernelContext, Pid, 1UL << addrSpaceBits, InvalidAccessHandler, for64Bit);
 
-            MemoryManager = new KPageTable(KernelContext, CpuMemory);
+            MemoryManager = new KPageTable(KernelContext, CpuMemory, Context.AddressSpaceSize);
         }
 
         private bool InvalidAccessHandler(ulong va)

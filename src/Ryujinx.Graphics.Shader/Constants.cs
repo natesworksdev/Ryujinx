@@ -11,6 +11,10 @@ namespace Ryujinx.Graphics.Shader
         public const int NvnBaseInstanceByteOffset = 0x644;
         public const int NvnDrawIndexByteOffset = 0x648;
 
-        public const int StorageAlignment = 16;
+        // Transform Feedback emulation.
+
+        public const int TfeInfoBinding = 0;
+        public const int TfeBufferBaseBinding = 1;
+        public const int TfeBuffersCount = 4;
     }
 }

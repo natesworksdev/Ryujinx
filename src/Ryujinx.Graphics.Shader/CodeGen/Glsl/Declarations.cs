@@ -71,47 +71,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"const int {DefaultNames.UndefinedName} = 0;");
             context.AppendLine();
 
-            if (context.Config.Stage == ShaderStage.Compute)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeLocalMemorySize(), 4);
-
-                if (localMemorySize != 0)
-                {
-                    string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                    context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                    context.AppendLine();
-                }
-
-                int sharedMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeSharedMemorySize(), 4);
-
-                if (sharedMemorySize != 0)
-                {
-                    string sharedMemorySizeStr = NumberFormatter.FormatInt(sharedMemorySize);
-
-                    context.AppendLine($"shared uint {DefaultNames.SharedMemoryName}[{sharedMemorySizeStr}];");
-                    context.AppendLine();
-                }
-            }
-            else if (context.Config.LocalMemorySize != 0)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.LocalMemorySize, 4);
-
-                string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                context.AppendLine();
-            }
-
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
-
-            var sBufferDescriptors = context.Config.GetStorageBufferDescriptors();
-            if (sBufferDescriptors.Length != 0)
-            {
-                DeclareStorages(context, sBufferDescriptors);
-
-                context.AppendLine();
-            }
+            DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
+            DeclareMemories(context, context.Config.Properties.LocalMemories.Values, isShared: false);
+            DeclareMemories(context, context.Config.Properties.SharedMemories.Values, isShared: true);
 
             var textureDescriptors = context.Config.GetTextureDescriptors();
             if (textureDescriptors.Length != 0)
@@ -245,16 +208,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Shared) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Shared.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Storage) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Storage.glsl");
-            }
-
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/MultiplyHighS32.glsl");
@@ -283,16 +236,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleXor) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleXor.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreSharedSmallInt) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreSharedSmallInt.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreStorageSmallInt) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreStorageSmallInt.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.SwizzleAdd) != 0)
@@ -357,6 +300,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareConstantBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
         {
+            DeclareBuffers(context, buffers, "uniform");
+        }
+
+        private static void DeclareStorageBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
+        {
+            DeclareBuffers(context, buffers, "buffer");
+        }
+
+        private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, string declType)
+        {
             foreach (BufferDefinition buffer in buffers)
             {
                 string layout = buffer.Layout switch
@@ -365,7 +318,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     _ => "std430"
                 };
 
-                context.AppendLine($"layout (binding = {buffer.Binding}, {layout}) uniform _{buffer.Name}");
+                string set = string.Empty;
+
+                if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+                {
+                    set = $"set = {buffer.Set}, ";
+                }
+
+                context.AppendLine($"layout ({set}binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
                 context.EnterScope();
 
                 foreach (StructureField field in buffer.Type.Fields)
@@ -373,9 +333,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     if (field.Type.HasFlag(AggregateType.Array))
                     {
                         string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
-                        string arraySize = field.ArrayLength.ToString(CultureInfo.InvariantCulture);
 
-                        context.AppendLine($"{typeName} {field.Name}[{arraySize}];");
+                        if (field.ArrayLength > 0)
+                        {
+                            string arraySize = field.ArrayLength.ToString(CultureInfo.InvariantCulture);
+
+                            context.AppendLine($"{typeName} {field.Name}[{arraySize}];");
+                        }
+                        else
+                        {
+                            context.AppendLine($"{typeName} {field.Name}[];");
+                        }
                     }
                     else
                     {
@@ -390,20 +358,25 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static void DeclareStorages(CodeGenContext context, BufferDescriptor[] descriptors)
+        private static void DeclareMemories(CodeGenContext context, IEnumerable<MemoryDefinition> memories, bool isShared)
         {
-            string sbName = OperandManager.GetShaderStagePrefix(context.Config.Stage);
+            string prefix = isShared ? "shared " : string.Empty;
 
-            sbName += "_" + DefaultNames.StorageNamePrefix;
+            foreach (MemoryDefinition memory in memories)
+            {
+                string typeName = GetVarTypeName(context, memory.Type & ~AggregateType.Array);
 
-            string blockName = $"{sbName}_{DefaultNames.BlockSuffix}";
+                if (memory.ArrayLength > 0)
+                {
+                    string arraySize = memory.ArrayLength.ToString(CultureInfo.InvariantCulture);
 
-            string layout = context.Config.Options.TargetApi == TargetApi.Vulkan ? ", set = 1" : string.Empty;
-
-            context.AppendLine($"layout (binding = {context.Config.FirstStorageBufferBinding}{layout}, std430) buffer {blockName}");
-            context.EnterScope();
-            context.AppendLine("uint " + DefaultNames.DataName + "[];");
-            context.LeaveScope($" {sbName}[{NumberFormatter.FormatInt(descriptors.Max(x => x.Slot) + 1)}];");
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[{arraySize}];");
+                }
+                else
+                {
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[];");
+                }
+            }
         }
 
         private static void DeclareSamplers(CodeGenContext context, TextureDescriptor[] descriptors)
@@ -732,8 +705,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string code = EmbeddedResources.ReadAllText(filename);
 
             code = code.Replace("\t", CodeGenContext.Tab);
-            code = code.Replace("$SHARED_MEM$", DefaultNames.SharedMemoryName);
-            code = code.Replace("$STORAGE_MEM$", OperandManager.GetShaderStagePrefix(context.Config.Stage) + "_" + DefaultNames.StorageNamePrefix);
 
             if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
             {

@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSets = descriptorSets;
         }
 
-        public void InitializeBuffers(int setIndex, int baseBinding, int countPerUnit, DescriptorType type, VkBuffer dummyBuffer)
+        public void InitializeBuffers(int setIndex, int baseBinding, int count, DescriptorType type, VkBuffer dummyBuffer)
         {
-            Span<DescriptorBufferInfo> infos = stackalloc DescriptorBufferInfo[countPerUnit];
+            Span<DescriptorBufferInfo> infos = stackalloc DescriptorBufferInfo[count];
 
             infos.Fill(new DescriptorBufferInfo()
             {
@@ -62,30 +62,6 @@ namespace Ryujinx.Graphics.Vulkan
                     DstSet = _descriptorSets[setIndex],
                     DstBinding = (uint)baseBinding,
                     DescriptorType = type,
-                    DescriptorCount = (uint)bufferInfo.Length,
-                    PBufferInfo = pBufferInfo
-                };
-
-                _holder.Api.UpdateDescriptorSets(_holder.Device, 1, writeDescriptorSet, 0, null);
-            }
-        }
-
-        public unsafe void UpdateStorageBuffers(int setIndex, int baseBinding, ReadOnlySpan<DescriptorBufferInfo> bufferInfo)
-        {
-            if (bufferInfo.Length == 0)
-            {
-                return;
-            }
-
-            fixed (DescriptorBufferInfo* pBufferInfo = bufferInfo)
-            {
-                var writeDescriptorSet = new WriteDescriptorSet
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = _descriptorSets[setIndex],
-                    DstBinding = (uint)(baseBinding & ~(Constants.MaxStorageBuffersPerStage - 1)),
-                    DstArrayElement = (uint)(baseBinding & (Constants.MaxStorageBuffersPerStage - 1)),
-                    DescriptorType = DescriptorType.StorageBuffer,
                     DescriptorCount = (uint)bufferInfo.Length,
                     PBufferInfo = pBufferInfo
                 };

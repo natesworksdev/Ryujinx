@@ -57,6 +57,61 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicXor, storageKind, Local(), a, b, c);
         }
 
+        public static Operand AtomicAdd(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicAdd, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicAnd(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicAnd, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand compare, Operand value)
+        {
+            return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, compare, value);
+        }
+
+        public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand compare, Operand value)
+        {
+            return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, e1, compare, value);
+        }
+
+        public static Operand AtomicMaxS32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMaxS32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMaxU32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMaxU32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMinS32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMinS32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicMinU32(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicMinU32, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicOr(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicOr, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicSwap, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
+        public static Operand AtomicXor(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.AtomicXor, storageKind, Local(), Const(binding), e0, e1, value);
+        }
+
         public static Operand Ballot(this EmitterContext context, Operand a)
         {
             return context.Add(Instruction.Ballot, Local(), a);
@@ -554,6 +609,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(fpType | Instruction.IsNan, Local(), a);
         }
 
+        public static Operand Load(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1)
+        {
+            return context.Add(Instruction.Load, storageKind, Local(), e0, e1);
+        }
+
         public static Operand Load(this EmitterContext context, StorageKind storageKind, int binding)
         {
             return context.Add(Instruction.Load, storageKind, Local(), Const(binding));
@@ -606,21 +666,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                 : context.Load(storageKind, (int)ioVariable, arrayIndex, elemIndex);
         }
 
-        public static Operand LoadGlobal(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.LoadGlobal, Local(), a, b);
-        }
-
-        public static Operand LoadLocal(this EmitterContext context, Operand a)
-        {
-            return context.Add(Instruction.LoadLocal, Local(), a);
-        }
-
-        public static Operand LoadShared(this EmitterContext context, Operand a)
-        {
-            return context.Add(Instruction.LoadShared, Local(), a);
-        }
-
         public static Operand MemoryBarrier(this EmitterContext context)
         {
             return context.Add(Instruction.MemoryBarrier);
@@ -655,7 +700,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static void Return(this EmitterContext context)
         {
-            context.PrepareForReturn();
             context.Add(Instruction.Return);
         }
 
@@ -699,6 +743,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.ShuffleXor, (Local(), Local()), a, b, c);
         }
 
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, value);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, e1, value);
+        }
+
         public static Operand Store(
             this EmitterContext context,
             StorageKind storageKind,
@@ -736,41 +795,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return invocationId != null
                 ? context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), invocationId, arrayIndex, elemIndex, value)
                 : context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), arrayIndex, elemIndex, value);
-        }
-
-        public static Operand StoreGlobal(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal16(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal16, null, a, b, c);
-        }
-
-        public static Operand StoreGlobal8(this EmitterContext context, Operand a, Operand b, Operand c)
-        {
-            return context.Add(Instruction.StoreGlobal8, null, a, b, c);
-        }
-
-        public static Operand StoreLocal(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreLocal, null, a, b);
-        }
-
-        public static Operand StoreShared(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreShared, null, a, b);
-        }
-
-        public static Operand StoreShared16(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreShared16, null, a, b);
-        }
-
-        public static Operand StoreShared8(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreShared8, null, a, b);
         }
 
         public static Operand UnpackDouble2x32High(this EmitterContext context, Operand a)
