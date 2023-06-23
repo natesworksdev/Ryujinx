@@ -6,7 +6,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
     class ServerDomainManager
     {
-        private class EntryManager
+        private sealed class EntryManager
         {
             public class Entry
             {
@@ -78,7 +78,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             }
         }
 
-        private class Domain : DomainServiceObject, IDisposable
+        private sealed class Domain : DomainServiceObject, IDisposable
         {
             private readonly ServerDomainManager _manager;
             private readonly LinkedList<EntryManager.Entry> _entries;

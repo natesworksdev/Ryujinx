@@ -27,7 +27,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private List<(IntrusiveList<Operation>, Operation)> _operationNodes;
         private int _operationsCount;
 
-        private class AllocationContext
+        private sealed class AllocationContext
         {
             public RegisterMasks Masks { get; }
 

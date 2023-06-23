@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         private readonly HashSet<BasicBlock> _blocks;
 
-        private class PhiSource
+        private sealed class PhiSource
         {
             public BasicBlock Block { get; }
             public Operand Operand { get; set; }

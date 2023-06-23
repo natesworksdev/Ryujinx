@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
     {
         private readonly ViServiceType _serviceType;
 
-        private class DisplayState
+        private sealed class DisplayState
         {
             public int RetrievedEventsCount;
         }

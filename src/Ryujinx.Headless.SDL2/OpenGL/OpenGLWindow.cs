@@ -38,7 +38,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STEREO, 0));
         }
 
-        private class OpenToolkitBindingsContext : IBindingsContext
+        private sealed class OpenToolkitBindingsContext : IBindingsContext
         {
             public IntPtr GetProcAddress(string procName)
             {
@@ -46,7 +46,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             }
         }
 
-        private class SDL2OpenGLContext : IOpenGLContext
+        private sealed class SDL2OpenGLContext : IOpenGLContext
         {
             private readonly IntPtr _context;
             private readonly IntPtr _window;

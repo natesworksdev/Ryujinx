@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public long RenderLayerId { get; private set; }
 
-        private class Layer
+        private sealed class Layer
         {
             public int                    ProducerBinderId;
             public IGraphicBufferProducer Producer;
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public LayerState             State;
         }
 
-        private class TextureCallbackInformation
+        private sealed class TextureCallbackInformation
         {
             public Layer      Layer;
             public BufferItem Item;

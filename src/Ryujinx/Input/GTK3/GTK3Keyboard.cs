@@ -9,7 +9,7 @@ namespace Ryujinx.Input.GTK3
 {
     public class GTK3Keyboard : IKeyboard
     {
-        private class ButtonMappingEntry
+        private sealed class ButtonMappingEntry
         {
             public readonly GamepadButtonInputId To;
             public readonly Key From;

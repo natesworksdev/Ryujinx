@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private class BlockLabel
+        private sealed class BlockLabel
         {
             public readonly Operand Label;
             public BrxTarget BrxTarget;

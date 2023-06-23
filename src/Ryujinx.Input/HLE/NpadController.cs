@@ -15,7 +15,7 @@ namespace Ryujinx.Input.HLE
 {
     public class NpadController : IDisposable
     {
-        private class HLEButtonMappingEntry
+        private sealed class HLEButtonMappingEntry
         {
             public readonly GamepadButtonInputId DriverInputId;
             public readonly ControllerKeys HLEInput;
@@ -51,7 +51,7 @@ namespace Ryujinx.Input.HLE
             new(GamepadButtonInputId.SingleRightTrigger1, ControllerKeys.SrRight),
         };
 
-        private class HLEKeyboardMappingEntry
+        private sealed class HLEKeyboardMappingEntry
         {
             public readonly Key TargetKey;
             public readonly byte Target;

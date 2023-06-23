@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private KProcess _owner;
 
-        private class Image
+        private sealed class Image
         {
             public ulong BaseAddress { get; }
             public ulong Size { get; }

@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     class KPageHeap
     {
-        private class Block
+        private sealed class Block
         {
             private KPageBitmap _bitmap = new KPageBitmap();
             private ulong _heapAddress;

@@ -8,7 +8,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     class CopyResolver
     {
-        private class ParallelCopy
+        private sealed class ParallelCopy
         {
             private readonly struct Copy
             {

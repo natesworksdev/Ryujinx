@@ -6,7 +6,7 @@ namespace ARMeilleure.Common
 {
     unsafe sealed class ArenaAllocator : Allocator
     {
-        private class PageInfo
+        private sealed class PageInfo
         {
             public byte* Pointer;
             public byte Unused;

@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Sync : IDisposable
     {
-        private class SyncHandle
+        private sealed class SyncHandle
         {
             public ulong ID;
             public IntPtr Handle;

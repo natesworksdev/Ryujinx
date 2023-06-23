@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Reference type wrapping a value.
         /// </summary>
-        private class Box<T>
+        private sealed class Box<T>
         {
             /// <summary>
             /// Wrapped value.

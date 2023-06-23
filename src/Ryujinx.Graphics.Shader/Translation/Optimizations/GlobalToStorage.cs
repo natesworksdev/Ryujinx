@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Shared,
         }
 
-        private class GtsContext
+        private sealed class GtsContext
         {
             private readonly struct Entry
             {

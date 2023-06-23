@@ -22,7 +22,7 @@ namespace Ryujinx.Cpu.AppleHv
         private const int PageMask = PageSize - 1;
         private const int AllLevelsMask = PageMask | (LevelMask << PageBits) | (LevelMask << (PageBits + LevelBits));
 
-        private class PtLevel
+        private sealed class PtLevel
         {
             public ulong Address => Allocation.Ipa + Allocation.Offset;
             public int EntriesCount;
