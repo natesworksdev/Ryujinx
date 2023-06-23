@@ -10,7 +10,7 @@ namespace Ryujinx.Memory
     {
         public const int PageSize = 0x1000;
 
-        private static readonly PlaceholderManager _placeholders = new PlaceholderManager();
+        private static readonly PlaceholderManager _placeholders = new();
 
         public static IntPtr Allocate(IntPtr size)
         {
