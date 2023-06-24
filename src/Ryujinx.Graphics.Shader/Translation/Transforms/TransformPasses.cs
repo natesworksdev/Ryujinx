@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                         continue;
                     }
 
-                    T.RunPass(hfm, node, resourceManager, gpuAccessor, stage, ref usedFeatures);
+                    node = T.RunPass(hfm, node, resourceManager, gpuAccessor, stage, ref usedFeatures);
                 }
             }
         }
