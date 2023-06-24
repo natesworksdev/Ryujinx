@@ -163,3 +163,24 @@ csharp_space_between_square_brackets = false
 # Wrapping preferences
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
+
+#### Naming styles ####
+
+# Naming rules
+
+dotnet_naming_rule.private_static_readonly_lower_camel_case.symbols = private_static_readonly_fields
+dotnet_naming_rule.private_static_readonly_lower_camel_case.severity = suggestion
+dotnet_naming_rule.private_static_readonly_lower_camel_case.style = _lowerCamelCase
+
+# Symbol specifications
+
+dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+
+# Naming styles
+
+dotnet_naming_style._lowerCamelCase.required_prefix = _
+dotnet_naming_style._lowerCamelCase.required_suffix =
+dotnet_naming_style._lowerCamelCase.word_separator =
+dotnet_naming_style._lowerCamelCase.capitalization = camel_case
