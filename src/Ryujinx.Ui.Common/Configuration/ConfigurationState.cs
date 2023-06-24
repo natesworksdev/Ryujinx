@@ -633,70 +633,69 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             ConfigurationFileFormat configurationFile = new()
             {
-                Version                    = ConfigurationFileFormat.CurrentVersion,
-                BackendThreading           = Graphics.BackendThreading,
-                EnableFileLog              = Logger.EnableFileLog,
-                ResScale                   = Graphics.ResScale,
-                ResScaleCustom             = Graphics.ResScaleCustom,
-                MaxAnisotropy              = Graphics.MaxAnisotropy,
-                AspectRatio                = Graphics.AspectRatio,
-                AntiAliasing               = Graphics.AntiAliasing,
-                ScalingFilter              = Graphics.ScalingFilter,
-                ScalingFilterLevel         = Graphics.ScalingFilterLevel,
-                GraphicsShadersDumpPath    = Graphics.ShadersDumpPath,
-                LoggingEnableDebug         = Logger.EnableDebug,
-                LoggingEnableStub          = Logger.EnableStub,
-                LoggingEnableInfo          = Logger.EnableInfo,
-                LoggingEnableWarn          = Logger.EnableWarn,
-                LoggingEnableError         = Logger.EnableError,
-                LoggingEnableTrace         = Logger.EnableTrace,
-                LoggingEnableGuest         = Logger.EnableGuest,
-                LoggingEnableFsAccessLog   = Logger.EnableFsAccessLog,
-                LoggingFilteredClasses     = Logger.FilteredClasses,
-                LoggingGraphicsDebugLevel  = Logger.GraphicsDebugLevel,
-                SystemLanguage             = System.Language,
-                SystemRegion               = System.Region,
-                SystemTimeZone             = System.TimeZone,
-                SystemTimeOffset           = System.SystemTimeOffset,
-                DockedMode                 = System.EnableDockedMode,
-                EnableDiscordIntegration   = EnableDiscordIntegration,
-                CheckUpdatesOnStart        = CheckUpdatesOnStart,
-                ShowConfirmExit            = ShowConfirmExit,
-                HideCursor                 = HideCursor,
-                EnableVsync                = Graphics.EnableVsync,
-                EnableShaderCache          = Graphics.EnableShaderCache,
+                Version = ConfigurationFileFormat.CurrentVersion,
+                BackendThreading = Graphics.BackendThreading,
+                EnableFileLog = Logger.EnableFileLog,
+                ResScale = Graphics.ResScale,
+                ResScaleCustom = Graphics.ResScaleCustom,
+                MaxAnisotropy = Graphics.MaxAnisotropy,
+                AspectRatio = Graphics.AspectRatio,
+                AntiAliasing = Graphics.AntiAliasing,
+                ScalingFilter = Graphics.ScalingFilter,
+                ScalingFilterLevel = Graphics.ScalingFilterLevel,
+                GraphicsShadersDumpPath = Graphics.ShadersDumpPath,
+                LoggingEnableDebug = Logger.EnableDebug,
+                LoggingEnableStub = Logger.EnableStub,
+                LoggingEnableInfo = Logger.EnableInfo,
+                LoggingEnableWarn = Logger.EnableWarn,
+                LoggingEnableError = Logger.EnableError,
+                LoggingEnableTrace = Logger.EnableTrace,
+                LoggingEnableGuest = Logger.EnableGuest,
+                LoggingEnableFsAccessLog = Logger.EnableFsAccessLog,
+                LoggingFilteredClasses = Logger.FilteredClasses,
+                LoggingGraphicsDebugLevel = Logger.GraphicsDebugLevel,
+                SystemLanguage = System.Language,
+                SystemRegion = System.Region,
+                SystemTimeZone = System.TimeZone,
+                SystemTimeOffset = System.SystemTimeOffset,
+                DockedMode = System.EnableDockedMode,
+                EnableDiscordIntegration = EnableDiscordIntegration,
+                CheckUpdatesOnStart = CheckUpdatesOnStart,
+                ShowConfirmExit = ShowConfirmExit,
+                HideCursor = HideCursor,
+                EnableVsync = Graphics.EnableVsync,
+                EnableShaderCache = Graphics.EnableShaderCache,
                 EnableTextureRecompression = Graphics.EnableTextureRecompression,
-                EnableMacroHLE             = Graphics.EnableMacroHLE,
-                EnablePtc                  = System.EnablePtc,
-                EnableInternetAccess       = System.EnableInternetAccess,
-                EnableFsIntegrityChecks    = System.EnableFsIntegrityChecks,
-                FsGlobalAccessLogMode      = System.FsGlobalAccessLogMode,
-                AudioBackend               = System.AudioBackend,
-                AudioVolume                = System.AudioVolume,
-                MemoryManagerMode          = System.MemoryManagerMode,
-                ExpandRam                  = System.ExpandRam,
-                IgnoreMissingServices      = System.IgnoreMissingServices,
-                UseHypervisor              = System.UseHypervisor,
-                GuiColumns                 = new GuiColumns
-                {
-                    FavColumn        = Ui.GuiColumns.FavColumn,
-                    IconColumn       = Ui.GuiColumns.IconColumn,
-                    AppColumn        = Ui.GuiColumns.AppColumn,
-                    DevColumn        = Ui.GuiColumns.DevColumn,
-                    VersionColumn    = Ui.GuiColumns.VersionColumn,
-                    TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
-                    LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
-                    FileExtColumn    = Ui.GuiColumns.FileExtColumn,
-                    FileSizeColumn   = Ui.GuiColumns.FileSizeColumn,
-                    PathColumn       = Ui.GuiColumns.PathColumn
-                },
-                ColumnSort                = new ColumnSort
-                {
-                    SortColumnId  = Ui.ColumnSort.SortColumnId,
-                    SortAscending = Ui.ColumnSort.SortAscending
-                },
-                GameDirs                  = Ui.GameDirs,
-                ShownFileTypes            = new ShownFileTypes
+                EnableMacroHLE = Graphics.EnableMacroHLE,
+                EnablePtc = System.EnablePtc,
+                EnableInternetAccess = System.EnableInternetAccess,
+                EnableFsIntegrityChecks = System.EnableFsIntegrityChecks,
+                FsGlobalAccessLogMode = System.FsGlobalAccessLogMode,
+                AudioBackend = System.AudioBackend,
+                AudioVolume = System.AudioVolume,
+                MemoryManagerMode = System.MemoryManagerMode,
+                ExpandRam = System.ExpandRam,
+                IgnoreMissingServices = System.IgnoreMissingServices,
+                UseHypervisor = System.UseHypervisor,
+                GuiColumns = new GuiColumns
+                    {
+                        FavColumn = Ui.GuiColumns.FavColumn,
+                        IconColumn = Ui.GuiColumns.IconColumn,
+                        AppColumn = Ui.GuiColumns.AppColumn,
+                        DevColumn = Ui.GuiColumns.DevColumn,
+                        VersionColumn = Ui.GuiColumns.VersionColumn,
+                        TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
+                        LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
+                        FileExtColumn = Ui.GuiColumns.FileExtColumn,
+                        FileSizeColumn = Ui.GuiColumns.FileSizeColumn,
+                        PathColumn = Ui.GuiColumns.PathColumn
+                    },
+                ColumnSort = new ColumnSort
+                    {
+                        SortColumnId = Ui.ColumnSort.SortColumnId, SortAscending = Ui.ColumnSort.SortAscending
+                    },
+                GameDirs = Ui.GameDirs,
+                ShownFileTypes = new ShownFileTypes
                 {
                     NSP = Ui.ShownFileTypes.NSP,
                     PFS0 = Ui.ShownFileTypes.PFS0,
@@ -705,7 +704,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     NRO = Ui.ShownFileTypes.NRO,
                     NSO = Ui.ShownFileTypes.NSO,
                 },
-                WindowStartup              = new WindowStartup
+                WindowStartup = new WindowStartup
                 {
                     WindowSizeWidth = Ui.WindowStartup.WindowSizeWidth,
                     WindowSizeHeight = Ui.WindowStartup.WindowSizeHeight,
@@ -713,26 +712,26 @@ namespace Ryujinx.Ui.Common.Configuration
                     WindowPositionY = Ui.WindowStartup.WindowPositionY,
                     WindowMaximized = Ui.WindowStartup.WindowMaximized,
                 },
-                LanguageCode               = Ui.LanguageCode,
-                EnableCustomTheme          = Ui.EnableCustomTheme,
-                CustomThemePath            = Ui.CustomThemePath,
-                BaseStyle                  = Ui.BaseStyle,
-                GameListViewMode           = Ui.GameListViewMode,
-                ShowNames                  = Ui.ShowNames,
-                GridSize                   = Ui.GridSize,
-                ApplicationSort            = Ui.ApplicationSort,
-                IsAscendingOrder           = Ui.IsAscendingOrder,
-                StartFullscreen            = Ui.StartFullscreen,
-                ShowConsole                = Ui.ShowConsole,
-                EnableKeyboard             = Hid.EnableKeyboard,
-                EnableMouse                = Hid.EnableMouse,
-                Hotkeys                    = Hid.Hotkeys,
-                KeyboardConfig             = new List<JsonObject>(),
-                ControllerConfig           = new List<JsonObject>(),
-                InputConfig                = Hid.InputConfig,
-                GraphicsBackend            = Graphics.GraphicsBackend,
-                PreferredGpu               = Graphics.PreferredGpu,
-                MultiplayerLanInterfaceId  = Multiplayer.LanInterfaceId
+                LanguageCode = Ui.LanguageCode,
+                EnableCustomTheme = Ui.EnableCustomTheme,
+                CustomThemePath = Ui.CustomThemePath,
+                BaseStyle = Ui.BaseStyle,
+                GameListViewMode = Ui.GameListViewMode,
+                ShowNames = Ui.ShowNames,
+                GridSize = Ui.GridSize,
+                ApplicationSort = Ui.ApplicationSort,
+                IsAscendingOrder = Ui.IsAscendingOrder,
+                StartFullscreen = Ui.StartFullscreen,
+                ShowConsole = Ui.ShowConsole,
+                EnableKeyboard = Hid.EnableKeyboard,
+                EnableMouse = Hid.EnableMouse,
+                Hotkeys = Hid.Hotkeys,
+                KeyboardConfig = new List<JsonObject>(),
+                ControllerConfig = new List<JsonObject>(),
+                InputConfig = Hid.InputConfig,
+                GraphicsBackend = Graphics.GraphicsBackend,
+                PreferredGpu = Graphics.PreferredGpu,
+                MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId
             };
 
             return configurationFile;
@@ -837,57 +836,54 @@ namespace Ryujinx.Ui.Common.Configuration
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
-                 new StandardKeyboardInputConfig
-                 {
-                        Version          = InputConfig.CurrentVersion,
-                        Backend          = InputBackendType.WindowKeyboard,
-                        Id               = "0",
-                        PlayerIndex      = PlayerIndex.Player1,
-                        ControllerType   = ControllerType.JoyconPair,
-                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
-                        {
-                            DpadUp       = Key.Up,
-                            DpadDown     = Key.Down,
-                            DpadLeft     = Key.Left,
-                            DpadRight    = Key.Right,
-                            ButtonMinus  = Key.Minus,
-                            ButtonL      = Key.E,
-                            ButtonZl     = Key.Q,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
-                        },
-
-                        LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
-                        {
-                            StickUp      = Key.W,
-                            StickDown    = Key.S,
-                            StickLeft    = Key.A,
-                            StickRight   = Key.D,
-                            StickButton  = Key.F,
-                        },
-
-                        RightJoycon      = new RightJoyconCommonConfig<Key>
-                        {
-                            ButtonA      = Key.Z,
-                            ButtonB      = Key.X,
-                            ButtonX      = Key.C,
-                            ButtonY      = Key.V,
-                            ButtonPlus   = Key.Plus,
-                            ButtonR      = Key.U,
-                            ButtonZr     = Key.O,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
-                        },
-
-                        RightJoyconStick = new JoyconConfigKeyboardStick<Key>
-                        {
-                            StickUp      = Key.I,
-                            StickDown    = Key.K,
-                            StickLeft    = Key.J,
-                            StickRight   = Key.L,
-                            StickButton  = Key.H,
-                        }
-                 }
+                new StandardKeyboardInputConfig
+                {
+                    Version = InputConfig.CurrentVersion,
+                    Backend = InputBackendType.WindowKeyboard,
+                    Id = "0",
+                    PlayerIndex = PlayerIndex.Player1,
+                    ControllerType = ControllerType.JoyconPair,
+                    LeftJoycon = new LeftJoyconCommonConfig<Key>
+                    {
+                        DpadUp = Key.Up,
+                        DpadDown = Key.Down,
+                        DpadLeft = Key.Left,
+                        DpadRight = Key.Right,
+                        ButtonMinus = Key.Minus,
+                        ButtonL = Key.E,
+                        ButtonZl = Key.Q,
+                        ButtonSl = Key.Unbound,
+                        ButtonSr = Key.Unbound
+                    },
+                    LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
+                    {
+                        StickUp = Key.W,
+                        StickDown = Key.S,
+                        StickLeft = Key.A,
+                        StickRight = Key.D,
+                        StickButton = Key.F,
+                    },
+                    RightJoycon = new RightJoyconCommonConfig<Key>
+                    {
+                        ButtonA = Key.Z,
+                        ButtonB = Key.X,
+                        ButtonX = Key.C,
+                        ButtonY = Key.V,
+                        ButtonPlus = Key.Plus,
+                        ButtonR = Key.U,
+                        ButtonZr = Key.O,
+                        ButtonSl = Key.Unbound,
+                        ButtonSr = Key.Unbound,
+                    },
+                    RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                    {
+                        StickUp = Key.I,
+                        StickDown = Key.K,
+                        StickLeft = Key.J,
+                        StickRight = Key.L,
+                        StickButton = Key.H,
+                    }
+                }
             };
         }
 
@@ -1057,57 +1053,54 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.InputConfig = new List<InputConfig>
                 {
-                     new StandardKeyboardInputConfig
-                     {
-                            Version          = InputConfig.CurrentVersion,
-                            Backend          = InputBackendType.WindowKeyboard,
-                            Id               = "0",
-                            PlayerIndex      = PlayerIndex.Player1,
-                            ControllerType   = ControllerType.JoyconPair,
-                            LeftJoycon       = new LeftJoyconCommonConfig<Key>
-                            {
-                                DpadUp       = Key.Up,
-                                DpadDown     = Key.Down,
-                                DpadLeft     = Key.Left,
-                                DpadRight    = Key.Right,
-                                ButtonMinus  = Key.Minus,
-                                ButtonL      = Key.E,
-                                ButtonZl     = Key.Q,
-                                ButtonSl     = Key.Unbound,
-                                ButtonSr     = Key.Unbound
-                            },
-
-                            LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
-                            {
-                                StickUp      = Key.W,
-                                StickDown    = Key.S,
-                                StickLeft    = Key.A,
-                                StickRight   = Key.D,
-                                StickButton  = Key.F,
-                            },
-
-                            RightJoycon      = new RightJoyconCommonConfig<Key>
-                            {
-                                ButtonA      = Key.Z,
-                                ButtonB      = Key.X,
-                                ButtonX      = Key.C,
-                                ButtonY      = Key.V,
-                                ButtonPlus   = Key.Plus,
-                                ButtonR      = Key.U,
-                                ButtonZr     = Key.O,
-                                ButtonSl     = Key.Unbound,
-                                ButtonSr     = Key.Unbound
-                            },
-
-                            RightJoyconStick = new JoyconConfigKeyboardStick<Key>
-                            {
-                                StickUp      = Key.I,
-                                StickDown    = Key.K,
-                                StickLeft    = Key.J,
-                                StickRight   = Key.L,
-                                StickButton  = Key.H,
-                            }
-                     }
+                    new StandardKeyboardInputConfig
+                    {
+                        Version = InputConfig.CurrentVersion,
+                        Backend = InputBackendType.WindowKeyboard,
+                        Id = "0",
+                        PlayerIndex = PlayerIndex.Player1,
+                        ControllerType = ControllerType.JoyconPair,
+                        LeftJoycon = new LeftJoyconCommonConfig<Key>
+                        {
+                            DpadUp = Key.Up,
+                            DpadDown = Key.Down,
+                            DpadLeft = Key.Left,
+                            DpadRight = Key.Right,
+                            ButtonMinus = Key.Minus,
+                            ButtonL = Key.E,
+                            ButtonZl = Key.Q,
+                            ButtonSl = Key.Unbound,
+                            ButtonSr = Key.Unbound
+                        },
+                        LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp = Key.W,
+                            StickDown = Key.S,
+                            StickLeft = Key.A,
+                            StickRight = Key.D,
+                            StickButton = Key.F,
+                        },
+                        RightJoycon = new RightJoyconCommonConfig<Key>
+                        {
+                            ButtonA = Key.Z,
+                            ButtonB = Key.X,
+                            ButtonX = Key.C,
+                            ButtonY = Key.V,
+                            ButtonPlus = Key.Plus,
+                            ButtonR = Key.U,
+                            ButtonZr = Key.O,
+                            ButtonSl = Key.Unbound,
+                            ButtonSr = Key.Unbound
+                        },
+                        RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp = Key.I,
+                            StickDown = Key.K,
+                            StickLeft = Key.J,
+                            StickRight = Key.L,
+                            StickButton = Key.H,
+                        }
+                    }
                 };
 
                 configurationFileUpdated = true;
@@ -1142,11 +1135,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 28.");
 
-                configurationFileFormat.Hotkeys = new KeyboardHotkeys
-                {
-                    ToggleVsync = Key.F1,
-                    Screenshot = Key.F8
-                };
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys { ToggleVsync = Key.F1, Screenshot = Key.F8 };
 
                 configurationFileUpdated = true;
             }
@@ -1396,6 +1385,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
+
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
