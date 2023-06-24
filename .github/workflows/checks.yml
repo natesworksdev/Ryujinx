@@ -2,29 +2,52 @@ name: Perform checks
 
 on:
   pull_request:
+    branches: [ master ]
+    paths:
+      - '!.github/**'
+      - '!*.yml'
+      - '!*.json'
+      - '!*.config'
+      - '!README.md'
+      - '.github/workflows/*.yml'
 
 permissions:
   pull-requests: write
   checks: write
 
+concurrency:
+  group: pr-checks-${{ github.event.number }}
+  cancel-in-progress: true
+
 jobs:
-  checks:
+  format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Run super-linter
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_CSHARP: true
-          VALIDATE_BASH: true
-          VALIDATE_BASH_EXEC: true
-          VALIDATE_EDITORCONFIG: true
-          VALIDATE_GITHUB_ACTIONS: true
-          VALIDATE_JSON: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_NATURAL_LANGUAGE: true
-          VALIDATE_PYTHON: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore
+
+      - name: Run dotnet format
+        run: |
+          dotnet tool install -g dotnet-format
+          dotnet format whitespace --verify-no-changes --report ./whitespace-report.json -v d
+          dotnet format style --severity info --verify-no-changes --report ./style-report.json -v d
+          dotnet format analyzers --severity info --verify-no-changes --report ./analyzers-report.json -v d
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-format
+          path: ./*-report.json
+
+  pr_build:
+    uses: ./.github/workflows/build.yml
+    needs: format
+    secrets: inherit
