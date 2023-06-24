@@ -465,19 +465,19 @@ namespace Ryujinx.Ui.App.Common
 
                     numApplicationsLoaded++;
 
-                    OnApplicationAdded(new ApplicationAddedEventArgs()
+                    OnApplicationAdded(new ApplicationAddedEventArgs
                     {
                         AppData = data
                     });
 
-                    OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs()
+                    OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs
                     {
                         NumAppsFound = numApplicationsFound,
                         NumAppsLoaded = numApplicationsLoaded
                     });
                 }
 
-                OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs()
+                OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs
                 {
                     NumAppsFound = numApplicationsFound,
                     NumAppsLoaded = numApplicationsLoaded

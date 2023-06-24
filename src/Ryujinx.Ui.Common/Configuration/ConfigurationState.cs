@@ -767,7 +767,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration.Value = true;
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
-            HideCursor.Value = Ryujinx.Common.Configuration.HideCursorMode.Never;
+            HideCursor.Value = HideCursorMode.Never;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
             Graphics.EnableTextureRecompression.Value = false;

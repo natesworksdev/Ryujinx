@@ -24,9 +24,9 @@ namespace Ryujinx.Ui.Common
                 Details = "Main Menu",
                 State = "Idling",
                 Timestamps = Timestamps.Now,
-                Buttons = new Button[]
+                Buttons = new[]
                 {
-                    new Button()
+                    new Button
                     {
                         Label = "Website",
                         Url   = "https://ryujinx.org/"
@@ -74,9 +74,9 @@ namespace Ryujinx.Ui.Common
                 Details = $"Playing {titleName}",
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
-                Buttons = new Button[]
+                Buttons = new[]
                 {
-                    new Button()
+                    new Button
                     {
                         Label = "Website",
                         Url   = "https://ryujinx.org/"
