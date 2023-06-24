@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+
 using static Ryujinx.Memory.MemoryManagerUnixHelper;
 
 namespace Ryujinx.Memory
@@ -50,7 +51,7 @@ namespace Ryujinx.Memory
                 }
             }
 
-            IntPtr ptr = mmap(IntPtr.Zero, size, prot, flags, -1, 0);
+            IntPtr ptr = Mmap(IntPtr.Zero, size, prot, flags, -1, 0);
 
             if (ptr == MAP_FAILED)
             {
@@ -185,16 +186,12 @@ namespace Ryujinx.Memory
 
         public static void DestroySharedMemory(IntPtr handle)
         {
-#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
-            close((int)handle);
-#pragma warning restore CA2020
+            close(handle.ToInt32());
         }
 
         public static IntPtr MapSharedMemory(IntPtr handle, ulong size)
         {
-#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
-            return mmap(IntPtr.Zero, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_SHARED, (int)handle, 0);
-#pragma warning restore CA2020
+            return Mmap(IntPtr.Zero, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_SHARED, handle.ToInt32(), 0);
         }
 
         public static void UnmapSharedMemory(IntPtr address, ulong size)
@@ -204,14 +201,12 @@ namespace Ryujinx.Memory
 
         public static void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, ulong size)
         {
-#pragma warning disable CA2020 // Prevent behavioral change caused by built-in operators of IntPtr/UIntPtr
-            mmap(location, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_FIXED | MmapFlags.MAP_SHARED, (int)sharedMemory, (long)srcOffset);
-#pragma warning restore CA2020
+            Mmap(location, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE, MmapFlags.MAP_FIXED | MmapFlags.MAP_SHARED, sharedMemory.ToInt32(), (long)srcOffset);
         }
 
         public static void UnmapView(IntPtr location, ulong size)
         {
-            mmap(location, size, MmapProts.PROT_NONE, MmapFlags.MAP_FIXED | MmapFlags.MAP_PRIVATE | MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_NORESERVE, -1, 0);
+            Mmap(location, size, MmapProts.PROT_NONE, MmapFlags.MAP_FIXED | MmapFlags.MAP_PRIVATE | MmapFlags.MAP_ANONYMOUS | MmapFlags.MAP_NORESERVE, -1, 0);
         }
     }
 }

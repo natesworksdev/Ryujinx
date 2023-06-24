@@ -164,11 +164,9 @@ namespace Ryujinx.Memory
             return result;
         }
 
-#pragma warning disable IDE1006 // Naming rule violation
-        public static IntPtr mmap(IntPtr address, ulong length, MmapProts prot, MmapFlags flags, int fd, long offset)
+        public static IntPtr Mmap(IntPtr address, ulong length, MmapProts prot, MmapFlags flags, int fd, long offset)
         {
             return Internal_mmap(address, length, prot, MmapFlagsToSystemFlags(flags), fd, offset);
         }
-#pragma warning restore IDE1006
     }
 }
