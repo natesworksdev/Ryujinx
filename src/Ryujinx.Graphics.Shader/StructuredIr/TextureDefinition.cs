@@ -2,28 +2,26 @@ namespace Ryujinx.Graphics.Shader
 {
     readonly struct TextureDefinition
     {
+        public int Set { get; }
         public int Binding { get; }
         public string Name { get; }
         public SamplerType Type { get; }
         public TextureFormat Format { get; }
-        public int CbufSlot { get; }
-        public int HandleIndex { get; }
         public TextureUsageFlags Flags { get; }
 
-        public TextureDefinition(int binding, string name, SamplerType type, TextureFormat format, int cbufSlot, int handleIndex, TextureUsageFlags flags)
+        public TextureDefinition(int set, int binding, string name, SamplerType type, TextureFormat format, TextureUsageFlags flags)
         {
+            Set = set;
             Binding = binding;
             Name = name;
             Type = type;
             Format = format;
-            CbufSlot = cbufSlot;
-            HandleIndex = handleIndex;
             Flags = flags;
         }
 
         public TextureDefinition SetFlag(TextureUsageFlags flag)
         {
-            return new TextureDefinition(Binding, Name, Type, Format, CbufSlot, HandleIndex, Flags | flag);
+            return new TextureDefinition(Set, Binding, Name, Type, Format, Flags | flag);
         }
     }
 }

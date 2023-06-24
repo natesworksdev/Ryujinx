@@ -303,12 +303,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
 
                 var definition = new TextureDefinition(
+                    isImage ? 3 : 2,
                     binding,
                     $"{_stagePrefix}_{nameSuffix}",
                     meta.Type,
                     info.Format,
-                    info.CbufSlot,
-                    info.Handle,
                     meta.UsageFlags);
 
                 if (isImage)
@@ -347,9 +346,24 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void SetUsageFlagsForTextureQuery(int binding, SamplerType type)
         {
-            if (Properties.Textures.TryGetValue(binding, out var definition))
+            TextureInfo selectedInfo = default;
+            TextureMeta selectedMeta = default;
+            bool found = false;
+
+            foreach ((TextureInfo info, TextureMeta meta) in _usedTextures)
             {
-                definition = definition.SetFlag(TextureUsageFlags.NeedsScaleValue);
+                if (meta.Binding == binding)
+                {
+                    selectedInfo = info;
+                    selectedMeta = meta;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                selectedMeta.UsageFlags |= TextureUsageFlags.NeedsScaleValue;
 
                 var dimensions = type.GetDimensions();
                 var isIndexed = type.HasFlag(SamplerType.Indexed);
@@ -359,10 +373,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     // Resolution scaling cannot be applied to this texture right now.
                     // Flag so that we know to blacklist scaling on related textures when binding them.
-                    definition = definition.SetFlag(TextureUsageFlags.ResScaleUnsupported);
+                    selectedMeta.UsageFlags |= TextureUsageFlags.ResScaleUnsupported;
                 }
 
-                Properties.AddOrUpdateTexture(binding, definition);
+                _usedTextures[selectedInfo] = selectedMeta;
             }
         }
 
@@ -423,32 +437,45 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TextureDescriptor[] GetTextureDescriptors()
         {
-            return GetDescriptors(Properties.Textures.Values, Properties.Textures.Count);
+            return GetDescriptors(_usedTextures, _usedTextures.Count);
         }
 
         public TextureDescriptor[] GetImageDescriptors()
         {
-            return GetDescriptors(Properties.Images.Values, Properties.Images.Count);
+            return GetDescriptors(_usedImages, _usedImages.Count);
         }
 
-        private static TextureDescriptor[] GetDescriptors(IEnumerable<TextureDefinition> definitions, int count)
+        private static TextureDescriptor[] GetDescriptors(IReadOnlyDictionary<TextureInfo, TextureMeta> usedResources, int count)
         {
             TextureDescriptor[] descriptors = new TextureDescriptor[count];
 
             int descriptorIndex = 0;
 
-            foreach (TextureDefinition definition in definitions)
+            foreach ((TextureInfo info, TextureMeta meta) in usedResources)
             {
                 descriptors[descriptorIndex++] = new TextureDescriptor(
-                    definition.Binding,
-                    definition.Type,
-                    definition.Format,
-                    definition.CbufSlot,
-                    definition.HandleIndex,
-                    definition.Flags);
+                    meta.Binding,
+                    meta.Type,
+                    info.Format,
+                    info.CbufSlot,
+                    info.Handle,
+                    meta.UsageFlags);
             }
 
             return descriptors;
+        }
+
+        public (int, int) GetCbufSlotAndHandleForTexture(int binding)
+        {
+            foreach ((TextureInfo info, TextureMeta meta) in _usedTextures)
+            {
+                if (meta.Binding == binding)
+                {
+                    return (info.CbufSlot, info.Handle);
+                }
+            }
+
+            throw new ArgumentException($"Binding {binding} is invalid.");
         }
 
         private static int FindDescriptorIndex(TextureDescriptor[] array, int binding)

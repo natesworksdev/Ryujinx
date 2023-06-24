@@ -386,9 +386,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
-            TextureDefinition definition = config.Properties.Textures[texOp.Binding];
+            (int cbufSlot, int handle) = config.ResourceManager.GetCbufSlotAndHandleForTexture(texOp.Binding);
 
-            bool isCoordNormalized = config.GpuAccessor.QueryTextureCoordNormalized(definition.HandleIndex, definition.CbufSlot);
+            bool isCoordNormalized = config.GpuAccessor.QueryTextureCoordNormalized(handle, cbufSlot);
 
             if (isCoordNormalized || intCoords)
             {
@@ -851,9 +851,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-            TextureDefinition definition = config.Properties.Textures[texOp.Binding];
+            (int cbufSlot, int handle) = config.ResourceManager.GetCbufSlotAndHandleForTexture(texOp.Binding);
 
-            TextureFormat format = config.GpuAccessor.QueryTextureFormat(definition.HandleIndex, definition.CbufSlot);
+            TextureFormat format = config.GpuAccessor.QueryTextureFormat(handle, cbufSlot);
 
             int maxPositive = format switch
             {

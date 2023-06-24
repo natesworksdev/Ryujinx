@@ -383,7 +383,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    layout = ", set = 2";
+                    layout = $", set = {definition.Set}";
                 }
 
                 context.AppendLine($"layout (binding = {definition.Binding}{layout}) uniform {samplerTypeName} {definition.Name}{indexExpr};");
@@ -428,7 +428,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    layout = $", set = 3{layout}";
+                    layout = $", set = {definition.Set}{layout}";
                 }
 
                 context.AppendLine($"layout (binding = {definition.Binding}{layout}) uniform {imageTypeName} {definition.Name}{indexExpr};");
