@@ -68,6 +68,7 @@ namespace Ryujinx.Common
         private static Hash128 Mult64To128(ulong lhs, ulong rhs)
         {
             ulong high = Math.BigMul(lhs, rhs, out ulong low);
+
             return new Hash128
             {
                 Low = low,
@@ -79,6 +80,7 @@ namespace Ryujinx.Common
         private static ulong Mul128Fold64(ulong lhs, ulong rhs)
         {
             Hash128 product = Mult64To128(lhs, rhs);
+
             return product.Low ^ product.High;
         }
 
@@ -86,6 +88,7 @@ namespace Ryujinx.Common
         private static ulong XorShift64(ulong v64, int shift)
         {
             Debug.Assert(0 <= shift && shift < 64);
+
             return v64 ^ (v64 >> shift);
         }
 
@@ -95,6 +98,7 @@ namespace Ryujinx.Common
             h64 = XorShift64(h64, 37);
             h64 *= 0x165667919E3779F9UL;
             h64 = XorShift64(h64, 32);
+
             return h64;
         }
 
@@ -106,6 +110,7 @@ namespace Ryujinx.Common
             h64 ^= h64 >> 29;
             h64 *= Prime64_3;
             h64 ^= h64 >> 32;
+
             return h64;
         }
 
@@ -336,6 +341,7 @@ namespace Ryujinx.Common
             ulong keyedLo = combinedL ^ bitFlipL;
             ulong keyedHi = combinedH ^ bitFlipH;
 
+
             return new Hash128
             {
                 Low = Xxh64Avalanche(keyedLo),
@@ -364,6 +370,7 @@ namespace Ryujinx.Common
             m128.Low *= 0x9FB21C651E98DF25UL;
             m128.Low = XorShift64(m128.Low, 28);
             m128.High = Xxh3Avalanche(m128.High);
+
             return m128;
         }
 
@@ -386,6 +393,7 @@ namespace Ryujinx.Common
             h128.High += m128.High * Prime64_2;
             h128.Low = Xxh3Avalanche(h128.Low);
             h128.High = Xxh3Avalanche(h128.High);
+
             return h128;
         }
 
@@ -413,6 +421,7 @@ namespace Ryujinx.Common
             ulong bitFlipH = BinaryPrimitives.ReadUInt64LittleEndian(secret[80..]) ^ BinaryPrimitives.ReadUInt64LittleEndian(secret[88..]);
             h128.Low = Xxh64Avalanche(seed ^ bitFlipL);
             h128.High = Xxh64Avalanche(seed ^ bitFlipH);
+
             return h128;
         }
 
@@ -420,6 +429,7 @@ namespace Ryujinx.Common
         {
             ulong inputLo = BinaryPrimitives.ReadUInt64LittleEndian(input);
             ulong inputHi = BinaryPrimitives.ReadUInt64LittleEndian(input[8..]);
+
             return Mul128Fold64(
                 inputLo ^ (BinaryPrimitives.ReadUInt64LittleEndian(secret) + seed),
                 inputHi ^ (BinaryPrimitives.ReadUInt64LittleEndian(secret[8..]) - seed));
@@ -431,6 +441,7 @@ namespace Ryujinx.Common
             acc.Low ^= BinaryPrimitives.ReadUInt64LittleEndian(input2) + BinaryPrimitives.ReadUInt64LittleEndian(input2[8..]);
             acc.High += Xxh3Mix16b(input2, secret[16..], seed);
             acc.High ^= BinaryPrimitives.ReadUInt64LittleEndian(input) + BinaryPrimitives.ReadUInt64LittleEndian(input[8..]);
+
             return acc;
         }
 
@@ -466,6 +477,7 @@ namespace Ryujinx.Common
             };
             h128.Low = Xxh3Avalanche(h128.Low);
             h128.High = 0UL - Xxh3Avalanche(h128.High);
+
             return h128;
         }
 
@@ -503,6 +515,7 @@ namespace Ryujinx.Common
             };
             h128.Low = Xxh3Avalanche(h128.Low);
             h128.High = 0UL - Xxh3Avalanche(h128.High);
+
             return h128;
         }
 
