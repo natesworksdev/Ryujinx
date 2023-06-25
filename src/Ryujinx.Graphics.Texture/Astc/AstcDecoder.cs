@@ -1253,6 +1253,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                 int b = 0, c = 0, d = 0;
                 // A is just the lsb replicated 9 times.
                 int a = Bits.Replicate(bitValue & 1, 1, 9);
+
                 switch (intEncoded.GetEncoding())
                 {
                     case IntegerEncoded.EIntegerEncoding.JustBits:
