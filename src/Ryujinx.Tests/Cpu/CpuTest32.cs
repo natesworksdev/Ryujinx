@@ -290,7 +290,7 @@ namespace Ryujinx.Tests.Cpu
 
             SetWorkingMemory(0, testMem);
 
-            RunPrecomputedTestCase(new PrecomputedThumbTestCase()
+            RunPrecomputedTestCase(new PrecomputedThumbTestCase
             {
                 Instructions = test.Instructions,
                 StartRegs = test.StartRegs,
@@ -328,7 +328,7 @@ namespace Ryujinx.Tests.Cpu
             Rm,
             /// <summary>Round towards Zero mode.</summary>
             Rz
-        };
+        }
 
         /// <summary>Floating-point Control Register.</summary>
         protected enum Fpcr

@@ -1,7 +1,6 @@
 ﻿// https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
 
 using ARMeilleure.State;
-
 using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu

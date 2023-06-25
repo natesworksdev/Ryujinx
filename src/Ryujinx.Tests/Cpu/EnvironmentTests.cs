@@ -55,7 +55,7 @@ namespace Ryujinx.Tests.Cpu
 
                 if (test < 4f)
                 {
-                    throw new System.Exception("Sanity check.");
+                    throw new Exception("Sanity check.");
                 }
 
                 isFz = GetDenormal() + GetZero() == 0f;
@@ -64,7 +64,7 @@ namespace Ryujinx.Tests.Cpu
                 {
                     if (test >= 4f)
                     {
-                        throw new System.Exception("Always throws.");
+                        throw new Exception("Always throws.");
                     }
                 }
                 catch

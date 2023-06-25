@@ -34,8 +34,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
         /// <param name="quality">The resampler quality to use</param>
         private static void DoResamplingTest(int inputRate, int outputRate, VoiceInParameter.SampleRateConversionQuality quality)
         {
-            float inputSampleRate = (float)inputRate;
-            float outputSampleRate = (float)outputRate;
+            float inputSampleRate = inputRate;
+            float outputSampleRate = outputRate;
             int inputSampleCount = inputRate;
             int outputSampleCount = outputRate;
             short[] inputBuffer = new short[inputSampleCount + 100]; // add some safety buffer at the end
@@ -43,7 +43,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
             for (int sample = 0; sample < inputBuffer.Length; sample++)
             {
                 // 440 hz sine wave with amplitude = 0.5f at input sample rate
-                inputBuffer[sample] = (short)(32767 * MathF.Sin((440 / inputSampleRate) * (float)sample * MathF.PI * 2f) * 0.5f);
+                inputBuffer[sample] = (short)(32767 * MathF.Sin((440 / inputSampleRate) * sample * MathF.PI * 2f) * 0.5f);
             }
 
             float fraction = 0;
@@ -70,7 +70,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
             {
                 outputBuffer[sample] /= 32767;
                 // 440 hz sine wave with amplitude = 0.5f at output sample rate
-                expectedOutput[sample] = MathF.Sin((440 / outputSampleRate) * (float)(sample + delay) * MathF.PI * 2f) * 0.5f;
+                expectedOutput[sample] = MathF.Sin((440 / outputSampleRate) * (sample + delay) * MathF.PI * 2f) * 0.5f;
                 float thisDelta = Math.Abs(expectedOutput[sample] - outputBuffer[sample]);
 
                 // Ensure no discontinuities
@@ -78,7 +78,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
                 sumDifference += thisDelta;
             }
 
-            sumDifference /= (float)outputSampleCount;
+            sumDifference /= outputSampleCount;
             // Expect the output to be 99% similar to the expected resampled sine wave
             Assert.IsTrue(sumDifference < 0.01f);
         }

@@ -257,7 +257,7 @@ namespace Ryujinx.Tests.Cpu
             Rm,
             /// <summary>Round towards Zero mode.</summary>
             Rz
-        };
+        }
 
         /// <summary>Floating-point Control Register.</summary>
         protected enum Fpcr
