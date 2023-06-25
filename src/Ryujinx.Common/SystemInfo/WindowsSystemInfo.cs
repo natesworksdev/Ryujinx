@@ -22,10 +22,8 @@ namespace Ryujinx.Common.SystemInfo
             {
                 return (memStatus.TotalPhys, memStatus.AvailPhys); // Bytes
             }
-            else
-            {
-                Logger.Error?.Print(LogClass.Application, $"GlobalMemoryStatusEx failed. Error {Marshal.GetLastWin32Error():X}");
-            }
+
+            Logger.Error?.Print(LogClass.Application, $"GlobalMemoryStatusEx failed. Error {Marshal.GetLastWin32Error():X}");
 
             return (0, 0);
         }

@@ -35,20 +35,20 @@ namespace Ryujinx.Common.SystemInfo
             {
                 return new WindowsSystemInfo();
             }
-            else if (OperatingSystem.IsLinux())
+
+            if (OperatingSystem.IsLinux())
             {
                 return new LinuxSystemInfo();
             }
-            else if (OperatingSystem.IsMacOS())
+
+            if (OperatingSystem.IsMacOS())
             {
                 return new MacOSSystemInfo();
             }
-            else
-            {
-                Logger.Error?.Print(LogClass.Application, "SystemInfo unsupported on this platform");
 
-                return new SystemInfo();
-            }
+            Logger.Error?.Print(LogClass.Application, "SystemInfo unsupported on this platform");
+
+            return new SystemInfo();
         }
 
         // x86 exposes a 48 byte ASCII "CPU brand" string via CPUID leaves 0x80000002-0x80000004.

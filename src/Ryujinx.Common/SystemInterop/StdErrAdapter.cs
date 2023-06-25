@@ -11,7 +11,7 @@ namespace Ryujinx.Common.SystemInterop
 {
     public partial class StdErrAdapter : IDisposable
     {
-        private bool _disposable = false;
+        private bool _disposable;
         private Stream _pipeReader;
         private Stream _pipeWriter;
         private CancellationTokenSource _cancellationTokenSource;
@@ -86,10 +86,8 @@ namespace Ryujinx.Common.SystemInterop
             {
                 return (pipefd[0], pipefd[1]);
             }
-            else
-            {
-                throw new();
-            }
+
+            throw new();
         }
 
         [SupportedOSPlatform("linux")]
@@ -97,7 +95,7 @@ namespace Ryujinx.Common.SystemInterop
         private static Stream CreateFileDescriptorStream(int fd)
         {
             return new FileStream(
-                new SafeFileHandle((IntPtr)fd, ownsHandle: true),
+                new SafeFileHandle(fd, ownsHandle: true),
                 FileAccess.ReadWrite
             );
         }

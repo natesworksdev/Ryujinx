@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
-
 using static Ryujinx.Common.Memory.PartialUnmaps.PartialUnmapHelpers;
 
 namespace Ryujinx.Common.Memory.PartialUnmaps

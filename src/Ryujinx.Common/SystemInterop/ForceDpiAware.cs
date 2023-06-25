@@ -63,14 +63,14 @@ namespace Ryujinx.Common.SystemInterop
                         string dpiString = Marshal.PtrToStringAnsi(XGetDefault(display, "Xft", "dpi"));
                         if (dpiString == null || !double.TryParse(dpiString, NumberStyles.Any, CultureInfo.InvariantCulture, out userDpiScale))
                         {
-                            userDpiScale = (double)XDisplayWidth(display, 0) * 25.4 / (double)XDisplayWidthMM(display, 0);
+                            userDpiScale = XDisplayWidth(display, 0) * 25.4 / XDisplayWidthMM(display, 0);
                         }
                         _ = XCloseDisplay(display);
                     }
                     else if (xdgSessionType == "wayland")
                     {
                         // TODO
-                        Logger.Warning?.Print(LogClass.Application, $"Couldn't determine monitor DPI: Wayland not yet supported");
+                        Logger.Warning?.Print(LogClass.Application, "Couldn't determine monitor DPI: Wayland not yet supported");
                     }
                     else
                     {

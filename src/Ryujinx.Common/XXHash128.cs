@@ -31,8 +31,7 @@ namespace Ryujinx.Common
         private const ulong Prime64_4 = 0x85EBCA77C2B2AE63UL;
         private const ulong Prime64_5 = 0x27D4EB2F165667C5UL;
 
-        private static readonly ulong[] Xxh3InitAcc = new ulong[]
-        {
+        private static readonly ulong[] _xxh3InitAcc = {
             Prime32_3,
             Prime64_1,
             Prime64_2,
@@ -62,7 +61,7 @@ namespace Ryujinx.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Mult32To64(ulong x, ulong y)
         {
-            return (ulong)(uint)x * (ulong)(uint)y;
+            return (uint)x * (ulong)(uint)y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -305,7 +304,7 @@ namespace Ryujinx.Common
         private static Hash128 Xxh3HashLong128bInternal(ReadOnlySpan<byte> input, ReadOnlySpan<byte> secret)
         {
             Span<ulong> acc = stackalloc ulong[AccNb];
-            Xxh3InitAcc.CopyTo(acc);
+            _xxh3InitAcc.CopyTo(acc);
 
             Xxh3HashLongInternalLoop(acc, input, secret);
 
@@ -398,23 +397,23 @@ namespace Ryujinx.Common
             {
                 return Xxh3Len9To16128b(input, secret, seed);
             }
-            else if (input.Length >= 4)
+
+            if (input.Length >= 4)
             {
                 return Xxh3Len4To8128b(input, secret, seed);
             }
-            else if (input.Length != 0)
+
+            if (input.Length != 0)
             {
                 return Xxh3Len1To3128b(input, secret, seed);
             }
-            else
-            {
-                Hash128 h128 = new();
-                ulong bitFlipL = BinaryPrimitives.ReadUInt64LittleEndian(secret[64..]) ^ BinaryPrimitives.ReadUInt64LittleEndian(secret[72..]);
-                ulong bitFlipH = BinaryPrimitives.ReadUInt64LittleEndian(secret[80..]) ^ BinaryPrimitives.ReadUInt64LittleEndian(secret[88..]);
-                h128.Low = Xxh64Avalanche(seed ^ bitFlipL);
-                h128.High = Xxh64Avalanche(seed ^ bitFlipH);
-                return h128;
-            }
+
+            Hash128 h128 = new();
+            ulong bitFlipL = BinaryPrimitives.ReadUInt64LittleEndian(secret[64..]) ^ BinaryPrimitives.ReadUInt64LittleEndian(secret[72..]);
+            ulong bitFlipH = BinaryPrimitives.ReadUInt64LittleEndian(secret[80..]) ^ BinaryPrimitives.ReadUInt64LittleEndian(secret[88..]);
+            h128.Low = Xxh64Avalanche(seed ^ bitFlipL);
+            h128.High = Xxh64Avalanche(seed ^ bitFlipH);
+            return h128;
         }
 
         private static ulong Xxh3Mix16b(ReadOnlySpan<byte> input, ReadOnlySpan<byte> secret, ulong seed)
@@ -515,18 +514,18 @@ namespace Ryujinx.Common
             {
                 return Xxh3Len0To16128b(input, secret, seed);
             }
-            else if (input.Length <= 128)
+
+            if (input.Length <= 128)
             {
                 return Xxh3Len17To128128b(input, secret, seed);
             }
-            else if (input.Length <= 240)
+
+            if (input.Length <= 240)
             {
                 return Xxh3Len129To240128b(input, secret, seed);
             }
-            else
-            {
-                return Xxh3HashLong128bInternal(input, secret);
-            }
+
+            return Xxh3HashLong128bInternal(input, secret);
         }
 
         public static Hash128 ComputeHash(ReadOnlySpan<byte> input)

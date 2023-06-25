@@ -154,10 +154,8 @@ namespace Ryujinx.Common.GraphicsDriver
             {
                 return Marshal.GetDelegateForFunctionPointer<T>(ptr);
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using System.Threading;
-
 using static Ryujinx.Common.Memory.PartialUnmaps.PartialUnmapHelpers;
 
 namespace Ryujinx.Common.Memory.PartialUnmaps

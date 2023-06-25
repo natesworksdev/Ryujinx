@@ -34,10 +34,8 @@ namespace Ryujinx.Common
             {
                 return BuildVersion;
             }
-            else
-            {
-                return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-            }
+
+            return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         }
 
 #if FORCE_EXTERNAL_BASE_DIR
