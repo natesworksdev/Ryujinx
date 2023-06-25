@@ -10,25 +10,25 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         public static readonly BlockSize[][] SubsizeLookup = {
             new[]
-            { // PARTITION_NONE
+            {  // PARTITION_NONE
                 BlockSize.Block4x4, BlockSize.Block4x8, BlockSize.Block8x4, BlockSize.Block8x8, BlockSize.Block8x16, BlockSize.Block16x8,
                 BlockSize.Block16x16, BlockSize.Block16x32, BlockSize.Block32x16, BlockSize.Block32x32, BlockSize.Block32x64,
                 BlockSize.Block64x32, BlockSize.Block64x64,
             },
             new[]
-            { // PARTITION_HORZ
+            {  // PARTITION_HORZ
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block8x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block16x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x16,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block64x32,
             },
             new[]
-            { // PARTITION_VERT
+            {  // PARTITION_VERT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x8, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x16, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x32,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x64,
             },
             new[]
-            { // PARTITION_SPLIT
+            {  // PARTITION_SPLIT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x16,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x32,
@@ -41,8 +41,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         public static readonly TxSize[] TxModeToBiggestTxSize = {
-            TxSize.Tx4x4,    // ONLY_4X4
-            TxSize.Tx8x8,    // ALLOW_8X8
+            TxSize.Tx4x4,  // ONLY_4X4
+            TxSize.Tx8x8,  // ALLOW_8X8
             TxSize.Tx16x16,  // ALLOW_16X16
             TxSize.Tx32x32,  // ALLOW_32X32
             TxSize.Tx32x32,  // TX_MODE_SELECT
@@ -198,12 +198,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new(14, 12),  // 8X16  - {0b1110, 0b1100}
             new(12, 14),  // 16X8  - {0b1100, 0b1110}
             new(12, 12),  // 16X16 - {0b1100, 0b1100}
-            new(12, 8),   // 16X32 - {0b1100, 0b1000}
-            new(8, 12),   // 32X16 - {0b1000, 0b1100}
-            new(8, 8),    // 32X32 - {0b1000, 0b1000}
-            new(8, 0),    // 32X64 - {0b1000, 0b0000}
-            new(0, 8),    // 64X32 - {0b0000, 0b1000}
-            new(0, 0),    // 64X64 - {0b0000, 0b0000}
+            new(12, 8),  // 16X32 - {0b1100, 0b1000}
+            new(8, 12),  // 32X16 - {0b1000, 0b1100}
+            new(8, 8),  // 32X32 - {0b1000, 0b1000}
+            new(8, 0),  // 32X64 - {0b1000, 0b0000}
+            new(0, 8),  // 64X32 - {0b0000, 0b1000}
+            new(0, 0),  // 64X64 - {0b0000, 0b0000}
         };
 
         // Filter
@@ -965,28 +965,28 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         public static readonly ScanOrder[][] Vp9ScanOrders = {
             new ScanOrder[]
-            { // TX_4X4
+            {  // TX_4X4
                 new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
                 new(_rowScan4X4, _vp9RowIscan4X4, _rowScan4X4Neighbors),
                 new(_colScan4X4, _vp9ColIscan4X4, _colScan4X4Neighbors),
                 new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
             },
             new ScanOrder[]
-            { // TX_8X8
+            {  // TX_8X8
                 new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
                 new(_rowScan8X8, _vp9RowIscan8X8, _rowScan8X8Neighbors),
                 new(_colScan8X8, _vp9ColIscan8X8, _colScan8X8Neighbors),
                 new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
             },
             new ScanOrder[]
-            { // TX_16X16
+            {  // TX_16X16
                 new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
                 new(_rowScan16X16, _vp9RowIscan16X16, _rowScan16X16Neighbors),
                 new(_colScan16X16, _vp9ColIscan16X16, _colScan16X16Neighbors),
                 new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
             },
             new ScanOrder[]
-            { // TX_32X32
+            {  // TX_32X32
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
@@ -1411,25 +1411,25 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // 2. However the actual count can never be greater than 2 so the highest
         // counter we need is 18. 9 is an invalid counter that's never used.
         public static readonly MotionVectorContext[] CounterToContext = {
-            MotionVectorContext.BothPredicted,     // 0
-            MotionVectorContext.NewPlusNonIntra,   // 1
-            MotionVectorContext.BothNew,           // 2
-            MotionVectorContext.ZeroPlusPredicted, // 3
-            MotionVectorContext.NewPlusNonIntra,   // 4
-            MotionVectorContext.InvalidCase,       // 5
-            MotionVectorContext.BothZero,          // 6
-            MotionVectorContext.InvalidCase,       // 7
-            MotionVectorContext.InvalidCase,       // 8
-            MotionVectorContext.IntraPlusNonIntra, // 9
-            MotionVectorContext.IntraPlusNonIntra, // 10
-            MotionVectorContext.InvalidCase,       // 11
-            MotionVectorContext.IntraPlusNonIntra, // 12
-            MotionVectorContext.InvalidCase,       // 13
-            MotionVectorContext.InvalidCase,       // 14
-            MotionVectorContext.InvalidCase,       // 15
-            MotionVectorContext.InvalidCase,       // 16
-            MotionVectorContext.InvalidCase,       // 17
-            MotionVectorContext.BothIntra, // 18
+            MotionVectorContext.BothPredicted,  // 0
+            MotionVectorContext.NewPlusNonIntra,  // 1
+            MotionVectorContext.BothNew,  // 2
+            MotionVectorContext.ZeroPlusPredicted,  // 3
+            MotionVectorContext.NewPlusNonIntra,  // 4
+            MotionVectorContext.InvalidCase,  // 5
+            MotionVectorContext.BothZero,  // 6
+            MotionVectorContext.InvalidCase,  // 7
+            MotionVectorContext.InvalidCase,  // 8
+            MotionVectorContext.IntraPlusNonIntra,  // 9
+            MotionVectorContext.IntraPlusNonIntra,  // 10
+            MotionVectorContext.InvalidCase,  // 11
+            MotionVectorContext.IntraPlusNonIntra,  // 12
+            MotionVectorContext.InvalidCase,  // 13
+            MotionVectorContext.InvalidCase,  // 14
+            MotionVectorContext.InvalidCase,  // 15
+            MotionVectorContext.InvalidCase,  // 16
+            MotionVectorContext.InvalidCase,  // 17
+            MotionVectorContext.BothIntra,  // 18
         };
 
         public static readonly Position[][] MvRefBlocks = {

@@ -16,7 +16,7 @@
         public const int MiSizeLog2 = 3;
         public const int MiBlockSizeLog2 = 6 - MiSizeLog2;  // 64 = 2^6
 
-        public const int MiSize = 1 << MiSizeLog2;              // pixels per mi-unit
+        public const int MiSize = 1 << MiSizeLog2;  // pixels per mi-unit
         public const int MiBlockSize = 1 << MiBlockSizeLog2;  // mi-units per max block
         public const int MiMask = MiBlockSize - 1;
 
@@ -48,9 +48,9 @@
         public const int MvLow = -(1 << MvInUseBits);
 
         // Coefficient token alphabet
-        public const int ZeroToken = 0;        // 0     Extra Bits 0+0
-        public const int OneToken = 1;         // 1     Extra Bits 0+1
-        public const int TwoToken = 2;         // 2     Extra Bits 0+1
+        public const int ZeroToken = 0;  // 0     Extra Bits 0+0
+        public const int OneToken = 1;  // 1     Extra Bits 0+1
+        public const int TwoToken = 2;  // 2     Extra Bits 0+1
 
         public const int PivotNode = 2;
 

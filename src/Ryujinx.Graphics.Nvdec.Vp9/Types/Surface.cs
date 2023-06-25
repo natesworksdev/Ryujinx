@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public int UvAlignedHeight { get; }
         public int UvStride { get; }
 
-#pragma warning disable CA1822 // Mark member as static
+#pragma warning disable CA1822  // Mark member as static
         public readonly bool HighBd => false;
 #pragma warning restore CA1822
 
