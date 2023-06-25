@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.Common.Locale
         private Dictionary<LocaleKeys, string> _localeDefaultStrings;
         private readonly ConcurrentDictionary<LocaleKeys, object[]> _dynamicValues;
 
-        public static LocaleManager Instance { get; } = new LocaleManager();
+        public static LocaleManager Instance { get; } = new();
 
         public LocaleManager()
         {

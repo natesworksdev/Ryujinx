@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public void SendText(string text)
         {
-            OnTextInput(new TextInputEventArgs()
+            OnTextInput(new TextInputEventArgs
             {
                 Text = text,
                 Device = KeyboardDevice.Instance,

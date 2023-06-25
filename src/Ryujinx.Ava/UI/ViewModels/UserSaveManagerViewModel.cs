@@ -105,11 +105,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             return SortIndex switch
             {
                 0 => OrderIndex == 0
-                                        ? SortExpressionComparer<SaveModel>.Ascending(save => save.Title)
-                                        : SortExpressionComparer<SaveModel>.Descending(save => save.Title),
+                    ? SortExpressionComparer<SaveModel>.Ascending(save => save.Title)
+                    : SortExpressionComparer<SaveModel>.Descending(save => save.Title),
                 1 => OrderIndex == 0
-                                        ? SortExpressionComparer<SaveModel>.Ascending(save => save.Size)
-                                        : SortExpressionComparer<SaveModel>.Descending(save => save.Size),
+                    ? SortExpressionComparer<SaveModel>.Ascending(save => save.Size)
+                    : SortExpressionComparer<SaveModel>.Descending(save => save.Size),
                 _ => null,
             };
         }

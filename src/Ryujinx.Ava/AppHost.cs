@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Translation;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -26,6 +27,7 @@ using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Graphics.Vulkan;
+using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -49,10 +51,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
+using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using Key = Ryujinx.Input.Key;
 using MouseButton = Ryujinx.Input.MouseButton;
+using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using Size = Avalonia.Size;
 using Switch = Ryujinx.HLE.Switch;
 
@@ -219,7 +223,7 @@ namespace Ryujinx.Ava
             _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
         }
 
-        private void UpdateScalingFilter(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.ScalingFilter> e)
+        private void UpdateScalingFilter(object sender, ReactiveEventArgs<ScalingFilter> e)
         {
             _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
             _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
@@ -304,7 +308,7 @@ namespace Ryujinx.Ava
                             image.Mutate(x => x.Flip(FlipMode.Vertical));
                         }
 
-                        image.SaveAsPng(path, new PngEncoder()
+                        image.SaveAsPng(path, new PngEncoder
                         {
                             ColorType = PngColorType.Rgb,
                         });
@@ -378,7 +382,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private void UpdateAntiAliasing(object sender, ReactiveEventArgs<Ryujinx.Common.Configuration.AntiAliasing> e)
+        private void UpdateAntiAliasing(object sender, ReactiveEventArgs<AntiAliasing> e)
         {
             _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)e.NewValue);
         }
@@ -507,7 +511,7 @@ namespace Ryujinx.Ava
 
             SystemVersion firmwareVersion = ContentManager.GetCurrentFirmwareVersion();
 
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 if (!SetupValidator.CanStartApplication(ContentManager, ApplicationPath, out UserError userError))
                 {
@@ -746,9 +750,9 @@ namespace Ryujinx.Ava
             Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {isGaLthreaded}");
 
             // Initialize Configuration.
-            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? HLE.MemoryConfiguration.MemoryConfiguration6GiB : HLE.MemoryConfiguration.MemoryConfiguration4GiB;
+            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB;
 
-            HLE.HLEConfiguration configuration = new(VirtualFileSystem,
+            HLEConfiguration configuration = new(VirtualFileSystem,
                                                      _viewModel.LibHacHorizonManager,
                                                      ContentManager,
                                                      _accountManager,
@@ -779,7 +783,7 @@ namespace Ryujinx.Ava
 
         private static IHardwareDeviceDriver InitializeAudio()
         {
-            var availableBackends = new List<AudioBackend>()
+            var availableBackends = new List<AudioBackend>
             {
                 AudioBackend.SDL2,
                 AudioBackend.SoundIo,
@@ -805,12 +809,10 @@ namespace Ryujinx.Ava
                 {
                     return new T();
                 }
-                else
-                {
-                    Logger.Warning?.Print(LogClass.Audio, $"{backend} is not supported, falling back to {nextBackend}.");
 
-                    return null;
-                }
+                Logger.Warning?.Print(LogClass.Audio, $"{backend} is not supported, falling back to {nextBackend}.");
+
+                return null;
             }
 
             IHardwareDeviceDriver deviceDriver = null;

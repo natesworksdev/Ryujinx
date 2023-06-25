@@ -18,6 +18,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Button = Avalonia.Controls.Button;
 using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Views.User
@@ -114,7 +115,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            if (sender is Avalonia.Controls.Button button)
+            if (sender is Button button)
             {
                 if (button.DataContext is SaveModel saveModel)
                 {
@@ -125,7 +126,7 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void Delete(object sender, RoutedEventArgs e)
         {
-            if (sender is Avalonia.Controls.Button button)
+            if (sender is Button button)
             {
                 if (button.DataContext is SaveModel saveModel)
                 {

@@ -1,5 +1,6 @@
 using Avalonia.Data;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static readonly Dictionary<Glyph, string> _glyphs = new()
         {
-            { Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString() },
-            { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString() },
-            { Glyph.Chip, char.ConvertFromUtf32(59748).ToString() },
+            { Glyph.List, char.ConvertFromUtf32((int)Symbol.List) },
+            { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll) },
+            { Glyph.Chip, char.ConvertFromUtf32(59748) },
         };
 
         public GlyphValueConverter(string key)
@@ -37,7 +38,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension binding = new($"[{_key}]")
+            ReflectionBindingExtension binding = new($"[{_key}]")
             {
                 Mode = BindingMode.OneWay,
                 Source = this,

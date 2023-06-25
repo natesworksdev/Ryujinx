@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -44,7 +45,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private PlayerIndex _playerId;
         private int _controller;
-        private int _controllerNumber = 0;
+        private int _controllerNumber;
         private string _controllerImage;
         private int _device;
         private object _configuration;
@@ -236,7 +237,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (Program.PreviewerDetached)
             {
                 _mainWindow =
-                    (MainWindow)((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current
+                    (MainWindow)((IClassicDesktopStyleApplicationLifetime)Application.Current
                         .ApplicationLifetime).MainWindow;
 
                 AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
@@ -346,7 +347,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return;
             }
-            else if (type == DeviceType.Keyboard)
+
+            if (type == DeviceType.Keyboard)
             {
                 if (_mainWindow.InputManager.KeyboardDriver is AvaloniaKeyboardDriver)
                 {
@@ -749,37 +751,35 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 return;
             }
+
+            bool validFileName = ProfileName.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
+
+            if (validFileName)
+            {
+                string path = Path.Combine(GetProfileBasePath(), ProfileName + ".json");
+
+                InputConfig config = null;
+
+                if (IsKeyboard)
+                {
+                    config = (Configuration as InputConfiguration<Key, ConfigStickInputId>).GetConfig();
+                }
+                else if (IsController)
+                {
+                    config = (Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>).GetConfig();
+                }
+
+                config.ControllerType = Controllers[_controller].Type;
+
+                string jsonString = JsonHelper.Serialize(config, _serializerContext.InputConfig);
+
+                await File.WriteAllTextAsync(path, jsonString);
+
+                LoadProfiles();
+            }
             else
             {
-                bool validFileName = ProfileName.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
-
-                if (validFileName)
-                {
-                    string path = Path.Combine(GetProfileBasePath(), ProfileName + ".json");
-
-                    InputConfig config = null;
-
-                    if (IsKeyboard)
-                    {
-                        config = (Configuration as InputConfiguration<Key, ConfigStickInputId>).GetConfig();
-                    }
-                    else if (IsController)
-                    {
-                        config = (Configuration as InputConfiguration<GamepadInputId, ConfigStickInputId>).GetConfig();
-                    }
-
-                    config.ControllerType = Controllers[_controller].Type;
-
-                    string jsonString = JsonHelper.Serialize(config, _serializerContext.InputConfig);
-
-                    await File.WriteAllTextAsync(path, jsonString);
-
-                    LoadProfiles();
-                }
-                else
-                {
-                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogProfileInvalidProfileNameErrorMessage]);
-                }
+                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogProfileInvalidProfileNameErrorMessage]);
             }
         }
 

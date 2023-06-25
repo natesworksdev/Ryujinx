@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -123,7 +124,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     return -1;
                 }
-                else if (string.IsNullOrEmpty(second.Control.DisplayVersionString.ToString()))
+
+                if (string.IsNullOrEmpty(second.Control.DisplayVersionString.ToString()))
                 {
                     return 1;
                 }
@@ -212,7 +214,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Extensions = { "nsp" },
             });
 
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 string[] files = await dialog.ShowAsync(desktop.MainWindow);
 

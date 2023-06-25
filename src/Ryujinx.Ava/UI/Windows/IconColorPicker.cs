@@ -63,6 +63,14 @@ namespace Ryujinx.Ava.UI.Windows
 
             var buffer = GetBuffer(image);
 
+            int w = image.Width;
+
+            int w8 = w << 8;
+            int h8 = image.Height << 8;
+
+            int xStep = w8 / ColorsPerLine;
+            int yStep = h8 / ColorsPerLine;
+
             int i = 0;
             int maxHitCount = 0;
 

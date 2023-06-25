@@ -77,11 +77,13 @@ namespace Ryujinx.Ava.UI.Renderer
             {
                 return CreateLinux(control);
             }
-            else if (OperatingSystem.IsWindows())
+
+            if (OperatingSystem.IsWindows())
             {
                 return CreateWin32(control);
             }
-            else if (OperatingSystem.IsMacOS())
+
+            if (OperatingSystem.IsMacOS())
             {
                 return CreateMacOS();
             }

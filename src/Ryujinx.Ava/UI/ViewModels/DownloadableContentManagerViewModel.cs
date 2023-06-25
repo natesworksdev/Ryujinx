@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Application = Avalonia.Application;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -206,7 +207,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Extensions = { "nsp" },
             });
 
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 string[] files = await dialog.ShowAsync(desktop.MainWindow);
 

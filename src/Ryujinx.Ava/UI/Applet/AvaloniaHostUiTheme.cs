@@ -9,7 +9,7 @@ namespace Ryujinx.Ava.UI.Applet
     {
         public AvaloniaHostUiTheme(MainWindow parent)
         {
-            FontFamily = OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000, 0) ? "Segoe UI Variable" : parent.FontFamily.Name;
+            FontFamily = OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000) ? "Segoe UI Variable" : parent.FontFamily.Name;
             DefaultBackgroundColor = BrushToThemeColor(parent.Background);
             DefaultForegroundColor = BrushToThemeColor(parent.Foreground);
             DefaultBorderColor = BrushToThemeColor(parent.BorderBrush);
@@ -34,10 +34,8 @@ namespace Ryujinx.Ava.UI.Applet
                     (float)solidColor.Color.G / 255,
                     (float)solidColor.Color.B / 255);
             }
-            else
-            {
-                return new ThemeColor();
-            }
+
+            return new ThemeColor();
         }
     }
 }

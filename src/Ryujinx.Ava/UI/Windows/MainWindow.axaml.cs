@@ -385,9 +385,10 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Position = savedPoint;
             }
-
             else
+            {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
@@ -400,7 +401,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            Logger.Warning?.Print(LogClass.Application, $"Failed to find valid start-up coordinates. Defaulting to primary monitor center.");
+            Logger.Warning?.Print(LogClass.Application, "Failed to find valid start-up coordinates. Defaulting to primary monitor center.");
             return false;
         }
 

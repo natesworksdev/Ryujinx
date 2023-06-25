@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using FluentAvalonia.Core;
@@ -146,8 +147,8 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             Grid content = new()
             {
-                RowDefinitions = new RowDefinitions() { new RowDefinition(), new RowDefinition() },
-                ColumnDefinitions = new ColumnDefinitions() { new ColumnDefinition(GridLength.Auto), new ColumnDefinition() },
+                RowDefinitions = new RowDefinitions { new(), new() },
+                ColumnDefinitions = new ColumnDefinitions { new(GridLength.Auto), new() },
 
                 MinHeight = 80,
             };
@@ -157,7 +158,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 Symbol = (Symbol)symbol,
                 Margin = new Thickness(10),
                 FontSize = 40,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
             };
 
             Grid.SetColumn(icon, 0);

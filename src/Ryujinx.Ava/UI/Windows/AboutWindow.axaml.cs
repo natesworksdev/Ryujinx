@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -35,7 +36,7 @@ namespace Ryujinx.Ava.UI.Windows
             closeButton.Setters.Add(new Setter(WidthProperty, 80d));
 
             Style closeButtonParent = new(x => x.Name("CommandSpace"));
-            closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Right));
+            closeButtonParent.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Right));
 
             contentDialog.Styles.Add(closeButton);
             contentDialog.Styles.Add(closeButtonParent);

@@ -262,7 +262,6 @@ namespace Ryujinx.Modules
                 Header = LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
                 SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterDownloading],
                 IconSource = new SymbolIconSource { Symbol = Symbol.Download },
-                Buttons = { },
                 ShowProgressBar = true,
                 XamlRoot = parent,
             };
@@ -436,8 +435,6 @@ namespace Ryujinx.Modules
                             Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
                             DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
-
-                            return;
                         }
                     }
                 };

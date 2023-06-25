@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Controls
@@ -123,7 +124,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 
-            HashSet<HLE.HOS.Services.Account.Acc.UserId> lostAccounts = new();
+            HashSet<UserId> lostAccounts = new();
 
             while (true)
             {
@@ -137,7 +138,7 @@ namespace Ryujinx.Ava.UI.Controls
                 for (int i = 0; i < readCount; i++)
                 {
                     var save = saveDataInfo[i];
-                    var id = new HLE.HOS.Services.Account.Acc.UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
+                    var id = new UserId((long)save.UserId.Id.Low, (long)save.UserId.Id.High);
                     if (ViewModel.Profiles.Cast<UserProfile>().FirstOrDefault(x => x.UserId == id) == null)
                     {
                         lostAccounts.Add(id);

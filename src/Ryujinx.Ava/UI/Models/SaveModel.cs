@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.Models
 {
@@ -80,7 +81,7 @@ namespace Ryujinx.Ava.UI.Models
 
             Task.Run(() =>
             {
-                var saveRoot = System.IO.Path.Combine(MainWindow.MainWindowViewModel.VirtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
+                var saveRoot = Path.Combine(MainWindow.MainWindowViewModel.VirtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
 
                 long totalSize = GetDirectorySize(saveRoot);
 
