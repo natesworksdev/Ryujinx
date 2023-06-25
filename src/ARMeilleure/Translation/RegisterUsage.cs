@@ -12,7 +12,7 @@ namespace ARMeilleure.Translation
     static class RegisterUsage
     {
         private const int RegsCount = 32;
-        private const int RegsMask  = RegsCount - 1;
+        private const int RegsMask = RegsCount - 1;
 
         private readonly struct RegisterMask : IEquatable<RegisterMask>
         {
@@ -90,7 +90,7 @@ namespace ARMeilleure.Translation
         public static void RunPass(ControlFlowGraph cfg, ExecutionMode mode)
         {
             // Compute local register inputs and outputs used inside blocks.
-            RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
+            RegisterMask[] localInputs = new RegisterMask[cfg.Blocks.Count];
             RegisterMask[] localOutputs = new RegisterMask[cfg.Blocks.Count];
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
@@ -119,7 +119,7 @@ namespace ARMeilleure.Translation
             // Compute global register inputs and outputs used across blocks.
             RegisterMask[] globalCmnOutputs = new RegisterMask[cfg.Blocks.Count];
 
-            RegisterMask[] globalInputs  = new RegisterMask[cfg.Blocks.Count];
+            RegisterMask[] globalInputs = new RegisterMask[cfg.Blocks.Count];
             RegisterMask[] globalOutputs = new RegisterMask[cfg.Blocks.Count];
 
             bool modified;

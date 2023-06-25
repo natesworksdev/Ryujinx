@@ -4,7 +4,6 @@ using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -322,7 +321,7 @@ namespace ARMeilleure.Instructions
             for (int index = 0; index < elems; index++)
             {
                 Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size + 1, signed);
-                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size,     signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
 
                 if (op.Size == 2)
                 {
@@ -375,8 +374,8 @@ namespace ARMeilleure.Instructions
             for (int index = 0; index < elems; index++)
             {
                 Operand de = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size + 1, signed);
-                Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size,     signed);
-                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size,     signed);
+                Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size, signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
 
                 if (op.Size == 2)
                 {

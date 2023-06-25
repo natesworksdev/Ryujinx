@@ -242,7 +242,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             LiveInterval result = new(Local, Parent)
             {
-                End = End
+                End = End,
             };
 
             LiveRange prev = PrevRange;

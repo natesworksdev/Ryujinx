@@ -58,9 +58,9 @@ namespace ARMeilleure.Decoders
 
         private static int BinarySearch(List<OpCode> opCodes, ulong address)
         {
-            int left   = 0;
+            int left = 0;
             int middle = 0;
-            int right  = opCodes.Count - 1;
+            int right = opCodes.Count - 1;
 
             while (left <= right)
             {

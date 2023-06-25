@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
 using System.Reflection;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -16,13 +15,13 @@ namespace ARMeilleure.Instructions
         private static readonly long[] _masksE0_Uzp = new long[]
         {
             13L << 56 | 09L << 48 | 05L << 40 | 01L << 32 | 12L << 24 | 08L << 16 | 04L << 8 | 00L << 0,
-            11L << 56 | 10L << 48 | 03L << 40 | 02L << 32 | 09L << 24 | 08L << 16 | 01L << 8 | 00L << 0
+            11L << 56 | 10L << 48 | 03L << 40 | 02L << 32 | 09L << 24 | 08L << 16 | 01L << 8 | 00L << 0,
         };
 
         private static readonly long[] _masksE1_Uzp = new long[]
         {
             15L << 56 | 11L << 48 | 07L << 40 | 03L << 32 | 14L << 24 | 10L << 16 | 06L << 8 | 02L << 0,
-            15L << 56 | 14L << 48 | 07L << 40 | 06L << 32 | 13L << 24 | 12L << 16 | 05L << 8 | 04L << 0
+            15L << 56 | 14L << 48 | 07L << 40 | 06L << 32 | 13L << 24 | 12L << 16 | 05L << 8 | 04L << 0,
         };
         #endregion
 
@@ -217,7 +216,7 @@ namespace ARMeilleure.Instructions
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
             Operand lblTrue = Label();
-            Operand lblEnd  = Label();
+            Operand lblEnd = Label();
 
             Operand isTrue = InstEmitFlowHelper.GetCondTrue(context, op.Cond);
 
@@ -361,7 +360,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
-            Operand d  = GetVec(op.Rd);
+            Operand d = GetVec(op.Rd);
             Operand ne = EmitVectorExtractZx(context, op.Rn, op.SrcIndex, op.Size);
 
             context.Copy(d, EmitVectorInsert(context, d, ne, op.DstIndex, op.Size));
@@ -578,7 +577,7 @@ namespace ARMeilleure.Instructions
 
                 if (!isTbl)
                 {
-                    Operand idxMask  = X86GetAllElements(context, (0x1010101010101010L * op.Size) - 0x0101010101010101L);
+                    Operand idxMask = X86GetAllElements(context, (0x1010101010101010L * op.Size) - 0x0101010101010101L);
                     Operand zeroMask = context.VectorZero();
 
                     Operand mPosMask = context.AddIntrinsic(Intrinsic.X86Pcmpgtb, m, idxMask);
@@ -672,7 +671,7 @@ namespace ARMeilleure.Instructions
                 if (op.Size < 3)
                 {
                     long maskE0 = EvenMasks[op.Size];
-                    long maskE1 = OddMasks [op.Size];
+                    long maskE1 = OddMasks[op.Size];
 
                     mask = X86GetScalar(context, maskE0);
 
@@ -740,7 +739,7 @@ namespace ARMeilleure.Instructions
                     if (op.Size < 3)
                     {
                         long maskE0 = EvenMasks[op.Size];
-                        long maskE1 = OddMasks [op.Size];
+                        long maskE1 = OddMasks[op.Size];
 
                         mask = X86GetScalar(context, maskE0);
 

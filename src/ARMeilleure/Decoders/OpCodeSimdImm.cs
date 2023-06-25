@@ -13,9 +13,9 @@ namespace ARMeilleure.Decoders
             Rd = opCode & 0x1f;
 
             int cMode = (opCode >> 12) & 0xf;
-            int op    = (opCode >> 29) & 0x1;
+            int op = (opCode >> 29) & 0x1;
 
-            int modeLow  = cMode &  1;
+            int modeLow = cMode & 1;
             int modeHigh = cMode >> 1;
 
             long imm;

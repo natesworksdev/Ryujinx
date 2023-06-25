@@ -12,7 +12,6 @@ using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-
 using static ARMeilleure.Translation.PTC.PtcFormatter;
 
 namespace ARMeilleure.Translation.PTC
@@ -269,7 +268,7 @@ namespace ARMeilleure.Translation.PTC
                 Magic = _outerHeaderMagic,
 
                 InfoFileVersion = InternalVersion,
-                Endianness = Ptc.GetEndianness()
+                Endianness = Ptc.GetEndianness(),
             };
 
             outerHeader.SetHeaderHash();

@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitMemoryExHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -15,10 +14,10 @@ namespace ARMeilleure.Instructions
         [Flags]
         private enum AccessType
         {
-            None      = 0,
-            Ordered   = 1,
+            None = 0,
+            Ordered = 1,
             Exclusive = 2,
-            OrderedEx = Ordered | Exclusive
+            OrderedEx = Ordered | Exclusive,
         }
 
         public static void Clrex(ArmEmitterContext context)
@@ -54,7 +53,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
 
-            bool ordered   = (accType & AccessType.Ordered)   != 0;
+            bool ordered = (accType & AccessType.Ordered) != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
             if (ordered)
@@ -87,7 +86,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand value = EmitLoadExclusive(context, address, exclusive, 4);
 
-                    Operand valueLow  = context.VectorExtract(OperandType.I64, value, 0);
+                    Operand valueLow = context.VectorExtract(OperandType.I64, value, 0);
                     Operand valueHigh = context.VectorExtract(OperandType.I64, value, 1);
 
                     SetIntOrZR(context, op.Rt, valueLow);
@@ -132,7 +131,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
 
-            bool ordered   = (accType & AccessType.Ordered)   != 0;
+            bool ordered = (accType & AccessType.Ordered) != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
             Operand address = context.Copy(GetIntOrSP(context, op.Rn));

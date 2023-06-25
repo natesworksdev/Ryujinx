@@ -7,7 +7,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
@@ -187,10 +186,10 @@ namespace ARMeilleure.Instructions
 
                 Operand res = eSize switch
                 {
-                    8  => Clz_V_I8 (context, GetVec(op.Rn)),
+                    8 => Clz_V_I8(context, GetVec(op.Rn)),
                     16 => Clz_V_I16(context, GetVec(op.Rn)),
                     32 => Clz_V_I32(context, GetVec(op.Rn)),
-                    _  => default
+                    _ => default,
                 };
 
                 if (res != default)
@@ -231,7 +230,7 @@ namespace ARMeilleure.Instructions
             Operand clzTable = X86GetScalar(context, 0x01_01_01_01_02_02_03_04);
 
             Operand maskLow = X86GetAllElements(context, 0x0f_0f_0f_0f);
-            Operand c04     = X86GetAllElements(context, 0x04_04_04_04);
+            Operand c04 = X86GetAllElements(context, 0x04_04_04_04);
 
             // CLZ of low 4 bits of elements in arg.
             Operand loClz = context.AddIntrinsic(Intrinsic.X86Pshufb, clzTable, arg);
@@ -258,8 +257,8 @@ namespace ARMeilleure.Instructions
             }
 
             Operand maskSwap = X86GetElements(context, 0x80_0f_80_0d_80_0b_80_09, 0x80_07_80_05_80_03_80_01);
-            Operand maskLow  = X86GetAllElements(context, 0x00ff_00ff);
-            Operand c0008    = X86GetAllElements(context, 0x0008_0008);
+            Operand maskLow = X86GetAllElements(context, 0x00ff_00ff);
+            Operand c0008 = X86GetAllElements(context, 0x0008_0008);
 
             // CLZ pair of high 8 and low 8 bits of elements in arg.
             Operand hiloClz = Clz_V_I8(context, arg);
@@ -2439,8 +2438,8 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    Operand maskHalf    = X86GetScalar(context, 0.5f);
-                    Operand maskThree   = X86GetScalar(context, 3f);
+                    Operand maskHalf = X86GetScalar(context, 0.5f);
+                    Operand maskThree = X86GetScalar(context, 3f);
                     Operand maskOneHalf = X86GetScalar(context, 1.5f);
 
                     if (Optimizations.UseFma)
@@ -2460,8 +2459,8 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Operand maskHalf    = X86GetScalar(context, 0.5d);
-                    Operand maskThree   = X86GetScalar(context, 3d);
+                    Operand maskHalf = X86GetScalar(context, 0.5d);
+                    Operand maskThree = X86GetScalar(context, 3d);
                     Operand maskOneHalf = X86GetScalar(context, 1.5d);
 
                     if (Optimizations.UseFma)
@@ -2508,8 +2507,8 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    Operand maskHalf    = X86GetAllElements(context, 0.5f);
-                    Operand maskThree   = X86GetAllElements(context, 3f);
+                    Operand maskHalf = X86GetAllElements(context, 0.5f);
+                    Operand maskThree = X86GetAllElements(context, 3f);
                     Operand maskOneHalf = X86GetAllElements(context, 1.5f);
 
                     if (Optimizations.UseFma)
@@ -2534,8 +2533,8 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Operand maskHalf    = X86GetAllElements(context, 0.5d);
-                    Operand maskThree   = X86GetAllElements(context, 3d);
+                    Operand maskHalf = X86GetAllElements(context, 0.5d);
+                    Operand maskThree = X86GetAllElements(context, 3d);
                     Operand maskOneHalf = X86GetAllElements(context, 1.5d);
 
                     if (Optimizations.UseFma)
@@ -3122,7 +3121,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res  = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
                 Operand res2 = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
                 Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psraw : Intrinsic.X86Psrad;
@@ -4061,7 +4060,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res  = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
                 Operand res2 = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
                 Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psrlw : Intrinsic.X86Psrld;
@@ -4597,7 +4596,7 @@ namespace ARMeilleure.Instructions
             {
                 int pairIndex = index << 1;
 
-                Operand ne0 = EmitVectorExtract(context, op.Rn, pairIndex,     op.Size, signed);
+                Operand ne0 = EmitVectorExtract(context, op.Rn, pairIndex, op.Size, signed);
                 Operand ne1 = EmitVectorExtract(context, op.Rn, pairIndex + 1, op.Size, signed);
 
                 Operand e = context.Add(ne0, ne1);
@@ -4689,7 +4688,7 @@ namespace ARMeilleure.Instructions
             Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
 
             Operand cmp = signed
-                ? context.ICompareGreaterOrEqual  (op1, op2)
+                ? context.ICompareGreaterOrEqual(op1, op2)
                 : context.ICompareGreaterOrEqualUI(op1, op2);
 
             return context.ConditionalSelect(cmp, op1, op2);
@@ -4700,7 +4699,7 @@ namespace ARMeilleure.Instructions
             Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
 
             Operand cmp = signed
-                ? context.ICompareLessOrEqual  (op1, op2)
+                ? context.ICompareLessOrEqual(op1, op2)
                 : context.ICompareLessOrEqualUI(op1, op2);
 
             return context.ConditionalSelect(cmp, op1, op2);
@@ -4855,7 +4854,7 @@ namespace ARMeilleure.Instructions
 
                 Operand mask1 = context.AddIntrinsic(Intrinsic.X86Cmpps, opF, opF, Const((int)CmpCondition.UnorderedQ));
 
-                Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
+                Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand, opF, qMask);
                 mask2 = context.AddIntrinsic(Intrinsic.X86Cmpps, mask2, qMask, Const((int)CmpCondition.Equal));
 
                 qNaNMask = isQNaN == null || (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andps, mask2, mask1) : default;
@@ -4869,7 +4868,7 @@ namespace ARMeilleure.Instructions
 
                 Operand mask1 = context.AddIntrinsic(Intrinsic.X86Cmppd, opF, opF, Const((int)CmpCondition.UnorderedQ));
 
-                Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
+                Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand, opF, qMask);
                 mask2 = context.AddIntrinsic(Intrinsic.X86Cmppd, mask2, qMask, Const((int)CmpCondition.Equal));
 
                 qNaNMask = isQNaN == null || (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andpd, mask2, mask1) : default;
@@ -4898,7 +4897,7 @@ namespace ARMeilleure.Instructions
 
                 Operand qMask = scalar ? X86GetScalar(context, 1 << QBit) : X86GetAllElements(context, 1 << QBit);
 
-                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
+                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask, nQNaNMask);
                 resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvps, mCopy, nCopy, resNaNMask);
@@ -4932,7 +4931,7 @@ namespace ARMeilleure.Instructions
 
                 Operand qMask = scalar ? X86GetScalar(context, 1L << QBit) : X86GetAllElements(context, 1L << QBit);
 
-                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
+                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask, nQNaNMask);
                 resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvpd, mCopy, nCopy, resNaNMask);
@@ -5006,7 +5005,7 @@ namespace ARMeilleure.Instructions
             if (sizeF == 0)
             {
                 Operand negInfMask = scalar
-                    ? X86GetScalar     (context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity)
+                    ? X86GetScalar(context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity)
                     : X86GetAllElements(context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity);
 
                 Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnps, mQNaNMask, nQNaNMask);
@@ -5041,7 +5040,7 @@ namespace ARMeilleure.Instructions
             else /* if (sizeF == 1) */
             {
                 Operand negInfMask = scalar
-                    ? X86GetScalar     (context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity)
+                    ? X86GetScalar(context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity)
                     : X86GetAllElements(context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity);
 
                 Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnpd, mQNaNMask, nQNaNMask);
@@ -5075,7 +5074,7 @@ namespace ARMeilleure.Instructions
         {
             None,
             Add,
-            Subtract
+            Subtract,
         }
 
         private static void EmitSse41VectorMul_AddSub(ArmEmitterContext context, AddSub addSub)
@@ -5190,7 +5189,7 @@ namespace ARMeilleure.Instructions
 
             Intrinsic subInst = X86PsubInstruction[size];
 
-            Operand res  = context.AddIntrinsic(subInst, n, m);
+            Operand res = context.AddIntrinsic(subInst, n, m);
             Operand res2 = context.AddIntrinsic(subInst, m, n);
 
             res = context.AddIntrinsic(Intrinsic.X86Pand, cmpMask, res);

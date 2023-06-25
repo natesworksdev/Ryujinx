@@ -16,19 +16,19 @@ namespace ARMeilleure.CodeGen.X86
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         private enum InstructionFlags
         {
-            None     = 0,
-            RegOnly  = 1 << 0,
-            Reg8Src  = 1 << 1,
+            None = 0,
+            RegOnly = 1 << 0,
+            Reg8Src = 1 << 1,
             Reg8Dest = 1 << 2,
-            RexW     = 1 << 3,
-            Vex      = 1 << 4,
-            Evex     = 1 << 5,
+            RexW = 1 << 3,
+            Vex = 1 << 4,
+            Evex = 1 << 5,
 
-            PrefixBit  = 16,
+            PrefixBit = 16,
             PrefixMask = 7 << PrefixBit,
-            Prefix66   = 1 << PrefixBit,
-            PrefixF3   = 2 << PrefixBit,
-            PrefixF2   = 4 << PrefixBit
+            Prefix66 = 1 << PrefixBit,
+            PrefixF3 = 2 << PrefixBit,
+            PrefixF2 = 4 << PrefixBit,
         }
 
         private readonly struct InstructionInfo

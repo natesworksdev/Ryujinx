@@ -636,6 +636,6 @@ namespace ARMeilleure.IntermediateRepresentation
         Arm64VByte = 0 << Arm64VSizeShift,
         Arm64VHWord = 1 << Arm64VSizeShift,
         Arm64VWord = 2 << Arm64VSizeShift,
-        Arm64VDWord = 3 << Arm64VSizeShift
+        Arm64VDWord = 3 << Arm64VSizeShift,
     }
 }

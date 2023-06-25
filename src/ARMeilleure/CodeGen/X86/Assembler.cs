@@ -15,7 +15,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private const int OpModRMBits = 24;
 
-        private const byte RexPrefix  = 0x40;
+        private const byte RexPrefix = 0x40;
         private const byte RexWPrefix = 0x48;
         private const byte LockPrefix = 0xf0;
 
@@ -799,7 +799,7 @@ namespace ARMeilleure.CodeGen.X86
                             {
                                 JumpIndex = _jumps.Count - 1,
                                 Position = (int)_stream.Position,
-                                Symbol = source.Symbol
+                                Symbol = source.Symbol,
                             });
                         }
 
@@ -959,7 +959,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            bool needsSibByte      = false;
+            bool needsSibByte = false;
             bool needsDisplacement = false;
 
             int sib = 0;
@@ -1049,7 +1049,7 @@ namespace ARMeilleure.CodeGen.X86
                     InstructionFlags.Prefix66 => 1,
                     InstructionFlags.PrefixF3 => 2,
                     InstructionFlags.PrefixF2 => 3,
-                    _ => 0
+                    _ => 0,
                 };
 
                 if (src1 != default)
@@ -1233,7 +1233,7 @@ namespace ARMeilleure.CodeGen.X86
                 InstructionFlags.Prefix66 => 0b01,
                 InstructionFlags.PrefixF3 => 0b10,
                 InstructionFlags.PrefixF2 => 0b11,
-                _ => 0
+                _ => 0,
             };
             WriteByte(
                 (byte)(

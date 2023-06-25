@@ -173,7 +173,7 @@ namespace ARMeilleure.State
         /// <returns>A new <see cref="byte"/> array which represents the <see cref="V128"/></returns>
         public readonly byte[] ToArray()
         {
-            byte[]     data = new byte[16];
+            byte[] data = new byte[16];
             Span<byte> span = data;
 
             BitConverter.TryWriteBytes(span, _e0);

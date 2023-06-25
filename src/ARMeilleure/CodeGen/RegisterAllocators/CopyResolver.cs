@@ -1,7 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
-
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
@@ -43,12 +42,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public void Sequence(List<Operation> sequence)
             {
                 Dictionary<Register, Register> locations = new();
-                Dictionary<Register, Register> sources   = new();
+                Dictionary<Register, Register> sources = new();
 
                 Dictionary<Register, OperandType> types = new();
 
                 Queue<Register> pendingQueue = new();
-                Queue<Register> readyQueue   = new();
+                Queue<Register> readyQueue = new();
 
                 foreach (Copy copy in _copies)
                 {

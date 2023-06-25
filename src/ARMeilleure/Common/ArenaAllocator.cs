@@ -84,7 +84,7 @@ namespace ARMeilleure.Common
             {
                 _page = new PageInfo
                 {
-                    Pointer = (byte*)NativeAllocator.Instance.Allocate(_pageSize)
+                    Pointer = (byte*)NativeAllocator.Instance.Allocate(_pageSize),
                 };
 
                 _pages.Add(_page);
@@ -132,8 +132,8 @@ namespace ARMeilleure.Common
                 >= 5000 => 0,
                 >= 2500 => 50,
                 >= 1000 => 100,
-                >= 10   => 1500,
-                _       => 5000
+                >= 10 => 1500,
+                _ => 5000,
             };
 
             for (int i = _pages.Count - 1; i >= 0; i--)

@@ -55,7 +55,7 @@ namespace ARMeilleure.Instructions
                     (1, true) => nameof(SoftFallback.Crc32ch),
                     (2, true) => nameof(SoftFallback.Crc32cw),
                     (3, true) => nameof(SoftFallback.Crc32cx),
-                    _ => throw new ArgumentOutOfRangeException(nameof(size))
+                    _ => throw new ArgumentOutOfRangeException(nameof(size)),
                 };
 
                 return context.Call(typeof(SoftFallback).GetMethod(name), crc, value);

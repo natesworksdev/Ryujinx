@@ -29,15 +29,15 @@ namespace ARMeilleure.Translation.Cache
 
         private enum UnwindOp
         {
-            PushNonvol    = 0,
-            AllocLarge    = 1,
-            AllocSmall    = 2,
-            SetFpreg      = 3,
-            SaveNonvol    = 4,
+            PushNonvol = 0,
+            AllocLarge = 1,
+            AllocSmall = 2,
+            SetFpreg = 3,
+            SaveNonvol = 4,
             SaveNonvolFar = 5,
-            SaveXmm128    = 8,
+            SaveXmm128 = 8,
             SaveXmm128Far = 9,
-            PushMachframe = 10
+            PushMachframe = 10,
         }
 
         private unsafe delegate RuntimeFunction* GetRuntimeFunctionCallback(ulong controlPc, IntPtr context);

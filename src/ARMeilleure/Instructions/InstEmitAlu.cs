@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System.Diagnostics;
-
 using static ARMeilleure.Instructions.InstEmitAluHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -281,7 +280,7 @@ namespace ARMeilleure.Instructions
             Debug.Assert(op.Type == OperandType.I64);
 
             Operand val = context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op, Const(0xaaaaaaaaaaaaaaaaul)), Const(1)),
-                                            context.ShiftLeft   (context.BitwiseAnd(op, Const(0x5555555555555555ul)), Const(1)));
+                                            context.ShiftLeft(context.BitwiseAnd(op, Const(0x5555555555555555ul)), Const(1)));
 
             val = context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(val, Const(0xccccccccccccccccul)), Const(2)),
                                     context.ShiftLeft(context.BitwiseAnd(val, Const(0x3333333333333333ul)), Const(2)));

@@ -9,7 +9,7 @@ namespace ARMeilleure.IntermediateRepresentation
         I64,
         FP32,
         FP64,
-        V128
+        V128,
     }
 
     static class OperandTypeExtensions

@@ -11,12 +11,12 @@ namespace ARMeilleure.Decoders
 
         public OpCodeSimdMemSs(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            int size   = (opCode >> 10) & 3;
-            int s      = (opCode >> 12) & 1;
+            int size = (opCode >> 10) & 3;
+            int s = (opCode >> 12) & 1;
             int sElems = (opCode >> 12) & 2;
-            int scale  = (opCode >> 14) & 3;
-            int l      = (opCode >> 22) & 1;
-            int q      = (opCode >> 30) & 1;
+            int scale = (opCode >> 14) & 3;
+            int l = (opCode >> 22) & 1;
+            int q = (opCode >> 30) & 1;
 
             sElems |= (opCode >> 21) & 1;
 

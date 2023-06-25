@@ -13,8 +13,8 @@ namespace ARMeilleure.Translation.Cache
 {
     static partial class JitCache
     {
-        private static readonly int PageSize = (int)MemoryBlock.GetPageSize();
-        private static readonly int PageMask = PageSize - 1;
+        private static readonly int _pageSize = (int)MemoryBlock.GetPageSize();
+        private static readonly int _pageMask = _pageSize - 1;
 
         private const int CodeAlignment = 4; // Bytes.
         private const int CacheSize = 2047 * 1024 * 1024;
@@ -58,7 +58,7 @@ namespace ARMeilleure.Translation.Cache
 
                 if (OperatingSystem.IsWindows())
                 {
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
+                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(_pageSize));
                 }
 
                 _initialized = true;
@@ -130,8 +130,8 @@ namespace ARMeilleure.Translation.Cache
         {
             int endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            int regionStart = offset & ~_pageMask;
+            int regionEnd = (endOffs + _pageMask) & ~_pageMask;
 
             _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
@@ -140,8 +140,8 @@ namespace ARMeilleure.Translation.Cache
         {
             int endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            int regionStart = offset & ~_pageMask;
+            int regionEnd = (endOffs + _pageMask) & ~_pageMask;
 
             _jitRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }

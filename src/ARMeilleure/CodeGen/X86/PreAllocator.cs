@@ -456,7 +456,7 @@ namespace ARMeilleure.CodeGen.X86
             // Unsigned integer to FP conversions are not supported on X86.
             // We need to turn them into signed integer to FP conversions, and
             // adjust the final result.
-            Operand dest   = node.Destination;
+            Operand dest = node.Destination;
             Operand source = node.GetSource(0);
 
             Debug.Assert(source.Type.IsInteger(), $"Invalid source type \"{source.Type}\".");
@@ -484,7 +484,7 @@ namespace ARMeilleure.CodeGen.X86
                 // --- This can be done efficiently by adding the result to itself.
                 // -- Then, we need to add the least significant bit that was shifted out.
                 // --- We can convert the least significant bit to float, and add it to the result.
-                Operand lsb  = Local(OperandType.I64);
+                Operand lsb = Local(OperandType.I64);
                 Operand half = Local(OperandType.I64);
 
                 Operand lsbF = Local(dest.Type);
@@ -510,7 +510,7 @@ namespace ARMeilleure.CodeGen.X86
             // There's no SSE FP negate instruction, so we need to transform that into
             // a XOR of the value to be negated with a mask with the highest bit set.
             // This also produces -0 for a negation of the value 0.
-            Operand dest   = node.Destination;
+            Operand dest = node.Destination;
             Operand source = node.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.FP32 ||

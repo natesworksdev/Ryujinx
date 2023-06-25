@@ -9,11 +9,11 @@ namespace ARMeilleure.Decoders
 
         private enum MemOp
         {
-            Unscaled     = 0,
-            PostIndexed  = 1,
+            Unscaled = 0,
+            PostIndexed = 1,
             Unprivileged = 2,
-            PreIndexed   = 3,
-            Unsigned
+            PreIndexed = 3,
+            Unsigned,
         }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemImm(inst, address, opCode);

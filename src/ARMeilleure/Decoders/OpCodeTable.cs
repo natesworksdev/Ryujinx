@@ -29,13 +29,13 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        private static readonly List<InstInfo> AllInstA32 = new();
-        private static readonly List<InstInfo> AllInstT32 = new();
-        private static readonly List<InstInfo> AllInstA64 = new();
+        private static readonly List<InstInfo> _allInstA32 = new();
+        private static readonly List<InstInfo> _allInstT32 = new();
+        private static readonly List<InstInfo> _allInstA64 = new();
 
-        private static readonly InstInfo[][] InstA32FastLookup = new InstInfo[FastLookupSize][];
-        private static readonly InstInfo[][] InstT32FastLookup = new InstInfo[FastLookupSize][];
-        private static readonly InstInfo[][] InstA64FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] _instA32FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] _instT32FastLookup = new InstInfo[FastLookupSize][];
+        private static readonly InstInfo[][] _instA64FastLookup = new InstInfo[FastLookupSize][];
 
         static OpCodeTable()
         {
@@ -1300,13 +1300,13 @@ namespace ARMeilleure.Decoders
             SetT32("11110011101011111000000000000001", InstName.Yield,    InstEmit32.Nop,      OpCodeT32.Create);
 #endregion
 
-            FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
-            FillFastLookupTable(InstT32FastLookup, AllInstT32, ToFastLookupIndexT);
-            FillFastLookupTable(InstA64FastLookup, AllInstA64, ToFastLookupIndexA);
+            FillFastLookupTable(_instA32FastLookup, _allInstA32, ToFastLookupIndexA);
+            FillFastLookupTable(_instT32FastLookup, _allInstT32, ToFastLookupIndexT);
+            FillFastLookupTable(_instA64FastLookup, _allInstA64, ToFastLookupIndexA);
 #pragma warning restore IDE0055
         }
 
-        private static void FillFastLookupTable(InstInfo[][] table, List<InstInfo> allInsts, Func<int, int> ToFastLookupIndex)
+        private static void FillFastLookupTable(InstInfo[][] table, List<InstInfo> allInsts, Func<int, int> toFastLookupIndex)
         {
             List<InstInfo>[] temp = new List<InstInfo>[FastLookupSize];
 
@@ -1317,8 +1317,8 @@ namespace ARMeilleure.Decoders
 
             foreach (InstInfo inst in allInsts)
             {
-                int mask  = ToFastLookupIndex(inst.Mask);
-                int value = ToFastLookupIndex(inst.Value);
+                int mask = toFastLookupIndex(inst.Mask);
+                int value = toFastLookupIndex(inst.Value);
 
                 for (int index = 0; index < temp.Length; index++)
                 {
@@ -1337,21 +1337,21 @@ namespace ARMeilleure.Decoders
 
         private static void SetA32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
-            Set(encoding, AllInstA32, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, _allInstA32, new InstDescriptor(name, emitter), makeOp);
         }
 
         private static void SetT16(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
             encoding = "xxxxxxxxxxxxxxxx" + encoding;
-            Set(encoding, AllInstT32, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, _allInstT32, new InstDescriptor(name, emitter), makeOp);
         }
 
         private static void SetT32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
             string reversedEncoding = $"{encoding.AsSpan(16)}{encoding.AsSpan(0, 16)}";
-            OpCode reversedMakeOp(InstDescriptor inst, ulong address, int opCode)
+            OpCode ReversedMakeOp(InstDescriptor inst, ulong address, int opCode)
                     => makeOp(inst, address, (int)BitOperations.RotateRight((uint)opCode, 16));
-            Set(reversedEncoding, AllInstT32, new InstDescriptor(name, emitter), reversedMakeOp);
+            Set(reversedEncoding, _allInstT32, new InstDescriptor(name, emitter), ReversedMakeOp);
         }
 
         private static void SetVfp(string encoding, InstName name, InstEmitter emitter, MakeOp makeOpA32, MakeOp makeOpT32)
@@ -1396,12 +1396,12 @@ namespace ARMeilleure.Decoders
 
         private static void SetA64(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
-            Set(encoding, AllInstA64, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, _allInstA64, new InstDescriptor(name, emitter), makeOp);
         }
 
         private static void Set(string encoding, List<InstInfo> list, InstDescriptor inst, MakeOp makeOp)
         {
-            int bit   = encoding.Length - 1;
+            int bit = encoding.Length - 1;
             int value = 0;
             int xMask = 0;
             int xBits = 0;
@@ -1471,17 +1471,17 @@ namespace ARMeilleure.Decoders
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstA32(int opCode)
         {
-            return GetInstFromList(InstA32FastLookup[ToFastLookupIndexA(opCode)], opCode);
+            return GetInstFromList(_instA32FastLookup[ToFastLookupIndexA(opCode)], opCode);
         }
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstT32(int opCode)
         {
-            return GetInstFromList(InstT32FastLookup[ToFastLookupIndexT(opCode)], opCode);
+            return GetInstFromList(_instT32FastLookup[ToFastLookupIndexT(opCode)], opCode);
         }
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstA64(int opCode)
         {
-            return GetInstFromList(InstA64FastLookup[ToFastLookupIndexA(opCode)], opCode);
+            return GetInstFromList(_instA64FastLookup[ToFastLookupIndexA(opCode)], opCode);
         }
 
         private static (InstDescriptor inst, MakeOp makeOp) GetInstFromList(InstInfo[] insts, int opCode)

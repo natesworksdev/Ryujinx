@@ -297,7 +297,7 @@ namespace ARMeilleure.Instructions
         #endregion
 
         #region "Crc32"
-        private const uint Crc32RevPoly  = 0xedb88320;
+        private const uint Crc32RevPoly = 0xedb88320;
         private const uint Crc32cRevPoly = 0x82f63b78;
 
         public static uint Crc32b(uint crc, byte value) => Crc32(crc, Crc32RevPoly, value);

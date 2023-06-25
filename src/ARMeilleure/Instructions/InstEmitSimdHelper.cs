@@ -6,7 +6,6 @@ using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -23,14 +22,14 @@ namespace ARMeilleure.Instructions
         {
             14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0, // B
             13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0, // H
-            11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0  // S
+            11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0, // S
         };
 
         public static readonly long[] OddMasks = new long[]
         {
             15L << 56 | 13L << 48 | 11L << 40 | 09L << 32 | 07L << 24 | 05L << 16 | 03L << 8 | 01L << 0, // B
             15L << 56 | 14L << 48 | 11L << 40 | 10L << 32 | 07L << 24 | 06L << 16 | 03L << 8 | 02L << 0, // H
-            15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0  // S
+            15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0, // S
         };
 
         public static readonly long ZeroMask = 128L << 56 | 128L << 48 | 128L << 40 | 128L << 32 | 128L << 24 | 128L << 16 | 128L << 8 | 128L << 0;
@@ -38,7 +37,7 @@ namespace ARMeilleure.Instructions
         public static ulong X86GetGf2p8LogicalShiftLeft(int shift)
         {
             ulong identity = (0b00000001UL << 56) | (0b00000010UL << 48) | (0b00000100UL << 40) | (0b00001000UL << 32) |
-                             (0b00010000UL << 24) | (0b00100000UL << 16) | (0b01000000UL <<  8) | (0b10000000UL <<  0);
+                             (0b00010000UL << 24) | (0b00100000UL << 16) | (0b01000000UL << 8) | (0b10000000UL << 0);
 
             return shift >= 0 ? identity >> (shift * 8) : identity << (-shift * 8);
         }
@@ -50,7 +49,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Paddb,
             Intrinsic.X86Paddw,
             Intrinsic.X86Paddd,
-            Intrinsic.X86Paddq
+            Intrinsic.X86Paddq,
         };
 
         public static readonly Intrinsic[] X86PcmpeqInstruction = new Intrinsic[]
@@ -58,7 +57,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Pcmpeqb,
             Intrinsic.X86Pcmpeqw,
             Intrinsic.X86Pcmpeqd,
-            Intrinsic.X86Pcmpeqq
+            Intrinsic.X86Pcmpeqq,
         };
 
         public static readonly Intrinsic[] X86PcmpgtInstruction = new Intrinsic[]
@@ -66,49 +65,49 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Pcmpgtb,
             Intrinsic.X86Pcmpgtw,
             Intrinsic.X86Pcmpgtd,
-            Intrinsic.X86Pcmpgtq
+            Intrinsic.X86Pcmpgtq,
         };
 
         public static readonly Intrinsic[] X86PmaxsInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pmaxsb,
             Intrinsic.X86Pmaxsw,
-            Intrinsic.X86Pmaxsd
+            Intrinsic.X86Pmaxsd,
         };
 
         public static readonly Intrinsic[] X86PmaxuInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pmaxub,
             Intrinsic.X86Pmaxuw,
-            Intrinsic.X86Pmaxud
+            Intrinsic.X86Pmaxud,
         };
 
         public static readonly Intrinsic[] X86PminsInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pminsb,
             Intrinsic.X86Pminsw,
-            Intrinsic.X86Pminsd
+            Intrinsic.X86Pminsd,
         };
 
         public static readonly Intrinsic[] X86PminuInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pminub,
             Intrinsic.X86Pminuw,
-            Intrinsic.X86Pminud
+            Intrinsic.X86Pminud,
         };
 
         public static readonly Intrinsic[] X86PmovsxInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pmovsxbw,
             Intrinsic.X86Pmovsxwd,
-            Intrinsic.X86Pmovsxdq
+            Intrinsic.X86Pmovsxdq,
         };
 
         public static readonly Intrinsic[] X86PmovzxInstruction = new Intrinsic[]
         {
             Intrinsic.X86Pmovzxbw,
             Intrinsic.X86Pmovzxwd,
-            Intrinsic.X86Pmovzxdq
+            Intrinsic.X86Pmovzxdq,
         };
 
         public static readonly Intrinsic[] X86PsllInstruction = new Intrinsic[]
@@ -116,14 +115,14 @@ namespace ARMeilleure.Instructions
             0,
             Intrinsic.X86Psllw,
             Intrinsic.X86Pslld,
-            Intrinsic.X86Psllq
+            Intrinsic.X86Psllq,
         };
 
         public static readonly Intrinsic[] X86PsraInstruction = new Intrinsic[]
         {
             0,
             Intrinsic.X86Psraw,
-            Intrinsic.X86Psrad
+            Intrinsic.X86Psrad,
         };
 
         public static readonly Intrinsic[] X86PsrlInstruction = new Intrinsic[]
@@ -131,7 +130,7 @@ namespace ARMeilleure.Instructions
             0,
             Intrinsic.X86Psrlw,
             Intrinsic.X86Psrld,
-            Intrinsic.X86Psrlq
+            Intrinsic.X86Psrlq,
         };
 
         public static readonly Intrinsic[] X86PsubInstruction = new Intrinsic[]
@@ -139,7 +138,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Psubb,
             Intrinsic.X86Psubw,
             Intrinsic.X86Psubd,
-            Intrinsic.X86Psubq
+            Intrinsic.X86Psubq,
         };
 
         public static readonly Intrinsic[] X86PunpckhInstruction = new Intrinsic[]
@@ -147,7 +146,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Punpckhbw,
             Intrinsic.X86Punpckhwd,
             Intrinsic.X86Punpckhdq,
-            Intrinsic.X86Punpckhqdq
+            Intrinsic.X86Punpckhqdq,
         };
 
         public static readonly Intrinsic[] X86PunpcklInstruction = new Intrinsic[]
@@ -155,7 +154,7 @@ namespace ARMeilleure.Instructions
             Intrinsic.X86Punpcklbw,
             Intrinsic.X86Punpcklwd,
             Intrinsic.X86Punpckldq,
-            Intrinsic.X86Punpcklqdq
+            Intrinsic.X86Punpcklqdq,
         };
         #endregion
 
@@ -462,7 +461,7 @@ namespace ARMeilleure.Instructions
 
             MethodInfo info = (op.Size & 1) == 0
                 ? typeof(MathF).GetMethod(name, new Type[] { typeof(float) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double) });
+                : typeof(Math).GetMethod(name, new Type[] { typeof(double) });
 
             return context.Call(info, n);
         }
@@ -474,8 +473,8 @@ namespace ARMeilleure.Instructions
             string name = nameof(Math.Round);
 
             MethodInfo info = (op.Size & 1) == 0
-                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float),  typeof(MidpointRounding) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double), typeof(MidpointRounding) });
+                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float), typeof(MidpointRounding) })
+                : typeof(Math).GetMethod(name, new Type[] { typeof(double), typeof(MidpointRounding) });
 
             return context.Call(info, n, Const((int)roundMode));
         }
@@ -1016,8 +1015,8 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = EmitVectorExtract(context, op.Rn,        index, op.Size + 1, signed);
-                Operand me = EmitVectorExtract(context, op.Rm, part + index, op.Size,     signed);
+                Operand ne = EmitVectorExtract(context, op.Rn, index, op.Size + 1, signed);
+                Operand me = EmitVectorExtract(context, op.Rm, part + index, op.Size, signed);
 
                 res = EmitVectorInsert(context, res, emit(ne, me), index, op.Size + 1);
             }
@@ -1078,9 +1077,9 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = EmitVectorExtract(context, op.Rd,        index, op.Size + 1, signed);
-                Operand ne = EmitVectorExtract(context, op.Rn, part + index, op.Size,     signed);
-                Operand me = EmitVectorExtract(context, op.Rm, part + index, op.Size,     signed);
+                Operand de = EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
+                Operand ne = EmitVectorExtract(context, op.Rn, part + index, op.Size, signed);
+                Operand me = EmitVectorExtract(context, op.Rm, part + index, op.Size, signed);
 
                 res = EmitVectorInsert(context, res, emit(de, ne, me), index, op.Size + 1);
             }
@@ -1144,8 +1143,8 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = EmitVectorExtract(context, op.Rd,        index, op.Size + 1, signed);
-                Operand ne = EmitVectorExtract(context, op.Rn, part + index, op.Size,     signed);
+                Operand de = EmitVectorExtract(context, op.Rd, index, op.Size + 1, signed);
+                Operand ne = EmitVectorExtract(context, op.Rn, part + index, op.Size, signed);
 
                 res = EmitVectorInsert(context, res, emit(de, ne, me), index, op.Size + 1);
             }
@@ -1175,10 +1174,10 @@ namespace ARMeilleure.Instructions
             {
                 int pairIndex = index << 1;
 
-                Operand n0 = EmitVectorExtract(context, op.Rn, pairIndex,     op.Size, signed);
+                Operand n0 = EmitVectorExtract(context, op.Rn, pairIndex, op.Size, signed);
                 Operand n1 = EmitVectorExtract(context, op.Rn, pairIndex + 1, op.Size, signed);
 
-                Operand m0 = EmitVectorExtract(context, op.Rm, pairIndex,     op.Size, signed);
+                Operand m0 = EmitVectorExtract(context, op.Rm, pairIndex, op.Size, signed);
                 Operand m1 = EmitVectorExtract(context, op.Rm, pairIndex + 1, op.Size, signed);
 
                 res = EmitVectorInsert(context, res, emit(n0, n1), index, op.Size);
@@ -1198,11 +1197,11 @@ namespace ARMeilleure.Instructions
             if (op.RegisterSize == RegisterSize.Simd64)
             {
                 Operand zeroEvenMask = X86GetElements(context, ZeroMask, EvenMasks[op.Size]);
-                Operand zeroOddMask  = X86GetElements(context, ZeroMask, OddMasks [op.Size]);
+                Operand zeroOddMask = X86GetElements(context, ZeroMask, OddMasks[op.Size]);
 
                 Operand mN = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, n, m); // m:n
 
-                Operand left  = context.AddIntrinsic(Intrinsic.X86Pshufb, mN, zeroEvenMask); // 0:even from m:n
+                Operand left = context.AddIntrinsic(Intrinsic.X86Pshufb, mN, zeroEvenMask); // 0:even from m:n
                 Operand right = context.AddIntrinsic(Intrinsic.X86Pshufb, mN, zeroOddMask);  // 0:odd  from m:n
 
                 context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[op.Size], left, right));
@@ -1214,14 +1213,14 @@ namespace ARMeilleure.Instructions
                 Operand oddEvenN = context.AddIntrinsic(Intrinsic.X86Pshufb, n, oddEvenMask); // odd:even from n
                 Operand oddEvenM = context.AddIntrinsic(Intrinsic.X86Pshufb, m, oddEvenMask); // odd:even from m
 
-                Operand left  = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, oddEvenN, oddEvenM);
+                Operand left = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, oddEvenN, oddEvenM);
                 Operand right = context.AddIntrinsic(Intrinsic.X86Punpckhqdq, oddEvenN, oddEvenM);
 
                 context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[op.Size], left, right));
             }
             else
             {
-                Operand left  = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, n, m);
+                Operand left = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, n, m);
                 Operand right = context.AddIntrinsic(Intrinsic.X86Punpckhqdq, n, m);
 
                 context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[3], left, right));
@@ -1434,18 +1433,18 @@ namespace ARMeilleure.Instructions
         public enum CmpCondition
         {
             // Legacy Sse.
-            Equal              = 0, // Ordered, non-signaling.
-            LessThan           = 1, // Ordered, signaling.
-            LessThanOrEqual    = 2, // Ordered, signaling.
-            UnorderedQ         = 3, // Non-signaling.
-            NotLessThan        = 5, // Unordered, signaling.
+            Equal = 0, // Ordered, non-signaling.
+            LessThan = 1, // Ordered, signaling.
+            LessThanOrEqual = 2, // Ordered, signaling.
+            UnorderedQ = 3, // Non-signaling.
+            NotLessThan = 5, // Unordered, signaling.
             NotLessThanOrEqual = 6, // Unordered, signaling.
-            OrderedQ           = 7, // Non-signaling.
+            OrderedQ = 7, // Non-signaling.
 
             // Vex.
             GreaterThanOrEqual = 13, // Ordered, signaling.
-            GreaterThan        = 14, // Ordered, signaling.
-            OrderedS           = 23  // Signaling.
+            GreaterThan = 14, // Ordered, signaling.
+            OrderedS = 23, // Signaling.
         }
 
         [Flags]
@@ -1460,7 +1459,7 @@ namespace ARMeilleure.Instructions
             Add = 1 << 3,
             Sub = 1 << 4,
 
-            Accumulate = 1 << 5
+            Accumulate = 1 << 5,
         }
 
         public static void EmitScalarSaturatingUnaryOpSx(ArmEmitterContext context, Func1I emit)
@@ -1580,7 +1579,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand de;
                     Operand ne = EmitVectorExtract(context, op.Rn, index, op.Size, !signed);
-                    Operand me = EmitVectorExtract(context, op.Rd, index, op.Size,  signed);
+                    Operand me = EmitVectorExtract(context, op.Rd, index, op.Size, signed);
 
                     if (op.Size <= 2)
                     {
@@ -1628,7 +1627,7 @@ namespace ARMeilleure.Instructions
         [Flags]
         public enum SaturatingNarrowFlags
         {
-            Scalar    = 1 << 0,
+            Scalar = 1 << 0,
             SignedSrc = 1 << 1,
             SignedDst = 1 << 2,
 
@@ -1638,14 +1637,14 @@ namespace ARMeilleure.Instructions
 
             VectorSxSx = SignedSrc | SignedDst,
             VectorSxZx = SignedSrc,
-            VectorZxZx = 0
+            VectorZxZx = 0,
         }
 
         public static void EmitSaturatingNarrowOp(ArmEmitterContext context, SaturatingNarrowFlags flags)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            bool scalar    = (flags & SaturatingNarrowFlags.Scalar)    != 0;
+            bool scalar = (flags & SaturatingNarrowFlags.Scalar) != 0;
             bool signedSrc = (flags & SaturatingNarrowFlags.SignedSrc) != 0;
             bool signedDst = (flags & SaturatingNarrowFlags.SignedDst) != 0;
 

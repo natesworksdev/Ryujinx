@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -493,7 +492,7 @@ namespace ARMeilleure.Instructions
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
             Operand lblTrue = Label();
-            Operand lblEnd  = Label();
+            Operand lblEnd = Label();
 
             context.BranchIfTrue(lblTrue, InstEmitFlowHelper.GetCondTrue(context, op.Cond));
 

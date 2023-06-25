@@ -10,7 +10,7 @@ namespace ARMeilleure.Decoders
             Imm8ToFP64Table = BuildImm8ToFP64Table();
         }
 
-        public static readonly uint[]  Imm8ToFP32Table;
+        public static readonly uint[] Imm8ToFP32Table;
         public static readonly ulong[] Imm8ToFP64Table;
 
         private static uint[] BuildImm8ToFP32Table()
@@ -76,8 +76,8 @@ namespace ARMeilleure.Decoders
         {
             public long WMask;
             public long TMask;
-            public int  Pos;
-            public int  Shift;
+            public int Pos;
+            public int Shift;
             public bool IsUndefined;
 
             public static BitMask Invalid => new() { IsUndefined = true };
@@ -88,7 +88,7 @@ namespace ARMeilleure.Decoders
             int immS = (opCode >> 10) & 0x3f;
             int immR = (opCode >> 16) & 0x3f;
 
-            int n  = (opCode >> 22) & 1;
+            int n = (opCode >> 22) & 1;
             int sf = (opCode >> 31) & 1;
 
             int length = BitUtils.HighestBitSet((~immS & 0x3f) | (n << 6));
@@ -125,7 +125,7 @@ namespace ARMeilleure.Decoders
                 TMask = BitUtils.Replicate(tMask, size),
 
                 Pos = immS,
-                Shift = immR
+                Shift = immR,
             };
         }
 

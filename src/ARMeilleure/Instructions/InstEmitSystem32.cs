@@ -4,7 +4,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Reflection;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -89,7 +88,7 @@ namespace ARMeilleure.Instructions
                         2 => EmitGetTpidrEl0(context),
                         3 => EmitGetTpidrroEl0(context),
                         _ => throw new NotImplementedException(
-                            $"Unknown MRC Opc2 0x{op.Opc2:X} at 0x{op.Address:X} (0x{op.RawOpCode:X}).")
+                            $"Unknown MRC Opc2 0x{op.Opc2:X} at 0x{op.Address:X} (0x{op.RawOpCode:X})."),
                     };
 
                     break;

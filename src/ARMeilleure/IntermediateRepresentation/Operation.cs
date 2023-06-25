@@ -270,7 +270,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 Operation result = new()
                 {
                     _data = data,
-                    Instruction = inst
+                    Instruction = inst,
                 };
 
                 EnsureCapacity(ref result._data->Destinations, ref result._data->DestinationsCount, destCount);

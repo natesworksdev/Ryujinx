@@ -455,7 +455,7 @@ namespace ARMeilleure.IntermediateRepresentation
                     {
                         Operand interned = new()
                         {
-                            _data = &InternTable[(hash + i) % InternTableSize]
+                            _data = &InternTable[(hash + i) % InternTableSize],
                         };
 
                         // If slot matches the allocation request then return that slot.
@@ -486,7 +486,7 @@ namespace ARMeilleure.IntermediateRepresentation
                     _data = data,
                     Value = value,
                     Kind = kind,
-                    Type = type
+                    Type = type,
                 };
 
                 if (kind != OperandKind.Memory)

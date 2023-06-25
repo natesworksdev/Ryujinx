@@ -17,13 +17,12 @@ using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-
 using static ARMeilleure.Translation.PTC.PtcFormatter;
 
 namespace ARMeilleure.Translation.PTC
 {
-    using Arm64HardwareCapabilities = ARMeilleure.CodeGen.Arm64.HardwareCapabilities;
-    using X86HardwareCapabilities = ARMeilleure.CodeGen.X86.HardwareCapabilities;
+    using Arm64HardwareCapabilities = CodeGen.Arm64.HardwareCapabilities;
+    using X86HardwareCapabilities = CodeGen.X86.HardwareCapabilities;
 
     class Ptc : IPtcLoadState
     {
@@ -432,7 +431,7 @@ namespace ARMeilleure.Translation.PTC
                 InfosLength = (int)_infosStream.Length,
                 CodesLength = _codesList.Length(),
                 RelocsLength = (int)_relocsStream.Length,
-                UnwindInfosLength = (int)_unwindInfosStream.Length
+                UnwindInfosLength = (int)_unwindInfosStream.Length,
             };
 
             OuterHeader outerHeader = new()
@@ -451,7 +450,7 @@ namespace ARMeilleure.Translation.PTC
                 innerHeader.InfosLength +
                 innerHeader.CodesLength +
                 innerHeader.RelocsLength +
-                innerHeader.UnwindInfosLength
+                innerHeader.UnwindInfosLength,
             };
 
             outerHeader.SetHeaderHash();
@@ -814,7 +813,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 Name = "Ptc.ProgressReporter",
                 Priority = ThreadPriority.Lowest,
-                IsBackground = true
+                IsBackground = true,
             };
 
             progressReportThread.Start(progressReportEvent);
@@ -850,7 +849,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 Thread thread = new(TranslateFuncs)
                 {
-                    IsBackground = true
+                    IsBackground = true,
                 };
 
                 threads.Add(thread);
@@ -874,7 +873,7 @@ namespace ARMeilleure.Translation.PTC
 
             Thread preSaveThread = new(PreSave)
             {
-                IsBackground = true
+                IsBackground = true,
             };
             preSaveThread.Start();
         }
@@ -921,7 +920,7 @@ namespace ARMeilleure.Translation.PTC
                     HighCq = highCq,
                     Stubbed = false,
                     CodeLength = code.Length,
-                    RelocEntriesCount = relocInfo.Entries.Length
+                    RelocEntriesCount = relocInfo.Entries.Length,
                 };
 
                 SerializeStructure(_infosStream, infoEntry);

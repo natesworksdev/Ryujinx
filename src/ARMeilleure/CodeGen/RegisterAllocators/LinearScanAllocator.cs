@@ -14,7 +14,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     // http://www.christianwimmer.at/Publications/Wimmer04a/Wimmer04a.pdf
     class LinearScanAllocator : IRegisterAllocator
     {
-        private const int InstructionGap     = 2;
+        private const int InstructionGap = 2;
         private const int InstructionGapMask = InstructionGap - 1;
 
         private HashSet<int> _blockEdges;
@@ -668,10 +668,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             continue;
                         }
 
-                        int lEnd   = _blockRanges[block.Index].End - 1;
+                        int lEnd = _blockRanges[block.Index].End - 1;
                         int rStart = _blockRanges[succIndex].Start;
 
-                        LiveInterval left  = interval.GetSplitChild(lEnd);
+                        LiveInterval left = interval.GetSplitChild(lEnd);
                         LiveInterval right = interval.GetSplitChild(rStart);
 
                         if (left != default && right != default && left != right)
@@ -853,13 +853,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int mapSize = _intervals.Count;
 
-            BitMap[] blkLiveGen  = new BitMap[cfg.Blocks.Count];
+            BitMap[] blkLiveGen = new BitMap[cfg.Blocks.Count];
             BitMap[] blkLiveKill = new BitMap[cfg.Blocks.Count];
 
             // Compute local live sets.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BitMap liveGen  = new(Allocators.Default, mapSize);
+                BitMap liveGen = new(Allocators.Default, mapSize);
                 BitMap liveKill = new(Allocators.Default, mapSize);
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
@@ -912,7 +912,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
 
             // Compute global live sets.
-            BitMap[] blkLiveIn  = new BitMap[cfg.Blocks.Count];
+            BitMap[] blkLiveIn = new BitMap[cfg.Blocks.Count];
             BitMap[] blkLiveOut = new BitMap[cfg.Blocks.Count];
 
             for (int index = 0; index < cfg.Blocks.Count; index++)
@@ -966,7 +966,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 int instCount = Math.Max(block.Operations.Count, 1);
 
                 int blockStart = operationPos - instCount * InstructionGap;
-                int blockEnd   = operationPos;
+                int blockEnd = operationPos;
 
                 _blockRanges[block.Index] = new LiveRange(blockStart, blockEnd);
 

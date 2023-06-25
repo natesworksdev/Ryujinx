@@ -5,7 +5,6 @@ using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
 using System;
 using System.Reflection;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -20,7 +19,7 @@ namespace ARMeilleure.Instructions
         {
             Zx,
             Sx32,
-            Sx64
+            Sx64,
         }
 
         public static void EmitLoadZx(ArmEmitterContext context, Operand address, int rt, int size)
@@ -134,7 +133,7 @@ namespace ARMeilleure.Instructions
             Operand temp = context.AllocateLocal(size == 3 ? OperandType.I64 : OperandType.I32);
 
             Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblEnd = Label();
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false, size);
 
@@ -175,7 +174,7 @@ namespace ARMeilleure.Instructions
         private static void EmitReadInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
             Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblEnd = Label();
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false, size);
 
@@ -226,7 +225,7 @@ namespace ARMeilleure.Instructions
                 1 => context.Load16(physAddr),
                 2 => context.Load(OperandType.I32, physAddr),
                 3 => context.Load(OperandType.I64, physAddr),
-                _ => context.Load(OperandType.V128, physAddr)
+                _ => context.Load(OperandType.V128, physAddr),
             };
         }
 
@@ -239,7 +238,7 @@ namespace ARMeilleure.Instructions
             int size)
         {
             Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblEnd = Label();
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false, size);
 
@@ -286,7 +285,7 @@ namespace ARMeilleure.Instructions
         private static void EmitWriteInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
             Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblEnd = Label();
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: true, size);
 
@@ -361,7 +360,7 @@ namespace ARMeilleure.Instructions
             int size)
         {
             Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblEnd = Label();
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: true, size);
 

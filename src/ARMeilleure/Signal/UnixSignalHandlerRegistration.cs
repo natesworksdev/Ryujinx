@@ -50,7 +50,7 @@ namespace ARMeilleure.Signal
             SigAction sig = new()
             {
                 sa_handler = action,
-                sa_flags = SA_SIGINFO
+                sa_flags = SA_SIGINFO,
             };
 
             sigemptyset(ref sig.sa_mask);

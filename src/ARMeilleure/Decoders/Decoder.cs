@@ -163,7 +163,7 @@ namespace ARMeilleure.Decoders
         {
             index = 0;
 
-            int left  = 0;
+            int left = 0;
             int right = blocks.Count - 1;
 
             while (left <= right)

@@ -133,8 +133,8 @@ namespace ARMeilleure.Instructions
         {
             sign = (~(uint)valueBits & 0x8000u) == 0u;
 
-            uint exp16  = ((uint)valueBits & 0x7C00u) >> 10;
-            uint frac16 =  (uint)valueBits & 0x03FFu;
+            uint exp16 = ((uint)valueBits & 0x7C00u) >> 10;
+            uint frac16 = (uint)valueBits & 0x03FFu;
 
             double real;
 
@@ -180,7 +180,7 @@ namespace ARMeilleure.Instructions
             const int e = 5;
             const int f = 10;
 
-            bool   sign;
+            bool sign;
             double mantissa;
 
             if (real < 0d)
@@ -359,7 +359,7 @@ namespace ARMeilleure.Instructions
             const int e = 8;
             const int f = 23;
 
-            bool   sign;
+            bool sign;
             double mantissa;
 
             if (real < 0d)
@@ -534,7 +534,7 @@ namespace ARMeilleure.Instructions
             const int e = 11;
             const int f = 52;
 
-            bool   sign;
+            bool sign;
             double mantissa;
 
             if (real < 0d)
@@ -728,8 +728,8 @@ namespace ARMeilleure.Instructions
 
             sign = (~valueBits & 0x80000000u) == 0u;
 
-            uint exp32  = (valueBits & 0x7F800000u) >> 23;
-            uint frac32 =  valueBits & 0x007FFFFFu;
+            uint exp32 = (valueBits & 0x7F800000u) >> 23;
+            uint frac32 = valueBits & 0x007FFFFFu;
 
             double real;
 
@@ -1304,8 +1304,8 @@ namespace ARMeilleure.Instructions
                 bool infA = typeA == FPType.Infinity;
                 bool zeroA = typeA == FPType.Zero;
 
-                bool signP = sign1 ^  sign2;
-                bool infP  = inf1  || inf2;
+                bool signP = sign1 ^ sign2;
+                bool infP = inf1 || inf2;
                 bool zeroP = zero1 || zero2;
 
                 if ((inf1 && zero2) || (zero1 && inf2) || (infA && infP && signA != signP))
@@ -2159,8 +2159,8 @@ namespace ARMeilleure.Instructions
 
             sign = (~valueBits & 0x8000000000000000ul) == 0u;
 
-            ulong exp64  = (valueBits & 0x7FF0000000000000ul) >> 52;
-            ulong frac64 =  valueBits & 0x000FFFFFFFFFFFFFul;
+            ulong exp64 = (valueBits & 0x7FF0000000000000ul) >> 52;
+            ulong frac64 = valueBits & 0x000FFFFFFFFFFFFFul;
 
             double real;
 
@@ -2735,8 +2735,8 @@ namespace ARMeilleure.Instructions
                 bool infA = typeA == FPType.Infinity;
                 bool zeroA = typeA == FPType.Zero;
 
-                bool signP = sign1 ^  sign2;
-                bool infP  = inf1  || inf2;
+                bool signP = sign1 ^ sign2;
+                bool infP = inf1 || inf2;
                 bool zeroP = zero1 || zero2;
 
                 if ((inf1 && zero2) || (zero1 && inf2) || (infA && infP && signA != signP))

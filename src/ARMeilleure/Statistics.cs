@@ -18,11 +18,11 @@ namespace ARMeilleure
         private static Stopwatch _executionTimer;
 #endif
 
-        private static readonly ConcurrentDictionary<ulong, long> TicksPerFunction;
+        private static readonly ConcurrentDictionary<ulong, long> _ticksPerFunction;
 
         static Statistics()
         {
-            TicksPerFunction = new ConcurrentDictionary<ulong, long>();
+            _ticksPerFunction = new ConcurrentDictionary<ulong, long>();
         }
 
         public static void InitializeTimer()
@@ -76,7 +76,7 @@ namespace ARMeilleure
             sb.AppendLine(" Function address   | Time");
             sb.AppendLine("--------------------------");
 
-            KeyValuePair<ulong, long>[] funcTable = TicksPerFunction.ToArray();
+            KeyValuePair<ulong, long>[] funcTable = _ticksPerFunction.ToArray();
 
             foreach (KeyValuePair<ulong, long> kv in funcTable.OrderByDescending(x => x.Value))
             {

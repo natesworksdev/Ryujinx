@@ -22,10 +22,10 @@ namespace ARMeilleure.Decoders.Optimizations
             Block entryBlock = blocks[entryBlockId];
 
             Block startBlock = entryBlock;
-            Block endBlock   = entryBlock;
+            Block endBlock = entryBlock;
 
             int startBlockIndex = entryBlockId;
-            int endBlockIndex   = entryBlockId;
+            int endBlockIndex = entryBlockId;
 
             for (int i = entryBlockId + 1; i < blocks.Count; i++) // Search forwards.
             {

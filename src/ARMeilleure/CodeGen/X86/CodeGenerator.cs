@@ -17,7 +17,7 @@ namespace ARMeilleure.CodeGen.X86
     static class CodeGenerator
     {
         private const int RegistersCount = 16;
-        private const int PageSize       = 0x1000;
+        private const int PageSize = 0x1000;
         private const int StackGuardSize = 0x2000;
 
         private static readonly Action<CodeGenContext, Operation>[] _instTable;
@@ -284,7 +284,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     case IntrinsicType.PopCount:
                         {
-                            Operand dest   = operation.Destination;
+                            Operand dest = operation.Destination;
                             Operand source = operation.GetSource(0);
 
                             EnsureSameType(dest, source);
@@ -298,7 +298,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     case IntrinsicType.Unary:
                         {
-                            Operand dest   = operation.Destination;
+                            Operand dest = operation.Destination;
                             Operand source = operation.GetSource(0);
 
                             EnsureSameType(dest, source);
@@ -312,7 +312,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     case IntrinsicType.UnaryToGpr:
                         {
-                            Operand dest   = operation.Destination;
+                            Operand dest = operation.Destination;
                             Operand source = operation.GetSource(0);
 
                             Debug.Assert(dest.Type.IsInteger() && !source.Type.IsInteger());
@@ -594,7 +594,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateBitwiseNot(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             ValidateUnOp(dest, source);
@@ -632,7 +632,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateByteSwap(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             ValidateUnOp(dest, source);
@@ -775,7 +775,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateConvertI64ToI32(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.I32 && source.Type == OperandType.I64);
@@ -785,7 +785,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateConvertToFP(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.FP32 || dest.Type == OperandType.FP64);
@@ -826,7 +826,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateCopy(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             EnsureSameType(dest, source);
@@ -857,7 +857,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateCountLeadingZeros(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             EnsureSameType(dest, source);
@@ -890,9 +890,9 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateDivide(CodeGenContext context, Operation operation)
         {
-            Operand dest     = operation.Destination;
+            Operand dest = operation.Destination;
             Operand dividend = operation.GetSource(0);
-            Operand divisor  = operation.GetSource(1);
+            Operand divisor = operation.GetSource(1);
 
             if (!dest.Type.IsInteger())
             {
@@ -940,7 +940,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateFill(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand offset = operation.GetSource(0);
 
             Debug.Assert(offset.Kind == OperandKind.Constant);
@@ -956,7 +956,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateLoad(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.Destination;
+            Operand value = operation.Destination;
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             GenerateLoad(context, address, value);
@@ -964,7 +964,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateLoad16(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.Destination;
+            Operand value = operation.Destination;
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             Debug.Assert(value.Type.IsInteger());
@@ -974,7 +974,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateLoad8(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.Destination;
+            Operand value = operation.Destination;
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             Debug.Assert(value.Type.IsInteger());
@@ -1041,7 +1041,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateNegate(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             ValidateUnOp(dest, source);
@@ -1104,7 +1104,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateSignExtend16(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1114,7 +1114,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateSignExtend32(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1124,7 +1124,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateSignExtend8(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1160,7 +1160,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStackAlloc(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand offset = operation.GetSource(0);
 
             Debug.Assert(offset.Kind == OperandKind.Constant);
@@ -1176,7 +1176,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStore(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.GetSource(1);
+            Operand value = operation.GetSource(1);
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             GenerateStore(context, address, value);
@@ -1184,7 +1184,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStore16(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.GetSource(1);
+            Operand value = operation.GetSource(1);
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             Debug.Assert(value.Type.IsInteger());
@@ -1194,7 +1194,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateStore8(CodeGenContext context, Operation operation)
         {
-            Operand value   =        operation.GetSource(1);
+            Operand value = operation.GetSource(1);
             Operand address = Memory(operation.GetSource(0), value.Type);
 
             Debug.Assert(value.Type.IsInteger());
@@ -1233,7 +1233,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorCreateScalar(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(!dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1557,7 +1557,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorZeroUpper64(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.V128 && source.Type == OperandType.V128);
@@ -1567,7 +1567,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorZeroUpper96(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.V128 && source.Type == OperandType.V128);
@@ -1577,7 +1577,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateZeroExtend16(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1587,7 +1587,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateZeroExtend32(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1603,7 +1603,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateZeroExtend8(CodeGenContext context, Operation operation)
         {
-            Operand dest   = operation.Destination;
+            Operand dest = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
@@ -1857,7 +1857,7 @@ namespace ARMeilleure.CodeGen.X86
 
             size = (size + pageMask) & ~pageMask;
 
-            Operand rsp  = Register(X86Register.Rsp);
+            Operand rsp = Register(X86Register.Rsp);
             Operand temp = Register(CallingConvention.GetIntReturnRegister());
 
             for (int offset = PageSize; offset < size; offset += PageSize)

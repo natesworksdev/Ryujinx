@@ -1,11 +1,9 @@
-
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
@@ -339,7 +337,7 @@ namespace ARMeilleure.Instructions
                     CmpCondition.GreaterThanOrEqual => Intrinsic.Arm64FcmgeVz,
                     CmpCondition.LessThan => Intrinsic.Arm64FcmltVz,
                     CmpCondition.LessThanOrEqual => Intrinsic.Arm64FcmleVz,
-                    _ => throw new InvalidOperationException()
+                    _ => throw new InvalidOperationException(),
                 };
             }
             else
@@ -349,7 +347,7 @@ namespace ARMeilleure.Instructions
                     CmpCondition.Equal => Intrinsic.Arm64FcmeqV,
                     CmpCondition.GreaterThan => Intrinsic.Arm64FcmgtV,
                     CmpCondition.GreaterThanOrEqual => Intrinsic.Arm64FcmgeV,
-                    _ => throw new InvalidOperationException()
+                    _ => throw new InvalidOperationException(),
                 };
             }
 
