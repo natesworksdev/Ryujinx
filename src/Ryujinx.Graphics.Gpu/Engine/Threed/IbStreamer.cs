@@ -41,10 +41,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         /// <summary>
         /// Gets the number of elements on the current inline index buffer,
-        /// while also reseting it to zero for the next draw.
+        /// while also resetting it to zero for the next draw.
         /// </summary>
         /// <param name="renderer">Host renderer</param>
-        /// <returns>Inline index bufffer count</returns>
+        /// <returns>Inline index buffer count</returns>
         public int GetAndResetInlineIndexCount(IRenderer renderer)
         {
             UpdateRemaining(renderer);
