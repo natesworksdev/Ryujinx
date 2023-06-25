@@ -131,12 +131,12 @@ namespace Ryujinx.Ui.Windows
         {
             FileChooserNative fileChooser = new("Select DLC files", this, FileChooserAction.Open, "Add", "Cancel")
             {
-                SelectMultiple = true
+                SelectMultiple = true,
             };
 
             FileFilter filter = new()
             {
-                Name = "Switch Game DLCs"
+                Name = "Switch Game DLCs",
             };
             filter.AddPattern("*.nsp");
 
@@ -245,7 +245,7 @@ namespace Ryujinx.Ui.Windows
                         DownloadableContentContainer dlcContainer = new()
                         {
                             ContainerPath = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
-                            DownloadableContentNcaList = new List<DownloadableContentNca>()
+                            DownloadableContentNcaList = new List<DownloadableContentNca>(),
                         };
 
                         do
@@ -254,7 +254,7 @@ namespace Ryujinx.Ui.Windows
                             {
                                 Enabled = (bool)_dlcTreeView.Model.GetValue(childIter, 0),
                                 TitleId = Convert.ToUInt64(_dlcTreeView.Model.GetValue(childIter, 1).ToString(), 16),
-                                FullPath = (string)_dlcTreeView.Model.GetValue(childIter, 2)
+                                FullPath = (string)_dlcTreeView.Model.GetValue(childIter, 2),
                             });
                         }
                         while (_dlcTreeView.Model.IterNext(ref childIter));

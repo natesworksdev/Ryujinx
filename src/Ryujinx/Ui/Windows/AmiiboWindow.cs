@@ -55,7 +55,7 @@ namespace Ryujinx.Ui.Windows
 
             _httpClient = new HttpClient()
             {
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(30),
             };
 
             Directory.CreateDirectory(System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));

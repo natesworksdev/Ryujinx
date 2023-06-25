@@ -602,7 +602,7 @@ namespace Ryujinx.Ui.Windows
                         DpadUp = lDPadUp,
                         DpadDown = lDPadDown,
                         DpadLeft = lDPadLeft,
-                        DpadRight = lDPadRight
+                        DpadRight = lDPadRight,
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -622,7 +622,7 @@ namespace Ryujinx.Ui.Windows
                         ButtonR = rButtonR,
                         ButtonZr = rButtonZr,
                         ButtonSl = rButtonSl,
-                        ButtonSr = rButtonSr
+                        ButtonSr = rButtonSr,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -679,7 +679,7 @@ namespace Ryujinx.Ui.Windows
                         Slot = (int)_slotNumber.Value,
                         AltSlot = (int)_altSlotNumber.Value,
                         DsuServerHost = _dsuServerHost.Buffer.Text,
-                        DsuServerPort = port
+                        DsuServerPort = port,
                     };
                 }
                 else
@@ -715,7 +715,7 @@ namespace Ryujinx.Ui.Windows
                         DpadUp = lDPadUp,
                         DpadDown = lDPadDown,
                         DpadLeft = lDPadLeft,
-                        DpadRight = lDPadRight
+                        DpadRight = lDPadRight,
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -735,7 +735,7 @@ namespace Ryujinx.Ui.Windows
                         ButtonR = rButtonR,
                         ButtonZr = rButtonZr,
                         ButtonSl = rButtonSl,
-                        ButtonSr = rButtonSr
+                        ButtonSr = rButtonSr,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -750,8 +750,8 @@ namespace Ryujinx.Ui.Windows
                     {
                         StrongRumble = (float)_controllerStrongRumble.Value,
                         WeakRumble = (float)_controllerWeakRumble.Value,
-                        EnableRumble = _enableRumble.Active
-                    }
+                        EnableRumble = _enableRumble.Active,
+                    },
                 };
             }
 
@@ -917,7 +917,7 @@ namespace Ryujinx.Ui.Windows
             })
             {
                 Name = "GUI.InputThread",
-                IsBackground = true
+                IsBackground = true,
             };
             inputThread.Start();
         }
@@ -998,7 +998,7 @@ namespace Ryujinx.Ui.Windows
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
 
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1020,7 +1020,7 @@ namespace Ryujinx.Ui.Windows
                             ButtonR = Key.U,
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -1030,7 +1030,7 @@ namespace Ryujinx.Ui.Windows
                             StickLeft = Key.J,
                             StickRight = Key.L,
                             StickButton = Key.H,
-                        }
+                        },
                     };
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller"))
@@ -1103,8 +1103,8 @@ namespace Ryujinx.Ui.Windows
                         {
                             StrongRumble = 1f,
                             WeakRumble = 1f,
-                            EnableRumble = false
-                        }
+                            EnableRumble = false,
+                        },
                     };
                 }
             }

@@ -188,7 +188,7 @@ namespace Ryujinx.Ui.Widgets
                             Title = "Ryujinx - NCA Section Extractor",
                             Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
                             SecondaryText = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(_titleFilePath)}...",
-                            WindowPosition = WindowPosition.Center
+                            WindowPosition = WindowPosition.Center,
                         };
 
                         int dialogResponse = _dialog.Run();
@@ -317,7 +317,7 @@ namespace Ryujinx.Ui.Widgets
                                         Title = "Ryujinx - NCA Section Extractor",
                                         Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
                                         SecondaryText = "Extraction completed successfully.",
-                                        WindowPosition = WindowPosition.Center
+                                        WindowPosition = WindowPosition.Center,
                                     };
 
                                     dialog.Run();
@@ -331,7 +331,7 @@ namespace Ryujinx.Ui.Widgets
                 })
                 {
                     Name = "GUI.NcaSectionExtractorThread",
-                    IsBackground = true
+                    IsBackground = true,
                 };
                 extractorThread.Start();
             }

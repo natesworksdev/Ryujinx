@@ -383,7 +383,7 @@ namespace Ryujinx.Ui
                         string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable or AppDataManager.LaunchMode.Custom => System.IO.Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
-                            _ => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
+                            _ => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx"),
                         };
 
                         string path = System.IO.Path.Combine(directory, filename);
@@ -414,7 +414,7 @@ namespace Ryujinx.Ui
 
                         image.SaveAsPng(path, new PngEncoder()
                         {
-                            ColorType = PngColorType.Rgb
+                            ColorType = PngColorType.Rgb,
                         });
 
                         image.Dispose();
@@ -535,7 +535,7 @@ namespace Ryujinx.Ui
 
             Thread renderLoopThread = new(Render)
             {
-                Name = "GUI.RenderLoop"
+                Name = "GUI.RenderLoop",
             };
             renderLoopThread.Start();
 
@@ -544,7 +544,7 @@ namespace Ryujinx.Ui
             {
                 nvStutterWorkaround = new Thread(NvStutterWorkaround)
                 {
-                    Name = "GUI.NVStutterWorkaround"
+                    Name = "GUI.NVStutterWorkaround",
                 };
                 nvStutterWorkaround.Start();
             }
@@ -751,7 +751,7 @@ namespace Ryujinx.Ui
             ResScaleUp = 1 << 5,
             ResScaleDown = 1 << 6,
             VolumeUp = 1 << 7,
-            VolumeDown = 1 << 8
+            VolumeDown = 1 << 8,
         }
 
         private KeyboardHotkeyState GetHotkeyState()

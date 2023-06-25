@@ -14,17 +14,17 @@ namespace Ryujinx.Ui.Widgets
 
             Label mainTextLabel = new()
             {
-                Text = mainText
+                Text = mainText,
             };
 
             InputEntry = new Entry
             {
-                MaxLength = (int)inputMax
+                MaxLength = (int)inputMax,
             };
 
             Label inputMaxTextLabel = new()
             {
-                Text = $"(Max length: {inputMax})"
+                Text = $"(Max length: {inputMax})",
             };
 
             ((Box)MessageArea).PackStart(mainTextLabel, true, true, 0);

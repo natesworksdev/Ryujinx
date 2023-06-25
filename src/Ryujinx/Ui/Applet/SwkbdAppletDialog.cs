@@ -30,12 +30,12 @@ namespace Ryujinx.Ui.Applet
 
             _validationInfo = new Label()
             {
-                Visible = false
+                Visible = false,
             };
 
             InputEntry = new Entry()
             {
-                Visible = true
+                Visible = true,
             };
 
             InputEntry.Activated += OnInputActivated;

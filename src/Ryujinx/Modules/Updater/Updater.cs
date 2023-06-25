@@ -377,7 +377,7 @@ namespace Ryujinx.Modules
         {
             Thread worker = new(() => DoUpdateWithSingleThreadWorker(updateDialog, downloadUrl, updateFile))
             {
-                Name = "Updater.SingleThreadWorker"
+                Name = "Updater.SingleThreadWorker",
             };
             worker.Start();
         }

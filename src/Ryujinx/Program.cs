@@ -164,7 +164,7 @@ namespace Ryujinx
             // Sets ImageSharp Jpeg Encoder Quality.
             SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.SetEncoder(JpegFormat.Instance, new JpegEncoder()
             {
-                Quality = 100
+                Quality = 100,
             });
 
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
@@ -233,7 +233,7 @@ namespace Ryujinx
                     "never" => HideCursorMode.Never,
                     "onidle" => HideCursorMode.OnIdle,
                     "always" => HideCursorMode.Always,
-                    _ => ConfigurationState.Instance.HideCursor.Value
+                    _ => ConfigurationState.Instance.HideCursor.Value,
                 };
             }
 
@@ -279,7 +279,7 @@ namespace Ryujinx
                         {
                             { 0, "Yes, until the next restart" },
                             { 1, "Yes, permanently" },
-                            { 2, "No" }
+                            { 2, "No" },
                         };
 
                         ResponseType response = GtkDialog.CreateCustomDialog(
@@ -348,7 +348,7 @@ namespace Ryujinx
                 var buttonTexts = new Dictionary<int, string>()
                 {
                     { 0, "Yes (Vulkan)" },
-                    { 1, "No (OpenGL)" }
+                    { 1, "No (OpenGL)" },
                 };
 
                 ResponseType response = GtkDialog.CreateCustomDialog(

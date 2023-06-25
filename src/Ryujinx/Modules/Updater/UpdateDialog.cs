@@ -52,7 +52,7 @@ namespace Ryujinx.Modules
                 ProcessStartInfo processStart = new(ryuName)
                 {
                     UseShellExecute = true,
-                    WorkingDirectory = ReleaseInformation.GetBaseApplicationDirectory()
+                    WorkingDirectory = ReleaseInformation.GetBaseApplicationDirectory(),
                 };
 
                 foreach (string argument in CommandLineState.Arguments)

@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Windows
                 _titleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths = new List<string>()
+                    Paths = new List<string>(),
                 };
             }
 
@@ -147,7 +147,7 @@ namespace Ryujinx.Ui.Windows
 
             FileFilter filter = new()
             {
-                Name = "Switch Game Updates"
+                Name = "Switch Game Updates",
             };
             filter.AddPattern("*.nsp");
 

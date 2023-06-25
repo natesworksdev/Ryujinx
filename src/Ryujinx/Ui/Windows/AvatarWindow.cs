@@ -51,7 +51,7 @@ namespace Ryujinx.Ui.Windows
 
             ScrolledWindow scrolledWindow = new()
             {
-                ShadowType = ShadowType.EtchedIn
+                ShadowType = ShadowType.EtchedIn,
             };
             scrolledWindow.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 
@@ -61,14 +61,14 @@ namespace Ryujinx.Ui.Windows
             {
                 Label = "Choose",
                 CanFocus = true,
-                ReceivesDefault = true
+                ReceivesDefault = true,
             };
             chooseButton.Clicked += ChooseButton_Pressed;
 
             _setBackgroungColorButton = new Button()
             {
                 Label = "Set Background Color",
-                CanFocus = true
+                CanFocus = true,
             };
             _setBackgroungColorButton.Clicked += SetBackgroungColorButton_Pressed;
 
@@ -80,7 +80,7 @@ namespace Ryujinx.Ui.Windows
             Button closeButton = new()
             {
                 Label = "Close",
-                CanFocus = true
+                CanFocus = true,
             };
             closeButton.Clicked += CloseButton_Pressed;
 
@@ -97,7 +97,7 @@ namespace Ryujinx.Ui.Windows
             {
                 ItemWidth = 64,
                 ItemPadding = 10,
-                PixbufColumn = 1
+                PixbufColumn = 1,
             };
 
             _iconView.SelectionChanged += IconView_SelectionChanged;

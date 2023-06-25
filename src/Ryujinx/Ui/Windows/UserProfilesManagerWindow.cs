@@ -192,12 +192,12 @@ namespace Ryujinx.Ui.Windows
         {
             FileChooserNative fileChooser = new("Import Custom Profile Image", this, FileChooserAction.Open, "Import", "Cancel")
             {
-                SelectMultiple = false
+                SelectMultiple = false,
             };
 
             FileFilter filter = new()
             {
-                Name = "Custom Profile Images"
+                Name = "Custom Profile Images",
             };
             filter.AddPattern("*.jpg");
             filter.AddPattern("*.jpeg");
@@ -225,7 +225,7 @@ namespace Ryujinx.Ui.Windows
                 Dictionary<int, string> buttons = new()
                 {
                     { 0, "Import Image File"      },
-                    { 1, "Select Firmware Avatar" }
+                    { 1, "Select Firmware Avatar" },
                 };
 
                 ResponseType responseDialog = GtkDialog.CreateCustomDialog("Profile Image Selection",
@@ -241,7 +241,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     AvatarWindow avatarWindow = new()
                     {
-                        NewUser = newUser
+                        NewUser = newUser,
                     };
 
                     avatarWindow.DeleteEvent += AvatarWindow_DeleteEvent;

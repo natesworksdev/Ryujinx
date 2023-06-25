@@ -50,7 +50,7 @@ namespace Ryujinx.Ui.Applet
                     {
                         Title = title,
                         Text = message,
-                        UseMarkup = true
+                        UseMarkup = true,
                     };
 
                     msgDialog.SetDefaultSize(400, 0);
@@ -97,7 +97,7 @@ namespace Ryujinx.Ui.Applet
                     {
                         Title = "Software Keyboard",
                         Text = args.HeaderText,
-                        SecondaryText = args.SubtitleText
+                        SecondaryText = args.SubtitleText,
                     };
 
                     swkbdDialog.InputEntry.Text = inputText;
@@ -155,7 +155,7 @@ namespace Ryujinx.Ui.Applet
                         Title = title,
                         Text = message,
                         UseMarkup = true,
-                        WindowPosition = WindowPosition.CenterAlways
+                        WindowPosition = WindowPosition.CenterAlways,
                     };
 
                     msgDialog.SetDefaultSize(400, 0);

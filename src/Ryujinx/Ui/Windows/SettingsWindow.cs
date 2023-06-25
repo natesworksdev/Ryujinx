@@ -457,7 +457,7 @@ namespace Ryujinx.Ui.Windows
                     AudioBackend.SoundIo => soundIoIsSupported,
                     AudioBackend.SDL2 => sdl2IsSupported,
                     AudioBackend.Dummy => true,
-                    _ => throw new InvalidOperationException($"{nameof(_audioBackendStore)} contains an invalid value for iteration {iter}: {_audioBackendStore.GetValue(iter, 1)}")
+                    _ => throw new InvalidOperationException($"{nameof(_audioBackendStore)} contains an invalid value for iteration {iter}: {_audioBackendStore.GetValue(iter, 1)}"),
                 };
             });
 
@@ -726,7 +726,7 @@ namespace Ryujinx.Ui.Windows
             {
                 FileChooserNative fileChooser = new("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Add", "Cancel")
                 {
-                    SelectMultiple = true
+                    SelectMultiple = true,
                 };
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
@@ -789,7 +789,7 @@ namespace Ryujinx.Ui.Windows
             {
                 FileFilter filter = new()
                 {
-                    Name = "Theme Files"
+                    Name = "Theme Files",
                 };
                 filter.AddPattern("*.css");
 

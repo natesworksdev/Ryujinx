@@ -589,30 +589,30 @@ namespace Ryujinx.Ui
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
             HLE.HLEConfiguration configuration = new(_virtualFileSystem,
-                                                                          _libHacHorizonManager,
-                                                                          _contentManager,
-                                                                          _accountManager,
-                                                                          _userChannelPersistence,
-                                                                          renderer,
-                                                                          deviceDriver,
-                                                                          memoryConfiguration,
-                                                                          _uiHandler,
-                                                                          (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
-                                                                          (RegionCode)ConfigurationState.Instance.System.Region.Value,
-                                                                          ConfigurationState.Instance.Graphics.EnableVsync,
-                                                                          ConfigurationState.Instance.System.EnableDockedMode,
-                                                                          ConfigurationState.Instance.System.EnablePtc,
-                                                                          ConfigurationState.Instance.System.EnableInternetAccess,
-                                                                          fsIntegrityCheckLevel,
-                                                                          ConfigurationState.Instance.System.FsGlobalAccessLogMode,
-                                                                          ConfigurationState.Instance.System.SystemTimeOffset,
-                                                                          ConfigurationState.Instance.System.TimeZone,
-                                                                          ConfigurationState.Instance.System.MemoryManagerMode,
-                                                                          ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                                          ConfigurationState.Instance.Graphics.AspectRatio,
-                                                                          ConfigurationState.Instance.System.AudioVolume,
-                                                                          ConfigurationState.Instance.System.UseHypervisor,
-                                                                          ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+                _libHacHorizonManager,
+                _contentManager,
+                _accountManager,
+                _userChannelPersistence,
+                renderer,
+                deviceDriver,
+                memoryConfiguration,
+                _uiHandler,
+                (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
+                (RegionCode)ConfigurationState.Instance.System.Region.Value,
+                ConfigurationState.Instance.Graphics.EnableVsync,
+                ConfigurationState.Instance.System.EnableDockedMode,
+                ConfigurationState.Instance.System.EnablePtc,
+                ConfigurationState.Instance.System.EnableInternetAccess,
+                fsIntegrityCheckLevel,
+                ConfigurationState.Instance.System.FsGlobalAccessLogMode,
+                ConfigurationState.Instance.System.SystemTimeOffset,
+                ConfigurationState.Instance.System.TimeZone,
+                ConfigurationState.Instance.System.MemoryManagerMode,
+                ConfigurationState.Instance.System.IgnoreMissingServices,
+                ConfigurationState.Instance.Graphics.AspectRatio,
+                ConfigurationState.Instance.System.AudioVolume,
+                ConfigurationState.Instance.System.UseHypervisor,
+                ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -681,7 +681,7 @@ namespace Ryujinx.Ui
             })
             {
                 Name = "GUI.ApplicationLibraryThread",
-                IsBackground = true
+                IsBackground = true,
             };
             applicationLibraryThread.Start();
         }
@@ -695,7 +695,7 @@ namespace Ryujinx.Ui
                 {
                     Title = "Ryujinx - Warning",
                     Text = "You have trace logging enabled, which is designed to be used by developers only.",
-                    SecondaryText = "For optimal performance, it's recommended to disable trace logging. Would you like to disable trace logging now?"
+                    SecondaryText = "For optimal performance, it's recommended to disable trace logging. Would you like to disable trace logging now?",
                 };
 
                 if (debugWarningDialog.Run() == (int)ResponseType.Yes)
@@ -713,7 +713,7 @@ namespace Ryujinx.Ui
                 {
                     Title = "Ryujinx - Warning",
                     Text = "You have shader dumping enabled, which is designed to be used by developers only.",
-                    SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?"
+                    SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?",
                 };
 
                 if (shadersDumpWarningDialog.Run() == (int)ResponseType.Yes)
@@ -1649,11 +1649,11 @@ namespace Ryujinx.Ui
         private void ManageCheats_Pressed(object sender, EventArgs args)
         {
             var window = new CheatWindow(
-                            _virtualFileSystem,
-                            _emulationContext.Processes.ActiveApplication.ProgramId,
-                            _emulationContext.Processes.ActiveApplication.ApplicationControlProperties
-                                .Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString(),
-                            _currentEmulatedGamePath);
+                _virtualFileSystem,
+                _emulationContext.Processes.ActiveApplication.ProgramId,
+                _emulationContext.Processes.ActiveApplication.ApplicationControlProperties
+                    .Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString(),
+                _currentEmulatedGamePath);
 
             window.Destroyed += CheatWindow_Destroyed;
             window.Show();
