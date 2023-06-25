@@ -11,6 +11,7 @@ namespace Ryujinx.Common.Utilities
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
 
+
             input.CopyTo(stream);
 
             return stream.ToArray();
