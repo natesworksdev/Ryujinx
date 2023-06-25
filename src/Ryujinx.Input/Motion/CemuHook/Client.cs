@@ -382,6 +382,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
+
             writer.WriteStruct(header);
 
             ControllerInfoRequest request = new()
@@ -420,6 +421,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
+
             writer.WriteStruct(header);
 
             ControllerDataRequest request = new()
