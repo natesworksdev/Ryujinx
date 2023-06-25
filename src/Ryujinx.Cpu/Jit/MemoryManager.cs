@@ -297,7 +297,7 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public unsafe WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
+        public WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
             {

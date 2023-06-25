@@ -41,7 +41,7 @@ namespace Ryujinx.Cpu.AppleHv
             _ipaAllocator = ipaAllocator;
         }
 
-        public unsafe HvMemoryBlockAllocation Allocate(ulong size, ulong alignment)
+        public HvMemoryBlockAllocation Allocate(ulong size, ulong alignment)
         {
             var allocation = Allocate(size, alignment, CreateBlock);
 

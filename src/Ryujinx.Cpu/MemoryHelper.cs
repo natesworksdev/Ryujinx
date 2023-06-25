@@ -25,12 +25,12 @@ namespace Ryujinx.Cpu
             }
         }
 
-        public unsafe static T Read<T>(IVirtualMemoryManager memory, ulong position) where T : unmanaged
+        public static T Read<T>(IVirtualMemoryManager memory, ulong position) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(memory.GetSpan(position, Unsafe.SizeOf<T>()))[0];
         }
 
-        public unsafe static ulong Write<T>(IVirtualMemoryManager memory, ulong position, T value) where T : unmanaged
+        public static ulong Write<T>(IVirtualMemoryManager memory, ulong position, T value) where T : unmanaged
         {
             ReadOnlySpan<byte> data = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateReadOnlySpan(ref value, 1));
 

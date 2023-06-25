@@ -42,7 +42,7 @@ namespace Ryujinx.Cpu.AppleHv
                 }
             }
 
-            public unsafe Span<ulong> AsSpan()
+            public Span<ulong> AsSpan()
             {
                 return MemoryMarshal.Cast<byte, ulong>(Allocation.Memory.GetSpan(Allocation.Offset, (int)Allocation.Size));
             }
