@@ -10,11 +10,11 @@ namespace Ryujinx.Common.Logging
 {
     public static class Logger
     {
-        private static readonly Stopwatch m_Time;
+        private static readonly Stopwatch _time;
 
-        private static readonly bool[] m_EnabledClasses;
+        private static readonly bool[] _enabledClasses;
 
-        private static readonly List<ILogTarget> m_LogTargets;
+        private static readonly List<ILogTarget> _logTargets;
 
         private static readonly StdErrAdapter _stdErrAdapter;
 
@@ -32,27 +32,27 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintMsg(LogClass logClass, string message)
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Print(LogClass logClass, string message, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Print(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), data));
                 }
             }
 
@@ -60,47 +60,47 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStack(LogClass logClass, string message, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), new StackTrace(true)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), new StackTrace(true)));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, string message = "", [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, object data, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
+                if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintRawMsg(string message)
             {
-                Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, message));
+                Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, message));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static string FormatMessage(LogClass Class, string Caller, string Message) => $"{Class} {Caller}: {Message}";
+            private static string FormatMessage(LogClass logClass, string caller, string message) => $"{logClass} {caller}: {message}";
         }
 
         public static Log? Debug { get; private set; }
@@ -115,16 +115,16 @@ namespace Ryujinx.Common.Logging
 
         static Logger()
         {
-            m_EnabledClasses = new bool[Enum.GetNames<LogClass>().Length];
+            _enabledClasses = new bool[Enum.GetNames<LogClass>().Length];
 
-            for (int index = 0; index < m_EnabledClasses.Length; index++)
+            for (int index = 0; index < _enabledClasses.Length; index++)
             {
-                m_EnabledClasses[index] = true;
+                _enabledClasses[index] = true;
             }
 
-            m_LogTargets = new List<ILogTarget>();
+            _logTargets = new List<ILogTarget>();
 
-            m_Time = Stopwatch.StartNew();
+            _time = Stopwatch.StartNew();
 
             // Logger should log to console by default
             AddTarget(new AsyncLogTargetWrapper(
@@ -145,12 +145,12 @@ namespace Ryujinx.Common.Logging
 
         public static void RestartTime()
         {
-            m_Time.Restart();
+            _time.Restart();
         }
 
         private static ILogTarget GetTarget(string targetName)
         {
-            foreach (var target in m_LogTargets)
+            foreach (var target in _logTargets)
             {
                 if (target.Name.Equals(targetName))
                 {
@@ -163,7 +163,7 @@ namespace Ryujinx.Common.Logging
 
         public static void AddTarget(ILogTarget target)
         {
-            m_LogTargets.Add(target);
+            _logTargets.Add(target);
 
             Updated += target.Log;
         }
@@ -176,7 +176,7 @@ namespace Ryujinx.Common.Logging
             {
                 Updated -= logTarget.Log;
 
-                m_LogTargets.Remove(logTarget);
+                _logTargets.Remove(logTarget);
 
                 logTarget.Dispose();
             }
@@ -188,17 +188,17 @@ namespace Ryujinx.Common.Logging
 
             _stdErrAdapter.Dispose();
 
-            foreach (var target in m_LogTargets)
+            foreach (var target in _logTargets)
             {
                 target.Dispose();
             }
 
-            m_LogTargets.Clear();
+            _logTargets.Clear();
         }
 
         public static IReadOnlyCollection<LogLevel> GetEnabledLevels()
         {
-            var logs = new Log?[] { Debug, Info, Warning, Error, Guest, AccessLog, Stub, Trace };
+            var logs = new[] { Debug, Info, Warning, Error, Guest, AccessLog, Stub, Trace };
             List<LogLevel> levels = new(logs.Length);
             foreach (var log in logs)
             {
@@ -231,7 +231,7 @@ namespace Ryujinx.Common.Logging
 
         public static void SetEnable(LogClass logClass, bool enabled)
         {
-            m_EnabledClasses[(int)logClass] = enabled;
+            _enabledClasses[(int)logClass] = enabled;
         }
     }
 }

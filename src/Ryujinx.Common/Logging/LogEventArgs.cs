@@ -6,7 +6,7 @@ namespace Ryujinx.Common.Logging
     {
         public readonly LogLevel Level;
         public readonly TimeSpan Time;
-        public readonly string   ThreadName;
+        public readonly string ThreadName;
 
         public readonly string Message;
         public readonly object Data;

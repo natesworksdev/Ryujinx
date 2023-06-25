@@ -9,11 +9,11 @@ namespace Ryujinx.Common
 {
     public static class EmbeddedResources
     {
-        private readonly static Assembly ResourceAssembly;
+        private readonly static Assembly _resourceAssembly;
 
         static EmbeddedResources()
         {
-            ResourceAssembly = Assembly.GetAssembly(typeof(EmbeddedResources));
+            _resourceAssembly = Assembly.GetAssembly(typeof(EmbeddedResources));
         }
 
         public static byte[] Read(string filename)
@@ -99,8 +99,8 @@ namespace Ryujinx.Common
 
         public static Stream GetStream(Assembly assembly, string filename)
         {
-            var namespace_ = assembly.GetName().Name;
-            var manifestUri = namespace_ + "." + filename.Replace('/', '.');
+            var @namespace = assembly.GetName().Name;
+            var manifestUri = @namespace + "." + filename.Replace('/', '.');
 
             var stream = assembly.GetManifestResourceStream(manifestUri);
 
@@ -129,7 +129,7 @@ namespace Ryujinx.Common
                 }
             }
 
-            return (ResourceAssembly, filename);
+            return (_resourceAssembly, filename);
         }
     }
 }

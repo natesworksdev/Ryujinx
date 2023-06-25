@@ -7,9 +7,9 @@ namespace Ryujinx.Common.Logging.Targets
 {
     public class FileLogTarget : ILogTarget
     {
-        private readonly StreamWriter  _logWriter;
+        private readonly StreamWriter _logWriter;
         private readonly ILogFormatter _formatter;
-        private readonly string        _name;
+        private readonly string _name;
 
         string ILogTarget.Name { get => _name; }
 

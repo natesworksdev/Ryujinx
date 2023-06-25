@@ -260,11 +260,11 @@ namespace Ryujinx.Common.Collections
         /// <param name="tree">Tree to search at</param>
         /// <param name="key">Key of the node to be found</param>
         /// <returns>Node that is equal to <paramref name="key"/></returns>
-        public static N GetNodeByKey<N, K>(this IntrusiveRedBlackTree<N> tree, K key)
-            where N : IntrusiveRedBlackTreeNode<N>, IComparable<N>, IComparable<K>
-            where K : struct
+        public static TN GetNodeByKey<TN, TK>(this IntrusiveRedBlackTree<TN> tree, TK key)
+            where TN : IntrusiveRedBlackTreeNode<TN>, IComparable<TN>, IComparable<TK>
+            where TK : struct
         {
-            N node = tree.RootNode;
+            TN node = tree.RootNode;
             while (node != null)
             {
                 int cmp = node.CompareTo(key);
