@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
                     {
                         AddressList = new[] { hostEntry.Value },
                         HostName = hostEntry.Key,
-                        Aliases = Array.Empty<string>()
+                        Aliases = Array.Empty<string>(),
                     };
                 }
             }

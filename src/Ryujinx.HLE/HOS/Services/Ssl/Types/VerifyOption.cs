@@ -10,6 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.Types
         DateCheck = 1 << 2,
         EvCertPartial = 1 << 3,
         EvPolicyOid = 1 << 4, // 6.0.0+
-        EvCertFingerprint = 1 << 5  // 6.0.0+
+        EvCertFingerprint = 1 << 5, // 6.0.0+
     }
 }

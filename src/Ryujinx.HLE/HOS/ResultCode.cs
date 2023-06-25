@@ -7,6 +7,6 @@
 
         Success = 0,
 
-        NotAllocated = (1023 << ErrorCodeShift) | OsModuleId
+        NotAllocated = (1023 << ErrorCodeShift) | OsModuleId,
     }
 }

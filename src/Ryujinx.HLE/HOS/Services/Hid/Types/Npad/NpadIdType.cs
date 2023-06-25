@@ -11,6 +11,6 @@
         Player7 = 6,
         Player8 = 7,
         Unknown = 16,
-        Handheld = 32
+        Handheld = 32,
     }
 }

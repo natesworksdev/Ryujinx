@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             KeyboardInput emptyInput = new()
             {
-                Keys = new ulong[4]
+                Keys = new ulong[4],
             };
 
             for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
@@ -399,7 +399,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _sensorFusionParams = new SensorFusionParameters
             {
                 RevisePower = context.RequestData.ReadInt32(),
-                ReviseRange = context.RequestData.ReadInt32()
+                ReviseRange = context.RequestData.ReadInt32(),
             };
 
             long appletResourceUserId = context.RequestData.ReadInt64();
@@ -451,7 +451,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _accelerometerParams = new AccelerometerParameters
             {
                 X = context.RequestData.ReadInt32(),
-                Y = context.RequestData.ReadInt32()
+                Y = context.RequestData.ReadInt32(),
             };
 
             long appletResourceUserId = context.RequestData.ReadInt64();
@@ -814,7 +814,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 NpadIdType.Player8 => 0b0110,
                 NpadIdType.Unknown => 0b0000,
                 NpadIdType.Handheld => 0b0000,
-                _ => throw new InvalidOperationException($"{nameof(npadId)} contains an invalid value: {npadId}")
+                _ => throw new InvalidOperationException($"{nameof(npadId)} contains an invalid value: {npadId}"),
             };
 
             context.ResponseData.Write(ledPattern);
@@ -1159,7 +1159,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 VibrationDeviceValue deviceInfo = new()
                 {
                     DeviceType = vibrationDeviceType,
-                    Position = vibrationDevicePosition
+                    Position = vibrationDevicePosition,
                 };
 
                 context.ResponseData.WriteStruct(deviceInfo);
@@ -1179,7 +1179,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId = context.RequestData.ReadByte(),
                 Position = context.RequestData.ReadByte(),
-                Reserved = context.RequestData.ReadByte()
+                Reserved = context.RequestData.ReadByte(),
             };
 
             VibrationValue vibrationValue = new()
@@ -1187,7 +1187,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 AmplitudeLow = context.RequestData.ReadSingle(),
                 FrequencyLow = context.RequestData.ReadSingle(),
                 AmplitudeHigh = context.RequestData.ReadSingle(),
-                FrequencyHigh = context.RequestData.ReadSingle()
+                FrequencyHigh = context.RequestData.ReadSingle(),
             };
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
@@ -1196,7 +1196,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Dictionary<byte, VibrationValue> dualVibrationValues = new()
             {
-                [deviceHandle.Position] = vibrationValue
+                [deviceHandle.Position] = vibrationValue,
             };
 
             context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
@@ -1213,7 +1213,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId = context.RequestData.ReadByte(),
                 Position = context.RequestData.ReadByte(),
-                Reserved = context.RequestData.ReadByte()
+                Reserved = context.RequestData.ReadByte(),
             };
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment

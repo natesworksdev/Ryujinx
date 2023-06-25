@@ -41,8 +41,8 @@ namespace Ryujinx.HLE
             _framesRendered = new long[1];
             _percentTime = new double[1];
 
-            _frameLock = new object[] { new object() };
-            _percentLock = new object[] { new object() };
+            _frameLock = new[] { new object() };
+            _percentLock = new[] { new object() };
 
             _resetTimer = new Timer(750);
 

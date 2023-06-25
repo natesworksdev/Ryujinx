@@ -18,6 +18,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         None = 0,
         Paused = 1,
         Running = 2,
-        TerminationPending = 3
+        TerminationPending = 3,
     }
 }

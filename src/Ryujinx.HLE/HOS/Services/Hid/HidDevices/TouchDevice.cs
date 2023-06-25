@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             TouchScreenState newState = new()
             {
-                SamplingNumber = previousEntry.SamplingNumber + 1
+                SamplingNumber = previousEntry.SamplingNumber + 1,
             };
 
             if (Active)
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                         FingerId = (uint)i,
                         DiameterX = pi.DiameterX,
                         DiameterY = pi.DiameterY,
-                        RotationAngle = pi.Angle
+                        RotationAngle = pi.Angle,
                     };
                 }
             }

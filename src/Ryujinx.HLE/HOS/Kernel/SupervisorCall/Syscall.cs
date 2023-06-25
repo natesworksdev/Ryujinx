@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 ProcessCreationFlags.PoolPartitionApplet => MemoryRegion.Applet,
                 ProcessCreationFlags.PoolPartitionSystem => MemoryRegion.Service,
                 ProcessCreationFlags.PoolPartitionSystemNonSecure => MemoryRegion.NvServices,
-                _ => MemoryRegion.NvServices
+                _ => MemoryRegion.NvServices,
             };
 
             Result result = process.Initialize(
@@ -3034,7 +3034,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     => currentProcess.AddressArbiter.SignalAndIncrementIfEqual(address, value, count),
                 SignalType.SignalAndModifyIfEqual
                     => currentProcess.AddressArbiter.SignalAndModifyIfEqual(address, value, count),
-                _ => KernelResult.InvalidEnumValue
+                _ => KernelResult.InvalidEnumValue,
             };
         }
 

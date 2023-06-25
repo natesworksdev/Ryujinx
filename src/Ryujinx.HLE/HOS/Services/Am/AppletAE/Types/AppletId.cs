@@ -22,6 +22,6 @@
         LibAppletOff = 0x17,
         LibAppletWhitelisted = 0x18,
         LibAppletAuth = 0x19,
-        MyPage = 0x1A
+        MyPage = 0x1A,
     }
 }

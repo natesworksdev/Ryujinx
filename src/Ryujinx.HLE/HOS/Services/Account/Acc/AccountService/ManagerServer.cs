@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
             var header = new JwtHeader(credentials)
             {
-                { "jku", "https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com/1.0.0/certificates" }
+                { "jku", "https://e0d67c509fb203858ebcb2fe3f88c2aa.baas.nintendo.com/1.0.0/certificates" },
             };
 
             byte[] rawUserId = new byte[0x10];
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
                 { "typ", "id_token" },
                 { "iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
                 { "jti", Guid.NewGuid().ToString() },
-                { "exp", (DateTimeOffset.UtcNow + TimeSpan.FromHours(3)).ToUnixTimeSeconds() }
+                { "exp", (DateTimeOffset.UtcNow + TimeSpan.FromHours(3)).ToUnixTimeSeconds() },
             };
 
             JwtSecurityToken securityToken = new(header, payload);

@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     _keyboardForegroundConfig.SubmitText : "OK"),
                     StringLengthMin = _keyboardForegroundConfig.StringLengthMin,
                     StringLengthMax = _keyboardForegroundConfig.StringLengthMax,
-                    InitialText = initialText
+                    InitialText = initialText,
                 };
 
                 _lastResult = _device.UiHandler.DisplayInputDialog(args, out _textValue) ? KeyboardResult.Accept : KeyboardResult.Cancel;

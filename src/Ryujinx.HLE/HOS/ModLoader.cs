@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS
                 MatchCasing = MatchCasing.CaseInsensitive,
                 MatchType = MatchType.Simple,
                 RecurseSubdirectories = false,
-                ReturnSpecialDirectories = false
+                ReturnSpecialDirectories = false,
             };
         }
 
@@ -552,7 +552,7 @@ namespace Ryujinx.HLE.HOS
             ModLoadResult modLoadResult = new()
             {
                 Stubs = new BitVector32(),
-                Replaces = new BitVector32()
+                Replaces = new BitVector32(),
             };
 
             if (!_appMods.TryGetValue(titleId, out ModCache mods) || mods.ExefsDirs.Count == 0)
@@ -714,7 +714,7 @@ namespace Ryujinx.HLE.HOS
             {
                 NsoExecutable nso => Convert.ToHexString(nso.BuildId.ItemsRo.ToArray()).TrimEnd('0'),
                 NroExecutable nro => Convert.ToHexString(nro.Header.BuildId).TrimEnd('0'),
-                _ => string.Empty
+                _ => string.Empty,
             }).ToList();
 
             int GetIndex(string buildId) => buildIds.FindIndex(id => id == buildId); // O(n) but list is small

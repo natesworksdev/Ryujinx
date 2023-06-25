@@ -40,6 +40,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         Left = DpadLeft | LStickLeft | RStickLeft,
         Right = DpadRight | LStickRight | RStickRight,
         Sl = SlLeft | SlRight,
-        Sr = SrLeft | SrRight
+        Sr = SrLeft | SrRight,
     }
 }

@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
                 List<IOperand> operandList = new()
                 {
                     destinationRegister,
-                    leftHandSideRegister
+                    leftHandSideRegister,
                 };
 
                 if (rhs != null)

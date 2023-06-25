@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.FileSystem
                 { "FontExtendedChineseSimplified", 0x0100000000000814 },
                 { "FontKorean",                    0x0100000000000812 },
                 { "FontChineseTraditional",        0x0100000000000813 },
-                { "FontNintendoExtended",          0x0100000000000810 }
+                { "FontNintendoExtended",          0x0100000000000810 },
             };
 
             _systemTitlesNameDictionary = new Dictionary<ulong, string>()
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.FileSystem
                 { "FontExtendedChineseSimplified", "nintendo_udsg-r_ext_zh-cn_003.bfttf" },
                 { "FontKorean",                    "nintendo_udsg-r_ko_003.bfttf" },
                 { "FontChineseTraditional",        "nintendo_udjxh-db_zh-tw_003.bfttf" },
-                { "FontNintendoExtended",          "nintendo_ext_003.bfttf" }
+                { "FontNintendoExtended",          "nintendo_ext_003.bfttf" },
             };
 
             _virtualFileSystem = virtualFileSystem;

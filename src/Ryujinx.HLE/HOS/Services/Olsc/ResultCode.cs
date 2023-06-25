@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Olsc
         Success = 0,
 
         NullArgument = (100 << ErrorCodeShift) | ModuleId,
-        NotInitialized = (101 << ErrorCodeShift) | ModuleId
+        NotInitialized = (101 << ErrorCodeShift) | ModuleId,
     }
 }

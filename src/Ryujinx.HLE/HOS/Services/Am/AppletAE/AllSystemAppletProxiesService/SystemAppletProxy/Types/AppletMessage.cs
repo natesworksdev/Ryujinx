@@ -31,6 +31,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         FloatingApplicationDetected = 60,
         DetectShortPressingCaptureButton = 90,
         AlbumScreenShotTaken = 92,
-        AlbumRecordingSaved = 93
+        AlbumRecordingSaved = 93,
     }
 }

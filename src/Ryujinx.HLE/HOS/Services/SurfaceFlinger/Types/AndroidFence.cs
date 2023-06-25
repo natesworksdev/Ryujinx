@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 AndroidFence fence = new()
                 {
-                    FenceCount = 0
+                    FenceCount = 0,
                 };
 
                 fence.NvFences[0].Id = NvFence.InvalidSyncPointId;

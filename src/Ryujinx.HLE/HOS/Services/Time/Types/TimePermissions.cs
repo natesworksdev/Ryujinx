@@ -17,6 +17,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
         System = NetworkSystemClockWritableMask,
         SystemUpdate = BypassUninitialized,
         Repair = SteadyClockWritableMask,
-        Manufacture = LocalSystemClockWritableMask | UserSystemClockWritableMask | NetworkSystemClockWritableMask | TimeZoneWritableMask | SteadyClockWritableMask
+        Manufacture = LocalSystemClockWritableMask | UserSystemClockWritableMask | NetworkSystemClockWritableMask | TimeZoneWritableMask | SteadyClockWritableMask,
     }
 }

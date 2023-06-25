@@ -10,6 +10,6 @@
         InvalidUserID = (100 << ErrorCodeShift) | ModuleId,
         UserNotFound = (101 << ErrorCodeShift) | ModuleId,
         ServiceUnavailable = (150 << ErrorCodeShift) | ModuleId,
-        FileStorageFailure = (200 << ErrorCodeShift) | ModuleId
+        FileStorageFailure = (200 << ErrorCodeShift) | ModuleId,
     }
 }

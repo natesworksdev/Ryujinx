@@ -13,6 +13,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Toothbrush,
 
         Min = 0,
-        Max = 5
+        Max = 5,
     }
 }

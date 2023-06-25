@@ -5,6 +5,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         Application = 0,
         Applet = 1,
         Service = 2,
-        NvServices = 3
+        NvServices = 3,
     }
 }

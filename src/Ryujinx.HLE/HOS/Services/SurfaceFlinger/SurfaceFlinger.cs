@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             _composerThread = new Thread(HandleComposition)
             {
-                Name = "SurfaceFlinger.Composer"
+                Name = "SurfaceFlinger.Composer",
             };
 
             _chrono = new Stopwatch();
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     Consumer = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
                     Core = core,
                     Owner = pid,
-                    State = initialState
+                    State = initialState,
                 });
             }
         }
@@ -448,7 +448,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             TextureCallbackInformation textureCallbackInformation = new()
             {
                 Layer = layer,
-                Item = item
+                Item = item,
             };
 
             if (_device.Gpu.Window.EnqueueFrameThreadSafe(

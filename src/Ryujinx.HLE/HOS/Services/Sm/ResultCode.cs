@@ -10,6 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         NotInitialized = (2 << ErrorCodeShift) | ModuleId,
         AlreadyRegistered = (4 << ErrorCodeShift) | ModuleId,
         InvalidName = (6 << ErrorCodeShift) | ModuleId,
-        NotRegistered = (7 << ErrorCodeShift) | ModuleId
+        NotRegistered = (7 << ErrorCodeShift) | ModuleId,
     }
 }

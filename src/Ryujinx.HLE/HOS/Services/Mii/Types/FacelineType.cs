@@ -19,6 +19,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         AngularSmall,
 
         Min = 0,
-        Max = 11
+        Max = 11,
     }
 }

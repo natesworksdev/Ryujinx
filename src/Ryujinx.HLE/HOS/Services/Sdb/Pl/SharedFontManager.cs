@@ -121,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
                     { SharedFontType.SimplifiedChineseEx, CreateFont("FontExtendedChineseSimplified") },
                     { SharedFontType.TraditionalChinese,  CreateFont("FontChineseTraditional")        },
                     { SharedFontType.Korean,              CreateFont("FontKorean")                    },
-                    { SharedFontType.NintendoEx,          CreateFont("FontNintendoExtended")          }
+                    { SharedFontType.NintendoEx,          CreateFont("FontNintendoExtended")          },
                 };
 
                 if (fontOffset > Horizon.FontSize)

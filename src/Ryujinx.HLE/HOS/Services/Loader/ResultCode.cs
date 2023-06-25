@@ -41,6 +41,6 @@ namespace Ryujinx.HLE.HOS.Services.Loader
         ACI0NotMatchingApplicationTypeDescriptor = (113 << ErrorCodeShift) | ModuleId,
         ACI0NotMatchingKernelReleaseVersionDescriptor = (114 << ErrorCodeShift) | ModuleId,
         ACI0NotMatchingHandleTableSizeDescriptor = (115 << ErrorCodeShift) | ModuleId,
-        ACI0NotMatchingDebugFlagsDescriptor = (116 << ErrorCodeShift) | ModuleId
+        ACI0NotMatchingDebugFlagsDescriptor = (116 << ErrorCodeShift) | ModuleId,
     }
 }

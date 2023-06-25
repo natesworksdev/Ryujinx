@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         public enum ResourcePolicy
         {
             Device,
-            Channel
+            Channel,
         }
 
         protected static uint[] DeviceSyncpoints = new uint[MaxModuleSyncpoint];

@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
 
         Success = 0,
 
-        InvalidArgument = (5 << ErrorCodeShift) | ModuleId
+        InvalidArgument = (5 << ErrorCodeShift) | ModuleId,
     }
 }

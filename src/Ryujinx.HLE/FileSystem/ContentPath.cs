@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.FileSystem
                 SdCardContent => Path.Combine(GetSdCardPath(), Nintendo, Contents),
                 System => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
                 User => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
-                _ => throw new NotSupportedException($"Content Path \"`{switchContentPath}`\" is not supported.")
+                _ => throw new NotSupportedException($"Content Path \"`{switchContentPath}`\" is not supported."),
             };
         }
 
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.FileSystem
                 ContentStorageId.System => SystemContent,
                 ContentStorageId.User => UserContent,
                 ContentStorageId.SdCard => SdCardContent,
-                _ => throw new NotSupportedException($"Content Storage Id \"`{contentStorageId}`\" is not supported.")
+                _ => throw new NotSupportedException($"Content Storage Id \"`{contentStorageId}`\" is not supported."),
             };
         }
 
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.FileSystem
                 StorageId.BuiltInSystem => SystemContent,
                 StorageId.BuiltInUser => UserContent,
                 StorageId.SdCard => SdCardContent,
-                _ => throw new NotSupportedException($"Storage Id \"`{storageId}`\" is not supported.")
+                _ => throw new NotSupportedException($"Storage Id \"`{storageId}`\" is not supported."),
             };
         }
 
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.FileSystem
                 GamecardApp or
                 GamecardContents or
                 GamecardUpdate => StorageId.GameCard,
-                _ => StorageId.None
+                _ => StorageId.None,
             };
         }
     }

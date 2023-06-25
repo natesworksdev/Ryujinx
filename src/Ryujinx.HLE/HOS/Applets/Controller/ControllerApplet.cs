@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     PlayerCountMax = playerMax,
                     SupportedStyles = (ControllerType)privateArg.NpadStyleSet,
                     SupportedPlayers = _system.Device.Hid.Npads.GetSupportedPlayers(),
-                    IsDocked = _system.State.DockedMode
+                    IsDocked = _system.State.DockedMode,
                 };
 
                 if (!_system.Device.UiHandler.DisplayMessageDialog(uiArgs))
@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Applets
             ControllerSupportResultInfo result = new()
             {
                 PlayerCount = (sbyte)configuredCount,
-                SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
+                SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex),
             };
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");

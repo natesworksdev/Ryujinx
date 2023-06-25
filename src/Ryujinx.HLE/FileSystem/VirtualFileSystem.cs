@@ -207,7 +207,7 @@ namespace Ryujinx.HLE.FileSystem
                 DeviceOperator = fsServerObjects.DeviceOperator,
                 ExternalKeySet = KeySet.ExternalKeySet,
                 FsCreators = fsServerObjects.FsCreators,
-                RandomGenerator = randomGenerator
+                RandomGenerator = randomGenerator,
             };
 
             FileSystemServerInitializer.InitializeWithConfig(fsServerClient, fsServer, fsServerConfig);
@@ -382,7 +382,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 SaveDataSpaceId.System => BisPartitionId.System,
                 SaveDataSpaceId.User => BisPartitionId.User,
-                _ => throw new ArgumentOutOfRangeException(nameof(info), info.SpaceId, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(info), info.SpaceId, null),
             };
 
             Result rc = hos.Fs.MountBis(mountNameU8, partitionId);
@@ -531,7 +531,7 @@ namespace Ryujinx.HLE.FileSystem
                 OwnerId = info.OwnerId,
                 Flags = info.Flags,
                 DataSize = info.DataSize,
-                JournalSize = info.JournalSize
+                JournalSize = info.JournalSize,
             };
 
             // Make a mask for writing the entire extra data
@@ -623,7 +623,7 @@ namespace Ryujinx.HLE.FileSystem
                 OwnerId = 0x010000000000001F,
                 Flags = SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData,
                 DataSize = 0x10000,
-                JournalSize = 0x10000
+                JournalSize = 0x10000,
             },
             new ExtraDataFixInfo()
             {
@@ -631,8 +631,8 @@ namespace Ryujinx.HLE.FileSystem
                 OwnerId = 0x0100000000001009,
                 Flags = SaveDataFlags.None,
                 DataSize = 0xC000,
-                JournalSize = 0xC000
-            }
+                JournalSize = 0xC000,
+            },
         };
 
         public void Dispose()

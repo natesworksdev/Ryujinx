@@ -27,6 +27,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         OpaqueAviator,
 
         Min = 0,
-        Max = 19
+        Max = 19,
     }
 }

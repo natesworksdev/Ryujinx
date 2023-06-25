@@ -57,6 +57,6 @@
         OverrideWebAudioVolume = 0x3F,
         OverrideMediaAudioVolume = 0x40,
         BootMode = 0x41,
-        MediaPlayerUiEnabled = 0x43
+        MediaPlayerUiEnabled = 0x43,
     }
 }

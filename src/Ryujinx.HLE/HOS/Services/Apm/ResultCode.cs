@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 
         Success = 0,
 
-        InvalidParameters = (1 << ErrorCodeShift) | ModuleId
+        InvalidParameters = (1 << ErrorCodeShift) | ModuleId,
     }
 }

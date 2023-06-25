@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             SetPreallocatedBuffer,
             Reserved15,
             GetBufferInfo,
-            GetBufferHistory
+            GetBufferHistory,
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x54)]

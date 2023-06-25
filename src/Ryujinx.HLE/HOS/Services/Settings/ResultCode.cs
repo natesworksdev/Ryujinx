@@ -121,6 +121,6 @@
         NullAmiiboECDSACertificateBuffer = (1273 << ErrorCodeShift) | ModuleId,
         NullAmiiboECQVBLSKeyBuffer = (1274 << ErrorCodeShift) | ModuleId,
         NullAmiiboECQVBLSCertificateBuffer = (1275 << ErrorCodeShift) | ModuleId,
-        NullAmiiboECQVBLSRootCertificateBuffer = (1276 << ErrorCodeShift) | ModuleId
+        NullAmiiboECQVBLSRootCertificateBuffer = (1276 << ErrorCodeShift) | ModuleId,
     }
 }

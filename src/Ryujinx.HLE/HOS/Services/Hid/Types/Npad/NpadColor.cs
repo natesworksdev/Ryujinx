@@ -32,6 +32,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         ButtonPokemonLetsGoEevee = 0x281900,
         ButtonNintendoLaboCreatorsContestEdition = 0x1E1914,
         ButtonAnimalCrossingSpecialEditionLeftJoyCon = 0x0A1E0A,
-        ButtonAnimalCrossingSpecialEditionRightJoyCon = 0x0A1E28
+        ButtonAnimalCrossingSpecialEditionRightJoyCon = 0x0A1E28,
     }
 }

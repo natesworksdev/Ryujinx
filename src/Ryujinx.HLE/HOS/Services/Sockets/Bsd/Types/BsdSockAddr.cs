@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
             {
                 Length = 0,
                 Family = (byte)endpoint.AddressFamily,
-                Port = (ushort)IPAddress.HostToNetworkOrder((short)endpoint.Port)
+                Port = (ushort)IPAddress.HostToNetworkOrder((short)endpoint.Port),
             };
 
             endpoint.Address.GetAddressBytes().AsSpan().CopyTo(result.Address.AsSpan());

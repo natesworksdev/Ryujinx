@@ -71,6 +71,6 @@ namespace Ryujinx.HLE.Loaders.Elf
         DT_VERNEED = 0x6ffffffe,
         DT_VERNEEDNUM = 0x6fffffff,
         DT_AUXILIARY = 0x7ffffffd,
-        DT_FILTER = 0x7fffffff
+        DT_FILTER = 0x7fffffff,
     }
 }

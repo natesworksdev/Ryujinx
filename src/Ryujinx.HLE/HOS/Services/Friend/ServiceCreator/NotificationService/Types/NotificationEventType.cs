@@ -4,6 +4,6 @@
     {
         Invalid = 0x0,
         FriendListUpdate = 0x1,
-        NewFriendRequest = 0x65
+        NewFriendRequest = 0x65,
     }
 }

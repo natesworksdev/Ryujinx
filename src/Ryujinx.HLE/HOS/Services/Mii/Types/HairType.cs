@@ -139,6 +139,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         LongFrontTwoBackPonyTails,
 
         Min = 0,
-        Max = 131
+        Max = 131,
     }
 }

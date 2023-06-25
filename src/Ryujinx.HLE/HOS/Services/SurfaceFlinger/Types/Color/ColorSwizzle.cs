@@ -27,7 +27,7 @@
        _000X = 0x124 << ColorShift.Swizzle,
        _0XY0 = 0x844 << ColorShift.Swizzle,
         XXXY = 0x200 << ColorShift.Swizzle,
-        YYYX = 0x049 << ColorShift.Swizzle
+        YYYX = 0x049 << ColorShift.Swizzle,
 #pragma warning restore IDE0055
     }
 }

@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             context.ResponseData.WriteStruct(new ImageTransferProcessorState()
             {
                 SamplingNumber = 0,
-                AmbientNoiseLevel = 0
+                AmbientNoiseLevel = 0,
             });
 
             return ResultCode.Success;

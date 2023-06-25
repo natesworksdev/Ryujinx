@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Mnpp
         Success = 0,
 
         InvalidArgument = (100 << ErrorCodeShift) | ModuleId,
-        InvalidBufferSize = (101 << ErrorCodeShift) | ModuleId
+        InvalidBufferSize = (101 << ErrorCodeShift) | ModuleId,
     }
 }

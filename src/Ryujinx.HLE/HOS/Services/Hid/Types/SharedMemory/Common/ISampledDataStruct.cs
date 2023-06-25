@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
             return sampledDataStruct switch
             {
                 Npad.SixAxisSensorState _ => sizeof(ulong),
-                _ => 0
+                _ => 0,
             };
         }
     }

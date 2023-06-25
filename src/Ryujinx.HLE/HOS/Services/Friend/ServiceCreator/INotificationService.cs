@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
                         NotificationInfo newFriendRequestNotification = new()
                         {
-                            Type = NotificationEventType.NewFriendRequest
+                            Type = NotificationEventType.NewFriendRequest,
                         };
 
                         _notifications.AddLast(newFriendRequestNotification);

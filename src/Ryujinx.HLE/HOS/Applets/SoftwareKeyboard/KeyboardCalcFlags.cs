@@ -21,6 +21,6 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         DisableSeGroup = 0x4000,
         SetBackspaceEnabled = 0x8000,
         AppearTrigger = 0x10000,
-        MustShow = Appear | SetInputText | AppearTrigger
+        MustShow = Appear | SetInputText | AppearTrigger,
     }
 }

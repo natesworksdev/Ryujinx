@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             {
                 NpadIdType = NpadIdType.Player1,
                 Handle = HidUtils.GetIndexFromNpadIdType(NpadIdType.Player1),
-                State = NfpDeviceState.Initialized
+                State = NfpDeviceState.Initialized,
             };
 
             context.Device.System.NfpDevices.Add(devicePlayer1);
@@ -623,7 +623,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                                 Reserved1 = new Array21<byte>(),
                                 Protocol = uint.MaxValue, // All Protocol
                                 TagType = uint.MaxValue, // All Type
-                                Reserved2 = new Array6<byte>()
+                                Reserved2 = new Array6<byte>(),
                             };
 
                             uuid.CopyTo(tagInfo.Uuid.AsSpan());
@@ -816,7 +816,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                                 CharacterVariant = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(4, 2), NumberStyles.HexNumber),
                                 Series = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(12, 2), NumberStyles.HexNumber),
                                 ModelNumber = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(8, 4), NumberStyles.HexNumber),
-                                Type = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(6, 2), NumberStyles.HexNumber)
+                                Type = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(6, 2), NumberStyles.HexNumber),
                             };
 
                             context.Memory.Write(outputPosition, modelInfo);

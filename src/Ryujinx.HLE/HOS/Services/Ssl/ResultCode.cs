@@ -15,6 +15,6 @@
         WouldBlock = (204 << ErrorCodeShift) | OsModuleId,
         Timeout = (205 << ErrorCodeShift) | OsModuleId,
         ConnectionReset = (209 << ErrorCodeShift) | OsModuleId,
-        ConnectionAbort = (210 << ErrorCodeShift) | OsModuleId
+        ConnectionAbort = (210 << ErrorCodeShift) | OsModuleId,
     }
 }

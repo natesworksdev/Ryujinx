@@ -10,6 +10,6 @@
         InvalidNpadDeviceType = (122 << ErrorCodeShift) | ModuleId,
         InvalidNpadIdType = (123 << ErrorCodeShift) | ModuleId,
         InvalidDeviceIndex = (124 << ErrorCodeShift) | ModuleId,
-        InvalidBufferSize = (131 << ErrorCodeShift) | ModuleId
+        InvalidBufferSize = (131 << ErrorCodeShift) | ModuleId,
     }
 }

@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                     Padding = new Array7<byte>(),
                     LayerLimitMax = layerLimitMax,
                     Width = width,
-                    Height = height
+                    Height = height,
                 };
 
                 Encoding.ASCII.GetBytes(name).AsSpan().CopyTo(displayInfo.Name.AsSpan());

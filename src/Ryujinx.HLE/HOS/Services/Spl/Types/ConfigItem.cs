@@ -19,6 +19,6 @@
         QuestState = 14,
         RegulatorType = 15,
         DeviceUniqueKeyGeneration = 16,
-        Package2Hash = 17
+        Package2Hash = 17,
     }
 }

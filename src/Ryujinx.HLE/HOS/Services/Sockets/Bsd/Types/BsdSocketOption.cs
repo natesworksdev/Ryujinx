@@ -117,6 +117,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
         TcpKeepInit = 128,
         TcpKeepIdle = 256,
         TcpKeepIntvl = 512,
-        TcpKeepCnt = 1024
+        TcpKeepCnt = 1024,
     }
 }

@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             SystemClockContext clockContext = new()
             {
                 Offset = posixTime - currentTimePoint.TimePoint,
-                SteadyTimePoint = currentTimePoint
+                SteadyTimePoint = currentTimePoint,
             };
 
             ResultCode result = SetClockContext(clockContext);

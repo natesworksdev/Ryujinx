@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             Normal,
             String,
             EscapeChar,
-            Comment
+            Comment,
         }
 
         private readonly StreamReader _reader;
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                         {
                             '"' => Token.Normal,
                             '\\' => Token.EscapeChar,
-                            _ => Token.String
+                            _ => Token.String,
                         };
                         break;
                     case Token.EscapeChar:
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                             't' => '\t',
                             'v' => '\v',
                             '\\' => '\\',
-                            _ => '?'
+                            _ => '?',
                         };
                         break;
                 }

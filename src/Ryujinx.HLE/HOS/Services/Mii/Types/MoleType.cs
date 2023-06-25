@@ -9,6 +9,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         OneDot,
 
         Min = 0,
-        Max = 1
+        Max = 1,
     }
 }

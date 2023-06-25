@@ -4,6 +4,6 @@ namespace Ryujinx.HLE.Loaders.Elf
     {
         StbLocal = 0,
         StbGlobal = 1,
-        StbWeak = 2
+        StbWeak = 2,
     }
 }

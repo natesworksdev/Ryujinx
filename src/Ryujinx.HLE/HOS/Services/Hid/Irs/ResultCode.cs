@@ -10,6 +10,6 @@
         InvalidCameraHandle = (204 << ErrorCodeShift) | ModuleId,
         InvalidBufferSize = (207 << ErrorCodeShift) | ModuleId,
         HandlePointerIsNull = (212 << ErrorCodeShift) | ModuleId,
-        NpadIdOutOfRange = (709 << ErrorCodeShift) | ModuleId
+        NpadIdOutOfRange = (709 << ErrorCodeShift) | ModuleId,
     }
 }

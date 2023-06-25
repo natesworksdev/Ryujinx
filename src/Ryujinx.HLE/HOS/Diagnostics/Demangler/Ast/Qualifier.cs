@@ -7,14 +7,14 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         None,
         Const,
         Volatile,
-        Restricted = 4
+        Restricted = 4,
     }
 
     public enum Reference
     {
         None,
         RValue,
-        LValue
+        LValue,
     }
 
     public class CvType : ParentNode

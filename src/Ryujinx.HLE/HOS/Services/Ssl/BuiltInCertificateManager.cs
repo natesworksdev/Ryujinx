@@ -106,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             {
                 Id = entry.Id,
                 Status = entry.Status,
-                Data = data
+                Data = data,
             };
         }
 

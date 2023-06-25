@@ -17,6 +17,6 @@
         PerformanceConfiguration13 = 0x92220009, // 1785 | 768   | 1600   | 7.0.0+
         PerformanceConfiguration14 = 0x9222000A, // 1785 | 768   | 1331.2 | 7.0.0+
         PerformanceConfiguration15 = 0x9222000B, // 1020 | 768   | 1600   | 7.0.0+
-        PerformanceConfiguration16 = 0x9222000C  // 1020 | 768   | 1331.2 | 7.0.0+
+        PerformanceConfiguration16 = 0x9222000C, // 1020 | 768   | 1331.2 | 7.0.0+
     }
 }

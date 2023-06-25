@@ -14,6 +14,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         User = UserMask,
         Viewer = UserMask | ViewerMask,
         Manager = UserMask | ViewerMask | ManagerMask,
-        System = UserMask | SystemMask
+        System = UserMask | SystemMask,
     }
 }

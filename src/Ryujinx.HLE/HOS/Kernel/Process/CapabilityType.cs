@@ -14,6 +14,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         DebugFlags = (1u << 16) - 1,
 
         Invalid = 0u,
-        Padding = ~0u
+        Padding = ~0u,
     }
 }

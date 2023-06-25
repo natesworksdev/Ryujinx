@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
         {
             return new RingLifo<T>
             {
-                _bufferCount = MaxEntries
+                _bufferCount = MaxEntries,
             };
         }
     }

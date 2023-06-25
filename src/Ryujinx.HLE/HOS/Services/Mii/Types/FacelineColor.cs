@@ -17,6 +17,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Espresso,
 
         Min = 0,
-        Max = 9
+        Max = 9,
     }
 }

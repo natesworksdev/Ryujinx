@@ -5,6 +5,6 @@
         Administrator = 100,
         SystemService = 101,
         Application = 102,
-        BaasAccessTokenAccessor = 200
+        BaasAccessTokenAccessor = 200,
     }
 }

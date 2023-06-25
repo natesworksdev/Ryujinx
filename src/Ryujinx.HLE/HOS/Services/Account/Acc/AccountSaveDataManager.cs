@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             ProfilesJson profilesJson = new()
             {
                 Profiles = new List<UserProfileJson>(),
-                LastOpened = LastOpened.ToString()
+                LastOpened = LastOpened.ToString(),
             };
 
             foreach (var profile in profiles)

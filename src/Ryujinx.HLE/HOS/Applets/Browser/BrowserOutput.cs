@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             writer.WriteStruct(new WebArgTLV
             {
                 Type = (ushort)Type,
-                Size = (ushort)Value.Length
+                Size = (ushort)Value.Length,
             });
 
             writer.Write(Value);

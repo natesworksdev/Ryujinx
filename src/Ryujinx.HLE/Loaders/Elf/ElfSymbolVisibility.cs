@@ -5,6 +5,6 @@ namespace Ryujinx.HLE.Loaders.Elf
         StvDefault = 0,
         StvInternal = 1,
         StvHidden = 2,
-        StvProtected = 3
+        StvProtected = 3,
     }
 }

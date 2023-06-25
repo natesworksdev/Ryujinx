@@ -14,6 +14,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         Invalid = 1 << 5,
         Pokeball = 1 << 6,
         SystemExternal = 1 << 29,
-        System = 1 << 30
+        System = 1 << 30,
     }
 }

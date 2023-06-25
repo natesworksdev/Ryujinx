@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.Loaders.Elf
         SttSection = 3,
         SttFile = 4,
         SttCommon = 5,
-        SttTls = 6
+        SttTls = 6,
     }
 }

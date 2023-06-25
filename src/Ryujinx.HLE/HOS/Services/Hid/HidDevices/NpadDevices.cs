@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             AmplitudeLow = 0f,
             FrequencyLow = 160f,
             AmplitudeHigh = 0f,
-            FrequencyHigh = 320f
+            FrequencyHigh = 320f,
         };
 
         internal NpadJoyHoldType JoyHold { get; set; }
@@ -394,7 +394,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     X = state.RStick.Dx,
                     Y = state.RStick.Dy,
                 },
-                Attributes = NpadAttribute.IsConnected
+                Attributes = NpadAttribute.IsConnected,
             };
 
             switch (currentNpad.StyleSet)
@@ -519,21 +519,21 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 X = state.Accelerometer.X,
                 Y = state.Accelerometer.Y,
-                Z = state.Accelerometer.Z
+                Z = state.Accelerometer.Z,
             };
 
             HidVector gyro = new()
             {
                 X = state.Gyroscope.X,
                 Y = state.Gyroscope.Y,
-                Z = state.Gyroscope.Z
+                Z = state.Gyroscope.Z,
             };
 
             HidVector rotation = new()
             {
                 X = state.Rotation.X,
                 Y = state.Rotation.Y,
-                Z = state.Rotation.Z
+                Z = state.Rotation.Z,
             };
 
             SixAxisSensorState newState = new()
@@ -541,7 +541,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 Acceleration = accel,
                 AngularVelocity = gyro,
                 Angle = rotation,
-                Attributes = SixAxisSensorAttribute.IsConnected
+                Attributes = SixAxisSensorAttribute.IsConnected,
             };
 
             state.Orientation.AsSpan().CopyTo(newState.Direction.AsSpan());
@@ -565,7 +565,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 SixAxisSensorState emptyState = new()
                 {
-                    Attributes = SixAxisSensorAttribute.IsConnected
+                    Attributes = SixAxisSensorAttribute.IsConnected,
                 };
 
                 WriteNewSixInputEntry(ref currentNpad.JoyDualRightSixAxisSensor, ref emptyState);
@@ -580,7 +580,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             SixAxisSensorState newState = new()
             {
-                Attributes = SixAxisSensorAttribute.IsConnected
+                Attributes = SixAxisSensorAttribute.IsConnected,
             };
 
             WriteNewSixInputEntry(ref currentNpad.FullKeySixAxisSensor, ref newState);

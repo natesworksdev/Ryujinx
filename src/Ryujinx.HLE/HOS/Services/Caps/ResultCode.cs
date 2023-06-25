@@ -13,6 +13,6 @@
         InvalidContentType = (14 << ErrorCodeShift) | ModuleId,
         NullOutputBuffer = (141 << ErrorCodeShift) | ModuleId,
         NullInputBuffer = (142 << ErrorCodeShift) | ModuleId,
-        BlacklistedPid = (822 << ErrorCodeShift) | ModuleId
+        BlacklistedPid = (822 << ErrorCodeShift) | ModuleId,
     }
 }

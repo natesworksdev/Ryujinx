@@ -8,6 +8,6 @@
         JoyLeft = 6,
         JoyRight = 7,
         SystemExt = 32,
-        System = 33
+        System = 33,
     }
 }

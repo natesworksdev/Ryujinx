@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         Success = 0,
 
         InvalidBufferSize = (200 << ErrorCodeShift) | ModuleId,
-        InvalidPid = (300 << ErrorCodeShift) | ModuleId
+        InvalidPid = (300 << ErrorCodeShift) | ModuleId,
     }
 }

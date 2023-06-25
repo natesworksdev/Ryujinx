@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private static readonly List<string> _deviceFileDebugRegistry = new()
         {
             "/dev/nvhost-dbg-gpu",
-            "/dev/nvhost-prof-gpu"
+            "/dev/nvhost-prof-gpu",
         };
 
         private static readonly Dictionary<string, Type> _deviceFileRegistry = new()
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (_deviceFileRegistry.TryGetValue(path, out Type deviceFileClass))
             {
-                ConstructorInfo constructor = deviceFileClass.GetConstructor(new Type[] { typeof(ServiceCtx), typeof(IVirtualMemoryManager), typeof(ulong) });
+                ConstructorInfo constructor = deviceFileClass.GetConstructor(new[] { typeof(ServiceCtx), typeof(IVirtualMemoryManager), typeof(ulong) });
 
                 NvDeviceFile deviceFile = (NvDeviceFile)constructor.Invoke(new object[] { context, _clientMemory, _owner });
 
@@ -403,7 +403,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                     MemoryValue1 = 0, // GetMemStats(transfer_memory + 0x60, 3)
                     MemoryValue2 = 0, // GetMemStats(transfer_memory + 0x60, 5)
                     MemoryValue3 = 0, // transfer_memory + 0x78
-                    MemoryValue4 = 0  // transfer_memory + 0x80
+                    MemoryValue4 = 0, // transfer_memory + 0x80
                 };
 
                 context.ResponseData.WriteStruct(nvStatus);

@@ -73,9 +73,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
                     SteadyTimePoint = new SteadyClockTimePoint
                     {
                         ClockSourceId = clockSourceId,
-                        TimePoint = 0
-                    }
-                }
+                        TimePoint = 0,
+                    },
+                },
             };
 
             WriteObjectToSharedMemory(ContinuousAdjustmentTimePointOffset, 4, adjustmentTimePoint);
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             SteadyClockContext context = new()
             {
                 InternalOffset = (ulong)(currentTimePoint.NanoSeconds - ticksTimeSpan.NanoSeconds),
-                ClockSourceId = clockSourceId
+                ClockSourceId = clockSourceId,
             };
 
             WriteObjectToSharedMemory(SteadyClockContextOffset, 4, context);

@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
     {
         Database = 1 << Source.Database,
         Default = 1 << Source.Default,
-        All = Database | Default
+        All = Database | Default,
     }
 }

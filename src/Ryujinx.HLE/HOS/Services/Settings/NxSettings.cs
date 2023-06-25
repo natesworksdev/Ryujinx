@@ -1706,7 +1706,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             { "time!standard_network_clock_sufficient_accuracy_minutes", 43200 },
             { "time!standard_user_clock_initial_year", 2019 },
             { "usb!usb30_force_enabled", false },
-            { "wlan_debug!skip_wlan_boot", false }
+            { "wlan_debug!skip_wlan_boot", false },
         };
     }
 }

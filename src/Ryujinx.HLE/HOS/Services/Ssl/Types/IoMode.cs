@@ -3,6 +3,6 @@
     enum IoMode : uint
     {
         Blocking = 1,
-        NonBlocking = 2
+        NonBlocking = 2,
     }
 }

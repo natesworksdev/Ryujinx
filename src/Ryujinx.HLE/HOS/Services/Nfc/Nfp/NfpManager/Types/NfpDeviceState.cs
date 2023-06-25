@@ -8,6 +8,6 @@
         TagRemoved = 3,
         TagMounted = 4,
         Unavailable = 5,
-        Finalized = 6
+        Finalized = 6,
     }
 }

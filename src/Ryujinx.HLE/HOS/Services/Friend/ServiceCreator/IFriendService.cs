@@ -285,7 +285,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 UserIdBool = 0, // TODO: Find it.
                 UnknownBool = (byte)(unknownBool ? 1 : 0), // TODO: Find it.
                 Reserved = new Array11<byte>(),
-                Uuid = randomGuid
+                Uuid = randomGuid,
             };
 
             ReadOnlySpan<byte> playHistoryRegistrationKeyBuffer = SpanHelpers.AsByteSpan(ref playHistoryRegistrationKey);

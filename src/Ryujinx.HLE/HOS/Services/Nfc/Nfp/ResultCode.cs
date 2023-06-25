@@ -13,6 +13,6 @@
         NfcDisabled = (80 << ErrorCodeShift) | ModuleId,
         TagNotFound = (97 << ErrorCodeShift) | ModuleId,
         ApplicationAreaIsNull = (128 << ErrorCodeShift) | ModuleId,
-        ApplicationAreaAlreadyCreated = (168 << ErrorCodeShift) | ModuleId
+        ApplicationAreaAlreadyCreated = (168 << ErrorCodeShift) | ModuleId,
     }
 }

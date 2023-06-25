@@ -7,6 +7,6 @@
         ContentManual = 4,
         ContentMeta = 5,
         ContentData = 6,
-        ApplicationPackage = 7
+        ApplicationPackage = 7,
     }
 }

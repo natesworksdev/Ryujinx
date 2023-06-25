@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
             {
                 Initialized = true,
                 TestMode = (bool)testMode,
-                Environment = (string)environmentIdentifier
+                Environment = (string)environmentIdentifier,
             };
         }
 
@@ -379,7 +379,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
                 "sd" => (byte)ApplicationServerEnvironmentType.Sd,
                 "sp" => (byte)ApplicationServerEnvironmentType.Sp,
                 "dp" => (byte)ApplicationServerEnvironmentType.Dp,
-                _ => (byte)ApplicationServerEnvironmentType.None
+                _ => (byte)ApplicationServerEnvironmentType.None,
             };
 
             context.ResponseData.Write(environmentType);

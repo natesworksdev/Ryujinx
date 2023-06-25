@@ -4,6 +4,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
     {
         Signal = 0,
         SignalAndIncrementIfEqual = 1,
-        SignalAndModifyIfEqual = 2
+        SignalAndModifyIfEqual = 2,
     }
 }

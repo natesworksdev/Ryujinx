@@ -15,6 +15,6 @@
         TitleIsNotRegistered = (7 << ErrorCodeShift) | ModuleId,
         ControlLocationEntryForHostNotFound = (8 << ErrorCodeShift) | ModuleId,
         LegalInfoHTMLLocationEntryNotFound = (9 << ErrorCodeShift) | ModuleId,
-        ProgramLocationForDebugEntryNotFound = (10 << ErrorCodeShift) | ModuleId
+        ProgramLocationForDebugEntryNotFound = (10 << ErrorCodeShift) | ModuleId,
     }
 }

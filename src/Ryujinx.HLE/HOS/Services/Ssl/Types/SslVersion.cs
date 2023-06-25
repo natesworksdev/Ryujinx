@@ -11,6 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.Types
         TlsV12 = 1 << 5,
         TlsV13 = 1 << 6, // 11.0.0+
 
-        VersionMask = 0xFFFFFF
+        VersionMask = 0xFFFFFF,
     }
 }

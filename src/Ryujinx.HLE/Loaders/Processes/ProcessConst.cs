@@ -17,7 +17,7 @@
             "subsdk7",
             "subsdk8",
             "subsdk9",
-            "sdk"
+            "sdk",
         };
 
         public static readonly string MainNpdmPath = "/main.npdm";

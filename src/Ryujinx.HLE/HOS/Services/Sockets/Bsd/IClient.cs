@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         private static readonly List<IPollManager> _pollManagers = new()
         {
             EventFileDescriptorPollManager.Instance,
-            ManagedSocketPollManager.Instance
+            ManagedSocketPollManager.Instance,
         };
 
         private BsdContext _context;
@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             ISocket newBsdSocket = new ManagedSocket(netDomain, (SocketType)type, protocol)
             {
-                Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking)
+                Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking),
             };
 
             LinuxError errno = LinuxError.SUCCESS;

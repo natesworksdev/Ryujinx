@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Ipc
         CmifControl = 5,
         CmifRequestWithContext = 6,
         CmifControlWithContext = 7,
-        TipcCloseSession = 0xF
+        TipcCloseSession = 0xF,
     }
 }

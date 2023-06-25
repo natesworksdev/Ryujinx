@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             Error = 1,
             OnHold = 2,
-            Available = 3
+            Available = 3,
         }
 
         private readonly KEvent _event0;

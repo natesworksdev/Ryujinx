@@ -129,6 +129,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
          * buffer in general */
         WSA_QOS_TRAFFIC_CTRL_ERROR = (WSABASEERR + 1014),
         /* problem with some part of the flowspec */
-        WSA_QOS_GENERIC_ERROR = (WSABASEERR + 1015)
+        WSA_QOS_GENERIC_ERROR = (WSABASEERR + 1015),
     }
 }

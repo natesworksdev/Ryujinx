@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 NetDbError.TryAgain => "Host name lookup failure",
                 NetDbError.NoRecovery => "Unknown server error",
                 NetDbError.NoData => "No address associated with name",
-                _ => (errorCode <= NetDbError.Internal) ? "Resolver internal error" : "Unknown resolver error"
+                _ => (errorCode <= NetDbError.Internal) ? "Resolver internal error" : "Unknown resolver error",
             };
 
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 GaiError.Protocol => "Resolved protocol is unknown",
                 GaiError.Overflow => "Argument buffer overflow",
                 GaiError.Max => "Unknown error",
-                _ => "Success"
+                _ => "Success",
             };
 
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
@@ -694,7 +694,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 11002 => NetDbError.TryAgain,
                 11003 => NetDbError.NoRecovery,
                 11004 => NetDbError.NoData,
-                _ => NetDbError.Internal
+                _ => NetDbError.Internal,
             };
         }
 
@@ -704,7 +704,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 11001 => GaiError.NoData,
                 10060 => GaiError.Again,
-                _ => errno
+                _ => errno,
             };
         }
     }

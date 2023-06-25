@@ -19,6 +19,6 @@ namespace Ryujinx.HLE.HOS.Services.Account
         NullObject = (302 << ErrorCodeShift) | ModuleId,
         Unknown341 = (341 << ErrorCodeShift) | ModuleId,
         MissingNetworkServiceLicenseKind = (400 << ErrorCodeShift) | ModuleId,
-        InvalidIdTokenCacheBufferSize = (451 << ErrorCodeShift) | ModuleId
+        InvalidIdTokenCacheBufferSize = (451 << ErrorCodeShift) | ModuleId,
     }
 }

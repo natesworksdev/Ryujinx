@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
             BlockedHost3(),
             BlockedHost4(),
             BlockedHost5(),
-            BlockedHost6()
+            BlockedHost6(),
         };
 
         public static bool IsHostBlocked(string host)

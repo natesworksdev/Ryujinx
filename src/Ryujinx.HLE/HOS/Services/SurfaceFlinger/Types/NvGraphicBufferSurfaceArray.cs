@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     0 => Surface0,
                     1 => Surface1,
                     2 => Surface2,
-                    _ => throw new IndexOutOfRangeException()
+                    _ => throw new IndexOutOfRangeException(),
                 };
             }
         }

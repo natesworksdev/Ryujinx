@@ -9,6 +9,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Right,
 
         Min = 0,
-        Max = 1
+        Max = 1,
     }
 }

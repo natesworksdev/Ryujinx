@@ -419,7 +419,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 {
                     FrameNumber = Core.FrameCounter,
                     QueueTime = Core.Slots[slot].QueueTime,
-                    State = BufferState.Queued
+                    State = BufferState.Queued,
                 };
 
                 _stickyTransform = input.StickyTransform;
@@ -465,7 +465,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     Width = (uint)Core.DefaultWidth,
                     Height = (uint)Core.DefaultHeight,
                     TransformHint = Core.TransformHint,
-                    NumPendingBuffers = (uint)Core.Queue.Count
+                    NumPendingBuffers = (uint)Core.Queue.Count,
                 };
 
                 if ((input.StickyTransform & 8) != 0)

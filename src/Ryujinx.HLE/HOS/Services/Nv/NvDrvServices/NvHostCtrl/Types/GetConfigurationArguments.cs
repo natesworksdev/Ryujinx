@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types
             {
                 Domain = domain[..domain.IndexOf('\0')],
                 Parameter = parameter[..parameter.IndexOf('\0')],
-                Configuration = span.Slice(0x82, 0x101).ToArray()
+                Configuration = span.Slice(0x82, 0x101).ToArray(),
             };
 
             return result;

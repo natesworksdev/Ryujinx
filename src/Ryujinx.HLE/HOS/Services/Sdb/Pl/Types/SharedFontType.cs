@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl.Types
         TraditionalChinese = 3,
         Korean = 4,
         NintendoEx = 5,
-        Count
+        Count,
     }
 }

@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         ConversionOperatorType,
         LocalName,
         CtorVtableSpecialName,
-        ArrayType
+        ArrayType,
     }
 
     public abstract class BaseNode

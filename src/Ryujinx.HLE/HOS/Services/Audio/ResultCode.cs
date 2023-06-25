@@ -16,6 +16,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         InvalidChannelCount = (10 << ErrorCodeShift) | ModuleId,
         InvalidOperation = (513 << ErrorCodeShift) | ModuleId,
         InvalidHandle = (1536 << ErrorCodeShift) | ModuleId,
-        OutputAlreadyStarted = (1540 << ErrorCodeShift) | ModuleId
+        OutputAlreadyStarted = (1540 << ErrorCodeShift) | ModuleId,
     }
 }

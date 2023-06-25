@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 WriteCounter = amiiboFile.WriteCounter,
                 Version = 1,
                 ApplicationAreaSize = AmiiboConstants.ApplicationAreaSize,
-                Reserved = new Array52<byte>()
+                Reserved = new Array52<byte>(),
             };
         }
 
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 FirstWriteDay = (byte)amiiboFile.FirstWriteDate.Day,
                 FontRegion = 0,
                 Reserved1 = new Array64<byte>(),
-                Reserved2 = new Array58<byte>()
+                Reserved2 = new Array58<byte>(),
             };
             "Ryujinx"u8.CopyTo(registerInfo.Nickname.AsSpan());
 
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             virtualAmiiboFile.ApplicationAreas.Add(new VirtualAmiiboApplicationArea()
             {
                 ApplicationAreaId = applicationAreaId,
-                ApplicationArea = applicationAreaData
+                ApplicationArea = applicationAreaData,
             });
 
             SaveAmiiboFile(virtualAmiiboFile);
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         virtualAmiiboFile.ApplicationAreas[i] = new VirtualAmiiboApplicationArea()
                         {
                             ApplicationAreaId = _openedApplicationAreaId,
-                            ApplicationArea = applicationAreaData
+                            ApplicationArea = applicationAreaData,
                         };
 
                         break;
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                     FirstWriteDate = DateTime.Now,
                     LastWriteDate = DateTime.Now,
                     WriteCounter = 0,
-                    ApplicationAreas = new List<VirtualAmiiboApplicationArea>()
+                    ApplicationAreas = new List<VirtualAmiiboApplicationArea>(),
                 };
 
                 SaveAmiiboFile(virtualAmiiboFile);

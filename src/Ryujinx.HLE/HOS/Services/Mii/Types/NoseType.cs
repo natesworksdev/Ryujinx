@@ -25,6 +25,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         ArrowLarge,
 
         Min = 0,
-        Max = 17
+        Max = 17,
     }
 }

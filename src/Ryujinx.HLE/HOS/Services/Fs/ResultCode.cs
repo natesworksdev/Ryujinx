@@ -11,6 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         PathAlreadyExists = (2 << ErrorCodeShift) | ModuleId,
         PathAlreadyInUse = (7 << ErrorCodeShift) | ModuleId,
         PartitionNotFound = (1001 << ErrorCodeShift) | ModuleId,
-        InvalidInput = (6001 << ErrorCodeShift) | ModuleId
+        InvalidInput = (6001 << ErrorCodeShift) | ModuleId,
     }
 }

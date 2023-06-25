@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
         Base = 3,
         Heap = 4,
         Kind = 5,
-        Compr = 6
+        Compr = 6,
     }
 }

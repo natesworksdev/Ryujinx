@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         Cancelling = 2,
         Signaling = 3,
         Signaled = 4,
-        Cancelled = 5
+        Cancelled = 5,
     }
 }

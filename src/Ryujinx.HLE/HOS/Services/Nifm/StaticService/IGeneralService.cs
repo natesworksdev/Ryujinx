@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             _generalServiceDetail = new GeneralServiceDetail
             {
                 ClientId = GeneralServiceManager.Count,
-                IsAnyInternetRequestAccepted = true // NOTE: Why not accept any internet request?
+                IsAnyInternetRequestAccepted = true, // NOTE: Why not accept any internet request?
             };
 
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(LocalInterfaceCacheHandler);
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             NetworkProfileData networkProfile = new()
             {
-                Uuid = UInt128Utils.CreateRandom()
+                Uuid = UInt128Utils.CreateRandom(),
             };
 
             networkProfile.IpSettingData.IpAddressSetting = new IpAddressSetting(interfaceProperties, unicastAddress);

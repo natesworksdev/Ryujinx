@@ -17,6 +17,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         BorrowedAndIpcMapped = Borrowed | IpcMapped,
 
-        DeviceMappedAndUncached = DeviceMapped | Uncached
+        DeviceMappedAndUncached = DeviceMapped | Uncached,
     }
 }

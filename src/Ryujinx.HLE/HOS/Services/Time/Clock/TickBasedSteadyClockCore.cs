@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             SteadyClockTimePoint result = new()
             {
                 TimePoint = 0,
-                ClockSourceId = GetClockSourceId()
+                ClockSourceId = GetClockSourceId(),
             };
 
             TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(tickSource.Counter, tickSource.Frequency);

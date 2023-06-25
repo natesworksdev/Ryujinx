@@ -38,6 +38,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             IsApplication |
             DeprecatedUseSecureMemory |
             PoolPartitionMask |
-            OptimizeMemoryAllocation
+            OptimizeMemoryAllocation,
     }
 }

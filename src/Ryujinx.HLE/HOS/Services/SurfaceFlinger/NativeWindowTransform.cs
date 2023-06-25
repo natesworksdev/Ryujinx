@@ -13,6 +13,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         Rotate270 = Rotate90 | Rotate180,
         InverseDisplay = 8,
         NoVSyncCapability = 0x10,
-        ReturnFrameNumber = 0x20
+        ReturnFrameNumber = 0x20,
     }
 }

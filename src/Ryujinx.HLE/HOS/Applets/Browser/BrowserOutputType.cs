@@ -9,6 +9,6 @@
         PostServiceName = 0x5,
         PostServiceNameSize = 0x6,
         PostId = 0x7,
-        MediaPlayerAutoClosedByCompletion = 0x8
+        MediaPlayerAutoClosedByCompletion = 0x8,
     }
 }

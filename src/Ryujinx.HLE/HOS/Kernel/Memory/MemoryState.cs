@@ -45,6 +45,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         IsPoolAllocated = 1 << 22,
         MapProcessAllowed = 1 << 23,
         AttributeChangeAllowed = 1 << 24,
-        CodeMemoryAllowed = 1 << 25
+        CodeMemoryAllowed = 1 << 25,
     }
 }

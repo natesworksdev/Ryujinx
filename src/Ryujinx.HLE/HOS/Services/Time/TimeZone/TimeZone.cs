@@ -33,10 +33,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private const long SecondsPerRepeat = YearsPerRepeat * AverageSecondsPerYear;
 
         private static readonly int[] _yearLengths = { DaysPerNYear, DaysPerLYear };
-        private static readonly int[][] _monthsLengths = new int[][]
-        {
-            new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
-            new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+        private static readonly int[][] _monthsLengths = {
+            new[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+            new[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
         };
 
         private static ReadOnlySpan<byte> TimeZoneDefaultRule => ",M4.1.0,M10.5.0"u8;
@@ -97,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             JulianDay,
             DayOfYear,
-            MonthNthDayOfWeek
+            MonthNthDayOfWeek,
         }
 
         private struct Rule
@@ -540,14 +539,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     {
                         GmtOffset = -dstOffset,
                         IsDaySavingTime = true,
-                        AbbreviationListIndex = stdLen + 1
+                        AbbreviationListIndex = stdLen + 1,
                     };
 
                     outRules.Ttis[1] = new TimeTypeInfo
                     {
                         GmtOffset = -stdOffset,
                         IsDaySavingTime = false,
-                        AbbreviationListIndex = 0
+                        AbbreviationListIndex = 0,
                     };
 
                     outRules.DefaultType = 0;
@@ -702,14 +701,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     {
                         GmtOffset = -stdOffset,
                         IsDaySavingTime = false,
-                        AbbreviationListIndex = 0
+                        AbbreviationListIndex = 0,
                     };
 
                     outRules.Ttis[1] = new TimeTypeInfo
                     {
                         GmtOffset = -dstOffset,
                         IsDaySavingTime = true,
-                        AbbreviationListIndex = stdLen + 1
+                        AbbreviationListIndex = stdLen + 1,
                     };
 
                     outRules.TypeCount = 2;
@@ -726,7 +725,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 {
                     GmtOffset = -stdOffset,
                     IsDaySavingTime = false,
-                    AbbreviationListIndex = 0
+                    AbbreviationListIndex = 0,
                 };
             }
 
@@ -1682,9 +1681,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     Day = calendarTime.Day,
                     Hour = calendarTime.Hour,
                     Minute = calendarTime.Minute,
-                    Second = calendarTime.Second
+                    Second = calendarTime.Second,
                 },
-                AdditionalInfo = calendarAdditionalInfo
+                AdditionalInfo = calendarAdditionalInfo,
             };
 
             return result;
@@ -1700,7 +1699,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 Day = calendarTime.Day,
                 Hour = calendarTime.Hour,
                 Minute = calendarTime.Minute,
-                Second = calendarTime.Second
+                Second = calendarTime.Second,
             };
 
             return ToPosixTimeInternal(in rules, calendarTimeInternal, out posixTime);

@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 NsoExecutable nso => Convert.ToHexString(nso.BuildId.ItemsRo.ToArray()),
                 NroExecutable nro => Convert.ToHexString(nro.Header.BuildId),
-                _ => ""
+                _ => "",
             }).ToUpper());
 
             ulong[] nsoBase = new ulong[executables.Length];

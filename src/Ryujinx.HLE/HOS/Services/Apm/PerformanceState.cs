@@ -18,7 +18,7 @@
             {
                 PerformanceMode.Default => DefaultPerformanceConfiguration,
                 PerformanceMode.Boost => BoostPerformanceConfiguration,
-                _ => PerformanceConfiguration.PerformanceConfiguration7
+                _ => PerformanceConfiguration.PerformanceConfiguration7,
             };
         }
     }

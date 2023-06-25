@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
             Thread work = new(WaitAndCheckScheduledObjects)
             {
-                Name = "HLE.TimeManager"
+                Name = "HLE.TimeManager",
             };
 
             work.Start();

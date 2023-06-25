@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 TransformToDisplayInverse = TransformToDisplayInverse,
                 SwapInterval = SwapInterval,
                 Fence = Fence,
-                Crop = Crop
+                Crop = Crop,
             };
 
             item.GraphicBuffer.Set(GraphicBuffer);

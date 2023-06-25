@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
                         Id = entries[i].Id,
                         Status = entries[i].Status,
                         CertificateDataSize = (ulong)entries[i].Data.Length,
-                        CertificateDataOffset = (ulong)(rawData.Length - certificatesData.Length)
+                        CertificateDataOffset = (ulong)(rawData.Length - certificatesData.Length),
                     };
 
                     certificatesData = certificatesData[entries[i].Data.Length..];
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
                         Id = CaCertificateId.All,
                         Status = TrustedCertStatus.Invalid,
                         CertificateDataSize = 0,
-                        CertificateDataOffset = 0
+                        CertificateDataOffset = 0,
                     };
                 }
             }

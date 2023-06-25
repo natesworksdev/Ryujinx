@@ -23,14 +23,13 @@ namespace Ryujinx.HLE.HOS.Services
         // not large enough.
         private const int PointerBufferSize = 0x8000;
 
-        private readonly static uint[] _defaultCapabilities = new uint[]
-        {
+        private readonly static uint[] _defaultCapabilities = {
             0x030363F7,
             0x1FFFFFCF,
             0x207FFFEF,
             0x47E0060F,
             0x0048BFFF,
-            0x01007FFF
+            0x01007FFF,
         };
 
         // The amount of time Dispose() will wait to Join() the thread executing the ServerLoop()

@@ -9,6 +9,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         Attached = 4,
         Exiting = 5,
         Exited = 6,
-        DebugSuspended = 7
+        DebugSuspended = 7,
     }
 }

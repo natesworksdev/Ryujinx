@@ -150,6 +150,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 
         ERFKILL = 132     /* Operation not possible due to RF-kill */,
 
-        EHWPOISON = 133     /* Memory page has hardware error */
+        EHWPOISON = 133, /* Memory page has hardware error */
     }
 }

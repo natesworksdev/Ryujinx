@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 Reserved6 = 0,
                 Reserved7 = 0,
                 Reserved8 = 0,
-                Reserved9 = 0
+                Reserved9 = 0,
             };
 
             return appear;

@@ -43,6 +43,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Kiss,
 
         Min = 0,
-        Max = 35
+        Max = 35,
     }
 }

@@ -67,6 +67,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         WhiteLarge,
 
         Min = 0,
-        Max = 59
+        Max = 59,
     }
 }

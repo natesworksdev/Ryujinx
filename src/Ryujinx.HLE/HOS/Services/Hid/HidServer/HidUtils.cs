@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             NpadIdType.Player8  => PlayerIndex.Player8,
             NpadIdType.Handheld => PlayerIndex.Handheld,
             NpadIdType.Unknown  => PlayerIndex.Unknown,
-            _                   => throw new ArgumentOutOfRangeException(nameof(npadIdType))
+            _                   => throw new ArgumentOutOfRangeException(nameof(npadIdType)),
 #pragma warning restore IDE0055
         };
 
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             PlayerIndex.Player8  => NpadIdType.Player8,
             PlayerIndex.Handheld => NpadIdType.Handheld,
             PlayerIndex.Unknown  => NpadIdType.Unknown,
-            _                    => throw new ArgumentOutOfRangeException(nameof(index))
+            _                    => throw new ArgumentOutOfRangeException(nameof(index)),
 #pragma warning restore IDE0055
         };
 

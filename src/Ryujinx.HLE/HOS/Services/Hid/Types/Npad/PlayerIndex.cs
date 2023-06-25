@@ -12,6 +12,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         Player8 = 7,
         Handheld = 8,
         Unknown = 9,
-        Auto = 10    // Shouldn't be used directly
+        Auto = 10, // Shouldn't be used directly
     }
 }

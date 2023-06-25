@@ -15,6 +15,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         DontCare = 1 << 28,
 
         ReadAndWrite = Read | Write,
-        ReadAndExecute = Read | Execute
+        ReadAndExecute = Read | Execute,
     }
 }

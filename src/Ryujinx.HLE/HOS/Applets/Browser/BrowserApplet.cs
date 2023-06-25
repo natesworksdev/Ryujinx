@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             {
                 List<BrowserOutput> result = new()
                 {
-                    new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton)
+                    new BrowserOutput(BrowserOutputType.ExitReason, (uint)WebExitReason.ExitButton),
                 };
 
                 _normalSession.Push(BuildResponseNew(result));
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             writer.WriteStruct(new WebArgHeader
             {
                 Count = (ushort)outputArguments.Count,
-                ShimKind = _shimKind
+                ShimKind = _shimKind,
             });
 
             foreach (BrowserOutput output in outputArguments)

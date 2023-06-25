@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         Success = 0,
 
-        InvalidArguments = (101 << ErrorCodeShift) | ModuleId
+        InvalidArguments = (101 << ErrorCodeShift) | ModuleId,
     }
 }

@@ -115,13 +115,12 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             // Try a list of fonts in case any of them is not available in the system.
 
-            string[] availableFonts = new string[]
-            {
+            string[] availableFonts = {
                 uiThemeFontFamily,
                 "Liberation Sans",
                 "FreeSans",
                 "DejaVu Sans",
-                "Lucida Grande"
+                "Lucida Grande",
             };
 
             foreach (string fontFamily in availableFonts)
@@ -437,8 +436,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
                 if (cursorWidth == 0)
                 {
-                    PointF[] points = new PointF[]
-                    {
+                    PointF[] points = {
                         new PointF(cursorPositionXLeft, cursorPositionYTop),
                         new PointF(cursorPositionXLeft, cursorPositionYBottom),
                     };

@@ -14,6 +14,6 @@
         PsciNotSupported = -1,
         PsciInvalidParameters = -2,
         PsciDenied = -3,
-        PsciAlreadyOn = -4
+        PsciAlreadyOn = -4,
     }
 }

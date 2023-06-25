@@ -89,6 +89,6 @@
         XUsbIoPllHwSeq = 0x40000055,
         Cec = 0x40000056,
         Extperiph2 = 0x40000057,
-        OscClk = 0x40000080
+        OscClk = 0x40000080,
     }
 }

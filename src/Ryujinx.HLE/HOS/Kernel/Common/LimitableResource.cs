@@ -8,6 +8,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         TransferMemory = 3,
         Session = 4,
 
-        Count = 5
+        Count = 5,
     }
 }

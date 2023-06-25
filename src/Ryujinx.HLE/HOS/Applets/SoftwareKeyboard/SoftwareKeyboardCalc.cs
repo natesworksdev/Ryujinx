@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 Unknown11 = Unknown11,
                 SeGroup = SeGroup,
                 TriggerFlag = TriggerFlag,
-                Trigger = Trigger
+                Trigger = Trigger,
             };
 
             return calc;

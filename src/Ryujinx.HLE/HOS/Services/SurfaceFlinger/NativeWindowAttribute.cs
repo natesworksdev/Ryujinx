@@ -8,6 +8,6 @@
         MinUnqueuedBuffers = 3,
         ConsumerRunningBehind = 9,
         ConsumerUsageBits = 10,
-        MaxBufferCountAsync = 12
+        MaxBufferCountAsync = 12,
     }
 }

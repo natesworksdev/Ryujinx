@@ -4,8 +4,7 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     public class SystemStateMgr
     {
-        internal static string[] LanguageCodes = new string[]
-        {
+        internal static string[] LanguageCodes = {
             "ja",
             "en-US",
             "fr",
@@ -23,7 +22,7 @@ namespace Ryujinx.HLE.HOS.SystemState
             "es-419",
             "zh-Hans",
             "zh-Hant",
-            "pt-BR"
+            "pt-BR",
         };
 
         internal long DesiredKeyboardLayout { get; private set; }
