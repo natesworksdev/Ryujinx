@@ -18,7 +18,7 @@ namespace Ryujinx.Common.Configuration
         {
             UserProfile,
             Portable,
-            Custom
+            Custom,
         }
 
         public static LaunchMode Mode { get; private set; }

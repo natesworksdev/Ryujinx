@@ -39,7 +39,7 @@ namespace Ryujinx.Common
             Prime64_4,
             Prime32_2,
             Prime64_5,
-            Prime32_1
+            Prime32_1,
         };
 
         private static ReadOnlySpan<byte> Xxh3KSecret => new byte[]
@@ -55,7 +55,7 @@ namespace Ryujinx.Common
             0xea, 0xc5, 0xac, 0x83, 0x34, 0xd3, 0xeb, 0xc3, 0xc5, 0x81, 0xa0, 0xff, 0xfa, 0x13, 0x63, 0xeb,
             0x17, 0x0d, 0xdd, 0x51, 0xb7, 0xf0, 0xda, 0x49, 0xd3, 0x16, 0x55, 0x26, 0x29, 0xd4, 0x68, 0x9e,
             0x2b, 0x16, 0xbe, 0x58, 0x7d, 0x47, 0xa1, 0xfc, 0x8f, 0xf8, 0xb8, 0xd1, 0x7a, 0xd0, 0x31, 0xce,
-            0x45, 0xcb, 0x3a, 0x8f, 0x95, 0x16, 0x04, 0x28, 0xaf, 0xd7, 0xfb, 0xca, 0xbb, 0x4b, 0x40, 0x7e
+            0x45, 0xcb, 0x3a, 0x8f, 0x95, 0x16, 0x04, 0x28, 0xaf, 0xd7, 0xfb, 0xca, 0xbb, 0x4b, 0x40, 0x7e,
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,7 +72,7 @@ namespace Ryujinx.Common
             return new Hash128
             {
                 Low = low,
-                High = high
+                High = high,
             };
         }
 
@@ -322,7 +322,7 @@ namespace Ryujinx.Common
                 High = Xxh3MergeAccs(
                     acc,
                     secret[(secret.Length - acc.Length * sizeof(ulong) - SecretMergeAccsStart)..],
-                    ~((ulong)input.Length * Prime64_2))
+                    ~((ulong)input.Length * Prime64_2)),
             };
         }
 
@@ -345,7 +345,7 @@ namespace Ryujinx.Common
             return new Hash128
             {
                 Low = Xxh64Avalanche(keyedLo),
-                High = Xxh64Avalanche(keyedHi)
+                High = Xxh64Avalanche(keyedHi),
             };
         }
 
@@ -453,7 +453,7 @@ namespace Ryujinx.Common
             Hash128 acc = new()
             {
                 Low = (ulong)input.Length * Prime64_1,
-                High = 0
+                High = 0,
             };
 
             if (input.Length > 32)
@@ -473,7 +473,7 @@ namespace Ryujinx.Common
             Hash128 h128 = new()
             {
                 Low = acc.Low + acc.High,
-                High = acc.Low * Prime64_1 + acc.High * Prime64_4 + ((ulong)input.Length - seed) * Prime64_2
+                High = acc.Low * Prime64_1 + acc.High * Prime64_4 + ((ulong)input.Length - seed) * Prime64_2,
             };
             h128.Low = Xxh3Avalanche(h128.Low);
             h128.High = 0UL - Xxh3Avalanche(h128.High);
@@ -511,7 +511,7 @@ namespace Ryujinx.Common
             Hash128 h128 = new()
             {
                 Low = acc.Low + acc.High,
-                High = acc.Low * Prime64_1 + acc.High * Prime64_4 + ((ulong)input.Length - seed) * Prime64_2
+                High = acc.Low * Prime64_1 + acc.High * Prime64_4 + ((ulong)input.Length - seed) * Prime64_2,
             };
             h128.Low = Xxh3Avalanche(h128.Low);
             h128.High = 0UL - Xxh3Avalanche(h128.High);

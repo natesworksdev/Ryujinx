@@ -20,7 +20,7 @@ namespace Ryujinx.Common.SystemInfo
                 {
                     ["model name"] = null,
                     ["Processor"] = null,
-                    ["Hardware"] = null
+                    ["Hardware"] = null,
                 };
 
                 ParseKeyValues("/proc/cpuinfo", cpuDict);
@@ -31,7 +31,7 @@ namespace Ryujinx.Common.SystemInfo
             var memDict = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["MemTotal"] = null,
-                ["MemAvailable"] = null
+                ["MemAvailable"] = null,
             };
 
             ParseKeyValues("/proc/meminfo", memDict);

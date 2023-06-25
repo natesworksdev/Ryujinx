@@ -14,7 +14,7 @@ namespace Ryujinx.Common.Logging.Targets
         /// <summary>
         /// Discard the overflowing item
         /// </summary>
-        Discard = 1
+        Discard = 1,
     }
 
     public class AsyncLogTargetWrapper : ILogTarget
@@ -59,7 +59,7 @@ namespace Ryujinx.Common.Logging.Targets
             })
             {
                 Name = "Logger.MessageThread",
-                IsBackground = true
+                IsBackground = true,
             };
             _messageThread.Start();
         }

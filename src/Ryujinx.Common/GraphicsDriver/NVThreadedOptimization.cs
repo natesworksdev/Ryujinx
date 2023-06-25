@@ -108,7 +108,7 @@ namespace Ryujinx.Common.GraphicsDriver
                 {
                     Version = MakeVersion<NvdrsProfile>(1),
                     IsPredefined = 0,
-                    GpuSupport = uint.MaxValue
+                    GpuSupport = uint.MaxValue,
                 };
                 profile.ProfileName.Set(ProfileName);
                 Check(NvAPI_DRS_CreateProfile(handle, ref profile, out profileHandle));
@@ -117,7 +117,7 @@ namespace Ryujinx.Common.GraphicsDriver
                 {
                     Version = MakeVersion<NvdrsApplicationV4>(4),
                     IsPredefined = 0,
-                    Flags = 3 // IsMetro, IsCommandLine
+                    Flags = 3, // IsMetro, IsCommandLine
                 };
                 application.AppName.Set("Ryujinx.exe");
                 application.UserFriendlyName.Set("Ryujinx");
@@ -136,7 +136,7 @@ namespace Ryujinx.Common.GraphicsDriver
                 IsCurrentPredefined = 0,
                 IsPredefinedValid = 0,
                 CurrentValue = targetValue,
-                PredefinedValue = targetValue
+                PredefinedValue = targetValue,
             };
 
             Check(NvAPI_DRS_SetSetting(handle, profileHandle, ref setting));

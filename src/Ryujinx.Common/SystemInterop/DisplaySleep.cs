@@ -10,7 +10,7 @@ namespace Ryujinx.Common.SystemInterop
         {
             ES_CONTINUOUS = 0x80000000,
             ES_DISPLAY_REQUIRED = 0x00000002,
-            ES_SYSTEM_REQUIRED = 0x00000001
+            ES_SYSTEM_REQUIRED = 0x00000001,
         }
 
         [LibraryImport("kernel32.dll", SetLastError = true)]

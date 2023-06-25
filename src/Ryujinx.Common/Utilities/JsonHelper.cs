@@ -25,7 +25,7 @@ namespace Ryujinx.Common.Utilities
                 PropertyNamingPolicy = _snakeCasePolicy,
                 WriteIndented = indented,
                 AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
+                ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
             return options;
