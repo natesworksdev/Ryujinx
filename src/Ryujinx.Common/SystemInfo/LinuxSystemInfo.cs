@@ -57,6 +57,7 @@ namespace Ryujinx.Common.SystemInfo
             int count = itemDict.Count;
 
             using StreamReader file = new(filePath);
+
             string line;
             while ((line = file.ReadLine()) != null)
             {

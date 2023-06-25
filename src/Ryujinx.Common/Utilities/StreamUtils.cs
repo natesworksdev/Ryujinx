@@ -10,6 +10,7 @@ namespace Ryujinx.Common.Utilities
         public static byte[] StreamToBytes(Stream input)
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+
             input.CopyTo(stream);
 
             return stream.ToArray();
@@ -18,6 +19,7 @@ namespace Ryujinx.Common.Utilities
         public static async Task<byte[]> StreamToBytesAsync(Stream input, CancellationToken cancellationToken = default)
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+
             await input.CopyToAsync(stream, cancellationToken);
 
             return stream.ToArray();
