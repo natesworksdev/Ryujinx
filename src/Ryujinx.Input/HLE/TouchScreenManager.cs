@@ -41,7 +41,7 @@ namespace Ryujinx.Input.HLE
                         // Placeholder values till more data is acquired
                         DiameterX = 10,
                         DiameterY = 10,
-                        Angle = 90
+                        Angle = 90,
                     };
 
                     _device.Hid.Touchscreen.Update(currentPoint);
@@ -81,7 +81,7 @@ namespace Ryujinx.Input.HLE
                     // Placeholder values till more data is acquired
                     DiameterX = 10,
                     DiameterY = 10,
-                    Angle = 90
+                    Angle = 90,
                 };
 
                 _device.Hid.Touchscreen.Update(currentPoint);

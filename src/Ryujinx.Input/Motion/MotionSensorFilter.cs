@@ -110,7 +110,7 @@ namespace Ryujinx.Input.Motion
             {
                 X = 2f * (q2 * q4 - q1 * q3),
                 Y = 2f * (q1 * q2 + q3 * q4),
-                Z = q1 * q1 - q2 * q2 - q3 * q3 + q4 * q4
+                Z = q1 * q1 - q2 * q2 - q3 * q3 + q4 * q4,
             };
 
             // Error is cross product between estimated direction and measured direction of gravity.
@@ -118,7 +118,7 @@ namespace Ryujinx.Input.Motion
             {
                 X = accel.Y * gravity.Z - accel.Z * gravity.Y,
                 Y = accel.Z * gravity.X - accel.X * gravity.Z,
-                Z = accel.X * gravity.Y - accel.Y * gravity.X
+                Z = accel.X * gravity.Y - accel.Y * gravity.X,
             };
 
             if (Ki > 0f)

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using CemuHookClient = Ryujinx.Input.Motion.CemuHook.Client;
+using ControllerType = Ryujinx.Common.Configuration.Hid.ControllerType;
+using PlayerIndex = Ryujinx.HLE.HOS.Services.Hid.PlayerIndex;
 using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Input.HLE
@@ -96,10 +98,8 @@ namespace Ryujinx.Input.HLE
             {
                 return controller.UpdateDriverConfiguration(targetDriver, config);
             }
-            else
-            {
-                return controller.GamepadDriver != null;
-            }
+
+            return controller.GamepadDriver != null;
         }
 
         public void ReloadConfiguration(List<InputConfig> inputConfig, bool enableKeyboard, bool enableMouse)
@@ -178,7 +178,7 @@ namespace Ryujinx.Input.HLE
                     (SixAxisInput, SixAxisInput) motionState = default;
 
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
-                    Ryujinx.HLE.HOS.Services.Hid.PlayerIndex playerIndex = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+                    PlayerIndex playerIndex = (PlayerIndex)inputConfig.PlayerIndex;
 
                     bool isJoyconPair = false;
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Input.HLE
 
                         inputState.Buttons |= Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
-                        isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
+                        isJoyconPair = inputConfig.ControllerType == ControllerType.JoyconPair;
 
                         var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
 
@@ -284,7 +284,7 @@ namespace Ryujinx.Input.HLE
         {
             lock (_lock)
             {
-                return _inputConfig.Find(x => x.PlayerIndex == (Ryujinx.Common.Configuration.Hid.PlayerIndex)index);
+                return _inputConfig.Find(x => x.PlayerIndex == (Common.Configuration.Hid.PlayerIndex)index);
             }
         }
 
