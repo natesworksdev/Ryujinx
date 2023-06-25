@@ -427,7 +427,6 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-
         [Test, Pairwise, Description("VCVT.I32.F32 <Vd>, <Vm>, #<fbits>")]
         public void Vcvt_V_Fixed_F32_I32([Values(0u, 1u, 2u, 3u)] uint vd,
                                          [Values(0u, 1u, 2u, 3u)] uint vm,
