@@ -35,6 +35,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             // of this range for invalid/corrupt VP9 streams.
             Debug.Assert(short.MinValue <= input);
             Debug.Assert(input <= short.MaxValue);
+
             return input;
         }
 
@@ -70,6 +71,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         public static byte ClipPixelAdd(byte dest, long trans)
         {
             trans = WrapLow(trans);
+
             return BitUtils.ClipPixel(dest + (int)trans);
         }
 
@@ -77,6 +79,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         public static ushort HighbdClipPixelAdd(ushort dest, long trans, int bd)
         {
             trans = HighbdWrapLow(trans, bd);
+
             return BitUtils.ClipPixelHighbd(dest + (int)trans, bd);
         }
 
@@ -84,6 +87,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         private static long DctConstRoundShift(long input)
         {
             long rv = BitUtils.RoundPowerOfTwo(input, DctConstBits);
+
             return rv;
         }
 

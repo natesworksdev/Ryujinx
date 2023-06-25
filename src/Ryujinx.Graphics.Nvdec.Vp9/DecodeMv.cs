@@ -67,6 +67,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return fc.Tx32x32Prob[ctx].AsSpan();
                 default:
                     Debug.Assert(false, "Invalid maxTxSize.");
+
                     return ReadOnlySpan<byte>.Empty;
             }
         }
@@ -83,6 +84,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return counts.Tx32x32[ctx].AsSpan();
                 default:
                     Debug.Assert(false, "Invalid maxTxSize.");
+
                     return Span<uint>.Empty;
             }
         }
@@ -135,6 +137,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             Debug.Assert(segmentId >= 0 && segmentId < Constants.MaxSegments);
+
             return segmentId;
         }
 
@@ -185,11 +188,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             if (!seg.UpdateMap)
             {
                 CopySegmentId(ref cm, cm.LastFrameSegMap, cm.CurrentFrameSegMap, miOffset, xMis, yMis);
+
                 return 0;
             }
 
             segmentId = ReadSegmentId(ref r, ref cm.Fc.Value.SegTreeProb);
             SetSegmentId(ref cm, miOffset, xMis, yMis, segmentId);
+
             return segmentId;
         }
 
@@ -219,6 +224,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             if (!seg.UpdateMap)
             {
                 CopySegmentId(ref cm, cm.LastFrameSegMap, cm.CurrentFrameSegMap, miOffset, xMis, yMis);
+
                 return predictedSegmentId;
             }
 
@@ -233,6 +239,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 segmentId = ReadSegmentId(ref r, ref cm.Fc.Value.SegTreeProb);
             }
             SetSegmentId(ref cm, miOffset, xMis, yMis, segmentId);
+
             return segmentId;
         }
 
@@ -288,6 +295,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             // Result
             mag += ((d << 3) | (fr << 1) | hp) + 1;
+
             return sign ? -mag : mag;
         }
 
@@ -550,6 +558,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 {
                     mvRefList[refMvCount] = mv;
                     refMvCount++;
+
                     return true;
                 }
             }
@@ -905,6 +914,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 if (bsize < BlockSize.Block8x8)
                 {
                     xd.ErrorInfo.Value.InternalError(CodecErr.CodecUnsupBitstream, "Invalid usage of segement feature on small blocks");
+
                     return;
                 }
             }
@@ -1035,6 +1045,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             Debug.Assert(b == 1 || b == 3);
+
             return curMi.Value.Bmi[b - 1].Mode;
         }
 
@@ -1051,6 +1062,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             Debug.Assert(b == 2 || b == 3);
+
             return curMi.Value.Bmi[b - 2].Mode;
         }
 
@@ -1063,6 +1075,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             PredictionMode above = AboveBlockMode(mi, aboveMi, block);
             PredictionMode left = LeftBlockMode(mi, leftMi, block);
+
             return fc.KfYModeProb[(int)above][(int)left].AsSpan();
         }
 

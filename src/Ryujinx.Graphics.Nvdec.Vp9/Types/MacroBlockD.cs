@@ -66,6 +66,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             int aboveSkip = !AboveMi.IsNull ? AboveMi.Value.Skip : 0;
             int leftSkip = !LeftMi.IsNull ? LeftMi.Value.Skip : 0;
+
             return aboveSkip + leftSkip;
         }
 
@@ -109,6 +110,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             {  // Both edges available
                 bool aboveIntra = !AboveMi.Value.IsInterBlock();
                 bool leftIntra = !LeftMi.Value.IsInterBlock();
+
                 return leftIntra && aboveIntra ? 3 : (leftIntra || aboveIntra ? 1 : 0);
             }
 

@@ -736,6 +736,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     x,
                     y,
                     plane);
+
                 return;
             }
             BuildIntraPredictors(

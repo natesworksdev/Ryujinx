@@ -46,6 +46,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Common
         private static int GetMsb(uint n)
         {
             Debug.Assert(n != 0);
+
             return 31 ^ BitOperations.LeadingZeroCount(n);
         }
 

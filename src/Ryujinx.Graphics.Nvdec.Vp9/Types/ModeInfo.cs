@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             Debug.Assert(SbType < BlockSize.Block8x8 ||
                 Luts.SsSizeLookup[(int)SbType][pd.SubsamplingX][pd.SubsamplingY] != BlockSize.BlockInvalid);
+
             return Luts.UvTxsizeLookup[(int)SbType][(int)TxSize][pd.SubsamplingX][pd.SubsamplingY];
         }
 

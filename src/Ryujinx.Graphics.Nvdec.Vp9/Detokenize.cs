@@ -107,6 +107,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         r.Value = value;
                         r.Range = range;
                         r.Count = count;
+
                         return c;  // Zero tokens at the end (no eob token)
                     }
                     ctx = GetCoefContext(nb, tokenCache, c);
@@ -196,6 +197,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             r.Value = value;
             r.Range = range;
             r.Count = count;
+
             return c;
         }
 

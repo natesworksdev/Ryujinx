@@ -77,6 +77,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             break;
                         default:
                             Debug.Assert(false, "Invalid transform size");
+
                             return;
                     }
                 }
@@ -168,6 +169,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             break;
                         default:
                             Debug.Assert(false, "Invalid transform size");
+
                             return;
                     }
                 }
@@ -612,6 +614,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         refr,
                         xs,
                         ys);
+
                     return;
                 }
             }
@@ -817,6 +820,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             xd.SetMiRowCol(ref tile, miRow, bh, miCol, bw, cm.MiRows, cm.MiCols);
 
             ReconInter.SetupDstPlanes(ref xd.Plane, ref xd.CurBuf, miRow, miCol);
+
             return ref xd.Mi[0].Value;
         }
 
@@ -1260,6 +1264,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             } while (!tileData.Xd.Corrupted && ++n <= tileData.BufEnd);
 
             tileData.DataEnd = bitReaderEnd;
+
             return !tileData.Xd.Corrupted;
         }
 
@@ -1361,6 +1366,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             Debug.Assert(!bitReaderEnd.IsNull || cm.Mb.Corrupted);
+
             return bitReaderEnd;
         }
 

@@ -404,6 +404,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 Row = ScaledY(mv.Row) + yOffQ4,
                 Col = ScaledX(mv.Col) + xOffQ4,
             };
+
             return res;
         }
 
@@ -431,6 +432,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             {
                 XScaleFP = RefInvalidScale;
                 YScaleFP = RefInvalidScale;
+
                 return;
             }
 

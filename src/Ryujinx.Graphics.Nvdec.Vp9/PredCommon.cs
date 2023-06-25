@@ -55,6 +55,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 ctx = 1;
             }
             Debug.Assert(ctx >= 0 && ctx < Constants.CompInterContexts);
+
             return ctx;
         }
 
@@ -170,6 +171,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 predContext = 2;
             }
             Debug.Assert(predContext >= 0 && predContext < Constants.RefContexts);
+
             return predContext;
         }
 
@@ -262,6 +264,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 predContext = 2;
             }
             Debug.Assert(predContext >= 0 && predContext < Constants.RefContexts);
+
             return predContext;
         }
 
@@ -383,6 +386,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 predContext = 2;
             }
             Debug.Assert(predContext >= 0 && predContext < Constants.RefContexts);
+
             return predContext;
         }
     }

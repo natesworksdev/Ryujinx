@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             int sbCols = MiColsAlignedToSb(mis) >> Constants.MiBlockSizeLog2;
             int offset = ((idx * sbCols) >> log2) << Constants.MiBlockSizeLog2;
+
             return Math.Min(offset, mis);
         }
 

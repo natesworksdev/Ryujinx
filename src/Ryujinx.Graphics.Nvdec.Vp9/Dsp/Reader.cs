@@ -42,6 +42,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             Count = -8;
             Range = 255;
             Fill();
+
             return ReadBit() != 0;  // Marker bit
         }
 

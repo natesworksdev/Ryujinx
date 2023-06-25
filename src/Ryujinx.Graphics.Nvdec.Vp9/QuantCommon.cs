@@ -166,6 +166,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return _dcQlookup12[Math.Clamp(qindex + delta, 0, MaxQ)];
                 default:
                     Debug.Assert(false, "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+
                     return -1;
             }
         }
@@ -182,6 +183,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return _acQlookup12[Math.Clamp(qindex + delta, 0, MaxQ)];
                 default:
                     Debug.Assert(false, "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+
                     return -1;
             }
         }
@@ -192,6 +194,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 int data = seg.GetSegData(segmentId, SegLvlFeatures.SegLvlAltQ);
                 int segQIndex = seg.AbsDelta == Constants.SegmentAbsData ? data : baseQIndex + data;
+
                 return Math.Clamp(segQIndex, 0, MaxQ);
             }
 

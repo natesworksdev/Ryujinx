@@ -93,6 +93,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[0].Mv[idx].Col + mi.Bmi[1].Mv[idx].Col +
                     mi.Bmi[2].Mv[idx].Col + mi.Bmi[3].Mv[idx].Col),
             };
+
             return res;
         }
 
@@ -112,6 +113,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[block0].Mv[idx].Col +
                     mi.Bmi[block1].Mv[idx].Col),
             };
+
             return res;
         }
 
@@ -171,6 +173,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         {
             int x = !sf.IsNull ? sf.Value.ScaleValueX(xOffset) : xOffset;
             int y = !sf.IsNull ? sf.Value.ScaleValueY(yOffset) : yOffset;
+
             return y * stride + x;
         }
 

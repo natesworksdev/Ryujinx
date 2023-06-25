@@ -117,6 +117,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (Sse41.IsSupported && UseIntrinsics && xStepQ4 == 1 << SubpelBits)
             {
                 ConvolveHorizSse41(src, srcStride, dst, dstStride, xFilters, x0Q4, w, h);
+
                 return;
             }
 
@@ -261,6 +262,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if (Avx2.IsSupported && UseIntrinsics && yStepQ4 == 1 << SubpelBits)
             {
                 ConvolveVertAvx2(src, srcStride, dst, dstStride, yFilters, y0Q4, w, h);
+
                 return;
             }
 
