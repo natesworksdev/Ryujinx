@@ -85,8 +85,11 @@ namespace Ryujinx.Ui.Windows
                     // "enabled" box if all child NCAs are enabled. Usually fine since each nsp has only one nca.
                     bool areAllContentPacksEnabled = dlcContainer.DownloadableContentNcaList.TrueForAll((nca) => nca.Enabled);
                     TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(areAllContentPacksEnabled, "", dlcContainer.ContainerPath);
+
                     using FileStream containerFile = File.OpenRead(dlcContainer.ContainerPath);
+
                     PartitionFileSystem pfs = new(containerFile.AsStorage());
+
                     _virtualFileSystem.ImportTickets(pfs);
 
                     foreach (DownloadableContentNca dlcNca in dlcContainer.DownloadableContentNcaList)
@@ -149,6 +152,7 @@ namespace Ryujinx.Ui.Windows
                     }
 
                     using FileStream containerFile = File.OpenRead(containerPath);
+
                     PartitionFileSystem pfs = new(containerFile.AsStorage());
                     bool containsDlc = false;
 

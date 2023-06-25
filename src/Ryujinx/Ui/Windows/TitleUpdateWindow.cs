@@ -89,6 +89,7 @@ namespace Ryujinx.Ui.Windows
             if (File.Exists(path))
             {
                 using FileStream file = new(path, FileMode.Open, FileAccess.Read);
+
                 PartitionFileSystem nsp = new(file.AsStorage());
 
                 try
@@ -141,6 +142,7 @@ namespace Ryujinx.Ui.Windows
         private void AddButton_Clicked(object sender, EventArgs args)
         {
             using FileChooserNative fileChooser = new("Select update files", this, FileChooserAction.Open, "Add", "Cancel");
+
             fileChooser.SelectMultiple = true;
 
             FileFilter filter = new()

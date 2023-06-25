@@ -202,6 +202,7 @@ namespace Ryujinx.Ui.Widgets
                     });
 
                     using FileStream file = new(_titleFilePath, FileMode.Open, FileAccess.Read);
+
                     Nca mainNca = null;
                     Nca patchNca = null;
 

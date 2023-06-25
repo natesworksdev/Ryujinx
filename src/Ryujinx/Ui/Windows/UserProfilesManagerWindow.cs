@@ -178,9 +178,11 @@ namespace Ryujinx.Ui.Windows
         private void ProcessProfileImage(byte[] buffer)
         {
             using Image image = Image.Load(buffer);
+
             image.Mutate(x => x.Resize(256, 256));
 
             using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+
             image.SaveAsJpeg(streamJpg);
 
             _bufferImageProfile = streamJpg.ToArray();

@@ -1263,6 +1263,7 @@ namespace Ryujinx.Ui
         private void Load_Application_File(object sender, EventArgs args)
         {
             using FileChooserNative fileChooser = new("Choose the file to open", this, FileChooserAction.Open, "Open", "Cancel");
+
             FileFilter filter = new()
             {
                 Name = "Switch Executables"
@@ -1285,6 +1286,7 @@ namespace Ryujinx.Ui
         private void Load_Application_Folder(object sender, EventArgs args)
         {
             using FileChooserNative fileChooser = new("Choose the folder to open", this, FileChooserAction.SelectFolder, "Open", "Cancel");
+
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
                 RunApplication(fileChooser.Filename);

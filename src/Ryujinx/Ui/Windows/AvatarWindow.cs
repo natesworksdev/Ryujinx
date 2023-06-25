@@ -126,6 +126,7 @@ namespace Ryujinx.Ui.Windows
             if (!string.IsNullOrWhiteSpace(avatarPath))
             {
                 using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
+
                 Nca         nca   = new(virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
@@ -170,6 +171,7 @@ namespace Ryujinx.Ui.Windows
         private byte[] ProcessImage(byte[] data)
         {
             using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+
             Image avatarImage = Image.Load(data, new PngDecoder());
 
             avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
@@ -203,6 +205,7 @@ namespace Ryujinx.Ui.Windows
         private void SetBackgroungColorButton_Pressed(object sender, EventArgs e)
         {
             using ColorChooserDialog colorChooserDialog = new("Set Background Color", this);
+
             colorChooserDialog.UseAlpha = false;
             colorChooserDialog.Rgba = _backgroundColor;
 
@@ -224,6 +227,7 @@ namespace Ryujinx.Ui.Windows
         private static byte[] DecompressYaz0(Stream stream)
         {
             using BinaryReader reader = new(stream);
+
             reader.ReadInt32(); // Magic
 
             uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());
