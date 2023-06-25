@@ -115,6 +115,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (!string.IsNullOrWhiteSpace(avatarPath))
             {
                 using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
+
                 Nca nca = new(virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
@@ -129,6 +130,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                         using MemoryStream stream = new();
                         using MemoryStream streamPng = new();
+
                         file.Get.AsStream().CopyTo(stream);
 
                         stream.Position = 0;
@@ -146,6 +148,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private static byte[] DecompressYaz0(Stream stream)
         {
             using BinaryReader reader = new(stream);
+
             reader.ReadInt32(); // Magic
 
             uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());

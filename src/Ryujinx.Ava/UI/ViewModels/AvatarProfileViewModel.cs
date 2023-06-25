@@ -202,6 +202,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private byte[] ProcessImage(byte[] data)
         {
             using MemoryStream streamJpg = new();
+
             Image avatarImage = Image.Load(data, new PngDecoder());
 
             avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(BackgroundColor.R,
@@ -232,14 +233,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (!string.IsNullOrWhiteSpace(avatarPath))
                 {
                     using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
+
                     Nca nca = new(virtualFileSystem.KeySet, ncaFileStream);
                     IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                     foreach (DirectoryEntryEx item in romfs.EnumerateEntries())
                     {
                         // TODO: Parse DatabaseInfo.bin and table.bin files for more accuracy.
-                        if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") &&
-                            item.FullPath.Contains("szs"))
+                        if (item.Type == DirectoryEntryType.File && item.FullPath.Contains("chara") && item.FullPath.Contains("szs"))
                         {
                             using var file = new UniqueRef<IFile>();
 
@@ -248,6 +249,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                             using MemoryStream stream = new();
                             using MemoryStream streamPng = new();
+
                             file.Get.AsStream().CopyTo(stream);
 
                             stream.Position = 0;
@@ -271,6 +273,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private static byte[] DecompressYaz0(Stream stream)
         {
             using BinaryReader reader = new(stream);
+
             reader.ReadInt32(); // Magic
 
             uint decodedLength = BinaryPrimitives.ReverseEndianness(reader.ReadUInt32());

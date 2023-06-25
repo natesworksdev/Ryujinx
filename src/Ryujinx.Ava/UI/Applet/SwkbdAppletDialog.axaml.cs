@@ -83,6 +83,7 @@ namespace Ryujinx.Ava.UI.Controls
                     input = content.Input.Text;
                 }
             }
+
             contentDialog.Closed += Handler;
 
             await ContentDialogHelper.ShowAsync(contentDialog);

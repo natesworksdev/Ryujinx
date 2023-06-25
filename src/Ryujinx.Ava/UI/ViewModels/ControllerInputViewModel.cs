@@ -231,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public InputConfig Config { get; set; }
 
-        public ControllerInputViewModel(UserControl owner) : this()
+        public ControllerInputViewModel() : this()
         {
             if (Program.PreviewerDetached)
             {
@@ -243,6 +243,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 _mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
                 _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+
                 _mainWindow.ViewModel.AppHost?.NpadManager.BlockInputUpdates();
 
                 _isLoaded = false;

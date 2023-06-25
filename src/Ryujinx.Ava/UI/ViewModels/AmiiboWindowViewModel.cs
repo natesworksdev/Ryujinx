@@ -427,6 +427,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
                 using MemoryStream memoryStream = new(amiiboPreviewBytes);
+
                 Bitmap bitmap = new(memoryStream);
 
                 double ratio = Math.Min(AmiiboImageSize / bitmap.Size.Width,
@@ -446,6 +447,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private void ResetAmiiboPreview()
         {
             using MemoryStream memoryStream = new(_amiiboLogoBytes);
+
             Bitmap bitmap = new(memoryStream);
 
             AmiiboImage = bitmap;

@@ -422,6 +422,7 @@ namespace Ryujinx.Modules
                         if (OperatingSystem.IsMacOS())
                         {
                             using Process xattrProcess = Process.Start("xattr", new List<string> { "-d", "com.apple.quarantine", updateFile });
+
                             xattrProcess.WaitForExit();
                         }
 

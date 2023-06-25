@@ -825,7 +825,7 @@ namespace Ryujinx.Ava
                     AudioBackend.SDL2 => InitializeAudioBackend<SDL2HardwareDeviceDriver>(AudioBackend.SDL2, nextBackend),
                     AudioBackend.SoundIo => InitializeAudioBackend<SoundIoHardwareDeviceDriver>(AudioBackend.SoundIo, nextBackend),
                     AudioBackend.OpenAl => InitializeAudioBackend<OpenALHardwareDeviceDriver>(AudioBackend.OpenAl, nextBackend),
-                    _ => new DummyHardwareDeviceDriver()
+                    _ => new DummyHardwareDeviceDriver(),
                 };
 
                 if (deviceDriver != null)
