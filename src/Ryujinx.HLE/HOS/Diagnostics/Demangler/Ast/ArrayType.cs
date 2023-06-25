@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         private readonly BaseNode _base;
         private readonly BaseNode _dimensionExpression;
-        private readonly string   _dimensionString;
+        private readonly string _dimensionString;
 
         public ArrayType(BaseNode Base, BaseNode dimensionExpression = null) : base(NodeType.ArrayType)
         {

@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager
         public NfpDeviceState State = NfpDeviceState.Unavailable;
 
         public PlayerIndex Handle;
-        public NpadIdType  NpadIdType;
+        public NpadIdType NpadIdType;
 
         public string AmiiboId;
 

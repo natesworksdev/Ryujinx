@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         private readonly string TimeZoneSystemTitleMissingErrorMessage = "TimeZoneBinary system title not found! TimeZone conversions will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
 
-        private VirtualFileSystem   _virtualFileSystem;
+        private VirtualFileSystem _virtualFileSystem;
         private IntegrityCheckLevel _fsIntegrityCheckLevel;
-        private ContentManager      _contentManager;
+        private ContentManager _contentManager;
 
         public string[] LocationNameCache { get; private set; }
 
@@ -90,8 +90,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             if (HasTimeZoneBinaryTitle())
             {
                 using IStorage ncaFileStream = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
-                Nca         nca              = new(_virtualFileSystem.KeySet, ncaFileStream);
-                IFileSystem romfs            = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
+                Nca nca = new(_virtualFileSystem.KeySet, ncaFileStream);
+                IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
 
                 using var binaryListFile = new UniqueRef<IFile>();
 
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             ncaFile = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
 
-            Nca         nca   = new(_virtualFileSystem.KeySet, ncaFile);
+            Nca nca = new(_virtualFileSystem.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
 
             using var timeZoneBinaryFile = new UniqueRef<IFile>();

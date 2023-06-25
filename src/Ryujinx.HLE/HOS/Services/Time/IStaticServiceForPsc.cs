@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:su", TimePermissions.SystemUpdate)]
     class IStaticServiceForPsc : IpcService
     {
-        private readonly TimeManager     _timeManager;
+        private readonly TimeManager _timeManager;
         private readonly TimePermissions _permissions;
 
         private int _timeSharedMemoryNativeHandle = 0;
@@ -149,8 +149,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetStandardUserSystemClockAutomaticCorrectionEnabled(b8)
         public ResultCode SetStandardUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
-            SteadyClockCore             steadyClock = _timeManager.StandardSteadyClock;
-            StandardUserSystemClockCore userClock   = _timeManager.StandardUserSystemClock;
+            SteadyClockCore steadyClock = _timeManager.StandardSteadyClock;
+            StandardUserSystemClockCore userClock = _timeManager.StandardUserSystemClock;
 
             if (!userClock.IsInitialized() || !steadyClock.IsInitialized())
             {
@@ -229,7 +229,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             ITickSource tickSource = context.Device.System.TickSource;
 
-            SystemClockContext   otherContext     = context.RequestData.ReadStruct<SystemClockContext>();
+            SystemClockContext otherContext = context.RequestData.ReadStruct<SystemClockContext>();
             SteadyClockTimePoint currentTimePoint = steadyClock.GetCurrentTimePoint(tickSource);
 
             ResultCode result = ResultCode.TimeMismatch;
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             if (currentTimePoint.ClockSourceId == otherContext.SteadyTimePoint.ClockSourceId)
             {
                 TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(tickSource.Counter, tickSource.Frequency);
-                long         baseTimePoint = otherContext.Offset + currentTimePoint.TimePoint - ticksTimeSpan.ToSeconds();
+                long baseTimePoint = otherContext.Offset + currentTimePoint.TimePoint - ticksTimeSpan.ToSeconds();
 
                 context.ResponseData.Write(baseTimePoint);
 
@@ -287,7 +287,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             context.RequestData.BaseStream.Position += 7;
 
-            SystemClockContext userContext    = context.RequestData.ReadStruct<SystemClockContext>();
+            SystemClockContext userContext = context.RequestData.ReadStruct<SystemClockContext>();
             SystemClockContext networkContext = context.RequestData.ReadStruct<SystemClockContext>();
 
             ITickSource tickSource = context.Device.System.TickSource;
@@ -308,7 +308,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             ClockSnapshot clockSnapshotA = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[0]);
             ClockSnapshot clockSnapshotB = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[1]);
-            TimeSpanType  difference     = TimeSpanType.FromSeconds(clockSnapshotB.UserContext.Offset - clockSnapshotA.UserContext.Offset);
+            TimeSpanType difference = TimeSpanType.FromSeconds(clockSnapshotB.UserContext.Offset - clockSnapshotA.UserContext.Offset);
 
             if (clockSnapshotB.UserContext.SteadyTimePoint.ClockSourceId != clockSnapshotA.UserContext.SteadyTimePoint.ClockSourceId || (clockSnapshotB.IsAutomaticCorrectionEnabled && clockSnapshotA.IsAutomaticCorrectionEnabled))
             {
@@ -359,7 +359,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             clockSnapshot = new ClockSnapshot();
 
-            SteadyClockCore      steadyClockCore  = _timeManager.StandardSteadyClock;
+            SteadyClockCore steadyClockCore = _timeManager.StandardSteadyClock;
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(tickSource);
 
             clockSnapshot.IsAutomaticCorrectionEnabled = _timeManager.StandardUserSystemClock.IsAutomaticCorrectionEnabled();

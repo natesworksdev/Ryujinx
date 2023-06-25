@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
 
         private static Range BinarySearch(SortedList<ulong, Range> list, ulong address)
         {
-            int left  = 0;
+            int left = 0;
             int right = list.Count - 1;
 
             while (left <= right)
@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
         {
             Range ltRg = null;
 
-            int left  = 0;
+            int left = 0;
             int right = list.Count - 1;
 
             while (left <= right)

@@ -23,15 +23,15 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             ScreenShotAttribute screenShotAttribute = context.RequestData.ReadStruct<ScreenShotAttribute>();
 
-            uint  unknown              = context.RequestData.ReadUInt32();
+            uint unknown = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong pidPlaceholder       = context.RequestData.ReadUInt64();
+            ulong pidPlaceholder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
             ulong screenshotDataPosition = context.Request.SendBuff[0].Position;
-            ulong screenshotDataSize     = context.Request.SendBuff[0].Size;
+            ulong screenshotDataSize = context.Request.SendBuff[0].Size;
 
             byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
@@ -55,10 +55,10 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             _ = context.RequestData.ReadUInt64();
 
             ulong applicationDataPosition = context.Request.SendBuff[0].Position;
-            ulong applicationDataSize     = context.Request.SendBuff[0].Size;
+            ulong applicationDataSize = context.Request.SendBuff[0].Size;
 
             ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
-            ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
+            ulong screenshotDataSize = context.Request.SendBuff[1].Size;
 
 
             // TODO: Parse the application data: At 0x00 it's UserData (Size of 0x400), at 0x404 it's a uint UserDataSize (Always empty for now).
@@ -84,10 +84,10 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
             ulong userIdListPosition = context.Request.SendBuff[0].Position;
-            ulong userIdListSize     = context.Request.SendBuff[0].Size;
+            ulong userIdListSize = context.Request.SendBuff[0].Size;
 
             ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
-            ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
+            ulong screenshotDataSize = context.Request.SendBuff[1].Size;
 
 
             // TODO: Parse the UserIdList.

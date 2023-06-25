@@ -139,9 +139,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             InternetConnectionStatus internetConnectionStatus = new()
             {
-                Type         = InternetConnectionType.WiFi,
+                Type = InternetConnectionType.WiFi,
                 WifiStrength = 3,
-                State        = InternetConnectionState.Connected,
+                State = InternetConnectionState.Connected,
             };
 
             context.ResponseData.WriteStruct(internetConnectionStatus);
@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             ulong position = context.Request.PtrBuff[0].Position;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong size     = context.Request.PtrBuff[0].Size;
+            ulong size = context.Request.PtrBuff[0].Size;
 #pragma warning restore IDE0059
 
             int clientId = context.Memory.Read<int>(position);

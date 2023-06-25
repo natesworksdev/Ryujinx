@@ -10,10 +10,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
     struct AddrInfoSerializedHeader
     {
         public uint Magic;
-        public int  Flags;
-        public int  Family;
-        public int  SocketType;
-        public int  Protocol;
+        public int Flags;
+        public int Family;
+        public int SocketType;
+        public int Protocol;
         public uint AddressLength;
 
         public AddrInfoSerializedHeader(IPAddress address, SocketType socketType)

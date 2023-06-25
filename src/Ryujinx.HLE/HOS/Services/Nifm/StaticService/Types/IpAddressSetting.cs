@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types
     struct IpAddressSetting
     {
         [MarshalAs(UnmanagedType.U1)]
-        public bool        IsDhcpEnabled;
+        public bool IsDhcpEnabled;
         public IpV4Address Address;
         public IpV4Address IPv4Mask;
         public IpV4Address GatewayAddress;

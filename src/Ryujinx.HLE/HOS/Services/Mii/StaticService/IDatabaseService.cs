@@ -85,8 +85,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         // UpdateLatest(nn::mii::CharInfo old_char_info, SourceFlag flag) -> nn::mii::CharInfo
         public ResultCode UpdateLatest(ServiceCtx context)
         {
-            CharInfo   oldCharInfo = context.RequestData.ReadStruct<CharInfo>();
-            SourceFlag flag        = (SourceFlag)context.RequestData.ReadInt32();
+            CharInfo oldCharInfo = context.RequestData.ReadStruct<CharInfo>();
+            SourceFlag flag = (SourceFlag)context.RequestData.ReadInt32();
 
             ResultCode result = UpdateLatest(oldCharInfo, flag, out CharInfo newCharInfo);
 
@@ -99,9 +99,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         // BuildRandom(Age age, Gender gender, Race race) -> nn::mii::CharInfo
         public ResultCode BuildRandom(ServiceCtx context)
         {
-            Age    age    = (Age)context.RequestData.ReadInt32();
+            Age age = (Age)context.RequestData.ReadInt32();
             Gender gender = (Gender)context.RequestData.ReadInt32();
-            Race   race   = (Race)context.RequestData.ReadInt32();
+            Race race = (Race)context.RequestData.ReadInt32();
 
             ResultCode result = BuildRandom(age, gender, race, out CharInfo charInfo);
 
@@ -169,8 +169,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         // UpdateLatest1(nn::mii::StoreData old_store_data, SourceFlag flag) -> nn::mii::StoreData
         public ResultCode UpdateLatest1(ServiceCtx context)
         {
-            StoreData  oldStoreData = context.RequestData.ReadStruct<StoreData>();
-            SourceFlag flag         = (SourceFlag)context.RequestData.ReadInt32();
+            StoreData oldStoreData = context.RequestData.ReadStruct<StoreData>();
+            SourceFlag flag = (SourceFlag)context.RequestData.ReadInt32();
 
             ResultCode result = UpdateLatest1(oldStoreData, flag, out StoreData newStoreData);
 
@@ -183,8 +183,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         // FindIndex(nn::mii::CreateId create_id, bool is_special) -> s32
         public ResultCode FindIndex(ServiceCtx context)
         {
-            CreateId createId  = context.RequestData.ReadStruct<CreateId>();
-            bool     isSpecial = context.RequestData.ReadBoolean();
+            CreateId createId = context.RequestData.ReadStruct<CreateId>();
+            bool isSpecial = context.RequestData.ReadBoolean();
 
             ResultCode result = FindIndex(createId, isSpecial, out int index);
 
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         public ResultCode Move(ServiceCtx context)
         {
             CreateId createId = context.RequestData.ReadStruct<CreateId>();
-            int      newIndex = context.RequestData.ReadInt32();
+            int newIndex = context.RequestData.ReadInt32();
 
             return Move(createId, newIndex);
         }

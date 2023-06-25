@@ -383,18 +383,18 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             NpadCommonState newState = new()
             {
-                Buttons      = (NpadButton)state.Buttons,
+                Buttons = (NpadButton)state.Buttons,
                 AnalogStickL = new AnalogStickState
                 {
-                    X        = state.LStick.Dx,
-                    Y        = state.LStick.Dy,
+                    X = state.LStick.Dx,
+                    Y = state.LStick.Dy,
                 },
                 AnalogStickR = new AnalogStickState
                 {
-                    X        = state.RStick.Dx,
-                    Y        = state.RStick.Dy,
+                    X = state.RStick.Dx,
+                    Y = state.RStick.Dy,
                 },
-                Attributes   = NpadAttribute.IsConnected
+                Attributes = NpadAttribute.IsConnected
             };
 
             switch (currentNpad.StyleSet)
@@ -538,10 +538,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             SixAxisSensorState newState = new()
             {
-                Acceleration    = accel,
+                Acceleration = accel,
                 AngularVelocity = gyro,
-                Angle           = rotation,
-                Attributes      = SixAxisSensorAttribute.IsConnected
+                Angle = rotation,
+                Attributes = SixAxisSensorAttribute.IsConnected
             };
 
             state.Orientation.AsSpan().CopyTo(newState.Direction.AsSpan());

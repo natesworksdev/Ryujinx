@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
     {
         private readonly DeviceCode _deviceCode;
 #pragma warning disable IDE0052 // Remove unread private member
-        private readonly uint       _unknown;
+        private readonly uint _unknown;
 #pragma warning restore IDE0052
-        private uint       _clockRate;
+        private uint _clockRate;
 
         private readonly DeviceCode[] allowedDeviceCodeTable = new DeviceCode[]
         {

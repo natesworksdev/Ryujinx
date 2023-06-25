@@ -12,19 +12,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
     class NvHostEvent
     {
-        public NvFence          Fence;
+        public NvFence Fence;
         public NvHostEventState State;
-        public KEvent           Event;
-        public int              EventHandle;
+        public KEvent Event;
+        public int EventHandle;
 
-        private readonly uint                  _eventId;
+        private readonly uint _eventId;
 #pragma warning disable IDE0052 // Remove unread private member
-        private readonly NvHostSyncpt          _syncpointManager;
+        private readonly NvHostSyncpt _syncpointManager;
 #pragma warning restore IDE0052
         private SyncpointWaiterHandle _waiterInformation;
 
         private NvFence _previousFailingFence;
-        private uint    _failingCount;
+        private uint _failingCount;
 
         public readonly object Lock = new();
 

@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 {
     class Demangler
     {
-        private static readonly string Base36     = "0123456789abcdefghijklmnopqrstuvwxyz";
-        private readonly List<BaseNode> _substitutionList  = new();
+        private static readonly string Base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+        private readonly List<BaseNode> _substitutionList = new();
         private List<BaseNode> _templateParamList = new();
 
         private readonly List<ForwardTemplateReference> _forwardTemplateReferenceList = new();
@@ -101,8 +101,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         private int ParseSeqId()
         {
-            ReadOnlySpan<char> part     = Mangled.AsSpan(_position);
-            int                seqIdLen = 0;
+            ReadOnlySpan<char> part = Mangled.AsSpan(_position);
+            int seqIdLen = 0;
 
             for (; seqIdLen < part.Length; seqIdLen++)
             {
@@ -899,8 +899,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
         private int ParsePositiveNumber()
         {
-            ReadOnlySpan<char> part         = Mangled.AsSpan(_position);
-            int                numberLength = 0;
+            ReadOnlySpan<char> part = Mangled.AsSpan(_position);
+            int numberLength = 0;
 
             for (; numberLength < part.Length; numberLength++)
             {
@@ -932,8 +932,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                 return null;
             }
 
-            ReadOnlySpan<char> part         = Mangled.AsSpan(_position);
-            int                numberLength = 0;
+            ReadOnlySpan<char> part = Mangled.AsSpan(_position);
+            int numberLength = 0;
 
             for (; numberLength < part.Length; numberLength++)
             {
@@ -1056,7 +1056,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                         case 'v':
                             _position += 2;
 
-                            bool canParseTemplateArgsBackup        = _canParseTemplateArgs;
+                            bool canParseTemplateArgsBackup = _canParseTemplateArgs;
                             bool canForwardTemplateReferenceBackup = _canForwardTemplateReference;
 
                             _canParseTemplateArgs = false;
@@ -1333,7 +1333,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             if (ConsumeIf("C"))
             {
-                bool isInherited  = ConsumeIf("I");
+                bool isInherited = ConsumeIf("I");
 
                 char ctorDtorType = Peek();
                 if (ctorDtorType != '1' && ctorDtorType != '2' && ctorDtorType != '3')
@@ -1433,9 +1433,9 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                 return null;
             }
 
-            char foldKind       = Peek();
+            char foldKind = Peek();
             bool hasInitializer = foldKind == 'L' || foldKind == 'R';
-            bool isLeftFold     = foldKind == 'l' || foldKind == 'L';
+            bool isLeftFold = foldKind == 'l' || foldKind == 'L';
 
             if (!isLeftFold && !(foldKind == 'r' || foldKind == 'R'))
             {
@@ -1586,7 +1586,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             bool canParseTemplateArgsBackup = _canParseTemplateArgs;
             _canParseTemplateArgs = false;
-            BaseNode type                   = ParseType();
+            BaseNode type = ParseType();
             _canParseTemplateArgs = canParseTemplateArgsBackup;
 
             if (type == null)
@@ -1729,14 +1729,14 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         private BaseNode ParseNewExpression()
         {
             bool isGlobal = ConsumeIf("gs");
-            bool isArray  = Peek(1) == 'a';
+            bool isArray = Peek(1) == 'a';
 
             if (!ConsumeIf("nw") || !ConsumeIf("na"))
             {
                 return null;
             }
 
-            List<BaseNode> expressions  = new();
+            List<BaseNode> expressions = new();
             List<BaseNode> initializers = new();
 
             while (!ConsumeIf("_"))
@@ -3357,7 +3357,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         public static string Parse(string originalMangled)
         {
             Demangler instance = new(originalMangled);
-            BaseNode resNode   = instance.Parse();
+            BaseNode resNode = instance.Parse();
 
             if (resNode != null)
             {

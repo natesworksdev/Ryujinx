@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // GetFirmwareVersion2() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
         public static ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
-            ulong replyPos  = context.Request.RecvListBuff[0].Position;
+            ulong replyPos = context.Request.RecvListBuff[0].Position;
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x100L);
 
@@ -46,14 +46,14 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             const byte MajorFwVersion = 0x03;
             const byte MinorFwVersion = 0x00;
             const byte MicroFwVersion = 0x00;
-            const byte Unknown        = 0x00; //Build?
+            const byte Unknown = 0x00; //Build?
 
             const int RevisionNumber = 0x0A;
 
-            const string Platform   = "NX";
+            const string Platform = "NX";
             const string UnknownHex = "7fbde2b0bba4d14107bf836e4643043d9f6c8e47";
-            const string Version    = "3.0.0";
-            const string Build      = "NintendoSDK Firmware for NX 3.0.0-10.0";
+            const string Version = "3.0.0";
+            const string Build = "NintendoSDK Firmware for NX 3.0.0-10.0";
 
             // http://switchbrew.org/index.php?title=System_Version_Title
             using MemoryStream ms = new(0x100);
@@ -109,10 +109,10 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // GetSettingsItemValueSize(buffer<nn::settings::SettingsName, 0x19>, buffer<nn::settings::SettingsItemKey, 0x19>) -> u64
         public static ResultCode GetSettingsItemValueSize(ServiceCtx context)
         {
-            ulong classPos  = context.Request.PtrBuff[0].Position;
+            ulong classPos = context.Request.PtrBuff[0].Position;
             ulong classSize = context.Request.PtrBuff[0].Size;
 
-            ulong namePos  = context.Request.PtrBuff[1].Position;
+            ulong namePos = context.Request.PtrBuff[1].Position;
             ulong nameSize = context.Request.PtrBuff[1].Size;
 
             byte[] classBuffer = new byte[classSize];
@@ -158,13 +158,13 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // GetSettingsItemValue(buffer<nn::settings::SettingsName, 0x19, 0x48>, buffer<nn::settings::SettingsItemKey, 0x19, 0x48>) -> (u64, buffer<unknown, 6, 0>)
         public static ResultCode GetSettingsItemValue(ServiceCtx context)
         {
-            ulong classPos  = context.Request.PtrBuff[0].Position;
+            ulong classPos = context.Request.PtrBuff[0].Position;
             ulong classSize = context.Request.PtrBuff[0].Size;
 
-            ulong namePos  = context.Request.PtrBuff[1].Position;
+            ulong namePos = context.Request.PtrBuff[1].Position;
             ulong nameSize = context.Request.PtrBuff[1].Size;
 
-            ulong replyPos  = context.Request.ReceiveBuff[0].Position;
+            ulong replyPos = context.Request.ReceiveBuff[0].Position;
             ulong replySize = context.Request.ReceiveBuff[0].Size;
 
             byte[] classBuffer = new byte[classSize];
@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         public static ResultCode GetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong deviceNickNameBufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong deviceNickNameBufferSize = context.Request.ReceiveBuff[0].Size;
 
             if (deviceNickNameBufferPosition == 0)
             {
@@ -270,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         public static ResultCode SetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.SendBuff[0].Position;
-            ulong deviceNickNameBufferSize     = context.Request.SendBuff[0].Size;
+            ulong deviceNickNameBufferSize = context.Request.SendBuff[0].Size;
 
             byte[] deviceNickNameBuffer = new byte[deviceNickNameBufferSize];
 

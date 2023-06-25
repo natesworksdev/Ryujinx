@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService
     [StructLayout(LayoutKind.Sequential, Pack = 0x8)]
     struct UserPresence
     {
-        public UserId         UserId;
-        public long           LastTimeOnlineTimestamp;
+        public UserId UserId;
+        public long LastTimeOnlineTimestamp;
         public PresenceStatus Status;
 
         [MarshalAs(UnmanagedType.I1)]

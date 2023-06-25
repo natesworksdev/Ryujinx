@@ -11,8 +11,6 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    using ResultCode = Ryujinx.HLE.HOS.Services.Vi.ResultCode;
-
     class SurfaceFlinger : IConsumerListener, IDisposable
     {
         private const int TargetFps = 60;
@@ -43,17 +41,17 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private class Layer
         {
-            public int                    ProducerBinderId;
+            public int ProducerBinderId;
             public IGraphicBufferProducer Producer;
-            public BufferItemConsumer     Consumer;
-            public BufferQueueCore        Core;
-            public ulong                  Owner;
-            public LayerState             State;
+            public BufferItemConsumer Consumer;
+            public BufferQueueCore Core;
+            public ulong Owner;
+            public LayerState State;
         }
 
         private class TextureCallbackInformation
         {
-            public Layer      Layer;
+            public Layer Layer;
             public BufferItem Item;
         }
 
@@ -141,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public ResultCode OpenLayer(ulong pid, long layerId, out IBinder producer)
+        public Vi.ResultCode OpenLayer(ulong pid, long layerId, out IBinder producer)
         {
             Layer layer = GetLayerByIdLocked(layerId);
 
@@ -149,16 +147,16 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 producer = null;
 
-                return ResultCode.InvalidArguments;
+                return Vi.ResultCode.InvalidArguments;
             }
 
             layer.State = LayerState.ManagedOpened;
             producer = layer.Producer;
 
-            return ResultCode.Success;
+            return Vi.ResultCode.Success;
         }
 
-        public ResultCode CloseLayer(long layerId)
+        public Vi.ResultCode CloseLayer(long layerId)
         {
             lock (Lock)
             {
@@ -168,16 +166,16 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 {
                     Logger.Error?.Print(LogClass.SurfaceFlinger, $"Failed to close layer {layerId}");
 
-                    return ResultCode.InvalidValue;
+                    return Vi.ResultCode.InvalidValue;
                 }
 
                 CloseLayer(layerId, layer);
 
-                return ResultCode.Success;
+                return Vi.ResultCode.Success;
             }
         }
 
-        public ResultCode DestroyManagedLayer(long layerId)
+        public Vi.ResultCode DestroyManagedLayer(long layerId)
         {
             lock (Lock)
             {
@@ -187,14 +185,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 {
                     Logger.Error?.Print(LogClass.SurfaceFlinger, $"Failed to destroy managed layer {layerId} (not found)");
 
-                    return ResultCode.InvalidValue;
+                    return Vi.ResultCode.InvalidValue;
                 }
 
                 if (layer.State != LayerState.ManagedClosed && layer.State != LayerState.ManagedOpened)
                 {
                     Logger.Error?.Print(LogClass.SurfaceFlinger, $"Failed to destroy managed layer {layerId} (permission denied)");
 
-                    return ResultCode.PermissionDenied;
+                    return Vi.ResultCode.PermissionDenied;
                 }
 
                 HOSBinderDriverServer.UnregisterBinderObject(layer.ProducerBinderId);
@@ -204,11 +202,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     CloseLayer(layerId, layer);
                 }
 
-                return ResultCode.Success;
+                return Vi.ResultCode.Success;
             }
         }
 
-        public ResultCode DestroyStrayLayer(long layerId)
+        public Vi.ResultCode DestroyStrayLayer(long layerId)
         {
             lock (Lock)
             {
@@ -218,14 +216,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 {
                     Logger.Error?.Print(LogClass.SurfaceFlinger, $"Failed to destroy stray layer {layerId} (not found)");
 
-                    return ResultCode.InvalidValue;
+                    return Vi.ResultCode.InvalidValue;
                 }
 
                 if (layer.State != LayerState.Stray)
                 {
                     Logger.Error?.Print(LogClass.SurfaceFlinger, $"Failed to destroy stray layer {layerId} (permission denied)");
 
-                    return ResultCode.PermissionDenied;
+                    return Vi.ResultCode.PermissionDenied;
                 }
 
                 HOSBinderDriverServer.UnregisterBinderObject(layer.ProducerBinderId);
@@ -235,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     CloseLayer(layerId, layer);
                 }
 
-                return ResultCode.Success;
+                return Vi.ResultCode.Success;
             }
         }
 
@@ -403,7 +401,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private void PostFrameBuffer(Layer layer, BufferItem item)
         {
-            int frameBufferWidth  = item.GraphicBuffer.Object.Width;
+            int frameBufferWidth = item.GraphicBuffer.Object.Width;
             int frameBufferHeight = item.GraphicBuffer.Object.Height;
 
             int nvMapHandle = item.GraphicBuffer.Object.Buffer.Surfaces[0].NvMapHandle;
@@ -434,7 +432,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             bool flipY = item.Transform.HasFlag(NativeWindowTransform.FlipY);
 
             AspectRatio aspectRatio = _device.Configuration.AspectRatio;
-            bool        isStretched = aspectRatio == AspectRatio.Stretched;
+            bool isStretched = aspectRatio == AspectRatio.Stretched;
 
             ImageCrop crop = new(
                 cropRect.Left,
@@ -450,7 +448,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             TextureCallbackInformation textureCallbackInformation = new()
             {
                 Layer = layer,
-                Item  = item
+                Item = item
             };
 
             if (_device.Gpu.Window.EnqueueFrameThreadSafe(

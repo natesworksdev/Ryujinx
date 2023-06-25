@@ -107,8 +107,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         [StructLayout(LayoutKind.Sequential, Size = 0x28)]
         private struct FlatBinderObject
         {
-            public int  Type;
-            public int  Flags;
+            public int Type;
+            public int Flags;
             public long BinderId;
             public long Cookie;
 
@@ -121,8 +121,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             FlatBinderObject flatBinderObject = new()
             {
-                Type     = 2,
-                Flags    = 0,
+                Type = 2,
+                Flags = 0,
                 BinderId = HOSBinderDriverServer.GetBinderId(obj),
             };
 

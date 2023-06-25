@@ -19,8 +19,8 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     class INfp : IpcService
     {
 #pragma warning disable IDE0052 // Remove unread private member
-        private ulong  _appletResourceUserId;
-        private ulong  _mcuVersionData;
+        private ulong _appletResourceUserId;
+        private ulong _mcuVersionData;
 #pragma warning restore IDE0052
         private byte[] _mcuData;
 
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             _mcuVersionData = context.RequestData.ReadUInt64();
 
             ulong inputPosition = context.Request.SendBuff[0].Position;
-            ulong inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputSize = context.Request.SendBuff[0].Size;
 
             _mcuData = new byte[inputSize];
 
@@ -58,8 +58,8 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             NfpDevice devicePlayer1 = new()
             {
                 NpadIdType = NpadIdType.Player1,
-                Handle     = HidUtils.GetIndexFromNpadIdType(NpadIdType.Player1),
-                State      = NfpDeviceState.Initialized
+                Handle = HidUtils.GetIndexFromNpadIdType(NpadIdType.Player1),
+                State = NfpDeviceState.Initialized
             };
 
             context.Device.System.NfpDevices.Add(devicePlayer1);
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             }
 
             ulong outputPosition = context.Request.RecvListBuff[0].Position;
-            ulong outputSize      = context.Request.RecvListBuff[0].Size;
+            ulong outputSize = context.Request.RecvListBuff[0].Size;
 
             if (context.Device.System.NfpDevices.Count == 0)
             {
@@ -214,9 +214,9 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 return resultCode;
             }
 
-            uint        deviceHandle = (uint)context.RequestData.ReadUInt64();
-            DeviceType  deviceType   = (DeviceType)context.RequestData.ReadUInt32();
-            MountTarget mountTarget  = (MountTarget)context.RequestData.ReadUInt32();
+            uint deviceHandle = (uint)context.RequestData.ReadUInt64();
+            DeviceType deviceType = (DeviceType)context.RequestData.ReadUInt32();
+            MountTarget mountTarget = (MountTarget)context.RequestData.ReadUInt32();
 
             if (deviceType != 0)
             {
@@ -378,7 +378,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             }
 
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
-            ulong outputSize     = context.Request.ReceiveBuff[0].Size;
+            ulong outputSize = context.Request.ReceiveBuff[0].Size;
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
@@ -446,7 +446,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             }
 
             ulong inputPosition = context.Request.SendBuff[0].Position;
-            ulong inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputSize = context.Request.SendBuff[0].Size;
 
             byte[] applicationArea = new byte[inputSize];
 
@@ -527,7 +527,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             uint applicationAreaId = context.RequestData.ReadUInt32();
 
             ulong inputPosition = context.Request.SendBuff[0].Position;
-            ulong inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputSize = context.Request.SendBuff[0].Size;
 
             byte[] applicationArea = new byte[inputSize];
 
@@ -620,10 +620,10 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                             TagInfo tagInfo = new()
                             {
                                 UuidLength = (byte)Uuid.Length,
-                                Reserved1  = new Array21<byte>(),
-                                Protocol   = uint.MaxValue, // All Protocol
-                                TagType    = uint.MaxValue, // All Type
-                                Reserved2  = new Array6<byte>()
+                                Reserved1 = new Array21<byte>(),
+                                Protocol = uint.MaxValue, // All Protocol
+                                TagType = uint.MaxValue, // All Type
+                                Reserved2 = new Array6<byte>()
                             };
 
                             Uuid.CopyTo(tagInfo.Uuid.AsSpan());
@@ -811,12 +811,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         {
                             ModelInfo modelInfo = new()
                             {
-                                Reserved         = new Array57<byte>(),
-                                CharacterId      = BinaryPrimitives.ReverseEndianness(ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(0, 4), NumberStyles.HexNumber)),
+                                Reserved = new Array57<byte>(),
+                                CharacterId = BinaryPrimitives.ReverseEndianness(ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(0, 4), NumberStyles.HexNumber)),
                                 CharacterVariant = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(4, 2), NumberStyles.HexNumber),
-                                Series           = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(12, 2), NumberStyles.HexNumber),
-                                ModelNumber      = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(8, 4), NumberStyles.HexNumber),
-                                Type             = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(6, 2), NumberStyles.HexNumber)
+                                Series = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(12, 2), NumberStyles.HexNumber),
+                                ModelNumber = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(8, 4), NumberStyles.HexNumber),
+                                Type = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.AsSpan(6, 2), NumberStyles.HexNumber)
                             };
 
                             context.Memory.Write(outputPosition, modelInfo);

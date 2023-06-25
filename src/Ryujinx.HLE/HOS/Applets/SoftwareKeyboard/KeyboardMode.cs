@@ -30,10 +30,10 @@
         /// </summary>
         Alphabet = 4,
 
-        SimplifiedChinese  = 5,
+        SimplifiedChinese = 5,
         TraditionalChinese = 6,
-        Korean             = 7,
-        LanguageSet2       = 8,
-        LanguageSet2Latin  = 9,
+        Korean = 7,
+        LanguageSet2 = 8,
+        LanguageSet2Latin = 9,
     }
 }

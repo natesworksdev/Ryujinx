@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     {
         const int TerminationTypeIndex = 1;
 
-        private const byte End  = 0; // True end of the conditional.
+        private const byte End = 0; // True end of the conditional.
         private const byte Else = 1; // End of the 'then' block and beginning of 'else' block.
 
         public static void Emit(byte[] instruction, CompilationContext context)

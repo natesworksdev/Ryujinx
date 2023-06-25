@@ -355,7 +355,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             BufferItem item = new();
 
             IConsumerListener frameAvailableListener = null;
-            IConsumerListener frameReplaceListener   = null;
+            IConsumerListener frameReplaceListener = null;
 
             lock (Core.Lock)
             {

@@ -35,18 +35,18 @@ namespace Ryujinx.HLE.HOS.Services.Caps
         private static ResultCode GetAlbumFileList(ServiceCtx context)
         {
             ResultCode resultCode = ResultCode.Success;
-            ulong      count      = 0;
+            ulong count = 0;
 
             ContentType contentType = (ContentType)context.RequestData.ReadUInt16();
-            ulong       startTime   = context.RequestData.ReadUInt64();
-            ulong       endTime     = context.RequestData.ReadUInt64();
+            ulong startTime = context.RequestData.ReadUInt64();
+            ulong endTime = context.RequestData.ReadUInt64();
 
             context.RequestData.ReadUInt16(); // Alignment.
 
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
             ulong applicationAlbumFileEntryPosition = context.Request.ReceiveBuff[0].Position;
-            ulong applicationAlbumFileEntrySize     = context.Request.ReceiveBuff[0].Size;
+            ulong applicationAlbumFileEntrySize = context.Request.ReceiveBuff[0].Size;
 
             MemoryHelper.FillWithZeros(context.Memory, applicationAlbumFileEntryPosition, (int)applicationAlbumFileEntrySize);
 

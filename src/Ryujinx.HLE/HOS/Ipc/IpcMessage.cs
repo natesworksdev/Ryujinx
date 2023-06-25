@@ -45,13 +45,13 @@ namespace Ryujinx.HLE.HOS.Ipc
 
             Type = (IpcMessageType)(word0 & 0xffff);
 
-            int  ptrBuffCount  = (word0 >> 16) & 0xf;
-            int  sendBuffCount = (word0 >> 20) & 0xf;
-            int  recvBuffCount = (word0 >> 24) & 0xf;
-            int  xchgBuffCount = (word0 >> 28) & 0xf;
+            int ptrBuffCount = (word0 >> 16) & 0xf;
+            int sendBuffCount = (word0 >> 20) & 0xf;
+            int recvBuffCount = (word0 >> 24) & 0xf;
+            int xchgBuffCount = (word0 >> 28) & 0xf;
 
-            int  rawDataSize   = (word1 >> 0) & 0x3ff;
-            int  recvListFlags = (word1 >> 10) & 0xf;
+            int rawDataSize = (word1 >> 0) & 0x3ff;
+            int recvListFlags = (word1 >> 10) & 0xf;
             bool hndDescEnable = ((word1 >> 31) & 0x1) != 0;
 
             if (hndDescEnable)

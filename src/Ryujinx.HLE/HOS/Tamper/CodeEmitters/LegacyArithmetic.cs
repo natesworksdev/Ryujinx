@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
     /// </summary>
     class LegacyArithmetic
     {
-        const int OperationWidthIndex  = 1;
+        const int OperationWidthIndex = 1;
         const int DestinationRegisterIndex = 3;
         const int OperationTypeIndex = 4;
         const int ValueImmediateIndex = 8;

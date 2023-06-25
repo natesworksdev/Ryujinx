@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
         public static ResultCode ThrowFatal(ServiceCtx context)
         {
             ResultCode resultCode = (ResultCode)context.RequestData.ReadUInt64();
-            ulong      pid        = context.Request.HandleDesc.PId;
+            ulong pid = context.Request.HandleDesc.PId;
 
             return ThrowFatalWithCpuContextImpl(context, resultCode, pid, FatalPolicy.ErrorReportAndErrorScreen, null);
         }
@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
         // ThrowFatalWithPolicy(u64 result_code, u32 fatal_policy, u64 pid)
         public static ResultCode ThrowFatalWithPolicy(ServiceCtx context)
         {
-            ResultCode  resultCode  = (ResultCode)context.RequestData.ReadUInt64();
+            ResultCode resultCode = (ResultCode)context.RequestData.ReadUInt64();
             FatalPolicy fatalPolicy = (FatalPolicy)context.RequestData.ReadUInt32();
-            ulong       pid         = context.Request.HandleDesc.PId;
+            ulong pid = context.Request.HandleDesc.PId;
 
             return ThrowFatalWithCpuContextImpl(context, resultCode, pid, fatalPolicy, null);
         }
@@ -36,12 +36,12 @@ namespace Ryujinx.HLE.HOS.Services.Fatal
         // ThrowFatalWithCpuContext(u64 result_code, u32 fatal_policy, u64 pid, buffer<bytes, 0x15> cpu_context)
         public static ResultCode ThrowFatalWithCpuContext(ServiceCtx context)
         {
-            ResultCode  resultCode  = (ResultCode)context.RequestData.ReadUInt64();
+            ResultCode resultCode = (ResultCode)context.RequestData.ReadUInt64();
             FatalPolicy fatalPolicy = (FatalPolicy)context.RequestData.ReadUInt32();
-            ulong       pid         = context.Request.HandleDesc.PId;
+            ulong pid = context.Request.HandleDesc.PId;
 
             ulong cpuContextPosition = context.Request.SendBuff[0].Position;
-            ulong cpuContextSize     = context.Request.SendBuff[0].Size;
+            ulong cpuContextSize = context.Request.SendBuff[0].Size;
 
             ReadOnlySpan<byte> cpuContextData = context.Memory.GetSpan(cpuContextPosition, (int)cpuContextSize);
 

@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             address -= image.BaseAddress;
 
-            int left  = 0;
+            int left = 0;
             int right = image.Symbols.Length - 1;
 
             while (left <= right)
@@ -324,7 +324,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private void ScanMemoryForTextSegments()
         {
             ulong oldAddress = 0;
-            ulong address    = 0;
+            ulong address = 0;
 
             while (address >= oldAddress)
             {
@@ -364,12 +364,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 return;
             }
 
-            ulong dynamicOffset    = memory.Read<uint>(mod0Offset + 0x4)  + mod0Offset;
-            ulong bssStartOffset   = memory.Read<uint>(mod0Offset + 0x8)  + mod0Offset;
-            ulong bssEndOffset     = memory.Read<uint>(mod0Offset + 0xc)  + mod0Offset;
+            ulong dynamicOffset = memory.Read<uint>(mod0Offset + 0x4) + mod0Offset;
+            ulong bssStartOffset = memory.Read<uint>(mod0Offset + 0x8) + mod0Offset;
+            ulong bssEndOffset = memory.Read<uint>(mod0Offset + 0xc) + mod0Offset;
             ulong ehHdrStartOffset = memory.Read<uint>(mod0Offset + 0x10) + mod0Offset;
-            ulong ehHdrEndOffset   = memory.Read<uint>(mod0Offset + 0x14) + mod0Offset;
-            ulong modObjOffset     = memory.Read<uint>(mod0Offset + 0x18) + mod0Offset;
+            ulong ehHdrEndOffset = memory.Read<uint>(mod0Offset + 0x14) + mod0Offset;
+            ulong modObjOffset = memory.Read<uint>(mod0Offset + 0x18) + mod0Offset;
 
             bool isAArch32 = memory.Read<ulong>(dynamicOffset) > 0xFFFFFFFF || memory.Read<ulong>(dynamicOffset + 0x10) > 0xFFFFFFFF;
 

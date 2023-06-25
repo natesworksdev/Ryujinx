@@ -41,7 +41,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using TimeSpanType = Ryujinx.HLE.HOS.Services.Time.Clock.TimeSpanType;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -49,10 +48,10 @@ namespace Ryujinx.HLE.HOS
 
     public class Horizon : IDisposable
     {
-        internal const int HidSize                 = 0x40000;
-        internal const int FontSize                = 0x1100000;
-        internal const int IirsSize                = 0x8000;
-        internal const int TimeSize                = 0x1000;
+        internal const int HidSize = 0x40000;
+        internal const int FontSize = 0x1100000;
+        internal const int IirsSize = 0x8000;
+        internal const int TimeSize = 0x1000;
         internal const int AppletCaptureBufferSize = 0x384000;
 
         internal KernelContext KernelContext { get; }
@@ -148,16 +147,16 @@ namespace Ryujinx.HLE.HOS
             // region used that is used is Application, so we can use the other ones for anything.
             KMemoryRegionManager region = KernelContext.MemoryManager.MemoryRegions[(int)MemoryRegion.NvServices];
 
-            ulong hidPa                 = region.Address;
-            ulong fontPa                = region.Address + HidSize;
-            ulong iirsPa                = region.Address + HidSize + FontSize;
-            ulong timePa                = region.Address + HidSize + FontSize + IirsSize;
+            ulong hidPa = region.Address;
+            ulong fontPa = region.Address + HidSize;
+            ulong iirsPa = region.Address + HidSize + FontSize;
+            ulong timePa = region.Address + HidSize + FontSize + IirsSize;
             ulong appletCaptureBufferPa = region.Address + HidSize + FontSize + IirsSize + TimeSize;
 
-            KPageList hidPageList                 = new();
-            KPageList fontPageList                = new();
-            KPageList iirsPageList                = new();
-            KPageList timePageList                = new();
+            KPageList hidPageList = new();
+            KPageList fontPageList = new();
+            KPageList iirsPageList = new();
+            KPageList timePageList = new();
             KPageList appletCaptureBufferPageList = new();
 
             hidPageList.AddRange(hidPa, HidSize / KPageTableBase.PageSize);

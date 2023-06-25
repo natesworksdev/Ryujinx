@@ -21,16 +21,16 @@ namespace Ryujinx.HLE.HOS.Applets
     {
         private const string DefaultInputText = "Ryujinx";
 
-        private const int StandardBufferSize    = 0x7D8;
+        private const int StandardBufferSize = 0x7D8;
         private const int InteractiveBufferSize = 0x7D4;
-        private const int MaxUserWords          = 0x1388;
-        private const int MaxUiTextSize         = 100;
+        private const int MaxUserWords = 0x1388;
+        private const int MaxUiTextSize = 100;
 
         private const Key CycleInputModesKey = Key.F6;
 
         private readonly Switch _device;
 
-        private SoftwareKeyboardState        _foregroundState = SoftwareKeyboardState.Uninitialized;
+        private SoftwareKeyboardState _foregroundState = SoftwareKeyboardState.Uninitialized;
         private volatile InlineKeyboardState _backgroundState = InlineKeyboardState.Uninitialized;
 
         private bool _isBackground = false;
@@ -43,24 +43,24 @@ namespace Ryujinx.HLE.HOS.Applets
 
         // Configuration for background (inline) mode.
 #pragma warning disable IDE0052 // Remove unread private member
-        private SoftwareKeyboardInitialize   _keyboardBackgroundInitialize;
+        private SoftwareKeyboardInitialize _keyboardBackgroundInitialize;
         private SoftwareKeyboardCustomizeDic _keyboardBackgroundDic;
-        private SoftwareKeyboardDictSet      _keyboardBackgroundDictSet;
+        private SoftwareKeyboardDictSet _keyboardBackgroundDictSet;
 #pragma warning restore IDE0052
-        private SoftwareKeyboardUserWord[]   _keyboardBackgroundUserWords;
+        private SoftwareKeyboardUserWord[] _keyboardBackgroundUserWords;
 
         private byte[] _transferMemory;
 
-        private string         _textValue   = "";
-        private int            _cursorBegin = 0;
-        private Encoding       _encoding    = Encoding.Unicode;
-        private KeyboardResult _lastResult  = KeyboardResult.NotSet;
+        private string _textValue = "";
+        private int _cursorBegin = 0;
+        private Encoding _encoding = Encoding.Unicode;
+        private KeyboardResult _lastResult = KeyboardResult.NotSet;
 
         private IDynamicTextInputHandler _dynamicTextInputHandler = null;
-        private SoftwareKeyboardRenderer _keyboardRenderer        = null;
-        private NpadReader               _npads                   = null;
-        private bool                     _canAcceptController     = false;
-        private KeyboardInputMode        _inputMode               = KeyboardInputMode.ControllerAndKeyboard;
+        private SoftwareKeyboardRenderer _keyboardRenderer = null;
+        private NpadReader _npads = null;
+        private bool _canAcceptController = false;
+        private KeyboardInputMode _inputMode = KeyboardInputMode.ControllerAndKeyboard;
 
         private readonly object _lock = new();
 
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
                 _interactiveSession.DataAvailable += OnInteractiveData;
 
-                var launchParams   = _normalSession.Pop();
+                var launchParams = _normalSession.Pop();
                 var keyboardConfig = _normalSession.Pop();
 
                 _isBackground = keyboardConfig.Length == Unsafe.SizeOf<SoftwareKeyboardInitialize>();
@@ -404,7 +404,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     if (remaining == Marshal.SizeOf<SoftwareKeyboardCalc>())
                     {
                         var keyboardCalcData = reader.ReadBytes((int)remaining);
-                        var keyboardCalc     = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
+                        var keyboardCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
 
                         newCalc = keyboardCalc.ToExtended();
                     }
@@ -551,7 +551,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     {
                         AdvanceInputMode();
 
-                        bool typingEnabled     = InputModeTypingEnabled();
+                        bool typingEnabled = InputModeTypingEnabled();
                         bool controllerEnabled = InputModeControllerEnabled();
 
                         _dynamicTextInputHandler.TextProcessingEnabled = typingEnabled;

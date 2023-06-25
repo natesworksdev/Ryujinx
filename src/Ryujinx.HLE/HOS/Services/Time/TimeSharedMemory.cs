@@ -11,11 +11,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
 {
     class TimeSharedMemory
     {
-        private Switch              _device;
-        private KSharedMemory       _sharedMemory;
+        private Switch _device;
+        private KSharedMemory _sharedMemory;
         private SharedMemoryStorage _timeSharedMemoryStorage;
 #pragma warning disable IDE0052 // Remove unread private member
-        private int                 _timeSharedMemorySize;
+        private int _timeSharedMemorySize;
 #pragma warning restore IDE0052
 
         private const uint SteadyClockContextOffset = 0x00;
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private T ReadObjectFromSharedMemory<T>(ulong offset, ulong padding) where T : unmanaged
         {
-            T    result;
+            T result;
             uint index;
             uint possiblyNewIndex;
 

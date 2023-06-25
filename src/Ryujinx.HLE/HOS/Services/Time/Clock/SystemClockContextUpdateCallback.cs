@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     abstract class SystemClockContextUpdateCallback
     {
         private readonly List<KWritableEvent> _operationEventList;
-        protected SystemClockContext   _context;
-        private   bool                 _hasContext;
+        protected SystemClockContext _context;
+        private bool _hasContext;
 
         public SystemClockContextUpdateCallback()
         {

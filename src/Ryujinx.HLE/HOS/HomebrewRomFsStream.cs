@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS
     class HomebrewRomFsStream : Stream
     {
         private readonly Stream _baseStream;
-        private readonly long   _positionOffset;
+        private readonly long _positionOffset;
 
         public HomebrewRomFsStream(Stream baseStream, long positionOffset)
         {

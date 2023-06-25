@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     abstract class SteadyClockCore
     {
         private UInt128 _clockSourceId;
-        private bool    _isRtcResetDetected;
-        private bool    _isInitialized;
+        private bool _isRtcResetDetected;
+        private bool _isInitialized;
 
         public SteadyClockCore()
         {

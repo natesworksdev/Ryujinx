@@ -10,16 +10,16 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// </summary>
     internal class SoftwareKeyboardRenderer : IDisposable
     {
-        private const int TextBoxBlinkSleepMilliseconds   = 100;
+        private const int TextBoxBlinkSleepMilliseconds = 100;
         private const int RendererWaitTimeoutMilliseconds = 100;
 
-        private readonly object _stateLock  = new();
+        private readonly object _stateLock = new();
 
-        private readonly SoftwareKeyboardUiState      _state = new();
+        private readonly SoftwareKeyboardUiState _state = new();
         private readonly SoftwareKeyboardRendererBase _renderer;
 
         private readonly TimedAction _textBoxBlinkTimedAction = new();
-        private readonly TimedAction _renderAction            = new();
+        private readonly TimedAction _renderAction = new();
 
         public SoftwareKeyboardRenderer(IHostUiTheme uiTheme)
         {
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             SoftwareKeyboardUiState internalState = new();
 
             bool canCreateSurface = false;
-            bool needsUpdate      = true;
+            bool needsUpdate = true;
 
             timedAction.Reset(() =>
             {

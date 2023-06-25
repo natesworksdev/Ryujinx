@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     public class NewExpression : BaseNode
     {
         private readonly NodeArray _expressions;
-        private readonly BaseNode  _typeNode;
+        private readonly BaseNode _typeNode;
         private readonly NodeArray _initializers;
 
         private readonly bool _isGlobal;

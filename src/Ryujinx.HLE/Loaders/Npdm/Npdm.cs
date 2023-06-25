@@ -62,9 +62,9 @@ namespace Ryujinx.HLE.Loaders.Npdm
 
             int aci0Offset = reader.ReadInt32();
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            int aci0Size   = reader.ReadInt32();
+            int aci0Size = reader.ReadInt32();
             int acidOffset = reader.ReadInt32();
-            int acidSize   = reader.ReadInt32();
+            int acidSize = reader.ReadInt32();
 #pragma warning restore IDE0059
 
             Aci0 = new Aci0(stream, aci0Offset);

@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         public static ResultCode GetApplicationControlData(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            byte  source  = (byte)context.RequestData.ReadInt64();
+            byte source = (byte)context.RequestData.ReadInt64();
             ulong titleId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 

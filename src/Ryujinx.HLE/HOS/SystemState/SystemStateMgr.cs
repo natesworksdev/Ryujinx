@@ -76,8 +76,8 @@ namespace Ryujinx.HLE.HOS.SystemState
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            long code  = 0;
-            int  shift = 0;
+            long code = 0;
+            int shift = 0;
 
             foreach (char chr in LanguageCodes[index])
             {

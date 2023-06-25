@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
     {
         private readonly BaseNode _element;
         private readonly BaseNode _expression;
-        private readonly bool     _isArrayExpression;
+        private readonly bool _isArrayExpression;
 
         public BracedExpression(BaseNode element, BaseNode expression, bool isArrayExpression) : base(NodeType.BracedExpression)
         {

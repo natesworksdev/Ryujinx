@@ -97,9 +97,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 #pragma warning restore IDE0059
 
             NvIoctl.Direction ioctlDirection = ioctlCommand.DirectionValue;
-            uint              ioctlSize      = ioctlCommand.Size;
+            uint ioctlSize = ioctlCommand.Size;
 
-            bool isRead  = (ioctlDirection & NvIoctl.Direction.Read)  != 0;
+            bool isRead = (ioctlDirection & NvIoctl.Direction.Read) != 0;
             bool isWrite = (ioctlDirection & NvIoctl.Direction.Write) != 0;
 
             if ((isWrite && ioctlSize > outputDataSize) || (isRead && ioctlSize > inputDataSize))
@@ -218,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         public ResultCode Open(ServiceCtx context)
         {
             NvResult errorCode = EnsureInitialized();
-            int      fd        = -1;
+            int fd = -1;
 
             if (errorCode == NvResult.Success)
             {
@@ -244,7 +244,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int     fd           = context.RequestData.ReadInt32();
+                int fd = context.RequestData.ReadInt32();
                 NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
 
                 errorCode = GetIoctlArgument(context, ioctlCommand, out Span<byte> arguments);
@@ -307,9 +307,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         public ResultCode Initialize(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            long transferMemSize   = context.RequestData.ReadInt64();
+            long transferMemSize = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
-            int  transferMemHandle = context.Request.HandleDesc.ToCopy[1];
+            int transferMemHandle = context.Request.HandleDesc.ToCopy[1];
 
             // TODO: When transfer memory will be implemented, this could be removed.
             _transferMemInitialized = true;
@@ -337,7 +337,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int  fd      = context.RequestData.ReadInt32();
+                int fd = context.RequestData.ReadInt32();
                 uint eventId = context.RequestData.ReadUInt32();
 
                 errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
@@ -373,9 +373,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int  fd                 = context.RequestData.ReadInt32();
-                uint argument           = context.RequestData.ReadUInt32();
-                int  sharedMemoryHandle = context.Request.HandleDesc.ToCopy[0];
+                int fd = context.RequestData.ReadInt32();
+                uint argument = context.RequestData.ReadUInt32();
+                int sharedMemoryHandle = context.Request.HandleDesc.ToCopy[0];
 
                 errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
@@ -463,7 +463,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int     fd           = context.RequestData.ReadInt32();
+                int fd = context.RequestData.ReadInt32();
                 NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
 
                 (ulong inlineInBufferPosition, ulong inlineInBufferSize) = context.Request.GetBufferType0x21(1);
@@ -512,7 +512,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int     fd           = context.RequestData.ReadInt32();
+                int fd = context.RequestData.ReadInt32();
                 NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
 
                 (ulong inlineOutBufferPosition, ulong inlineOutBufferSize) = context.Request.GetBufferType0x22(1);

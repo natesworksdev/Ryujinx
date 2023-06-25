@@ -14,10 +14,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode GetBusHandle(ServiceCtx context)
 #pragma warning restore CA1822
         {
-            NpadIdType npadIdType           = (NpadIdType)context.RequestData.ReadInt32();
+            NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadInt32();
             context.RequestData.BaseStream.Position += 4; // Padding
-            BusType    busType              = (BusType)context.RequestData.ReadInt64();
-            long       appletResourceUserId = context.RequestData.ReadInt64();
+            BusType busType = (BusType)context.RequestData.ReadInt64();
+            long appletResourceUserId = context.RequestData.ReadInt64();
 
             context.ResponseData.Write(false);
             context.ResponseData.BaseStream.Position += 7; // Padding

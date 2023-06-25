@@ -77,41 +77,41 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         [MarshalAs(UnmanagedType.I1)]
         public bool UseSaveData;
 
-        public uint   Reserved3;
+        public uint Reserved3;
         public ushort Reserved4;
-        public byte   Reserved5;
-        public ulong  Reserved6;
-        public ulong  Reserved7;
+        public byte Reserved5;
+        public ulong Reserved6;
+        public ulong Reserved7;
 
         public SoftwareKeyboardAppearEx ToExtended()
         {
             SoftwareKeyboardAppearEx appear = new()
             {
-                KeyboardMode           = KeyboardMode,
-                OkText                 = OkText,
-                LeftOptionalSymbolKey  = LeftOptionalSymbolKey,
+                KeyboardMode = KeyboardMode,
+                OkText = OkText,
+                LeftOptionalSymbolKey = LeftOptionalSymbolKey,
                 RightOptionalSymbolKey = RightOptionalSymbolKey,
-                PredictionEnabled      = PredictionEnabled,
-                CancelButtonDisabled   = CancelButtonDisabled,
-                InvalidChars           = InvalidChars,
-                TextMaxLength          = TextMaxLength,
-                TextMinLength          = TextMinLength,
-                UseNewLine             = UseNewLine,
-                MiniaturizationMode    = MiniaturizationMode,
-                Reserved1              = Reserved1,
-                Reserved2              = Reserved2,
-                InvalidButtons         = InvalidButtons,
-                UseSaveData            = UseSaveData,
-                Reserved3              = Reserved3,
-                Reserved4              = Reserved4,
-                Reserved5              = Reserved5,
-                Uid0                   = Reserved6,
-                Uid1                   = Reserved7,
-                SamplingNumber         = 0,
-                Reserved6              = 0,
-                Reserved7              = 0,
-                Reserved8              = 0,
-                Reserved9              = 0
+                PredictionEnabled = PredictionEnabled,
+                CancelButtonDisabled = CancelButtonDisabled,
+                InvalidChars = InvalidChars,
+                TextMaxLength = TextMaxLength,
+                TextMinLength = TextMinLength,
+                UseNewLine = UseNewLine,
+                MiniaturizationMode = MiniaturizationMode,
+                Reserved1 = Reserved1,
+                Reserved2 = Reserved2,
+                InvalidButtons = InvalidButtons,
+                UseSaveData = UseSaveData,
+                Reserved3 = Reserved3,
+                Reserved4 = Reserved4,
+                Reserved5 = Reserved5,
+                Uid0 = Reserved6,
+                Uid1 = Reserved7,
+                SamplingNumber = 0,
+                Reserved6 = 0,
+                Reserved7 = 0,
+                Reserved8 = 0,
+                Reserved9 = 0
             };
 
             return appear;

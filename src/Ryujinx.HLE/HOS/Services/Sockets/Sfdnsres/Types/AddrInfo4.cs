@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x10)]
     struct AddrInfo4
     {
-        public byte         Length;
-        public byte         Family;
-        public short        Port;
+        public byte Length;
+        public byte Family;
+        public short Port;
         public Array4<byte> Address;
         public Array8<byte> Padding;
 

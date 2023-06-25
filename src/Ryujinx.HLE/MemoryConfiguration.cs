@@ -5,12 +5,12 @@ namespace Ryujinx.HLE
 {
     public enum MemoryConfiguration
     {
-        MemoryConfiguration4GiB          = 0,
+        MemoryConfiguration4GiB = 0,
         MemoryConfiguration4GiBAppletDev = 1,
         MemoryConfiguration4GiBSystemDev = 2,
-        MemoryConfiguration6GiB          = 3,
+        MemoryConfiguration6GiB = 3,
         MemoryConfiguration6GiBAppletDev = 4,
-        MemoryConfiguration8GiB          = 5
+        MemoryConfiguration8GiB = 5
     }
 
     static class MemoryConfigurationExtensions

@@ -5,9 +5,9 @@ namespace Ryujinx.HLE.HOS.Services.Arp
     class ApplicationLaunchProperty
     {
         public ulong TitleId;
-        public int   Version;
-        public byte  BaseGameStorageId;
-        public byte  UpdateGameStorageId;
+        public int Version;
+        public byte BaseGameStorageId;
+        public byte UpdateGameStorageId;
 #pragma warning disable CS0649 // Field is never assigned to
         public short Padding;
 #pragma warning restore CS0649

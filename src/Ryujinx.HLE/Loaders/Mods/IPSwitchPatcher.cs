@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             for (int i = 0; i < hexstr.Length; i += 2)
             {
                 int high = ParseHexByte((byte)hexstr[i]);
-                int low  = ParseHexByte((byte)hexstr[i + 1]);
+                int low = ParseHexByte((byte)hexstr[i + 1]);
 
                 bytes[i >> 1] = (byte)((high << 4) | low);
             }
@@ -155,7 +155,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
             MemPatch patches = new();
 
-            bool enabled     = false;
+            bool enabled = false;
             bool printValues = false;
             int offset_shift = 0;
 

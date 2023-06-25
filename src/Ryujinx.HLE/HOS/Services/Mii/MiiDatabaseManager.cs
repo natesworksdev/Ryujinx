@@ -12,16 +12,16 @@ namespace Ryujinx.HLE.HOS.Services.Mii
     class MiiDatabaseManager
     {
         private static readonly bool IsTestModeEnabled = false;
-        private static uint MountCounter      = 0;
+        private static uint MountCounter = 0;
 
-        private const ulong  DatabaseTestSaveDataId = 0x8000000000000031;
-        private const ulong  DatabaseSaveDataId     = 0x8000000000000030;
+        private const ulong DatabaseTestSaveDataId = 0x8000000000000031;
+        private const ulong DatabaseSaveDataId = 0x8000000000000030;
 
         private static readonly U8String DatabasePath = new("mii:/MiiDatabase.dat");
-        private static readonly U8String MountName    = new("mii");
+        private static readonly U8String MountName = new("mii");
 
         private NintendoFigurineDatabase _database;
-        private bool                     _isDirty;
+        private bool _isDirty;
 
         private HorizonClient _horizonClient;
 

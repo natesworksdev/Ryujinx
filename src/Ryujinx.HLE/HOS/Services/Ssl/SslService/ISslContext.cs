@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong certificateDataPosition = context.Request.SendBuff[0].Position;
-            ulong certificateDataSize     = context.Request.SendBuff[0].Size;
+            ulong certificateDataSize = context.Request.SendBuff[0].Size;
 #pragma warning restore IDE0059
 
             context.ResponseData.Write(_serverCertificateId++);
@@ -65,11 +65,11 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong certificateDataPosition = context.Request.SendBuff[0].Position;
-            ulong certificateDataSize     = context.Request.SendBuff[0].Size;
+            ulong certificateDataSize = context.Request.SendBuff[0].Size;
 #pragma warning restore IDE0059
 
             ulong asciiPasswordDataPosition = context.Request.SendBuff[1].Position;
-            ulong asciiPasswordDataSize     = context.Request.SendBuff[1].Size;
+            ulong asciiPasswordDataSize = context.Request.SendBuff[1].Size;
 
             byte[] asciiPasswordData = new byte[asciiPasswordDataSize];
 

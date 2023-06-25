@@ -439,18 +439,18 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             int indexFor4 = 3 * (int)age + 9 * (int)gender + (int)race;
 
-            var facelineTypeInfo    = RandomMiiFacelineArray[indexFor4];
-            var facelineColorInfo   = RandomMiiFacelineColorArray[3 * (int)gender + (int)race];
+            var facelineTypeInfo = RandomMiiFacelineArray[indexFor4];
+            var facelineColorInfo = RandomMiiFacelineColorArray[3 * (int)gender + (int)race];
             var facelineWrinkleInfo = RandomMiiFacelineWrinkleArray[indexFor4];
-            var facelineMakeInfo    = RandomMiiFacelineMakeArray[indexFor4];
-            var hairTypeInfo        = RandomMiiHairTypeArray[indexFor4];
-            var hairColorInfo       = RandomMiiHairColorArray[3 * (int)race + (int)age];
-            var eyeTypeInfo         = RandomMiiEyeTypeArray[indexFor4];
-            var eyeColorInfo        = RandomMiiEyeColorArray[(int)race];
-            var eyebrowTypeInfo     = RandomMiiEyebrowTypeArray[indexFor4];
-            var noseTypeInfo        = RandomMiiNoseTypeArray[indexFor4];
-            var mouthTypeInfo       = RandomMiiMouthTypeArray[indexFor4];
-            var glassTypeInfo       = RandomMiiGlassTypeArray[(int)age];
+            var facelineMakeInfo = RandomMiiFacelineMakeArray[indexFor4];
+            var hairTypeInfo = RandomMiiHairTypeArray[indexFor4];
+            var hairColorInfo = RandomMiiHairColorArray[3 * (int)race + (int)age];
+            var eyeTypeInfo = RandomMiiEyeTypeArray[indexFor4];
+            var eyeColorInfo = RandomMiiEyeColorArray[(int)race];
+            var eyebrowTypeInfo = RandomMiiEyebrowTypeArray[indexFor4];
+            var noseTypeInfo = RandomMiiNoseTypeArray[indexFor4];
+            var mouthTypeInfo = RandomMiiMouthTypeArray[indexFor4];
+            var glassTypeInfo = RandomMiiGlassTypeArray[(int)age];
 
             // Faceline
             coreData.FacelineType = (FacelineType)facelineTypeInfo.Values[utilImpl.GetRandom(facelineTypeInfo.ValuesCount)];
@@ -470,7 +470,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             int eyeRotateKey2 = gender != Gender.Male ? 3 : 4;
 
             byte eyeRotateOffset = (byte)(32 - EyeRotateTable[eyeRotateKey1] + eyeRotateKey2);
-            byte eyeRotate       = (byte)(32 - EyeRotateTable[(int)coreData.EyeType]);
+            byte eyeRotate = (byte)(32 - EyeRotateTable[(int)coreData.EyeType]);
 
             coreData.EyeColor = (CommonColor)Helper.Ver3EyeColorTable[eyeColorInfo.Values[utilImpl.GetRandom(eyeColorInfo.ValuesCount)]];
             coreData.EyeScale = 4;
@@ -483,10 +483,10 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             coreData.EyebrowType = (EyebrowType)eyebrowTypeInfo.Values[utilImpl.GetRandom(eyebrowTypeInfo.ValuesCount)];
 
             int eyebrowRotateKey = race == Race.Asian ? 6 : 0;
-            int eyebrowY         = race == Race.Asian ? 9 : 10;
+            int eyebrowY = race == Race.Asian ? 9 : 10;
 
             byte eyebrowRotateOffset = (byte)(32 - EyebrowRotateTable[eyebrowRotateKey] + 6);
-            byte eyebrowRotate       = (byte)(32 - EyebrowRotateTable[(int)coreData.EyebrowType]);
+            byte eyebrowRotate = (byte)(32 - EyebrowRotateTable[(int)coreData.EyebrowType]);
 
             coreData.EyebrowColor = coreData.HairColor;
             coreData.EyebrowScale = 4;
@@ -519,7 +519,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             {
                 BeardAndMustacheFlag mustacheAndBeardFlag = (BeardAndMustacheFlag)utilImpl.GetRandom(3);
 
-                BeardType    beardType    = BeardType.None;
+                BeardType beardType = BeardType.None;
                 MustacheType mustacheType = MustacheType.None;
 
                 if ((mustacheAndBeardFlag & BeardAndMustacheFlag.Beard) == BeardAndMustacheFlag.Beard)

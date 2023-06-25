@@ -107,9 +107,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 ReceiveBuffersCount = (word0 >> 24) & 0xf;
                 ExchangeBuffersCount = word0 >> 28;
 
-                uint pointerDescSizeInWords  = PointerBuffersCount  * 2;
-                uint sendDescSizeInWords     = SendBuffersCount     * 3;
-                uint receiveDescSizeInWords  = ReceiveBuffersCount  * 3;
+                uint pointerDescSizeInWords = PointerBuffersCount * 2;
+                uint sendDescSizeInWords = SendBuffersCount * 3;
+                uint receiveDescSizeInWords = ReceiveBuffersCount * 3;
                 uint exchangeDescSizeInWords = ExchangeBuffersCount * 3;
 
                 RawDataSizeInWords = word1 & 0x3ff;
@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public Result Receive(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelStatic.GetCurrentThread();
+            KThread serverThread = KernelStatic.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 return KernelResult.PortRemoteClosed;
             }
 
-            KThread  clientThread  = request.ClientThread;
+            KThread clientThread = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             KernelContext.CriticalSection.Leave();
@@ -451,7 +451,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             // Copy send, receive and exchange buffers.
             uint totalBuffersCount =
-                clientHeader.SendBuffersCount    +
+                clientHeader.SendBuffersCount +
                 clientHeader.ReceiveBuffersCount +
                 clientHeader.ExchangeBuffersCount;
 
@@ -463,11 +463,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 uint descWord1 = clientProcess.CpuMemory.Read<uint>(clientDescAddress + 4);
                 uint descWord2 = clientProcess.CpuMemory.Read<uint>(clientDescAddress + 8);
 
-                bool isSendDesc     = index <  clientHeader.SendBuffersCount;
+                bool isSendDesc = index < clientHeader.SendBuffersCount;
                 bool isExchangeDesc = index >= clientHeader.SendBuffersCount + clientHeader.ReceiveBuffersCount;
 
                 bool notReceiveDesc = isSendDesc || isExchangeDesc;
-                bool isReceiveDesc  = !notReceiveDesc;
+                bool isReceiveDesc = !notReceiveDesc;
 
                 KMemoryPermission permission = index >= clientHeader.SendBuffersCount
                     ? KMemoryPermission.ReadAndWrite
@@ -587,7 +587,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public Result Reply(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelStatic.GetCurrentThread();
+            KThread serverThread = KernelStatic.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -610,7 +610,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             KernelContext.CriticalSection.Leave();
 
-            KThread  clientThread  = request.ClientThread;
+            KThread clientThread = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             Message clientMsg = new(request);
@@ -818,7 +818,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             // Set send, receive and exchange buffer descriptors to zero.
             uint totalBuffersCount =
-                serverHeader.SendBuffersCount    +
+                serverHeader.SendBuffersCount +
                 serverHeader.ReceiveBuffersCount +
                 serverHeader.ExchangeBuffersCount;
 

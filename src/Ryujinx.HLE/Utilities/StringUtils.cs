@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.Utilities
         public static string ReadUtf8String(ServiceCtx context, int index = 0)
         {
             ulong position = context.Request.PtrBuff[index].Position;
-            ulong size     = context.Request.PtrBuff[index].Size;
+            ulong size = context.Request.PtrBuff[index].Size;
 
             using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
             while (size-- > 0)
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.Utilities
         public static U8Span ReadUtf8Span(ServiceCtx context, int index = 0)
         {
             ulong position = context.Request.PtrBuff[index].Position;
-            ulong size     = context.Request.PtrBuff[index].Size;
+            ulong size = context.Request.PtrBuff[index].Size;
 
             ReadOnlySpan<byte> buffer = context.Memory.GetSpan(position, (int)size);
 
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.Utilities
         public static string ReadUtf8StringSend(ServiceCtx context, int index = 0)
         {
             ulong position = context.Request.SendBuff[index].Position;
-            ulong size     = context.Request.SendBuff[index].Size;
+            ulong size = context.Request.SendBuff[index].Size;
 
             using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
             while (size-- > 0)

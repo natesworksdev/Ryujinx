@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     }
 
                     long address = ((long)prevCap << 5) & 0xffffff000;
-                    long size    = ((long)cap     << 5) & 0xfffff000;
+                    long size = ((long)cap << 5) & 0xfffff000;
 
                     if (((ulong)(address + size - 1) >> 36) != 0)
                     {
@@ -150,7 +150,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                             return KernelResult.InvalidCapability;
                         }
 
-                        uint lowestCpuCore  = (cap >> 16) & 0xff;
+                        uint lowestCpuCore = (cap >> 16) & 0xff;
                         uint highestCpuCore = (cap >> 24) & 0xff;
 
                         if (lowestCpuCore > highestCpuCore)
@@ -158,8 +158,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                             return KernelResult.InvalidCombination;
                         }
 
-                        uint highestThreadPrio = (cap >>  4) & 0x3f;
-                        uint lowestThreadPrio  = (cap >> 10) & 0x3f;
+                        uint highestThreadPrio = (cap >> 4) & 0x3f;
+                        uint lowestThreadPrio = (cap >> 10) & 0x3f;
 
                         if (lowestThreadPrio > highestThreadPrio)
                         {

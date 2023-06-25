@@ -26,10 +26,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         internal const int SharedMemEntryCount = 17;
 
         public DebugPadDevice DebugPad;
-        public TouchDevice    Touchscreen;
-        public MouseDevice    Mouse;
+        public TouchDevice Touchscreen;
+        public MouseDevice Mouse;
         public KeyboardDevice Keyboard;
-        public NpadDevices    Npads;
+        public NpadDevices Npads;
 
         private static void CheckTypeSizeOrThrow<T>(int expectedSize)
         {

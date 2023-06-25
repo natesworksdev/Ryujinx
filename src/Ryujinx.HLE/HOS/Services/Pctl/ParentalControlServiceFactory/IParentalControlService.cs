@@ -1,30 +1,29 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Arp;
 using System;
-
 using static LibHac.Ns.ApplicationControlProperty;
 
 namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 {
     class IParentalControlService : IpcService
     {
-        private readonly ulong                    _pid;
-        private readonly int                      _permissionFlag;
-        private ulong                    _titleId;
+        private readonly ulong _pid;
+        private readonly int _permissionFlag;
+        private ulong _titleId;
         private ParentalControlFlagValue _parentalControlFlag;
 #pragma warning disable IDE0052 // Remove unread private member
-        private int[]                    _ratingAge;
+        private int[] _ratingAge;
 #pragma warning restore IDE0052
 
 #pragma warning disable CS0414 // Remove unread private member
         // TODO: Find where they are set.
-        private readonly bool _restrictionEnabled                  = false;
-        private readonly bool _featuresRestriction                 = false;
+        private readonly bool _restrictionEnabled = false;
+        private readonly bool _featuresRestriction = false;
 #pragma warning disable IDE0052 // Remove unread private member
-        private bool _freeCommunicationEnabled            = false;
+        private bool _freeCommunicationEnabled = false;
 #pragma warning restore IDE0052
         private readonly bool _stereoVisionRestrictionConfigurable = true;
-        private bool _stereoVisionRestriction             = false;
+        private bool _stereoVisionRestriction = false;
 #pragma warning restore CS0414
 
         public IParentalControlService(ServiceCtx context, ulong pid, bool withInitialize, int permissionFlag)

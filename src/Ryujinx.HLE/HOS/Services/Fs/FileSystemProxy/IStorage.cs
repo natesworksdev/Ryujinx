@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         public ResultCode Read(ServiceCtx context)
         {
             ulong offset = context.RequestData.ReadUInt64();
-            ulong size   = context.RequestData.ReadUInt64();
+            ulong size = context.RequestData.ReadUInt64();
 
             if (context.Request.ReceiveBuff.Count > 0)
             {

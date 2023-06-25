@@ -113,8 +113,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             // If this isn't the only element in the list, move the data in it.
             if (index < newCount)
             {
-                int targetLength     = newCount - index;
-                int sourceIndex      = index + 1;
+                int targetLength = newCount - index;
+                int sourceIndex = index + 1;
                 int destinationIndex = index;
 
                 Figurines.Slice(sourceIndex, targetLength).CopyTo(Figurines.Slice(destinationIndex, targetLength));

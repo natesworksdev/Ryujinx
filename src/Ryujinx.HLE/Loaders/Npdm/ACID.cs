@@ -44,12 +44,12 @@ namespace Ryujinx.HLE.Loaders.Npdm
             TitleIdRangeMin = reader.ReadInt64();
             TitleIdRangeMax = reader.ReadInt64();
 
-            int fsAccessControlOffset      = reader.ReadInt32();
-            int fsAccessControlSize        = reader.ReadInt32();
+            int fsAccessControlOffset = reader.ReadInt32();
+            int fsAccessControlSize = reader.ReadInt32();
             int serviceAccessControlOffset = reader.ReadInt32();
-            int serviceAccessControlSize   = reader.ReadInt32();
-            int kernelAccessControlOffset  = reader.ReadInt32();
-            int kernelAccessControlSize    = reader.ReadInt32();
+            int serviceAccessControlSize = reader.ReadInt32();
+            int kernelAccessControlOffset = reader.ReadInt32();
+            int kernelAccessControlSize = reader.ReadInt32();
 
             FsAccessControl = new FsAccessControl(stream, offset + fsAccessControlOffset, fsAccessControlSize);
 

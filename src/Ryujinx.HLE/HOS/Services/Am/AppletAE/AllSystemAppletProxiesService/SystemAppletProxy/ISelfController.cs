@@ -12,10 +12,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private readonly ulong _pid;
 
         private readonly KEvent _libraryAppletLaunchableEvent;
-        private int    _libraryAppletLaunchableEventHandle;
+        private int _libraryAppletLaunchableEventHandle;
 
         private KEvent _accumulatedSuspendedTickChangedEvent;
-        private int    _accumulatedSuspendedTickChangedEventHandle;
+        private int _accumulatedSuspendedTickChangedEventHandle;
 
         private readonly object _fatalSectionLock = new();
         private int _fatalSectionCount;
@@ -25,14 +25,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         // TODO: Determine where those fields are used.
 #pragma warning disable IDE0052 // Remove unread private member
-        private bool _screenShotPermission               = false;
-        private bool _operationModeChangedNotification   = false;
+        private bool _screenShotPermission = false;
+        private bool _operationModeChangedNotification = false;
         private bool _performanceModeChangedNotification = false;
-        private bool _restartMessageEnabled              = false;
-        private bool _outOfFocusSuspendingEnabled        = false;
-        private bool _handlesRequestToDisplay            = false;
+        private bool _restartMessageEnabled = false;
+        private bool _outOfFocusSuspendingEnabled = false;
+        private bool _handlesRequestToDisplay = false;
 #pragma warning restore IDE0052
-        private bool _autoSleepDisabled                  = false;
+        private bool _autoSleepDisabled = false;
 #pragma warning disable IDE0052 // Remove unread private member
         private bool _albumImageTakenNotificationEnabled = false;
         private bool _recordVolumeMuted = false;

@@ -11,13 +11,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types
 
         public static GetConfigurationArguments FromSpan(Span<byte> span)
         {
-            string domain    = Encoding.ASCII.GetString(span[..0x41]);
+            string domain = Encoding.ASCII.GetString(span[..0x41]);
             string parameter = Encoding.ASCII.GetString(span.Slice(0x41, 0x41));
 
             GetConfigurationArguments result = new()
             {
-                Domain        = domain[..domain.IndexOf('\0')],
-                Parameter     = parameter[..parameter.IndexOf('\0')],
+                Domain = domain[..domain.IndexOf('\0')],
+                Parameter = parameter[..parameter.IndexOf('\0')],
                 Configuration = span.Slice(0x82, 0x101).ToArray()
             };
 

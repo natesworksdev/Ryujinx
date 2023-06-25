@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             foreach (var (offset, patch) in _patches.OrderBy(item => item.Key))
             {
                 int patchOffset = (int)offset;
-                int patchSize   = patch.Length;
+                int patchSize = patch.Length;
 
                 if (patchOffset < protectedOffset || patchOffset > memory.Length)
                 {

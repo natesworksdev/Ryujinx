@@ -29,8 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong bufferPosition     = context.Request.SendBuff[0].Position;
-            ulong bufferSize         = context.Request.SendBuff[0].Size;
+            ulong bufferPosition = context.Request.SendBuff[0].Position;
+            ulong bufferSize = context.Request.SendBuff[0].Size;
 #pragma warning restore IDE0059
 
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
@@ -45,8 +45,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong bufferPosition     = context.Request.ReceiveBuff[0].Position;
-            ulong bufferSize         = context.Request.ReceiveBuff[0].Size;
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferSize = context.Request.ReceiveBuff[0].Size;
 #pragma warning restore IDE0059
 
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
@@ -60,10 +60,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetHostByNameRequest(ServiceCtx context)
         {
             ulong inputBufferPosition = context.Request.SendBuff[0].Position;
-            ulong inputBufferSize     = context.Request.SendBuff[0].Size;
+            ulong inputBufferSize = context.Request.SendBuff[0].Size;
 
             ulong outputBufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong outputBufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong outputBufferSize = context.Request.ReceiveBuff[0].Size;
 
             return GetHostByNameRequestImpl(context, inputBufferPosition, inputBufferSize, outputBufferPosition, outputBufferSize, false, 0, 0);
         }
@@ -73,10 +73,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetHostByAddrRequest(ServiceCtx context)
         {
             ulong inputBufferPosition = context.Request.SendBuff[0].Position;
-            ulong inputBufferSize     = context.Request.SendBuff[0].Size;
+            ulong inputBufferSize = context.Request.SendBuff[0].Size;
 
             ulong outputBufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong outputBufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong outputBufferSize = context.Request.ReceiveBuff[0].Size;
 
             return GetHostByAddrRequestImpl(context, inputBufferPosition, inputBufferSize, outputBufferPosition, outputBufferSize, false, 0, 0);
         }
@@ -86,20 +86,20 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetHostStringErrorRequest(ServiceCtx context)
         {
             ResultCode resultCode = ResultCode.NotAllocated;
-            NetDbError errorCode  = (NetDbError)context.RequestData.ReadInt32();
+            NetDbError errorCode = (NetDbError)context.RequestData.ReadInt32();
 
             string errorString = errorCode switch
             {
-                NetDbError.Success      => "Resolver Error 0 (no error)",
+                NetDbError.Success => "Resolver Error 0 (no error)",
                 NetDbError.HostNotFound => "Unknown host",
-                NetDbError.TryAgain     => "Host name lookup failure",
-                NetDbError.NoRecovery   => "Unknown server error",
-                NetDbError.NoData       => "No address associated with name",
-                _                       => (errorCode <= NetDbError.Internal) ? "Resolver internal error" : "Unknown resolver error"
+                NetDbError.TryAgain => "Host name lookup failure",
+                NetDbError.NoRecovery => "Unknown server error",
+                NetDbError.NoData => "No address associated with name",
+                _ => (errorCode <= NetDbError.Internal) ? "Resolver internal error" : "Unknown resolver error"
             };
 
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong bufferSize = context.Request.ReceiveBuff[0].Size;
 
             if ((ulong)(errorString.Length + 1) <= bufferSize)
             {
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetGaiStringErrorRequest(ServiceCtx context)
         {
             ResultCode resultCode = ResultCode.NotAllocated;
-            GaiError   errorCode  = (GaiError)context.RequestData.ReadInt32();
+            GaiError errorCode = (GaiError)context.RequestData.ReadInt32();
 
             if (errorCode > GaiError.Max)
             {
@@ -126,25 +126,25 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             string errorString = errorCode switch
             {
                 GaiError.AddressFamily => "Address family for hostname not supported",
-                GaiError.Again         => "Temporary failure in name resolution",
-                GaiError.BadFlags      => "Invalid value for ai_flags",
-                GaiError.Fail          => "Non-recoverable failure in name resolution",
-                GaiError.Family        => "ai_family not supported",
-                GaiError.Memory        => "Memory allocation failure",
-                GaiError.NoData        => "No address associated with hostname",
-                GaiError.NoName        => "hostname nor servname provided, or not known",
-                GaiError.Service       => "servname not supported for ai_socktype",
-                GaiError.SocketType    => "ai_socktype not supported",
-                GaiError.System        => "System error returned in errno",
-                GaiError.BadHints      => "Invalid value for hints",
-                GaiError.Protocol      => "Resolved protocol is unknown",
-                GaiError.Overflow      => "Argument buffer overflow",
-                GaiError.Max           => "Unknown error",
-                _                      => "Success"
+                GaiError.Again => "Temporary failure in name resolution",
+                GaiError.BadFlags => "Invalid value for ai_flags",
+                GaiError.Fail => "Non-recoverable failure in name resolution",
+                GaiError.Family => "ai_family not supported",
+                GaiError.Memory => "Memory allocation failure",
+                GaiError.NoData => "No address associated with hostname",
+                GaiError.NoName => "hostname nor servname provided, or not known",
+                GaiError.Service => "servname not supported for ai_socktype",
+                GaiError.SocketType => "ai_socktype not supported",
+                GaiError.System => "System error returned in errno",
+                GaiError.BadHints => "Invalid value for hints",
+                GaiError.Protocol => "Resolved protocol is unknown",
+                GaiError.Overflow => "Argument buffer overflow",
+                GaiError.Max => "Unknown error",
+                _ => "Success"
             };
 
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong bufferSize = context.Request.ReceiveBuff[0].Size;
 
             if ((ulong)(errorString.Length + 1) <= bufferSize)
             {
@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetAddrInfoRequest(ServiceCtx context)
         {
             ulong responseBufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong responseBufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong responseBufferSize = context.Request.ReceiveBuff[0].Size;
 
             return GetAddrInfoRequestImpl(context, responseBufferPosition, responseBufferSize, false, 0, 0);
         }
@@ -171,9 +171,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode GetCancelHandleRequest(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
+            ulong pidPlaceHolder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
-            uint  cancelHandleRequest = 0;
+            uint cancelHandleRequest = 0;
 
             context.ResponseData.Write(cancelHandleRequest);
 
@@ -186,9 +186,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         // CancelRequest(u32, u64, pid)
         public static ResultCode CancelRequest(ServiceCtx context)
         {
-            uint  cancelHandleRequest = context.RequestData.ReadUInt32();
+            uint cancelHandleRequest = context.RequestData.ReadUInt32();
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong pidPlaceHolder      = context.RequestData.ReadUInt64();
+            ulong pidPlaceHolder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { cancelHandleRequest });
@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public static ResultCode ResolverSetOptionRequest(ServiceCtx context)
         {
             ulong bufferPosition = context.Request.SendBuff[0].Position;
-            ulong bufferSize     = context.Request.SendBuff[0].Size;
+            ulong bufferSize = context.Request.SendBuff[0].Size;
 
             ulong unknown = context.RequestData.ReadUInt64();
 
@@ -262,7 +262,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { unknown });
 
             NetDbError netDbErrorCode = NetDbError.Success;
-            GaiError   errno          = GaiError.Success;
+            GaiError errno = GaiError.Success;
 
             context.ResponseData.Write((int)errno);
             context.ResponseData.Write((int)netDbErrorCode);
@@ -302,10 +302,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             }
 
             // TODO: Use params.
-            bool  enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
+            bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            int   timeOut          = context.RequestData.ReadInt32();
-            ulong pidPlaceholder   = context.RequestData.ReadUInt64();
+            int timeOut = context.RequestData.ReadInt32();
+            ulong pidPlaceholder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
             if (withOptions)
@@ -316,8 +316,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             IPHostEntry hostEntry = null;
 
             NetDbError netDbErrorCode = NetDbError.Success;
-            GaiError   errno          = GaiError.Overflow;
-            int        serializedSize = 0;
+            GaiError errno = GaiError.Overflow;
+            int serializedSize = 0;
 
             if (host.Length <= byte.MaxValue)
             {
@@ -404,9 +404,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             // TODO: Use params.
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            uint  socketLength   = context.RequestData.ReadUInt32();
-            uint  type           = context.RequestData.ReadUInt32();
-            int   timeOut        = context.RequestData.ReadInt32();
+            uint socketLength = context.RequestData.ReadUInt32();
+            uint type = context.RequestData.ReadUInt32();
+            int timeOut = context.RequestData.ReadInt32();
             ulong pidPlaceholder = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
 
@@ -418,8 +418,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             IPHostEntry hostEntry = null;
 
             NetDbError netDbErrorCode = NetDbError.Success;
-            GaiError   errno          = GaiError.AddressFamily;
-            int        serializedSize = 0;
+            GaiError errno = GaiError.AddressFamily;
+            int serializedSize = 0;
 
             if (rawIp.Length == 4)
             {
@@ -454,7 +454,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         private static int SerializeHostEntries(ServiceCtx context, ulong outputBufferPosition, ulong outputBufferSize, IPHostEntry hostEntry, IEnumerable<IPAddress> addresses = null)
         {
             ulong originalBufferPosition = outputBufferPosition;
-            ulong bufferPosition         = originalBufferPosition;
+            ulong bufferPosition = originalBufferPosition;
 
             string hostName = hostEntry.HostName + '\0';
 
@@ -507,10 +507,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            uint cancelHandle     = context.RequestData.ReadUInt32();
+            uint cancelHandle = context.RequestData.ReadUInt32();
 #pragma warning restore IDE0059
 
-            string host    = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[0].Position, (long)context.Request.SendBuff[0].Size);
+            string host = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[0].Position, (long)context.Request.SendBuff[0].Size);
             string service = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[1].Position, (long)context.Request.SendBuff[1].Size);
 
             if (!context.Device.Configuration.EnableInternetAccess)
@@ -542,8 +542,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             IPHostEntry hostEntry = null;
 
             NetDbError netDbErrorCode = NetDbError.Success;
-            GaiError   errno          = GaiError.AddressFamily;
-            int        serializedSize = 0;
+            GaiError errno = GaiError.AddressFamily;
+            int serializedSize = 0;
 
             if (host.Length <= byte.MaxValue)
             {
@@ -627,7 +627,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             ulong originalBufferPosition = responseBufferPosition;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong bufferPosition         = originalBufferPosition;
+            ulong bufferPosition = originalBufferPosition;
 
             byte[] hostName = Encoding.ASCII.GetBytes(hostEntry.HostName + '\0');
 #pragma warning restore IDE0059
@@ -646,8 +646,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
                 // NOTE: 0 = Any
                 AddrInfoSerializedHeader header = new(ip, 0);
-                AddrInfo4                addr   = new(ip, (short)port);
-                AddrInfoSerialized       info   = new(header, addr, null, hostEntry.HostName);
+                AddrInfo4 addr = new(ip, (short)port);
+                AddrInfoSerialized info = new(header, addr, null, hostEntry.HostName);
 
                 data = info.Write(data);
             }

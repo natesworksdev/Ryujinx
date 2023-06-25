@@ -2,7 +2,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
 {
     enum ResultCode
     {
-        ModuleId       = 30,
+        ModuleId = 30,
         ErrorCodeShift = 9,
 
         Success = 0,

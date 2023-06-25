@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
     abstract class NvDeviceFile
     {
         public readonly ServiceCtx Context;
-        public readonly ulong      Owner;
+        public readonly ulong Owner;
 
         public string Path;
 

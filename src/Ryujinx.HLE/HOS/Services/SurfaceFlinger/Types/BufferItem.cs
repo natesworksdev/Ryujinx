@@ -6,18 +6,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     class BufferItem : ICloneable
     {
         public AndroidStrongPointer<GraphicBuffer> GraphicBuffer;
-        public AndroidFence                        Fence;
-        public Rect                                Crop;
-        public NativeWindowTransform               Transform;
-        public NativeWindowScalingMode             ScalingMode;
-        public long                                Timestamp;
-        public bool                                IsAutoTimestamp;
-        public int                                 SwapInterval;
-        public ulong                               FrameNumber;
-        public int                                 Slot;
-        public bool                                IsDroppable;
-        public bool                                AcquireCalled;
-        public bool                                TransformToDisplayInverse;
+        public AndroidFence Fence;
+        public Rect Crop;
+        public NativeWindowTransform Transform;
+        public NativeWindowScalingMode ScalingMode;
+        public long Timestamp;
+        public bool IsAutoTimestamp;
+        public int SwapInterval;
+        public ulong FrameNumber;
+        public int Slot;
+        public bool IsDroppable;
+        public bool AcquireCalled;
+        public bool TransformToDisplayInverse;
 
         public BufferItem()
         {
@@ -42,17 +42,17 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             BufferItem item = new()
             {
-                Transform                 = Transform,
-                ScalingMode               = ScalingMode,
-                IsAutoTimestamp           = IsAutoTimestamp,
-                FrameNumber               = FrameNumber,
-                Slot                      = Slot,
-                IsDroppable               = IsDroppable,
-                AcquireCalled             = AcquireCalled,
+                Transform = Transform,
+                ScalingMode = ScalingMode,
+                IsAutoTimestamp = IsAutoTimestamp,
+                FrameNumber = FrameNumber,
+                Slot = Slot,
+                IsDroppable = IsDroppable,
+                AcquireCalled = AcquireCalled,
                 TransformToDisplayInverse = TransformToDisplayInverse,
-                SwapInterval              = SwapInterval,
-                Fence                     = Fence,
-                Crop                      = Crop
+                SwapInterval = SwapInterval,
+                Fence = Fence,
+                Crop = Crop
             };
 
             item.GraphicBuffer.Set(GraphicBuffer);

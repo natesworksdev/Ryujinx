@@ -2,7 +2,6 @@
 using LibHac.Ncm;
 using Ryujinx.Common.Configuration;
 using System;
-
 using static Ryujinx.HLE.FileSystem.VirtualFileSystem;
 using Path = System.IO.Path;
 
@@ -10,18 +9,18 @@ namespace Ryujinx.HLE.FileSystem
 {
     internal static class ContentPath
     {
-        public const string SystemContent    = "@SystemContent";
-        public const string UserContent      = "@UserContent";
-        public const string SdCardContent    = "@SdCardContent";
-        public const string SdCard           = "@Sdcard";
-        public const string CalibFile        = "@CalibFile";
-        public const string Safe             = "@Safe";
-        public const string User             = "@User";
-        public const string System           = "@System";
-        public const string Host             = "@Host";
-        public const string GamecardApp      = "@GcApp";
+        public const string SystemContent = "@SystemContent";
+        public const string UserContent = "@UserContent";
+        public const string SdCardContent = "@SdCardContent";
+        public const string SdCard = "@Sdcard";
+        public const string CalibFile = "@CalibFile";
+        public const string Safe = "@Safe";
+        public const string User = "@User";
+        public const string System = "@System";
+        public const string Host = "@Host";
+        public const string GamecardApp = "@GcApp";
         public const string GamecardContents = "@GcS00000001";
-        public const string GamecardUpdate   = "@upp";
+        public const string GamecardUpdate = "@upp";
         public const string RegisteredUpdate = "@RegUpdate";
 
         public const string Nintendo = "Nintendo";

@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class FoldExpression : BaseNode
     {
-        private readonly bool     _isLeftFold;
-        private readonly string   _operatorName;
+        private readonly bool _isLeftFold;
+        private readonly string _operatorName;
         private readonly BaseNode _expression;
         private readonly BaseNode _initializer;
 

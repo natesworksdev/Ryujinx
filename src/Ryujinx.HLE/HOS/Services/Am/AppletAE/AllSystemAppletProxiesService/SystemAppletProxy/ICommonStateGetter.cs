@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
     {
         private readonly ServiceCtx _context;
 
-        private readonly Apm.ManagerServer       _apmManagerServer;
+        private readonly Apm.ManagerServer _apmManagerServer;
         private readonly Apm.SystemManagerServer _apmSystemManagerServer;
         private readonly Lbl.LblControllerServer _lblControllerServer;
 
@@ -22,8 +22,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private bool _lcdBacklighOffEnabled;
         private bool _requestExitToLibraryAppletAtExecuteNextProgramEnabled;
 #pragma warning restore CS0414, IDE0052
-        private int  _messageEventHandle;
-        private int  _displayResolutionChangedEventHandle;
+        private int _messageEventHandle;
+        private int _displayResolutionChangedEventHandle;
 
         private readonly KEvent _acquiredSleepLockEvent;
         private int _acquiredSleepLockEventHandle;

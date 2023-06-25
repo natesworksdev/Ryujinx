@@ -22,11 +22,11 @@ namespace Ryujinx.HLE.HOS.Applets.Error
     {
         private const long ErrorMessageBinaryTitleId = 0x0100000000000801;
 
-        private readonly Horizon           _horizon;
-        private AppletSession     _normalSession;
-        private CommonArguments   _commonArguments;
+        private readonly Horizon _horizon;
+        private AppletSession _normalSession;
+        private CommonArguments _commonArguments;
         private ErrorCommonHeader _errorCommonHeader;
-        private byte[]            _errorStorage;
+        private byte[] _errorStorage;
 
         public event EventHandler AppletStateChanged;
 
@@ -115,10 +115,10 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             string binaryTitleContentPath = _horizon.ContentManager.GetInstalledContentPath(ErrorMessageBinaryTitleId, StorageId.BuiltInSystem, NcaContentType.Data);
 
             using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open);
-            Nca         nca          = new(_horizon.Device.FileSystem.KeySet, ncaFileStream);
-            IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
-            string      languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);
-            string      filePath     = $"/{module}/{description:0000}/{languageCode}_{key}";
+            Nca nca = new(_horizon.Device.FileSystem.KeySet, ncaFileStream);
+            IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
+            string languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);
+            string filePath = $"/{module}/{description:0000}/{languageCode}_{key}";
 
             if (romfs.FileExists(filePath))
             {
@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             ErrorCommonArg errorCommonArg = IApplet.ReadStruct<ErrorCommonArg>(_errorStorage);
 
-            uint module      = errorCommonArg.Module;
+            uint module = errorCommonArg.Module;
             uint description = errorCommonArg.Description;
 
             if (_errorCommonHeader.MessageFlag == 0)

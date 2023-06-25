@@ -27,7 +27,7 @@
         public const bool AslrEnabled = true;
 
         public const int NsoArgsHeaderSize = 8;
-        public const int NsoArgsDataSize   = 0x9000;
-        public const int NsoArgsTotalSize  = NsoArgsHeaderSize + NsoArgsDataSize;
+        public const int NsoArgsDataSize = 0x9000;
+        public const int NsoArgsTotalSize = NsoArgsHeaderSize + NsoArgsDataSize;
     }
 }

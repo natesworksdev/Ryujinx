@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             SteadyClockTimePoint result = new()
             {
-                TimePoint     = 0,
+                TimePoint = 0,
                 ClockSourceId = GetClockSourceId()
             };
 

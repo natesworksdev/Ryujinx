@@ -58,9 +58,9 @@ namespace Ryujinx.HLE.Exceptions
                 var ipcCommands = Request.Type > IpcMessageType.TipcCloseSession ? Service.TipcCommands : Service.CmifCommands;
 
                 // Find the handler for the method called
-                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value == callingMethod);
+                var ipcHandler = ipcCommands.FirstOrDefault(x => x.Value == callingMethod);
                 var ipcCommandId = ipcHandler.Key;
-                var ipcMethod    = ipcHandler.Value;
+                var ipcMethod = ipcHandler.Value;
 
                 if (ipcMethod != null)
                 {
@@ -151,7 +151,7 @@ namespace Ryujinx.HLE.Exceptions
             // Find the IIpcService method that threw this exception
             while ((frame = trace.GetFrame(i++)) != null)
             {
-                var method   = frame.GetMethod();
+                var method = frame.GetMethod();
                 var declType = method.DeclaringType;
 
                 if (typeof(IpcService).IsAssignableFrom(declType))

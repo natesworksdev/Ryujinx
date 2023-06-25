@@ -5,9 +5,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockCore
     {
-        private readonly SteadyClockCore                  _steadyClockCore;
-        private SystemClockContext               _context;
-        private bool                             _isInitialized;
+        private readonly SteadyClockCore _steadyClockCore;
+        private SystemClockContext _context;
+        private bool _isInitialized;
         private SystemClockContextUpdateCallback _systemClockContextUpdateCallback;
 
         public SystemClockCore(SteadyClockCore steadyClockCore)
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             SystemClockContext clockContext = new()
             {
-                Offset          = posixTime - currentTimePoint.TimePoint,
+                Offset = posixTime - currentTimePoint.TimePoint,
                 SteadyTimePoint = currentTimePoint
             };
 

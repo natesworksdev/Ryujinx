@@ -21,21 +21,21 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     {
         public const int TextBoxBlinkThreshold = 8;
 
-        const string MessageText          = "Please use the keyboard to input text";
-        const string AcceptText           = "Accept";
-        const string CancelText           = "Cancel";
+        const string MessageText = "Please use the keyboard to input text";
+        const string AcceptText = "Accept";
+        const string CancelText = "Cancel";
         const string ControllerToggleText = "Toggle input";
 
         private readonly object _bufferLock = new();
 
         private RenderingSurfaceInfo _surfaceInfo = null;
-        private Image<Argb32>        _surface     = null;
-        private byte[]               _bufferData  = null;
+        private Image<Argb32> _surface = null;
+        private byte[] _bufferData = null;
 
-        private readonly Image _ryujinxLogo   = null;
+        private readonly Image _ryujinxLogo = null;
         private readonly Image _padAcceptIcon = null;
         private readonly Image _padCancelIcon = null;
-        private readonly Image _keyModeIcon   = null;
+        private readonly Image _keyModeIcon = null;
 
         private readonly float _textBoxOutlineWidth;
         private readonly float _padPressedPenWidth;
@@ -54,14 +54,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private readonly Pen _selectionBoxPen;
         private readonly Pen _padPressedPen;
 
-        private readonly int  _inputTextFontSize;
+        private readonly int _inputTextFontSize;
         private Font _messageFont;
         private Font _inputTextFont;
         private Font _labelsTextFont;
 
         private RectangleF _panelRectangle;
-        private Point      _logoPosition;
-        private float      _messagePositionY;
+        private Point _logoPosition;
+        private float _messagePositionY;
 
         public SoftwareKeyboardRendererBase(IHostUiTheme uiTheme)
         {
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
             string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
-            string keyModeIconPath   = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
+            string keyModeIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
 
 #pragma warning disable IDE0055 // Disable formatting
             _padAcceptIcon = LoadResource(Assembly.GetExecutingAssembly(), padAcceptIconPath  , 0, 0);
@@ -80,9 +80,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             _keyModeIcon   = LoadResource(Assembly.GetExecutingAssembly(), keyModeIconPath    , 0, 0);
 #pragma warning restore IDE0055
 
-            Color panelColor               = ToColor(uiTheme.DefaultBackgroundColor, 255);
-            Color panelTransparentColor    = ToColor(uiTheme.DefaultBackgroundColor, 150);
-            Color borderColor              = ToColor(uiTheme.DefaultBorderColor);
+            Color panelColor = ToColor(uiTheme.DefaultBackgroundColor, 255);
+            Color panelTransparentColor = ToColor(uiTheme.DefaultBackgroundColor, 150);
+            Color borderColor = ToColor(uiTheme.DefaultBorderColor);
             Color selectionBackgroundColor = ToColor(uiTheme.SelectionBackgroundColor);
 
 #pragma warning disable IDE0055 // Disable formatting
@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 context.DrawImage(_ryujinxLogo, _logoPosition, 1);
 
                 float halfWidth = _panelRectangle.Width / 2;
-                float buttonsY  = _panelRectangle.Y + 185;
+                float buttonsY = _panelRectangle.Y + 185;
 
                 PointF disableButtonPosition = new(halfWidth + 180, buttonsY);
 
@@ -221,11 +221,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             _surface.Mutate(context =>
             {
-                var    messageRectangle      = MeasureString(MessageText, _messageFont);
-                float  messagePositionX      = (_panelRectangle.Width - messageRectangle.Width) / 2 - messageRectangle.X;
-                float  messagePositionY      = _messagePositionY - messageRectangle.Y;
-                var    messagePosition       = new PointF(messagePositionX, messagePositionY);
-                var    messageBoundRectangle = new RectangleF(messagePositionX, messagePositionY, messageRectangle.Width, messageRectangle.Height);
+                var messageRectangle = MeasureString(MessageText, _messageFont);
+                float messagePositionX = (_panelRectangle.Width - messageRectangle.Width) / 2 - messageRectangle.X;
+                float messagePositionY = _messagePositionY - messageRectangle.Y;
+                var messagePosition = new PointF(messagePositionX, messagePositionY);
+                var messageBoundRectangle = new RectangleF(messagePositionX, messagePositionY, messageRectangle.Width, messageRectangle.Height);
 
                 SetGraphicsOptions(context);
 
@@ -244,10 +244,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 DrawTextBox(context, state);
 
                 float halfWidth = _panelRectangle.Width / 2;
-                float buttonsY  = _panelRectangle.Y + 185;
+                float buttonsY = _panelRectangle.Y + 185;
 
-                PointF acceptButtonPosition  = new(halfWidth - 180, buttonsY);
-                PointF cancelButtonPosition  = new(halfWidth      , buttonsY);
+                PointF acceptButtonPosition = new(halfWidth - 180, buttonsY);
+                PointF cancelButtonPosition = new(halfWidth, buttonsY);
                 PointF disableButtonPosition = new(halfWidth + 180, buttonsY);
 
                 DrawPadButton(context, acceptButtonPosition, _padAcceptIcon, AcceptText, state.AcceptPressed, state.ControllerEnabled);
@@ -268,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             // Use the whole area of the image to draw, even the alignment, otherwise it may shear the final
             // image if the pitch is different.
-            uint totalWidth  = _surfaceInfo.Pitch / 4;
+            uint totalWidth = _surfaceInfo.Pitch / 4;
             uint totalHeight = _surfaceInfo.Size / _surfaceInfo.Pitch;
 
             Debug.Assert(_surfaceInfo.Width <= totalWidth);
@@ -283,10 +283,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         private void ComputeConstants()
         {
-            int totalWidth  = (int)_surfaceInfo.Width;
+            int totalWidth = (int)_surfaceInfo.Width;
             int totalHeight = (int)_surfaceInfo.Height;
 
-            int panelHeight    = 240;
+            int panelHeight = 240;
             int panelPositionY = totalHeight - panelHeight;
 
             _panelRectangle = new RectangleF(0, panelPositionY, totalWidth, panelHeight);
@@ -333,10 +333,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             var inputTextRectangle = MeasureString(state.InputText, _inputTextFont);
 
-            float boxWidth  = (int)(Math.Max(300, inputTextRectangle.Width + inputTextRectangle.X + 8));
+            float boxWidth = (int)(Math.Max(300, inputTextRectangle.Width + inputTextRectangle.X + 8));
             float boxHeight = 32;
-            float boxY      = _panelRectangle.Y + 110;
-            float boxX      = (int)((_panelRectangle.Width - boxWidth) / 2);
+            float boxY = _panelRectangle.Y + 110;
+            float boxX = (int)((_panelRectangle.Width - boxWidth) / 2);
 
             RectangleF boxRectangle = new(boxX, boxY, boxWidth, boxHeight);
 
@@ -356,11 +356,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             // Draw the cursor on top of the text and redraw the text with a different color if necessary.
 
-            Color  cursorTextColor;
+            Color cursorTextColor;
             IBrush cursorBrush;
-            Pen    cursorPen;
+            Pen cursorPen;
 
-            float cursorPositionYTop    = inputTextY + 1;
+            float cursorPositionYTop = inputTextY + 1;
             float cursorPositionYBottom = cursorPositionYTop + _inputTextFontSize + 1;
             float cursorPositionXLeft;
             float cursorPositionXRight;
@@ -376,10 +376,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 cursorPen = _selectionBoxPen;
 
                 ReadOnlySpan<char> textUntilBegin = state.InputText.AsSpan(0, state.CursorBegin);
-                ReadOnlySpan<char> textUntilEnd   = state.InputText.AsSpan(0, state.CursorEnd);
+                ReadOnlySpan<char> textUntilEnd = state.InputText.AsSpan(0, state.CursorEnd);
 
                 var selectionBeginRectangle = MeasureString(textUntilBegin, _inputTextFont);
-                var selectionEndRectangle   = MeasureString(textUntilEnd  , _inputTextFont);
+                var selectionEndRectangle = MeasureString(textUntilEnd, _inputTextFont);
 
                 cursorVisible = true;
                 cursorPositionXLeft = inputTextX + selectionBeginRectangle.Width + selectionBeginRectangle.X;
@@ -395,9 +395,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 {
                     // Show the blinking cursor.
 
-                    int                cursorBegin         = Math.Min(state.InputText.Length, state.CursorBegin);
-                    ReadOnlySpan<char> textUntilCursor     = state.InputText.AsSpan(0, cursorBegin);
-                    var                cursorTextRectangle = MeasureString(textUntilCursor, _inputTextFont);
+                    int cursorBegin = Math.Min(state.InputText.Length, state.CursorBegin);
+                    ReadOnlySpan<char> textUntilCursor = state.InputText.AsSpan(0, cursorBegin);
+                    var cursorTextRectangle = MeasureString(textUntilCursor, _inputTextFont);
 
                     cursorVisible = true;
                     cursorPositionXLeft = inputTextX + cursorTextRectangle.Width + cursorTextRectangle.X;
@@ -432,7 +432,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             if (state.TypingEnabled && cursorVisible)
             {
-                float cursorWidth  = cursorPositionXRight  - cursorPositionXLeft;
+                float cursorWidth = cursorPositionXRight - cursorPositionXLeft;
                 float cursorHeight = cursorPositionYBottom - cursorPositionYTop;
 
                 if (cursorWidth == 0)
@@ -476,9 +476,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             // Use relative positions so we can center the the entire drawing later.
 
-            float iconX      = 0;
-            float iconY      = 0;
-            float iconWidth  = icon.Width;
+            float iconX = 0;
+            float iconY = 0;
+            float iconWidth = icon.Width;
             float iconHeight = icon.Height;
 
             var labelRectangle = MeasureString(label, _labelsTextFont);
@@ -486,18 +486,18 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             float labelPositionX = iconWidth + 8 - labelRectangle.X;
             float labelPositionY = 3;
 
-            float fullWidth  = labelPositionX + labelRectangle.Width + labelRectangle.X;
+            float fullWidth = labelPositionX + labelRectangle.Width + labelRectangle.X;
             float fullHeight = iconHeight;
 
             // Convert all relative positions into absolute.
 
-            float originX = (int)(point.X - fullWidth  / 2);
+            float originX = (int)(point.X - fullWidth / 2);
             float originY = (int)(point.Y - fullHeight / 2);
 
             iconX += originX;
             iconY += originY;
 
-            var iconPosition  = new Point((int)iconX, (int)iconY);
+            var iconPosition = new Point((int)iconX, (int)iconY);
             var labelPosition = new PointF(labelPositionX + originX, labelPositionY + originY);
 
             var selectedRectangle = new RectangleF(originX - 2 * _padPressedPenWidth, originY - 2 * _padPressedPenWidth,
@@ -532,7 +532,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             // Use relative positions so we can center the the entire drawing later.
 
-            float keyWidth  = _keyModeIcon.Width;
+            float keyWidth = _keyModeIcon.Width;
             float keyHeight = _keyModeIcon.Height;
 
             float labelPositionX = keyWidth + 8 - labelRectangle.X;
@@ -541,18 +541,18 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             float keyX = 0;
             float keyY = (int)((labelPositionY + labelRectangle.Height - keyHeight) / 2);
 
-            float fullWidth  = labelPositionX + labelRectangle.Width;
+            float fullWidth = labelPositionX + labelRectangle.Width;
             float fullHeight = Math.Max(labelPositionY + labelRectangle.Height, keyHeight);
 
             // Convert all relative positions into absolute.
 
-            float originX = (int)(point.X - fullWidth  / 2);
+            float originX = (int)(point.X - fullWidth / 2);
             float originY = (int)(point.Y - fullHeight / 2);
 
             keyX += originX;
             keyY += originY;
 
-            var labelPosition   = new PointF(labelPositionX + originX, labelPositionY + originY);
+            var labelPosition = new PointF(labelPositionX + originX, labelPositionY + originY);
             var overlayPosition = new Point((int)keyX, (int)keyY);
 
             context.DrawImage(_keyModeIcon, overlayPosition, 1);

@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
     class ITimeZoneServiceForPsc : IpcService
     {
         private readonly TimeZoneManager _timeZoneManager;
-        private readonly bool            _writePermission;
+        private readonly bool _writePermission;
 
         public ITimeZoneServiceForPsc(TimeZoneManager timeZoneManager, bool writePermission)
         {
@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
 
             ulong timeZoneRuleBufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong timeZoneRuleBufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong timeZoneRuleBufferSize = context.Request.ReceiveBuff[0].Size;
 
             if (timeZoneRuleBufferSize != 0x4000)
             {
@@ -183,9 +183,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // ToCalendarTime(nn::time::PosixTime time, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public ResultCode ToCalendarTime(ServiceCtx context)
         {
-            long  posixTime      = context.RequestData.ReadInt64();
+            long posixTime = context.RequestData.ReadInt64();
             ulong bufferPosition = context.Request.SendBuff[0].Position;
-            ulong bufferSize     = context.Request.SendBuff[0].Size;
+            ulong bufferSize = context.Request.SendBuff[0].Size;
 
             if (bufferSize != 0x4000)
             {
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         public ResultCode ToPosixTime(ServiceCtx context)
         {
             ulong inBufferPosition = context.Request.SendBuff[0].Position;
-            ulong inBufferSize     = context.Request.SendBuff[0].Size;
+            ulong inBufferSize = context.Request.SendBuff[0].Size;
 
             CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             {
                 ulong outBufferPosition = context.Request.RecvListBuff[0].Position;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-                ulong outBufferSize     = context.Request.RecvListBuff[0].Size;
+                ulong outBufferSize = context.Request.RecvListBuff[0].Size;
 #pragma warning restore IDE0059
 
                 context.Memory.Write(outBufferPosition, posixTime);
@@ -270,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             {
                 ulong outBufferPosition = context.Request.RecvListBuff[0].Position;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-                ulong outBufferSize     = context.Request.RecvListBuff[0].Size;
+                ulong outBufferSize = context.Request.RecvListBuff[0].Size;
 #pragma warning restore IDE0059
 
                 context.Memory.Write(outBufferPosition, posixTime);

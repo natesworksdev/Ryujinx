@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
     class IAddOnContentManager : IpcService
     {
         private readonly KEvent _addOnContentListChangedEvent;
-        private int             _addOnContentListChangedEventHandle;
+        private int _addOnContentListChangedEventHandle;
 
         private ulong _addOnContentBaseId;
 
@@ -255,10 +255,10 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             // NOTE: Service call sys:set GetQuestFlag and store it internally.
             //       If QuestFlag is true, counts some extra titles.
 
-            uint  startIndex     = context.RequestData.ReadUInt32();
-            uint  indexNumber    = context.RequestData.ReadUInt32();
+            uint startIndex = context.RequestData.ReadUInt32();
+            uint indexNumber = context.RequestData.ReadUInt32();
             ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
-            ulong bufferSize     = context.Request.ReceiveBuff[0].Size;
+            ulong bufferSize = context.Request.ReceiveBuff[0].Size;
 
             // TODO: This should use _addOnContentBaseId;
             uint aocTotalCount = (uint)context.Device.System.ContentManager.GetAocCount();

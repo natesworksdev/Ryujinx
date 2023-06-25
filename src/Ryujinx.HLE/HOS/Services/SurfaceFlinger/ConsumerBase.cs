@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public class Slot
         {
             public AndroidStrongPointer<GraphicBuffer> GraphicBuffer;
-            public AndroidFence                        Fence;
-            public ulong                               FrameNumber;
+            public AndroidFence Fence;
+            public ulong FrameNumber;
 
             public Slot()
             {

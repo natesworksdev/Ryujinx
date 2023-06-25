@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Mm
     [Service("mm:u")]
     class IRequest : IpcService
     {
-        private static readonly object                  _sessionListLock = new();
-        private static readonly List<MultiMediaSession> _sessionList     = new();
+        private static readonly object _sessionListLock = new();
+        private static readonly List<MultiMediaSession> _sessionList = new();
 
         private static uint _uniqueId = 1;
 
@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         // InitializeOld(u32, u32, u32)
         public static ResultCode InitializeOld(ServiceCtx context)
         {
-            MultiMediaOperationType operationType    = (MultiMediaOperationType)context.RequestData.ReadUInt32();
-            int                     fgmId            = context.RequestData.ReadInt32();
-            bool                    isAutoClearEvent = context.RequestData.ReadInt32() != 0;
+            MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
+            int fgmId = context.RequestData.ReadInt32();
+            bool isAutoClearEvent = context.RequestData.ReadInt32() != 0;
 
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { operationType, fgmId, isAutoClearEvent });
 
@@ -50,8 +50,8 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         public static ResultCode SetAndWaitOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
-            uint                    frequenceHz   = context.RequestData.ReadUInt32();
-            int                     timeout       = context.RequestData.ReadInt32();
+            uint frequenceHz = context.RequestData.ReadUInt32();
+            int timeout = context.RequestData.ReadInt32();
 
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { operationType, frequenceHz, timeout });
 
@@ -87,9 +87,9 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         // Initialize(u32, u32, u32) -> u32
         public static ResultCode Initialize(ServiceCtx context)
         {
-            MultiMediaOperationType operationType    = (MultiMediaOperationType)context.RequestData.ReadUInt32();
-            int                     fgmId            = context.RequestData.ReadInt32();
-            bool                    isAutoClearEvent = context.RequestData.ReadInt32() != 0;
+            MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
+            int fgmId = context.RequestData.ReadInt32();
+            bool isAutoClearEvent = context.RequestData.ReadInt32() != 0;
 
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { operationType, fgmId, isAutoClearEvent });
 
@@ -120,9 +120,9 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         // SetAndWait(u32, u32, u32)
         public static ResultCode SetAndWait(ServiceCtx context)
         {
-            uint id          = context.RequestData.ReadUInt32();
+            uint id = context.RequestData.ReadUInt32();
             uint frequenceHz = context.RequestData.ReadUInt32();
-            int  timeout     = context.RequestData.ReadInt32();
+            int timeout = context.RequestData.ReadInt32();
 
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { id, frequenceHz, timeout });
 

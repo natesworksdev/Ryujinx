@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         public bool IsEqual(KPageList other)
         {
-            LinkedListNode<KPageNode> thisNode  = Nodes.First;
+            LinkedListNode<KPageNode> thisNode = Nodes.First;
             LinkedListNode<KPageNode> otherNode = other.Nodes.First;
 
             while (thisNode != null && otherNode != null)

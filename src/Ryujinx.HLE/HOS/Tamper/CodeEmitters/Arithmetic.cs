@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
         private const byte Lsh = 3; // lhs << rhs
         private const byte Rsh = 4; // lhs >> rhs
         private const byte And = 5; // lhs & rhs
-        private const byte Or  = 6; // lhs | rhs
+        private const byte Or = 6; // lhs | rhs
         private const byte Not = 7; // ~lhs (discards right-hand operand)
         private const byte Xor = 8; // lhs ^ rhs
         private const byte Mov = 9; // lhs (discards right-hand operand)

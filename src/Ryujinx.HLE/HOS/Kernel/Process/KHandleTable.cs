@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 {
     class KHandleTable
     {
-        public const int SelfThreadHandle  = (0x1ffff << 15) | 0;
+        public const int SelfThreadHandle = (0x1ffff << 15) | 0;
         public const int SelfProcessHandle = (0x1ffff << 15) | 1;
 
 #pragma warning disable IDE0052 // Remove unread private member
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public void SetReservedHandleObj(int handle, KAutoObject obj)
         {
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             lock (_table)
@@ -179,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 return false;
             }
 
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             KAutoObject obj = null;
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public T GetObject<T>(int handle) where T : KAutoObject
         {
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             lock (_table)

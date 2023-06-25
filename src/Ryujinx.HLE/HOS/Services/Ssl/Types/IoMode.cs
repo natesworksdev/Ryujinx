@@ -2,7 +2,7 @@
 {
     enum IoMode : uint
     {
-        Blocking    = 1,
+        Blocking = 1,
         NonBlocking = 2
     }
 }

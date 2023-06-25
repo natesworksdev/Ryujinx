@@ -5,7 +5,7 @@ namespace Ryujinx.HLE
 {
     public class PerformanceStatistics
     {
-        private const int FrameTypeGame   = 0;
+        private const int FrameTypeGame = 0;
         private const int PercentTypeFifo = 0;
 
         private readonly double[] _frameRate;
@@ -17,7 +17,7 @@ namespace Ryujinx.HLE
         private readonly double[] _percentLastEndTime;
         private readonly double[] _percentStartTime;
 
-        private readonly long[]   _framesRendered;
+        private readonly long[] _framesRendered;
         private readonly double[] _percentTime;
 
         private readonly object[] _frameLock;
@@ -120,8 +120,8 @@ namespace Ryujinx.HLE
 
         private void EndPercentTime(int percentType)
         {
-            double currentTime       = PerformanceCounter.ElapsedTicks * _ticksToSeconds;
-            double elapsedTime       = currentTime - _percentLastEndTime[percentType];
+            double currentTime = PerformanceCounter.ElapsedTicks * _ticksToSeconds;
+            double elapsedTime = currentTime - _percentLastEndTime[percentType];
             double elapsedActiveTime = currentTime - _percentStartTime[percentType];
 
             lock (_percentLock[percentType])

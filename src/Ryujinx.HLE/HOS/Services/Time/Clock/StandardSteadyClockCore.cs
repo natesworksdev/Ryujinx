@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             SteadyClockTimePoint result = new()
             {
-                TimePoint     = GetCurrentRawTimePoint(tickSource).ToSeconds(),
+                TimePoint = GetCurrentRawTimePoint(tickSource).ToSeconds(),
                 ClockSourceId = GetClockSourceId()
             };
 

@@ -2,7 +2,7 @@
 {
     public enum ResultCode
     {
-        OsModuleId     = 3,
+        OsModuleId = 3,
         ErrorCodeShift = 9,
 
         Success = 0,

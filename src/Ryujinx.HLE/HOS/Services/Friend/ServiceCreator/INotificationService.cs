@@ -11,13 +11,13 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
     class INotificationService : DisposableIpcService
     {
-        private readonly UserId                       _userId;
+        private readonly UserId _userId;
         private readonly FriendServicePermissionLevel _permissionLevel;
 
         private readonly object _lock = new();
 
         private readonly KEvent _notificationEvent;
-        private int    _notificationEventHandle = 0;
+        private int _notificationEventHandle = 0;
 
         private readonly LinkedList<NotificationInfo> _notifications;
 

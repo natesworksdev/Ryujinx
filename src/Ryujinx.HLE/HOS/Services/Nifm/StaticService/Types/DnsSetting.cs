@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types
     struct DnsSetting
     {
         [MarshalAs(UnmanagedType.U1)]
-        public bool        IsDynamicDnsEnabled;
+        public bool IsDynamicDnsEnabled;
         public IpV4Address PrimaryDns;
         public IpV4Address SecondaryDns;
 

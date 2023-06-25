@@ -7,7 +7,6 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Horizon.Common;
 using System;
-using System.Linq;
 
 namespace Ryujinx.HLE.Loaders.Processes
 {
@@ -20,17 +19,17 @@ namespace Ryujinx.HLE.Loaders.Processes
 
         public readonly IDiskCacheLoadState DiskCacheLoadState;
 
-        public readonly MetaLoader                 MetaLoader;
+        public readonly MetaLoader MetaLoader;
         public readonly ApplicationControlProperty ApplicationControlProperties;
 
-        public readonly ulong  ProcessId;
+        public readonly ulong ProcessId;
         public readonly string Name;
         public readonly string DisplayVersion;
-        public readonly ulong  ProgramId;
+        public readonly ulong ProgramId;
         public readonly string ProgramIdText;
-        public readonly bool   Is64Bit;
-        public readonly bool   DiskCacheEnabled;
-        public readonly bool   AllowCodeMemoryForJit;
+        public readonly bool Is64Bit;
+        public readonly bool DiskCacheEnabled;
+        public readonly bool AllowCodeMemoryForJit;
 
         public ProcessResult(
             MetaLoader metaLoader,

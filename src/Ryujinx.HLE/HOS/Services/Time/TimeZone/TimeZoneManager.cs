@@ -7,13 +7,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
     class TimeZoneManager
     {
-        private bool                 _isInitialized;
-        private Box<TimeZoneRule>    _myRules;
-        private string               _deviceLocationName;
-        private UInt128              _timeZoneRuleVersion;
-        private uint                 _totalLocationNameCount;
+        private bool _isInitialized;
+        private Box<TimeZoneRule> _myRules;
+        private string _deviceLocationName;
+        private UInt128 _timeZoneRuleVersion;
+        private uint _totalLocationNameCount;
         private SteadyClockTimePoint _timeZoneUpdateTimePoint;
-        private readonly object      _lock = new();
+        private readonly object _lock = new();
 
         public TimeZoneManager()
         {

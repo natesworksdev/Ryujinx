@@ -47,9 +47,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public static KMemoryRegionManager[] GetMemoryRegions(MemorySize size, MemoryArrange arrange)
         {
-            ulong poolEnd             = KSystemControl.GetDramEndAddress(size);
+            ulong poolEnd = KSystemControl.GetDramEndAddress(size);
             ulong applicationPoolSize = KSystemControl.GetApplicationPoolSize(arrange);
-            ulong appletPoolSize      = KSystemControl.GetAppletPoolSize(arrange);
+            ulong appletPoolSize = KSystemControl.GetAppletPoolSize(arrange);
 
             MemoryRegion servicePool;
             MemoryRegion nvServicesPool;

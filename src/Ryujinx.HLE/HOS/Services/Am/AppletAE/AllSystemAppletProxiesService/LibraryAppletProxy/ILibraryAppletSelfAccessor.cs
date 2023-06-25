@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             LibraryAppletInfo libraryAppletInfo = new()
             {
-                AppletId          = _appletStandalone.AppletId,
+                AppletId = _appletStandalone.AppletId,
                 LibraryAppletMode = _appletStandalone.LibraryAppletMode
             };
 
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             AppletIdentifyInfo appletIdentifyInfo = new()
             {
                 AppletId = AppletId.QLaunch,
-                TitleId  = 0x0100000000001000
+                TitleId = 0x0100000000001000
             };
 
             context.ResponseData.WriteStruct(appletIdentifyInfo);

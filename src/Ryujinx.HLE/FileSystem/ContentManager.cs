@@ -26,12 +26,12 @@ namespace Ryujinx.HLE.FileSystem
     public class ContentManager
     {
         private const ulong SystemVersionTitleId = 0x0100000000000809;
-        private const ulong SystemUpdateTitleId  = 0x0100000000000816;
+        private const ulong SystemUpdateTitleId = 0x0100000000000816;
 
         private Dictionary<StorageId, LinkedList<LocationEntry>> _locationEntries;
 
-        private readonly Dictionary<string, ulong>  _sharedFontTitleDictionary;
-        private readonly Dictionary<ulong, string>  _systemTitlesNameDictionary;
+        private readonly Dictionary<string, ulong> _sharedFontTitleDictionary;
+        private readonly Dictionary<ulong, string> _systemTitlesNameDictionary;
         private readonly Dictionary<string, string> _sharedFontFilenameDictionary;
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
@@ -103,8 +103,8 @@ namespace Ryujinx.HLE.FileSystem
 
                 foreach (StorageId storageId in Enum.GetValues<StorageId>())
                 {
-                    string contentDirectory    = null;
-                    string contentPathString   = null;
+                    string contentDirectory = null;
+                    string contentPathString = null;
                     string registeredDirectory = null;
 
                     try
@@ -242,7 +242,7 @@ namespace Ryujinx.HLE.FileSystem
 
                 if (!mergedToContainer)
                 {
-                    using FileStream          fileStream          = File.OpenRead(containerPath);
+                    using FileStream fileStream = File.OpenRead(containerPath);
                     using PartitionFileSystem partitionFileSystem = new(fileStream.AsStorage());
 
                     _virtualFileSystem.ImportTickets(partitionFileSystem);
@@ -300,7 +300,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             lock (_lock)
             {
-                LinkedList<LocationEntry> locationList      = _locationEntries[storageId];
+                LinkedList<LocationEntry> locationList = _locationEntries[storageId];
                 LinkedListNode<LocationEntry> locationEntry = locationList.First;
 
                 while (locationEntry != null)
@@ -478,10 +478,10 @@ namespace Ryujinx.HLE.FileSystem
 
         public void InstallFirmware(string firmwareSource)
         {
-            string contentPathString   = ContentPath.GetContentPath(StorageId.BuiltInSystem);
-            string contentDirectory    = ContentPath.GetRealPath(contentPathString);
+            string contentPathString = ContentPath.GetContentPath(StorageId.BuiltInSystem);
+            string contentDirectory = ContentPath.GetRealPath(contentPathString);
             string registeredDirectory = Path.Combine(contentDirectory, "registered");
-            string temporaryDirectory  = Path.Combine(contentDirectory, "temp");
+            string temporaryDirectory = Path.Combine(contentDirectory, "temp");
 
             if (Directory.Exists(temporaryDirectory))
             {
@@ -783,7 +783,7 @@ namespace Ryujinx.HLE.FileSystem
                                 continue;
                             }
 
-                            ZipArchiveEntry metaZipEntry    = archive.GetEntry(metaPath);
+                            ZipArchiveEntry metaZipEntry = archive.GetEntry(metaPath);
                             ZipArchiveEntry contentZipEntry = archive.GetEntry(contentPath);
 
                             using Stream metaNcaStream = GetZipStream(metaZipEntry);
@@ -912,7 +912,7 @@ namespace Ryujinx.HLE.FileSystem
                     if (updateNcas.TryGetValue(metaEntry.TitleId, out var ncaEntry))
                     {
                         var (type, path) = ncaEntry.Find(x => x.type == NcaContentType.Meta);
-                        string contentPath  = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
+                        string contentPath = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
 
                         // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
                         // This is a perfect valid case, so we should just ignore the missing content nca and continue.

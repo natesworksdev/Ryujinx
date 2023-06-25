@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private readonly MemoryFillValue _heapFillValue;
         private readonly MemoryFillValue _ipcFillValue;
 
-        private ulong _reservedAddressSpaceSize;
+        private readonly ulong _reservedAddressSpaceSize;
 
         public KPageTableBase(KernelContext context, ulong reservedAddressSpaceSize)
         {

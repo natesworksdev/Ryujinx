@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
         public static ResultCode ResolveEx(ServiceCtx context, out ResultCode resultCode, out string resolvedAddress)
         {
             ulong inputPosition = context.Request.SendBuff[0].Position;
-            ulong inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputSize = context.Request.SendBuff[0].Size;
 
             byte[] addressBuffer = new byte[inputSize];
 

@@ -8,7 +8,6 @@ using Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 {
@@ -70,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             VirtualAmiiboFile amiiboFile = LoadAmiiboFile(amiiboId);
 
             UtilityImpl utilityImpl = new(tickSource);
-            CharInfo    charInfo    = new();
+            CharInfo charInfo = new();
 
             charInfo.SetFromStoreData(StoreData.BuildDefault(utilityImpl, 0));
 
@@ -78,13 +77,13 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             RegisterInfo registerInfo = new()
             {
-                MiiCharInfo     = charInfo,
-                FirstWriteYear  = (ushort)amiiboFile.FirstWriteDate.Year,
+                MiiCharInfo = charInfo,
+                FirstWriteYear = (ushort)amiiboFile.FirstWriteDate.Year,
                 FirstWriteMonth = (byte)amiiboFile.FirstWriteDate.Month,
-                FirstWriteDay   = (byte)amiiboFile.FirstWriteDate.Day,
-                FontRegion      = 0,
-                Reserved1       = new Array64<byte>(),
-                Reserved2       = new Array58<byte>()
+                FirstWriteDay = (byte)amiiboFile.FirstWriteDate.Day,
+                FontRegion = 0,
+                Reserved1 = new Array64<byte>(),
+                Reserved2 = new Array58<byte>()
             };
             "Ryujinx"u8.CopyTo(registerInfo.Nickname.AsSpan());
 

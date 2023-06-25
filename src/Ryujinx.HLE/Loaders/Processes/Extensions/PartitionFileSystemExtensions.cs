@@ -25,8 +25,8 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             errorMessage = null;
 
             // Load required NCAs.
-            Nca mainNca    = null;
-            Nca patchNca   = null;
+            Nca mainNca = null;
+            Nca patchNca = null;
             Nca controlNca = null;
 
             try

@@ -32,8 +32,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         public static ResultCode CreateManagedLayer(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            long layerFlags           = context.RequestData.ReadInt64();
-            long displayId            = context.RequestData.ReadInt64();
+            long layerFlags = context.RequestData.ReadInt64();
+            long displayId = context.RequestData.ReadInt64();
 #pragma warning restore IDE0059
             long appletResourceUserId = context.RequestData.ReadInt64();
 

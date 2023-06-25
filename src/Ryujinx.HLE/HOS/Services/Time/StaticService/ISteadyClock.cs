@@ -7,8 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
     class ISteadyClock : IpcService
     {
         private readonly SteadyClockCore _steadyClock;
-        private readonly bool            _writePermission;
-        private readonly bool            _bypassUninitializedClock;
+        private readonly bool _writePermission;
+        private readonly bool _bypassUninitializedClock;
 
         public ISteadyClock(SteadyClockCore steadyClock, bool writePermission, bool bypassUninitializedClock)
         {

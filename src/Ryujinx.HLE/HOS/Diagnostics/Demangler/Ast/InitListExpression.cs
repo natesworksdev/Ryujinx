@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
 {
     public class InitListExpression : BaseNode
     {
-        private readonly BaseNode       _typeNode;
+        private readonly BaseNode _typeNode;
         private readonly List<BaseNode> _nodes;
 
         public InitListExpression(BaseNode typeNode, List<BaseNode> nodes) : base(NodeType.InitListExpression)
