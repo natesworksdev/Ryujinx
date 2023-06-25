@@ -5,9 +5,9 @@ using System.Runtime.Versioning;
 namespace ARMeilleure.Native
 {
     [SupportedOSPlatform("macos")]
-    public static partial class JitSupportDarwin
+    internal static partial class JitSupportDarwin
     {
         [LibraryImport("libarmeilleure-jitsupport", EntryPoint = "armeilleure_jit_memcpy")]
-        internal static partial void Copy(IntPtr dst, IntPtr src, ulong n);
+        public static partial void Copy(IntPtr dst, IntPtr src, ulong n);
     }
 }
