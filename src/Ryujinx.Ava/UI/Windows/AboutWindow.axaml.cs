@@ -25,10 +25,10 @@ namespace Ryujinx.Ava.UI.Windows
         {
             ContentDialog contentDialog = new()
             {
-                PrimaryButtonText   = "",
+                PrimaryButtonText = "",
                 SecondaryButtonText = "",
-                CloseButtonText     = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
-                Content             = new AboutWindow()
+                CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
+                Content = new AboutWindow()
             };
 
             Style closeButton = new(x => x.Name("CloseButton"));

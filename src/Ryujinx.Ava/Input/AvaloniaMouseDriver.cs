@@ -11,9 +11,9 @@ namespace Ryujinx.Ava.Input
 {
     internal class AvaloniaMouseDriver : IGamepadDriver
     {
-        private Control           _widget;
-        private bool              _isDisposed;
-        private Size              _size;
+        private Control _widget;
+        private bool _isDisposed;
+        private Size _size;
         private readonly TopLevel _window;
 
         public bool[] PressedButtons { get; }
@@ -47,13 +47,13 @@ namespace Ryujinx.Ava.Input
 
         public event Action<string> OnGamepadConnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
         public event Action<string> OnGamepadDisconnected
         {
-            add    { }
+            add { }
             remove { }
         }
 

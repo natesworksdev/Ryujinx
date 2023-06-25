@@ -21,7 +21,7 @@ namespace Ryujinx.Ava.UI.Renderer
     public class EmbeddedWindow : NativeControlHost
     {
         private WindowProc _wndProcDelegate;
-        private string     _className;
+        private string _className;
 
         protected GLXWindow X11Window { get; set; }
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Ava.UI.Renderer
         private UpdateBoundsCallbackDelegate _updateBoundsCallback;
 
         public event EventHandler<IntPtr> WindowCreated;
-        public event EventHandler<Size>   SizeChanged;
+        public event EventHandler<Size> SizeChanged;
 
         public EmbeddedWindow()
         {
@@ -147,17 +147,17 @@ namespace Ryujinx.Ava.UI.Renderer
                         msg == WindowsMessages.RBUTTONUP ||
                         msg == WindowsMessages.MOUSEMOVE)
                     {
-                        Point   rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;
-                        Pointer pointer            = new(0, PointerType.Mouse, true);
+                        Point rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;
+                        Pointer pointer = new(0, PointerType.Mouse, true);
 
                         switch (msg)
                         {
                             case WindowsMessages.LBUTTONDOWN:
                             case WindowsMessages.RBUTTONDOWN:
                                 {
-                                    bool                   isLeft               = msg == WindowsMessages.LBUTTONDOWN;
-                                    RawInputModifiers      pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
-                                    PointerPointProperties properties           = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed);
+                                    bool isLeft = msg == WindowsMessages.LBUTTONDOWN;
+                                    RawInputModifiers pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
+                                    PointerPointProperties properties = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed);
 
                                     var evnt = new PointerPressedEventArgs(
                                         this,
@@ -175,9 +175,9 @@ namespace Ryujinx.Ava.UI.Renderer
                             case WindowsMessages.LBUTTONUP:
                             case WindowsMessages.RBUTTONUP:
                                 {
-                                    bool                   isLeft               = msg == WindowsMessages.LBUTTONUP;
-                                    RawInputModifiers      pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
-                                    PointerPointProperties properties           = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonReleased : PointerUpdateKind.RightButtonReleased);
+                                    bool isLeft = msg == WindowsMessages.LBUTTONUP;
+                                    RawInputModifiers pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
+                                    PointerPointProperties properties = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonReleased : PointerUpdateKind.RightButtonReleased);
 
                                     var evnt = new PointerReleasedEventArgs(
                                         this,
@@ -218,12 +218,12 @@ namespace Ryujinx.Ava.UI.Renderer
 
             WNDCLASSEX wndClassEx = new()
             {
-                cbSize        = Marshal.SizeOf<WNDCLASSEX>(),
-                hInstance     = GetModuleHandle(null),
-                lpfnWndProc   = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
-                style         = ClassStyles.CS_OWNDC,
+                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
+                hInstance = GetModuleHandle(null),
+                lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
+                style = ClassStyles.CS_OWNDC,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
-                hCursor       = CreateArrowCursor()
+                hCursor = CreateArrowCursor()
             };
 
             RegisterClassEx(ref wndClassEx);

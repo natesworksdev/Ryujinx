@@ -35,11 +35,11 @@ namespace Ryujinx.Ava.UI.Windows
         {
             ContentDialog contentDialog = new()
             {
-                PrimaryButtonText   = "",
+                PrimaryButtonText = "",
                 SecondaryButtonText = "",
-                CloseButtonText     = "",
-                Content             = new TitleUpdateWindow(virtualFileSystem, titleId),
-                Title               = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, titleName, titleId.ToString("X16"))
+                CloseButtonText = "",
+                Content = new TitleUpdateWindow(virtualFileSystem, titleId),
+                Title = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, titleName, titleId.ToString("X16"))
             };
 
             Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());

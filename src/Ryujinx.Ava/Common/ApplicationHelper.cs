@@ -149,8 +149,8 @@ namespace Ryujinx.Ava.Common
                 Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle]
             };
 
-            string destination       = await folderDialog.ShowAsync(_owner);
-            var    cancellationToken = new CancellationTokenSource();
+            string destination = await folderDialog.ShowAsync(_owner);
+            var cancellationToken = new CancellationTokenSource();
 
             UpdateWaitWindow waitingDialog = new(
                 LocaleManager.Instance[LocaleKeys.DialogNcaExtractionTitle],
@@ -165,7 +165,7 @@ namespace Ryujinx.Ava.Common
 
                     using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
-                    Nca mainNca  = null;
+                    Nca mainNca = null;
                     Nca patchNca = null;
 
                     string extension = Path.GetExtension(titleFilePath).ToLower();
@@ -294,7 +294,7 @@ namespace Ryujinx.Ava.Common
                     }
                 })
                 {
-                    Name         = "GUI.NcaSectionExtractorThread",
+                    Name = "GUI.NcaSectionExtractorThread",
                     IsBackground = true
                 };
                 extractorThread.Start();

@@ -13,12 +13,12 @@ namespace Ryujinx.Ava.Input
     internal class AvaloniaKeyboardDriver : IGamepadDriver
     {
         private static readonly string[] _keyboardIdentifers = new string[1] { "0" };
-        private readonly Control         _control;
+        private readonly Control _control;
         private readonly HashSet<AvaKey> _pressedKeys;
 
         public event EventHandler<KeyEventArgs> KeyPressed;
         public event EventHandler<KeyEventArgs> KeyRelease;
-        public event EventHandler<string>       TextInput;
+        public event EventHandler<string> TextInput;
 
         public string DriverName => "AvaloniaKeyboardDriver";
         public ReadOnlySpan<string> GamepadsIds => _keyboardIdentifers;
@@ -47,13 +47,13 @@ namespace Ryujinx.Ava.Input
 
         public event Action<string> OnGamepadConnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
         public event Action<string> OnGamepadDisconnected
         {
-            add    { }
+            add { }
             remove { }
         }
 

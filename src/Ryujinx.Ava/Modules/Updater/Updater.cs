@@ -34,17 +34,17 @@ namespace Ryujinx.Modules
         private const string GitHubApiURL = "https://api.github.com";
         private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
+        private static readonly string HomeDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(UpdateDir, "publish");
-        private static readonly int    ConnectionCount  = 4;
+        private static readonly int ConnectionCount = 4;
 
         private static string _buildVer;
         private static string _platformExt;
         private static string _buildUrl;
-        private static long   _buildSize;
-        private static bool   _updateSuccessful;
-        private static bool   _running;
+        private static long _buildSize;
+        private static bool _updateSuccessful;
+        private static bool _running;
 
         private static readonly string[] WindowsDependencyDirs = Array.Empty<string>();
 
@@ -99,8 +99,8 @@ namespace Ryujinx.Modules
             {
                 using HttpClient jsonClient = ConstructHttpClient();
 
-                string  buildInfoURL = $"{GitHubApiURL}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
-                string  fetchedJson  = await jsonClient.GetStringAsync(buildInfoURL);
+                string buildInfoURL = $"{GitHubApiURL}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+                string fetchedJson = await jsonClient.GetStringAsync(buildInfoURL);
                 var fetched = JsonHelper.Deserialize(fetchedJson, SerializerContext.GithubReleasesJsonResponse);
                 _buildVer = fetched.Name;
 
@@ -259,12 +259,12 @@ namespace Ryujinx.Modules
 
             TaskDialog taskDialog = new()
             {
-                Header          = LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
-                SubHeader       = LocaleManager.Instance[LocaleKeys.UpdaterDownloading],
-                IconSource      = new SymbolIconSource { Symbol = Symbol.Download },
-                Buttons         = { },
+                Header = LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
+                SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterDownloading],
+                IconSource = new SymbolIconSource { Symbol = Symbol.Download },
+                Buttons = { },
                 ShowProgressBar = true,
-                XamlRoot        = parent
+                XamlRoot = parent
             };
 
             taskDialog.Opened += (s, e) =>
@@ -347,14 +347,14 @@ namespace Ryujinx.Modules
         private static void DoUpdateWithMultipleThreads(TaskDialog taskDialog, string downloadUrl, string updateFile)
         {
             // Multi-Threaded Updater
-            long chunkSize      = _buildSize / ConnectionCount;
+            long chunkSize = _buildSize / ConnectionCount;
             long remainderChunk = _buildSize % ConnectionCount;
 
-            int   completedRequests       = 0;
-            int   totalProgressPercentage = 0;
-            int[] progressPercentage      = new int[ConnectionCount];
+            int completedRequests = 0;
+            int totalProgressPercentage = 0;
+            int[] progressPercentage = new int[ConnectionCount];
 
-            List<byte[]>    list       = new(ConnectionCount);
+            List<byte[]> list = new(ConnectionCount);
             List<WebClient> webClients = new(ConnectionCount);
 
             for (int i = 0; i < ConnectionCount; i++)
@@ -473,7 +473,7 @@ namespace Ryujinx.Modules
             {
                 using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
 
-                long totalBytes  = response.Content.Headers.ContentLength.Value;
+                long totalBytes = response.Content.Headers.ContentLength.Value;
                 long byteWritten = 0;
 
                 byte[] buffer = new byte[32 * 1024];
@@ -518,9 +518,9 @@ namespace Ryujinx.Modules
         [SupportedOSPlatform("macos")]
         private static void ExtractTarGzipFile(TaskDialog taskDialog, string archivePath, string outputDirectoryPath)
         {
-            using Stream          inStream   = File.OpenRead(archivePath);
+            using Stream inStream = File.OpenRead(archivePath);
             using GZipInputStream gzipStream = new(inStream);
-            using TarInputStream  tarStream  = new(gzipStream, Encoding.ASCII);
+            using TarInputStream tarStream = new(gzipStream, Encoding.ASCII);
 
             TarEntry tarEntry;
 
@@ -557,8 +557,8 @@ namespace Ryujinx.Modules
 
         private static void ExtractZipFile(TaskDialog taskDialog, string archivePath, string outputDirectoryPath)
         {
-            using Stream  inStream = File.OpenRead(archivePath);
-            using ZipFile zipFile  = new(inStream);
+            using Stream inStream = File.OpenRead(archivePath);
+            using ZipFile zipFile = new(inStream);
 
             double count = 0;
             foreach (ZipEntry zipEntry in zipFile)

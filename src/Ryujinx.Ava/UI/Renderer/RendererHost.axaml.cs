@@ -11,7 +11,7 @@ namespace Ryujinx.Ava.UI.Renderer
         public readonly EmbeddedWindow EmbeddedWindow;
 
         public event EventHandler<EventArgs> WindowCreated;
-        public event Action<object, Size>    SizeChanged;
+        public event Action<object, Size> SizeChanged;
 
         public RendererHost()
         {

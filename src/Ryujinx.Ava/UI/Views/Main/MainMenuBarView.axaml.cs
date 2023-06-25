@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             foreach (var item in Enum.GetValues(typeof(FileTypes)))
             {
-                string fileName = Enum.GetName(typeof (FileTypes), item);
+                string fileName = Enum.GetName(typeof(FileTypes), item);
                 checkBoxes.Add(new CheckBox()
                 {
                     Content = $".{fileName}",
@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             List<MenuItem> menuItems = new();
 
             string localePath = "Ryujinx.Ava/Assets/Locales";
-            string localeExt  = ".json";
+            string localeExt = ".json";
 
             string[] localesPath = EmbeddedResources.GetAllAvailableResources(localePath, localeExt);
 
@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             {
                 string languageCode = Path.GetFileNameWithoutExtension(locale).Split('.').Last();
                 string languageJson = EmbeddedResources.ReadAllText($"{localePath}/{languageCode}{localeExt}");
-                var    strings      = JsonHelper.Deserialize(languageJson, CommonJsonContext.Default.StringDictionary);
+                var strings = JsonHelper.Deserialize(languageJson, CommonJsonContext.Default.StringDictionary);
 
                 if (!strings.TryGetValue("Language", out string languageName))
                 {
@@ -76,7 +76,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
                 MenuItem menuItem = new()
                 {
-                    Header  = languageName,
+                    Header = languageName,
                     Command = MiniCommand.Create(() =>
                     {
                         MainWindowViewModel.ChangeLanguage(languageCode);

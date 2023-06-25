@@ -12,8 +12,8 @@ namespace Ryujinx.Ava.Input
     internal class AvaloniaKeyboard : IKeyboard
     {
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
-        private readonly AvaloniaKeyboardDriver   _driver;
-        private StandardKeyboardInputConfig       _configuration;
+        private readonly AvaloniaKeyboardDriver _driver;
+        private StandardKeyboardInputConfig _configuration;
 
         private readonly object _userMappingLock = new();
 
@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.Input
 
         private class ButtonMappingEntry
         {
-            public readonly Key                  From;
+            public readonly Key From;
             public readonly GamepadButtonInputId To;
 
             public ButtonMappingEntry(GamepadButtonInputId to, Key from)
@@ -52,7 +52,7 @@ namespace Ryujinx.Ava.Input
         public GamepadStateSnapshot GetMappedStateSnapshot()
         {
             KeyboardStateSnapshot rawState = GetKeyboardStateSnapshot();
-            GamepadStateSnapshot  result   = default;
+            GamepadStateSnapshot result = default;
 
             lock (_userMappingLock)
             {

@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.UI.Renderer
     class SPBOpenGLContext : IOpenGLContext
     {
         private readonly OpenGLContextBase _context;
-        private readonly NativeWindowBase  _window;
+        private readonly NativeWindowBase _window;
 
         private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
         {
@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.UI.Renderer
         public static SPBOpenGLContext CreateBackgroundContext(OpenGLContextBase sharedContext)
         {
             OpenGLContextBase context = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, 3, 3, OpenGLContextFlags.Compat, true, sharedContext);
-            NativeWindowBase  window  = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100);
+            NativeWindowBase window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100);
 
             context.Initialize(window);
             context.MakeCurrent(window);

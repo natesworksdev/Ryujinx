@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.ViewModels
     public class TitleUpdateViewModel : BaseModel
     {
         public TitleUpdateMetadata _titleUpdateWindowData;
-        public readonly string     _titleUpdateJsonPath;
+        public readonly string _titleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
         private ulong TitleId { get; }
 
@@ -202,7 +202,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             OpenFileDialog dialog = new()
             {
-                Title         = LocaleManager.Instance[LocaleKeys.SelectUpdateDialogTitle],
+                Title = LocaleManager.Instance[LocaleKeys.SelectUpdateDialogTitle],
                 AllowMultiple = true
             };
 

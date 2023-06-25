@@ -29,9 +29,9 @@ namespace Ryujinx.Ava.UI.ViewModels
     public class DownloadableContentManagerViewModel : BaseModel
     {
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
-        private readonly string                             _downloadableContentJsonPath;
+        private readonly string _downloadableContentJsonPath;
 
-        private readonly VirtualFileSystem                      _virtualFileSystem;
+        private readonly VirtualFileSystem _virtualFileSystem;
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _views = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
@@ -196,7 +196,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             OpenFileDialog dialog = new()
             {
-                Title         = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
+                Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
                 AllowMultiple = true
             };
 
@@ -229,8 +229,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             using FileStream containerFile = File.OpenRead(path);
 
-            PartitionFileSystem partitionFileSystem         = new(containerFile.AsStorage());
-            bool                containsDownloadableContent = false;
+            PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+            bool containsDownloadableContent = false;
 
             _virtualFileSystem.ImportTickets(partitionFileSystem);
 

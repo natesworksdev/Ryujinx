@@ -41,7 +41,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SPB.Graphics.Exceptions;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -61,31 +60,31 @@ namespace Ryujinx.Ava
 {
     internal class AppHost
     {
-        private const int   CursorHideIdleTime = 5;    // Hide Cursor seconds.
+        private const int CursorHideIdleTime = 5;    // Hide Cursor seconds.
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
-        private const int   TargetFps          = 60;
-        private const float VolumeDelta        = 0.05f;
+        private const int TargetFps = 60;
+        private const float VolumeDelta = 0.05f;
 
         private static readonly Cursor InvisibleCursor = new(StandardCursorType.None);
-        private readonly IntPtr        InvisibleCursorWin;
-        private readonly IntPtr        DefaultCursorWin;
+        private readonly IntPtr InvisibleCursorWin;
+        private readonly IntPtr DefaultCursorWin;
 
-        private readonly long      _ticksPerFrame;
+        private readonly long _ticksPerFrame;
         private readonly Stopwatch _chrono;
-        private long               _ticks;
+        private long _ticks;
 
-        private readonly AccountManager         _accountManager;
+        private readonly AccountManager _accountManager;
         private readonly UserChannelPersistence _userChannelPersistence;
-        private readonly InputManager           _inputManager;
+        private readonly InputManager _inputManager;
 
         private readonly MainWindowViewModel _viewModel;
-        private readonly IKeyboard           _keyboardInterface;
-        private readonly TopLevel            _topLevel;
-        public           RendererHost        _rendererHost;
+        private readonly IKeyboard _keyboardInterface;
+        private readonly TopLevel _topLevel;
+        public RendererHost _rendererHost;
 
         private readonly GraphicsDebugLevel _glLogLevel;
-        private float                       _newVolume;
-        private KeyboardHotkeyState         _prevHotkeyState;
+        private float _newVolume;
+        private KeyboardHotkeyState _prevHotkeyState;
 
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer = true;
@@ -96,12 +95,12 @@ namespace Ryujinx.Ava
 
         private readonly ManualResetEvent _gpuDoneEvent;
 
-        private IRenderer                        _renderer;
-        private readonly Thread                  _renderingThread;
+        private IRenderer _renderer;
+        private readonly Thread _renderingThread;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
-        private bool          _dialogShown;
+        private bool _dialogShown;
         private readonly bool _isFirmwareTitle;
 
         private readonly object _lockObject = new();
@@ -198,7 +197,7 @@ namespace Ryujinx.Ava
 
                 if (_rendererHost.EmbeddedWindow.TransformedBounds != null)
                 {
-                    var point  = e.GetCurrentPoint(window).Position;
+                    var point = e.GetCurrentPoint(window).Position;
                     var bounds = _rendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
 
                     _isCursorInRenderer = point.X >= bounds.X &&
@@ -271,12 +270,12 @@ namespace Ryujinx.Ava
                     lock (_lockObject)
                     {
                         DateTime currentTime = DateTime.Now;
-                        string   filename    = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
+                        string filename = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
 
                         string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable or AppDataManager.LaunchMode.Custom => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
-                            _                                  => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
+                            _ => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
                         };
 
                         string path = Path.Combine(directory, filename);
@@ -336,12 +335,12 @@ namespace Ryujinx.Ava
 
             _viewModel.IsGameRunning = true;
 
-            var activeProcess   = Device.Processes.ActiveApplication;
+            var activeProcess = Device.Processes.ActiveApplication;
 
-            string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+            string titleNameSection = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
             string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
-            string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
-            string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
+            string titleIdSection = $" ({activeProcess.ProgramIdText.ToUpper()})";
+            string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -819,7 +818,7 @@ namespace Ryujinx.Ava
             for (int i = 0; i < availableBackends.Count; i++)
             {
                 AudioBackend currentBackend = availableBackends[i];
-                AudioBackend nextBackend    = i + 1 < availableBackends.Count ? availableBackends[i + 1] : AudioBackend.Dummy;
+                AudioBackend nextBackend = i + 1 < availableBackends.Count ? availableBackends[i + 1] : AudioBackend.Dummy;
 
                 deviceDriver = currentBackend switch
                 {
