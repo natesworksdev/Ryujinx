@@ -7,10 +7,10 @@ namespace Ryujinx.Ui.Common
     public static class DiscordIntegrationModule
     {
         private const string Description = "A simple, experimental Nintendo Switch emulator.";
-        private const string CliendId    = "568815339807309834";
+        private const string CliendId = "568815339807309834";
 
         private static DiscordRpcClient _discordClient;
-        private static RichPresence     _discordPresenceMain;
+        private static RichPresence _discordPresenceMain;
 
         public static void Initialize()
         {

@@ -32,7 +32,7 @@ namespace Ryujinx.Ui.App.Common
 {
     public class ApplicationLibrary
     {
-        public event EventHandler<ApplicationAddedEventArgs>        ApplicationAdded;
+        public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
         private readonly byte[] _nspIcon;
@@ -42,11 +42,11 @@ namespace Ryujinx.Ui.App.Common
         private readonly byte[] _nsoIcon;
 
         private readonly VirtualFileSystem _virtualFileSystem;
-        private Language                   _desiredTitleLanguage;
-        private CancellationTokenSource    _cancellationToken;
+        private Language _desiredTitleLanguage;
+        private CancellationTokenSource _cancellationToken;
 
-        private static readonly ApplicationJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
-        private static readonly TitleUpdateMetadataJsonSerializerContext TitleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly ApplicationJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext _titleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
@@ -61,7 +61,7 @@ namespace Ryujinx.Ui.App.Common
 
         private static byte[] GetResourceBytes(string resourceName)
         {
-            Stream resourceStream    = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
+            Stream resourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
             byte[] resourceByteArray = new byte[resourceStream.Length];
 
             resourceStream.Read(resourceByteArray);
@@ -84,7 +84,7 @@ namespace Ryujinx.Ui.App.Common
 
         public void LoadApplications(List<string> appDirs, Language desiredTitleLanguage)
         {
-            int numApplicationsFound  = 0;
+            int numApplicationsFound = 0;
             int numApplicationsLoaded = 0;
 
             _desiredTitleLanguage = desiredTitleLanguage;
@@ -115,12 +115,12 @@ namespace Ryujinx.Ui.App.Common
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
                         {
                             return
-                            (Path.GetExtension(file).ToLower() is ".nsp"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value)  ||
+                            (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value) ||
                             (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".xci"  && ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nca"  && ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nro"  && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value)  ||
-                            (Path.GetExtension(file).ToLower() is ".nso"  && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
+                            (Path.GetExtension(file).ToLower() is ".xci" && ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value) ||
+                            (Path.GetExtension(file).ToLower() is ".nca" && ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value) ||
+                            (Path.GetExtension(file).ToLower() is ".nro" && ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value) ||
+                            (Path.GetExtension(file).ToLower() is ".nso" && ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value);
                         });
 
                         foreach (string app in files)
@@ -512,7 +512,7 @@ namespace Ryujinx.Ui.App.Common
         public static ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
         {
             string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
-            string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
+            string metadataFile = Path.Combine(metadataFolder, "metadata.json");
 
             ApplicationMetadata appMetadata;
 
@@ -522,12 +522,12 @@ namespace Ryujinx.Ui.App.Common
 
                 appMetadata = new ApplicationMetadata();
 
-                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, _serializerContext.ApplicationMetadata);
             }
 
             try
             {
-                appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
+                appMetadata = JsonHelper.DeserializeFromFile(metadataFile, _serializerContext.ApplicationMetadata);
             }
             catch (JsonException)
             {
@@ -540,7 +540,7 @@ namespace Ryujinx.Ui.App.Common
             {
                 modifyFunction(appMetadata);
 
-                JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
+                JsonHelper.SerializeToFile(metadataFile, appMetadata, _serializerContext.ApplicationMetadata);
             }
 
             return appMetadata;
@@ -926,7 +926,7 @@ namespace Ryujinx.Ui.App.Common
 
                 if (File.Exists(titleUpdateMetadataPath))
                 {
-                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, TitleSerializerContext.TitleUpdateMetadata).Selected;
+                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, _titleSerializerContext.TitleUpdateMetadata).Selected;
 
                     if (File.Exists(updatePath))
                     {

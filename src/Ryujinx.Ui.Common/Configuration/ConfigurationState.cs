@@ -678,22 +678,23 @@ namespace Ryujinx.Ui.Common.Configuration
                 IgnoreMissingServices = System.IgnoreMissingServices,
                 UseHypervisor = System.UseHypervisor,
                 GuiColumns = new GuiColumns
-                    {
-                        FavColumn = Ui.GuiColumns.FavColumn,
-                        IconColumn = Ui.GuiColumns.IconColumn,
-                        AppColumn = Ui.GuiColumns.AppColumn,
-                        DevColumn = Ui.GuiColumns.DevColumn,
-                        VersionColumn = Ui.GuiColumns.VersionColumn,
-                        TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
-                        LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
-                        FileExtColumn = Ui.GuiColumns.FileExtColumn,
-                        FileSizeColumn = Ui.GuiColumns.FileSizeColumn,
-                        PathColumn = Ui.GuiColumns.PathColumn
-                    },
+                {
+                    FavColumn = Ui.GuiColumns.FavColumn,
+                    IconColumn = Ui.GuiColumns.IconColumn,
+                    AppColumn = Ui.GuiColumns.AppColumn,
+                    DevColumn = Ui.GuiColumns.DevColumn,
+                    VersionColumn = Ui.GuiColumns.VersionColumn,
+                    TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
+                    LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
+                    FileExtColumn = Ui.GuiColumns.FileExtColumn,
+                    FileSizeColumn = Ui.GuiColumns.FileSizeColumn,
+                    PathColumn = Ui.GuiColumns.PathColumn
+                },
                 ColumnSort = new ColumnSort
-                    {
-                        SortColumnId = Ui.ColumnSort.SortColumnId, SortAscending = Ui.ColumnSort.SortAscending
-                    },
+                {
+                    SortColumnId = Ui.ColumnSort.SortColumnId,
+                    SortAscending = Ui.ColumnSort.SortAscending
+                },
                 GameDirs = Ui.GameDirs,
                 ShownFileTypes = new ShownFileTypes
                 {
