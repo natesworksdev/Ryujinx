@@ -168,7 +168,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                                 decodedSampleCount = PcmHelper.Decode(tempSpan, waveBufferPcmFloat, targetSampleStartOffset, targetSampleEndOffset, info.ChannelIndex, info.ChannelCount);
                                 break;
                             default:
-                                Logger.Error?.Print(LogClass.AudioRenderer, $"Unsupported sample format " + info.SampleFormat);
+                                Logger.Error?.Print(LogClass.AudioRenderer, "Unsupported sample format " + info.SampleFormat);
                                 break;
                         }
 

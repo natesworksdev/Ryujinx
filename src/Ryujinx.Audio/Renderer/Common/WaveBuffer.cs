@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-
 using DspAddr = System.UInt64;
 
 namespace Ryujinx.Audio.Renderer.Common

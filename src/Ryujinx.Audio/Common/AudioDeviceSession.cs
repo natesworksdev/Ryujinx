@@ -425,10 +425,8 @@ namespace Ryujinx.Audio.Common
             {
                 return 0;
             }
-            else
-            {
-                return _hardwareDeviceSession.GetPlayedSampleCount();
-            }
+
+            return _hardwareDeviceSession.GetPlayedSampleCount();
         }
 
         /// <summary>

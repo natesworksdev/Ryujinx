@@ -7,7 +7,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 {
     public class ReverbState
     {
-        private static readonly float[] FdnDelayTimes = new float[20]
+        private static readonly float[] _fdnDelayTimes = new float[20]
         {
             // Room
             53.953247f, 79.192566f, 116.238770f, 130.615295f,
@@ -21,7 +21,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             53.953247f, 79.192566f, 116.238770f, 170.615295f,
         };
 
-        private static readonly float[] DecayDelayTimes = new float[20]
+        private static readonly float[] _decayDelayTimes = new float[20]
         {
             // Room
             7f, 9f, 13f, 17f,
@@ -35,7 +35,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             7f, 9f, 13f, 17f,
         };
 
-        private static readonly float[] EarlyDelayTimes = new float[50]
+        private static readonly float[] _earlyDelayTimes = new float[50]
         {
             // Room
             0.0f, 3.5f, 2.8f, 3.9f, 2.7f, 13.4f, 7.9f, 8.4f, 9.9f, 12.0f,
@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
         };
 
-        private static readonly float[] EarlyGainBase = new float[50]
+        private static readonly float[] _earlyGainBase = new float[50]
         {
             // Room
             0.70f, 0.68f, 0.70f, 0.68f, 0.70f, 0.68f, 0.70f, 0.68f, 0.68f, 0.68f,
@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f
         };
 
-        private static readonly float[] PreDelayTimes = new float[5]
+        private static readonly float[] _preDelayTimes = new float[5]
         {
             // Room
             12.5f,
@@ -95,12 +95,12 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
         private static ReadOnlySpan<float> GetFdnDelayTimesByLateMode(ReverbLateMode lateMode)
         {
-            return FdnDelayTimes.AsSpan((int)lateMode * 4, 4);
+            return _fdnDelayTimes.AsSpan((int)lateMode * 4, 4);
         }
 
         private static ReadOnlySpan<float> GetDecayDelayTimesByLateMode(ReverbLateMode lateMode)
         {
-            return DecayDelayTimes.AsSpan((int)lateMode * 4, 4);
+            return _decayDelayTimes.AsSpan((int)lateMode * 4, 4);
         }
 
         public ReverbState(ref ReverbParameter parameter, ulong workBuffer, bool isLongSizePreDelaySupported)
@@ -148,8 +148,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             for (int i = 0; i < 10; i++)
             {
-                EarlyDelayTime[i] = Math.Min(IDelayLine.GetSampleCount(sampleRate, EarlyDelayTimes[i] + preDelayTimeInMilliseconds), PreDelayLine.SampleCountMax) + 1;
-                EarlyGain[i] = EarlyGainBase[i] * earlyGain;
+                EarlyDelayTime[i] = Math.Min(IDelayLine.GetSampleCount(sampleRate, _earlyDelayTimes[i] + preDelayTimeInMilliseconds), PreDelayLine.SampleCountMax) + 1;
+                EarlyGain[i] = _earlyGainBase[i] * earlyGain;
             }
 
             if (parameter.ChannelCount == 2)
@@ -158,7 +158,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
                 EarlyGain[5] = EarlyGain[5] * 0.5f;
             }
 
-            PreDelayLineDelayTime = Math.Min(IDelayLine.GetSampleCount(sampleRate, PreDelayTimes[(int)parameter.EarlyMode] + preDelayTimeInMilliseconds), PreDelayLine.SampleCountMax);
+            PreDelayLineDelayTime = Math.Min(IDelayLine.GetSampleCount(sampleRate, _preDelayTimes[(int)parameter.EarlyMode] + preDelayTimeInMilliseconds), PreDelayLine.SampleCountMax);
 
             ReadOnlySpan<float> fdnDelayTimes = GetFdnDelayTimesByLateMode(parameter.LateMode);
             ReadOnlySpan<float> decayDelayTimes = GetDecayDelayTimesByLateMode(parameter.LateMode);

@@ -22,11 +22,12 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
                                                  PerformanceEntryVersion2,
                                                  PerformanceDetailVersion2>.GetRequiredBufferSizeForPerformanceMetricsPerFrame(ref parameter);
             }
-            else if (version == 1)
+
+            if (version == 1)
             {
                 return (ulong)PerformanceManagerGeneric<PerformanceFrameHeaderVersion1,
-                                                 PerformanceEntryVersion1,
-                                                 PerformanceDetailVersion1>.GetRequiredBufferSizeForPerformanceMetricsPerFrame(ref parameter);
+                    PerformanceEntryVersion1,
+                    PerformanceDetailVersion1>.GetRequiredBufferSizeForPerformanceMetricsPerFrame(ref parameter);
             }
 
             throw new NotImplementedException($"Unknown Performance metrics data format version {version}");

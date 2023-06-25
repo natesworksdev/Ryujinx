@@ -19,7 +19,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Threading;
-
 using CpuAddress = System.UInt64;
 
 namespace Ryujinx.Audio.Renderer.Server
@@ -566,7 +565,6 @@ namespace Ryujinx.Audio.Renderer.Server
                     }
                     else if (command.CommandType == CommandType.Performance || !command.Enabled)
                     {
-                        continue;
                     }
                     else
                     {

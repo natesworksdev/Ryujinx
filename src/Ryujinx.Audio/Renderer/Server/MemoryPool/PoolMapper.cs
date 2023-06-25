@@ -125,7 +125,8 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
             {
                 return CurrentProcessPseudoHandle;
             }
-            else if (memoryPool.Location == MemoryPoolState.LocationType.Dsp)
+
+            if (memoryPool.Location == MemoryPoolState.LocationType.Dsp)
             {
                 return _processHandle;
             }
@@ -234,13 +235,11 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
 
                 return true;
             }
-            else
-            {
-                errorInfo.ErrorCode = ResultCode.InvalidAddressInfo;
-                errorInfo.ExtraErrorInfo = addressInfo.CpuAddress;
 
-                return _isForceMapEnabled;
-            }
+            errorInfo.ErrorCode = ResultCode.InvalidAddressInfo;
+            errorInfo.ExtraErrorInfo = addressInfo.CpuAddress;
+
+            return _isForceMapEnabled;
         }
 
         /// <summary>

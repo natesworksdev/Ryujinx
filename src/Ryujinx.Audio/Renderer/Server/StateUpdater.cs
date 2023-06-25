@@ -240,10 +240,8 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 return UpdateEffectsVersion2(context, isAudioRendererActive, memoryPools);
             }
-            else
-            {
-                return UpdateEffectsVersion1(context, isAudioRendererActive, memoryPools);
-            }
+
+            return UpdateEffectsVersion1(context, isAudioRendererActive, memoryPools);
         }
 
         public ResultCode UpdateEffectsVersion2(EffectContext context, bool isAudioRendererActive, Memory<MemoryPoolState> memoryPools)
@@ -358,10 +356,8 @@ namespace Ryujinx.Audio.Renderer.Server
 
                 return ResultCode.Success;
             }
-            else
-            {
-                return ResultCode.InvalidUpdateInfo;
-            }
+
+            return ResultCode.InvalidUpdateInfo;
         }
 
         private static bool CheckMixParametersValidity(MixContext mixContext, uint mixBufferCount, uint inputMixCount, ReadOnlySpan<MixParameter> parameters)

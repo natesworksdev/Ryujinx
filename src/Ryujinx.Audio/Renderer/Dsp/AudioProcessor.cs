@@ -55,11 +55,9 @@ namespace Ryujinx.Audio.Renderer.Dsp
             {
                 return 6;
             }
-            else
-            {
-                // NOTE: We default to stereo as this will get downmixed to mono by the compat layer if it's not compatible.
-                return 2;
-            }
+
+            // NOTE: We default to stereo as this will get downmixed to mono by the compat layer if it's not compatible.
+            return 2;
         }
 #pragma warning restore IDE0051
 

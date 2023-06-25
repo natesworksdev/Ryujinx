@@ -10,8 +10,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
     public static class ResamplerHelper
     {
         #region "Default Quality Lookup Tables"
-        private static readonly short[] _normalCurveLut0 = new short[]
-        {
+        private static readonly short[] _normalCurveLut0 = {
             6600,  19426, 6722,  3,     6479,  19424, 6845,  9,     6359,  19419, 6968,  15,    6239,  19412, 7093,  22,
             6121,  19403, 7219,  28,    6004,  19391, 7345,  34,    5888,  19377, 7472,  41,    5773,  19361, 7600,  48,
             5659,  19342, 7728,  55,    5546,  19321, 7857,  62,    5434,  19298, 7987,  69,    5323,  19273, 8118,  77,
@@ -46,8 +45,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             22,    7093,  19412, 6239,  15,    6968,  19419, 6359,  9,     6845,  19424, 6479,  3,     6722,  19426, 6600
         };
 
-        private static readonly short[] _normalCurveLut1 = new short[]
-        {
+        private static readonly short[] _normalCurveLut1 = {
             -68,   32639, 69,    -5,    -200,  32630, 212,   -15,   -328,  32613, 359,   -26,   -450,  32586, 512,   -36,
             -568,  32551, 669,   -47,   -680,  32507, 832,   -58,   -788,  32454, 1000,  -69,   -891,  32393, 1174,  -80,
             -990,  32323, 1352,  -92,   -1084, 32244, 1536,  -103,  -1173, 32157, 1724,  -115,  -1258, 32061, 1919,  -128,
@@ -82,8 +80,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             -36,   512,   32586, -450,  -26,   359,   32613, -328,  -15,   212,   32630, -200,  -5,    69,    32639, -68
         };
 
-        private static readonly short[] _normalCurveLut2 = new short[]
-        {
+        private static readonly short[] _normalCurveLut2 = {
             3195,  26287, 3329,  -32,   3064,  26281, 3467,  -34,   2936,  26270, 3608,  -38,   2811,  26253, 3751,  -42,
             2688,  26230, 3897,  -46,   2568,  26202, 4046,  -50,   2451,  26169, 4199,  -54,   2338,  26130, 4354,  -58,
             2227,  26085, 4512,  -63,   2120,  26035, 4673,  -67,   2015,  25980, 4837,  -72,   1912,  25919, 5004,  -76,
@@ -120,8 +117,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         #endregion
 
         #region "High Quality Lookup Tables"
-        private static readonly short[] _highCurveLut0 = new short[]
-        {
+        private static readonly short[] _highCurveLut0 = {
             -582, -23,  8740, 16386, 8833,  8,    -590,  0,    -573, -54,  8647, 16385, 8925,  40,   -598, -1,
             -565, -84,  8555, 16383, 9018,  72,   -606,  -1,   -557, -113, 8462, 16379, 9110,  105,  -614, -2,
             -549, -142, 8370, 16375, 9203,  139,  -622,  -2,   -541, -170, 8277, 16369, 9295,  173,  -630, -3,
@@ -188,8 +184,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             -1,   -598, 40,   8925,  16385, 8647, -54,   -573, 0,    -590, 8,    8833,  16386, 8740, -23,  -582,
         };
 
-        private static readonly short[] _highCurveLut1 = new short[]
-        {
+        private static readonly short[] _highCurveLut1 = {
             -12,  47,   -134,  32767, 81,     -16,   2,     0,    -26,  108,  -345,   32760, 301,   -79,   17,   -1,
             -40,  168,  -552,  32745, 526,    -144,  32,    -2,   -53,  226,  -753,   32723, 755,   -210,  47,   -3,
             -66,  284,  -950,  32694, 989,    -277,  63,    -5,   -78,  340,  -1143,  32658, 1226,  -346,  79,   -6,
@@ -256,8 +251,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             -1,   17,   -79,   301,   32760,  -345,  108,   -26,  0,    2,    -16,    81,    32767, -134,  47,   -12,
         };
 
-        private static readonly short[] _highCurveLut2 = new short[]
-        {
+        private static readonly short[] _highCurveLut2 = {
             418, -2538, 6118,  24615, 6298,  -2563, 417,   0,   420, -2512, 5939,  24611, 6479,  -2588, 415,   1,
             421, -2485, 5761,  24605, 6662,  -2612, 412,   2,   422, -2458, 5585,  24595, 6846,  -2635, 409,   3,
             423, -2430, 5410,  24582, 7030,  -2658, 406,   4,   423, -2402, 5236,  24565, 7216,  -2680, 403,   5,
@@ -372,7 +366,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
             {
                 return _normalCurveLut1F;
             }
-            else if (ratio > 1.333313f)
+
+            if (ratio > 1.333313f)
             {
                 return _normalCurveLut0F;
             }
@@ -513,7 +508,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
             {
                 return _highCurveLut1F;
             }
-            else if (ratio > 1.333313f)
+
+            if (ratio > 1.333313f)
             {
                 return _highCurveLut0F;
             }

@@ -16,7 +16,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         /// <summary>
         /// Global lock of the object.
         /// </summary>
-        private readonly object Lock = new();
+        private readonly object _lock = new();
 
         /// <summary>
         /// The upsamplers instances.
@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         {
             int workBufferOffset = 0;
 
-            lock (Lock)
+            lock (_lock)
             {
                 for (int i = 0; i < _count; i++)
                 {
@@ -73,7 +73,7 @@ namespace Ryujinx.Audio.Renderer.Server.Upsampler
         /// <param name="index">The index of the <see cref="UpsamplerState"/> to free.</param>
         public void Free(int index)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Debug.Assert(_upsamplers[index] != null);
 

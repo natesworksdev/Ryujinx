@@ -1,7 +1,9 @@
 using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Renderer.Common;
+using Ryujinx.Audio.Renderer.Server.Voice;
 using System;
 using static Ryujinx.Audio.Renderer.Parameter.VoiceInParameter;
+using WaveBuffer = Ryujinx.Audio.Renderer.Common.WaveBuffer;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
@@ -29,7 +31,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public DecodingBehaviour DecodingBehaviour { get; }
 
-        public AdpcmDataSourceCommandVersion1(ref Server.Voice.VoiceState serverState, Memory<VoiceUpdateState> state, ushort outputBufferIndex, int nodeId)
+        public AdpcmDataSourceCommandVersion1(ref VoiceState serverState, Memory<VoiceUpdateState> state, ushort outputBufferIndex, int nodeId)
         {
             Enabled = true;
             NodeId = nodeId;

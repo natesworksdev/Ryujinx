@@ -90,11 +90,13 @@ namespace Ryujinx.Audio.Output
             {
                 return ResultCode.DeviceNotFound;
             }
-            else if (configuration.SampleRate != 0 && configuration.SampleRate != Constants.TargetSampleRate)
+
+            if (configuration.SampleRate != 0 && configuration.SampleRate != Constants.TargetSampleRate)
             {
                 return ResultCode.UnsupportedSampleRate;
             }
-            else if (configuration.ChannelCount != 0 && configuration.ChannelCount != 1 && configuration.ChannelCount != 2 && configuration.ChannelCount != 6)
+
+            if (configuration.ChannelCount != 0 && configuration.ChannelCount != 1 && configuration.ChannelCount != 2 && configuration.ChannelCount != 6)
             {
                 return ResultCode.UnsupportedChannelConfiguration;
             }

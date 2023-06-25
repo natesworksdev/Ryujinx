@@ -1,7 +1,9 @@
 using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Renderer.Common;
+using Ryujinx.Audio.Renderer.Server.Voice;
 using System;
 using static Ryujinx.Audio.Renderer.Parameter.VoiceInParameter;
+using WaveBuffer = Ryujinx.Audio.Renderer.Common.WaveBuffer;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
@@ -37,7 +39,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public SampleRateConversionQuality SrcQuality { get; }
 
-        public DataSourceVersion2Command(ref Server.Voice.VoiceState serverState, Memory<VoiceUpdateState> state, ushort outputBufferIndex, ushort channelIndex, int nodeId)
+        public DataSourceVersion2Command(ref VoiceState serverState, Memory<VoiceUpdateState> state, ushort outputBufferIndex, ushort channelIndex, int nodeId)
         {
             Enabled = true;
             NodeId = nodeId;

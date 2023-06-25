@@ -6,7 +6,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Threading;
-
 using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.CompatLayer
@@ -139,7 +138,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
             if (direction == Direction.Input)
             {
-                Logger.Warning?.Print(LogClass.Audio, $"The selected audio backend doesn't support the requested audio input configuration, fallback to dummy...");
+                Logger.Warning?.Print(LogClass.Audio, "The selected audio backend doesn't support the requested audio input configuration, fallback to dummy...");
 
                 // TODO: We currently don't support audio input upsampling/downsampling, implement this.
                 realSession.Dispose();

@@ -120,7 +120,8 @@ namespace Ryujinx.Audio.Renderer.Common
 
                 return NodeState.Discovered;
             }
-            else if (_finished.Test(index))
+
+            if (_finished.Test(index))
             {
                 Debug.Assert(!_discovered.Test(index));
 

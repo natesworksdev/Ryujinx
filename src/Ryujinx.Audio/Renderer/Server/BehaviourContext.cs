@@ -254,7 +254,8 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 return 0.80f;
             }
-            else if (CheckFeatureSupported(UserRevision, BaseRevisionMagic + Revision4))
+
+            if (CheckFeatureSupported(UserRevision, BaseRevisionMagic + Revision4))
             {
                 return 0.75f;
             }
@@ -299,10 +300,8 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 return 2;
             }
-            else
-            {
-                return 1;
-            }
+
+            return 1;
         }
 
         /// <summary>

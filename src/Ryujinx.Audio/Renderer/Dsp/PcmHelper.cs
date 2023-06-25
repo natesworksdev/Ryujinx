@@ -61,7 +61,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         {
             for (int i = 0; i < input.Length; i++)
             {
-                output[i] = ((int)input[i]) << 16;
+                output[i] = input[i] << 16;
             }
         }
 

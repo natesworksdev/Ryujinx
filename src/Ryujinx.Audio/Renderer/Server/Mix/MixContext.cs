@@ -248,12 +248,10 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
 
                 return isValid;
             }
-            else
-            {
-                UpdateMixBufferOffset();
 
-                return true;
-            }
+            UpdateMixBufferOffset();
+
+            return true;
         }
     }
 }

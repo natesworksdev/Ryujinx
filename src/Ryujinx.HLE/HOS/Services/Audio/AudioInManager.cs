@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Input;
 using Ryujinx.HLE.HOS.Services.Audio.AudioIn;
-
 using AudioInManagerImpl = Ryujinx.Audio.Input.AudioInputManager;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
@@ -17,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         public string[] ListAudioIns(bool filtered)
         {
-            return _impl.ListAudioIns(filtered);
+            return AudioInManagerImpl.ListAudioIns(filtered);
         }
 
         public ResultCode OpenAudioIn(ServiceCtx context, out string outputDeviceName, out AudioOutputConfiguration outputConfiguration, out IAudioIn obj, string inputDeviceName, ref AudioInputConfiguration parameter, ulong appletResourceUserId, uint processHandle)

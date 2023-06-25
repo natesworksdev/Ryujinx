@@ -3,7 +3,6 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Memory;
 using System;
 using System.Threading;
-
 using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.Dummy
@@ -37,10 +36,8 @@ namespace Ryujinx.Audio.Backends.Dummy
             {
                 return new DummyHardwareDeviceSessionOutput(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
             }
-            else
-            {
-                return new DummyHardwareDeviceSessionInput(this, memoryManager);
-            }
+
+            return new DummyHardwareDeviceSessionInput(this, memoryManager);
         }
 
         public ManualResetEvent GetUpdateRequiredEvent()

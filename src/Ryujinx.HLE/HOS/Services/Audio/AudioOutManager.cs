@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Output;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOut;
-
 using AudioOutManagerImpl = Ryujinx.Audio.Output.AudioOutputManager;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
@@ -17,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         public string[] ListAudioOuts()
         {
-            return _impl.ListAudioOuts();
+            return AudioOutManagerImpl.ListAudioOuts();
         }
 
         public ResultCode OpenAudioOut(ServiceCtx context, out string outputDeviceName, out AudioOutputConfiguration outputConfiguration, out IAudioOut obj, string inputDeviceName, ref AudioInputConfiguration parameter, ulong appletResourceUserId, uint processHandle, float volume)

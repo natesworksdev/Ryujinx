@@ -198,17 +198,15 @@ namespace Ryujinx.Audio.Renderer.Server
                         _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
-                else
+
+                return command.Parameter.ChannelCount switch
                 {
-                    return command.Parameter.ChannelCount switch
-                    {
-                        1 => (uint)578.53f,
-                        2 => (uint)663.06f,
-                        4 => (uint)703.98f,
-                        6 => (uint)760.03f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                    };
-                }
+                    1 => (uint)578.53f,
+                    2 => (uint)663.06f,
+                    4 => (uint)703.98f,
+                    6 => (uint)760.03f,
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+                };
 
             }
 
@@ -223,17 +221,15 @@ namespace Ryujinx.Audio.Renderer.Server
                     _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
-            else
+
+            return command.Parameter.ChannelCount switch
             {
-                return command.Parameter.ChannelCount switch
-                {
-                    1 => (uint)521.28f,
-                    2 => (uint)585.4f,
-                    4 => (uint)629.88f,
-                    6 => (uint)713.57f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                };
-            }
+                1 => (uint)521.28f,
+                2 => (uint)585.4f,
+                4 => (uint)629.88f,
+                6 => (uint)713.57f,
+                _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+            };
         }
 
         public uint Estimate(ReverbCommand command)
@@ -253,17 +249,15 @@ namespace Ryujinx.Audio.Renderer.Server
                         _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
-                else
+
+                return command.Parameter.ChannelCount switch
                 {
-                    return command.Parameter.ChannelCount switch
-                    {
-                        1 => (uint)492.01f,
-                        2 => (uint)554.46f,
-                        4 => (uint)595.86f,
-                        6 => (uint)656.62f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                    };
-                }
+                    1 => (uint)492.01f,
+                    2 => (uint)554.46f,
+                    4 => (uint)595.86f,
+                    6 => (uint)656.62f,
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+                };
 
             }
 
@@ -278,17 +272,15 @@ namespace Ryujinx.Audio.Renderer.Server
                     _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
-            else
+
+            return command.Parameter.ChannelCount switch
             {
-                return command.Parameter.ChannelCount switch
-                {
-                    1 => (uint)495.79f,
-                    2 => (uint)527.16f,
-                    4 => (uint)598.75f,
-                    6 => (uint)666.03f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                };
-            }
+                1 => (uint)495.79f,
+                2 => (uint)527.16f,
+                4 => (uint)598.75f,
+                6 => (uint)666.03f,
+                _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+            };
         }
 
         public uint Estimate(Reverb3dCommand command)
@@ -308,17 +300,15 @@ namespace Ryujinx.Audio.Renderer.Server
                         _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                     };
                 }
-                else
+
+                return command.Parameter.ChannelCount switch
                 {
-                    return command.Parameter.ChannelCount switch
-                    {
-                        1 => (uint)718.7f,
-                        2 => (uint)751.3f,
-                        4 => (uint)797.46f,
-                        6 => (uint)867.43f,
-                        _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                    };
-                }
+                    1 => (uint)718.7f,
+                    2 => (uint)751.3f,
+                    4 => (uint)797.46f,
+                    6 => (uint)867.43f,
+                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+                };
             }
 
             if (command.Enabled)
@@ -332,17 +322,15 @@ namespace Ryujinx.Audio.Renderer.Server
                     _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
                 };
             }
-            else
+
+            return command.Parameter.ChannelCount switch
             {
-                return command.Parameter.ChannelCount switch
-                {
-                    1 => (uint)534.24f,
-                    2 => (uint)570.87f,
-                    4 => (uint)660.93f,
-                    6 => (uint)694.6f,
-                    _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
-                };
-            }
+                1 => (uint)534.24f,
+                2 => (uint)570.87f,
+                4 => (uint)660.93f,
+                6 => (uint)694.6f,
+                _ => throw new NotImplementedException($"{command.Parameter.ChannelCount}"),
+            };
         }
 
         public uint Estimate(AuxiliaryBufferCommand command)

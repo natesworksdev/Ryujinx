@@ -25,7 +25,7 @@ namespace Ryujinx.Audio.Renderer.Utils
                 throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
-            MemoryMarshal.Write<T>(backingMemory.Span[..size], ref data);
+            MemoryMarshal.Write(backingMemory.Span[..size], ref data);
 
             backingMemory = backingMemory[size..];
         }
@@ -45,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Utils
                 throw new ArgumentOutOfRangeException(nameof(backingMemory), backingMemory.Length, null);
             }
 
-            MemoryMarshal.Write<T>(backingMemory[..size], ref data);
+            MemoryMarshal.Write(backingMemory[..size], ref data);
 
             backingMemory = backingMemory[size..];
         }

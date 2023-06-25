@@ -173,7 +173,7 @@ namespace Ryujinx.Audio.Input
                 // TODO: Detect if the driver supports audio input
             }
 
-            return new string[] { Constants.DefaultDeviceInputName };
+            return new[] { Constants.DefaultDeviceInputName };
         }
 
         /// <summary>
