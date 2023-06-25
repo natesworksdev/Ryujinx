@@ -2029,8 +2029,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        // Unicorn seems to default all rounding modes to RMode.Rn.
         [Test, Pairwise]
-        [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
+        [Explicit]
         public void F_Cvt_S_SH([ValueSource(nameof(_F_Cvt_S_SH_))] uint opcodes,
                                [ValueSource(nameof(_1S_F_))] ulong a,
                                [Values(RMode.Rn)] RMode rMode)
@@ -2205,8 +2206,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        // Unicorn seems to default all rounding modes to RMode.Rn.
         [Test, Pairwise]
-        [Explicit] // Unicorn seems to default all rounding modes to RMode.Rn.
+        [Explicit]
         public void F_Cvtn_V_4S4H_4S8H([ValueSource(nameof(_F_Cvtn_V_4S4H_4S8H_))] uint opcodes,
                                        [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,

@@ -164,8 +164,9 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
+        // Roots.
         [Explicit]
-        [TestCase(0xFFFFFFFDu)] // Roots.
+        [TestCase(0xFFFFFFFDu)]
         [TestCase(0x00000005u)]
         public void Misc1(uint a)
         {
@@ -196,8 +197,9 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(GetContext().GetX(0), Is.Zero);
         }
 
+        // 18 integer solutions.
         [Explicit]
-        [TestCase(-20f, -5f)] // 18 integer solutions.
+        [TestCase(-20f, -5f)]
         [TestCase(-12f, -6f)]
         [TestCase(-12f, 3f)]
         [TestCase(-8f, -8f)]
@@ -242,8 +244,9 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(GetContext().GetV(0).As<float>(), Is.EqualTo(16f));
         }
 
+        // 18 integer solutions.
         [Explicit]
-        [TestCase(-20d, -5d)] // 18 integer solutions.
+        [TestCase(-20d, -5d)]
         [TestCase(-12d, -6d)]
         [TestCase(-12d, 3d)]
         [TestCase(-8d, -8d)]

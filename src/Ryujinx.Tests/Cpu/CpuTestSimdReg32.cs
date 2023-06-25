@@ -482,8 +482,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void Vfma_Vfms_Vfnma_Vfnms_S_F32([ValueSource(nameof(_Vfma_Vfms_Vfnma_Vfnms_S_F32_))] uint opcode,
                                                 [Values(0u, 1u, 2u, 3u)] uint rd,
                                                 [Values(0u, 1u, 2u, 3u)] uint rn,
@@ -504,8 +505,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void Vfma_Vfms_Vfnma_Vfnms_S_F64([ValueSource(nameof(_Vfma_Vfms_Vfnma_Vfnms_S_F64_))] uint opcode,
                                                 [Values(0u, 1u)] uint rd,
                                                 [Values(0u, 1u)] uint rn,
@@ -524,8 +526,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void Vfma_Vfms_V_F32([ValueSource(nameof(_Vfma_Vfms_V_F32_))] uint opcode,
                                     [Values(0u, 1u, 2u, 3u)] uint rd,
                                     [Values(0u, 1u, 2u, 3u)] uint rn,

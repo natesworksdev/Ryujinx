@@ -217,8 +217,9 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool _noInfs = false;
         private static readonly bool _noNaNs = false;
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void F_Mla_Mls_Se_S([ValueSource(nameof(_F_Mla_Mls_Se_S_))] uint opcodes,
                                    [ValueSource(nameof(_1S_F_))] ulong z,
                                    [ValueSource(nameof(_1S_F_))] ulong a,
@@ -244,8 +245,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsS);
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void F_Mla_Mls_Se_D([ValueSource(nameof(_F_Mla_Mls_Se_D_))] uint opcodes,
                                    [ValueSource(nameof(_1D_F_))] ulong z,
                                    [ValueSource(nameof(_1D_F_))] ulong a,
@@ -270,8 +272,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsD);
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void F_Mla_Mls_Ve_2S_4S([ValueSource(nameof(_F_Mla_Mls_Ve_2S_4S_))] uint opcodes,
                                        [Values(0u)] uint rd,
                                        [Values(1u, 0u)] uint rn,
@@ -303,8 +306,9 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(Fpsr.Ioc | Fpsr.Idc, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsS);
         }
 
+        // Fused.
         [Test, Pairwise]
-        [Explicit] // Fused.
+        [Explicit]
         public void F_Mla_Mls_Ve_2D([ValueSource(nameof(_F_Mla_Mls_Ve_2D_))] uint opcodes,
                                     [Values(0u)] uint rd,
                                     [Values(1u, 0u)] uint rn,
