@@ -4,6 +4,8 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
+using Ryujinx.Graphics.Gpu;
+using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.Ui;
@@ -54,7 +56,7 @@ namespace Ryujinx.Headless.SDL2
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        protected Sdl2MouseDriver MouseDriver;
+        protected SDL2MouseDriver MouseDriver;
         private readonly InputManager _inputManager;
         private readonly IKeyboard _keyboardInterface;
         private readonly GraphicsDebugLevel _glLogLevel;
@@ -81,7 +83,7 @@ namespace Ryujinx.Headless.SDL2
             bool enableMouse,
             HideCursorMode hideCursorMode)
         {
-            MouseDriver = new Sdl2MouseDriver(hideCursorMode);
+            MouseDriver = new SDL2MouseDriver(hideCursorMode);
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(MouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
@@ -192,9 +194,6 @@ namespace Ryujinx.Headless.SDL2
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
                         break;
-
-                    default:
-                        break;
                 }
             }
             else
@@ -260,7 +259,7 @@ namespace Ryujinx.Headless.SDL2
                     if (_ticks >= _ticksPerFrame)
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
-                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        float scale = GraphicsConfig.ResScale;
                         if (scale != 1)
                         {
                             dockedMode += $" ({scale}x)";
@@ -334,7 +333,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent.Set();
         }
 
-        private void NvStutterWorkaround()
+        private void NvidiaStutterWorkaround()
         {
             while (_isActive)
             {
@@ -348,7 +347,7 @@ namespace Ryujinx.Headless.SDL2
 
                 // TODO: This should be removed when the issue with the GateThread is resolved.
 
-                ThreadPool.QueueUserWorkItem((state) => { });
+                ThreadPool.QueueUserWorkItem(state => { });
                 Thread.Sleep(300);
             }
         }
@@ -373,7 +372,7 @@ namespace Ryujinx.Headless.SDL2
             // Get screen touch position
             if (!_enableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as Sdl2MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as SDL2MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
             }
 
             if (!hasTouch)
@@ -402,14 +401,14 @@ namespace Ryujinx.Headless.SDL2
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = null;
-            if (Renderer is Graphics.OpenGL.OpenGLRenderer)
+            Thread nvidiaStutterWorkaround = null;
+            if (Renderer is OpenGLRenderer)
             {
-                nvStutterWorkaround = new Thread(NvStutterWorkaround)
+                nvidiaStutterWorkaround = new Thread(NvidiaStutterWorkaround)
                 {
-                    Name = "GUI.NVStutterWorkaround",
+                    Name = "GUI.NvidiaStutterWorkaround",
                 };
-                nvStutterWorkaround.Start();
+                nvidiaStutterWorkaround.Start();
             }
 
             MainLoop();
@@ -418,7 +417,7 @@ namespace Ryujinx.Headless.SDL2
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
             _gpuDoneEvent.WaitOne();
             _gpuDoneEvent.Dispose();
-            nvStutterWorkaround?.Join();
+            nvidiaStutterWorkaround?.Join();
 
             Exit();
         }

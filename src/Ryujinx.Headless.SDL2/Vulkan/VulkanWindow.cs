@@ -38,7 +38,7 @@ namespace Ryujinx.Headless.SDL2.Vulkan
             action();
         }
 
-        public unsafe IntPtr CreateWindowSurface(IntPtr instance)
+        public IntPtr CreateWindowSurface(IntPtr instance)
         {
             ulong surfaceHandle = 0;
 

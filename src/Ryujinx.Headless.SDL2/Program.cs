@@ -28,6 +28,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
+using Ryujinx.SDL2.Common;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,7 @@ namespace Ryujinx.Headless.SDL2
                 AutoResetEvent invoked = new(false);
 
                 // MacOS must perform SDL polls from the main thread.
-                Ryujinx.SDL2.Common.SDL2Driver.MainThreadDispatcher = (Action action) =>
+                SDL2Driver.MainThreadDispatcher = action =>
                 {
                     invoked.Reset();
 
@@ -437,7 +438,7 @@ namespace Ryujinx.Headless.SDL2
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
-            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHle;
+            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
 
             while (true)
             {
@@ -474,6 +475,7 @@ namespace Ryujinx.Headless.SDL2
                 ShaderCacheState => $"Shaders : {current}/{total}",
                 _ => throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}"),
             };
+
             Logger.Info?.Print(LogClass.Application, label);
         }
 
@@ -491,9 +493,9 @@ namespace Ryujinx.Headless.SDL2
                 string preferredGpuId = string.Empty;
                 Vk api = Vk.GetApi();
 
-                if (!string.IsNullOrEmpty(options.PreferredGpuVendor))
+                if (!string.IsNullOrEmpty(options.PreferredGPUVendor))
                 {
-                    string preferredGpuVendor = options.PreferredGpuVendor.ToLowerInvariant();
+                    string preferredGpuVendor = options.PreferredGPUVendor.ToLowerInvariant();
                     var devices = VulkanRenderer.GetPhysicalDevices(api);
 
                     foreach (var device in devices)
@@ -512,48 +514,46 @@ namespace Ryujinx.Headless.SDL2
                     vulkanWindow.GetRequiredInstanceExtensions,
                     preferredGpuId);
             }
-            else
-            {
-                return new OpenGLRenderer();
-            }
+
+            return new OpenGLRenderer();
         }
 
         private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options)
         {
             BackendThreading threadingMode = options.BackendThreading;
 
-            bool threadedGal = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
 
-            if (threadedGal)
+            if (threadedGAL)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
 
             HLEConfiguration configuration = new(_virtualFileSystem,
-                                                                  _libHacHorizonManager,
-                                                                  _contentManager,
-                                                                  _accountManager,
-                                                                  _userChannelPersistence,
-                                                                  renderer,
-                                                                  new SDL2HardwareDeviceDriver(),
-                                                                  options.ExpandRam ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
-                                                                  window,
-                                                                  options.SystemLanguage,
-                                                                  options.SystemRegion,
-                                                                  !options.DisableVsync,
-                                                                  !options.DisableDockedMode,
-                                                                  !options.DisablePtc,
-                                                                  options.EnableInternetAccess,
-                                                                  !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
-                                                                  options.FsGlobalAccessLogMode,
-                                                                  options.SystemTimeOffset,
-                                                                  options.SystemTimeZone,
-                                                                  options.MemoryManagerMode,
-                                                                  options.IgnoreMissingServices,
-                                                                  options.AspectRatio,
-                                                                  options.AudioVolume,
-                                                                  options.UseHypervisor ?? true,
-                                                                  options.MultiplayerLanInterfaceId);
+                _libHacHorizonManager,
+                _contentManager,
+                _accountManager,
+                _userChannelPersistence,
+                renderer,
+                new SDL2HardwareDeviceDriver(),
+                options.ExpandRAM ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
+                window,
+                options.SystemLanguage,
+                options.SystemRegion,
+                !options.DisableVSync,
+                !options.DisableDockedMode,
+                !options.DisablePTC,
+                options.EnableInternetAccess,
+                !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                options.FsGlobalAccessLogMode,
+                options.SystemTimeOffset,
+                options.SystemTimeZone,
+                options.MemoryManagerMode,
+                options.IgnoreMissingServices,
+                options.AspectRatio,
+                options.AudioVolume,
+                options.UseHypervisor ?? true,
+                options.MultiplayerLanInterfaceId);
 
             return new Switch(configuration);
         }
