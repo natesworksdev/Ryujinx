@@ -14,11 +14,6 @@
             Size = Opc == 1 ? 0 : 2;
             Fbits = 64 - ((opCode >> 16) & 0x3f);
 
-            if (((opCode >> 21) & 0x1) == 0)
-            {
-                Instruction = InstDescriptor.Undefined;
-            }
-
             if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
             {
                 Instruction = InstDescriptor.Undefined;
