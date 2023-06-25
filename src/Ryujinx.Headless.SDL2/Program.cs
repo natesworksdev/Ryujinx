@@ -154,7 +154,7 @@ namespace Ryujinx.Headless.SDL2
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
 
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -176,7 +176,7 @@ namespace Ryujinx.Headless.SDL2
                             ButtonR = Key.U,
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -186,7 +186,7 @@ namespace Ryujinx.Headless.SDL2
                             StickLeft = Key.J,
                             StickRight = Key.L,
                             StickButton = Key.H,
-                        }
+                        },
                     };
                 }
                 else
@@ -259,8 +259,8 @@ namespace Ryujinx.Headless.SDL2
                         {
                             StrongRumble = 1f,
                             WeakRumble = 1f,
-                            EnableRumble = false
-                        }
+                            EnableRumble = false,
+                        },
                     };
                 }
             }

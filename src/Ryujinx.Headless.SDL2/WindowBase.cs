@@ -398,7 +398,7 @@ namespace Ryujinx.Headless.SDL2
 
             Thread renderLoopThread = new(Render)
             {
-                Name = "GUI.RenderLoop"
+                Name = "GUI.RenderLoop",
             };
             renderLoopThread.Start();
 
@@ -407,7 +407,7 @@ namespace Ryujinx.Headless.SDL2
             {
                 nvStutterWorkaround = new Thread(NvStutterWorkaround)
                 {
-                    Name = "GUI.NVStutterWorkaround"
+                    Name = "GUI.NVStutterWorkaround",
                 };
                 nvStutterWorkaround.Start();
             }
@@ -471,7 +471,7 @@ namespace Ryujinx.Headless.SDL2
                 message = message,
                 buttons = new SDL_MessageBoxButtonData[buttonsText.Length],
                 numbuttons = buttonsText.Length,
-                window = WindowHandle
+                window = WindowHandle,
             };
 
             for (int i = 0; i < buttonsText.Length; i++)
@@ -479,7 +479,7 @@ namespace Ryujinx.Headless.SDL2
                 data.buttons[i] = new SDL_MessageBoxButtonData
                 {
                     buttonid = i,
-                    text = buttonsText[i]
+                    text = buttonsText[i],
                 };
             }
 
