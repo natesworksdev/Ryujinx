@@ -1351,7 +1351,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             new byte[] { 255, 246, 247, 255, 239, 255, 253, 255 },
         };
 
-        /* Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
+        // Array indices are identical to previously-existing INTRAMODECONTEXTNODES.
         public static readonly sbyte[] Vp9IntraModeTree = {
             -(sbyte)PredictionMode.DcPred,   2,                                 /* 0 = DC_NODE */
             -(sbyte)PredictionMode.TmPred,   4,                                 /* 1 = TM_NODE */
