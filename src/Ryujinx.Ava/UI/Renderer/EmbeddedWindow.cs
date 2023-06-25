@@ -83,7 +83,7 @@ namespace Ryujinx.Ava.UI.Renderer
             }
             else if (OperatingSystem.IsMacOS())
             {
-                return CreateMacOs();
+                return CreateMacOS();
             }
 
             return base.CreateNativeControlCore(control);
@@ -103,7 +103,7 @@ namespace Ryujinx.Ava.UI.Renderer
             }
             else if (OperatingSystem.IsMacOS())
             {
-                DestroyMacOs();
+                DestroyMacOS();
             }
             else
             {
@@ -216,9 +216,9 @@ namespace Ryujinx.Ava.UI.Renderer
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             };
 
-            Wndclassex wndClassEx = new()
+            WndClassEx wndClassEx = new()
             {
-                cbSize = Marshal.SizeOf<Wndclassex>(),
+                cbSize = Marshal.SizeOf<WndClassEx>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
                 style = ClassStyles.CsOwndc,
@@ -236,31 +236,31 @@ namespace Ryujinx.Ava.UI.Renderer
         }
 
         [SupportedOSPlatform("macos")]
-        IPlatformHandle CreateMacOs()
+        IPlatformHandle CreateMacOS()
         {
             // Create a new CAMetalLayer.
-            ObjectiveC.Object layerObject = new("CAMetalLayer");
-            ObjectiveC.Object metalLayer = layerObject.GetFromMessage("alloc");
-            metalLayer.SendMessage("init");
+            IntPtr layerClass = ObjectiveC.objc_getClass("CAMetalLayer");
+            IntPtr metalLayer = ObjectiveC.IntPtr_objc_msgSend(layerClass, "alloc");
+            ObjectiveC.objc_msgSend(metalLayer, "init");
 
             // Create a child NSView to render into.
-            ObjectiveC.Object nsViewObject = new("NSView");
-            ObjectiveC.Object child = nsViewObject.GetFromMessage("alloc");
-            child.SendMessage("init", new ObjectiveC.NSRect(0, 0, 0, 0));
+            IntPtr nsViewClass = ObjectiveC.objc_getClass("NSView");
+            IntPtr child = ObjectiveC.IntPtr_objc_msgSend(nsViewClass, "alloc");
+            ObjectiveC.objc_msgSend(child, "init", new ObjectiveC.NSRect(0, 0, 0, 0));
 
             // Make its renderer our metal layer.
-            child.SendMessage("setWantsLayer:", 1);
-            child.SendMessage("setLayer:", metalLayer);
-            metalLayer.SendMessage("setContentsScale:", Program.DesktopScaleFactor);
+            ObjectiveC.objc_msgSend(child, "setWantsLayer:", 1);
+            ObjectiveC.objc_msgSend(child, "setLayer:", metalLayer);
+            ObjectiveC.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
 
             // Ensure the scale factor is up to date.
             _updateBoundsCallback = rect =>
             {
-                metalLayer.SendMessage("setContentsScale:", Program.DesktopScaleFactor);
+                ObjectiveC.objc_msgSend(metalLayer, "setContentsScale:", Program.DesktopScaleFactor);
             };
 
-            IntPtr nsView = child.ObjPtr;
-            MetalLayer = metalLayer.ObjPtr;
+            IntPtr nsView = child;
+            MetalLayer = metalLayer;
             NsView = nsView;
 
             return new PlatformHandle(nsView, "NSView");
@@ -280,7 +280,7 @@ namespace Ryujinx.Ava.UI.Renderer
         }
 
         [SupportedOSPlatform("macos")]
-        static void DestroyMacOs()
+        void DestroyMacOS()
         {
             // TODO
         }

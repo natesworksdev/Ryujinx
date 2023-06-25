@@ -1,12 +1,13 @@
-#if DEBUG
-using Avalonia;
-#endif
+
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Windows;
 using System.Threading.Tasks;
+#if DEBUG
+using Avalonia;
+#endif
 
 namespace Ryujinx.Ava.UI.Applet
 {

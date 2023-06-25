@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Path = System.IO.Path;
-using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Controls
 {

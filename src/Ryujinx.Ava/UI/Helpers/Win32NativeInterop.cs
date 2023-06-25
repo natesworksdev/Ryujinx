@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.UI.Helpers
         internal delegate IntPtr WindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct Wndclassex
+        public struct WndClassEx
         {
             public int cbSize;
             public ClassStyles style;
@@ -66,9 +66,9 @@ namespace Ryujinx.Ava.UI.Helpers
             public IntPtr lpszClassName;
             public IntPtr hIconSm;
 
-            public Wndclassex()
+            public WndClassEx()
             {
-                cbSize = Marshal.SizeOf<Wndclassex>();
+                cbSize = Marshal.SizeOf<WndClassEx>();
             }
         }
 
@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.Helpers
         public static partial IntPtr CreateCursor(IntPtr hInst, int xHotSpot, int yHotSpot, int nWidth, int nHeight, byte[] pvAndPlane, byte[] pvXorPlane);
 
         [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "RegisterClassExW")]
-        public static partial ushort RegisterClassEx(ref Wndclassex param);
+        public static partial ushort RegisterClassEx(ref WndClassEx param);
 
         [LibraryImport("user32.dll", SetLastError = true, EntryPoint = "UnregisterClassW")]
         public static partial short UnregisterClass([MarshalAs(UnmanagedType.LPWStr)] string lpClassName, IntPtr instance);

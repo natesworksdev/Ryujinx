@@ -5,8 +5,8 @@ using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using UserProfile = Ryujinx.Ava.UI.Models.UserProfile;
 
 namespace Ryujinx.Ava.UI.Views.User
 {
