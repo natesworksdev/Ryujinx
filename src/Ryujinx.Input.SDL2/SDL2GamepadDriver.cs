@@ -44,7 +44,7 @@ namespace Ryujinx.Input.SDL2
                 return null;
             }
 
-            return joystickIndex + "-" + guid.ToString();
+            return joystickIndex + "-" + guid;
         }
 
         private static int GetJoystickIndexByGamepadId(string id)
