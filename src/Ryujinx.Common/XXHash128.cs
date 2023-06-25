@@ -341,7 +341,6 @@ namespace Ryujinx.Common
             ulong keyedLo = combinedL ^ bitFlipL;
             ulong keyedHi = combinedH ^ bitFlipH;
 
-
             return new Hash128
             {
                 Low = Xxh64Avalanche(keyedLo),
