@@ -13,7 +13,6 @@ namespace Ryujinx.Tests.Cpu
 #if SimdCvt32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _Vrint_AMNP_V_F32_()
         {
             return new[]
@@ -156,7 +155,6 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
-#pragma warning restore IDE1006
         #endregion
 
         private const int RndCnt = 2;

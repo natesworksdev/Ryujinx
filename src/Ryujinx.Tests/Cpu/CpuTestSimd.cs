@@ -99,7 +99,6 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _1B1H1S1D_()
         {
             return new[] { 0x0000000000000000ul, 0x000000000000007Ful,
@@ -1218,7 +1217,6 @@ namespace Ryujinx.Tests.Cpu
                 0x5E282800u // SHA256SU0 V0.4S, V0.4S
             };
         }
-#pragma warning restore IDE1006
         #endregion
 
         private const int RndCnt = 2;

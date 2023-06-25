@@ -12,7 +12,6 @@ namespace Ryujinx.Tests.Cpu
 #if Simd32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006 // Naming rule violation
         private static uint[] _Vabs_Vneg_Vpaddl_I_()
         {
             return new[]
@@ -174,7 +173,6 @@ namespace Ryujinx.Tests.Cpu
                              (cnt << 24) | (cnt << 16) | (cnt << 08) | cnt;
             }
         }
-#pragma warning restore IDE1006
         #endregion
 
         private const int RndCnt = 2;

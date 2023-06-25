@@ -46,7 +46,6 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _2S_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFFFFFF7FFFFFFFul,
@@ -183,7 +182,6 @@ namespace Ryujinx.Tests.Cpu
                 0x6F00E400u // MOVI V0.2D, #0
             };
         }
-#pragma warning restore IDE1006
         #endregion
 
         private const int RndCntImm8 = 2;

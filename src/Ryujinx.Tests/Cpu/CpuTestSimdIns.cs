@@ -11,7 +11,6 @@ namespace Ryujinx.Tests.Cpu
 #if SimdIns
 
         #region "ValueSource"
-#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _1D_()
         {
             return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
@@ -65,7 +64,6 @@ namespace Ryujinx.Tests.Cpu
             return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
                            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
         }
-#pragma warning restore IDE1006
         #endregion
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, W<n>")]

@@ -10,8 +10,7 @@ namespace Ryujinx.Tests.Cpu
 #if AluRs32
 
         #region "ValueSource (Opcodes)"
-#pragma warning disable IDE1006 // Naming rule violation
-        private static uint[] _opcodes()
+        private static uint[] Opcodes()
         {
             return new[]
             {
@@ -31,13 +30,12 @@ namespace Ryujinx.Tests.Cpu
                 0xe2500000u, // SUBS R0, R0, #0
             };
         }
-#pragma warning restore IDE1006
         #endregion
 
         private const int RndCnt = 2;
 
         [Test, Pairwise]
-        public void TestCpuTestAluImm32([ValueSource(nameof(_opcodes))] uint opcode,
+        public void TestCpuTestAluImm32([ValueSource(nameof(Opcodes))] uint opcode,
                                         [Values(0u, 13u)] uint rd,
                                         [Values(1u, 13u)] uint rn,
                                         [Random(RndCnt)] uint imm,

@@ -11,7 +11,6 @@ namespace Ryujinx.Tests.Cpu
 #if SimdLogical32
 
         #region "ValueSource (Types)"
-#pragma warning disable IDE1006 // Naming rule violation
         private static ulong[] _8B4H2S_()
         {
             return new[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
@@ -47,7 +46,6 @@ namespace Ryujinx.Tests.Cpu
                 0xf2800910u  // VORR.I16 D0, #0 (A2)
             };
         }
-#pragma warning restore IDE1006
         #endregion
 
         [Test, Pairwise]
