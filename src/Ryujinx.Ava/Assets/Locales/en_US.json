@@ -72,7 +72,7 @@
   "GameListContextMenuExtractDataRomFSToolTip": "Extract the RomFS section from Application's current config (including updates)",
   "GameListContextMenuExtractDataLogo": "Logo",
   "GameListContextMenuExtractDataLogoToolTip": "Extract the Logo section from Application's current config (including updates)",
-  "GameListContextMenuCreateShortcut": "Create Shortcut",
+  "GameListContextMenuCreateShortcut": "Create Application Shortcut",
   "GameListContextMenuCreateShortcutToolTip": "Create a Desktop Shortcut that launches the selected Application in fullscreen mode",
   "StatusBarGamesLoaded": "{0}/{1} Games Loaded",
   "StatusBarSystemVersion": "System Version: {0}",

@@ -17,26 +17,25 @@ namespace Ryujinx.Ui.Common.Helper
     public static class ShortcutHelper
     {
         [SupportedOSPlatform("windows")]
-        private static void CreateShortcutWindows(string appFilePath, byte[] iconData, string iconPath, string cleanedAppName, string desktopPath)
+        private static void CreateShortcutWindows(string applicationFilePath, byte[] iconData, string iconPath, string cleanedAppName, string desktopPath)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
+            
             MemoryStream iconDataStream = new(iconData);
-            using (Image image = Image.FromStream(iconDataStream))
-            {
-                using Bitmap bitmap = new(128, 128);
-                using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
-                graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphic.DrawImage(image, 0, 0, 128, 128);
-                SaveBitmapAsIcon(bitmap, iconPath + ".ico");
-            }
+            using Image image = Image.FromStream(iconDataStream);
+            using Bitmap bitmap = new(128, 128);
+            using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
+            graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphic.DrawImage(image, 0, 0, 128, 128);
+            SaveBitmapAsIcon(bitmap, iconPath + ".ico");
 
-            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, appFilePath), iconPath + ".ico", 0);
+            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, applicationFilePath), iconPath + ".ico", 0);
             shortcut.StringData.NameString = cleanedAppName;
             shortcut.WriteToFile(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
         }
 
         [SupportedOSPlatform("linux")]
-        private static void CreateShortcutLinux(string appFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName)
+        private static void CreateShortcutLinux(string applicationFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
             var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
@@ -45,18 +44,18 @@ namespace Ryujinx.Ui.Common.Helper
             image.SaveAsPng(iconPath + ".png");
 
             using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", GetArgsString(basePath, appFilePath));
+            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", GetArgsString(basePath, applicationFilePath));
         }
 
-        public static void CreateAppShortcut(string appFilePath, string appName, string titleId, byte[] iconData)
+        public static void CreateAppShortcut(string applicationFilePath, string applicationName, string applicationId, byte[] iconData)
         {
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            string cleanedAppName = string.Join("_", appName.Split(Path.GetInvalidFileNameChars()));
+            string cleanedAppName = string.Join("_", applicationName.Split(Path.GetInvalidFileNameChars()));
 
             if (OperatingSystem.IsWindows())
             {
-                string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", titleId, "app");
-                CreateShortcutWindows(appFilePath, iconData, iconPath, cleanedAppName, desktopPath);
+                string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", applicationId, "app");
+                CreateShortcutWindows(applicationFilePath, iconData, iconPath, cleanedAppName, desktopPath);
                 return;
             }
 
@@ -64,7 +63,7 @@ namespace Ryujinx.Ui.Common.Helper
             {
                 string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
                 Directory.CreateDirectory(iconPath);
-                CreateShortcutLinux(appFilePath, iconData, Path.Combine(iconPath, titleId), desktopPath, cleanedAppName);
+                CreateShortcutLinux(applicationFilePath, iconData, Path.Combine(iconPath, applicationId), desktopPath, cleanedAppName);
                 return;
             }
 

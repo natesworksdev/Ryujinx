@@ -1686,12 +1686,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
         }
-
-        public void CreateShortcut()
-        {
-            ShortcutHelper.CreateAppShortcut(SelectedApplication.Path, SelectedApplication.TitleName, SelectedApplication.TitleId, SelectedApplication.Icon);
-        }
-
-        #endregion
+#endregion
     }
 }

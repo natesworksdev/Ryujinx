@@ -80,8 +80,8 @@
             Header="{locale:Locale GameListContextMenuExtractDataLogo}"
             ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
     </MenuItem>
-    <MenuItem
-        Command="{Binding CreateShortcut}"
-        Header="{locale:Locale GameListContextMenuCreateShortcut}"
-        ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
+	<MenuItem
+		Click="CreateApplicationShortcut_Click"
+		Header="{locale:Locale GameListContextMenuCreateShortcut}"
+		ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
 </MenuFlyout>
