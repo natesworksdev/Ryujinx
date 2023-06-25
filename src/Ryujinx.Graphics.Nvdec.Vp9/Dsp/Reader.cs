@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Memory;
+using Ryujinx.Graphics.Nvdec.Vp9.Types;
 using System;
 using System.Buffers.Binary;
 
@@ -6,19 +7,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 {
     internal struct Reader
     {
-        private static readonly byte[] Norm = new byte[]
+        private static readonly byte[] Norm =
         {
-            0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
+
         private const int BdValueSize = sizeof(ulong) * 8;
 
         // This is meant to be a large, positive constant that can still be efficiently
@@ -37,15 +37,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 return true;
             }
-            else
-            {
-                _buffer = new ArrayPtr<byte>(ref buffer[0], size);
-                Value = 0;
-                Count = -8;
-                Range = 255;
-                Fill();
-                return ReadBit() != 0;  // Marker bit
-            }
+
+            _buffer = new ArrayPtr<byte>(ref buffer[0], size);
+            Value = 0;
+            Count = -8;
+            Range = 255;
+            Fill();
+            return ReadBit() != 0; // Marker bit
         }
 
         private void Fill()
@@ -124,7 +122,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             ulong bigsplit;
             int count;
             uint range;
-            uint split = (Range * (uint)prob + (256 - (uint)prob)) >> 8;
+            uint split = ((Range * (uint)prob) + (256 - (uint)prob)) >> 8;
 
             if (Count < 0)
             {
@@ -160,7 +158,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
         public int ReadBit()
         {
-            return Read(128);  // vpx_prob_half
+            return Read(128); // vpx_prob_half
         }
 
         public int ReadLiteral(int bits)
@@ -181,7 +179,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             while ((i = tree[i + Read(probs[i >> 1])]) > 0)
             {
-                continue;
             }
 
             return -i;
@@ -189,7 +186,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
         public int ReadBool(int prob, ref ulong value, ref int count, ref uint range)
         {
-            uint split = (range * (uint)prob + (256 - (uint)prob)) >> 8;
+            uint split = ((range * (uint)prob) + (256 - (uint)prob)) >> 8;
             ulong bigsplit = (ulong)split << (BdValueSize - 8);
 
             if (count < 0)
@@ -213,6 +210,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 }
                 return 1;
             }
+
             range = split;
             {
                 int shift = Norm[range];
@@ -231,7 +229,82 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 Count -= 8;
                 _buffer = _buffer.Slice(-1);
             }
+
             return _buffer;
+        }
+
+        private int DecodeUniform()
+        {
+            const int l = 8;
+            const int m = (1 << l) - 191;
+            int v = ReadLiteral(l - 1);
+            return v < m ? v : (v << 1) - m + ReadBit();
+        }
+
+        public int DecodeTermSubexp()
+        {
+            if (ReadBit() == 0)
+            {
+                return ReadLiteral(4);
+            }
+
+            if (ReadBit() == 0)
+            {
+                return ReadLiteral(4) + 16;
+            }
+
+            if (ReadBit() == 0)
+            {
+                return ReadLiteral(5) + 32;
+            }
+
+            return DecodeUniform() + 64;
+        }
+
+        public TxMode ReadTxMode()
+        {
+            TxMode txMode = (TxMode)ReadLiteral(2);
+            if (txMode == TxMode.Allow32x32)
+            {
+                txMode += ReadBit();
+            }
+
+            return txMode;
+        }
+
+        public int ReadCoeff(
+            ReadOnlySpan<byte> probs,
+            int n,
+            ref ulong value,
+            ref int count,
+            ref uint range)
+        {
+            int val = 0;
+            for (int i = 0; i < n; ++i)
+            {
+                val = (val << 1) | ReadBool(probs[i], ref value, ref count, ref range);
+            }
+
+            return val;
+        }
+
+        public void DiffUpdateProb(ref byte p)
+        {
+            if (Read(Entropy.DiffUpdateProb) != 0)
+            {
+                p = (byte)DSubExp.InvRemapProb(DecodeTermSubexp(), p);
+            }
+        }
+
+        public void UpdateMvProbs(Span<byte> p, int n)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                if (Read(EntropyMv.UpdateProb) != 0)
+                {
+                    p[i] = (byte)((ReadLiteral(7) << 1) | 1);
+                }
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
     internal struct ScaleFactors
     {
         private const int RefScaleShift = 14;
-        private const int RefNoScale = (1 << RefScaleShift);
+        private const int RefNoScale = 1 << RefScaleShift;
         private const int RefInvalidScale = -1;
 
         private unsafe delegate void ConvolveFn(
@@ -38,248 +38,99 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             int h,
             int bd);
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16Y16 = new ConvolveFn[][][]
+        private static readonly unsafe ConvolveFn[][][] PredictX16Y16 =
         {
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    ConvolveCopy,
-                    ConvolveAvg
-                },
-                new ConvolveFn[]
-                {
-                    Convolve8Vert,
-                    Convolve8AvgVert
-                }
+                new ConvolveFn[] { ConvolveCopy, ConvolveAvg },
+                new ConvolveFn[] { Convolve8Vert, Convolve8AvgVert }
             },
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    Convolve8Horiz,
-                    Convolve8AvgHoriz
-                },
-                new ConvolveFn[]
-                {
-                    Convolve8,
-                    Convolve8Avg
-                }
+                new ConvolveFn[] { Convolve8Horiz, Convolve8AvgHoriz },
+                new ConvolveFn[] { Convolve8, Convolve8Avg }
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16 = new ConvolveFn[][][]
+        private static readonly unsafe ConvolveFn[][][] PredictX16 =
         {
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    ScaledVert,
-                    ScaledAvgVert
-                },
-                new ConvolveFn[]
-                {
-                    ScaledVert,
-                    ScaledAvgVert
-                }
+                new ConvolveFn[] { ScaledVert, ScaledAvgVert }, new ConvolveFn[] { ScaledVert, ScaledAvgVert }
             },
-            new ConvolveFn[][]
+            new[] { new ConvolveFn[] { Scaled2D, ScaledAvg2D }, new ConvolveFn[] { Scaled2D, ScaledAvg2D } }
+        };
+
+        private static readonly unsafe ConvolveFn[][][] PredictY16 =
+        {
+            new[] { new ConvolveFn[] { ScaledHoriz, ScaledAvgHoriz }, new ConvolveFn[] { Scaled2D, ScaledAvg2D } },
+            new[] { new ConvolveFn[] { ScaledHoriz, ScaledAvgHoriz }, new ConvolveFn[] { Scaled2D, ScaledAvg2D } }
+        };
+
+        private static readonly unsafe ConvolveFn[][][] Predict =
+        {
+            new[] { new ConvolveFn[] { Scaled2D, ScaledAvg2D }, new ConvolveFn[] { Scaled2D, ScaledAvg2D } },
+            new[] { new ConvolveFn[] { Scaled2D, ScaledAvg2D }, new ConvolveFn[] { Scaled2D, ScaledAvg2D } }
+        };
+
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16Y16 =
+        {
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                },
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                }
+                new HighbdConvolveFn[] { HighbdConvolveCopy, HighbdConvolveAvg },
+                new HighbdConvolveFn[] { HighbdConvolve8Vert, HighbdConvolve8AvgVert }
+            },
+            new[]
+            {
+                new HighbdConvolveFn[] { HighbdConvolve8Horiz, HighbdConvolve8AvgHoriz },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictY16 = new ConvolveFn[][][]
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16 =
         {
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    ScaledHoriz,
-                    ScaledAvgHoriz
-                },
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8Vert, HighbdConvolve8AvgVert },
+                new HighbdConvolveFn[] { HighbdConvolve8Vert, HighbdConvolve8AvgVert }
             },
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    ScaledHoriz,
-                    ScaledAvgHoriz
-                },
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             }
         };
 
-        private static readonly unsafe ConvolveFn[][][] Predict = new ConvolveFn[][][]
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictY16 =
         {
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                },
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8Horiz, HighbdConvolve8AvgHoriz },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             },
-            new ConvolveFn[][]
+            new[]
             {
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                },
-                new ConvolveFn[]
-                {
-                    Scaled2D,
-                    ScaledAvg2D
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8Horiz, HighbdConvolve8AvgHoriz },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16Y16 = new HighbdConvolveFn[][][]
+        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredict =
         {
-            new HighbdConvolveFn[][]
+            new[]
             {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolveCopy,
-                    HighbdConvolveAvg
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Vert,
-                    HighbdConvolve8AvgVert
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             },
-            new HighbdConvolveFn[][]
+            new[]
             {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Horiz,
-                    HighbdConvolve8AvgHoriz
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg },
+                new HighbdConvolveFn[] { HighbdConvolve8, HighbdConvolve8Avg }
             }
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16 = new HighbdConvolveFn[][][]
-        {
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Vert,
-                    HighbdConvolve8AvgVert
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Vert,
-                    HighbdConvolve8AvgVert
-                }
-            },
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
-            }
-        };
-
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictY16 = new HighbdConvolveFn[][][]
-        {
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Horiz,
-                    HighbdConvolve8AvgHoriz
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
-            },
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8Horiz,
-                    HighbdConvolve8AvgHoriz
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
-            }
-        };
-
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredict = new HighbdConvolveFn[][][]
-        {
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
-            },
-            new HighbdConvolveFn[][]
-            {
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                },
-                new HighbdConvolveFn[]
-                {
-                    HighbdConvolve8,
-                    HighbdConvolve8Avg
-                }
-            }
-        };
-
-        public int XScaleFP;  // Horizontal fixed point scale factor
-        public int YScaleFP;  // Vertical fixed point scale factor
+        public int XScaleFp; // Horizontal fixed point scale factor
+        public int YScaleFp; // Vertical fixed point scale factor
         public int XStepQ4;
         public int YStepQ4;
 
@@ -315,12 +166,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in either direction.
-                    PredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    PredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w,
+                        h);
                 }
                 else
                 {
                     // No scaling in x direction. Must always scale in the y direction.
-                    PredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    PredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w,
+                        h);
                 }
             }
             else
@@ -328,7 +181,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in the y direction. Must always scale in the x direction.
-                    PredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    PredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w,
+                        h);
                 }
                 else
                 {
@@ -361,12 +215,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in either direction.
-                    HighbdPredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    HighbdPredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY,
+                        ys, w, h, bd);
                 }
                 else
                 {
                     // No scaling in x direction. Must always scale in the y direction.
-                    HighbdPredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    HighbdPredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys,
+                        w, h, bd);
                 }
             }
             else
@@ -374,24 +230,26 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in the y direction. Must always scale in the x direction.
-                    HighbdPredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    HighbdPredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys,
+                        w, h, bd);
                 }
                 else
                 {
                     // Must always scale in both directions.
-                    HighbdPredict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    HighbdPredict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w,
+                        h, bd);
                 }
             }
         }
 
         private int ScaledX(int val)
         {
-            return (int)((long)val * XScaleFP >> RefScaleShift);
+            return (int)(((long)val * XScaleFp) >> RefScaleShift);
         }
 
         private int ScaledY(int val)
         {
-            return (int)((long)val * YScaleFP >> RefScaleShift);
+            return (int)(((long)val * YScaleFp) >> RefScaleShift);
         }
 
         private static int GetFixedPointScaleFactor(int otherSize, int thisSize)
@@ -407,22 +265,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             int xOffQ4 = ScaledX(x << SubpelBits) & SubpelMask;
             int yOffQ4 = ScaledY(y << SubpelBits) & SubpelMask;
-            Mv32 res = new Mv32()
-            {
-                Row = ScaledY(mv.Row) + yOffQ4,
-                Col = ScaledX(mv.Col) + xOffQ4
-            };
+            Mv32 res = new() { Row = ScaledY(mv.Row) + yOffQ4, Col = ScaledX(mv.Col) + xOffQ4 };
             return res;
         }
 
         public bool IsValidScale()
         {
-            return XScaleFP != RefInvalidScale && YScaleFP != RefInvalidScale;
+            return XScaleFp != RefInvalidScale && YScaleFp != RefInvalidScale;
         }
 
         public bool IsScaled()
         {
-            return IsValidScale() && (XScaleFP != RefNoScale || YScaleFP != RefNoScale);
+            return IsValidScale() && (XScaleFp != RefNoScale || YScaleFp != RefNoScale);
         }
 
         public static bool ValidRefFrameSize(int refWidth, int refHeight, int thisWidth, int thisHeight)
@@ -437,13 +291,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         {
             if (!ValidRefFrameSize(otherW, otherH, thisW, thisH))
             {
-                XScaleFP = RefInvalidScale;
-                YScaleFP = RefInvalidScale;
+                XScaleFp = RefInvalidScale;
+                YScaleFp = RefInvalidScale;
                 return;
             }
 
-            XScaleFP = GetFixedPointScaleFactor(otherW, thisW);
-            YScaleFP = GetFixedPointScaleFactor(otherH, thisH);
+            XScaleFp = GetFixedPointScaleFactor(otherW, thisW);
+            YScaleFp = GetFixedPointScaleFactor(otherH, thisH);
             XStepQ4 = ScaledX(16);
             YStepQ4 = ScaledY(16);
         }

@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Common
             public bool InUse;
         }
 
-        private PoolItem[] _pool = new PoolItem[PoolEntries];
+        private readonly PoolItem[] _pool = new PoolItem[PoolEntries];
 
         public ArrayPtr<T> Allocate<T>(int length) where T : unmanaged
         {
@@ -51,6 +51,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Common
                         {
                             Marshal.FreeHGlobal(item.Pointer);
                         }
+
                         item.Pointer = ptr;
                         item.Length = lengthInBytes;
                         break;
@@ -58,7 +59,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Common
                 }
             }
 
-            return new ArrayPtr<T>(ptr, length);
+            ArrayPtr<T> allocation = new ArrayPtr<T>(ptr, length);
+
+            allocation.AsSpan().Fill(default);
+
+            return allocation;
         }
 
         public unsafe void Free<T>(ArrayPtr<T> arr) where T : unmanaged

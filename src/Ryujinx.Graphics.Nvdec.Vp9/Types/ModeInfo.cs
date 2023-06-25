@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public TxSize TxSize;
         public sbyte Skip;
         public sbyte SegmentId;
-        public sbyte SegIdPredicted;  // Valid only when TemporalUpdate is enabled
+        public sbyte SegIdPredicted; // Valid only when TemporalUpdate is enabled
 
         // Only for Intra blocks
         public PredictionMode UvMode;
@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public TxSize GetUvTxSize(ref MacroBlockDPlane pd)
         {
             Debug.Assert(SbType < BlockSize.Block8x8 ||
-                Luts.SsSizeLookup[(int)SbType][pd.SubsamplingX][pd.SubsamplingY] != BlockSize.BlockInvalid);
+                         Luts.SsSizeLookup[(int)SbType][pd.SubsamplingX][pd.SubsamplingY] != BlockSize.BlockInvalid);
             return Luts.UvTxsizeLookup[(int)SbType][(int)TxSize][pd.SubsamplingX][pd.SubsamplingY];
         }
 
@@ -49,9 +49,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return RefFrame[1] > Constants.IntraFrame;
         }
 
-        private static readonly int[][] IdxNColumnToSubblock = new int[][]
+        private static readonly int[][] IdxNColumnToSubblock =
         {
-            new int[] { 1, 2 }, new int[] { 1, 3 }, new int[] { 3, 2 }, new int[] { 3, 3 }
+            new[] { 1, 2 }, new[] { 1, 3 }, new[] { 3, 2 }, new[] { 3, 3 }
         };
 
         // This function returns either the appropriate sub block or block's mv
@@ -61,6 +61,47 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return blockIdx >= 0 && SbType < BlockSize.Block8x8
                 ? Bmi[IdxNColumnToSubblock[blockIdx][searchCol == 0 ? 1 : 0]].Mv[whichMv]
                 : Mv[whichMv];
+        }
+
+        public Mv MvPredQ4(int idx)
+        {
+            Mv res = new()
+            {
+                Row = (short)ReconInter.RoundMvCompQ4(
+                    Bmi[0].Mv[idx].Row + Bmi[1].Mv[idx].Row +
+                    Bmi[2].Mv[idx].Row + Bmi[3].Mv[idx].Row),
+                Col = (short)ReconInter.RoundMvCompQ4(
+                    Bmi[0].Mv[idx].Col + Bmi[1].Mv[idx].Col +
+                    Bmi[2].Mv[idx].Col + Bmi[3].Mv[idx].Col)
+            };
+            return res;
+        }
+
+        public Mv MvPredQ2(int idx, int block0, int block1)
+        {
+            Mv res = new()
+            {
+                Row = (short)ReconInter.RoundMvCompQ2(
+                    Bmi[block0].Mv[idx].Row +
+                    Bmi[block1].Mv[idx].Row),
+                Col = (short)ReconInter.RoundMvCompQ2(
+                    Bmi[block0].Mv[idx].Col +
+                    Bmi[block1].Mv[idx].Col)
+            };
+            return res;
+        }
+
+        // Performs mv sign inversion if indicated by the reference frame combination.
+        public Mv ScaleMv(int refr, sbyte thisRefFrame, ref Array4<sbyte> refSignBias)
+        {
+            Mv mv = Mv[refr];
+            if (refSignBias[RefFrame[refr]] != refSignBias[thisRefFrame])
+            {
+                mv.Row *= -1;
+                mv.Col *= -1;
+            }
+
+            return mv;
         }
     }
 }

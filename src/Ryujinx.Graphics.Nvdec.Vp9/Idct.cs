@@ -8,11 +8,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     internal static class Idct
     {
         private delegate void Transform1D(ReadOnlySpan<int> input, Span<int> output);
+
         private delegate void HighbdTransform1D(ReadOnlySpan<int> input, Span<int> output, int bd);
 
         private struct Transform2D
         {
-            public Transform1D Cols, Rows;  // Vertical and horizontal
+            public readonly Transform1D Cols; // Vertical and horizontal
+            public readonly Transform1D Rows; // Vertical and horizontal
 
             public Transform2D(Transform1D cols, Transform1D rows)
             {
@@ -23,7 +25,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private struct HighbdTransform2D
         {
-            public HighbdTransform1D Cols, Rows;  // Vertical and horizontal
+            public readonly HighbdTransform1D Cols; // Vertical and horizontal
+            public readonly HighbdTransform1D Rows; // Vertical and horizontal
 
             public HighbdTransform2D(HighbdTransform1D cols, HighbdTransform1D rows)
             {
@@ -32,24 +35,23 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly Transform2D[] Iht4 = new Transform2D[]
+        private static readonly Transform2D[] Iht4 =
         {
-            new Transform2D(Idct4, Idct4),   // DCT_DCT  = 0
-            new Transform2D(Iadst4, Idct4),  // ADST_DCT = 1
-            new Transform2D(Idct4, Iadst4),  // DCT_ADST = 2
-            new Transform2D(Iadst4, Iadst4)  // ADST_ADST = 3
+            new(Idct4, Idct4), // DCT_DCT  = 0
+            new(Iadst4, Idct4), // ADST_DCT = 1
+            new(Idct4, Iadst4), // DCT_ADST = 2
+            new(Iadst4, Iadst4) // ADST_ADST = 3
         };
 
         public static void Iht4x416Add(ReadOnlySpan<int> input, Span<byte> dest, int stride, int txType)
         {
-            int i, j;
             Span<int> output = stackalloc int[4 * 4];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[4];
             Span<int> tempOut = stackalloc int[4];
 
             // Inverse transform row vectors
-            for (i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 Iht4[txType].Rows(input, outptr);
                 input = input.Slice(4);
@@ -57,32 +59,32 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Inverse transform column vectors
-            for (i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i)
             {
-                for (j = 0; j < 4; ++j)
+                for (int j = 0; j < 4; ++j)
                 {
-                    tempIn[j] = output[j * 4 + i];
+                    tempIn[j] = output[(j * 4) + i];
                 }
 
                 Iht4[txType].Cols(tempIn, tempOut);
-                for (j = 0; j < 4; ++j)
+                for (int j = 0; j < 4; ++j)
                 {
-                    dest[j * stride + i] = ClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 4));
+                    dest[(j * stride) + i] =
+                        ClipPixelAdd(dest[(j * stride) + i], BitUtils.RoundPowerOfTwo(tempOut[j], 4));
                 }
             }
         }
 
-        private static readonly Transform2D[] Iht8 = new Transform2D[]
+        private static readonly Transform2D[] Iht8 =
         {
-            new Transform2D(Idct8, Idct8),   // DCT_DCT  = 0
-            new Transform2D(Iadst8, Idct8),  // ADST_DCT = 1
-            new Transform2D(Idct8, Iadst8),  // DCT_ADST = 2
-            new Transform2D(Iadst8, Iadst8)  // ADST_ADST = 3
+            new(Idct8, Idct8), // DCT_DCT  = 0
+            new(Iadst8, Idct8), // ADST_DCT = 1
+            new(Idct8, Iadst8), // DCT_ADST = 2
+            new(Iadst8, Iadst8) // ADST_ADST = 3
         };
 
         public static void Iht8x864Add(ReadOnlySpan<int> input, Span<byte> dest, int stride, int txType)
         {
-            int i, j;
             Span<int> output = stackalloc int[8 * 8];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[8];
@@ -90,7 +92,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Transform2D ht = Iht8[txType];
 
             // Inverse transform row vectors
-            for (i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
             {
                 ht.Rows(input, outptr);
                 input = input.Slice(8);
@@ -98,32 +100,32 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Inverse transform column vectors
-            for (i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
             {
-                for (j = 0; j < 8; ++j)
+                for (int j = 0; j < 8; ++j)
                 {
-                    tempIn[j] = output[j * 8 + i];
+                    tempIn[j] = output[(j * 8) + i];
                 }
 
                 ht.Cols(tempIn, tempOut);
-                for (j = 0; j < 8; ++j)
+                for (int j = 0; j < 8; ++j)
                 {
-                    dest[j * stride + i] = ClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 5));
+                    dest[(j * stride) + i] =
+                        ClipPixelAdd(dest[(j * stride) + i], BitUtils.RoundPowerOfTwo(tempOut[j], 5));
                 }
             }
         }
 
-        private static readonly Transform2D[] Iht16 = new Transform2D[]
+        private static readonly Transform2D[] Iht16 =
         {
-            new Transform2D(Idct16, Idct16),   // DCT_DCT  = 0
-            new Transform2D(Iadst16, Idct16),  // ADST_DCT = 1
-            new Transform2D(Idct16, Iadst16),  // DCT_ADST = 2
-            new Transform2D(Iadst16, Iadst16)  // ADST_ADST = 3
+            new(Idct16, Idct16), // DCT_DCT  = 0
+            new(Iadst16, Idct16), // ADST_DCT = 1
+            new(Idct16, Iadst16), // DCT_ADST = 2
+            new(Iadst16, Iadst16) // ADST_ADST = 3
         };
 
         public static void Iht16x16256Add(ReadOnlySpan<int> input, Span<byte> dest, int stride, int txType)
         {
-            int i, j;
             Span<int> output = stackalloc int[16 * 16];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[16];
@@ -131,7 +133,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Transform2D ht = Iht16[txType];
 
             // Rows
-            for (i = 0; i < 16; ++i)
+            for (int i = 0; i < 16; ++i)
             {
                 ht.Rows(input, outptr);
                 input = input.Slice(16);
@@ -139,17 +141,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Columns
-            for (i = 0; i < 16; ++i)
+            for (int i = 0; i < 16; ++i)
             {
-                for (j = 0; j < 16; ++j)
+                for (int j = 0; j < 16; ++j)
                 {
-                    tempIn[j] = output[j * 16 + i];
+                    tempIn[j] = output[(j * 16) + i];
                 }
 
                 ht.Cols(tempIn, tempOut);
-                for (j = 0; j < 16; ++j)
+                for (int j = 0; j < 16; ++j)
                 {
-                    dest[j * stride + i] = ClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 6));
+                    dest[(j * stride) + i] =
+                        ClipPixelAdd(dest[(j * stride) + i], BitUtils.RoundPowerOfTwo(tempOut[j], 6));
                 }
             }
         }
@@ -271,7 +274,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         }
 
         public static void Iht16x16Add(TxType txType, ReadOnlySpan<int> input, Span<byte> dest,
-                              int stride, int eob)
+            int stride, int eob)
         {
             if (txType == TxType.DctDct)
             {
@@ -283,24 +286,23 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static readonly HighbdTransform2D[] HighbdIht4 = new HighbdTransform2D[]
+        private static readonly HighbdTransform2D[] HighbdIht4 =
         {
-            new HighbdTransform2D(HighbdIdct4, HighbdIdct4),   // DCT_DCT  = 0
-            new HighbdTransform2D(HighbdIadst4, HighbdIdct4),  // ADST_DCT = 1
-            new HighbdTransform2D(HighbdIdct4, HighbdIadst4),  // DCT_ADST = 2
-            new HighbdTransform2D(HighbdIadst4, HighbdIadst4)  // ADST_ADST = 3
+            new(HighbdIdct4, HighbdIdct4), // DCT_DCT  = 0
+            new(HighbdIadst4, HighbdIdct4), // ADST_DCT = 1
+            new(HighbdIdct4, HighbdIadst4), // DCT_ADST = 2
+            new(HighbdIadst4, HighbdIadst4) // ADST_ADST = 3
         };
 
         public static void HighbdIht4x416Add(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int txType, int bd)
         {
-            int i, j;
             Span<int> output = stackalloc int[4 * 4];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[4];
             Span<int> tempOut = stackalloc int[4];
 
             // Inverse transform row vectors.
-            for (i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 HighbdIht4[txType].Rows(input, outptr, bd);
                 input = input.Slice(4);
@@ -308,32 +310,32 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Inverse transform column vectors.
-            for (i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; ++i)
             {
-                for (j = 0; j < 4; ++j)
+                for (int j = 0; j < 4; ++j)
                 {
-                    tempIn[j] = output[j * 4 + i];
+                    tempIn[j] = output[(j * 4) + i];
                 }
 
                 HighbdIht4[txType].Cols(tempIn, tempOut, bd);
-                for (j = 0; j < 4; ++j)
+                for (int j = 0; j < 4; ++j)
                 {
-                    dest[j * stride + i] = HighbdClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 4), bd);
+                    dest[(j * stride) + i] = HighbdClipPixelAdd(dest[(j * stride) + i],
+                        BitUtils.RoundPowerOfTwo(tempOut[j], 4), bd);
                 }
             }
         }
 
-        private static readonly HighbdTransform2D[] HighIht8 = new HighbdTransform2D[]
+        private static readonly HighbdTransform2D[] HighIht8 =
         {
-            new HighbdTransform2D(HighbdIdct8, HighbdIdct8),   // DCT_DCT  = 0
-            new HighbdTransform2D(HighbdIadst8, HighbdIdct8),  // ADST_DCT = 1
-            new HighbdTransform2D(HighbdIdct8, HighbdIadst8),  // DCT_ADST = 2
-            new HighbdTransform2D(HighbdIadst8, HighbdIadst8)  // ADST_ADST = 3
+            new(HighbdIdct8, HighbdIdct8), // DCT_DCT  = 0
+            new(HighbdIadst8, HighbdIdct8), // ADST_DCT = 1
+            new(HighbdIdct8, HighbdIadst8), // DCT_ADST = 2
+            new(HighbdIadst8, HighbdIadst8) // ADST_ADST = 3
         };
 
         public static void HighbdIht8x864Add(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int txType, int bd)
         {
-            int i, j;
             Span<int> output = stackalloc int[8 * 8];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[8];
@@ -341,7 +343,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             HighbdTransform2D ht = HighIht8[txType];
 
             // Inverse transform row vectors.
-            for (i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
             {
                 ht.Rows(input, outptr, bd);
                 input = input.Slice(8);
@@ -349,32 +351,33 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Inverse transform column vectors.
-            for (i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i)
             {
-                for (j = 0; j < 8; ++j)
+                for (int j = 0; j < 8; ++j)
                 {
-                    tempIn[j] = output[j * 8 + i];
+                    tempIn[j] = output[(j * 8) + i];
                 }
 
                 ht.Cols(tempIn, tempOut, bd);
-                for (j = 0; j < 8; ++j)
+                for (int j = 0; j < 8; ++j)
                 {
-                    dest[j * stride + i] = HighbdClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 5), bd);
+                    dest[(j * stride) + i] = HighbdClipPixelAdd(dest[(j * stride) + i],
+                        BitUtils.RoundPowerOfTwo(tempOut[j], 5), bd);
                 }
             }
         }
 
-        private static readonly HighbdTransform2D[] HighIht16 = new HighbdTransform2D[]
+        private static readonly HighbdTransform2D[] HighIht16 =
         {
-            new HighbdTransform2D(HighbdIdct16, HighbdIdct16),   // DCT_DCT  = 0
-            new HighbdTransform2D(HighbdIadst16, HighbdIdct16),  // ADST_DCT = 1
-            new HighbdTransform2D(HighbdIdct16, HighbdIadst16),  // DCT_ADST = 2
-            new HighbdTransform2D(HighbdIadst16, HighbdIadst16)  // ADST_ADST = 3
+            new(HighbdIdct16, HighbdIdct16), // DCT_DCT  = 0
+            new(HighbdIadst16, HighbdIdct16), // ADST_DCT = 1
+            new(HighbdIdct16, HighbdIadst16), // DCT_ADST = 2
+            new(HighbdIadst16, HighbdIadst16) // ADST_ADST = 3
         };
 
-        public static void HighbdIht16x16256Add(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int txType, int bd)
+        public static void HighbdIht16x16256Add(ReadOnlySpan<int> input, Span<ushort> dest, int stride, int txType,
+            int bd)
         {
-            int i, j;
             Span<int> output = stackalloc int[16 * 16];
             Span<int> outptr = output;
             Span<int> tempIn = stackalloc int[16];
@@ -382,7 +385,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             HighbdTransform2D ht = HighIht16[txType];
 
             // Rows
-            for (i = 0; i < 16; ++i)
+            for (int i = 0; i < 16; ++i)
             {
                 ht.Rows(input, outptr, bd);
                 input = input.Slice(16);
@@ -390,17 +393,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             // Columns
-            for (i = 0; i < 16; ++i)
+            for (int i = 0; i < 16; ++i)
             {
-                for (j = 0; j < 16; ++j)
+                for (int j = 0; j < 16; ++j)
                 {
-                    tempIn[j] = output[j * 16 + i];
+                    tempIn[j] = output[(j * 16) + i];
                 }
 
                 ht.Cols(tempIn, tempOut, bd);
-                for (j = 0; j < 16; ++j)
+                for (int j = 0; j < 16; ++j)
                 {
-                    dest[j * stride + i] = HighbdClipPixelAdd(dest[j * stride + i], BitUtils.RoundPowerOfTwo(tempOut[j], 6), bd);
+                    dest[(j * stride) + i] = HighbdClipPixelAdd(dest[(j * stride) + i],
+                        BitUtils.RoundPowerOfTwo(tempOut[j], 6), bd);
                 }
             }
         }
@@ -440,7 +444,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             // DC only DCT coefficient
             if (eob == 1)
             {
-                vpx_Highbdidct8x8_1_add_c(input, dest, stride, bd);
+                VpxHighbdidct8x81AddC(input, dest, stride, bd);
             }
             else if (eob <= 12)
             {
@@ -497,7 +501,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         }
 
         // Iht
-        public static void HighbdIht4x4Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride, int eob, int bd)
+        public static void HighbdIht4x4Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride,
+            int eob, int bd)
         {
             if (txType == TxType.DctDct)
             {
@@ -509,7 +514,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        public static void HighbdIht8x8Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride, int eob, int bd)
+        public static void HighbdIht8x8Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride,
+            int eob, int bd)
         {
             if (txType == TxType.DctDct)
             {
@@ -521,7 +527,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        public static void HighbdIht16x16Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride, int eob, int bd)
+        public static void HighbdIht16x16Add(TxType txType, ReadOnlySpan<int> input, Span<ushort> dest, int stride,
+            int eob, int bd)
         {
             if (txType == TxType.DctDct)
             {
