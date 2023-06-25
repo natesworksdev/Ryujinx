@@ -102,7 +102,7 @@ namespace Ryujinx.Tests.Memory
             allHandle.Reprotect();
 
             (ulong address, ulong size)? readTrackingTriggeredAll = null;
-            void registerReadAction()
+            void RegisterReadAction()
             {
                 readTrackingTriggeredAll = null;
                 allHandle.RegisterAction((address, size) =>
@@ -110,7 +110,7 @@ namespace Ryujinx.Tests.Memory
                     readTrackingTriggeredAll = (address, size);
                 });
             }
-            registerReadAction();
+            RegisterReadAction();
 
             // Create 16 page sized handles contained within the allHandle.
             RegionHandle[] containedHandles = new RegionHandle[16];
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Memory
                 }
 
                 // Clear flags and reset read action.
-                registerReadAction();
+                RegisterReadAction();
                 allHandle.Reprotect();
                 containedHandles[i].Reprotect();
             }
@@ -303,7 +303,7 @@ namespace Ryujinx.Tests.Memory
             int signalThreadsDone = 0;
             bool isRegistered = false;
 
-            void registerReadAction()
+            void RegisterReadAction()
             {
                 registeredCount++;
                 handle.RegisterAction((address, size) =>
@@ -346,7 +346,7 @@ namespace Ryujinx.Tests.Memory
                 if (!isRegistered)
                 {
                     isRegistered = true;
-                    registerReadAction();
+                    RegisterReadAction();
                 }
             }
 

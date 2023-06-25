@@ -7,14 +7,14 @@ namespace Ryujinx.Tests.Memory
 {
     public class Tests
     {
-        private static readonly ulong MemorySize = MemoryBlock.GetPageSize() * 8;
+        private static readonly ulong _memorySize = MemoryBlock.GetPageSize() * 8;
 
         private MemoryBlock _memoryBlock;
 
         [SetUp]
         public void Setup()
         {
-            _memoryBlock = new MemoryBlock(MemorySize);
+            _memoryBlock = new MemoryBlock(_memorySize);
         }
 
         [TearDown]
