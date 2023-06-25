@@ -126,14 +126,14 @@ namespace Ryujinx.Graphics.Texture
             int mipGobBlocksInY = gobBlocksInY;
             int mipGobBlocksInZ = gobBlocksInZ;
 
-            int gobWidth  = (GobStride / bytesPerPixel) * gobBlocksInTileX;
+            int gobWidth = (GobStride / bytesPerPixel) * gobBlocksInTileX;
             int gobHeight = gobBlocksInY * GobHeight;
 
             for (int level = 0; level < levels; level++)
             {
-                int w = Math.Max(1, width  >> level);
+                int w = Math.Max(1, width >> level);
                 int h = Math.Max(1, height >> level);
-                int d = Math.Max(1, depth  >> level);
+                int d = Math.Max(1, depth >> level);
 
                 w = BitUtils.DivRoundUp(w, blockWidth);
                 h = BitUtils.DivRoundUp(h, blockHeight);
@@ -256,7 +256,7 @@ namespace Ryujinx.Graphics.Texture
             int bytesPerPixel,
             ReadOnlySpan<byte> data)
         {
-            int w = BitUtils.DivRoundUp(width,  blockWidth);
+            int w = BitUtils.DivRoundUp(width, blockWidth);
             int h = BitUtils.DivRoundUp(height, blockHeight);
 
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
@@ -390,14 +390,14 @@ namespace Ryujinx.Graphics.Texture
             int mipGobBlocksInY = gobBlocksInY;
             int mipGobBlocksInZ = gobBlocksInZ;
 
-            int gobWidth  = (GobStride / bytesPerPixel) * gobBlocksInTileX;
+            int gobWidth = (GobStride / bytesPerPixel) * gobBlocksInTileX;
             int gobHeight = gobBlocksInY * GobHeight;
 
             for (int level = 0; level < levels; level++)
             {
-                int w = Math.Max(1, width  >> level);
+                int w = Math.Max(1, width >> level);
                 int h = Math.Max(1, height >> level);
-                int d = Math.Max(1, depth  >> level);
+                int d = Math.Max(1, depth >> level);
 
                 w = BitUtils.DivRoundUp(w, blockWidth);
                 h = BitUtils.DivRoundUp(h, blockHeight);
@@ -521,7 +521,7 @@ namespace Ryujinx.Graphics.Texture
             int bytesPerPixel,
             ReadOnlySpan<byte> data)
         {
-            int w = BitUtils.DivRoundUp(width,  blockWidth);
+            int w = BitUtils.DivRoundUp(width, blockWidth);
             int h = BitUtils.DivRoundUp(height, blockHeight);
 
             int inStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
@@ -573,9 +573,9 @@ namespace Ryujinx.Graphics.Texture
 
             for (int level = 0; level < levels; level++)
             {
-                int w = Math.Max(1, width  >> level);
+                int w = Math.Max(1, width >> level);
                 int h = Math.Max(1, height >> level);
-                int d = Math.Max(1, depth  >> level);
+                int d = Math.Max(1, depth >> level);
 
                 w = BitUtils.DivRoundUp(w, blockWidth);
                 h = BitUtils.DivRoundUp(h, blockHeight);

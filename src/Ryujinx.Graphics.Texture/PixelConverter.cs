@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.Texture
                 {
                     uint packed = inputSpan[offset++];
 
-                    uint outputPacked =  0xff000000;
+                    uint outputPacked = 0xff000000;
                     outputPacked |= (packed << 3) & 0x000000f8;
                     outputPacked |= (packed << 8) & 0x00f80000;
 
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Texture
 
                     uint a = forceAlpha ? 1 : (packed >> 15);
 
-                    uint outputPacked =  a * 0xff000000;
+                    uint outputPacked = a * 0xff000000;
                     outputPacked |= (packed << 3) & 0x000000f8;
                     outputPacked |= (packed << 6) & 0x0000f800;
                     outputPacked |= (packed << 9) & 0x00f80000;
@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Texture
                 {
                     uint packed = inputSpan[offset++];
 
-                    uint outputPacked =  packed         & 0x0000000f;
+                    uint outputPacked = packed & 0x0000000f;
                     outputPacked |= (packed << 4) & 0x00000f00;
                     outputPacked |= (packed << 8) & 0x000f0000;
                     outputPacked |= (packed << 12) & 0x0f000000;
