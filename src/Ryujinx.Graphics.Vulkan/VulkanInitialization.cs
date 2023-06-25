@@ -14,9 +14,9 @@ namespace Ryujinx.Graphics.Vulkan
     public unsafe static class VulkanInitialization
     {
         private const uint InvalidIndex = uint.MaxValue;
-        private static readonly uint MinimalVulkanVersion = Vk.Version11.Value;
-        private static readonly uint MinimalInstanceVulkanVersion = Vk.Version12.Value;
-        private static readonly uint MaximumVulkanVersion = Vk.Version12.Value;
+        private static readonly uint _minimalVulkanVersion = Vk.Version11.Value;
+        private static readonly uint _minimalInstanceVulkanVersion = Vk.Version12.Value;
+        private static readonly uint _maximumVulkanVersion = Vk.Version12.Value;
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = MaximumVulkanVersion
+                ApiVersion = _maximumVulkanVersion
             };
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
@@ -169,7 +169,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ApplicationVersion = 1,
                 PEngineName = (byte*)appName,
                 EngineVersion = 1,
-                ApiVersion = MaximumVulkanVersion
+                ApiVersion = _maximumVulkanVersion
             };
 
             var instanceCreateInfo = new InstanceCreateInfo
@@ -192,7 +192,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             // We currently assume that the instance is compatible with Vulkan 1.2
             // TODO: Remove this once we relax our initialization codepaths.
-            if (instance.InstanceVersion < MinimalInstanceVulkanVersion)
+            if (instance.InstanceVersion < _minimalInstanceVulkanVersion)
             {
                 return Array.Empty<DeviceInfo>();
             }
@@ -203,7 +203,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             foreach (VulkanPhysicalDevice physicalDevice in physicalDevices)
             {
-                if (physicalDevice.PhysicalDeviceProperties.ApiVersion < MinimalVulkanVersion)
+                if (physicalDevice.PhysicalDeviceProperties.ApiVersion < _minimalVulkanVersion)
                 {
                     continue;
                 }

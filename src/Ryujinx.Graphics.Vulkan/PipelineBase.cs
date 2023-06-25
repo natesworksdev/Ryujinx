@@ -1440,7 +1440,7 @@ namespace Ryujinx.Graphics.Vulkan
                 // Just try to remove duplicate attachments.
                 // Save a copy of the array to rebind when mask changes.
 
-                void maskOut()
+                void MaskOut()
                 {
                     if (!_framebufferUsingColorWriteMask)
                     {
@@ -1474,12 +1474,12 @@ namespace Ryujinx.Graphics.Vulkan
                             if (vkBlend.ColorWriteMask == 0)
                             {
                                 colors[i] = null;
-                                maskOut();
+                                MaskOut();
                             }
                             else if (vkBlend2.ColorWriteMask == 0)
                             {
                                 colors[j] = null;
-                                maskOut();
+                                MaskOut();
                             }
                         }
                     }

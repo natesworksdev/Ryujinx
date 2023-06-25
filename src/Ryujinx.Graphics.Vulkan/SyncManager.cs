@@ -26,8 +26,8 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
         private readonly List<SyncHandle> _handles;
-        private ulong FlushId;
-        private long WaitTicks;
+        private ulong _flushId;
+        private long _waitTicks;
 
         public SyncManager(VulkanRenderer gd, Device device)
         {
@@ -38,12 +38,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void RegisterFlush()
         {
-            FlushId++;
+            _flushId++;
         }
 
         public void Create(ulong id, bool strict)
         {
-            ulong flushId = FlushId;
+            ulong flushId = _flushId;
             MultiFenceHolder waitable = new();
             if (strict || _gd.InterruptAction == null)
             {
@@ -132,11 +132,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 long beforeTicks = Stopwatch.GetTimestamp();
 
-                if (result.NeedsFlush(FlushId))
+                if (result.NeedsFlush(_flushId))
                 {
                     _gd.InterruptAction(() =>
                     {
-                        if (result.NeedsFlush(FlushId))
+                        if (result.NeedsFlush(_flushId))
                         {
                             _gd.FlushAllCommands();
                         }
@@ -158,7 +158,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else
                     {
-                        WaitTicks += Stopwatch.GetTimestamp() - beforeTicks;
+                        _waitTicks += Stopwatch.GetTimestamp() - beforeTicks;
                         result.Signalled = true;
                     }
                 }
@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Vulkan
                     first = _handles.FirstOrDefault();
                 }
 
-                if (first == null || first.NeedsFlush(FlushId))
+                if (first == null || first.NeedsFlush(_flushId))
                 {
                     break;
                 }
@@ -206,8 +206,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public long GetAndResetWaitTicks()
         {
-            long result = WaitTicks;
-            WaitTicks = 0;
+            long result = _waitTicks;
+            _waitTicks = 0;
 
             return result;
         }
