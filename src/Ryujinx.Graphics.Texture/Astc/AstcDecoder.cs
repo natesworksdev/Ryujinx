@@ -1232,7 +1232,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             unsafe
             {
                 // Skip struct initialization
-                _ = &integerEncodedSequence; 
+                _ = &integerEncodedSequence;
             }
 
             integerEncodedSequence.Reset();
@@ -1250,12 +1250,9 @@ namespace Ryujinx.Graphics.Texture.Astc
 
                 Debug.Assert(bitLength >= 1);
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                int a = 0, b = 0, c = 0, d = 0;
-#pragma warning restore IDE0059
+                int b = 0, c = 0, d = 0;
                 // A is just the lsb replicated 9 times.
-                a = Bits.Replicate(bitValue & 1, 1, 9);
-
+                int a = Bits.Replicate(bitValue & 1, 1, 9);
                 switch (intEncoded.GetEncoding())
                 {
                     case IntegerEncoded.EIntegerEncoding.JustBits:

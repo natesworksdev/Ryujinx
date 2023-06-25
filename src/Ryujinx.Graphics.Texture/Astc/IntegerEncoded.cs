@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Texture.Astc
     internal struct IntegerEncoded
     {
         internal const int StructSize = 8;
-        private static readonly IntegerEncoded[] Encodings;
+        private static readonly IntegerEncoded[] _encodings;
 
         public enum EIntegerEncoding : byte
         {
@@ -23,11 +23,11 @@ namespace Ryujinx.Graphics.Texture.Astc
 
         static IntegerEncoded()
         {
-            Encodings = new IntegerEncoded[0x100];
+            _encodings = new IntegerEncoded[0x100];
 
-            for (int i = 0; i < Encodings.Length; i++)
+            for (int i = 0; i < _encodings.Length; i++)
             {
-                Encodings[i] = CreateEncodingCalc(i);
+                _encodings[i] = CreateEncodingCalc(i);
             }
         }
 
@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
         public static IntegerEncoded CreateEncoding(int maxVal)
         {
-            return Encodings[maxVal];
+            return _encodings[maxVal];
         }
 
         private static IntegerEncoded CreateEncodingCalc(int maxVal)
