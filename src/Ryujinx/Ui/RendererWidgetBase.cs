@@ -539,14 +539,14 @@ namespace Ryujinx.Ui
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = null;
+            Thread nvidiaStutterWorkaround = null;
             if (Renderer is Graphics.OpenGL.OpenGLRenderer)
             {
-                nvStutterWorkaround = new Thread(NvStutterWorkaround)
+                nvidiaStutterWorkaround = new Thread(NvidiaStutterWorkaround)
                 {
-                    Name = "GUI.NVStutterWorkaround",
+                    Name = "GUI.NvidiaStutterWorkaround",
                 };
-                nvStutterWorkaround.Start();
+                nvidiaStutterWorkaround.Start();
             }
 
             MainLoop();
@@ -555,7 +555,7 @@ namespace Ryujinx.Ui
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
             _gpuDoneEvent.WaitOne();
             _gpuDoneEvent.Dispose();
-            nvStutterWorkaround?.Join();
+            nvidiaStutterWorkaround?.Join();
 
             Exit();
         }
@@ -583,7 +583,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void NvStutterWorkaround()
+        private void NvidiaStutterWorkaround()
         {
             while (_isActive)
             {
