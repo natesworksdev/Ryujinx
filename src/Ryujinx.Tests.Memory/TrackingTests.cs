@@ -102,6 +102,7 @@ namespace Ryujinx.Tests.Memory
             allHandle.Reprotect();
 
             (ulong address, ulong size)? readTrackingTriggeredAll = null;
+
             void RegisterReadAction()
             {
                 readTrackingTriggeredAll = null;
@@ -110,6 +111,7 @@ namespace Ryujinx.Tests.Memory
                     readTrackingTriggeredAll = (address, size);
                 });
             }
+
             RegisterReadAction();
 
             // Create 16 page sized handles contained within the allHandle.
