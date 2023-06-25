@@ -21,7 +21,7 @@ namespace Ryujinx.Ava.Common.Locale
             ReflectionBindingExtension binding = new($"[{keyToUse}]")
             {
                 Mode = BindingMode.OneWay,
-                Source = LocaleManager.Instance
+                Source = LocaleManager.Instance,
             };
 
             return binding.ProvideValue(serviceProvider);

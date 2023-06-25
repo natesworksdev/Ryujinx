@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 Position = NotificationPosition.BottomRight,
                 MaxItems = MaxNotifications,
-                Margin = new Thickness(0, 0, 15, 40)
+                Margin = new Thickness(0, 0, 15, 40),
             };
 
             var maybeAsyncWorkQueue = new Lazy<AsyncWorkQueue<Notification>>(

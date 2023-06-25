@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _httpClient = new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(30),
             };
 
             LastScannedAmiiboId = lastScannedAmiiboId;

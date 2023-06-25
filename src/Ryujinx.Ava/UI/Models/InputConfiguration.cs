@@ -333,7 +333,7 @@ namespace Ryujinx.Ava.UI.Models
                         ButtonZl = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonZl,
                         ButtonSl = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftButtonSl,
                         ButtonSr = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftButtonSr,
-                        ButtonMinus = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonMinus
+                        ButtonMinus = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonMinus,
                     },
                     RightJoycon = new RightJoyconCommonConfig<Ryujinx.Common.Configuration.Hid.Key>()
                     {
@@ -345,7 +345,7 @@ namespace Ryujinx.Ava.UI.Models
                         ButtonSl = (Ryujinx.Common.Configuration.Hid.Key)(object)RightButtonSl,
                         ButtonSr = (Ryujinx.Common.Configuration.Hid.Key)(object)RightButtonSr,
                         ButtonR = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonR,
-                        ButtonZr = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonZr
+                        ButtonZr = (Ryujinx.Common.Configuration.Hid.Key)(object)ButtonZr,
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Ryujinx.Common.Configuration.Hid.Key>()
                     {
@@ -353,7 +353,7 @@ namespace Ryujinx.Ava.UI.Models
                         StickDown = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftStickDown,
                         StickRight = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftStickRight,
                         StickLeft = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftStickLeft,
-                        StickButton = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftKeyboardStickButton
+                        StickButton = (Ryujinx.Common.Configuration.Hid.Key)(object)LeftKeyboardStickButton,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Ryujinx.Common.Configuration.Hid.Key>()
                     {
@@ -361,9 +361,9 @@ namespace Ryujinx.Ava.UI.Models
                         StickDown = (Ryujinx.Common.Configuration.Hid.Key)(object)RightStickDown,
                         StickLeft = (Ryujinx.Common.Configuration.Hid.Key)(object)RightStickLeft,
                         StickRight = (Ryujinx.Common.Configuration.Hid.Key)(object)RightStickRight,
-                        StickButton = (Ryujinx.Common.Configuration.Hid.Key)(object)RightKeyboardStickButton
+                        StickButton = (Ryujinx.Common.Configuration.Hid.Key)(object)RightKeyboardStickButton,
                     },
-                    Version = InputConfig.CurrentVersion
+                    Version = InputConfig.CurrentVersion,
                 };
 
             }
@@ -419,7 +419,7 @@ namespace Ryujinx.Ava.UI.Models
                     {
                         EnableRumble = EnableRumble,
                         WeakRumble = WeakRumble,
-                        StrongRumble = StrongRumble
+                        StrongRumble = StrongRumble,
                     },
                     Version = InputConfig.CurrentVersion,
                     DeadzoneLeft = DeadzoneLeft,
@@ -435,12 +435,12 @@ namespace Ryujinx.Ava.UI.Models
                                Slot = Slot,
                                AltSlot = AltSlot,
                                MirrorInput = MirrorInput,
-                               MotionBackend = MotionInputBackendType.CemuHook
+                               MotionBackend = MotionInputBackendType.CemuHook,
                            }
                            : new StandardMotionConfigController()
                            {
-                               MotionBackend = MotionInputBackendType.GamepadDriver
-                           }
+                               MotionBackend = MotionInputBackendType.GamepadDriver,
+                           },
                 };
 
                 config.Motion.Sensitivity = Sensitivity;

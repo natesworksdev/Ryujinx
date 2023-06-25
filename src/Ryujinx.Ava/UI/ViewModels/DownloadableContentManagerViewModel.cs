@@ -197,13 +197,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             OpenFileDialog dialog = new()
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
-                AllowMultiple = true
+                AllowMultiple = true,
             };
 
             dialog.Filters.Add(new FileDialogFilter
             {
                 Name = "NSP",
-                Extensions = { "nsp" }
+                Extensions = { "nsp" },
             });
 
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -312,7 +312,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     container = new DownloadableContentContainer
                     {
                         ContainerPath = downloadableContent.ContainerPath,
-                        DownloadableContentNcaList = new List<DownloadableContentNca>()
+                        DownloadableContentNcaList = new List<DownloadableContentNca>(),
                     };
                 }
 
@@ -320,7 +320,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Enabled = downloadableContent.Enabled,
                     TitleId = Convert.ToUInt64(downloadableContent.TitleId, 16),
-                    FullPath = downloadableContent.FullPath
+                    FullPath = downloadableContent.FullPath,
                 });
             }
 

@@ -557,7 +557,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         ButtonL = Key.E,
                         ButtonZl = Key.Q,
                         ButtonSl = Key.Unbound,
-                        ButtonSr = Key.Unbound
+                        ButtonSr = Key.Unbound,
                     },
                     LeftJoyconStick =
                         new JoyconConfigKeyboardStick<Key>
@@ -566,7 +566,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                             StickDown = Key.S,
                             StickLeft = Key.A,
                             StickRight = Key.D,
-                            StickButton = Key.F
+                            StickButton = Key.F,
                         },
                     RightJoycon = new RightJoyconCommonConfig<Key>
                     {
@@ -578,7 +578,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         ButtonR = Key.U,
                         ButtonZr = Key.O,
                         ButtonSl = Key.Unbound,
-                        ButtonSr = Key.Unbound
+                        ButtonSr = Key.Unbound,
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -586,8 +586,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                         StickDown = Key.K,
                         StickLeft = Key.J,
                         StickRight = Key.L,
-                        StickButton = Key.H
-                    }
+                        StickButton = Key.H,
+                    },
                 };
             }
             else if (activeDevice.Type == DeviceType.Controller)
@@ -617,14 +617,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                         ButtonL = ConfigGamepadInputId.LeftShoulder,
                         ButtonZl = ConfigGamepadInputId.LeftTrigger,
                         ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound
+                        ButtonSr = ConfigGamepadInputId.Unbound,
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
                         Joystick = ConfigStickInputId.Left,
                         StickButton = ConfigGamepadInputId.LeftStick,
                         InvertStickX = false,
-                        InvertStickY = false
+                        InvertStickY = false,
                     },
                     RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {
@@ -636,28 +636,28 @@ namespace Ryujinx.Ava.UI.ViewModels
                         ButtonR = ConfigGamepadInputId.RightShoulder,
                         ButtonZr = ConfigGamepadInputId.RightTrigger,
                         ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound
+                        ButtonSr = ConfigGamepadInputId.Unbound,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
                         Joystick = ConfigStickInputId.Right,
                         StickButton = ConfigGamepadInputId.RightStick,
                         InvertStickX = false,
-                        InvertStickY = false
+                        InvertStickY = false,
                     },
                     Motion = new StandardMotionConfigController
                     {
                         MotionBackend = MotionInputBackendType.GamepadDriver,
                         EnableMotion = true,
                         Sensitivity = 100,
-                        GyroDeadzone = 1
+                        GyroDeadzone = 1,
                     },
                     Rumble = new RumbleConfigController
                     {
                         StrongRumble = 1f,
                         WeakRumble = 1f,
-                        EnableRumble = false
-                    }
+                        EnableRumble = false,
+                    },
                 };
             }
             else

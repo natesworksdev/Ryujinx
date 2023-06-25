@@ -1047,7 +1047,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         }
                     })
                     {
-                        Name = "GUI.FirmwareInstallerThread"
+                        Name = "GUI.FirmwareInstallerThread",
                     };
 
                     thread.Start();
@@ -1393,7 +1393,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 OpenFileDialog dialog = new()
                 {
-                    Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle]
+                    Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle],
                 };
 
                 dialog.Filters.Add(new FileDialogFilter
@@ -1406,8 +1406,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                         "xci",
                         "nca",
                         "nro",
-                        "nso"
-                    }
+                        "nso",
+                    },
                 });
 
 #pragma warning disable IDE0055 // Disable formatting
@@ -1434,7 +1434,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 OpenFolderDialog dialog = new()
                 {
-                    Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle]
+                    Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
                 };
 
                 string folder = await dialog.ShowAsync(desktop.MainWindow);

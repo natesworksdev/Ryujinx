@@ -24,7 +24,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             _viewModel = new RumbleInputViewModel
             {
                 StrongRumble = config.StrongRumble,
-                WeakRumble = config.WeakRumble
+                WeakRumble = config.WeakRumble,
             };
 
             InitializeComponent();

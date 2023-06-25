@@ -18,12 +18,12 @@ namespace Ryujinx.Ava.UI.Helpers
         [Flags]
         public enum WindowStyles : uint
         {
-            WsChild = 0x40000000
+            WsChild = 0x40000000,
         }
 
         public enum Cursors : uint
         {
-            IdcArrow = 32512
+            IdcArrow = 32512,
         }
 
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
@@ -44,7 +44,7 @@ namespace Ryujinx.Ava.UI.Helpers
             Xbuttonup = 0x020C,
             Xbuttondblclk = 0x020D,
             Mousehwheel = 0x020E,
-            Mouselast = 0x020E
+            Mouselast = 0x020E,
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]

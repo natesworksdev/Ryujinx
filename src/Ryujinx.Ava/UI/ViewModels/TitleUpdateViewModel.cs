@@ -88,7 +88,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 TitleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths = new List<string>()
+                    Paths = new List<string>(),
                 };
 
                 Save();
@@ -203,13 +203,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             OpenFileDialog dialog = new()
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectUpdateDialogTitle],
-                AllowMultiple = true
+                AllowMultiple = true,
             };
 
             dialog.Filters.Add(new FileDialogFilter
             {
                 Name = "NSP",
-                Extensions = { "nsp" }
+                Extensions = { "nsp" },
             });
 
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

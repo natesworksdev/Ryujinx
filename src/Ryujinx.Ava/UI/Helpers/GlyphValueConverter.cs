@@ -14,7 +14,7 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             { Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString() },
             { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString() },
-            { Glyph.Chip, char.ConvertFromUtf32(59748).ToString() }
+            { Glyph.Chip, char.ConvertFromUtf32(59748).ToString() },
         };
 
         public GlyphValueConverter(string key)
@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Helpers
             Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension binding = new($"[{_key}]")
             {
                 Mode = BindingMode.OneWay,
-                Source = this
+                Source = this,
             };
 
             return binding.ProvideValue(serviceProvider);

@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.User
             dialog.Filters.Add(new FileDialogFilter
             {
                 Name = LocaleManager.Instance[LocaleKeys.AllSupportedFormats],
-                Extensions = { "jpg", "jpeg", "png", "bmp" }
+                Extensions = { "jpg", "jpeg", "png", "bmp" },
             });
             dialog.Filters.Add(new FileDialogFilter { Name = "JPEG", Extensions = { "jpg", "jpeg" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "PNG", Extensions = { "png" } });

@@ -80,7 +80,7 @@ namespace Ryujinx.Ava.UI.Controls
                 SecondaryButtonText = "",
                 CloseButtonText = "",
                 Content = content,
-                Padding = new Thickness(0)
+                Padding = new Thickness(0),
             };
 
             contentDialog.Closed += (sender, args) =>

@@ -146,7 +146,7 @@ namespace Ryujinx.Ava.Common
         {
             OpenFolderDialog folderDialog = new()
             {
-                Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle]
+                Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle],
             };
 
             string destination = await folderDialog.ShowAsync(_owner);
@@ -295,7 +295,7 @@ namespace Ryujinx.Ava.Common
                 })
                 {
                     Name = "GUI.NcaSectionExtractorThread",
-                    IsBackground = true
+                    IsBackground = true,
                 };
                 extractorThread.Start();
             }

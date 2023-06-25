@@ -159,7 +159,7 @@ namespace Ryujinx.Ava.UI.Applet
                     {
                         Title = title,
                         WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                        Width = 400
+                        Width = 400,
                     };
 
                     object response = await msgDialog.Run();

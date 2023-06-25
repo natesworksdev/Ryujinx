@@ -264,7 +264,7 @@ namespace Ryujinx.Modules
                 IconSource = new SymbolIconSource { Symbol = Symbol.Download },
                 Buttons = { },
                 ShowProgressBar = true,
-                XamlRoot = parent
+                XamlRoot = parent,
             };
 
             taskDialog.Opened += (s, e) =>
@@ -328,7 +328,7 @@ namespace Ryujinx.Modules
                         ProcessStartInfo processStart = new(ryuName)
                         {
                             UseShellExecute = true,
-                            WorkingDirectory = executableDirectory
+                            WorkingDirectory = executableDirectory,
                         };
 
                         foreach (string argument in CommandLineState.Arguments)
@@ -509,7 +509,7 @@ namespace Ryujinx.Modules
         {
             Thread worker = new(() => DoUpdateWithSingleThreadWorker(taskDialog, downloadUrl, updateFile))
             {
-                Name = "Updater.SingleThreadWorker"
+                Name = "Updater.SingleThreadWorker",
             };
 
             worker.Start();

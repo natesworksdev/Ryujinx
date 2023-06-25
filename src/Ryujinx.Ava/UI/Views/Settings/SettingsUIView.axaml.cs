@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
             var dialog = new OpenFileDialog()
             {
                 Title = LocaleManager.Instance[LocaleKeys.SettingsSelectThemeFileDialogTitle],
-                AllowMultiple = false
+                AllowMultiple = false,
             };
 
             dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = LocaleManager.Instance[LocaleKeys.SettingsXamlThemeFile] });

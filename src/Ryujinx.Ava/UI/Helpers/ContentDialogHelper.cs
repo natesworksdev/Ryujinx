@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 PrimaryButtonCommand = MiniCommand.Create(() =>
                 {
                     result = primaryButtonResult;
-                })
+                }),
             };
 
             contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
@@ -149,7 +149,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 RowDefinitions = new RowDefinitions() { new RowDefinition(), new RowDefinition() },
                 ColumnDefinitions = new ColumnDefinitions() { new ColumnDefinition(GridLength.Auto), new ColumnDefinition() },
 
-                MinHeight = 80
+                MinHeight = 80,
             };
 
             SymbolIcon icon = new()
@@ -157,7 +157,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 Symbol = (Symbol)symbol,
                 Margin = new Thickness(10),
                 FontSize = 40,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             };
 
             Grid.SetColumn(icon, 0);
@@ -169,7 +169,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 Text = primaryText,
                 Margin = new Thickness(5),
                 TextWrapping = TextWrapping.Wrap,
-                MaxWidth = 450
+                MaxWidth = 450,
             };
 
             TextBlock secondaryLabel = new()
@@ -177,7 +177,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 Text = secondaryText,
                 Margin = new Thickness(5),
                 TextWrapping = TextWrapping.Wrap,
-                MaxWidth = 450
+                MaxWidth = 450,
             };
 
             Grid.SetColumn(primaryLabel, 1);
@@ -321,7 +321,7 @@ namespace Ryujinx.Ava.UI.Helpers
                     Height = parent.Bounds.Height,
                     Width = parent.Bounds.Width,
                     Position = parent.PointToScreen(new Point()),
-                    ShowInTaskbar = false
+                    ShowInTaskbar = false,
                 };
 
                 parent.PositionChanged += OverlayOnPositionChanged;

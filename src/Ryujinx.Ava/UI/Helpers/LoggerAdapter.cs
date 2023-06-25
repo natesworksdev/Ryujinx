@@ -26,7 +26,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 AvaLogLevel.Warning => RyuLogger.Debug,
                 AvaLogLevel.Error => RyuLogger.Error,
                 AvaLogLevel.Fatal => RyuLogger.Error,
-                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null),
             };
         }
 

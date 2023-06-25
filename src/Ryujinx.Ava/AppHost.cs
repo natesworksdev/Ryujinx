@@ -275,7 +275,7 @@ namespace Ryujinx.Ava
                         string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable or AppDataManager.LaunchMode.Custom => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
-                            _ => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
+                            _ => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx"),
                         };
 
                         string path = Path.Combine(directory, filename);
@@ -306,7 +306,7 @@ namespace Ryujinx.Ava
 
                         image.SaveAsPng(path, new PngEncoder()
                         {
-                            ColorType = PngColorType.Rgb
+                            ColorType = PngColorType.Rgb,
                         });
 
                         image.Dispose();
@@ -784,7 +784,7 @@ namespace Ryujinx.Ava
                 AudioBackend.SDL2,
                 AudioBackend.SoundIo,
                 AudioBackend.OpenAl,
-                AudioBackend.Dummy
+                AudioBackend.Dummy,
             };
 
             AudioBackend preferredBackend = ConfigurationState.Instance.System.AudioBackend.Value;

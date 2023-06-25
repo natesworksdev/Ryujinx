@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.UI.Windows
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
                 CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
-                Content = new AboutWindow()
+                Content = new AboutWindow(),
             };
 
             Style closeButton = new(x => x.Name("CloseButton"));

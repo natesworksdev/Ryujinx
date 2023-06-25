@@ -33,7 +33,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 Text = text,
                 Device = KeyboardDevice.Instance,
                 Source = this,
-                RoutedEvent = TextInputEvent
+                RoutedEvent = TextInputEvent,
             });
         }
     }

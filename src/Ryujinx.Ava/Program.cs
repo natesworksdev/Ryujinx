@@ -60,7 +60,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = true
+                    UseGpu = true,
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -192,7 +192,7 @@ namespace Ryujinx.Ava
                     "never" => HideCursorMode.Never,
                     "onidle" => HideCursorMode.OnIdle,
                     "always" => HideCursorMode.Always,
-                    _ => ConfigurationState.Instance.HideCursor.Value
+                    _ => ConfigurationState.Instance.HideCursor.Value,
                 };
             }
         }
