@@ -688,12 +688,12 @@ namespace Ryujinx.Ui.Common.Configuration
                     LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
                     FileExtColumn = Ui.GuiColumns.FileExtColumn,
                     FileSizeColumn = Ui.GuiColumns.FileSizeColumn,
-                    PathColumn = Ui.GuiColumns.PathColumn
+                    PathColumn = Ui.GuiColumns.PathColumn,
                 },
                 ColumnSort = new ColumnSort
                 {
                     SortColumnId = Ui.ColumnSort.SortColumnId,
-                    SortAscending = Ui.ColumnSort.SortAscending
+                    SortAscending = Ui.ColumnSort.SortAscending,
                 },
                 GameDirs = Ui.GameDirs,
                 ShownFileTypes = new ShownFileTypes
@@ -732,7 +732,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 InputConfig = Hid.InputConfig,
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,
-                MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId
+                MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId,
             };
 
             return configurationFile;
@@ -833,7 +833,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 ResScaleUp = Key.Unbound,
                 ResScaleDown = Key.Unbound,
                 VolumeUp = Key.Unbound,
-                VolumeDown = Key.Unbound
+                VolumeDown = Key.Unbound,
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -854,7 +854,7 @@ namespace Ryujinx.Ui.Common.Configuration
                         ButtonL = Key.E,
                         ButtonZl = Key.Q,
                         ButtonSl = Key.Unbound,
-                        ButtonSr = Key.Unbound
+                        ButtonSr = Key.Unbound,
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -883,8 +883,8 @@ namespace Ryujinx.Ui.Common.Configuration
                         StickLeft = Key.J,
                         StickRight = Key.L,
                         StickButton = Key.H,
-                    }
-                }
+                    },
+                },
             };
         }
 
@@ -955,12 +955,12 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileFormat.ColumnSort = new ColumnSort
                 {
                     SortColumnId = 0,
-                    SortAscending = false
+                    SortAscending = false,
                 };
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.F1
+                    ToggleVsync = Key.F1,
                 };
 
                 configurationFileUpdated = true;
@@ -1071,7 +1071,7 @@ namespace Ryujinx.Ui.Common.Configuration
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
                         LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
@@ -1091,7 +1091,7 @@ namespace Ryujinx.Ui.Common.Configuration
                             ButtonR = Key.U,
                             ButtonZr = Key.O,
                             ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
+                            ButtonSr = Key.Unbound,
                         },
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
@@ -1100,8 +1100,8 @@ namespace Ryujinx.Ui.Common.Configuration
                             StickLeft = Key.J,
                             StickRight = Key.L,
                             StickButton = Key.H,
-                        }
-                    }
+                        },
+                    },
                 };
 
                 configurationFileUpdated = true;
@@ -1136,7 +1136,11 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 28.");
 
-                configurationFileFormat.Hotkeys = new KeyboardHotkeys { ToggleVsync = Key.F1, Screenshot = Key.F8 };
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.F1,
+                    Screenshot = Key.F8,
+                };
 
                 configurationFileUpdated = true;
             }
@@ -1149,7 +1153,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 {
                     ToggleVsync = Key.F1,
                     Screenshot = Key.F8,
-                    ShowUi = Key.F4
+                    ShowUi = Key.F4,
                 };
 
                 configurationFileUpdated = true;
@@ -1167,7 +1171,7 @@ namespace Ryujinx.Ui.Common.Configuration
                         {
                             EnableRumble = false,
                             StrongRumble = 1f,
-                            WeakRumble = 1f
+                            WeakRumble = 1f,
                         };
                     }
                 }
@@ -1193,7 +1197,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
-                    Pause = Key.F5
+                    Pause = Key.F5,
                 };
 
                 configurationFileUpdated = true;
@@ -1209,7 +1213,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = configurationFileFormat.Hotkeys.Pause,
-                    ToggleMute = Key.F2
+                    ToggleMute = Key.F2,
                 };
 
                 configurationFileFormat.AudioVolume = 1;
@@ -1285,7 +1289,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
                     ResScaleUp = Key.Unbound,
-                    ResScaleDown = Key.Unbound
+                    ResScaleDown = Key.Unbound,
                 };
 
                 configurationFileUpdated = true;
@@ -1316,7 +1320,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,
                     ResScaleDown = configurationFileFormat.Hotkeys.ResScaleDown,
                     VolumeUp = Key.Unbound,
-                    VolumeDown = Key.Unbound
+                    VolumeDown = Key.Unbound,
                 };
             }
 
@@ -1356,7 +1360,7 @@ namespace Ryujinx.Ui.Common.Configuration
                     XCI = true,
                     NCA = true,
                     NRO = true,
-                    NSO = true
+                    NSO = true,
                 };
 
                 configurationFileUpdated = true;

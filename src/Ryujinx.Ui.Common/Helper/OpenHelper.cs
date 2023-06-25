@@ -25,7 +25,7 @@ namespace Ryujinx.Ui.Common.Helper
                 {
                     FileName = path,
                     UseShellExecute = true,
-                    Verb = "open"
+                    Verb = "open",
                 });
             }
             else

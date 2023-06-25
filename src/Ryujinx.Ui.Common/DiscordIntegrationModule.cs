@@ -19,7 +19,7 @@ namespace Ryujinx.Ui.Common
                 Assets = new Assets
                 {
                     LargeImageKey = "ryujinx",
-                    LargeImageText = Description
+                    LargeImageText = Description,
                 },
                 Details = "Main Menu",
                 State = "Idling",
@@ -29,9 +29,9 @@ namespace Ryujinx.Ui.Common
                     new Button
                     {
                         Label = "Website",
-                        Url   = "https://ryujinx.org/"
-                    }
-                }
+                        Url   = "https://ryujinx.org/",
+                    },
+                },
             };
 
             ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
@@ -79,9 +79,9 @@ namespace Ryujinx.Ui.Common
                     new Button
                     {
                         Label = "Website",
-                        Url   = "https://ryujinx.org/"
-                    }
-                }
+                        Url = "https://ryujinx.org/",
+                    },
+                },
             });
         }
 

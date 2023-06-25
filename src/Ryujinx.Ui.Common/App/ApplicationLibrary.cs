@@ -460,27 +460,27 @@ namespace Ryujinx.Ui.App.Common
                         FileSize = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + " MiB" : fileSize.ToString("0.##") + " GiB",
                         FileSizeBytes = fileSize,
                         Path = applicationPath,
-                        ControlHolder = controlHolder
+                        ControlHolder = controlHolder,
                     };
 
                     numApplicationsLoaded++;
 
                     OnApplicationAdded(new ApplicationAddedEventArgs
                     {
-                        AppData = data
+                        AppData = data,
                     });
 
                     OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs
                     {
                         NumAppsFound = numApplicationsFound,
-                        NumAppsLoaded = numApplicationsLoaded
+                        NumAppsLoaded = numApplicationsLoaded,
                     });
                 }
 
                 OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs
                 {
                     NumAppsFound = numApplicationsFound,
-                    NumAppsLoaded = numApplicationsLoaded
+                    NumAppsLoaded = numApplicationsLoaded,
                 });
             }
             finally
