@@ -1708,7 +1708,6 @@ namespace Ryujinx.Graphics.OpenGL
             // Compare an event and a constant value.
             if (value is CounterQueueEvent evt)
             {
-
                 // Easy host conditional rendering when the check matches what GL can do:
                 //  - Event is of type samples passed.
                 //  - Result is not a combination of multiple queries.
