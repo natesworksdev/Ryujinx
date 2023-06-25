@@ -1,4 +1,4 @@
-﻿using BufferHandle = Ryujinx.Graphics.GAL.BufferHandle;
+﻿using Ryujinx.Graphics.GAL;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -74,17 +74,15 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return;
                 }
-                else
+
+                autoBuffer = gd.BufferManager.GetBuffer(cbs.CommandBuffer, _handle, false, out int size);
+
+                // The original stride must be reapplied in case it was rewritten.
+                state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)_stride;
+
+                if (_offset >= size)
                 {
-                    autoBuffer = gd.BufferManager.GetBuffer(cbs.CommandBuffer, _handle, false, out int size);
-
-                    // The original stride must be reapplied in case it was rewritten.
-                    state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)_stride;
-
-                    if (_offset >= size)
-                    {
-                        autoBuffer = null;
-                    }
+                    autoBuffer = null;
                 }
             }
 

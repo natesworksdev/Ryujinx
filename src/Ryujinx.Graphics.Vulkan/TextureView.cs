@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using Format = Ryujinx.Graphics.GAL.Format;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
 
@@ -18,7 +19,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageViewDraw;
         private readonly Auto<DisposableImageView> _imageViewIdentity;
         private readonly Auto<DisposableImageView> _imageView2dArray;
-        private Dictionary<GAL.Format, TextureView> _selfManagedViews;
+        private Dictionary<Format, TextureView> _selfManagedViews;
 
         private readonly TextureCreateInfo _info;
 
@@ -68,13 +69,13 @@ namespace Ryujinx.Graphics.Vulkan
             var swizzleB = info.SwizzleB.Convert();
             var swizzleA = info.SwizzleA.Convert();
 
-            if (info.Format == GAL.Format.R5G5B5A1Unorm ||
-                info.Format == GAL.Format.R5G5B5X1Unorm ||
-                info.Format == GAL.Format.R5G6B5Unorm)
+            if (info.Format == Format.R5G5B5A1Unorm ||
+                info.Format == Format.R5G5B5X1Unorm ||
+                info.Format == Format.R5G6B5Unorm)
             {
                 (swizzleB, swizzleR) = (swizzleR, swizzleB);
             }
-            else if (VkFormat == VkFormat.R4G4B4A4UnormPack16 || info.Format == GAL.Format.A1B5G5R5Unorm)
+            else if (VkFormat == VkFormat.R4G4B4A4UnormPack16 || info.Format == Format.A1B5G5R5Unorm)
             {
                 var tempB = swizzleB;
                 var tempA = swizzleA;
@@ -95,13 +96,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType, ImageUsageFlags usageFlags)
             {
-                var usage = new ImageViewUsageCreateInfo()
+                var usage = new ImageViewUsageCreateInfo
                 {
                     SType = StructureType.ImageViewUsageCreateInfo,
                     Usage = usageFlags
                 };
 
-                var imageCreateInfo = new ImageViewCreateInfo()
+                var imageCreateInfo = new ImageViewCreateInfo
                 {
                     SType = StructureType.ImageViewCreateInfo,
                     Image = storage.GetImageForViewCreation(),
@@ -351,8 +352,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return;
                 }
-                else if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitSrcBit, srcFormat) &&
-                         _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat))
+
+                if (_gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitSrcBit, srcFormat) &&
+                    _gd.FormatCapabilities.OptimalFormatSupports(FormatFeatureFlags.BlitDstBit, dstFormat))
                 {
                     TextureCopy.Blit(
                         _gd.Api,
@@ -467,7 +469,7 @@ namespace Ryujinx.Graphics.Vulkan
                 memoryBarrier);
         }
 
-        public TextureView GetView(GAL.Format format)
+        public TextureView GetView(Format format)
         {
             if (format == Info.Format)
             {
@@ -496,7 +498,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Info.SwizzleB,
                 Info.SwizzleA), 0, 0);
 
-            (_selfManagedViews ??= new Dictionary<GAL.Format, TextureView>()).Add(format, view);
+            (_selfManagedViews ??= new Dictionary<Format, TextureView>()).Add(format, view);
 
             return view;
         }
@@ -540,10 +542,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 return PinnedSpan<byte>.UnsafeFromSpan(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer()));
             }
-            else
-            {
-                return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer()));
-            }
+
+            return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer()));
         }
 
         public PinnedSpan<byte> GetData(int layer, int level)
@@ -556,10 +556,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 return PinnedSpan<byte>.UnsafeFromSpan(GetData(_gd.CommandBufferPool, resources.GetFlushBuffer(), layer, level));
             }
-            else
-            {
-                return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer(), layer, level));
-            }
+
+            return PinnedSpan<byte>.UnsafeFromSpan(GetData(resources.GetPool(), resources.GetFlushBuffer(), layer, level));
         }
 
         public void CopyTo(BufferRange range, int layer, int level, int stride)
@@ -683,11 +681,11 @@ namespace Ryujinx.Graphics.Vulkan
             return length;
         }
 
-        private GAL.Format GetCompatibleGalFormat(GAL.Format format)
+        private Format GetCompatibleGalFormat(Format format)
         {
             if (NeedsD24S8Conversion())
             {
-                return GAL.Format.D32FloatS8Uint;
+                return Format.D32FloatS8Uint;
             }
 
             return format;

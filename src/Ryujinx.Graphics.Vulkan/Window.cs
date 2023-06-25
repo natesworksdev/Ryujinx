@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             CreateSwapchain();
 
-            var semaphoreCreateInfo = new SemaphoreCreateInfo()
+            var semaphoreCreateInfo = new SemaphoreCreateInfo
             {
                 SType = StructureType.SemaphoreCreateInfo
             };
@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var oldSwapchain = _swapchain;
 
-            var swapchainCreateInfo = new SwapchainCreateInfoKHR()
+            var swapchainCreateInfo = new SwapchainCreateInfoKHR
             {
                 SType = StructureType.SwapchainCreateInfoKhr,
                 Surface = _surface,
@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1);
 
-            var imageCreateInfo = new ImageViewCreateInfo()
+            var imageCreateInfo = new ImageViewCreateInfo
             {
                 SType = StructureType.ImageViewCreateInfo,
                 Image = swapchainImage,
@@ -202,14 +202,13 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return CompositeAlphaFlagsKHR.OpaqueBitKhr;
             }
-            else if (supportedFlags.HasFlag(CompositeAlphaFlagsKHR.PreMultipliedBitKhr))
+
+            if (supportedFlags.HasFlag(CompositeAlphaFlagsKHR.PreMultipliedBitKhr))
             {
                 return CompositeAlphaFlagsKHR.PreMultipliedBitKhr;
             }
-            else
-            {
-                return CompositeAlphaFlagsKHR.InheritBitKhr;
-            }
+
+            return CompositeAlphaFlagsKHR.InheritBitKhr;
         }
 
         private static PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] availablePresentModes, bool vsyncEnabled)
@@ -218,14 +217,13 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return PresentModeKHR.ImmediateKhr;
             }
-            else if (availablePresentModes.Contains(PresentModeKHR.MailboxKhr))
+
+            if (availablePresentModes.Contains(PresentModeKHR.MailboxKhr))
             {
                 return PresentModeKHR.MailboxKhr;
             }
-            else
-            {
-                return PresentModeKHR.FifoKhr;
-            }
+
+            return PresentModeKHR.FifoKhr;
         }
 
         public static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
@@ -234,13 +232,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return capabilities.CurrentExtent;
             }
-            else
-            {
-                uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, SurfaceWidth));
-                uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, SurfaceHeight));
 
-                return new Extent2D(width, height);
-            }
+            uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, SurfaceWidth));
+            uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, SurfaceHeight));
+
+            return new Extent2D(width, height);
         }
 
         public unsafe override void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
@@ -413,7 +409,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Result result;
 
-            var presentInfo = new PresentInfoKHR()
+            var presentInfo = new PresentInfoKHR
             {
                 SType = StructureType.PresentInfoKhr,
                 WaitSemaphoreCount = 1,
@@ -529,7 +525,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ColorBit, 0, 1, 0, 1);
 
-            var barrier = new ImageMemoryBarrier()
+            var barrier = new ImageMemoryBarrier
             {
                 SType = StructureType.ImageMemoryBarrier,
                 SrcAccessMask = srcAccess,

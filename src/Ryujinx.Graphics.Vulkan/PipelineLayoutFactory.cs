@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
                         stages = activeStages;
                     }
 
-                    layoutBindings[descIndex] = new DescriptorSetLayoutBinding()
+                    layoutBindings[descIndex] = new DescriptorSetLayoutBinding
                     {
                         Binding = (uint)descriptor.Binding,
                         DescriptorType = descriptor.Type.Convert(),
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 fixed (DescriptorSetLayoutBinding* pLayoutBindings = layoutBindings)
                 {
-                    var descriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+                    var descriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo
                     {
                         SType = StructureType.DescriptorSetLayoutCreateInfo,
                         PBindings = pLayoutBindings,
@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             fixed (DescriptorSetLayout* pLayouts = layouts)
             {
-                var pipelineLayoutCreateInfo = new PipelineLayoutCreateInfo()
+                var pipelineLayoutCreateInfo = new PipelineLayoutCreateInfo
                 {
                     SType = StructureType.PipelineLayoutCreateInfo,
                     PSetLayouts = pLayouts,

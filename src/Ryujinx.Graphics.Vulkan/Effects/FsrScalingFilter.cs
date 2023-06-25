@@ -5,10 +5,12 @@ using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.Vulkan;
 using System;
 using Extent2D = Ryujinx.Graphics.GAL.Extents2D;
+using Format = Silk.NET.Vulkan.Format;
+using SamplerCreateInfo = Ryujinx.Graphics.GAL.SamplerCreateInfo;
 
 namespace Ryujinx.Graphics.Vulkan.Effects
 {
-    internal partial class FsrScalingFilter : IScalingFilter
+    internal class FsrScalingFilter : IScalingFilter
     {
         private readonly VulkanRenderer _renderer;
         private PipelineHelperShader _pipeline;
@@ -66,7 +68,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 .Add(ResourceStages.Compute, ResourceType.TextureAndSampler, 1)
                 .Add(ResourceStages.Compute, ResourceType.Image, 0).Build();
 
-            _sampler = _renderer.CreateSampler(GAL.SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
+            _sampler = _renderer.CreateSampler(SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
 
             _scalingProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
@@ -83,7 +85,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             TextureView view,
             CommandBufferScoped cbs,
             Auto<DisposableImageView> destinationTexture,
-            Silk.NET.Vulkan.Format format,
+            Format format,
             int width,
             int height,
             Extent2D source,

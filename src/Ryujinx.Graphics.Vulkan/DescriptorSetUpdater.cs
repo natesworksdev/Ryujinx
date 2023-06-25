@@ -2,8 +2,11 @@
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
+using Buffer = Silk.NET.Vulkan.Buffer;
+using CompareOp = Ryujinx.Graphics.GAL.CompareOp;
+using Format = Ryujinx.Graphics.GAL.Format;
+using SamplerCreateInfo = Ryujinx.Graphics.GAL.SamplerCreateInfo;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -21,7 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView>[] _imageRefs;
         private readonly TextureBuffer[] _bufferTextureRefs;
         private readonly TextureBuffer[] _bufferImageRefs;
-        private readonly GAL.Format[] _bufferImageFormats;
+        private readonly Format[] _bufferImageFormats;
 
         private readonly DescriptorBufferInfo[] _uniformBuffers;
         private readonly DescriptorBufferInfo[] _storageBuffers;
@@ -32,7 +35,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly bool[] _uniformSet;
         private readonly bool[] _storageSet;
-        private Silk.NET.Vulkan.Buffer _cachedSupportBuffer;
+        private Buffer _cachedSupportBuffer;
 
         [Flags]
         private enum DirtyFlags
@@ -66,7 +69,7 @@ namespace Ryujinx.Graphics.Vulkan
             _imageRefs = new Auto<DisposableImageView>[Constants.MaxImageBindings * 2];
             _bufferTextureRefs = new TextureBuffer[Constants.MaxTextureBindings * 2];
             _bufferImageRefs = new TextureBuffer[Constants.MaxImageBindings * 2];
-            _bufferImageFormats = new GAL.Format[Constants.MaxImageBindings * 2];
+            _bufferImageFormats = new Format[Constants.MaxImageBindings * 2];
 
             _uniformBuffers = new DescriptorBufferInfo[Constants.MaxUniformBufferBindings];
             _storageBuffers = new DescriptorBufferInfo[Constants.MaxStorageBufferBindings];
@@ -75,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
             _bufferTextures = new BufferView[Constants.MaxTexturesPerStage];
             _bufferImages = new BufferView[Constants.MaxImagesPerStage];
 
-            var initialImageInfo = new DescriptorImageInfo()
+            var initialImageInfo = new DescriptorImageInfo
             {
                 ImageLayout = ImageLayout.General
             };
@@ -106,7 +109,7 @@ namespace Ryujinx.Graphics.Vulkan
                 1,
                 1,
                 4,
-                GAL.Format.R8G8B8A8Unorm,
+                Format.R8G8B8A8Unorm,
                 DepthStencilMode.Depth,
                 Target.Texture2D,
                 SwizzleComponent.Red,
@@ -114,7 +117,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SwizzleComponent.Blue,
                 SwizzleComponent.Alpha), 1f);
 
-            _dummySampler = (SamplerHolder)gd.CreateSampler(new GAL.SamplerCreateInfo(
+            _dummySampler = (SamplerHolder)gd.CreateSampler(new SamplerCreateInfo(
                 MinFilter.Nearest,
                 MagFilter.Nearest,
                 false,
@@ -122,7 +125,7 @@ namespace Ryujinx.Graphics.Vulkan
                 AddressMode.Repeat,
                 AddressMode.Repeat,
                 CompareMode.None,
-                GAL.CompareOp.Always,
+                CompareOp.Always,
                 new ColorF(0, 0, 0, 0),
                 0,
                 0,
@@ -142,7 +145,7 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty = DirtyFlags.All;
         }
 
-        public void SetImage(int binding, ITexture image, GAL.Format imageFormat)
+        public void SetImage(int binding, ITexture image, Format imageFormat)
         {
             if (image is TextureBuffer imageBuffer)
             {
@@ -400,7 +403,7 @@ namespace Ryujinx.Graphics.Vulkan
                         _uniformSet[0] = true;
                     }
 
-                    uniformBuffer[0] = new DescriptorBufferInfo()
+                    uniformBuffer[0] = new DescriptorBufferInfo
                     {
                         Offset = 0,
                         Range = (ulong)SupportBuffer.RequiredSize,
@@ -554,7 +557,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
 
-                uniformBuffer[0] = new DescriptorBufferInfo()
+                uniformBuffer[0] = new DescriptorBufferInfo
                 {
                     Offset = 0,
                     Range = (ulong)SupportBuffer.RequiredSize,

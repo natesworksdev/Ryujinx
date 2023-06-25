@@ -319,7 +319,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _infos;
         }
 
-        protected unsafe DisposableRenderPass CreateDummyRenderPass()
+        protected DisposableRenderPass CreateDummyRenderPass()
         {
             if (_dummyRenderPass.Value.Handle != 0)
             {
@@ -484,7 +484,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _plce.GetNewDescriptorSetCollection(gd, commandBufferIndex, setIndex, out isNew);
         }
 
-        protected virtual unsafe void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             Span<DescriptorBufferInfo> infos = stackalloc DescriptorBufferInfo[count];
 
-            infos.Fill(new DescriptorBufferInfo()
+            infos.Fill(new DescriptorBufferInfo
             {
                 Buffer = dummyBuffer,
                 Range = Vk.WholeSize

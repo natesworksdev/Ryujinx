@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Thread = System.Threading.Thread;
+using System.Threading;
+using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -36,7 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             public void Initialize(Vk api, Device device, CommandPool pool)
             {
-                var allocateInfo = new CommandBufferAllocateInfo()
+                var allocateInfo = new CommandBufferAllocateInfo
                 {
                     SType = StructureType.CommandBufferAllocateInfo,
                     CommandBufferCount = 1,
@@ -67,7 +68,7 @@ namespace Ryujinx.Graphics.Vulkan
             _queueLock = queueLock;
             _owner = Thread.CurrentThread;
 
-            var commandPoolCreateInfo = new CommandPoolCreateInfo()
+            var commandPoolCreateInfo = new CommandPoolCreateInfo
             {
                 SType = StructureType.CommandPoolCreateInfo,
                 QueueFamilyIndex = queueFamilyIndex,
@@ -243,7 +244,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _inUseCount++;
 
-                        var commandBufferBeginInfo = new CommandBufferBeginInfo()
+                        var commandBufferBeginInfo = new CommandBufferBeginInfo
                         {
                             SType = StructureType.CommandBufferBeginInfo
                         };

@@ -1,5 +1,4 @@
 ﻿using System;
-
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 
 namespace Ryujinx.Graphics.Vulkan

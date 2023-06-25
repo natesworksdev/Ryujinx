@@ -83,10 +83,10 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var key = new PlceKey(setDescriptors, usePushDescriptors);
 
-            return _plces.GetOrAdd(key, (newKey) => new PipelineLayoutCacheEntry(gd, device, setDescriptors, usePushDescriptors));
+            return _plces.GetOrAdd(key, newKey => new PipelineLayoutCacheEntry(gd, device, setDescriptors, usePushDescriptors));
         }
 
-        protected virtual unsafe void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

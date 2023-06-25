@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PHostPointer = (void*)pageAlignedPointer
                 };
 
-                var memoryAllocateInfo = new MemoryAllocateInfo()
+                var memoryAllocateInfo = new MemoryAllocateInfo
                 {
                     SType = StructureType.MemoryAllocateInfo,
                     AllocationSize = pageAlignedSize,

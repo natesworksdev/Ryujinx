@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Api = api;
                 Device = device;
 
-                var poolSizes = new DescriptorPoolSize[]
+                var poolSizes = new[]
                 {
                     new DescriptorPoolSize(DescriptorType.UniformBuffer, (1 + Constants.MaxUniformBufferBindings) * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.StorageBuffer, Constants.MaxStorageBufferBindings * DescriptorPoolMultiplier),
@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 fixed (DescriptorPoolSize* pPoolsSize = poolSizes)
                 {
-                    var descriptorPoolCreateInfo = new DescriptorPoolCreateInfo()
+                    var descriptorPoolCreateInfo = new DescriptorPoolCreateInfo
                     {
                         SType = StructureType.DescriptorPoolCreateInfo,
                         MaxSets = maxSets,
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            public unsafe DescriptorSetCollection AllocateDescriptorSets(ReadOnlySpan<DescriptorSetLayout> layouts)
+            public DescriptorSetCollection AllocateDescriptorSets(ReadOnlySpan<DescriptorSetLayout> layouts)
             {
                 TryAllocateDescriptorSets(layouts, isTry: false, out var dsc);
                 return dsc;
@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     fixed (DescriptorSetLayout* pLayouts = layouts)
                     {
-                        var descriptorSetAllocateInfo = new DescriptorSetAllocateInfo()
+                        var descriptorSetAllocateInfo = new DescriptorSetAllocateInfo
                         {
                             SType = StructureType.DescriptorSetAllocateInfo,
                             DescriptorPool = _pool,
@@ -187,10 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
-                unsafe
-                {
-                    _currentPool?.Dispose();
-                }
+                _currentPool?.Dispose();
             }
         }
 

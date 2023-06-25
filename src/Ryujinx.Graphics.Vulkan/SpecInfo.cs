@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
                 structSize += typeSize;
             }
 
-            Info = new SpecializationInfo()
+            Info = new SpecializationInfo
             {
                 DataSize = structSize,
                 MapEntryCount = (uint)count
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Vulkan
                 structSize = Math.Max(structSize, map[i].Offset + (uint)map[i].Size);
             }
 
-            Info = new SpecializationInfo()
+            Info = new SpecializationInfo
             {
                 DataSize = structSize,
                 MapEntryCount = (uint)map.Length

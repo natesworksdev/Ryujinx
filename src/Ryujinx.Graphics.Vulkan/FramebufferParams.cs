@@ -158,7 +158,8 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     return ComponentType.SignedInteger;
                 }
-                else if (format.IsUint())
+
+                if (format.IsUint())
                 {
                     return ComponentType.UnsignedInteger;
                 }
@@ -196,7 +197,7 @@ namespace Ryujinx.Graphics.Vulkan
                 attachments[i] = _attachments[i].Get(cbs).Value;
             }
 
-            var framebufferCreateInfo = new FramebufferCreateInfo()
+            var framebufferCreateInfo = new FramebufferCreateInfo
             {
                 SType = StructureType.FramebufferCreateInfo,
                 RenderPass = renderPass.Get(cbs).Value,

@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 fixed (byte* pCode = spirv)
                 {
-                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
+                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo
                     {
                         SType = StructureType.ShaderModuleCreateInfo,
                         CodeSize = (uint)spirv.Length,
@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe PipelineShaderStageCreateInfo GetInfo()
         {
-            return new PipelineShaderStageCreateInfo()
+            return new PipelineShaderStageCreateInfo
             {
                 SType = StructureType.PipelineShaderStageCreateInfo,
                 Stage = _stage,

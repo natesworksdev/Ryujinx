@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= BufferUsageFlags.IndirectBufferBit;
             }
 
-            var bufferCreateInfo = new BufferCreateInfo()
+            var bufferCreateInfo = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)size,
@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= BufferUsageFlags.IndirectBufferBit;
             }
 
-            var bufferCreateInfo = new BufferCreateInfo()
+            var bufferCreateInfo = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)Environment.SystemPageSize,
@@ -169,7 +169,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= BufferUsageFlags.IndirectBufferBit;
             }
 
-            var bufferCreateInfo = new BufferCreateInfo()
+            var bufferCreateInfo = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)size,
@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Vulkan
             return (buffer, allocation, type);
         }
 
-        public unsafe BufferHolder Create(
+        public BufferHolder Create(
             VulkanRenderer gd,
             int size,
             bool forConditionalRendering = false,

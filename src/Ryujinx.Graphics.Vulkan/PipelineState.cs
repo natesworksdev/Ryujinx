@@ -325,7 +325,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int index = 0; index < Constants.MaxShaderStages; index++)
             {
-                StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT()
+                StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT
                 {
                     SType = StructureType.PipelineShaderStageRequiredSubgroupSizeCreateInfoExt,
                     RequiredSubgroupSize = RequiredSubgroupSize
@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Vulkan
                 UpdateStageRequiredSubgroupSizes(gd, 1);
             }
 
-            var pipelineCreateInfo = new ComputePipelineCreateInfo()
+            var pipelineCreateInfo = new ComputePipelineCreateInfo
             {
                 SType = StructureType.ComputePipelineCreateInfo,
                 Stage = Stages[0],
@@ -453,20 +453,20 @@ namespace Ryujinx.Graphics.Vulkan
 
                 primitiveRestartEnable &= topologySupportsRestart;
 
-                var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo()
+                var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                     PrimitiveRestartEnable = primitiveRestartEnable,
                     Topology = Topology
                 };
 
-                var tessellationState = new PipelineTessellationStateCreateInfo()
+                var tessellationState = new PipelineTessellationStateCreateInfo
                 {
                     SType = StructureType.PipelineTessellationStateCreateInfo,
                     PatchControlPoints = PatchControlPoints
                 };
 
-                var rasterizationState = new PipelineRasterizationStateCreateInfo()
+                var rasterizationState = new PipelineRasterizationStateCreateInfo
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
                     DepthClampEnable = DepthClampEnable,
@@ -481,7 +481,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBiasSlopeFactor = DepthBiasSlopeFactor
                 };
 
-                var viewportState = new PipelineViewportStateCreateInfo()
+                var viewportState = new PipelineViewportStateCreateInfo
                 {
                     SType = StructureType.PipelineViewportStateCreateInfo,
                     ViewportCount = ViewportsCount,
@@ -492,7 +492,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (gd.Capabilities.SupportsDepthClipControl)
                 {
-                    var viewportDepthClipControlState = new PipelineViewportDepthClipControlCreateInfoEXT()
+                    var viewportDepthClipControlState = new PipelineViewportDepthClipControlCreateInfoEXT
                     {
                         SType = StructureType.PipelineViewportDepthClipControlCreateInfoExt,
                         NegativeOneToOne = DepthMode
@@ -529,7 +529,7 @@ namespace Ryujinx.Graphics.Vulkan
                     StencilBackWriteMask,
                     StencilBackReference);
 
-                var depthStencilState = new PipelineDepthStencilStateCreateInfo()
+                var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
                     SType = StructureType.PipelineDepthStencilStateCreateInfo,
                     DepthTestEnable = DepthTestEnable,
@@ -564,7 +564,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                var colorBlendState = new PipelineColorBlendStateCreateInfo()
+                var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
                     LogicOpEnable = LogicOpEnable,
@@ -579,7 +579,7 @@ namespace Ryujinx.Graphics.Vulkan
                     !AdvancedBlendDstPreMultiplied ||
                     AdvancedBlendOverlap != BlendOverlapEXT.UncorrelatedExt)
                 {
-                    colorBlendAdvancedState = new PipelineColorBlendAdvancedStateCreateInfoEXT()
+                    colorBlendAdvancedState = new PipelineColorBlendAdvancedStateCreateInfoEXT
                     {
                         SType = StructureType.PipelineColorBlendAdvancedStateCreateInfoExt,
                         SrcPremultiplied = AdvancedBlendSrcPreMultiplied,
@@ -609,7 +609,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[8] = DynamicState.VertexInputBindingStrideExt;
                 }
 
-                var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo()
+                var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
                 {
                     SType = StructureType.PipelineDynamicStateCreateInfo,
                     DynamicStateCount = (uint)dynamicStatesCount,
@@ -621,7 +621,7 @@ namespace Ryujinx.Graphics.Vulkan
                     UpdateStageRequiredSubgroupSizes(gd, (int)StagesCount);
                 }
 
-                var pipelineCreateInfo = new GraphicsPipelineCreateInfo()
+                var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
                     StageCount = StagesCount,

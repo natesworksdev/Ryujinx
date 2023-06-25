@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Graphics.GAL;
+using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -56,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Span<byte> GetTextureData(CommandBufferPool cbp, TextureView view, int size)
         {
-            GAL.TextureCreateInfo info = view.Info;
+            TextureCreateInfo info = view.Info;
 
             var flushStorage = ResizeIfNeeded(size);
 

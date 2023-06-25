@@ -20,8 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] _desirableExtensions = new string[]
-        {
+        private static readonly string[] _desirableExtensions = {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -45,8 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_KHR_portability_subset" // As per spec, we should enable this if present.
         };
 
-        private static readonly string[] _requiredExtensions = new string[]
-        {
+        private static readonly string[] _requiredExtensions = {
             KhrSwapchain.ExtensionName
         };
 
@@ -278,7 +276,7 @@ namespace Ryujinx.Graphics.Vulkan
                 queuePriorities[i] = 1f;
             }
 
-            var queueCreateInfo = new DeviceQueueCreateInfo()
+            var queueCreateInfo = new DeviceQueueCreateInfo
             {
                 SType = StructureType.DeviceQueueCreateInfo,
                 QueueFamilyIndex = queueFamilyIndex,
@@ -361,7 +359,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var supportedFeatures = features2.Features;
 
-            var features = new PhysicalDeviceFeatures()
+            var features = new PhysicalDeviceFeatures
             {
                 DepthBiasClamp = supportedFeatures.DepthBiasClamp,
                 DepthClamp = supportedFeatures.DepthClamp,
@@ -392,7 +390,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent(ExtTransformFeedback.ExtensionName))
             {
-                featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
+                featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -406,7 +404,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_primitive_topology_list_restart"))
             {
-                featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT()
+                featuresPrimitiveTopologyListRestart = new PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT
                 {
                     SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -421,7 +419,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_robustness2"))
             {
-                featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+                featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
                     PNext = pExtendedFeatures,
@@ -431,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
                 pExtendedFeatures = &featuresRobustness2;
             }
 
-            var featuresExtendedDynamicState = new PhysicalDeviceExtendedDynamicStateFeaturesEXT()
+            var featuresExtendedDynamicState = new PhysicalDeviceExtendedDynamicStateFeaturesEXT
             {
                 SType = StructureType.PhysicalDeviceExtendedDynamicStateFeaturesExt,
                 PNext = pExtendedFeatures,
@@ -440,7 +438,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pExtendedFeatures = &featuresExtendedDynamicState;
 
-            var featuresVk11 = new PhysicalDeviceVulkan11Features()
+            var featuresVk11 = new PhysicalDeviceVulkan11Features
             {
                 SType = StructureType.PhysicalDeviceVulkan11Features,
                 PNext = pExtendedFeatures,
@@ -449,7 +447,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pExtendedFeatures = &featuresVk11;
 
-            var featuresVk12 = new PhysicalDeviceVulkan12Features()
+            var featuresVk12 = new PhysicalDeviceVulkan12Features
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
                 PNext = pExtendedFeatures,
@@ -464,7 +462,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_index_type_uint8"))
             {
-                featuresIndexU8 = new PhysicalDeviceIndexTypeUint8FeaturesEXT()
+                featuresIndexU8 = new PhysicalDeviceIndexTypeUint8FeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceIndexTypeUint8FeaturesExt,
                     PNext = pExtendedFeatures,
@@ -478,7 +476,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_fragment_shader_interlock"))
             {
-                featuresFragmentShaderInterlock = new PhysicalDeviceFragmentShaderInterlockFeaturesEXT()
+                featuresFragmentShaderInterlock = new PhysicalDeviceFragmentShaderInterlockFeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceFragmentShaderInterlockFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -492,7 +490,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_subgroup_size_control"))
             {
-                featuresSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlFeaturesEXT()
+                featuresSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlFeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceSubgroupSizeControlFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -508,7 +506,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedFeaturesCustomBorderColor.CustomBorderColors &&
                 supportedFeaturesCustomBorderColor.CustomBorderColorWithoutFormat)
             {
-                featuresCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT()
+                featuresCustomBorderColor = new PhysicalDeviceCustomBorderColorFeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -524,7 +522,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_depth_clip_control") &&
                 supportedFeaturesDepthClipControl.DepthClipControl)
             {
-                featuresDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT()
+                featuresDepthClipControl = new PhysicalDeviceDepthClipControlFeaturesEXT
                 {
                     SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
                     PNext = pExtendedFeatures,
@@ -543,7 +541,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ppEnabledExtensions[i] = Marshal.StringToHGlobalAnsi(enabledExtensions[i]);
             }
 
-            var deviceCreateInfo = new DeviceCreateInfo()
+            var deviceCreateInfo = new DeviceCreateInfo
             {
                 SType = StructureType.DeviceCreateInfo,
                 PNext = pExtendedFeatures,

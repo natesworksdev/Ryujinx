@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
             _api = api;
             _device = device;
 
-            var fenceCreateInfo = new FenceCreateInfo()
+            var fenceCreateInfo = new FenceCreateInfo
             {
                 SType = StructureType.FenceCreateInfo
             };

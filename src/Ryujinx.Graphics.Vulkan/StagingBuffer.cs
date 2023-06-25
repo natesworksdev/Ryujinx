@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
             _freeSize = BufferSize;
         }
 
-        public unsafe void PushData(CommandBufferPool cbp, CommandBufferScoped? cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
+        public void PushData(CommandBufferPool cbp, CommandBufferScoped? cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
         {
             bool isRender = cbs != null;
             CommandBufferScoped scoped = cbs ?? cbp.Rent();
@@ -113,7 +113,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pendingCopies.Enqueue(new PendingCopy(cbs.GetFence(), data.Length));
         }
 
-        public unsafe bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
+        public bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
         {
             if (data.Length > BufferSize)
             {

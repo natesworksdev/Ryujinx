@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     var range = _freeRanges[i];
 
-                    ulong alignedOffset = BitUtils.AlignUp<ulong>(range.Offset, alignment);
+                    ulong alignedOffset = BitUtils.AlignUp(range.Offset, alignment);
                     ulong sizeDelta = alignedOffset - range.Offset;
                     ulong usableSize = range.Size - sizeDelta;
 
@@ -198,9 +198,9 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            ulong blockAlignedSize = BitUtils.AlignUp<ulong>(size, (ulong)_blockAlignment);
+            ulong blockAlignedSize = BitUtils.AlignUp(size, (ulong)_blockAlignment);
 
-            var memoryAllocateInfo = new MemoryAllocateInfo()
+            var memoryAllocateInfo = new MemoryAllocateInfo
             {
                 SType = StructureType.MemoryAllocateInfo,
                 AllocationSize = blockAlignedSize,
@@ -213,12 +213,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (map)
             {
-                unsafe
-                {
-                    void* pointer = null;
-                    _api.MapMemory(_device, deviceMemory, 0, blockAlignedSize, 0, ref pointer).ThrowOnError();
-                    hostPointer = (IntPtr)pointer;
-                }
+                void* pointer = null;
+                _api.MapMemory(_device, deviceMemory, 0, blockAlignedSize, 0, ref pointer).ThrowOnError();
+                hostPointer = (IntPtr)pointer;
             }
 
             var newBlock = new Block(deviceMemory, hostPointer, blockAlignedSize);
@@ -238,10 +235,10 @@ namespace Ryujinx.Graphics.Vulkan
                 return IntPtr.Zero;
             }
 
-            return (IntPtr)((nuint)(nint)block.HostPointer + offset);
+            return (IntPtr)((nuint)block.HostPointer + offset);
         }
 
-        public unsafe void Free(Block block, ulong offset, ulong size)
+        public void Free(Block block, ulong offset, ulong size)
         {
             block.Free(offset, size);
 
@@ -271,7 +268,7 @@ namespace Ryujinx.Graphics.Vulkan
             _blocks.Insert(index, block);
         }
 
-        public unsafe void Dispose()
+        public void Dispose()
         {
             for (int i = 0; i < _blocks.Count; i++)
             {

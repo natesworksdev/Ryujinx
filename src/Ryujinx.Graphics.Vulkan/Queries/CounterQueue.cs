@@ -116,10 +116,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                     BufferedQuery result = _queryPool.Dequeue();
                     return result;
                 }
-                else
-                {
-                    return new BufferedQuery(_gd, _device, _pipeline, Type, _gd.IsAmdWindows);
-                }
+
+                return new BufferedQuery(_gd, _device, _pipeline, Type, _gd.IsAmdWindows);
             }
         }
 

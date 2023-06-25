@@ -181,17 +181,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                _swapQueued = false;
 
-                return true;
+                return false;
             }
+
+            _swapQueued = false;
+
+            return true;
         }
 
         private void ConsiderBackingSwap()
@@ -248,7 +244,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe Auto<DisposableBufferView> CreateView(VkFormat format, int offset, int size, Action invalidateView)
         {
-            var bufferViewCreateInfo = new BufferViewCreateInfo()
+            var bufferViewCreateInfo = new BufferViewCreateInfo
             {
                 SType = StructureType.BufferViewCreateInfo,
                 Buffer = new VkBuffer(_bufferHandle),
@@ -418,7 +414,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe PinnedSpan<byte> GetData(int offset, int size)
+        public PinnedSpan<byte> GetData(int offset, int size)
         {
             _flushLock.AcquireReaderLock(Timeout.Infinite);
 
@@ -444,26 +440,24 @@ namespace Ryujinx.Graphics.Vulkan
 
                 return PinnedSpan<byte>.UnsafeFromSpan(result, _buffer.DecrementReferenceCount);
             }
+
+            BackgroundResource resource = _gd.BackgroundResources.Get();
+
+            if (_gd.CommandBufferPool.OwnedByCurrentThread)
+            {
+                _gd.FlushAllCommands();
+
+                result = resource.GetFlushBuffer().GetBufferData(_gd.CommandBufferPool, this, offset, size);
+            }
             else
             {
-                BackgroundResource resource = _gd.BackgroundResources.Get();
-
-                if (_gd.CommandBufferPool.OwnedByCurrentThread)
-                {
-                    _gd.FlushAllCommands();
-
-                    result = resource.GetFlushBuffer().GetBufferData(_gd.CommandBufferPool, this, offset, size);
-                }
-                else
-                {
-                    result = resource.GetFlushBuffer().GetBufferData(resource.GetPool(), this, offset, size);
-                }
-
-                _flushLock.ReleaseReaderLock();
-
-                // Flush buffer is pinned until the next GetBufferData on the thread, which is fine for current uses.
-                return PinnedSpan<byte>.UnsafeFromSpan(result);
+                result = resource.GetFlushBuffer().GetBufferData(resource.GetPool(), this, offset, size);
             }
+
+            _flushLock.ReleaseReaderLock();
+
+            // Flush buffer is pinned until the next GetBufferData on the thread, which is fine for current uses.
+            return PinnedSpan<byte>.UnsafeFromSpan(result);
         }
 
         public unsafe Span<byte> GetDataStorage(int offset, int size)

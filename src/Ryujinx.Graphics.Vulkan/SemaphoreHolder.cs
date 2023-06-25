@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
             _api = api;
             _device = device;
 
-            var semaphoreCreateInfo = new SemaphoreCreateInfo()
+            var semaphoreCreateInfo = new SemaphoreCreateInfo
             {
                 SType = StructureType.SemaphoreCreateInfo
             };

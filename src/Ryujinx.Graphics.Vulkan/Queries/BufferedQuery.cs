@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 QueryPipelineStatisticFlags flags = type == CounterType.PrimitivesGenerated ?
                     QueryPipelineStatisticFlags.GeometryShaderPrimitivesBit : 0;
 
-                var queryPoolCreateInfo = new QueryPoolCreateInfo()
+                var queryPoolCreateInfo = new QueryPoolCreateInfo
                 {
                     SType = StructureType.QueryPoolCreateInfo,
                     QueryCount = 1,
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _resetSequence = null;
         }
 
-        public unsafe void End(bool withResult)
+        public void End(bool withResult)
         {
             if (_isSupported)
             {

@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Add(ref TK key, TV value)
         {
-            var entry = new Entry()
+            var entry = new Entry
             {
                 Hash = key.GetHashCode(),
                 Key = key,
@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _hashTable[bucketIndex] = new Entry[]
+                _hashTable[bucketIndex] = new[]
                 {
                     entry
                 };
