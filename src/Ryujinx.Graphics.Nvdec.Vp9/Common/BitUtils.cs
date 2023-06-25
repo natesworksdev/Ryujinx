@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Common
             {
                 10 => (ushort)Math.Clamp(val, 0, 1023),
                 12 => (ushort)Math.Clamp(val, 0, 4095),
-                _ => (ushort)Math.Clamp(val, 0, 255)
+                _ => (ushort)Math.Clamp(val, 0, 255),
             };
         }
 

@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Mv = Ryujinx.Graphics.Nvdec.Vp9.Types.Mv;
 
 namespace Ryujinx.Graphics.Nvdec.Vp9
 {
@@ -25,7 +24,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref MacroBlockDPlane pd = ref xd.Plane[plane];
             ArrayPtr<int> dqcoeff = pd.DqCoeff;
             Debug.Assert(eob > 0);
-            if (Surface.HighBd)
+            if (xd.CurBuf.HighBd)
             {
                 Span<ushort> dst16 = MemoryMarshal.Cast<byte, ushort>(dst);
                 if (xd.Lossless)
@@ -116,7 +115,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref MacroBlockDPlane pd = ref xd.Plane[plane];
             ArrayPtr<int> dqcoeff = pd.DqCoeff;
             Debug.Assert(eob > 0);
-            if (Surface.HighBd)
+            if (xd.CurBuf.HighBd)
             {
                 Span<ushort> dst16 = MemoryMarshal.Cast<byte, ushort>(dst);
                 if (xd.Lossless)
@@ -424,7 +423,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int ys)
         {
             ushort* mcBufHigh = stackalloc ushort[80 * 2 * 80 * 2];
-            if (Surface.HighBd)
+            if (xd.CurBuf.HighBd)
             {
                 HighBuildMcBorder(bufPtr1, preBufStride, mcBufHigh, bW, x0, y0, bW, bH, frameWidth, frameHeight);
                 ReconInter.HighbdInterPredictor(
@@ -616,7 +615,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     return;
                 }
             }
-            if (Surface.HighBd)
+
+            if (xd.CurBuf.HighBd)
             {
                 ReconInter.HighbdInterPredictor(
                     (ushort*)bufPtr,
@@ -1263,7 +1263,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return !tileData.Xd.Corrupted;
         }
 
-        public static unsafe ArrayPtr<byte> DecodeTilesMt(ref Vp9Common cm, ArrayPtr<byte> data, int maxThreads)
+        public static ArrayPtr<byte> DecodeTilesMt(ref Vp9Common cm, ArrayPtr<byte> data, int maxThreads)
         {
             ArrayPtr<byte> bitReaderEnd = ArrayPtr<byte>.Null;
 
@@ -1335,7 +1335,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             Ptr<Vp9Common> cmPtr = new(ref cm);
 
-            Parallel.For(0, numWorkers, (n) =>
+            Parallel.For(0, numWorkers, n =>
             {
                 ref TileWorkerData tileData = ref cmPtr.Value.TileWorkerData[n + totalTiles];
 

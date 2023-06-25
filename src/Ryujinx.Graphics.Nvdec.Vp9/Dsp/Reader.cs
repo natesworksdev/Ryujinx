@@ -6,8 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 {
     internal struct Reader
     {
-        private static readonly byte[] Norm = new byte[]
-        {
+        private static readonly byte[] Norm = {
             0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
             3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -17,7 +16,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         };
         private const int BdValueSize = sizeof(ulong) * 8;
 
@@ -37,15 +36,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 return true;
             }
-            else
-            {
-                _buffer = new ArrayPtr<byte>(ref buffer[0], size);
-                Value = 0;
-                Count = -8;
-                Range = 255;
-                Fill();
-                return ReadBit() != 0;  // Marker bit
-            }
+
+            _buffer = new ArrayPtr<byte>(ref buffer[0], size);
+            Value = 0;
+            Count = -8;
+            Range = 255;
+            Fill();
+            return ReadBit() != 0;  // Marker bit
         }
 
         private void Fill()
@@ -181,7 +178,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
             while ((i = tree[i + Read(probs[i >> 1])]) > 0)
             {
-                continue;
             }
 
             return -i;

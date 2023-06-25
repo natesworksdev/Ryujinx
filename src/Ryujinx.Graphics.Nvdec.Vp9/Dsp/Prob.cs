@@ -26,10 +26,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
         }
 
         // MODE_MV_MAX_UPDATE_FACTOR (128) * count / MODE_MV_COUNT_SAT;
-        private static readonly uint[] CountToUpdateFactor = new uint[]
-        {
+        private static readonly uint[] CountToUpdateFactor = {
             0,  6,  12, 19, 25, 32,  38,  44,  51,  57, 64,
-            70, 76, 83, 89, 96, 102, 108, 115, 121, 128
+            70, 76, 83, 89, 96, 102, 108, 115, 121, 128,
         };
 
         private const int ModeMvCountSat = 20;
@@ -41,13 +40,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 return preProb;
             }
-            else
-            {
-                uint count = Math.Min(den, ModeMvCountSat);
-                uint factor = CountToUpdateFactor[(int)count];
-                byte prob = GetProb(ct0, den);
-                return WeightedProb(preProb, prob, (int)factor);
-            }
+
+            uint count = Math.Min(den, ModeMvCountSat);
+            uint factor = CountToUpdateFactor[(int)count];
+            byte prob = GetProb(ct0, den);
+            return WeightedProb(preProb, prob, (int)factor);
         }
 
         private static uint TreeMergeProbsImpl(

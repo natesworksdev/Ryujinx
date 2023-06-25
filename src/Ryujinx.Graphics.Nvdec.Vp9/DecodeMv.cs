@@ -5,8 +5,6 @@ using Ryujinx.Graphics.Video;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Mv = Ryujinx.Graphics.Nvdec.Vp9.Types.Mv;
-using MvRef = Ryujinx.Graphics.Nvdec.Vp9.Types.MvRef;
 
 namespace Ryujinx.Graphics.Nvdec.Vp9
 {
@@ -120,10 +118,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 return ReadSelectedTxSize(ref cm, ref xd, maxTxSize, ref r);
             }
-            else
-            {
-                return (TxSize)Math.Min((int)maxTxSize, (int)Luts.TxModeToBiggestTxSize[(int)txMode]);
-            }
+
+            return (TxSize)Math.Min((int)maxTxSize, (int)Luts.TxModeToBiggestTxSize[(int)txMode]);
         }
 
         private static int DecGetSegmentId(ref Vp9Common cm, ArrayPtr<byte> segmentIds, int miOffset, int xMis, int yMis)
@@ -246,17 +242,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 return 1;
             }
-            else
-            {
-                int ctx = xd.GetSkipContext();
-                int skip = r.Read(cm.Fc.Value.SkipProb[ctx]);
-                if (!xd.Counts.IsNull)
-                {
-                    ++xd.Counts.Value.Skip[ctx][skip];
-                }
 
-                return skip;
+            int ctx = xd.GetSkipContext();
+            int skip = r.Read(cm.Fc.Value.SkipProb[ctx]);
+            if (!xd.Counts.IsNull)
+            {
+                ++xd.Counts.Value.Skip[ctx][skip];
             }
+
+            return skip;
         }
 
         private static int ReadMvComponent(ref Reader r, ref Vp9EntropyProbs fc, int mvcomp, bool usehp)
@@ -338,10 +332,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
                 return mode;  // SingleReference or CompoundReference
             }
-            else
-            {
-                return cm.ReferenceMode;
-            }
+
+            return cm.ReferenceMode;
         }
 
         // Read the referncence frame
@@ -527,17 +519,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 return cm.Seg.GetSegData(segmentId, SegLvlFeatures.SegLvlRefFrame) != Constants.IntraFrame;
             }
-            else
-            {
-                int ctx = xd.GetIntraInterContext();
-                bool isInter = r.Read(cm.Fc.Value.IntraInterProb[ctx]) != 0;
-                if (!xd.Counts.IsNull)
-                {
-                    ++xd.Counts.Value.IntraInter[ctx][isInter ? 1 : 0];
-                }
 
-                return isInter;
+            int ctx = xd.GetIntraInterContext();
+            bool isInter = r.Read(cm.Fc.Value.IntraInterProb[ctx]) != 0;
+            if (!xd.Counts.IsNull)
+            {
+                ++xd.Counts.Value.IntraInter[ctx][isInter ? 1 : 0];
             }
+
+            return isInter;
         }
 
         private static void DecFindBestRefMvs(bool allowHP, Span<Mv> mvlist, ref Mv bestMv, int refmvCount)
@@ -618,7 +608,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // This function searches the neighborhood of a given MB/SB
         // to try and find candidate reference vectors.
-        private static unsafe int DecFindMvRefs(
+        private static int DecFindMvRefs(
             ref Vp9Common cm,
             ref MacroBlockD xd,
             PredictionMode mode,
@@ -1043,11 +1033,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
                 return leftMi.Value.GetYMode(b + 1);
             }
-            else
-            {
-                Debug.Assert(b == 1 || b == 3);
-                return curMi.Value.Bmi[b - 1].Mode;
-            }
+
+            Debug.Assert(b == 1 || b == 3);
+            return curMi.Value.Bmi[b - 1].Mode;
         }
 
         private static PredictionMode AboveBlockMode(Ptr<ModeInfo> curMi, Ptr<ModeInfo> aboveMi, int b)
@@ -1061,11 +1049,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
                 return aboveMi.Value.GetYMode(b + 2);
             }
-            else
-            {
-                Debug.Assert(b == 2 || b == 3);
-                return curMi.Value.Bmi[b - 2].Mode;
-            }
+
+            Debug.Assert(b == 2 || b == 3);
+            return curMi.Value.Bmi[b - 2].Mode;
         }
 
         private static ReadOnlySpan<byte> GetYModeProbs(

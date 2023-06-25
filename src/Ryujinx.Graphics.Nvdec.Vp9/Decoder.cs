@@ -3,7 +3,6 @@ using Ryujinx.Graphics.Nvdec.Vp9.Common;
 using Ryujinx.Graphics.Nvdec.Vp9.Types;
 using Ryujinx.Graphics.Video;
 using System;
-using Vp9MvRef = Ryujinx.Graphics.Video.Vp9MvRef;
 
 namespace Ryujinx.Graphics.Nvdec.Vp9
 {
@@ -20,7 +19,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Constants.EightTapSmooth,
             Constants.EightTap,
             Constants.EightTapSharp,
-            Constants.Bilinear
+            Constants.Bilinear,
         };
 
         public unsafe bool Decode(
@@ -47,7 +46,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 BaseQindex = pictureInfo.BaseQIndex,
                 YDcDeltaQ = pictureInfo.YDcDeltaQ,
                 UvAcDeltaQ = pictureInfo.UvAcDeltaQ,
-                UvDcDeltaQ = pictureInfo.UvDcDeltaQ
+                UvDcDeltaQ = pictureInfo.UvDcDeltaQ,
             };
 
             cm.Mb.Lossless = pictureInfo.Lossless;

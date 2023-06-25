@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
             9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
             9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-            9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10
+            9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10,
         };
 
         public readonly bool UseMvHp()
@@ -127,10 +127,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             {
                 return Col == 0 ? MvJointType.MvJointZero : MvJointType.MvJointHnzvz;
             }
-            else
-            {
-                return Col == 0 ? MvJointType.MvJointHzvnz : MvJointType.MvJointHnzvnz;
-            }
+
+            return Col == 0 ? MvJointType.MvJointHzvnz : MvJointType.MvJointHnzvnz;
         }
 
         internal readonly void IncMv(Ptr<Vp9BackwardUpdates> counts)

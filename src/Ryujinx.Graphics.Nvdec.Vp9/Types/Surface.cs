@@ -27,7 +27,10 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public int UvAlignedWidth { get; }
         public int UvAlignedHeight { get; }
         public int UvStride { get; }
-        public static bool HighBd => false;
+
+#pragma warning disable CA1822 // Mark member as static
+        public readonly bool HighBd => false;
+#pragma warning restore CA1822
 
         private readonly IntPtr _pointer;
 
@@ -64,9 +67,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             UvAlignedHeight = uvHeight;
             UvStride = uvStride;
 
-            ArrayPtr<byte> NewPlane(int start, int size, int border)
+            ArrayPtr<byte> NewPlane(int start, int size, int planeBorder)
             {
-                return new ArrayPtr<byte>(pointer + start + border, size - border);
+                return new ArrayPtr<byte>(pointer + start + planeBorder, size - planeBorder);
             }
 
             YBuffer = NewPlane(0, yplaneSize, (border * yStride) + border);

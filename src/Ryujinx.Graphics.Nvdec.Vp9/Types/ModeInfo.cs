@@ -49,9 +49,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return RefFrame[1] > Constants.IntraFrame;
         }
 
-        private static readonly int[][] IdxNColumnToSubblock = new int[][]
-        {
-            new int[] { 1, 2 }, new int[] { 1, 3 }, new int[] { 3, 2 }, new int[] { 3, 3 }
+        private static readonly int[][] IdxNColumnToSubblock = {
+            new[] { 1, 2 }, new[] { 1, 3 }, new[] { 3, 2 }, new[] { 3, 3 },
         };
 
         // This function returns either the appropriate sub block or block's mv

@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[2].Mv[idx].Row + mi.Bmi[3].Mv[idx].Row),
                 Col = (short)RoundMvCompQ4(
                     mi.Bmi[0].Mv[idx].Col + mi.Bmi[1].Mv[idx].Col +
-                    mi.Bmi[2].Mv[idx].Col + mi.Bmi[3].Mv[idx].Col)
+                    mi.Bmi[2].Mv[idx].Col + mi.Bmi[3].Mv[idx].Col),
             };
             return res;
         }
@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[block1].Mv[idx].Row),
                 Col = (short)RoundMvCompQ2(
                     mi.Bmi[block0].Mv[idx].Col +
-                    mi.Bmi[block1].Mv[idx].Col)
+                    mi.Bmi[block1].Mv[idx].Col),
             };
             return res;
         }
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Mv clampedMv = new()
             {
                 Row = (short)(srcMv.Row * (1 << (1 - ssY))),
-                Col = (short)(srcMv.Col * (1 << (1 - ssX)))
+                Col = (short)(srcMv.Col * (1 << (1 - ssX))),
             };
 
             Debug.Assert(ssX <= 1);

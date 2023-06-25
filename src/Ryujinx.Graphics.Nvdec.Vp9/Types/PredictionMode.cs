@@ -16,6 +16,6 @@
         NearMv = 11,
         ZeroMv = 12,
         NewMv = 13,
-        MbModeCount = 14
+        MbModeCount = 14,
     }
 }

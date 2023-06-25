@@ -82,18 +82,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             {
                 return leftType;
             }
-            else if (leftType == Constants.SwitchableFilters)
+
+            if (leftType == Constants.SwitchableFilters)
             {
                 return aboveType;
             }
-            else if (aboveType == Constants.SwitchableFilters)
+
+            if (aboveType == Constants.SwitchableFilters)
             {
                 return leftType;
             }
-            else
-            {
-                return Constants.SwitchableFilters;
-            }
+
+            return Constants.SwitchableFilters;
         }
 
         // The mode info data structure has a one element border above and to the
@@ -111,7 +111,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 bool leftIntra = !LeftMi.Value.IsInterBlock();
                 return leftIntra && aboveIntra ? 3 : (leftIntra || aboveIntra ? 1 : 0);
             }
-            else if (!AboveMi.IsNull || !LeftMi.IsNull)
+
+            if (!AboveMi.IsNull || !LeftMi.IsNull)
             {  // One edge available
                 return 2 * (!(!AboveMi.IsNull ? AboveMi.Value : LeftMi.Value).IsInterBlock() ? 1 : 0);
             }
