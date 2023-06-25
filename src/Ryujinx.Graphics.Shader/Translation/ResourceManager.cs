@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private const int DefaultLocalMemorySize = 128;
         private const int DefaultSharedMemorySize = 4096;
 
-        private static readonly string[] StagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] _stagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private readonly IGpuAccessor _gpuAccessor;
         private readonly string _stagePrefix;
@@ -247,7 +247,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             uint index = (uint)stage;
 
-            return index >= StagePrefixes.Length ? "invalid" : StagePrefixes[index];
+            return index >= _stagePrefixes.Length ? "invalid" : _stagePrefixes[index];
         }
 
         private static int PackSbCbInfo(int sbCbSlot, int sbCbOffset)

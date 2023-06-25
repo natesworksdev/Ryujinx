@@ -17,15 +17,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
     {
         // Resource pools for Spirv generation. Note: Increase count when more threads are being used.
         private const int GeneratorPoolCount = 1;
-        private static readonly ObjectPool<SpvInstructionPool> InstructionPool;
-        private static readonly ObjectPool<SpvLiteralIntegerPool> IntegerPool;
-        private static readonly object PoolLock;
+        private static readonly ObjectPool<SpvInstructionPool> _instructionPool;
+        private static readonly ObjectPool<SpvLiteralIntegerPool> _integerPool;
+        private static readonly object _poolLock;
 
         static SpirvGenerator()
         {
-            InstructionPool = new(() => new SpvInstructionPool(), GeneratorPoolCount);
-            IntegerPool = new(() => new SpvLiteralIntegerPool(), GeneratorPoolCount);
-            PoolLock = new object();
+            _instructionPool = new(() => new SpvInstructionPool(), GeneratorPoolCount);
+            _integerPool = new(() => new SpvLiteralIntegerPool(), GeneratorPoolCount);
+            _poolLock = new object();
         }
 
         private const HelperFunctionsMask NeedsInvocationIdMask =
@@ -40,10 +40,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             SpvInstructionPool instPool;
             SpvLiteralIntegerPool integerPool;
 
-            lock (PoolLock)
+            lock (_poolLock)
             {
-                instPool = InstructionPool.Allocate();
-                integerPool = IntegerPool.Allocate();
+                instPool = _instructionPool.Allocate();
+                integerPool = _integerPool.Allocate();
             }
 
             CodeGenContext context = new(info, config, instPool, integerPool);
@@ -133,10 +133,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             byte[] result = context.Generate();
 
-            lock (PoolLock)
+            lock (_poolLock)
             {
-                InstructionPool.Release(instPool);
-                IntegerPool.Release(integerPool);
+                _instructionPool.Release(instPool);
+                _integerPool.Release(integerPool);
             }
 
             return result;

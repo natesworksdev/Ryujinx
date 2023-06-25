@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common;
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+﻿using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using Spv.Generator;
@@ -14,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
     static class Declarations
     {
-        private static readonly string[] StagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] _stagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         public static void DeclareParameters(CodeGenContext context, StructuredFunction function)
         {
@@ -542,7 +541,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static string GetStagePrefix(ShaderStage stage)
         {
-            return StagePrefixes[(int)stage];
+            return _stagePrefixes[(int)stage];
         }
     }
 }

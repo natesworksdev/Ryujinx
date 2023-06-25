@@ -21,11 +21,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             MemorySemanticsMask.UniformMemory |
             MemorySemanticsMask.AcquireRelease;
 
-        private static readonly Func<CodeGenContext, AstOperation, OperationResult>[] InstTable;
+        private static readonly Func<CodeGenContext, AstOperation, OperationResult>[] _instTable;
 
         static Instructions()
         {
-            InstTable = new Func<CodeGenContext, AstOperation, OperationResult>[(int)Instruction.Count];
+            _instTable = new Func<CodeGenContext, AstOperation, OperationResult>[(int)Instruction.Count];
 
 #pragma warning disable IDE0055 // Disable formatting
             Add(Instruction.Absolute,                 GenerateAbsolute);
@@ -147,12 +147,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void Add(Instruction inst, Func<CodeGenContext, AstOperation, OperationResult> handler)
         {
-            InstTable[(int)(inst & Instruction.Mask)] = handler;
+            _instTable[(int)(inst & Instruction.Mask)] = handler;
         }
 
         public static OperationResult Generate(CodeGenContext context, AstOperation operation)
         {
-            var handler = InstTable[(int)(operation.Inst & Instruction.Mask)];
+            var handler = _instTable[(int)(operation.Inst & Instruction.Mask)];
             if (handler != null)
             {
                 return handler(context, operation);
