@@ -59,9 +59,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         internal BufferHandle MapBuffer(BufferHandle handle)
         {
             // Maps a threaded buffer to a backend one.
-            // Threaded buffers are returned on creation as the buffer 
+            // Threaded buffers are returned on creation as the buffer
             // isn't actually created until the queue runs the command.
-
 
             lock (_bufferMap)
             {
