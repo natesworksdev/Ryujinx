@@ -1,4 +1,8 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿using Ryujinx.Common.Utilities;
+using System;
+using System.Runtime.InteropServices;
+
+namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     static class RandomMiiConstants
     {
@@ -12,7 +16,7 @@
         public static int[] EyebrowRotateTable =  {
             0x06, 0x06, 0x05, 0x07, 0x06, 0x07, 0x06, 0x07, 0x04, 0x07, 0x06, 0x08, 0x05, 0x05, 0x06, 0x06,
             0x07, 0x07, 0x06, 0x06, 0x05, 0x06, 0x07, 0x05,
-        ;
+        };
 
         [Flags]
         public enum BeardAndMustacheFlag

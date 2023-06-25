@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             if (!_isUsbDeviceSupported && device.IsUsbDevice())
             {
-                device = VirtualDeviceSessionRegistry.DefaultDevice;
+                device = _registry.DefaultDevice;
             }
 
             return device.Name;
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             if (!_isUsbDeviceSupported && device.IsUsbDevice())
             {
-                device = VirtualDeviceSessionRegistry.DefaultDevice;
+                device = _registry.DefaultDevice;
             }
 
             return device.ChannelCount;
