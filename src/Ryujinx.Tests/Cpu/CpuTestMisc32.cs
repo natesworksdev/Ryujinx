@@ -23,19 +23,19 @@ namespace Ryujinx.Tests.Cpu
             yield return 0x00000000007FFFFFul; // +Max Subnormal
             yield return 0x0000000000000001ul; // +Min Subnormal (float.Epsilon)
 
-            if (!NoZeros)
+            if (!_noZeros)
             {
                 yield return 0x0000000080000000ul; // -Zero
                 yield return 0x0000000000000000ul; // +Zero
             }
 
-            if (!NoInfs)
+            if (!_noInfs)
             {
                 yield return 0x00000000FF800000ul; // -Infinity
                 yield return 0x000000007F800000ul; // +Infinity
             }
 
-            if (!NoNaNs)
+            if (!_noNaNs)
             {
                 yield return 0x00000000FFC00000ul; // -QNaN (all zeros payload) (float.NaN)
                 yield return 0x00000000FFBFFFFFul; // -SNaN (all ones  payload)
@@ -57,9 +57,9 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private static readonly bool _noZeros = false;
+        private static readonly bool _noInfs = false;
+        private static readonly bool _noNaNs = false;
 
         [Test, Pairwise]
         public void Vmsr_Vcmp_Vmrs([ValueSource(nameof(_1S_F_))] ulong a,

@@ -24,19 +24,19 @@ namespace Ryujinx.Tests.Cpu
             yield return 0x00000000007FFFFFul; // +Max Subnormal
             yield return 0x0000000000000001ul; // +Min Subnormal (float.Epsilon)
 
-            if (!NoZeros)
+            if (!_noZeros)
             {
                 yield return 0x0000000080000000ul; // -Zero
                 yield return 0x0000000000000000ul; // +Zero
             }
 
-            if (!NoInfs)
+            if (!_noInfs)
             {
                 yield return 0x00000000FF800000ul; // -Infinity
                 yield return 0x000000007F800000ul; // +Infinity
             }
 
-            if (!NoNaNs)
+            if (!_noNaNs)
             {
                 yield return 0x00000000FFC00000ul; // -QNaN (all zeros payload) (float.NaN)
                 yield return 0x00000000FFBFFFFFul; // -SNaN (all ones  payload)
@@ -56,11 +56,11 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private const int RndCnt    = 2;
+        private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private static readonly bool _noZeros = false;
+        private static readonly bool _noInfs = false;
+        private static readonly bool _noNaNs = false;
 
         #region "AluImm & Csel"
         [Test, Pairwise]
@@ -73,7 +73,7 @@ namespace Ryujinx.Tests.Cpu
                                              0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
                                              0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
-            uint opCmn  = 0xB100001F; // ADDS  X31, X0,  #0,  LSL #0 -> CMN  X0, #0, LSL #0
+            uint opCmn = 0xB100001F; // ADDS  X31, X0,  #0,  LSL #0 -> CMN  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
 
             opCmn |= ((shift & 3) << 22) | ((imm & 4095) << 10);
@@ -98,7 +98,7 @@ namespace Ryujinx.Tests.Cpu
                                              0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
                                              0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
-            uint opCmn  = 0x3100001F; // ADDS  W31, W0,  #0,  LSL #0 -> CMN  W0, #0, LSL #0
+            uint opCmn = 0x3100001F; // ADDS  W31, W0,  #0,  LSL #0 -> CMN  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
 
             opCmn |= ((shift & 3) << 22) | ((imm & 4095) << 10);
@@ -123,7 +123,7 @@ namespace Ryujinx.Tests.Cpu
                                              0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
                                              0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
-            uint opCmp  = 0xF100001F; // SUBS  X31, X0,  #0,  LSL #0 -> CMP  X0, #0, LSL #0
+            uint opCmp = 0xF100001F; // SUBS  X31, X0,  #0,  LSL #0 -> CMP  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
 
             opCmp |= ((shift & 3) << 22) | ((imm & 4095) << 10);
@@ -148,7 +148,7 @@ namespace Ryujinx.Tests.Cpu
                                              0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
                                              0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
-            uint opCmp  = 0x7100001F; // SUBS  W31, W0,  #0,  LSL #0 -> CMP  W0, #0, LSL #0
+            uint opCmp = 0x7100001F; // SUBS  W31, W0,  #0,  LSL #0 -> CMP  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
 
             opCmp |= ((shift & 3) << 22) | ((imm & 4095) << 10);

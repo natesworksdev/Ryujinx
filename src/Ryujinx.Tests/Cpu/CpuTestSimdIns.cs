@@ -82,8 +82,8 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (imm5 << 16);
             opcode |= ((q & 1) << 30);
 
-            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcode, x1: wn, x31: w31, v0: v0);
@@ -100,7 +100,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
             ulong x31 = TestContext.CurrentContext.Random.NextULong();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcode, x1: xn, x31: x31, v0: v0);

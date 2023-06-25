@@ -15,13 +15,13 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void TestInitializeSystemPool()
         {
-            PoolMapper      poolMapper    = new(DummyProcessHandle, true);
+            PoolMapper poolMapper = new(DummyProcessHandle, true);
             MemoryPoolState memoryPoolDsp = MemoryPoolState.Create(MemoryPoolState.LocationType.Dsp);
             MemoryPoolState memoryPoolCpu = MemoryPoolState.Create(MemoryPoolState.LocationType.Cpu);
 
             const CpuAddress CpuAddress = 0x20000;
             const DspAddress DspAddress = CpuAddress; // TODO: DSP LLE
-            const ulong      CpuSize    = 0x1000;
+            const ulong CpuSize = 0x1000;
 
             Assert.IsFalse(poolMapper.InitializeSystemPool(ref memoryPoolCpu, CpuAddress, CpuSize));
             Assert.IsTrue(poolMapper.InitializeSystemPool(ref memoryPoolDsp, CpuAddress, CpuSize));
@@ -34,7 +34,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void TestGetProcessHandle()
         {
-            PoolMapper      poolMapper    = new(DummyProcessHandle, true);
+            PoolMapper poolMapper = new(DummyProcessHandle, true);
             MemoryPoolState memoryPoolDsp = MemoryPoolState.Create(MemoryPoolState.LocationType.Dsp);
             MemoryPoolState memoryPoolCpu = MemoryPoolState.Create(MemoryPoolState.LocationType.Cpu);
 
@@ -45,13 +45,13 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void TestMappings()
         {
-            PoolMapper      poolMapper    = new(DummyProcessHandle, true);
+            PoolMapper poolMapper = new(DummyProcessHandle, true);
             MemoryPoolState memoryPoolDsp = MemoryPoolState.Create(MemoryPoolState.LocationType.Dsp);
             MemoryPoolState memoryPoolCpu = MemoryPoolState.Create(MemoryPoolState.LocationType.Cpu);
 
             const CpuAddress CpuAddress = 0x20000;
             const DspAddress DspAddress = CpuAddress; // TODO: DSP LLE
-            const ulong      CpuSize    = 0x1000;
+            const ulong CpuSize = 0x1000;
 
             memoryPoolDsp.SetCpuAddress(CpuAddress, CpuSize);
             memoryPoolCpu.SetCpuAddress(CpuAddress, CpuSize);
@@ -72,10 +72,10 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         {
             const CpuAddress CpuAddress = 0x20000;
             const DspAddress DspAddress = CpuAddress; // TODO: DSP LLE
-            const ulong      CpuSize    = 0x1000;
+            const ulong CpuSize = 0x1000;
 
-            const int        MemoryPoolStateArraySize = 0x10;
-            const CpuAddress CpuAddressRegionEnding   = CpuAddress * MemoryPoolStateArraySize;
+            const int MemoryPoolStateArraySize = 0x10;
+            const CpuAddress CpuAddressRegionEnding = CpuAddress * MemoryPoolStateArraySize;
 
             MemoryPoolState[] memoryPoolStateArray = new MemoryPoolState[MemoryPoolStateArraySize];
 

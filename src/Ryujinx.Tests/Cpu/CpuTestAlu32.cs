@@ -193,7 +193,7 @@ namespace Ryujinx.Tests.Cpu
                               [Random(RndCnt)] uint w2)
         {
             uint opUadd8 = 0xE6500F90; // UADD8 R0, R0, R0
-            uint opSel   = 0xE6800FB0; // SEL R0, R0, R0
+            uint opSel = 0xE6800FB0; // SEL R0, R0, R0
 
             opUadd8 |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
             opSel |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);

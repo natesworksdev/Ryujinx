@@ -43,8 +43,8 @@ namespace Ryujinx.Tests.Cpu
                 return 1u;
             }
 
-            uint rnd  = TestContext.CurrentContext.Random.NextUInt();
-            int  mask = int.MinValue;
+            uint rnd = TestContext.CurrentContext.Random.NextUInt();
+            int mask = int.MinValue;
 
             return (rnd >> (cnt + 1)) | ((uint)mask >> cnt);
         }
@@ -61,8 +61,8 @@ namespace Ryujinx.Tests.Cpu
                 return 1ul;
             }
 
-            ulong rnd  = TestContext.CurrentContext.Random.NextULong();
-            long  mask = long.MinValue;
+            ulong rnd = TestContext.CurrentContext.Random.NextULong();
+            long mask = long.MinValue;
 
             return (rnd >> (cnt + 1)) | ((ulong)mask >> cnt);
         }

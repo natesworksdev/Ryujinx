@@ -186,7 +186,7 @@ namespace Ryujinx.Tests.Cpu
 #pragma warning restore IDE1006
         #endregion
 
-        private const int RndCntImm8  = 2;
+        private const int RndCntImm8 = 2;
         private const int RndCntImm64 = 2;
 
         [Test, Pairwise]
@@ -196,7 +196,7 @@ namespace Ryujinx.Tests.Cpu
                                      [Values(0b0u, 0b1u)] uint amount, // <0, 8>
                                      [Values(0b0u, 0b1u)] uint q)      // <4H, 8H>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -217,7 +217,7 @@ namespace Ryujinx.Tests.Cpu
                                      [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint amount, // <0, 8, 16, 24>
                                      [Values(0b0u, 0b1u)] uint q)                      // <2S, 4S>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -236,7 +236,7 @@ namespace Ryujinx.Tests.Cpu
         public void F_Mov_Vi_2S([ValueSource(nameof(_F_Mov_Vi_2S_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {
-            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint abc = (abcdefgh & 0xE0u) >> 5;
             uint defgh = (abcdefgh & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -254,7 +254,7 @@ namespace Ryujinx.Tests.Cpu
         public void F_Mov_Vi_4S([ValueSource(nameof(_F_Mov_Vi_4S_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {
-            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint abc = (abcdefgh & 0xE0u) >> 5;
             uint defgh = (abcdefgh & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -269,7 +269,7 @@ namespace Ryujinx.Tests.Cpu
         public void F_Mov_Vi_2D([ValueSource(nameof(_F_Mov_Vi_2D_))] uint opcodes,
                                 [Range(0u, 255u, 1u)] uint abcdefgh)
         {
-            uint abc   = (abcdefgh & 0xE0u) >> 5;
+            uint abc = (abcdefgh & 0xE0u) >> 5;
             uint defgh = (abcdefgh & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -284,7 +284,7 @@ namespace Ryujinx.Tests.Cpu
                                 [ValueSource(nameof(_8BIT_IMM_))] byte imm8,
                                 [Values(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -304,7 +304,7 @@ namespace Ryujinx.Tests.Cpu
                                                   [Values(0b0u, 0b1u)] uint amount, // <0, 8>
                                                   [Values(0b0u, 0b1u)] uint q)      // <4H, 8H>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -325,7 +325,7 @@ namespace Ryujinx.Tests.Cpu
                                                   [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint amount, // <0, 8, 16, 24>
                                                   [Values(0b0u, 0b1u)] uint q)                      // <2S, 4S>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -346,7 +346,7 @@ namespace Ryujinx.Tests.Cpu
                                                     [Values(0b0u, 0b1u)] uint amount, // <8, 16>
                                                     [Values(0b0u, 0b1u)] uint q)      // <2S, 4S>
         {
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -367,7 +367,7 @@ namespace Ryujinx.Tests.Cpu
         {
             byte imm8 = ShrinkImm64(imm);
 
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);
@@ -386,7 +386,7 @@ namespace Ryujinx.Tests.Cpu
         {
             byte imm8 = ShrinkImm64(imm);
 
-            uint abc   = (imm8 & 0xE0u) >> 5;
+            uint abc = (imm8 & 0xE0u) >> 5;
             uint defgh = (imm8 & 0x1Fu);
 
             opcodes |= (abc << 16) | (defgh << 5);

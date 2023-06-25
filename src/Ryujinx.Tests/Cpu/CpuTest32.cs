@@ -297,10 +297,10 @@ namespace Ryujinx.Tests.Cpu
                 FinalRegs = test.FinalRegs,
             });
 
-            foreach (var (Address, Value) in test.MemoryDelta)
+            foreach (var (address, value) in test.MemoryDelta)
             {
-                testMem[Address - DataBaseAddress + 0] = (byte)(Value >> 0);
-                testMem[Address - DataBaseAddress + 1] = (byte)(Value >> 8);
+                testMem[address - DataBaseAddress + 0] = (byte)(value >> 0);
+                testMem[address - DataBaseAddress + 1] = (byte)(value >> 8);
             }
 
             byte[] mem = _memory.GetSpan(DataBaseAddress, (int)Size).ToArray();

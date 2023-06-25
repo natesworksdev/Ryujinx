@@ -63,19 +63,19 @@ namespace Ryujinx.Tests.Cpu
             yield return 0x00000000007FFFFFul; // +Max Subnormal
             yield return 0x0000000000000001ul; // +Min Subnormal (float.Epsilon)
 
-            if (!NoZeros)
+            if (!_noZeros)
             {
                 yield return 0x0000000080000000ul; // -Zero
                 yield return 0x0000000000000000ul; // +Zero
             }
 
-            if (!NoInfs)
+            if (!_noInfs)
             {
                 yield return 0x00000000FF800000ul; // -Infinity
                 yield return 0x000000007F800000ul; // +Infinity
             }
 
-            if (!NoNaNs)
+            if (!_noNaNs)
             {
                 yield return 0x00000000FFC00000ul; // -QNaN (all zeros payload) (float.NaN)
                 yield return 0x00000000FFBFFFFFul; // -SNaN (all ones  payload)
@@ -146,19 +146,19 @@ namespace Ryujinx.Tests.Cpu
             yield return 0x000FFFFFFFFFFFFFul; // +Max Subnormal
             yield return 0x0000000000000001ul; // +Min Subnormal (double.Epsilon)
 
-            if (!NoZeros)
+            if (!_noZeros)
             {
                 yield return 0x8000000000000000ul; // -Zero
                 yield return 0x0000000000000000ul; // +Zero
             }
 
-            if (!NoInfs)
+            if (!_noInfs)
             {
                 yield return 0xFFF0000000000000ul; // -Infinity
                 yield return 0x7FF0000000000000ul; // +Infinity
             }
 
-            if (!NoNaNs)
+            if (!_noNaNs)
             {
                 yield return 0xFFF8000000000000ul; // -QNaN (all zeros payload) (double.NaN)
                 yield return 0xFFF7FFFFFFFFFFFFul; // -SNaN (all ones  payload)
@@ -366,11 +366,11 @@ namespace Ryujinx.Tests.Cpu
 #pragma warning restore IDE1006
         #endregion
 
-        private const int RndCnt      = 2;
+        private const int RndCnt = 2;
 
-        private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private static readonly bool _noZeros = false;
+        private static readonly bool _noInfs = false;
+        private static readonly bool _noNaNs = false;
 
         [Test, Pairwise]
         [Explicit]
@@ -537,8 +537,8 @@ namespace Ryujinx.Tests.Cpu
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
@@ -555,8 +555,8 @@ namespace Ryujinx.Tests.Cpu
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE1(z);
 
             SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
@@ -574,7 +574,7 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
             ulong x31 = TestContext.CurrentContext.Random.NextULong();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);
@@ -592,7 +592,7 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
             ulong x31 = TestContext.CurrentContext.Random.NextULong();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE1(z);
 
             SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);
@@ -613,8 +613,8 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= (scale << 10);
 
-            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
@@ -635,8 +635,8 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= (scale << 10);
 
-            uint  w31 = TestContext.CurrentContext.Random.NextUInt();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE1(z);
 
             SingleOpcode(opcodes, x1: wn, x31: w31, v0: v0);
@@ -658,7 +658,7 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= (scale << 10);
 
             ulong x31 = TestContext.CurrentContext.Random.NextULong();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE0E1(z, z);
 
             SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);
@@ -680,7 +680,7 @@ namespace Ryujinx.Tests.Cpu
             opcodes |= (scale << 10);
 
             ulong x31 = TestContext.CurrentContext.Random.NextULong();
-            ulong z   = TestContext.CurrentContext.Random.NextULong();
+            ulong z = TestContext.CurrentContext.Random.NextULong();
             V128 v0 = MakeVectorE1(z);
 
             SingleOpcode(opcodes, x1: xn, x31: x31, v0: v0);

@@ -1,7 +1,6 @@
 // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
 
 using ARMeilleure.State;
-
 using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
@@ -22,7 +21,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
             V128 v0 = MakeVectorE0E1(roundKeyL ^ valueL, roundKeyH ^ valueH);
-            V128 v1 = MakeVectorE0E1(roundKeyL,          roundKeyH);
+            V128 v1 = MakeVectorE0E1(roundKeyL, roundKeyH);
 
             ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1);
 
@@ -54,7 +53,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
             V128 v0 = MakeVectorE0E1(roundKeyL ^ valueL, roundKeyH ^ valueH);
-            V128 v1 = MakeVectorE0E1(roundKeyL,          roundKeyH);
+            V128 v1 = MakeVectorE0E1(roundKeyL, roundKeyH);
 
             ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1);
 

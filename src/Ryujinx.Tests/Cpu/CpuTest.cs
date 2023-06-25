@@ -19,10 +19,10 @@ namespace Ryujinx.Tests.Cpu
         protected static ulong DataBaseAddress = CodeBaseAddress + Size;
 #pragma warning restore CA2211
 
-        private static readonly bool Ignore_FpcrFz = false;
-        private static readonly bool Ignore_FpcrDn = false;
+        private static readonly bool _ignoreFpcrFz = false;
+        private static readonly bool _ignoreFpcrDn = false;
 
-        private static readonly bool IgnoreAllExcept_FpsrQc = false;
+        private static readonly bool _ignoreAllExceptFpsrQc = false;
 
         private ulong _currAddress;
 
@@ -210,12 +210,12 @@ namespace Ryujinx.Tests.Cpu
                                                 int fpsr = 0,
                                                 bool runUnicorn = true)
         {
-            if (Ignore_FpcrFz)
+            if (_ignoreFpcrFz)
             {
                 fpcr &= ~(1 << (int)Fpcr.Fz);
             }
 
-            if (Ignore_FpcrDn)
+            if (_ignoreFpcrDn)
             {
                 fpcr &= ~(1 << (int)Fpcr.Dn);
             }
@@ -265,11 +265,11 @@ namespace Ryujinx.Tests.Cpu
             /// <summary>Rounding Mode control field.</summary>
             RMode = 22,
             /// <summary>Flush-to-zero mode control bit.</summary>
-            Fz    = 24,
+            Fz = 24,
             /// <summary>Default NaN mode control bit.</summary>
-            Dn    = 25,
+            Dn = 25,
             /// <summary>Alternative half-precision control bit.</summary>
-            Ahp   = 26
+            Ahp = 26
         }
 
         /// <summary>Floating-point Status Register.</summary>
@@ -304,7 +304,7 @@ namespace Ryujinx.Tests.Cpu
             IfNaND = 2,
 
             IfUnderflow = 4,
-            IfOverflow  = 8
+            IfOverflow = 8
         }
 
         protected enum FpTolerances
@@ -320,7 +320,7 @@ namespace Ryujinx.Tests.Cpu
             FpSkips fpSkips = FpSkips.None,
             FpTolerances fpTolerances = FpTolerances.None)
         {
-            if (IgnoreAllExcept_FpsrQc)
+            if (_ignoreAllExceptFpsrQc)
             {
                 fpsrMask &= Fpsr.Qc;
             }
