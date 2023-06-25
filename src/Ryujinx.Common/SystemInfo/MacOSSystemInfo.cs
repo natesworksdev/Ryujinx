@@ -14,14 +14,14 @@ namespace Ryujinx.Common.SystemInfo
         {
             string cpuName = GetCpuidCpuName();
 
-            if (cpuName == null && sysctlbyname("machdep.cpu.brand_string", out cpuName) != 0)
+            if (cpuName == null && SysctlByName("machdep.cpu.brand_string", out cpuName) != 0)
             {
                 cpuName = "Unknown";
             }
 
             ulong totalRAM = 0;
 
-            if (sysctlbyname("hw.memsize", ref totalRAM) != 0)  // Bytes
+            if (SysctlByName("hw.memsize", ref totalRAM) != 0)  // Bytes
             {
                 totalRAM = 0;
             }
@@ -63,8 +63,7 @@ namespace Ryujinx.Common.SystemInfo
         [LibraryImport(SystemLibraryName, SetLastError = true)]
         private static partial int sysctlbyname([MarshalAs(UnmanagedType.LPStr)] string name, IntPtr oldValue, ref ulong oldSize, IntPtr newValue, ulong newValueSize);
 
-#pragma warning disable IDE1006 // Naming rule violation
-        private static int sysctlbyname(string name, IntPtr oldValue, ref ulong oldSize)
+        private static int SysctlByName(string name, IntPtr oldValue, ref ulong oldSize)
         {
             if (sysctlbyname(name, oldValue, ref oldSize, IntPtr.Zero, 0) == -1)
             {
@@ -78,23 +77,23 @@ namespace Ryujinx.Common.SystemInfo
             return 0;
         }
 
-        private static int sysctlbyname<T>(string name, ref T oldValue)
+        private static int SysctlByName<T>(string name, ref T oldValue)
         {
             unsafe
             {
                 ulong oldValueSize = (ulong)Unsafe.SizeOf<T>();
 
-                return sysctlbyname(name, (IntPtr)Unsafe.AsPointer(ref oldValue), ref oldValueSize);
+                return SysctlByName(name, (IntPtr)Unsafe.AsPointer(ref oldValue), ref oldValueSize);
             }
         }
 
-        private static int sysctlbyname(string name, out string oldValue)
+        private static int SysctlByName(string name, out string oldValue)
         {
             oldValue = default;
 
             ulong strSize = 0;
 
-            int res = sysctlbyname(name, IntPtr.Zero, ref strSize);
+            int res = SysctlByName(name, IntPtr.Zero, ref strSize);
 
             if (res == 0)
             {
@@ -104,7 +103,7 @@ namespace Ryujinx.Common.SystemInfo
                 {
                     fixed (byte* rawDataPtr = rawData)
                     {
-                        res = sysctlbyname(name, (IntPtr)rawDataPtr, ref strSize);
+                        res = SysctlByName(name, (IntPtr)rawDataPtr, ref strSize);
                     }
 
                     if (res == 0)
@@ -122,7 +121,6 @@ namespace Ryujinx.Common.SystemInfo
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
         private static partial int host_page_size(uint host, ref uint out_page_size);
-#pragma warning restore IDE1006
 
         [StructLayout(LayoutKind.Sequential, Pack = 8)]
         struct VMStatistics64
@@ -154,8 +152,6 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [LibraryImport(SystemLibraryName, SetLastError = true)]
-#pragma warning disable IDE1006 // Naming rule violation
-        private static partial int host_statistics64(uint host_priv, int host_flavor, ref VMStatistics64 host_info64_out, ref uint host_info64_outCnt);
-#pragma warning restore IDE1006
+        private static partial int host_statistics64(uint hostPriv, int hostFlavor, ref VMStatistics64 hostInfo64Out, ref uint hostInfo64OutCnt);
     }
 }
