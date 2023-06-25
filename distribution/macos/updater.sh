@@ -5,7 +5,7 @@ set -e
 INSTALL_DIRECTORY=$1
 NEW_APP_DIRECTORY=$2
 APP_PID=$3
-APP_ARGUMENTS="${@:4}"
+APP_ARGUMENTS=("${@:4}")
 
 error_handler() {
     local lineno="$1"
@@ -33,7 +33,7 @@ trap 'error_handler ${LINENO}' ERR
 
 attempt=0
 while true; do
-    if lsof -p $APP_PID +r 1 &>/dev/null || ps -p "$APP_PID" &>/dev/null; then
+    if lsof -p "$APP_PID" +r 1 &>/dev/null || ps -p "$APP_PID" &>/dev/null; then
         if [ "$attempt" -eq 4 ]; then
             exit 1
         fi
