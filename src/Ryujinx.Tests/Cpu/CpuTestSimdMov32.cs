@@ -354,6 +354,7 @@ namespace Ryujinx.Tests.Cpu
                 vd <<= 1;
                 vm <<= 1;
             }
+
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
             opcode |= (vd & 0x10) << 18;
@@ -388,6 +389,7 @@ namespace Ryujinx.Tests.Cpu
                 vd <<= 1;
                 vm <<= 1;
             }
+
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
             opcode |= (vd & 0x10) << 18;
@@ -422,6 +424,7 @@ namespace Ryujinx.Tests.Cpu
                 vd <<= 1;
                 vm <<= 1;
             }
+
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
             opcode |= (vd & 0x10) << 18;

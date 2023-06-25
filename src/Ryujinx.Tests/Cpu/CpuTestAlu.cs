@@ -37,6 +37,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 return 0u;
             }
+
             if (cnt == 31)
             {
                 return 1u;
@@ -54,6 +55,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 return 0ul;
             }
+
             if (cnt == 63)
             {
                 return 1ul;
