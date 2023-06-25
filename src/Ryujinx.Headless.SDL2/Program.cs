@@ -57,7 +57,7 @@ namespace Ryujinx.Headless.SDL2
         private static bool _enableKeyboard;
         private static bool _enableMouse;
 
-        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly InputConfigJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         static void Main(string[] args)
         {
@@ -195,65 +195,64 @@ namespace Ryujinx.Headless.SDL2
 
                     config = new StandardControllerInputConfig
                     {
-#pragma warning disable IDE0055 // Disable formatting
-                        Version          = InputConfig.CurrentVersion,
-                        Backend          = InputBackendType.GamepadSDL2,
-                        Id               = null,
-                        ControllerType   = ControllerType.JoyconPair,
-                        DeadzoneLeft     = 0.1f,
-                        DeadzoneRight    = 0.1f,
-                        RangeLeft        = 1.0f,
-                        RangeRight       = 1.0f,
+                        Version = InputConfig.CurrentVersion,
+                        Backend = InputBackendType.GamepadSDL2,
+                        Id = null,
+                        ControllerType = ControllerType.JoyconPair,
+                        DeadzoneLeft = 0.1f,
+                        DeadzoneRight = 0.1f,
+                        RangeLeft = 1.0f,
+                        RangeRight = 1.0f,
                         TriggerThreshold = 0.5f,
                         LeftJoycon = new LeftJoyconCommonConfig<ConfigGamepadInputId>
                         {
-                            DpadUp       = ConfigGamepadInputId.DpadUp,
-                            DpadDown     = ConfigGamepadInputId.DpadDown,
-                            DpadLeft     = ConfigGamepadInputId.DpadLeft,
-                            DpadRight    = ConfigGamepadInputId.DpadRight,
-                            ButtonMinus  = ConfigGamepadInputId.Minus,
-                            ButtonL      = ConfigGamepadInputId.LeftShoulder,
-                            ButtonZl     = ConfigGamepadInputId.LeftTrigger,
-                            ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            DpadUp = ConfigGamepadInputId.DpadUp,
+                            DpadDown = ConfigGamepadInputId.DpadDown,
+                            DpadLeft = ConfigGamepadInputId.DpadLeft,
+                            DpadRight = ConfigGamepadInputId.DpadRight,
+                            ButtonMinus = ConfigGamepadInputId.Minus,
+                            ButtonL = ConfigGamepadInputId.LeftShoulder,
+                            ButtonZl = ConfigGamepadInputId.LeftTrigger,
+                            ButtonSl = ConfigGamepadInputId.Unbound,
+                            ButtonSr = ConfigGamepadInputId.Unbound,
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                         {
-                            Joystick     = ConfigStickInputId.Left,
-                            StickButton  = ConfigGamepadInputId.LeftStick,
+                            Joystick = ConfigStickInputId.Left,
+                            StickButton = ConfigGamepadInputId.LeftStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW   = false,
+                            Rotate90CW = false,
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                         {
-                            ButtonA      = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
-                            ButtonB      = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,
-                            ButtonX      = isNintendoStyle ? ConfigGamepadInputId.X : ConfigGamepadInputId.Y,
-                            ButtonY      = isNintendoStyle ? ConfigGamepadInputId.Y : ConfigGamepadInputId.X,
-                            ButtonPlus   = ConfigGamepadInputId.Plus,
-                            ButtonR      = ConfigGamepadInputId.RightShoulder,
-                            ButtonZr     = ConfigGamepadInputId.RightTrigger,
-                            ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            ButtonA = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
+                            ButtonB = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,
+                            ButtonX = isNintendoStyle ? ConfigGamepadInputId.X : ConfigGamepadInputId.Y,
+                            ButtonY = isNintendoStyle ? ConfigGamepadInputId.Y : ConfigGamepadInputId.X,
+                            ButtonPlus = ConfigGamepadInputId.Plus,
+                            ButtonR = ConfigGamepadInputId.RightShoulder,
+                            ButtonZr = ConfigGamepadInputId.RightTrigger,
+                            ButtonSl = ConfigGamepadInputId.Unbound,
+                            ButtonSr = ConfigGamepadInputId.Unbound,
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                         {
-                            Joystick     = ConfigStickInputId.Right,
-                            StickButton  = ConfigGamepadInputId.RightStick,
+                            Joystick = ConfigStickInputId.Right,
+                            StickButton = ConfigGamepadInputId.RightStick,
                             InvertStickX = false,
                             InvertStickY = false,
-                            Rotate90CW   = false,
+                            Rotate90CW = false,
                         },
 
                         Motion = new StandardMotionConfigController
                         {
                             MotionBackend = MotionInputBackendType.GamepadDriver,
                             EnableMotion = true,
-                            Sensitivity  = 100,
+                            Sensitivity = 100,
                             GyroDeadzone = 1,
                         },
                         Rumble = new RumbleConfigController
@@ -262,7 +261,6 @@ namespace Ryujinx.Headless.SDL2
                             WeakRumble = 1f,
                             EnableRumble = false
                         }
-#pragma warning restore IDE0055
                     };
                 }
             }
@@ -290,7 +288,7 @@ namespace Ryujinx.Headless.SDL2
 
                 try
                 {
-                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
+                    config = JsonHelper.DeserializeFromFile(path, _serializerContext.InputConfig);
                 }
                 catch (JsonException)
                 {
@@ -439,7 +437,7 @@ namespace Ryujinx.Headless.SDL2
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
-            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
+            GraphicsConfig.EnableMacroHLE = !option.DisableMacroHle;
 
             while (true)
             {
@@ -524,9 +522,9 @@ namespace Ryujinx.Headless.SDL2
         {
             BackendThreading threadingMode = options.BackendThreading;
 
-            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            bool threadedGal = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
 
-            if (threadedGAL)
+            if (threadedGal)
             {
                 renderer = new ThreadedRenderer(renderer);
             }

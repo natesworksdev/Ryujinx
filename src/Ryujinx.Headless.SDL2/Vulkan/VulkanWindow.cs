@@ -42,7 +42,7 @@ namespace Ryujinx.Headless.SDL2.Vulkan
         {
             ulong surfaceHandle = 0;
 
-            void createSurface()
+            void CreateSurface()
             {
                 if (SDL_Vulkan_CreateSurface(WindowHandle, instance, out surfaceHandle) == SDL_bool.SDL_FALSE)
                 {
@@ -56,11 +56,11 @@ namespace Ryujinx.Headless.SDL2.Vulkan
 
             if (SDL2Driver.MainThreadDispatcher != null)
             {
-                SDL2Driver.MainThreadDispatcher(createSurface);
+                SDL2Driver.MainThreadDispatcher(CreateSurface);
             }
             else
             {
-                createSurface();
+                CreateSurface();
             }
 
             return (IntPtr)surfaceHandle;

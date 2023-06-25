@@ -46,20 +46,20 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             }
         }
 
-        private class SDL2OpenGLContext : IOpenGLContext
+        private class Sdl2OpenGLContext : IOpenGLContext
         {
             private readonly IntPtr _context;
             private readonly IntPtr _window;
             private readonly bool _shouldDisposeWindow;
 
-            public SDL2OpenGLContext(IntPtr context, IntPtr window, bool shouldDisposeWindow = true)
+            public Sdl2OpenGLContext(IntPtr context, IntPtr window, bool shouldDisposeWindow = true)
             {
                 _context = context;
                 _window = window;
                 _shouldDisposeWindow = shouldDisposeWindow;
             }
 
-            public static SDL2OpenGLContext CreateBackgroundContext(SDL2OpenGLContext sharedContext)
+            public static Sdl2OpenGLContext CreateBackgroundContext(Sdl2OpenGLContext sharedContext)
             {
                 sharedContext.MakeCurrent();
 
@@ -74,7 +74,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
                 CheckResult(SDL_GL_MakeCurrent(windowHandle, IntPtr.Zero));
 
-                return new SDL2OpenGLContext(context, windowHandle);
+                return new Sdl2OpenGLContext(context, windowHandle);
             }
 
             public void MakeCurrent()
@@ -108,7 +108,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         }
 
         private readonly GraphicsDebugLevel _glLogLevel;
-        private SDL2OpenGLContext _openGLContext;
+        private Sdl2OpenGLContext _openGLContext;
 
         public OpenGLWindow(
             InputManager inputManager,
@@ -140,10 +140,10 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             }
 
             // NOTE: The window handle needs to be disposed by the thread that created it and is handled separately.
-            _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
+            _openGLContext = new Sdl2OpenGLContext(context, WindowHandle, false);
 
             // First take exclusivity on the OpenGL context.
-            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(Sdl2OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
 

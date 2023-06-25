@@ -10,7 +10,7 @@ using static SDL2.SDL;
 
 namespace Ryujinx.Headless.SDL2
 {
-    class SDL2MouseDriver : IGamepadDriver
+    class Sdl2MouseDriver : IGamepadDriver
     {
         private const int CursorHideIdleTime = 5; // seconds
 
@@ -23,9 +23,9 @@ namespace Ryujinx.Headless.SDL2
 
         public Vector2 CurrentPosition { get; private set; }
         public Vector2 Scroll { get; private set; }
-        public Size _clientSize;
+        public Size ClientSize;
 
-        public SDL2MouseDriver(HideCursorMode hideCursorMode)
+        public Sdl2MouseDriver(HideCursorMode hideCursorMode)
         {
             PressedButtons = new bool[(int)MouseButton.Count];
             _hideCursorMode = hideCursorMode;
@@ -131,7 +131,7 @@ namespace Ryujinx.Headless.SDL2
 
         public void SetClientSize(int width, int height)
         {
-            _clientSize = new Size(width, height);
+            ClientSize = new Size(width, height);
         }
 
         public bool IsButtonPressed(MouseButton button)
@@ -141,7 +141,7 @@ namespace Ryujinx.Headless.SDL2
 
         public Size GetClientSize()
         {
-            return _clientSize;
+            return ClientSize;
         }
 
         public string DriverName => "SDL2";
@@ -162,7 +162,7 @@ namespace Ryujinx.Headless.SDL2
 
         public IGamepad GetGamepad(string id)
         {
-            return new SDL2Mouse(this);
+            return new Sdl2Mouse(this);
         }
 
         public void Dispose()

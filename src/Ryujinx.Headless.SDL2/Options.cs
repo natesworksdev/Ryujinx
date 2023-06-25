@@ -182,7 +182,7 @@ namespace Ryujinx.Headless.SDL2
         public BackendThreading BackendThreading { get; set; }
 
         [Option("disable-macro-hle", Required = false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
-        public bool DisableMacroHLE { get; set; }
+        public bool DisableMacroHle { get; set; }
 
         [Option("graphics-shaders-dump-path", Required = false, HelpText = "Dumps shaders in this local directory. (Developer only)")]
         public string GraphicsShadersDumpPath { get; set; }

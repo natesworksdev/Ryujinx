@@ -30,7 +30,7 @@ namespace Ryujinx.Headless.SDL2
         private const SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
         private const int TargetFps = 60;
 
-        private static readonly ConcurrentQueue<Action> MainThreadActions = new();
+        private static readonly ConcurrentQueue<Action> _mainThreadActions = new();
 
         [LibraryImport("SDL2")]
         // TODO: Remove this as soon as SDL2-CS was updated to expose this method publicly
@@ -38,7 +38,7 @@ namespace Ryujinx.Headless.SDL2
 
         public static void QueueMainThreadAction(Action action)
         {
-            MainThreadActions.Enqueue(action);
+            _mainThreadActions.Enqueue(action);
         }
 
         public NpadManager NpadManager { get; }
@@ -54,7 +54,7 @@ namespace Ryujinx.Headless.SDL2
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        protected SDL2MouseDriver MouseDriver;
+        protected Sdl2MouseDriver MouseDriver;
         private readonly InputManager _inputManager;
         private readonly IKeyboard _keyboardInterface;
         private readonly GraphicsDebugLevel _glLogLevel;
@@ -81,7 +81,7 @@ namespace Ryujinx.Headless.SDL2
             bool enableMouse,
             HideCursorMode hideCursorMode)
         {
-            MouseDriver = new SDL2MouseDriver(hideCursorMode);
+            MouseDriver = new Sdl2MouseDriver(hideCursorMode);
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(MouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
@@ -311,7 +311,7 @@ namespace Ryujinx.Headless.SDL2
 
         public static void ProcessMainThreadQueue()
         {
-            while (MainThreadActions.TryDequeue(out Action action))
+            while (_mainThreadActions.TryDequeue(out Action action))
             {
                 action();
             }
@@ -334,7 +334,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent.Set();
         }
 
-        private void NVStutterWorkaround()
+        private void NvStutterWorkaround()
         {
             while (_isActive)
             {
@@ -373,7 +373,7 @@ namespace Ryujinx.Headless.SDL2
             // Get screen touch position
             if (!_enableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as SDL2MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as Sdl2MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
             }
 
             if (!hasTouch)
@@ -405,7 +405,7 @@ namespace Ryujinx.Headless.SDL2
             Thread nvStutterWorkaround = null;
             if (Renderer is Graphics.OpenGL.OpenGLRenderer)
             {
-                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                nvStutterWorkaround = new Thread(NvStutterWorkaround)
                 {
                     Name = "GUI.NVStutterWorkaround"
                 };

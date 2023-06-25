@@ -6,9 +6,9 @@ using System.Numerics;
 
 namespace Ryujinx.Headless.SDL2
 {
-    class SDL2Mouse : IMouse
+    class Sdl2Mouse : IMouse
     {
-        private SDL2MouseDriver _driver;
+        private Sdl2MouseDriver _driver;
 
         public GamepadFeaturesFlag Features => throw new NotImplementedException();
 
@@ -22,7 +22,7 @@ namespace Ryujinx.Headless.SDL2
 
         Size IMouse.ClientSize => _driver.GetClientSize();
 
-        public SDL2Mouse(SDL2MouseDriver driver)
+        public Sdl2Mouse(Sdl2MouseDriver driver)
         {
             _driver = driver;
         }
