@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
     class Operand
     {
         private const int CbufSlotBits = 5;
-        private const int CbufSlotLsb  = 32 - CbufSlotBits;
+        private const int CbufSlotLsb = 32 - CbufSlotBits;
         private const int CbufSlotMask = (1 << CbufSlotBits) - 1;
 
         public OperandType Type { get; }

@@ -1,13 +1,14 @@
-﻿using Ryujinx.Graphics.Shader.StructuredIr;
+﻿using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using Spv.Generator;
 using System;
 using System.Collections.Generic;
 using static Spv.Specification;
+using Instruction = Spv.Generator.Instruction;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
-    using IrConsts = IntermediateRepresentation.IrConsts;
     using IrOperandType = IntermediateRepresentation.OperandType;
 
     partial class CodeGenContext : Module
@@ -359,7 +360,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
             else if (srcType == AggregateType.Bool)
             {
-                var intTrue  = Constant(TypeS32(), IrConsts.True);
+                var intTrue = Constant(TypeS32(), IrConsts.True);
                 var intFalse = Constant(TypeS32(), IrConsts.False);
 
                 return BitcastIfNeeded(dstType, AggregateType.S32, Select(TypeS32(), value, intTrue, intFalse));

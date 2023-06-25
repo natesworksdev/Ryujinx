@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Decoders
@@ -168,7 +167,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             index = 0;
 
-            int left  = 0;
+            int left = 0;
             int right = blocks.Count - 1;
 
             while (left <= right)

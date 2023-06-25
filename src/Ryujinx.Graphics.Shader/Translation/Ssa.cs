@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -38,7 +37,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 int key = GetKeyFromRegister(reg);
 
                 int index = key / 64;
-                int bit   = key & 63;
+                int bit = key & 63;
 
                 long mask = 1L << bit;
 
@@ -57,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 int key = GetKeyFromRegister(reg);
 
                 int index = key / 64;
-                int bit   = key & 63;
+                int bit = key & 63;
 
                 return (_phiMasks[index] & (1L << bit)) != 0;
             }

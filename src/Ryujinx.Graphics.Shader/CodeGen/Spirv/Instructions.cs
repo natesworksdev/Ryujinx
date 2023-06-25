@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
     static class Instructions
     {
-        private const  MemorySemanticsMask DefaultMemorySemantics =
+        private const MemorySemanticsMask DefaultMemorySemantics =
             MemorySemanticsMask.ImageMemory |
             MemorySemanticsMask.AtomicCounterMemory |
             MemorySemanticsMask.WorkgroupMemory |
@@ -617,7 +617,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 });
             }
 
-            bool isArray   = (texOp.Type & SamplerType.Array) != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int srcIndex = isBindless ? 1 : 0;
@@ -678,21 +678,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var result = (texOp.Flags & TextureFlags.AtomicMask) switch
             {
-                TextureFlags.Add        => context.AtomicIAdd(resultType, pointer, one, zero, value),
-                TextureFlags.Minimum    => componentType == AggregateType.S32
+                TextureFlags.Add => context.AtomicIAdd(resultType, pointer, one, zero, value),
+                TextureFlags.Minimum => componentType == AggregateType.S32
                     ? context.AtomicSMin(resultType, pointer, one, zero, value)
                     : context.AtomicUMin(resultType, pointer, one, zero, value),
-                TextureFlags.Maximum    => componentType == AggregateType.S32
+                TextureFlags.Maximum => componentType == AggregateType.S32
                     ? context.AtomicSMax(resultType, pointer, one, zero, value)
                     : context.AtomicUMax(resultType, pointer, one, zero, value),
-                TextureFlags.Increment  => context.AtomicIIncrement(resultType, pointer, one, zero),
-                TextureFlags.Decrement  => context.AtomicIDecrement(resultType, pointer, one, zero),
+                TextureFlags.Increment => context.AtomicIIncrement(resultType, pointer, one, zero),
+                TextureFlags.Decrement => context.AtomicIDecrement(resultType, pointer, one, zero),
                 TextureFlags.BitwiseAnd => context.AtomicAnd(resultType, pointer, one, zero, value),
-                TextureFlags.BitwiseOr  => context.AtomicOr(resultType, pointer, one, zero, value),
+                TextureFlags.BitwiseOr => context.AtomicOr(resultType, pointer, one, zero, value),
                 TextureFlags.BitwiseXor => context.AtomicXor(resultType, pointer, one, zero, value),
-                TextureFlags.Swap       => context.AtomicExchange(resultType, pointer, one, zero, value),
-                TextureFlags.CAS        => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType), value),
-                _                       => context.AtomicIAdd(resultType, pointer, one, zero, value),
+                TextureFlags.Swap => context.AtomicExchange(resultType, pointer, one, zero, value),
+                TextureFlags.CAS => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType), value),
+                _ => context.AtomicIAdd(resultType, pointer, one, zero, value),
             };
 
             return new OperationResult(componentType, result);
@@ -712,7 +712,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return GetZeroOperationResult(context, texOp, componentType, isVector: true);
             }
 
-            bool isArray   = (texOp.Type & SamplerType.Array) != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int srcIndex = isBindless ? 1 : 0;
@@ -780,7 +780,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return OperationResult.Invalid;
             }
 
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int srcIndex = isBindless ? 1 : 0;
@@ -1300,19 +1300,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
-            bool isBindless     = (texOp.Flags & TextureFlags.Bindless)    != 0;
-            bool isGather       = (texOp.Flags & TextureFlags.Gather)      != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
             bool hasDerivatives = (texOp.Flags & TextureFlags.Derivatives) != 0;
-            bool intCoords      = (texOp.Flags & TextureFlags.IntCoords)   != 0;
-            bool hasLodBias     = (texOp.Flags & TextureFlags.LodBias)     != 0;
-            bool hasLodLevel    = (texOp.Flags & TextureFlags.LodLevel)    != 0;
-            bool hasOffset      = (texOp.Flags & TextureFlags.Offset)      != 0;
-            bool hasOffsets     = (texOp.Flags & TextureFlags.Offsets)     != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool hasLodBias = (texOp.Flags & TextureFlags.LodBias) != 0;
+            bool hasLodLevel = (texOp.Flags & TextureFlags.LodLevel) != 0;
+            bool hasOffset = (texOp.Flags & TextureFlags.Offset) != 0;
+            bool hasOffsets = (texOp.Flags & TextureFlags.Offsets) != 0;
 
-            bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
-            bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
+            bool isShadow = (texOp.Type & SamplerType.Shadow) != 0;
 
             bool colorIsVector = isGather || !isShadow;
 

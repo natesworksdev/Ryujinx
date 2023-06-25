@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
-
 using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
@@ -252,7 +251,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             for (int index = path.Length - 1; index >= 0; index--)
             {
                 AstBlock child = path[index];
-                AstBlock last  = child;
+                AstBlock last = child;
 
                 if (child.Type == AstBlockType.If)
                 {

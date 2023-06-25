@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     static class RegisterUsage
     {
         private const int RegsCount = 256;
-        private const int RegsMask  = RegsCount - 1;
+        private const int RegsMask = RegsCount - 1;
 
         private const int GprMasks = 4;
         private const int PredMasks = 1;
@@ -128,11 +128,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static FunctionRegisterUsage RunPass(ControlFlowGraph cfg)
         {
-            List<Register> inArguments  = new();
+            List<Register> inArguments = new();
             List<Register> outArguments = new();
 
             // Compute local register inputs and outputs used inside blocks.
-            RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Length];
+            RegisterMask[] localInputs = new RegisterMask[cfg.Blocks.Length];
             RegisterMask[] localOutputs = new RegisterMask[cfg.Blocks.Length];
 
             foreach (BasicBlock block in cfg.Blocks)
@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             // Compute global register inputs and outputs used across blocks.
             RegisterMask[] globalCmnOutputs = new RegisterMask[cfg.Blocks.Length];
 
-            RegisterMask[] globalInputs  = new RegisterMask[cfg.Blocks.Length];
+            RegisterMask[] globalInputs = new RegisterMask[cfg.Blocks.Length];
             RegisterMask[] globalOutputs = new RegisterMask[cfg.Blocks.Length];
 
             RegisterMask allOutputs = new();

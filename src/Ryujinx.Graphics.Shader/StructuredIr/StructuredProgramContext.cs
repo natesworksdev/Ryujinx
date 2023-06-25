@@ -3,7 +3,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
 using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
@@ -165,7 +164,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             // this is not valid as the loop condition would be evaluated,
             // and it could erroneously jump back to the start of the loop.
             bool inRange =
-                block.Branch.Index <  _currEndIndex ||
+                block.Branch.Index < _currEndIndex ||
                (block.Branch.Index == _currEndIndex && block.Branch.Index < _loopEndIndex);
 
             bool isLoop = block.Branch.Index <= block.Index;

@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     size = DefaultSharedMemorySize;
                 }
 
-                var smem = new MemoryDefinition("shared_memory", AggregateType.Array | AggregateType.U32,  BitUtils.DivRoundUp(size, sizeof(uint)));
+                var smem = new MemoryDefinition("shared_memory", AggregateType.Array | AggregateType.U32, BitUtils.DivRoundUp(size, sizeof(uint)));
 
                 SharedMemoryId = Properties.AddSharedMemory(smem);
             }

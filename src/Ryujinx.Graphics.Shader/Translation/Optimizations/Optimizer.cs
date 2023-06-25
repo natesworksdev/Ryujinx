@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // the destination operand.
 
             Operand dest = copyOp.Dest;
-            Operand src  = copyOp.GetSource(0);
+            Operand src = copyOp.GetSource(0);
 
             INode[] uses = dest.UseOps.ToArray();
 

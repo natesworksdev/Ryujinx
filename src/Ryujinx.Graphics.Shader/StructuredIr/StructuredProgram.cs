@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 AggregateType returnType = function.ReturnsValue ? AggregateType.S32 : AggregateType.Void;
 
-                AggregateType[] inArguments  = new AggregateType[function.InArgumentsCount];
+                AggregateType[] inArguments = new AggregateType[function.InArgumentsCount];
                 AggregateType[] outArguments = new AggregateType[function.OutArgumentsCount];
 
                 for (int i = 0; i < inArguments.Length; i++)
@@ -207,7 +207,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
 
                 bool isCondSel = inst == Instruction.ConditionalSelect;
-                bool isCopy    = inst == Instruction.Copy;
+                bool isCopy = inst == Instruction.Copy;
 
                 if (isCondSel || isCopy)
                 {

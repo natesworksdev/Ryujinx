@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Shader.Translation.Optimizations;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -267,11 +266,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
 #pragma warning restore IDE0059
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
@@ -321,10 +320,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureOperation texOp = (TextureOperation)node.Value;
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 #pragma warning restore IDE0059
 
@@ -387,8 +386,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
             bool isCoordNormalized = isBindless || config.GpuAccessor.QueryTextureCoordNormalized(texOp.Handle, texOp.CbufSlot);
 
@@ -398,7 +397,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 #pragma warning restore IDE0059
 
@@ -459,7 +458,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureOperation texOp = (TextureOperation)node.Value;
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
-            bool isGather   = (texOp.Flags & TextureFlags.Gather)   != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
 
             int gatherBiasPrecision = config.GpuAccessor.QueryHostGatherBiasPrecision();
 
@@ -471,7 +470,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 #pragma warning restore IDE0059
 
@@ -544,7 +543,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool hasOffset  = (texOp.Flags & TextureFlags.Offset)  != 0;
+            bool hasOffset = (texOp.Flags & TextureFlags.Offset) != 0;
             bool hasOffsets = (texOp.Flags & TextureFlags.Offsets) != 0;
 
             bool hasInvalidOffset = (hasOffset || hasOffsets) && !config.GpuAccessor.QueryHostSupportsNonConstantTextureOffset();
@@ -556,16 +555,16 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-            bool isGather       = (texOp.Flags & TextureFlags.Gather)      != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
             bool hasDerivatives = (texOp.Flags & TextureFlags.Derivatives) != 0;
-            bool intCoords      = (texOp.Flags & TextureFlags.IntCoords)   != 0;
-            bool hasLodBias     = (texOp.Flags & TextureFlags.LodBias)     != 0;
-            bool hasLodLevel    = (texOp.Flags & TextureFlags.LodLevel)    != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool hasLodBias = (texOp.Flags & TextureFlags.LodBias) != 0;
+            bool hasLodLevel = (texOp.Flags & TextureFlags.LodLevel) != 0;
 
-            bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
-            bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
+            bool isShadow = (texOp.Type & SamplerType.Shadow) != 0;
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -870,13 +869,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             int maxPositive = format switch
             {
-                TextureFormat.R8Snorm           => sbyte.MaxValue,
-                TextureFormat.R8G8Snorm         => sbyte.MaxValue,
-                TextureFormat.R8G8B8A8Snorm     => sbyte.MaxValue,
-                TextureFormat.R16Snorm          => short.MaxValue,
-                TextureFormat.R16G16Snorm       => short.MaxValue,
+                TextureFormat.R8Snorm => sbyte.MaxValue,
+                TextureFormat.R8G8Snorm => sbyte.MaxValue,
+                TextureFormat.R8G8B8A8Snorm => sbyte.MaxValue,
+                TextureFormat.R16Snorm => short.MaxValue,
+                TextureFormat.R16G16Snorm => short.MaxValue,
                 TextureFormat.R16G16B16A16Snorm => short.MaxValue,
-                _                               => 0
+                _ => 0
             };
 
             // The value being 0 means that the format is not a SNORM format,

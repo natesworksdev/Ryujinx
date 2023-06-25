@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static string ReinterpretBoolToInt(string expr, IAstNode node, AggregateType dstType)
         {
-            string trueExpr  = NumberFormatter.FormatInt(IrConsts.True,  dstType);
+            string trueExpr = NumberFormatter.FormatInt(IrConsts.True, dstType);
             string falseExpr = NumberFormatter.FormatInt(IrConsts.False, dstType);
 
             expr = InstGenHelper.Enclose(expr, node, Instruction.ConditionalSelect, isLhs: false);
