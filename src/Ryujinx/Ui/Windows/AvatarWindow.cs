@@ -84,13 +84,11 @@ namespace Ryujinx.Ui.Windows
             };
             closeButton.Clicked += CloseButton_Pressed;
 
-#pragma warning disable IDE0055 // Disable formatting
-            vbox.PackStart(scrolledWindow,            true,  true,  0);
-            hbox.PackStart(chooseButton,              true,  true,  0);
-            hbox.PackStart(_setBackgroungColorButton, true,  true,  0);
-            hbox.PackStart(closeButton,               true,  true,  0);
-            vbox.PackStart(hbox,                      false, false, 0);
-#pragma warning restore
+            vbox.PackStart(scrolledWindow, true, true, 0);
+            hbox.PackStart(chooseButton, true, true, 0);
+            hbox.PackStart(_setBackgroungColorButton, true, true, 0);
+            hbox.PackStart(closeButton, true, true, 0);
+            vbox.PackStart(hbox, false, false, 0);
 
             _listStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             _listStore.SetSortColumnId(0, SortType.Ascending);
@@ -121,13 +119,13 @@ namespace Ryujinx.Ui.Windows
             }
 
             string contentPath = contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.BuiltInSystem, NcaContentType.Data);
-            string avatarPath  = virtualFileSystem.SwitchPathToSystemPath(contentPath);
+            string avatarPath = virtualFileSystem.SwitchPathToSystemPath(contentPath);
 
             if (!string.IsNullOrWhiteSpace(avatarPath))
             {
                 using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
 
-                Nca         nca   = new(virtualFileSystem.KeySet, ncaFileStream);
+                Nca nca = new(virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                 foreach (var item in romfs.EnumerateEntries())
@@ -239,11 +237,11 @@ namespace Ryujinx.Ui.Windows
 
             long inputOffset = 0;
 
-            byte[] output       = new byte[decodedLength];
-            long   outputOffset = 0;
+            byte[] output = new byte[decodedLength];
+            long outputOffset = 0;
 
-            ushort mask   = 0;
-            byte   header = 0;
+            ushort mask = 0;
+            byte header = 0;
 
             while (outputOffset < decodedLength)
             {
@@ -267,7 +265,7 @@ namespace Ryujinx.Ui.Windows
                     byte byte1 = input[inputOffset++];
                     byte byte2 = input[inputOffset++];
 
-                    int dist     = ((byte1 & 0xF) << 8) | byte2;
+                    int dist = ((byte1 & 0xF) << 8) | byte2;
                     int position = (int)outputOffset - (dist + 1);
 
                     int length = byte1 >> 4;

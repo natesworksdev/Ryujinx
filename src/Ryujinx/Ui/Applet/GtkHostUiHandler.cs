@@ -5,7 +5,6 @@ using Ryujinx.HLE.Ui;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Threading;
-using Action = System.Action;
 
 namespace Ryujinx.Ui.Applet
 {
@@ -192,21 +191,6 @@ namespace Ryujinx.Ui.Applet
 
             return showDetails;
         }
-
-#pragma warning disable IDE0051 // Remove unused private member
-        private static void SynchronousGtkInvoke(Action action)
-        {
-            var waitHandle = new ManualResetEventSlim();
-
-            Application.Invoke(delegate
-            {
-                action();
-                waitHandle.Set();
-            });
-
-            waitHandle.Wait();
-        }
-#pragma warning restore IDE0051
 
         public IDynamicTextInputHandler CreateDynamicTextInputHandler()
         {

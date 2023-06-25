@@ -187,31 +187,27 @@ namespace Ryujinx.Ui
             _uiHandler = new GtkHostUiHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
 
-#pragma warning disable IDE0055 // Disable formatting
             WindowStateEvent += WindowStateEvent_Changed;
-            DeleteEvent      += Window_Close;
-            FocusInEvent     += MainWindow_FocusInEvent;
-            FocusOutEvent    += MainWindow_FocusOutEvent;
+            DeleteEvent += Window_Close;
+            FocusInEvent += MainWindow_FocusInEvent;
+            FocusOutEvent += MainWindow_FocusOutEvent;
 
-            _applicationLibrary.ApplicationAdded        += Application_Added;
+            _applicationLibrary.ApplicationAdded += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
-            _fileMenu.StateChanged   += FileMenu_StateChanged;
+            _fileMenu.StateChanged += FileMenu_StateChanged;
             _actionMenu.StateChanged += ActionMenu_StateChanged;
             _optionMenu.StateChanged += OptionMenu_StateChanged;
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
-            _fullScreen.Activated         += FullScreen_Toggled;
-#pragma warning restore IDE0055
+            _fullScreen.Activated += FullScreen_Toggled;
 
             RendererWidgetBase.StatusUpdatedEvent += Update_StatusBar;
 
-#pragma warning disable IDE0055 // Disable formatting
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
-#pragma warning restore IDE0055
+            ConfigurationState.Instance.Graphics.AspectRatio.Event += UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
 
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
@@ -225,44 +221,53 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
 
-#pragma warning disable IDE0055 // Disable formatting
-            _nspShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value;
+            _nspShown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value;
             _pfs0Shown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value;
-            _xciShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value;
-            _ncaShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value;
-            _nroShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value;
-            _nsoShown.Active  = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value;
+            _xciShown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value;
+            _ncaShown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value;
+            _nroShown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value;
+            _nsoShown.Active = ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value;
 
-            _nspShown.Toggled  += NSP_Shown_Toggled;
+            _nspShown.Toggled += NSP_Shown_Toggled;
             _pfs0Shown.Toggled += PFS0_Shown_Toggled;
-            _xciShown.Toggled  += XCI_Shown_Toggled;
-            _ncaShown.Toggled  += NCA_Shown_Toggled;
-            _nroShown.Toggled  += NRO_Shown_Toggled;
-            _nsoShown.Toggled  += NSO_Shown_Toggled;
+            _xciShown.Toggled += XCI_Shown_Toggled;
+            _ncaShown.Toggled += NCA_Shown_Toggled;
+            _nroShown.Toggled += NRO_Shown_Toggled;
+            _nsoShown.Toggled += NSO_Shown_Toggled;
 
             _fileTypesSubMenu.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _appToggle.Active        = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _developerToggle.Active  = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _versionToggle.Active    = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtToggle.Active    = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)
+                _favToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)
+                _iconToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)
+                _appToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)
+                _developerToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)
+                _versionToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn)
+                _timePlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn)
+                _lastPlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)
+                _fileExtToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)
+                _fileSizeToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)
+                _pathToggle.Active = true;
 
-            _favToggle.Toggled        += Fav_Toggled;
-            _iconToggle.Toggled       += Icon_Toggled;
-            _appToggle.Toggled        += App_Toggled;
-            _developerToggle.Toggled  += Developer_Toggled;
-            _versionToggle.Toggled    += Version_Toggled;
+            _favToggle.Toggled += Fav_Toggled;
+            _iconToggle.Toggled += Icon_Toggled;
+            _appToggle.Toggled += App_Toggled;
+            _developerToggle.Toggled += Developer_Toggled;
+            _versionToggle.Toggled += Version_Toggled;
             _timePlayedToggle.Toggled += TimePlayed_Toggled;
             _lastPlayedToggle.Toggled += LastPlayed_Toggled;
-            _fileExtToggle.Toggled    += FileExt_Toggled;
-            _fileSizeToggle.Toggled   += FileSize_Toggled;
-            _pathToggle.Toggled       += Path_Toggled;
+            _fileExtToggle.Toggled += FileExt_Toggled;
+            _fileSizeToggle.Toggled += FileSize_Toggled;
+            _pathToggle.Toggled += Path_Toggled;
 #pragma warning restore IDE0055
 
             _gameTable.Model = _tableStore = new ListStore(
@@ -360,18 +365,26 @@ namespace Ryujinx.Ui
             CellRendererToggle favToggle = new();
             favToggle.Toggled += FavToggle_Toggled;
 
-#pragma warning disable IDE0055 // Disable formatting
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _gameTable.AppendColumn("Fav",         favToggle,                "active", 0);
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1);
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2);
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3);
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   4);
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   5);
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   6);
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7);
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8);
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9);
-#pragma warning restore IDE0055
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)
+                _gameTable.AppendColumn("Fav", favToggle, "active", 0);
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)
+                _gameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 1);
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)
+                _gameTable.AppendColumn("Application", new CellRendererText(), "text", 2);
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)
+                _gameTable.AppendColumn("Developer", new CellRendererText(), "text", 3);
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)
+                _gameTable.AppendColumn("Version", new CellRendererText(), "text", 4);
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn)
+                _gameTable.AppendColumn("Time Played", new CellRendererText(), "text", 5);
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn)
+                _gameTable.AppendColumn("Last Played", new CellRendererText(), "text", 6);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)
+                _gameTable.AppendColumn("File Ext", new CellRendererText(), "text", 7);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)
+                _gameTable.AppendColumn("File Size", new CellRendererText(), "text", 8);
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)
+                _gameTable.AppendColumn("Path", new CellRendererText(), "text", 9);
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
@@ -1042,14 +1055,12 @@ namespace Ryujinx.Ui
             int resScale = ConfigurationState.Instance.Graphics.ResScale;
             float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
 
-#pragma warning disable IDE0055 // Disable formatting
-            Graphics.Gpu.GraphicsConfig.ResScale                   = (resScale == -1) ? resScaleCustom : resScale;
-            Graphics.Gpu.GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-            Graphics.Gpu.GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            Graphics.Gpu.GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
+            Graphics.Gpu.GraphicsConfig.ResScale = (resScale == -1) ? resScaleCustom : resScale;
+            Graphics.Gpu.GraphicsConfig.MaxAnisotropy = ConfigurationState.Instance.Graphics.MaxAnisotropy;
+            Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
             Graphics.Gpu.GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
-            Graphics.Gpu.GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
-#pragma warning restore IDE0055
+            Graphics.Gpu.GraphicsConfig.EnableMacroHLE = ConfigurationState.Instance.Graphics.EnableMacroHLE;
         }
 
         public static void SaveConfig()
@@ -1135,15 +1146,13 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-#pragma warning disable IDE0055 // Disable formatting
-                _gameStatus.Text   = args.GameStatus;
-                _fifoStatus.Text   = args.FifoStatus;
-                _gpuName.Text      = args.GpuName;
-                _dockedMode.Text   = args.DockedMode;
-                _aspectRatio.Text  = args.AspectRatio;
-                _gpuBackend.Text   = args.GpuBackend;
+                _gameStatus.Text = args.GameStatus;
+                _fifoStatus.Text = args.FifoStatus;
+                _gpuName.Text = args.GpuName;
+                _dockedMode.Text = args.DockedMode;
+                _aspectRatio.Text = args.AspectRatio;
+                _gpuBackend.Text = args.GpuBackend;
                 _volumeStatus.Text = GetVolumeLabelText(args.Volume);
-#pragma warning restore IDE0055
 
                 if (args.VSyncEnabled)
                 {
@@ -1177,10 +1186,8 @@ namespace Ryujinx.Ui
         {
             TreeViewColumn column = (TreeViewColumn)sender;
 
-#pragma warning disable IDE0055 // Disable formatting
-            ConfigurationState.Instance.Ui.ColumnSort.SortColumnId.Value  = column.SortColumnId;
+            ConfigurationState.Instance.Ui.ColumnSort.SortColumnId.Value = column.SortColumnId;
             ConfigurationState.Instance.Ui.ColumnSort.SortAscending.Value = column.SortOrder == SortType.Ascending;
-#pragma warning restore IDE0055
 
             SaveConfig();
         }
@@ -1249,11 +1256,9 @@ namespace Ryujinx.Ui
                 return;
             }
 
-#pragma warning disable IDE0055 // Disable formatting
             string titleFilePath = _tableStore.GetValue(treeIter, 9).ToString();
-            string titleName     = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[0];
-            string titleId       = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-#pragma warning restore IDE0055
+            string titleName = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[0];
+            string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 

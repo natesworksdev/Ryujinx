@@ -41,10 +41,7 @@ namespace Ryujinx
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
 
         [LibraryImport("libc", SetLastError = true)]
-        private static partial int Setenv([MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string value, int overwrite);
-
-        [LibraryImport("libc")]
-        private static partial IntPtr Getenv([MarshalAs(UnmanagedType.LPStr)] string name);
+        private static partial int setenv([MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string value, int overwrite);
 
         private const uint MbIconwarning = 0x30;
 
@@ -108,7 +105,7 @@ namespace Ryujinx
                 }
 
                 Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
-                Setenv("GDK_BACKEND", "x11", 1);
+                setenv("GDK_BACKEND", "x11", 1);
             }
 
             if (OperatingSystem.IsMacOS())
@@ -127,7 +124,7 @@ namespace Ryujinx
 
                 static void SetEnvironmentVariableNoCaching(string key, string value)
                 {
-                    int res = Setenv(key, value, 1);
+                    int res = setenv(key, value, 1);
                     Debug.Assert(res != -1);
                 }
 
