@@ -82,7 +82,6 @@ namespace ARMeilleure.Translation
         {
             _delegates = new SortedList<string, DelegateInfo>();
 
-#pragma warning disable IDE0055 // Disable formatting
             SetDelegateInfo(new MathAbs(Math.Abs));
             SetDelegateInfo(new MathCeiling(Math.Ceiling));
             SetDelegateInfo(new MathFloor(Math.Floor));
@@ -256,7 +255,6 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(new SoftFloat64FPSub(SoftFloat64.FPSub));
 
             SetDelegateInfo(new SoftFloat64_16FPConvert(SoftFloat64_16.FPConvert));
-#pragma warning restore IDE0055
         }
 
         private delegate double MathAbs(double value);
