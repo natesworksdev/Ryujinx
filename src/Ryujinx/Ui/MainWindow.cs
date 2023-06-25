@@ -841,7 +841,7 @@ namespace Ryujinx.Ui
 
                 if (path.StartsWith("@SystemContent"))
                 {
-                    path = VirtualFileSystem.SwitchPathToSystemPath(path);
+                    path = _virtualFileSystem.SwitchPathToSystemPath(path);
 
                     isFirmwareTitle = true;
                 }
@@ -881,7 +881,7 @@ namespace Ryujinx.Ui
                 DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Processes.ActiveApplication.ProgramIdText,
                                                               _emulationContext.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString());
 
-                ApplicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
+                _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
                 {
                     appMetadata.LastPlayed = DateTime.UtcNow;
                 });
@@ -1024,7 +1024,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+                _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
                 {
                     if (appMetadata.LastPlayed.HasValue)
                     {
@@ -1167,7 +1167,7 @@ namespace Ryujinx.Ui
 
             _tableStore.SetValue(treeIter, 0, newToggleValue);
 
-            ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+            _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {
                 appMetadata.Favorite = newToggleValue;
             });
