@@ -24,24 +24,24 @@ namespace Ryujinx.Modules
 {
     public static class Updater
     {
-        private const string GitHubApiURL = "https://api.github.com";
+        private const string GitHubApiUrl = "https://api.github.com";
         private const int ConnectionCount = 4;
 
         internal static bool Running;
 
-        private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
-        private static readonly string UpdatePublishDir = Path.Combine(UpdateDir, "publish");
+        private static readonly string _homeDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string _updateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
+        private static readonly string _updatePublishDir = Path.Combine(_updateDir, "publish");
 
         private static string _buildVer;
         private static string _platformExt;
         private static string _buildUrl;
-        private static long   _buildSize;
+        private static long _buildSize;
 
-        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly GithubReleasesJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         // On Windows, GtkSharp.Dependencies adds these extra dirs that must be cleaned during updates.
-        private static readonly string[] WindowsDependencyDirs = new string[] { "bin", "etc", "lib", "share" };
+        private static readonly string[] _windowsDependencyDirs = new string[] { "bin", "etc", "lib", "share" };
 
         private static HttpClient ConstructHttpClient()
         {
@@ -108,11 +108,11 @@ namespace Ryujinx.Modules
             try
             {
                 using HttpClient jsonClient = ConstructHttpClient();
-                string buildInfoURL = $"{GitHubApiURL}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+                string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
 
                 // Fetch latest build information
-                string  fetchedJson = await jsonClient.GetStringAsync(buildInfoURL);
-                var fetched = JsonHelper.Deserialize(fetchedJson, SerializerContext.GithubReleasesJsonResponse);
+                string fetchedJson = await jsonClient.GetStringAsync(buildInfoUrl);
+                var fetched = JsonHelper.Deserialize(fetchedJson, _serializerContext.GithubReleasesJsonResponse);
                 _buildVer = fetched.Name;
 
                 foreach (var asset in fetched.Assets)
@@ -206,14 +206,14 @@ namespace Ryujinx.Modules
         public static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
-            if (Directory.Exists(UpdateDir))
+            if (Directory.Exists(_updateDir))
             {
-                Directory.Delete(UpdateDir, true);
+                Directory.Delete(_updateDir, true);
             }
 
-            Directory.CreateDirectory(UpdateDir);
+            Directory.CreateDirectory(_updateDir);
 
-            string updateFile = Path.Combine(UpdateDir, "update.bin");
+            string updateFile = Path.Combine(_updateDir, "update.bin");
 
             // Download the update .zip
             updateDialog.MainText.Text = "Downloading Update...";
@@ -389,9 +389,9 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsLinux())
             {
-                using Stream         inStream   = File.OpenRead(updateFile);
-                using Stream         gzipStream = new GZipInputStream(inStream);
-                using TarInputStream tarStream  = new(gzipStream, Encoding.ASCII);
+                using Stream inStream = File.OpenRead(updateFile);
+                using Stream gzipStream = new GZipInputStream(inStream);
+                using TarInputStream tarStream = new(gzipStream, Encoding.ASCII);
                 updateDialog.ProgressBar.MaxValue = inStream.Length;
 
                 await Task.Run(() =>
@@ -407,7 +407,7 @@ namespace Ryujinx.Modules
                                 continue;
                             }
 
-                            string outPath = Path.Combine(UpdateDir, tarEntry.Name);
+                            string outPath = Path.Combine(_updateDir, tarEntry.Name);
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
@@ -433,8 +433,8 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using Stream  inStream = File.OpenRead(updateFile);
-                using ZipFile zipFile  = new(inStream);
+                using Stream inStream = File.OpenRead(updateFile);
+                using ZipFile zipFile = new(inStream);
                 updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
                 await Task.Run(() =>
@@ -446,7 +446,7 @@ namespace Ryujinx.Modules
                             continue;
                         }
 
-                        string outPath = Path.Combine(UpdateDir, zipEntry.Name);
+                        string outPath = Path.Combine(_updateDir, zipEntry.Name);
 
                         Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
@@ -499,13 +499,13 @@ namespace Ryujinx.Modules
                 {
                     updateDialog.MainText.Text = "Adding New Files...";
                     updateDialog.ProgressBar.Value = 0;
-                    updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
+                    updateDialog.ProgressBar.MaxValue = Directory.GetFiles(_updatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
 
-                MoveAllFilesOver(UpdatePublishDir, HomeDir, updateDialog);
+                MoveAllFilesOver(_updatePublishDir, _homeDir, updateDialog);
             });
 
-            Directory.Delete(UpdateDir, true);
+            Directory.Delete(_updateDir, true);
 
             updateDialog.MainText.Text = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
@@ -570,15 +570,15 @@ namespace Ryujinx.Modules
         // NOTE: This method should always reflect the latest build layout.
         private static IEnumerable<string> EnumerateFilesToDelete()
         {
-            var files = Directory.EnumerateFiles(HomeDir); // All files directly in base dir.
+            var files = Directory.EnumerateFiles(_homeDir); // All files directly in base dir.
 
             // Determine and exclude user files only when the updater is running, not when cleaning old files
             if (Running)
             {
                 // Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list.
-                var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
-                var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
-                var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(HomeDir, filename));
+                var oldFiles = Directory.EnumerateFiles(_homeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+                var newFiles = Directory.EnumerateFiles(_updatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+                var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(_homeDir, filename));
 
                 // Remove user files from the paths in files.
                 files = files.Except(userFiles);
@@ -586,9 +586,9 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsWindows())
             {
-                foreach (string dir in WindowsDependencyDirs)
+                foreach (string dir in _windowsDependencyDirs)
                 {
-                    string dirPath = Path.Combine(HomeDir, dir);
+                    string dirPath = Path.Combine(_homeDir, dir);
                     if (Directory.Exists(dirPath))
                     {
                         files = files.Concat(Directory.EnumerateFiles(dirPath, "*", SearchOption.AllDirectories));

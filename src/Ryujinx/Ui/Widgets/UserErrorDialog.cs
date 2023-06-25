@@ -6,9 +6,9 @@ namespace Ryujinx.Ui.Widgets
 {
     internal class UserErrorDialog : MessageDialog
     {
-        private const string SetupGuideUrl        = "https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide";
-        private const int    OkResponseId         = 0;
-        private const int    SetupGuideResponseId = 1;
+        private const string SetupGuideUrl = "https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide";
+        private const int OkResponseId = 0;
+        private const int SetupGuideResponseId = 1;
 
         private readonly UserError _userError;
 

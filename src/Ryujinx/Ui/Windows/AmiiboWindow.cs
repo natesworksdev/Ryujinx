@@ -14,14 +14,12 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using AmiiboApi = Ryujinx.Ui.Common.Models.Amiibo.AmiiboApi;
-using AmiiboJsonSerializerContext = Ryujinx.Ui.Common.Models.Amiibo.AmiiboJsonSerializerContext;
 
 namespace Ryujinx.Ui.Windows
 {
     public partial class AmiiboWindow : Window
     {
-        private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
+        private const string DefaultJson = "{ \"amiibo\": [] }";
 
         public string AmiiboId { get; private set; }
 
@@ -41,13 +39,13 @@ namespace Ryujinx.Ui.Windows
         }
 
         private readonly HttpClient _httpClient;
-        private readonly string     _amiiboJsonPath;
+        private readonly string _amiiboJsonPath;
 
         private readonly byte[] _amiiboLogoBytes;
 
         private List<AmiiboApi> _amiiboList;
 
-        private static readonly AmiiboJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly AmiiboJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
         {
@@ -76,13 +74,13 @@ namespace Ryujinx.Ui.Windows
 
         private async Task LoadContentAsync()
         {
-            string amiiboJsonString = DEFAULT_JSON;
+            string amiiboJsonString = DefaultJson;
 
             if (File.Exists(_amiiboJsonPath))
             {
                 amiiboJsonString = await File.ReadAllTextAsync(_amiiboJsonPath);
 
-                if (await NeedsUpdate(JsonHelper.Deserialize(amiiboJsonString, SerializerContext.AmiiboJson).LastUpdated))
+                if (await NeedsUpdate(JsonHelper.Deserialize(amiiboJsonString, _serializerContext.AmiiboJson).LastUpdated))
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                 }
@@ -103,7 +101,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            _amiiboList = JsonHelper.Deserialize(amiiboJsonString, SerializerContext.AmiiboJson).Amiibo;
+            _amiiboList = JsonHelper.Deserialize(amiiboJsonString, _serializerContext.AmiiboJson).Amiibo;
             _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
             if (LastScannedAmiiboShowAll)
@@ -219,7 +217,7 @@ namespace Ryujinx.Ui.Windows
                 Close();
             }
 
-            return DEFAULT_JSON;
+            return DefaultJson;
         }
 
         private async Task UpdateAmiiboPreview(string imageUrl)
@@ -228,14 +226,14 @@ namespace Ryujinx.Ui.Windows
 
             if (response.IsSuccessStatusCode)
             {
-                byte[]     amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                Gdk.Pixbuf amiiboPreview      = new(amiiboPreviewBytes);
+                byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
+                Gdk.Pixbuf amiiboPreview = new(amiiboPreviewBytes);
 
-                float ratio = Math.Min((float)_amiiboImage.AllocatedWidth  / amiiboPreview.Width,
+                float ratio = Math.Min((float)_amiiboImage.AllocatedWidth / amiiboPreview.Width,
                                        (float)_amiiboImage.AllocatedHeight / amiiboPreview.Height);
 
                 int resizeHeight = (int)(amiiboPreview.Height * ratio);
-                int resizeWidth  = (int)(amiiboPreview.Width  * ratio);
+                int resizeWidth = (int)(amiiboPreview.Width * ratio);
 
                 _amiiboImage.Pixbuf = amiiboPreview.ScaleSimple(resizeWidth, resizeHeight, Gdk.InterpType.Bilinear);
             }

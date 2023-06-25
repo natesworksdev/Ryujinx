@@ -13,7 +13,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
-using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -111,7 +110,7 @@ namespace Ryujinx.Ui.Windows
             Gdk.Pixbuf userPicture = (Gdk.Pixbuf)_tableStore.GetValue(selectedIter, 1);
 
             string userName = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[0];
-            string userId   = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[1];
+            string userId = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[1];
 
             // Unselect the first user.
             _usersTreeView.Model.GetIterFirst(out TreeIter firstIter);

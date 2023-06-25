@@ -11,15 +11,15 @@ namespace Ryujinx.Ui.Applet
     /// </summary>
     internal class GtkDynamicTextInputHandler : IDynamicTextInputHandler
     {
-        private readonly Window              _parent;
-        private readonly OffscreenWindow     _inputToTextWindow = new();
-        private readonly RawInputToTextEntry _inputToTextEntry  = new();
+        private readonly Window _parent;
+        private readonly OffscreenWindow _inputToTextWindow = new();
+        private readonly RawInputToTextEntry _inputToTextEntry = new();
 
         private bool _canProcessInput;
 
         public event DynamicTextChangedHandler TextChangedEvent;
-        public event KeyPressedHandler         KeyPressedEvent;
-        public event KeyReleasedHandler        KeyReleasedEvent;
+        public event KeyPressedHandler KeyPressedEvent;
+        public event KeyReleasedHandler KeyReleasedEvent;
 
         public bool TextProcessingEnabled
         {
@@ -52,7 +52,7 @@ namespace Ryujinx.Ui.Applet
         [GLib.ConnectBefore()]
         private void HandleKeyPressEvent(object o, KeyPressEventArgs args)
         {
-            var key = (Ryujinx.Common.Configuration.Hid.Key)GTK3MappingHelper.ToInputKey(args.Event.Key);
+            var key = (Ryujinx.Common.Configuration.Hid.Key)Gtk3MappingHelper.ToInputKey(args.Event.Key);
 
             if (!(KeyPressedEvent?.Invoke(key)).GetValueOrDefault(true))
             {
@@ -70,7 +70,7 @@ namespace Ryujinx.Ui.Applet
         [GLib.ConnectBefore()]
         private void HandleKeyReleaseEvent(object o, KeyReleaseEventArgs args)
         {
-            var key = (Ryujinx.Common.Configuration.Hid.Key)GTK3MappingHelper.ToInputKey(args.Event.Key);
+            var key = (Ryujinx.Common.Configuration.Hid.Key)Gtk3MappingHelper.ToInputKey(args.Event.Key);
 
             if (!(KeyReleasedEvent?.Invoke(key)).GetValueOrDefault(true))
             {

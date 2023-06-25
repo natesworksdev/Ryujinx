@@ -21,14 +21,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Image = SixLabors.ImageSharp.Image;
+using Key = Ryujinx.Input.Key;
+using ScalingFilter = Ryujinx.Graphics.GAL.ScalingFilter;
+using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Ui
 {
-    using Image = SixLabors.ImageSharp.Image;
-    using Key = Input.Key;
-    using ScalingFilter = Graphics.GAL.ScalingFilter;
-    using Switch = HLE.Switch;
-
     public abstract class RendererWidgetBase : DrawingArea
     {
         private const int SwitchPanelWidth = 1280;
@@ -83,7 +82,7 @@ namespace Ryujinx.Ui
 
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
         {
-            var mouseDriver = new GTK3MouseDriver(this);
+            var mouseDriver = new Gtk3MouseDriver(this);
 
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(mouseDriver);
@@ -379,9 +378,9 @@ namespace Ryujinx.Ui
                 {
                     lock (this)
                     {
-                        var    currentTime = DateTime.Now;
-                        string filename    = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
-                        string directory   = AppDataManager.Mode switch
+                        var currentTime = DateTime.Now;
+                        string filename = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
+                        string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable or AppDataManager.LaunchMode.Custom => System.IO.Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
                             _ => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Ryujinx")
@@ -524,12 +523,12 @@ namespace Ryujinx.Ui
             {
                 parent.Present();
 
-                var activeProcess   = Device.Processes.ActiveApplication;
+                var activeProcess = Device.Processes.ActiveApplication;
 
-                string titleNameSection    = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
+                string titleNameSection = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
                 string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
-                string titleIdSection      = $" ({activeProcess.ProgramIdText.ToUpper()})";
-                string titleArchSection    = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
+                string titleIdSection = $" ({activeProcess.ProgramIdText.ToUpper()})";
+                string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
                 parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
             });
@@ -543,7 +542,7 @@ namespace Ryujinx.Ui
             Thread nvStutterWorkaround = null;
             if (Renderer is Graphics.OpenGL.OpenGLRenderer)
             {
-                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                nvStutterWorkaround = new Thread(NvStutterWorkaround)
                 {
                     Name = "GUI.NVStutterWorkaround"
                 };
@@ -584,7 +583,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void NVStutterWorkaround()
+        private void NvStutterWorkaround()
         {
             while (_isActive)
             {
@@ -727,7 +726,7 @@ namespace Ryujinx.Ui
             // Get screen touch position
             if ((Toplevel as MainWindow).IsFocused && !ConfigurationState.Instance.Hid.EnableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as GTK3MouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as Gtk3MouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
             }
 
             if (!hasTouch)

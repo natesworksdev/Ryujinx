@@ -6,12 +6,12 @@ using GtkKey = Gdk.Key;
 
 namespace Ryujinx.Input.GTK3
 {
-    public class GTK3KeyboardDriver : IGamepadDriver
+    public class Gtk3KeyboardDriver : IGamepadDriver
     {
         private readonly Widget _widget;
         private readonly HashSet<GtkKey> _pressedKeys;
 
-        public GTK3KeyboardDriver(Widget widget)
+        public Gtk3KeyboardDriver(Widget widget)
         {
             _widget = widget;
             _pressedKeys = new HashSet<GtkKey>();
@@ -28,13 +28,13 @@ namespace Ryujinx.Input.GTK3
 
         public event Action<string> OnGamepadConnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
         public event Action<string> OnGamepadDisconnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
@@ -76,7 +76,7 @@ namespace Ryujinx.Input.GTK3
                 return false;
             }
 
-            GtkKey nativeKey = GTK3MappingHelper.ToGtkKey(key);
+            GtkKey nativeKey = Gtk3MappingHelper.ToGtkKey(key);
 
             return _pressedKeys.Contains(nativeKey);
         }
@@ -88,7 +88,7 @@ namespace Ryujinx.Input.GTK3
                 return null;
             }
 
-            return new GTK3Keyboard(this, _keyboardIdentifers[0], "All keyboards");
+            return new Gtk3Keyboard(this, _keyboardIdentifers[0], "All keyboards");
         }
     }
 }

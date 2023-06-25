@@ -86,8 +86,8 @@ namespace Ryujinx.Ui.Applet
         {
             ManualResetEvent dialogCloseEvent = new(false);
 
-            bool   okPressed = false;
-            bool   error     = false;
+            bool okPressed = false;
+            bool error = false;
             string inputText = args.InitialText ?? "";
 
             Application.Invoke(delegate
@@ -96,8 +96,8 @@ namespace Ryujinx.Ui.Applet
                 {
                     var swkbdDialog = new SwkbdAppletDialog(_parent)
                     {
-                        Title         = "Software Keyboard",
-                        Text          = args.HeaderText,
+                        Title = "Software Keyboard",
+                        Text = args.HeaderText,
                         SecondaryText = args.SubtitleText
                     };
 
@@ -153,9 +153,9 @@ namespace Ryujinx.Ui.Applet
                 {
                     ErrorAppletDialog msgDialog = new(_parent, DialogFlags.DestroyWithParent, MessageType.Error, buttons)
                     {
-                        Title          = title,
-                        Text           = message,
-                        UseMarkup      = true,
+                        Title = title,
+                        Text = message,
+                        UseMarkup = true,
                         WindowPosition = WindowPosition.CenterAlways
                     };
 

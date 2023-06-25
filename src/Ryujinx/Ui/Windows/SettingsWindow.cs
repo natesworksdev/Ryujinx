@@ -26,95 +26,95 @@ namespace Ryujinx.Ui.Windows
 {
     public class SettingsWindow : Window
     {
-        private readonly MainWindow             _parent;
-        private readonly ListStore              _gameDirsBoxStore;
-        private readonly ListStore              _audioBackendStore;
+        private readonly MainWindow _parent;
+        private readonly ListStore _gameDirsBoxStore;
+        private readonly ListStore _audioBackendStore;
         private readonly TimeZoneContentManager _timeZoneContentManager;
-        private readonly HashSet<string>        _validTzRegions;
+        private readonly HashSet<string> _validTzRegions;
 
-        private long  _systemTimeOffset;
+        private long _systemTimeOffset;
         private float _previousVolumeLevel;
         private bool _directoryChanged = false;
 
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
-        [GUI] CheckButton     _traceLogToggle;
-        [GUI] CheckButton     _errorLogToggle;
-        [GUI] CheckButton     _warningLogToggle;
-        [GUI] CheckButton     _infoLogToggle;
-        [GUI] CheckButton     _stubLogToggle;
-        [GUI] CheckButton     _debugLogToggle;
-        [GUI] CheckButton     _fileLogToggle;
-        [GUI] CheckButton     _guestLogToggle;
-        [GUI] CheckButton     _fsAccessLogToggle;
-        [GUI] Adjustment      _fsLogSpinAdjustment;
-        [GUI] ComboBoxText    _graphicsDebugLevel;
-        [GUI] CheckButton     _dockedModeToggle;
-        [GUI] CheckButton     _discordToggle;
-        [GUI] CheckButton     _checkUpdatesToggle;
-        [GUI] CheckButton     _showConfirmExitToggle;
-        [GUI] RadioButton     _hideCursorNever;
-        [GUI] RadioButton     _hideCursorOnIdle;
-        [GUI] RadioButton     _hideCursorAlways;
-        [GUI] CheckButton     _vSyncToggle;
-        [GUI] CheckButton     _shaderCacheToggle;
-        [GUI] CheckButton     _textureRecompressionToggle;
-        [GUI] CheckButton     _macroHLEToggle;
-        [GUI] CheckButton     _ptcToggle;
-        [GUI] CheckButton     _internetToggle;
-        [GUI] CheckButton     _fsicToggle;
-        [GUI] RadioButton     _mmSoftware;
-        [GUI] RadioButton     _mmHost;
-        [GUI] RadioButton     _mmHostUnsafe;
-        [GUI] CheckButton     _expandRamToggle;
-        [GUI] CheckButton     _ignoreToggle;
-        [GUI] CheckButton     _directKeyboardAccess;
-        [GUI] CheckButton     _directMouseAccess;
-        [GUI] ComboBoxText    _systemLanguageSelect;
-        [GUI] ComboBoxText    _systemRegionSelect;
-        [GUI] Entry           _systemTimeZoneEntry;
+        [GUI] CheckButton _traceLogToggle;
+        [GUI] CheckButton _errorLogToggle;
+        [GUI] CheckButton _warningLogToggle;
+        [GUI] CheckButton _infoLogToggle;
+        [GUI] CheckButton _stubLogToggle;
+        [GUI] CheckButton _debugLogToggle;
+        [GUI] CheckButton _fileLogToggle;
+        [GUI] CheckButton _guestLogToggle;
+        [GUI] CheckButton _fsAccessLogToggle;
+        [GUI] Adjustment _fsLogSpinAdjustment;
+        [GUI] ComboBoxText _graphicsDebugLevel;
+        [GUI] CheckButton _dockedModeToggle;
+        [GUI] CheckButton _discordToggle;
+        [GUI] CheckButton _checkUpdatesToggle;
+        [GUI] CheckButton _showConfirmExitToggle;
+        [GUI] RadioButton _hideCursorNever;
+        [GUI] RadioButton _hideCursorOnIdle;
+        [GUI] RadioButton _hideCursorAlways;
+        [GUI] CheckButton _vSyncToggle;
+        [GUI] CheckButton _shaderCacheToggle;
+        [GUI] CheckButton _textureRecompressionToggle;
+        [GUI] CheckButton _macroHleToggle;
+        [GUI] CheckButton _ptcToggle;
+        [GUI] CheckButton _internetToggle;
+        [GUI] CheckButton _fsicToggle;
+        [GUI] RadioButton _mmSoftware;
+        [GUI] RadioButton _mmHost;
+        [GUI] RadioButton _mmHostUnsafe;
+        [GUI] CheckButton _expandRamToggle;
+        [GUI] CheckButton _ignoreToggle;
+        [GUI] CheckButton _directKeyboardAccess;
+        [GUI] CheckButton _directMouseAccess;
+        [GUI] ComboBoxText _systemLanguageSelect;
+        [GUI] ComboBoxText _systemRegionSelect;
+        [GUI] Entry _systemTimeZoneEntry;
         [GUI] EntryCompletion _systemTimeZoneCompletion;
-        [GUI] Box             _audioBackendBox;
-        [GUI] ComboBox        _audioBackendSelect;
-        [GUI] Label           _audioVolumeLabel;
-        [GUI] Scale           _audioVolumeSlider;
-        [GUI] SpinButton      _systemTimeYearSpin;
-        [GUI] SpinButton      _systemTimeMonthSpin;
-        [GUI] SpinButton      _systemTimeDaySpin;
-        [GUI] SpinButton      _systemTimeHourSpin;
-        [GUI] SpinButton      _systemTimeMinuteSpin;
-        [GUI] Adjustment      _systemTimeYearSpinAdjustment;
-        [GUI] Adjustment      _systemTimeMonthSpinAdjustment;
-        [GUI] Adjustment      _systemTimeDaySpinAdjustment;
-        [GUI] Adjustment      _systemTimeHourSpinAdjustment;
-        [GUI] Adjustment      _systemTimeMinuteSpinAdjustment;
-        [GUI] ComboBoxText    _multiLanSelect;
-        [GUI] CheckButton     _custThemeToggle;
-        [GUI] Entry           _custThemePath;
-        [GUI] ToggleButton    _browseThemePath;
-        [GUI] Label           _custThemePathLabel;
-        [GUI] TreeView        _gameDirsBox;
-        [GUI] Entry           _addGameDirBox;
-        [GUI] ComboBoxText    _galThreading;
-        [GUI] Entry           _graphicsShadersDumpPath;
-        [GUI] ComboBoxText    _anisotropy;
-        [GUI] ComboBoxText    _aspectRatio;
-        [GUI] ComboBoxText    _antiAliasing;
-        [GUI] ComboBoxText    _scalingFilter;
-        [GUI] ComboBoxText    _graphicsBackend;
-        [GUI] ComboBoxText    _preferredGpu;
-        [GUI] ComboBoxText    _resScaleCombo;
-        [GUI] Entry           _resScaleText;
-        [GUI] Adjustment      _scalingFilterLevel;
-        [GUI] Scale           _scalingFilterSlider;
-        [GUI] ToggleButton    _configureController1;
-        [GUI] ToggleButton    _configureController2;
-        [GUI] ToggleButton    _configureController3;
-        [GUI] ToggleButton    _configureController4;
-        [GUI] ToggleButton    _configureController5;
-        [GUI] ToggleButton    _configureController6;
-        [GUI] ToggleButton    _configureController7;
-        [GUI] ToggleButton    _configureController8;
-        [GUI] ToggleButton    _configureControllerH;
+        [GUI] Box _audioBackendBox;
+        [GUI] ComboBox _audioBackendSelect;
+        [GUI] Label _audioVolumeLabel;
+        [GUI] Scale _audioVolumeSlider;
+        [GUI] SpinButton _systemTimeYearSpin;
+        [GUI] SpinButton _systemTimeMonthSpin;
+        [GUI] SpinButton _systemTimeDaySpin;
+        [GUI] SpinButton _systemTimeHourSpin;
+        [GUI] SpinButton _systemTimeMinuteSpin;
+        [GUI] Adjustment _systemTimeYearSpinAdjustment;
+        [GUI] Adjustment _systemTimeMonthSpinAdjustment;
+        [GUI] Adjustment _systemTimeDaySpinAdjustment;
+        [GUI] Adjustment _systemTimeHourSpinAdjustment;
+        [GUI] Adjustment _systemTimeMinuteSpinAdjustment;
+        [GUI] ComboBoxText _multiLanSelect;
+        [GUI] CheckButton _custThemeToggle;
+        [GUI] Entry _custThemePath;
+        [GUI] ToggleButton _browseThemePath;
+        [GUI] Label _custThemePathLabel;
+        [GUI] TreeView _gameDirsBox;
+        [GUI] Entry _addGameDirBox;
+        [GUI] ComboBoxText _galThreading;
+        [GUI] Entry _graphicsShadersDumpPath;
+        [GUI] ComboBoxText _anisotropy;
+        [GUI] ComboBoxText _aspectRatio;
+        [GUI] ComboBoxText _antiAliasing;
+        [GUI] ComboBoxText _scalingFilter;
+        [GUI] ComboBoxText _graphicsBackend;
+        [GUI] ComboBoxText _preferredGpu;
+        [GUI] ComboBoxText _resScaleCombo;
+        [GUI] Entry _resScaleText;
+        [GUI] Adjustment _scalingFilterLevel;
+        [GUI] Scale _scalingFilterSlider;
+        [GUI] ToggleButton _configureController1;
+        [GUI] ToggleButton _configureController2;
+        [GUI] ToggleButton _configureController3;
+        [GUI] ToggleButton _configureController4;
+        [GUI] ToggleButton _configureController5;
+        [GUI] ToggleButton _configureController6;
+        [GUI] ToggleButton _configureController7;
+        [GUI] ToggleButton _configureController8;
+        [GUI] ToggleButton _configureControllerH;
 
 #pragma warning restore CS0649, IDE0044
 
@@ -258,7 +258,7 @@ namespace Ryujinx.Ui.Windows
 
             if (ConfigurationState.Instance.Graphics.EnableMacroHLE)
             {
-                _macroHLEToggle.Click();
+                _macroHleToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.EnablePtc)
@@ -393,10 +393,10 @@ namespace Ryujinx.Ui.Windows
 
             _audioBackendStore = new ListStore(typeof(string), typeof(AudioBackend));
 
-            TreeIter openAlIter  = _audioBackendStore.AppendValues("OpenAL", AudioBackend.OpenAl);
+            TreeIter openAlIter = _audioBackendStore.AppendValues("OpenAL", AudioBackend.OpenAl);
             TreeIter soundIoIter = _audioBackendStore.AppendValues("SoundIO", AudioBackend.SoundIo);
-            TreeIter sdl2Iter    = _audioBackendStore.AppendValues("SDL2", AudioBackend.SDL2);
-            TreeIter dummyIter   = _audioBackendStore.AppendValues("Dummy", AudioBackend.Dummy);
+            TreeIter sdl2Iter = _audioBackendStore.AppendValues("SDL2", AudioBackend.SDL2);
+            TreeIter dummyIter = _audioBackendStore.AppendValues("Dummy", AudioBackend.Dummy);
 
             _audioBackendSelect = ComboBox.NewWithModelAndEntry(_audioBackendStore);
             _audioBackendSelect.EntryTextColumn = 0;
@@ -437,9 +437,9 @@ namespace Ryujinx.Ui.Windows
             _audioVolumeLabel.Show();
             _audioVolumeSlider.Show();
 
-            bool openAlIsSupported  = false;
+            bool openAlIsSupported = false;
             bool soundIoIsSupported = false;
-            bool sdl2IsSupported    = false;
+            bool sdl2IsSupported = false;
 
             Task.Run(() =>
             {
@@ -484,8 +484,8 @@ namespace Ryujinx.Ui.Windows
 
                 foreach (var device in devices)
                 {
-                    string dGPU = device.IsDiscrete ? " (dGPU)" : "";
-                    _preferredGpu.Append(device.Id, $"{device.Name}{dGPU}");
+                    string dGpu = device.IsDiscrete ? " (dGPU)" : "";
+                    _preferredGpu.Append(device.Id, $"{device.Name}{dGpu}");
 
                     // If there's no GPU selected yet, we just pick the first GPU.
                     // If there's a discrete GPU available, we always prefer that over the previous selection,
@@ -629,7 +629,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.EnableVsync.Value                = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value          = _shaderCacheToggle.Active;
             ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
-            ConfigurationState.Instance.Graphics.EnableMacroHLE.Value             = _macroHLEToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableMacroHLE.Value             = _macroHleToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                    = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableInternetAccess.Value         = _internetToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value      = _fsicToggle.Active;
@@ -693,10 +693,10 @@ namespace Ryujinx.Ui.Windows
 
         private void SystemTimeSpin_ValueChanged(object sender, EventArgs e)
         {
-            int year   = _systemTimeYearSpin.ValueAsInt;
-            int month  = _systemTimeMonthSpin.ValueAsInt;
-            int day    = _systemTimeDaySpin.ValueAsInt;
-            int hour   = _systemTimeHourSpin.ValueAsInt;
+            int year = _systemTimeYearSpin.ValueAsInt;
+            int month = _systemTimeMonthSpin.ValueAsInt;
+            int day = _systemTimeDaySpin.ValueAsInt;
+            int hour = _systemTimeHourSpin.ValueAsInt;
             int minute = _systemTimeMinuteSpin.ValueAsInt;
 
             if (!DateTime.TryParse(year + "-" + month + "-" + day + " " + hour + ":" + minute, out DateTime newTime))

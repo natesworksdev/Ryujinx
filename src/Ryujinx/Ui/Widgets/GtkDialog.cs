@@ -92,9 +92,9 @@ namespace Ryujinx.Ui.Widgets
 
         internal static string CreateInputDialog(Window parent, string title, string mainText, uint inputMax)
         {
-            GtkInputDialog gtkDialog    = new(parent, title, mainText, inputMax);
-            ResponseType   response     = (ResponseType)gtkDialog.Run();
-            string         responseText = gtkDialog.InputEntry.Text.TrimEnd();
+            GtkInputDialog gtkDialog = new(parent, title, mainText, inputMax);
+            ResponseType response = (ResponseType)gtkDialog.Run();
+            string responseText = gtkDialog.InputEntry.Text.TrimEnd();
 
             gtkDialog.Dispose();
 

@@ -22,19 +22,19 @@ namespace Ryujinx.Ui.Windows
 {
     public class TitleUpdateWindow : Window
     {
-        private readonly MainWindow        _parent;
+        private readonly MainWindow _parent;
         private readonly VirtualFileSystem _virtualFileSystem;
-        private readonly string            _titleId;
-        private readonly string            _updateJsonPath;
+        private readonly string _titleId;
+        private readonly string _updateJsonPath;
 
         private TitleUpdateMetadata _titleUpdateWindowData;
 
         private readonly Dictionary<RadioButton, string> _radioButtonToPathDictionary;
-        private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
-        [GUI] Label       _baseTitleInfoLabel;
-        [GUI] Box         _availableUpdatesBox;
+        [GUI] Label _baseTitleInfoLabel;
+        [GUI] Box _availableUpdatesBox;
         [GUI] RadioButton _noUpdateRadioButton;
 #pragma warning restore CS0649, IDE0044
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Ui.Windows
 
             try
             {
-                _titleUpdateWindowData = JsonHelper.DeserializeFromFile(_updateJsonPath, SerializerContext.TitleUpdateMetadata);
+                _titleUpdateWindowData = JsonHelper.DeserializeFromFile(_updateJsonPath, _serializerContext.TitleUpdateMetadata);
             }
             catch
             {
@@ -188,7 +188,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            JsonHelper.SerializeToFile(_updateJsonPath, _titleUpdateWindowData, SerializerContext.TitleUpdateMetadata);
+            JsonHelper.SerializeToFile(_updateJsonPath, _titleUpdateWindowData, _serializerContext.TitleUpdateMetadata);
 
             _parent.UpdateGameTable();
 

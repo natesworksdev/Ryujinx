@@ -41,12 +41,12 @@ namespace Ryujinx
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
 
         [LibraryImport("libc", SetLastError = true)]
-        private static partial int setenv([MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string value, int overwrite);
+        private static partial int Setenv([MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string value, int overwrite);
 
         [LibraryImport("libc")]
-        private static partial IntPtr getenv([MarshalAs(UnmanagedType.LPStr)] string name);
+        private static partial IntPtr Getenv([MarshalAs(UnmanagedType.LPStr)] string name);
 
-        private const uint MB_ICONWARNING = 0x30;
+        private const uint MbIconwarning = 0x30;
 
         static Program()
         {
@@ -78,7 +78,7 @@ namespace Ryujinx
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
-                MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nStarting on June 1st 2022, Ryujinx will only support Windows 10 1803 and newer.\n", $"Ryujinx {Version}", MB_ICONWARNING);
+                MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nStarting on June 1st 2022, Ryujinx will only support Windows 10 1803 and newer.\n", $"Ryujinx {Version}", MbIconwarning);
             }
 
             // Parse arguments
@@ -108,7 +108,7 @@ namespace Ryujinx
                 }
 
                 Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
-                setenv("GDK_BACKEND", "x11", 1);
+                Setenv("GDK_BACKEND", "x11", 1);
             }
 
             if (OperatingSystem.IsMacOS())
@@ -127,7 +127,7 @@ namespace Ryujinx
 
                 static void SetEnvironmentVariableNoCaching(string key, string value)
                 {
-                    int res = setenv(key, value, 1);
+                    int res = Setenv(key, value, 1);
                     Debug.Assert(res != -1);
                 }
 
@@ -170,8 +170,8 @@ namespace Ryujinx
                 Quality = 100
             });
 
-            string localConfigurationPath   = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
-            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath,            "Config.json");
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "Config.json");
 
             // Now load the configuration as the other subsystems are now registered
             ConfigurationPath = File.Exists(localConfigurationPath)

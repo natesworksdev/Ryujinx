@@ -51,9 +51,9 @@ namespace Ryujinx.Ui
 {
     public class MainWindow : Window
     {
-        private readonly VirtualFileSystem    _virtualFileSystem;
-        private readonly ContentManager       _contentManager;
-        private readonly AccountManager       _accountManager;
+        private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly ContentManager _contentManager;
+        private readonly AccountManager _accountManager;
         private readonly LibHacHorizonManager _libHacHorizonManager;
 
         private UserChannelPersistence _userChannelPersistence;
@@ -63,9 +63,9 @@ namespace Ryujinx.Ui
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
         private readonly ApplicationLibrary _applicationLibrary;
-        private readonly GtkHostUiHandler   _uiHandler;
-        private readonly AutoResetEvent     _deviceExitStatus;
-        private readonly ListStore          _tableStore;
+        private readonly GtkHostUiHandler _uiHandler;
+        private readonly AutoResetEvent _deviceExitStatus;
+        private readonly ListStore _tableStore;
 
         private bool _updatingGameTable;
         private bool _gameLoaded;
@@ -74,7 +74,7 @@ namespace Ryujinx.Ui
         private string _currentEmulatedGamePath = null;
 
         private string _lastScannedAmiiboId = "";
-        private bool   _lastScannedAmiiboShowAll = false;
+        private bool _lastScannedAmiiboShowAll = false;
 
         public RendererWidgetBase RendererWidget;
         public InputManager InputManager;
@@ -85,62 +85,62 @@ namespace Ryujinx.Ui
 
         [GUI] public MenuItem ExitMenuItem;
         [GUI] public MenuItem UpdateMenuItem;
-        [GUI] MenuBar         _menuBar;
-        [GUI] Box             _footerBox;
-        [GUI] Box             _statusBar;
-        [GUI] MenuItem        _optionMenu;
-        [GUI] MenuItem        _manageUserProfiles;
-        [GUI] MenuItem        _fileMenu;
-        [GUI] MenuItem        _loadApplicationFile;
-        [GUI] MenuItem        _loadApplicationFolder;
-        [GUI] MenuItem        _appletMenu;
-        [GUI] MenuItem        _actionMenu;
-        [GUI] MenuItem        _pauseEmulation;
-        [GUI] MenuItem        _resumeEmulation;
-        [GUI] MenuItem        _stopEmulation;
-        [GUI] MenuItem        _simulateWakeUpMessage;
-        [GUI] MenuItem        _scanAmiibo;
-        [GUI] MenuItem        _takeScreenshot;
-        [GUI] MenuItem        _hideUi;
-        [GUI] MenuItem        _fullScreen;
-        [GUI] CheckMenuItem   _startFullScreen;
-        [GUI] CheckMenuItem   _showConsole;
-        [GUI] CheckMenuItem   _favToggle;
-        [GUI] MenuItem        _firmwareInstallDirectory;
-        [GUI] MenuItem        _firmwareInstallFile;
-        [GUI] MenuItem        _fileTypesSubMenu;
-        [GUI] Label           _fifoStatus;
-        [GUI] CheckMenuItem   _iconToggle;
-        [GUI] CheckMenuItem   _developerToggle;
-        [GUI] CheckMenuItem   _appToggle;
-        [GUI] CheckMenuItem   _timePlayedToggle;
-        [GUI] CheckMenuItem   _versionToggle;
-        [GUI] CheckMenuItem   _lastPlayedToggle;
-        [GUI] CheckMenuItem   _fileExtToggle;
-        [GUI] CheckMenuItem   _pathToggle;
-        [GUI] CheckMenuItem   _fileSizeToggle;
-        [GUI] CheckMenuItem   _nspShown;
-        [GUI] CheckMenuItem   _pfs0Shown;
-        [GUI] CheckMenuItem   _xciShown;
-        [GUI] CheckMenuItem   _ncaShown;
-        [GUI] CheckMenuItem   _nroShown;
-        [GUI] CheckMenuItem   _nsoShown;
-        [GUI] Label           _gpuBackend;
-        [GUI] Label           _dockedMode;
-        [GUI] Label           _aspectRatio;
-        [GUI] Label           _gameStatus;
-        [GUI] TreeView        _gameTable;
-        [GUI] TreeSelection   _gameTableSelection;
-        [GUI] ScrolledWindow  _gameTableWindow;
-        [GUI] Label           _gpuName;
-        [GUI] Label           _progressLabel;
-        [GUI] Label           _firmwareVersionLabel;
+        [GUI] MenuBar _menuBar;
+        [GUI] Box _footerBox;
+        [GUI] Box _statusBar;
+        [GUI] MenuItem _optionMenu;
+        [GUI] MenuItem _manageUserProfiles;
+        [GUI] MenuItem _fileMenu;
+        [GUI] MenuItem _loadApplicationFile;
+        [GUI] MenuItem _loadApplicationFolder;
+        [GUI] MenuItem _appletMenu;
+        [GUI] MenuItem _actionMenu;
+        [GUI] MenuItem _pauseEmulation;
+        [GUI] MenuItem _resumeEmulation;
+        [GUI] MenuItem _stopEmulation;
+        [GUI] MenuItem _simulateWakeUpMessage;
+        [GUI] MenuItem _scanAmiibo;
+        [GUI] MenuItem _takeScreenshot;
+        [GUI] MenuItem _hideUi;
+        [GUI] MenuItem _fullScreen;
+        [GUI] CheckMenuItem _startFullScreen;
+        [GUI] CheckMenuItem _showConsole;
+        [GUI] CheckMenuItem _favToggle;
+        [GUI] MenuItem _firmwareInstallDirectory;
+        [GUI] MenuItem _firmwareInstallFile;
+        [GUI] MenuItem _fileTypesSubMenu;
+        [GUI] Label _fifoStatus;
+        [GUI] CheckMenuItem _iconToggle;
+        [GUI] CheckMenuItem _developerToggle;
+        [GUI] CheckMenuItem _appToggle;
+        [GUI] CheckMenuItem _timePlayedToggle;
+        [GUI] CheckMenuItem _versionToggle;
+        [GUI] CheckMenuItem _lastPlayedToggle;
+        [GUI] CheckMenuItem _fileExtToggle;
+        [GUI] CheckMenuItem _pathToggle;
+        [GUI] CheckMenuItem _fileSizeToggle;
+        [GUI] CheckMenuItem _nspShown;
+        [GUI] CheckMenuItem _pfs0Shown;
+        [GUI] CheckMenuItem _xciShown;
+        [GUI] CheckMenuItem _ncaShown;
+        [GUI] CheckMenuItem _nroShown;
+        [GUI] CheckMenuItem _nsoShown;
+        [GUI] Label _gpuBackend;
+        [GUI] Label _dockedMode;
+        [GUI] Label _aspectRatio;
+        [GUI] Label _gameStatus;
+        [GUI] TreeView _gameTable;
+        [GUI] TreeSelection _gameTableSelection;
+        [GUI] ScrolledWindow _gameTableWindow;
+        [GUI] Label _gpuName;
+        [GUI] Label _progressLabel;
+        [GUI] Label _firmwareVersionLabel;
         [GUI] Gtk.ProgressBar _progressBar;
-        [GUI] Box             _viewBox;
-        [GUI] Label           _vSyncStatus;
-        [GUI] Label           _volumeStatus;
-        [GUI] Box             _listStatusBox;
-        [GUI] Label           _loadingStatusLabel;
+        [GUI] Box _viewBox;
+        [GUI] Label _vSyncStatus;
+        [GUI] Label _volumeStatus;
+        [GUI] Box _listStatusBox;
+        [GUI] Label _loadingStatusLabel;
         [GUI] Gtk.ProgressBar _loadingStatusBar;
 
 #pragma warning restore CS0649, IDE0044, CS0169, IDE0051
@@ -282,7 +282,7 @@ namespace Ryujinx.Ui
             _tableStore.SetSortFunc(6, SortHelper.LastPlayedSort);
             _tableStore.SetSortFunc(8, SortHelper.FileSizeSort);
 
-            int  columnId  = ConfigurationState.Instance.Ui.ColumnSort.SortColumnId;
+            int columnId = ConfigurationState.Instance.Ui.ColumnSort.SortColumnId;
             bool ascending = ConfigurationState.Instance.Ui.ColumnSort.SortAscending;
 
             _tableStore.SetSortColumnId(columnId, ascending ? SortType.Ascending : SortType.Descending);
@@ -306,7 +306,7 @@ namespace Ryujinx.Ui
 
             Task.Run(RefreshFirmwareLabel);
 
-            InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
+            InputManager = new InputManager(new Gtk3KeyboardDriver(this), new SDL2GamepadDriver());
         }
 
         private void UpdateIgnoreMissingServicesState(object sender, ReactiveEventArgs<bool> args)
@@ -440,14 +440,14 @@ namespace Ryujinx.Ui
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
 
-            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            bool threadedGal = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
 
-            if (threadedGAL)
+            if (threadedGal)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
 
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGAL}");
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGal}");
 
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 
@@ -606,7 +606,7 @@ namespace Ryujinx.Ui
 
         private SurfaceKHR CreateVulkanSurface(Instance instance, Vk vk)
         {
-            return new SurfaceKHR((ulong)((VKRenderer)RendererWidget).CreateWindowSurface(instance.Handle));
+            return new SurfaceKHR((ulong)((VkRenderer)RendererWidget).CreateWindowSurface(instance.Handle));
         }
 
         private void SetupProgressUiHandlers()
@@ -667,7 +667,7 @@ namespace Ryujinx.Ui
                 _updatingGameTable = false;
             })
             {
-                Name         = "GUI.ApplicationLibraryThread",
+                Name = "GUI.ApplicationLibraryThread",
                 IsBackground = true
             };
             applicationLibraryThread.Start();
@@ -680,8 +680,8 @@ namespace Ryujinx.Ui
             {
                 MessageDialog debugWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
-                    Title         = "Ryujinx - Warning",
-                    Text          = "You have trace logging enabled, which is designed to be used by developers only.",
+                    Title = "Ryujinx - Warning",
+                    Text = "You have trace logging enabled, which is designed to be used by developers only.",
                     SecondaryText = "For optimal performance, it's recommended to disable trace logging. Would you like to disable trace logging now?"
                 };
 
@@ -698,8 +698,8 @@ namespace Ryujinx.Ui
             {
                 MessageDialog shadersDumpWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
-                    Title         = "Ryujinx - Warning",
-                    Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
+                    Title = "Ryujinx - Warning",
+                    Text = "You have shader dumping enabled, which is designed to be used by developers only.",
                     SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?"
                 };
 
@@ -892,7 +892,7 @@ namespace Ryujinx.Ui
         {
             if (ConfigurationState.Instance.Graphics.GraphicsBackend == GraphicsBackend.Vulkan)
             {
-                return new VKRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+                return new VkRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             }
             else
             {
@@ -1039,7 +1039,7 @@ namespace Ryujinx.Ui
 
         public static void UpdateGraphicsConfig()
         {
-            int   resScale       = ConfigurationState.Instance.Graphics.ResScale;
+            int resScale = ConfigurationState.Instance.Graphics.ResScale;
             float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
 
 #pragma warning disable IDE0055 // Disable formatting
@@ -1114,7 +1114,7 @@ namespace Ryujinx.Ui
             Application.Invoke(delegate
             {
                 _progressLabel.Text = $"{args.NumAppsLoaded}/{args.NumAppsFound} Games Loaded";
-                float barValue      = 0;
+                float barValue = 0;
 
                 if (args.NumAppsFound != 0)
                 {
@@ -1162,8 +1162,8 @@ namespace Ryujinx.Ui
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
 
-            string titleId        = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-            bool   newToggleValue = !(bool)_tableStore.GetValue(treeIter, 0);
+            string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            bool newToggleValue = !(bool)_tableStore.GetValue(treeIter, 0);
 
             _tableStore.SetValue(treeIter, 0, newToggleValue);
 
@@ -1684,9 +1684,9 @@ namespace Ryujinx.Ui
                 AmiiboWindow amiiboWindow = new()
                 {
                     LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
-                    LastScannedAmiiboId      = _lastScannedAmiiboId,
-                    DeviceId                 = deviceId,
-                    TitleId                  = _emulationContext.Processes.ActiveApplication.ProgramIdText.ToUpper()
+                    LastScannedAmiiboId = _lastScannedAmiiboId,
+                    DeviceId = deviceId,
+                    TitleId = _emulationContext.Processes.ActiveApplication.ProgramIdText.ToUpper()
                 };
 
                 amiiboWindow.DeleteEvent += AmiiboWindow_DeleteEvent;

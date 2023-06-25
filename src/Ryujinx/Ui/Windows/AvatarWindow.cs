@@ -18,7 +18,6 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.Ui.Windows
@@ -26,14 +25,14 @@ namespace Ryujinx.Ui.Windows
     public class AvatarWindow : Window
     {
         public byte[] SelectedProfileImage;
-        public bool   NewUser;
+        public bool NewUser;
 
         private static readonly Dictionary<string, byte[]> _avatarDict = new();
 
         private readonly ListStore _listStore;
-        private readonly IconView  _iconView;
-        private readonly Button    _setBackgroungColorButton;
-        private Gdk.RGBA  _backgroundColor;
+        private readonly IconView _iconView;
+        private readonly Button _setBackgroungColorButton;
+        private Gdk.RGBA _backgroundColor;
 
         public AvatarWindow() : base($"Ryujinx {Program.Version} - Manage Accounts - Avatar")
         {
@@ -60,8 +59,8 @@ namespace Ryujinx.Ui.Windows
 
             Button chooseButton = new()
             {
-                Label           = "Choose",
-                CanFocus        = true,
+                Label = "Choose",
+                CanFocus = true,
                 ReceivesDefault = true
             };
             chooseButton.Clicked += ChooseButton_Pressed;
@@ -80,8 +79,8 @@ namespace Ryujinx.Ui.Windows
 
             Button closeButton = new()
             {
-                Label           = "Close",
-                CanFocus        = true
+                Label = "Close",
+                CanFocus = true
             };
             closeButton.Clicked += CloseButton_Pressed;
 

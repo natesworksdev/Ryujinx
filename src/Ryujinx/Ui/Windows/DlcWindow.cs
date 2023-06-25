@@ -19,16 +19,16 @@ namespace Ryujinx.Ui.Windows
 {
     public class DlcWindow : Window
     {
-        private readonly VirtualFileSystem                  _virtualFileSystem;
-        private readonly string                             _titleId;
-        private readonly string                             _dlcJsonPath;
+        private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly string _titleId;
+        private readonly string _dlcJsonPath;
         private readonly List<DownloadableContentContainer> _dlcContainerList;
 
-        private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly DownloadableContentJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
-        [GUI] Label         _baseTitleInfoLabel;
-        [GUI] TreeView      _dlcTreeView;
+        [GUI] Label _baseTitleInfoLabel;
+        [GUI] TreeView _dlcTreeView;
         [GUI] TreeSelection _dlcTreeSelection;
 #pragma warning restore CS0649, IDE0044
 
@@ -45,7 +45,7 @@ namespace Ryujinx.Ui.Windows
 
             try
             {
-                _dlcContainerList = JsonHelper.DeserializeFromFile(_dlcJsonPath, SerializerContext.ListDownloadableContentContainer);
+                _dlcContainerList = JsonHelper.DeserializeFromFile(_dlcJsonPath, _serializerContext.ListDownloadableContentContainer);
             }
             catch
             {
@@ -240,7 +240,7 @@ namespace Ryujinx.Ui.Windows
                     {
                         DownloadableContentContainer dlcContainer = new()
                         {
-                            ContainerPath              = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
+                            ContainerPath = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
                             DownloadableContentNcaList = new List<DownloadableContentNca>()
                         };
 
@@ -261,7 +261,7 @@ namespace Ryujinx.Ui.Windows
                 while (_dlcTreeView.Model.IterNext(ref parentIter));
             }
 
-            JsonHelper.SerializeToFile(_dlcJsonPath, _dlcContainerList, SerializerContext.ListDownloadableContentContainer);
+            JsonHelper.SerializeToFile(_dlcJsonPath, _dlcContainerList, _serializerContext.ListDownloadableContentContainer);
 
             Dispose();
         }

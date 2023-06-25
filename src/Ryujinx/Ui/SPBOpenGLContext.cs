@@ -7,12 +7,12 @@ using SPB.Windowing;
 
 namespace Ryujinx.Ui
 {
-    class SPBOpenGLContext : IOpenGLContext
+    class SpbOpenGLContext : IOpenGLContext
     {
         private readonly OpenGLContextBase _context;
         private readonly NativeWindowBase _window;
 
-        private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
+        private SpbOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
         {
             _context = context;
             _window = window;
@@ -29,7 +29,7 @@ namespace Ryujinx.Ui
             _context.MakeCurrent(_window);
         }
 
-        public static SPBOpenGLContext CreateBackgroundContext(OpenGLContextBase sharedContext)
+        public static SpbOpenGLContext CreateBackgroundContext(OpenGLContextBase sharedContext)
         {
             OpenGLContextBase context = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, 3, 3, OpenGLContextFlags.Compat, true, sharedContext);
             NativeWindowBase window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100);
@@ -41,7 +41,7 @@ namespace Ryujinx.Ui
 
             context.MakeCurrent(null);
 
-            return new SPBOpenGLContext(context, window);
+            return new SpbOpenGLContext(context, window);
         }
     }
 }

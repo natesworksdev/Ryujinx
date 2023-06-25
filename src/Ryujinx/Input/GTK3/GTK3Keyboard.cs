@@ -7,7 +7,7 @@ using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Input.GTK3
 {
-    public class GTK3Keyboard : IKeyboard
+    public class Gtk3Keyboard : IKeyboard
     {
         private class ButtonMappingEntry
         {
@@ -23,11 +23,11 @@ namespace Ryujinx.Input.GTK3
 
         private readonly object _userMappingLock = new();
 
-        private readonly GTK3KeyboardDriver _driver;
+        private readonly Gtk3KeyboardDriver _driver;
         private StandardKeyboardInputConfig _configuration;
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
 
-        public GTK3Keyboard(GTK3KeyboardDriver driver, string id, string name)
+        public Gtk3Keyboard(Gtk3KeyboardDriver driver, string id, string name)
         {
             _driver = driver;
             Id = id;

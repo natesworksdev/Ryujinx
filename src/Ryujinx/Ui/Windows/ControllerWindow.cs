@@ -32,46 +32,46 @@ namespace Ryujinx.Ui.Windows
         private bool _isWaitingForInput;
 
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
-        [GUI] Adjustment   _controllerStrongRumble;
-        [GUI] Adjustment   _controllerWeakRumble;
-        [GUI] Adjustment   _controllerDeadzoneLeft;
-        [GUI] Adjustment   _controllerDeadzoneRight;
-        [GUI] Adjustment   _controllerRangeLeft;
-        [GUI] Adjustment   _controllerRangeRight;
-        [GUI] Adjustment   _controllerTriggerThreshold;
-        [GUI] Adjustment   _slotNumber;
-        [GUI] Adjustment   _altSlotNumber;
-        [GUI] Adjustment   _sensitivity;
-        [GUI] Adjustment   _gyroDeadzone;
-        [GUI] CheckButton  _enableMotion;
-        [GUI] CheckButton  _enableCemuHook;
-        [GUI] CheckButton  _mirrorInput;
-        [GUI] Entry        _dsuServerHost;
-        [GUI] Entry        _dsuServerPort;
+        [GUI] Adjustment _controllerStrongRumble;
+        [GUI] Adjustment _controllerWeakRumble;
+        [GUI] Adjustment _controllerDeadzoneLeft;
+        [GUI] Adjustment _controllerDeadzoneRight;
+        [GUI] Adjustment _controllerRangeLeft;
+        [GUI] Adjustment _controllerRangeRight;
+        [GUI] Adjustment _controllerTriggerThreshold;
+        [GUI] Adjustment _slotNumber;
+        [GUI] Adjustment _altSlotNumber;
+        [GUI] Adjustment _sensitivity;
+        [GUI] Adjustment _gyroDeadzone;
+        [GUI] CheckButton _enableMotion;
+        [GUI] CheckButton _enableCemuHook;
+        [GUI] CheckButton _mirrorInput;
+        [GUI] Entry _dsuServerHost;
+        [GUI] Entry _dsuServerPort;
         [GUI] ComboBoxText _inputDevice;
         [GUI] ComboBoxText _profile;
-        [GUI] Box          _settingsBox;
-        [GUI] Box          _motionAltBox;
-        [GUI] Box          _motionBox;
-        [GUI] Box          _dsuServerHostBox;
-        [GUI] Box          _dsuServerPortBox;
-        [GUI] Box          _motionControllerSlot;
-        [GUI] Grid         _leftStickKeyboard;
-        [GUI] Grid         _leftStickController;
-        [GUI] Box          _deadZoneLeftBox;
-        [GUI] Box          _rangeLeftBox;
-        [GUI] Grid         _rightStickKeyboard;
-        [GUI] Grid         _rightStickController;
-        [GUI] Box          _deadZoneRightBox;
-        [GUI] Box          _rangeRightBox;
-        [GUI] Grid         _leftSideTriggerBox;
-        [GUI] Grid         _rightSideTriggerBox;
-        [GUI] Box          _triggerThresholdBox;
+        [GUI] Box _settingsBox;
+        [GUI] Box _motionAltBox;
+        [GUI] Box _motionBox;
+        [GUI] Box _dsuServerHostBox;
+        [GUI] Box _dsuServerPortBox;
+        [GUI] Box _motionControllerSlot;
+        [GUI] Grid _leftStickKeyboard;
+        [GUI] Grid _leftStickController;
+        [GUI] Box _deadZoneLeftBox;
+        [GUI] Box _rangeLeftBox;
+        [GUI] Grid _rightStickKeyboard;
+        [GUI] Grid _rightStickController;
+        [GUI] Box _deadZoneRightBox;
+        [GUI] Box _rangeRightBox;
+        [GUI] Grid _leftSideTriggerBox;
+        [GUI] Grid _rightSideTriggerBox;
+        [GUI] Box _triggerThresholdBox;
         [GUI] ComboBoxText _controllerType;
         [GUI] ToggleButton _lStick;
-        [GUI] CheckButton  _invertLStickX;
-        [GUI] CheckButton  _invertLStickY;
-        [GUI] CheckButton  _rotateL90CW;
+        [GUI] CheckButton _invertLStickX;
+        [GUI] CheckButton _invertLStickY;
+        [GUI] CheckButton _rotateL90Cw;
         [GUI] ToggleButton _lStickUp;
         [GUI] ToggleButton _lStickDown;
         [GUI] ToggleButton _lStickLeft;
@@ -85,9 +85,9 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _l;
         [GUI] ToggleButton _zL;
         [GUI] ToggleButton _rStick;
-        [GUI] CheckButton  _invertRStickX;
-        [GUI] CheckButton  _invertRStickY;
-        [GUI] CheckButton  _rotateR90CW;
+        [GUI] CheckButton _invertRStickX;
+        [GUI] CheckButton _invertRStickY;
+        [GUI] CheckButton _rotateR90Cw;
         [GUI] ToggleButton _rStickUp;
         [GUI] ToggleButton _rStickDown;
         [GUI] ToggleButton _rStickLeft;
@@ -104,9 +104,9 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _lSr;
         [GUI] ToggleButton _rSl;
         [GUI] ToggleButton _rSr;
-        [GUI] Image        _controllerImage;
-        [GUI] CheckButton  _enableRumble;
-        [GUI] Box          _rumbleBox;
+        [GUI] Image _controllerImage;
+        [GUI] CheckButton _enableRumble;
+        [GUI] Box _rumbleBox;
 #pragma warning restore CS0649, IDE0044
 
         private readonly MainWindow _mainWindow;
@@ -115,7 +115,7 @@ namespace Ryujinx.Ui.Windows
         private bool _mousePressed;
         private bool _middleMousePressed;
 
-        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly InputConfigJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
@@ -125,7 +125,7 @@ namespace Ryujinx.Ui.Windows
             _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
-            _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
+            _gtk3KeyboardDriver = new Gtk3KeyboardDriver(this);
 
             Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
@@ -491,7 +491,7 @@ namespace Ryujinx.Ui.Windows
                     _lStick.Label = controllerConfig.LeftJoyconStick.Joystick.ToString();
                     _invertLStickX.Active = controllerConfig.LeftJoyconStick.InvertStickX;
                     _invertLStickY.Active = controllerConfig.LeftJoyconStick.InvertStickY;
-                    _rotateL90CW.Active = controllerConfig.LeftJoyconStick.Rotate90CW;
+                    _rotateL90Cw.Active = controllerConfig.LeftJoyconStick.Rotate90CW;
                     _lStickButton.Label = controllerConfig.LeftJoyconStick.StickButton.ToString();
                     _dpadUp.Label = controllerConfig.LeftJoycon.DpadUp.ToString();
                     _dpadDown.Label = controllerConfig.LeftJoycon.DpadDown.ToString();
@@ -505,7 +505,7 @@ namespace Ryujinx.Ui.Windows
                     _rStick.Label = controllerConfig.RightJoyconStick.Joystick.ToString();
                     _invertRStickX.Active = controllerConfig.RightJoyconStick.InvertStickX;
                     _invertRStickY.Active = controllerConfig.RightJoyconStick.InvertStickY;
-                    _rotateR90CW.Active = controllerConfig.RightJoyconStick.Rotate90CW;
+                    _rotateR90Cw.Active = controllerConfig.RightJoyconStick.Rotate90CW;
                     _rStickButton.Label = controllerConfig.RightJoyconStick.StickButton.ToString();
                     _a.Label = controllerConfig.RightJoycon.ButtonA.ToString();
                     _b.Label = controllerConfig.RightJoycon.ButtonB.ToString();
@@ -725,7 +725,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick = lStick,
                         InvertStickY = _invertLStickY.Active,
                         StickButton = lStickButton,
-                        Rotate90CW = _rotateL90CW.Active,
+                        Rotate90CW = _rotateL90Cw.Active,
                     },
                     RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {
@@ -745,7 +745,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick = rStick,
                         InvertStickY = _invertRStickY.Active,
                         StickButton = rStickButton,
-                        Rotate90CW = _rotateR90CW.Active,
+                        Rotate90CW = _rotateR90Cw.Active,
                     },
                     Motion = motionConfig,
                     Rumble = new RumbleConfigController
@@ -803,7 +803,7 @@ namespace Ryujinx.Ui.Windows
                         SetValues(_inputConfig);
                     }
 
-                    if (_mainWindow.InputManager.KeyboardDriver is GTK3KeyboardDriver)
+                    if (_mainWindow.InputManager.KeyboardDriver is Gtk3KeyboardDriver)
                     {
                         // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
                         _selectedGamepad = _gtk3KeyboardDriver.GetGamepad(id);
@@ -918,7 +918,7 @@ namespace Ryujinx.Ui.Windows
                 });
             })
             {
-                Name         = "GUI.InputThread",
+                Name = "GUI.InputThread",
                 IsBackground = true
             };
             inputThread.Start();
@@ -978,7 +978,7 @@ namespace Ryujinx.Ui.Windows
             }
 
             InputConfig config = null;
-            int         pos    = _profile.Active;
+            int pos = _profile.Active;
 
             if (_profile.ActiveId == "default")
             {
@@ -1126,7 +1126,7 @@ namespace Ryujinx.Ui.Windows
 
                 try
                 {
-                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
+                    config = JsonHelper.DeserializeFromFile(path, _serializerContext.InputConfig);
                 }
                 catch (JsonException) { }
             }
@@ -1143,7 +1143,7 @@ namespace Ryujinx.Ui.Windows
                 return;
             }
 
-            InputConfig   inputConfig   = GetValues();
+            InputConfig inputConfig = GetValues();
             ProfileDialog profileDialog = new();
 
             if (inputConfig == null)
@@ -1154,7 +1154,7 @@ namespace Ryujinx.Ui.Windows
             if (profileDialog.Run() == (int)ResponseType.Ok)
             {
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
-                string jsonString = JsonHelper.Serialize(inputConfig, SerializerContext.InputConfig);
+                string jsonString = JsonHelper.Serialize(inputConfig, _serializerContext.InputConfig);
 
                 File.WriteAllText(path, jsonString);
             }

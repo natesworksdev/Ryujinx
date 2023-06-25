@@ -13,16 +13,16 @@ namespace Ryujinx.Modules
     public class UpdateDialog : Gtk.Window
     {
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
-        [Builder.Object] public Label    MainText;
-        [Builder.Object] public Label    SecondaryText;
+        [Builder.Object] public Label MainText;
+        [Builder.Object] public Label SecondaryText;
         [Builder.Object] public LevelBar ProgressBar;
-        [Builder.Object] public Button   YesButton;
-        [Builder.Object] public Button   NoButton;
+        [Builder.Object] public Button YesButton;
+        [Builder.Object] public Button NoButton;
 #pragma warning restore CS0649, IDE0044
 
         private readonly MainWindow _mainWindow;
-        private readonly string     _buildUrl;
-        private          bool       _restartQuery;
+        private readonly string _buildUrl;
+        private bool _restartQuery;
 
         public UpdateDialog(MainWindow mainWindow, Version newVersion, string buildUrl) : this(new Builder("Ryujinx.Modules.Updater.UpdateDialog.glade"), mainWindow, newVersion, buildUrl) { }
 

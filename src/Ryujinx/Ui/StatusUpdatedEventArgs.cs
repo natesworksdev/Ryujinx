@@ -4,8 +4,8 @@ namespace Ryujinx.Ui
 {
     public class StatusUpdatedEventArgs : EventArgs
     {
-        public bool   VSyncEnabled;
-        public float  Volume;
+        public bool VSyncEnabled;
+        public float Volume;
         public string DockedMode;
         public string AspectRatio;
         public string GameStatus;
