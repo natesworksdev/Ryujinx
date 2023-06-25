@@ -7,8 +7,8 @@ namespace Ryujinx.Horizon.Sm
 {
     public class SmMain
     {
-        private const int SmMaxSessionsCount      = 64;
-        private const int SmmMaxSessionsCount     = 1;
+        private const int SmMaxSessionsCount = 64;
+        private const int SmmMaxSessionsCount = 1;
         private const int SmTotalMaxSessionsCount = SmMaxSessionsCount + SmmMaxSessionsCount;
 
         private const int MaxPortsCount = 2;

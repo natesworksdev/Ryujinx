@@ -5,15 +5,15 @@ namespace Ryujinx.Horizon.LogManager.Types
 {
     struct LogPacket
     {
-        public string      Message;
-        public int         Line;
-        public string      Filename;
-        public string      Function;
-        public string      Module;
-        public string      Thread;
-        public long        DropCount;
-        public long        Time;
-        public string      ProgramName;
+        public string Message;
+        public int Line;
+        public string Filename;
+        public string Function;
+        public string Module;
+        public string Thread;
+        public long DropCount;
+        public long Time;
+        public string ProgramName;
         public LogSeverity Severity;
 
         public override string ToString()

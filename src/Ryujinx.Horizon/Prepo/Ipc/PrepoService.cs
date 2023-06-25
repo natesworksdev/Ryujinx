@@ -25,7 +25,7 @@ namespace Ryujinx.Horizon.Prepo.Ipc
         private ulong _systemSessionId;
 
         private bool _immediateTransmissionEnabled = false;
-        private bool _userAgreementCheckEnabled    = true;
+        private bool _userAgreementCheckEnabled = true;
 
         public PrepoService(PrepoServicePermissionLevel permissionLevel)
         {
@@ -191,7 +191,7 @@ namespace Ryujinx.Horizon.Prepo.Ipc
                 return PrepoResult.InvalidBufferSize;
             }
 
-            StringBuilder     builder            = new();
+            StringBuilder builder = new();
             MessagePackObject deserializedReport = MessagePackSerializer.UnpackMessagePackObject(reportBuffer.ToArray());
 
             builder.AppendLine();

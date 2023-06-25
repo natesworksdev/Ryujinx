@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 {
     static class CmifMessage
     {
-        public const uint CmifInHeaderMagic  = 0x49434653; // SFCI
+        public const uint CmifInHeaderMagic = 0x49434653; // SFCI
         public const uint CmifOutHeaderMagic = 0x4f434653; // SFCO
 
         public static CmifRequest CreateRequest(Span<byte> output, CmifRequestFormat format)
@@ -24,7 +24,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             totalSize = (totalSize + 1) & ~1;
 
             int outPointerSizeTableOffset = totalSize;
-            int outPointerSizeTableSize   = format.OutAutoBuffersCount + format.OutPointersCount;
+            int outPointerSizeTableSize = format.OutAutoBuffersCount + format.OutPointersCount;
 
             totalSize += sizeof(ushort) * outPointerSizeTableSize;
 
@@ -34,16 +34,16 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
             {
                 Hipc = HipcMessage.WriteMessage(output, new HipcMetadata()
                 {
-                    Type                 = format.Context != 0 ? (int)CommandType.RequestWithContext : (int)CommandType.Request,
-                    SendStaticsCount     = format.InAutoBuffersCount + format.InPointersCount,
-                    SendBuffersCount     = format.InAutoBuffersCount + format.InBuffersCount,
-                    ReceiveBuffersCount  = format.OutAutoBuffersCount + format.OutBuffersCount,
+                    Type = format.Context != 0 ? (int)CommandType.RequestWithContext : (int)CommandType.Request,
+                    SendStaticsCount = format.InAutoBuffersCount + format.InPointersCount,
+                    SendBuffersCount = format.InAutoBuffersCount + format.InBuffersCount,
+                    ReceiveBuffersCount = format.OutAutoBuffersCount + format.OutBuffersCount,
                     ExchangeBuffersCount = format.InOutBuffersCount,
-                    DataWordsCount       = rawDataSizeInWords,
-                    ReceiveStaticsCount  = outPointerSizeTableSize + format.OutFixedPointersCount,
-                    SendPid              = format.SendPid,
-                    CopyHandlesCount     = format.HandlesCount,
-                    MoveHandlesCount     = 0
+                    DataWordsCount = rawDataSizeInWords,
+                    ReceiveStaticsCount = outPointerSizeTableSize + format.OutFixedPointersCount,
+                    SendPid = format.SendPid,
+                    CopyHandlesCount = format.HandlesCount,
+                    MoveHandlesCount = 0
                 })
             };
 
@@ -96,7 +96,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
         {
             HipcMessage responseMessage = new(input);
 
-            Span<byte> data    = MemoryMarshal.Cast<uint, byte>(responseMessage.Data.DataWords);
+            Span<byte> data = MemoryMarshal.Cast<uint, byte>(responseMessage.Data.DataWords);
             Span<uint> objects = Span<uint>.Empty;
 
             if (isDomain)

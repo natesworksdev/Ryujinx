@@ -231,7 +231,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 {
                     HipcMessageData messageData = HipcMessage.WriteMessage(message, new HipcMetadata()
                     {
-                        Type                = (int)CommandType.Invalid,
+                        Type = (int)CommandType.Invalid,
                         ReceiveStaticsCount = HipcMessage.AutoReceiveStatic
                     });
 
@@ -288,14 +288,14 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             var dispatchCtx = new ServiceDispatchContext()
             {
-                ServiceObject    = objectHolder.ServiceObject,
-                Manager          = this,
-                Session          = session,
-                HandlesToClose   = new HandlesToClose(),
-                PointerBuffer    = session.PointerBuffer,
-                InMessageBuffer  = inMessage,
+                ServiceObject = objectHolder.ServiceObject,
+                Manager = this,
+                Session = session,
+                HandlesToClose = new HandlesToClose(),
+                PointerBuffer = session.PointerBuffer,
+                InMessageBuffer = inMessage,
                 OutMessageBuffer = outMessage,
-                Request          = request
+                Request = request
             };
 
             ReadOnlySpan<byte> inRawData = MemoryMarshal.Cast<uint, byte>(dispatchCtx.Request.Data.DataWords);

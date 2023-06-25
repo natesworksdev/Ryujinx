@@ -12,9 +12,9 @@ namespace Ryujinx.Horizon.Sdk.Sf
             {
                 int argsCount = args.Length;
 
-                int[] sizes  = new int[argsCount];
+                int[] sizes = new int[argsCount];
                 int[] aligns = new int[argsCount];
-                int[] map    = new int[argsCount];
+                int[] map = new int[argsCount];
 
                 for (int i = 0; i < argsCount; i++)
                 {

@@ -5,8 +5,8 @@ namespace Ryujinx.Horizon.Sm.Impl
     struct ServiceInfo
     {
         public ServiceName Name;
-        public ulong       OwnerProcessId;
-        public int         PortHandle;
+        public ulong OwnerProcessId;
+        public int PortHandle;
 
         public void Free()
         {

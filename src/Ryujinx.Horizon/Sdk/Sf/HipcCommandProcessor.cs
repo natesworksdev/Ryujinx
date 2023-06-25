@@ -134,9 +134,9 @@ namespace Ryujinx.Horizon.Sdk.Sf
             ulong pointerBufferTail = context.PointerBuffer.Address;
             ulong pointerBufferHead = pointerBufferTail + context.PointerBuffer.Size;
 
-            int sendMapAliasIndex       = 0;
-            int recvMapAliasIndex       = 0;
-            int sendPointerIndex        = 0;
+            int sendMapAliasIndex = 0;
+            int recvMapAliasIndex = 0;
+            int sendPointerIndex = 0;
             int unfixedRecvPointerIndex = 0;
 
             for (int i = 0; i < _args.Length; i++)
@@ -186,8 +186,8 @@ namespace Ryujinx.Horizon.Sdk.Sf
                     if (flags.HasFlag(HipcBufferFlags.In))
                     {
                         var descriptor = context.Request.Data.SendStatics[sendPointerIndex++];
-                        ulong address  = descriptor.Address;
-                        ulong size     = descriptor.Size;
+                        ulong address = descriptor.Address;
+                        ulong size = descriptor.Size;
 
                         _bufferRanges[i] = new PointerAndSize(address, size);
 
@@ -206,7 +206,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
                         }
                         else
                         {
-                            var data             = MemoryMarshal.Cast<uint, byte>(context.Request.Data.DataWords);
+                            var data = MemoryMarshal.Cast<uint, byte>(context.Request.Data.DataWords);
                             var recvPointerSizes = MemoryMarshal.Cast<byte, ushort>(data[runtimeMetadata.UnfixedOutPointerSizeOffset..]);
 
                             size = recvPointerSizes[unfixedRecvPointerIndex++];
@@ -345,7 +345,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
                     continue;
                 }
 
-                int index    = inObjectIndex++;
+                int index = inObjectIndex++;
                 var inObject = inObjects[index];
 
                 objects[index] = inObject?.ServiceObject;

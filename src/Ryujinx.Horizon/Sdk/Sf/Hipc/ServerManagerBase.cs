@@ -26,7 +26,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         private enum UserDataTag
         {
-            Server  = 1,
+            Server = 1,
             Session = 2
         }
 

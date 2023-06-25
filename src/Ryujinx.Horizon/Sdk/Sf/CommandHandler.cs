@@ -15,7 +15,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
             ReadOnlySpan<byte> inRawData,
             ref Span<CmifOutHeader> outHeader);
 
-        private readonly MethodInvoke         _invoke;
+        private readonly MethodInvoke _invoke;
         private readonly HipcCommandProcessor _processor;
 
         public string MethodName => _invoke.Method.Name;
@@ -37,8 +37,8 @@ namespace Ryujinx.Horizon.Sdk.Sf
                 context.Processor.SetImplementationProcessor(_processor);
             }
 
-            var    runtimeMetadata = context.Processor.GetRuntimeMetadata();
-            Result result          = context.Processor.PrepareForProcess(ref context, runtimeMetadata);
+            var runtimeMetadata = context.Processor.GetRuntimeMetadata();
+            Result result = context.Processor.PrepareForProcess(ref context, runtimeMetadata);
 
             return result.IsFailure ? result : _invoke(ref context, _processor, runtimeMetadata, inRawData, ref outHeader);
         }

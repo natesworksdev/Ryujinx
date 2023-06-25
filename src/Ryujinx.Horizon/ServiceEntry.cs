@@ -7,8 +7,8 @@ namespace Ryujinx.Horizon
     public readonly struct ServiceEntry
     {
         private readonly Action<ServiceTable> _entrypoint;
-        private readonly ServiceTable         _serviceTable;
-        private readonly HorizonOptions       _options;
+        private readonly ServiceTable _serviceTable;
+        private readonly HorizonOptions _options;
 
         internal ServiceEntry(Action<ServiceTable> entrypoint, ServiceTable serviceTable, HorizonOptions options)
         {

@@ -8,9 +8,9 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 {
     class MultiWaitImpl
     {
-        private const int WaitTimedOut  = -1;
+        private const int WaitTimedOut = -1;
         private const int WaitCancelled = -2;
-        private const int WaitInvalid   = -3;
+        private const int WaitInvalid = -3;
 
         private readonly List<MultiWaitHolderBase> _multiWaits;
 

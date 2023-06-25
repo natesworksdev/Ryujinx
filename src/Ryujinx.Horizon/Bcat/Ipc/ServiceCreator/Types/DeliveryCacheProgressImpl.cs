@@ -12,7 +12,7 @@ namespace Ryujinx.Horizon.Bcat.Ipc.Types
         }
 
         public Status State;
-        public uint   Result;
+        public uint Result;
         // TODO: reverse the rest of the structure
     }
 }

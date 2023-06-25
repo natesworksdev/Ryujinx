@@ -70,8 +70,8 @@ namespace Ryujinx.Horizon
                 var range = _freeRanges[i];
 
                 ulong alignedOffset = BitUtils.AlignUp(range.Offset, alignment);
-                ulong sizeDelta     = alignedOffset - range.Offset;
-                ulong usableSize    = range.Size - sizeDelta;
+                ulong sizeDelta = alignedOffset - range.Offset;
+                ulong usableSize = range.Size - sizeDelta;
 
                 if (sizeDelta < range.Size && usableSize >= size)
                 {
@@ -82,7 +82,7 @@ namespace Ryujinx.Horizon
                         InsertFreeRange(range.Offset, sizeDelta);
                     }
 
-                    ulong endOffset     = range.Offset + range.Size;
+                    ulong endOffset = range.Offset + range.Size;
                     ulong remainingSize = endOffset - (alignedOffset + size);
                     if (remainingSize != 0)
                     {

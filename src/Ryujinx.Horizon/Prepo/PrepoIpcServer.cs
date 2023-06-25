@@ -6,13 +6,13 @@ namespace Ryujinx.Horizon.Prepo
 {
     class PrepoIpcServer
     {
-        private const int PrepoMaxSessionsCount      = 12;
+        private const int PrepoMaxSessionsCount = 12;
         private const int PrepoTotalMaxSessionsCount = PrepoMaxSessionsCount * 6;
 
         private const int PointerBufferSize = 0x80;
-        private const int MaxDomains        = 64;
-        private const int MaxDomainObjects  = 16;
-        private const int MaxPortsCount     = 6;
+        private const int MaxDomains = 64;
+        private const int MaxDomainObjects = 16;
+        private const int MaxPortsCount = 6;
 
         private static readonly ManagerOptions _prepoManagerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
 

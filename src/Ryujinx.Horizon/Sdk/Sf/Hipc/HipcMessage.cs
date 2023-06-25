@@ -10,9 +10,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
     {
         public const int AutoReceiveStatic = byte.MaxValue;
 
-        public HipcMetadata    Meta;
+        public HipcMetadata Meta;
         public HipcMessageData Data;
-        public ulong           Pid;
+        public ulong Pid;
 
         public HipcMessage(Span<byte> data)
         {
@@ -22,8 +22,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             data = data[Unsafe.SizeOf<Header>()..];
 
-            int   receiveStaticsCount = 0;
-            ulong pid                 = 0;
+            int receiveStaticsCount = 0;
+            ulong pid = 0;
 
             if (header.ReceiveStaticMode != 0)
             {
@@ -87,7 +87,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
         public static HipcMessageData WriteMessage(Span<byte> destination, HipcMetadata meta)
         {
-            int  initialLength    = destination.Length;
+            int initialLength = destination.Length;
             bool hasSpecialHeader = meta.SendPid || meta.CopyHandlesCount != 0 || meta.MoveHandlesCount != 0;
 
             MemoryMarshal.Cast<byte, Header>(destination)[0] = new Header()
@@ -184,9 +184,9 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
             if (meta.DataWordsCount != 0)
             {
-                int dataOffset        = initialLength - data.Length;
+                int dataOffset = initialLength - data.Length;
                 int dataOffsetAligned = BitUtils.AlignUp(dataOffset, 0x10);
-                int padding           = (dataOffsetAligned - dataOffset) / sizeof(uint);
+                int padding = (dataOffsetAligned - dataOffset) / sizeof(uint);
 
                 dataWords = MemoryMarshal.Cast<byte, uint>(data)[padding..meta.DataWordsCount];
 
