@@ -322,6 +322,21 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Enables or disables guest Internet access
             /// </summary>
             public ReactiveObject<bool> EnableInternetAccess { get; private set; }
+            
+            /// <summary>
+            /// Enables or disables sending HTTP requests through a proxy server
+            /// </summary>
+            public ReactiveObject<bool> EnableHttpProxy { get; private set; }
+            
+            /// <summary>
+            /// IP address of HTTP proxy server
+            /// </summary>
+            public ReactiveObject<string> HttpProxyIpAddress { get; private set; }
+            
+            /// <summary>
+            /// Port number of HTTP proxy server
+            /// </summary>
+            public ReactiveObject<int> HttpProxyPort { get; private set; }
 
             /// <summary>
             /// Enables integrity checks on Game content files
@@ -375,6 +390,12 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnablePtc.Event               += static (sender, e) => LogValueChange(sender, e, nameof(EnablePtc));
                 EnableInternetAccess          = new ReactiveObject<bool>();
                 EnableInternetAccess.Event    += static (sender, e) => LogValueChange(sender, e, nameof(EnableInternetAccess));
+                EnableHttpProxy               = new ReactiveObject<bool>();
+                EnableHttpProxy.Event         += static (sender, e) => LogValueChange(sender, e, nameof(EnableHttpProxy));
+                HttpProxyIpAddress            = new ReactiveObject<string>();
+                HttpProxyIpAddress.Event      += static (sender, e) => LogValueChange(sender, e, nameof(HttpProxyIpAddress));
+                HttpProxyPort                 = new ReactiveObject<int>();
+                HttpProxyPort.Event           += static (sender, e) => LogValueChange(sender, e, nameof(HttpProxyPort));
                 EnableFsIntegrityChecks       = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableFsIntegrityChecks));
                 FsGlobalAccessLogMode         = new ReactiveObject<int>();
@@ -669,6 +690,9 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableMacroHLE             = Graphics.EnableMacroHLE,
                 EnablePtc                  = System.EnablePtc,
                 EnableInternetAccess       = System.EnableInternetAccess,
+                EnableHttpProxy            = System.EnableHttpProxy,
+                HttpProxyIpAddress         = System.HttpProxyIpAddress,
+                HttpProxyPort              = System.HttpProxyPort,
                 EnableFsIntegrityChecks    = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode      = System.FsGlobalAccessLogMode,
                 AudioBackend               = System.AudioBackend,
@@ -1397,6 +1421,17 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 48)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");
+                
+                configurationFileFormat.EnableHttpProxy = false;
+                configurationFileFormat.HttpProxyIpAddress = "127.0.0.1";
+                configurationFileFormat.HttpProxyPort = 8080;
+                
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
@@ -1434,6 +1469,9 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.EnableMacroHLE.Value             = configurationFileFormat.EnableMacroHLE;
             System.EnablePtc.Value                    = configurationFileFormat.EnablePtc;
             System.EnableInternetAccess.Value         = configurationFileFormat.EnableInternetAccess;
+            System.EnableHttpProxy.Value              = configurationFileFormat.EnableHttpProxy;
+            System.HttpProxyIpAddress.Value           = configurationFileFormat.HttpProxyIpAddress;
+            System.HttpProxyPort.Value                = configurationFileFormat.HttpProxyPort;
             System.EnableFsIntegrityChecks.Value      = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value        = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value                 = configurationFileFormat.AudioBackend;

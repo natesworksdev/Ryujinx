@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 47;
+        public const int CurrentVersion = 48;
 
         /// <summary>
         /// Version of the configuration file format
@@ -195,6 +195,22 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Enables or disables guest Internet access
         /// </summary>
         public bool EnableInternetAccess { get; set; }
+        
+        /// <summary>
+        /// Enables or disables sending HTTP requests through a proxy server
+        /// </summary>
+        public bool EnableHttpProxy { get; set; }
+            
+        /// <summary>
+        /// IP address of HTTP proxy server
+        /// </summary>
+        public string HttpProxyIpAddress { get; set; }
+            
+        /// <summary>
+        /// Port number of HTTP proxy server
+        /// </summary>
+        public int HttpProxyPort { get; set; }
+
 
         /// <summary>
         /// Enables integrity checks on Game content files

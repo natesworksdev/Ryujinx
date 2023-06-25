@@ -682,6 +682,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 IPEndPoint endPoint = context.Memory.Read<BsdSockAddr>(bufferPosition).ToIPEndPoint();
 
+                if (context.Device.Configuration.EnableHttpProxy)
+                {
+                    endPoint = new IPEndPoint(
+                        IPAddress.Parse(context.Device.Configuration.HttpProxyIpAddress),
+                        context.Device.Configuration.HttpProxyPort
+                    );
+                }
+                
                 errno = socket.Connect(endPoint);
             }
 
