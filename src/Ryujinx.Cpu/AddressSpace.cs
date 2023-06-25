@@ -1,5 +1,5 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Collections;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Memory;
 using System;
 
