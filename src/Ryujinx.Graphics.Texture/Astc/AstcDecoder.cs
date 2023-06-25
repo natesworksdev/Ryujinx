@@ -456,10 +456,12 @@ namespace Ryujinx.Graphics.Texture.Astc
                 for (int i = 0; i < numberPartitions; i++)
                 {
                     colorEndpointMode[i] = baseMode;
+
                     if (!(c[i]))
                     {
                         colorEndpointMode[i] -= 1;
                     }
+
                     colorEndpointMode[i] <<= 2;
                     colorEndpointMode[i] |= m[i];
                 }
@@ -486,6 +488,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             DecodeColorValues(colorValues, ref colorEndpointStream, colorEndpointMode, numberPartitions, colorDataBits);
 
             EndPointSet endPoints;
+
             unsafe
             {
                 // Skip struct initialization
@@ -523,11 +526,13 @@ namespace Ryujinx.Graphics.Texture.Astc
             }
 
             IntegerSequence texelWeightValues;
+
             unsafe
             {
                 // Skip struct initialization
                 _ = &texelWeightValues;
             }
+
             texelWeightValues.Reset();
 
             BitStream128 weightBitStream = new(texelWeightData);
@@ -536,6 +541,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             // Blocks can be at most 12x12, so we can have as many as 144 weights
             Weights weights;
+
             unsafe
             {
                 // Skip struct initialization
@@ -713,6 +719,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             {
                 d = 0;
             }
+
             if (partitionCount < 3)
             {
                 c = 0;
@@ -759,6 +766,7 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             int weightIndices = 0;
             Weights unquantized;
+
             unsafe
             {
                 // Skip struct initialization
@@ -1220,8 +1228,13 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             // We now have enough to decode our integer sequence.
             IntegerSequence integerEncodedSequence;
+
             unsafe
-            { _ = &integerEncodedSequence; } // Skip struct initialization
+            {
+                // Skip struct initialization
+                _ = &integerEncodedSequence; 
+            }
+
             integerEncodedSequence.Reset();
 
             IntegerEncoded.DecodeIntegerSequence(ref integerEncodedSequence, ref colorBitStream, range, numberValues);

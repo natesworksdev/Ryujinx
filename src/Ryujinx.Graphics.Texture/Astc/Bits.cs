@@ -33,6 +33,7 @@
             {
                 return 0;
             }
+
             if (toBit == 0)
             {
                 return 0;
