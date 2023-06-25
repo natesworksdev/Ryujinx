@@ -6,7 +6,7 @@ using Size = System.Drawing.Size;
 
 namespace Ryujinx.Input.GTK3
 {
-    public class Gtk3MouseDriver : IGamepadDriver
+    public class GTK3MouseDriver : IGamepadDriver
     {
         private Widget _widget;
         private bool _isDisposed;
@@ -16,7 +16,7 @@ namespace Ryujinx.Input.GTK3
         public Vector2 CurrentPosition { get; private set; }
         public Vector2 Scroll { get; private set; }
 
-        public Gtk3MouseDriver(Widget parent)
+        public GTK3MouseDriver(Widget parent)
         {
             _widget = parent;
 
@@ -84,7 +84,7 @@ namespace Ryujinx.Input.GTK3
 
         public IGamepad GetGamepad(string id)
         {
-            return new Gtk3Mouse(this);
+            return new GTK3Mouse(this);
         }
 
         public void Dispose()

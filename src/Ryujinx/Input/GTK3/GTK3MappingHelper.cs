@@ -6,7 +6,7 @@ using GtkKey = Gdk.Key;
 
 namespace Ryujinx.Input.GTK3
 {
-    public static class Gtk3MappingHelper
+    public static class GTK3MappingHelper
     {
         private static readonly GtkKey[] _keyMapping = new GtkKey[(int)Key.Count]
         {
@@ -149,7 +149,7 @@ namespace Ryujinx.Input.GTK3
 
         private static readonly Dictionary<GtkKey, Key> _gtkKeyMapping;
 
-        static Gtk3MappingHelper()
+        static GTK3MappingHelper()
         {
             var inputKeys = Enum.GetValues<Key>().SkipLast(1);
 

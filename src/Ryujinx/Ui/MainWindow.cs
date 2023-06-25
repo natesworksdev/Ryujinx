@@ -18,8 +18,6 @@ using Ryujinx.Common.SystemInterop;
 using Ryujinx.Cpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
-using Ryujinx.Graphics.OpenGL;
-using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -238,25 +236,45 @@ namespace Ryujinx.Ui
             _fileTypesSubMenu.Visible = FileAssociationHelper.IsTypeAssociationSupported;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)
+            {
                 _favToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)
+            {
                 _iconToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)
+            {
                 _appToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)
+            {
                 _developerToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)
+            {
                 _versionToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn)
+            {
                 _timePlayedToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn)
+            {
                 _lastPlayedToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)
+            {
                 _fileExtToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)
+            {
                 _fileSizeToggle.Active = true;
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)
+            {
                 _pathToggle.Active = true;
+            }
 
             _favToggle.Toggled += Fav_Toggled;
             _iconToggle.Toggled += Icon_Toggled;
@@ -268,7 +286,6 @@ namespace Ryujinx.Ui
             _fileExtToggle.Toggled += FileExt_Toggled;
             _fileSizeToggle.Toggled += FileSize_Toggled;
             _pathToggle.Toggled += Path_Toggled;
-#pragma warning restore IDE0055
 
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
@@ -311,7 +328,7 @@ namespace Ryujinx.Ui
 
             Task.Run(RefreshFirmwareLabel);
 
-            InputManager = new InputManager(new Gtk3KeyboardDriver(this), new SDL2GamepadDriver());
+            InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
         }
 
         private void UpdateIgnoreMissingServicesState(object sender, ReactiveEventArgs<bool> args)
@@ -366,25 +383,45 @@ namespace Ryujinx.Ui
             favToggle.Toggled += FavToggle_Toggled;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)
+            {
                 _gameTable.AppendColumn("Fav", favToggle, "active", 0);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)
+            {
                 _gameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 1);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)
+            {
                 _gameTable.AppendColumn("Application", new CellRendererText(), "text", 2);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)
+            {
                 _gameTable.AppendColumn("Developer", new CellRendererText(), "text", 3);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)
+            {
                 _gameTable.AppendColumn("Version", new CellRendererText(), "text", 4);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn)
+            {
                 _gameTable.AppendColumn("Time Played", new CellRendererText(), "text", 5);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn)
+            {
                 _gameTable.AppendColumn("Last Played", new CellRendererText(), "text", 6);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)
+            {
                 _gameTable.AppendColumn("File Ext", new CellRendererText(), "text", 7);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)
+            {
                 _gameTable.AppendColumn("File Size", new CellRendererText(), "text", 8);
+            }
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)
+            {
                 _gameTable.AppendColumn("Path", new CellRendererText(), "text", 9);
+            }
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
@@ -444,23 +481,23 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Graphics.GraphicsBackend == GraphicsBackend.Vulkan)
             {
                 string preferredGpu = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
-                renderer = new VulkanRenderer(Vk.GetApi(), CreateVulkanSurface, VulkanHelper.GetRequiredInstanceExtensions, preferredGpu);
+                renderer = new Graphics.Vulkan.VulkanRenderer(Vk.GetApi(), CreateVulkanSurface, VulkanHelper.GetRequiredInstanceExtensions, preferredGpu);
             }
             else
             {
-                renderer = new OpenGLRenderer();
+                renderer = new Graphics.OpenGL.OpenGLRenderer();
             }
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
 
-            bool threadedGal = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
 
-            if (threadedGal)
+            if (threadedGAL)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
 
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGal}");
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGAL}");
 
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 
@@ -619,7 +656,7 @@ namespace Ryujinx.Ui
 
         private SurfaceKHR CreateVulkanSurface(Instance instance, Vk vk)
         {
-            return new SurfaceKHR((ulong)((VkRenderer)RendererWidget).CreateWindowSurface(instance.Handle));
+            return new SurfaceKHR((ulong)((VulkanRenderer)RendererWidget).CreateWindowSurface(instance.Handle));
         }
 
         private void SetupProgressUiHandlers()
@@ -905,11 +942,11 @@ namespace Ryujinx.Ui
         {
             if (ConfigurationState.Instance.Graphics.GraphicsBackend == GraphicsBackend.Vulkan)
             {
-                return new VkRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+                return new VulkanRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             }
             else
             {
-                return new GlRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+                return new OpenGLRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             }
         }
 
