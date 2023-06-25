@@ -18,7 +18,7 @@ namespace Ryujinx.Cpu.AppleHv
                     Ipa = ipaAllocator.Allocate(size);
                 }
 
-                HvApi.hv_vm_map((ulong)Memory.Pointer, Ipa, size, hv_memory_flags_t.HV_MEMORY_READ | hv_memory_flags_t.HV_MEMORY_WRITE).ThrowOnError();
+                HvApi.hv_vm_map((ulong)Memory.Pointer, Ipa, size, HvMemoryFlags.Read | HvMemoryFlags.Write).ThrowOnError();
             }
 
             public override void Destroy()

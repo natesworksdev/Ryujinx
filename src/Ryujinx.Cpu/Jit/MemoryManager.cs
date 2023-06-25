@@ -605,7 +605,7 @@ namespace Ryujinx.Cpu.Jit
             {
                 MemoryPermission.None => 0L,
                 MemoryPermission.Write => 2L << PointerTagBit,
-                _ => 3L << PointerTagBit
+                _ => 3L << PointerTagBit,
             };
 
             int pages = GetPagesCount(va, (uint)size, out va);

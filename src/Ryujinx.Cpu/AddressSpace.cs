@@ -13,7 +13,7 @@ namespace Ryujinx.Cpu
         {
             None,
             Private,
-            Shared
+            Shared,
         }
 
         private class Mapping : IntrusiveRedBlackTreeNode<Mapping>, IComparable<Mapping>

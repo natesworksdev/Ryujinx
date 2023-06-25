@@ -32,7 +32,7 @@ namespace Ryujinx.Cpu.AppleHv
 
             MappedReplicated = 0x5555555555555555,
             WriteTrackedReplicated = 0xaaaaaaaaaaaaaaaa,
-            ReadWriteTrackedReplicated = ulong.MaxValue
+            ReadWriteTrackedReplicated = ulong.MaxValue,
         }
 
         private readonly InvalidAccessHandler _invalidAccessHandler;
@@ -816,7 +816,7 @@ namespace Ryujinx.Cpu.AppleHv
             {
                 MemoryPermission.None => MemoryPermission.ReadAndWrite,
                 MemoryPermission.Write => MemoryPermission.Read,
-                _ => MemoryPermission.None
+                _ => MemoryPermission.None,
             };
 
             _addressSpace.ReprotectUser(va, size, protection);

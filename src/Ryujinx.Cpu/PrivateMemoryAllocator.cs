@@ -40,7 +40,7 @@ namespace Ryujinx.Cpu
                 Size = size;
                 _freeRanges = new List<Range>
                 {
-                    new Range(0, size)
+                    new Range(0, size),
                 };
             }
 
