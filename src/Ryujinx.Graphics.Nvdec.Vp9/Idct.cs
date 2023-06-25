@@ -434,7 +434,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             // DC only DCT coefficient
             if (eob == 1)
             {
-                vpx_Highbdidct8x8_1_add_c(input, dest, stride, bd);
+                Vpx_Highbdidct8x8_1_add_c(input, dest, stride, bd);
             }
             else if (eob <= 12)
             {

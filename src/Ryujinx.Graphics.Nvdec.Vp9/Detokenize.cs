@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int band, c = 0;
             ref Array6<Array6<Array3<byte>>> coefProbs = ref fc.CoefProbs[(int)txSize][(int)type][refr];
             Span<byte> tokenCache = stackalloc byte[32 * 32];
-            ReadOnlySpan<byte> bandTranslate = Luts.get_band_translate(txSize);
+            ReadOnlySpan<byte> bandTranslate = Luts.GetBandTranslate(txSize);
             int dqShift = (txSize == TxSize.Tx32x32) ? 1 : 0;
             int v;
             short dqv = dq[0];
