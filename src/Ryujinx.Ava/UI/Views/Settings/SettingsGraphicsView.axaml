@@ -69,7 +69,7 @@
                             ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
                             <TextBlock Text="{locale:Locale SettingsEnableTextureRecompression}" />
                         </CheckBox>
-                        <CheckBox IsChecked="{Binding EnableMacroHLE}"
+                        <CheckBox IsChecked="{Binding EnableMacroHle}"
                             ToolTip.Tip="{locale:Locale SettingsEnableMacroHLETooltip}">
                             <TextBlock Text="{locale:Locale SettingsEnableMacroHLE}" />
                         </CheckBox>

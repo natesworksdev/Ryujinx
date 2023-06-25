@@ -83,7 +83,7 @@ namespace Ryujinx.Ava.UI.Renderer
             }
             else if (OperatingSystem.IsMacOS())
             {
-                return CreateMacOS();
+                return CreateMacOs();
             }
 
             return base.CreateNativeControlCore(control);
@@ -103,7 +103,7 @@ namespace Ryujinx.Ava.UI.Renderer
             }
             else if (OperatingSystem.IsMacOS())
             {
-                DestroyMacOS();
+                DestroyMacOs();
             }
             else
             {
@@ -141,21 +141,21 @@ namespace Ryujinx.Ava.UI.Renderer
             {
                 if (VisualRoot != null)
                 {
-                    if (msg == WindowsMessages.LBUTTONDOWN ||
-                        msg == WindowsMessages.RBUTTONDOWN ||
-                        msg == WindowsMessages.LBUTTONUP ||
-                        msg == WindowsMessages.RBUTTONUP ||
-                        msg == WindowsMessages.MOUSEMOVE)
+                    if (msg == WindowsMessages.Lbuttondown ||
+                        msg == WindowsMessages.Rbuttondown ||
+                        msg == WindowsMessages.Lbuttonup ||
+                        msg == WindowsMessages.Rbuttonup ||
+                        msg == WindowsMessages.Mousemove)
                     {
                         Point rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;
                         Pointer pointer = new(0, PointerType.Mouse, true);
 
                         switch (msg)
                         {
-                            case WindowsMessages.LBUTTONDOWN:
-                            case WindowsMessages.RBUTTONDOWN:
+                            case WindowsMessages.Lbuttondown:
+                            case WindowsMessages.Rbuttondown:
                                 {
-                                    bool isLeft = msg == WindowsMessages.LBUTTONDOWN;
+                                    bool isLeft = msg == WindowsMessages.Lbuttondown;
                                     RawInputModifiers pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
                                     PointerPointProperties properties = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonPressed : PointerUpdateKind.RightButtonPressed);
 
@@ -172,10 +172,10 @@ namespace Ryujinx.Ava.UI.Renderer
 
                                     break;
                                 }
-                            case WindowsMessages.LBUTTONUP:
-                            case WindowsMessages.RBUTTONUP:
+                            case WindowsMessages.Lbuttonup:
+                            case WindowsMessages.Rbuttonup:
                                 {
-                                    bool isLeft = msg == WindowsMessages.LBUTTONUP;
+                                    bool isLeft = msg == WindowsMessages.Lbuttonup;
                                     RawInputModifiers pointerPointModifier = isLeft ? RawInputModifiers.LeftMouseButton : RawInputModifiers.RightMouseButton;
                                     PointerPointProperties properties = new(pointerPointModifier, isLeft ? PointerUpdateKind.LeftButtonReleased : PointerUpdateKind.RightButtonReleased);
 
@@ -193,7 +193,7 @@ namespace Ryujinx.Ava.UI.Renderer
 
                                     break;
                                 }
-                            case WindowsMessages.MOUSEMOVE:
+                            case WindowsMessages.Mousemove:
                                 {
                                     var evnt = new PointerEventArgs(
                                         PointerMovedEvent,
@@ -216,19 +216,19 @@ namespace Ryujinx.Ava.UI.Renderer
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             };
 
-            WNDCLASSEX wndClassEx = new()
+            Wndclassex wndClassEx = new()
             {
-                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
+                cbSize = Marshal.SizeOf<Wndclassex>(),
                 hInstance = GetModuleHandle(null),
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
-                style = ClassStyles.CS_OWNDC,
+                style = ClassStyles.CsOwndc,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
                 hCursor = CreateArrowCursor()
             };
 
             RegisterClassEx(ref wndClassEx);
 
-            WindowHandle = CreateWindowEx(0, _className, "NativeWindow", WindowStyles.WS_CHILD, 0, 0, 640, 480, control.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            WindowHandle = CreateWindowEx(0, _className, "NativeWindow", WindowStyles.WsChild, 0, 0, 640, 480, control.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             Marshal.FreeHGlobal(wndClassEx.lpszClassName);
 
@@ -236,7 +236,7 @@ namespace Ryujinx.Ava.UI.Renderer
         }
 
         [SupportedOSPlatform("macos")]
-        IPlatformHandle CreateMacOS()
+        IPlatformHandle CreateMacOs()
         {
             // Create a new CAMetalLayer.
             ObjectiveC.Object layerObject = new("CAMetalLayer");
@@ -280,7 +280,7 @@ namespace Ryujinx.Ava.UI.Renderer
         }
 
         [SupportedOSPlatform("macos")]
-        static void DestroyMacOS()
+        static void DestroyMacOs()
         {
             // TODO
         }

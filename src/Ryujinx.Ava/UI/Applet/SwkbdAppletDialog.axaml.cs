@@ -75,7 +75,7 @@ namespace Ryujinx.Ava.UI.Controls
             contentDialog.CloseButtonText = LocaleManager.Instance[LocaleKeys.InputDialogCancel];
             contentDialog.Content = content;
 
-            void handler(ContentDialog sender, ContentDialogClosedEventArgs eventArgs)
+            void Handler(ContentDialog sender, ContentDialogClosedEventArgs eventArgs)
             {
                 if (eventArgs.Result == ContentDialogResult.Primary)
                 {
@@ -83,7 +83,7 @@ namespace Ryujinx.Ava.UI.Controls
                     input = content.Input.Text;
                 }
             }
-            contentDialog.Closed += handler;
+            contentDialog.Closed += Handler;
 
             await ContentDialogHelper.ShowAsync(contentDialog);
 

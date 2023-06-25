@@ -28,8 +28,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 {
     public class TitleUpdateViewModel : BaseModel
     {
-        public TitleUpdateMetadata _titleUpdateWindowData;
-        public readonly string _titleUpdateJsonPath;
+        public TitleUpdateMetadata TitleUpdateWindowData;
+        public readonly string TitleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
         private ulong TitleId { get; }
 
@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private AvaloniaList<object> _views = new();
         private object _selectedUpdate;
 
-        private static readonly TitleUpdateMetadataJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public AvaloniaList<TitleUpdateModel> TitleUpdates
         {
@@ -75,17 +75,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             TitleId = titleId;
 
-            _titleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
+            TitleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
 
             try
             {
-                _titleUpdateWindowData = JsonHelper.DeserializeFromFile(_titleUpdateJsonPath, SerializerContext.TitleUpdateMetadata);
+                TitleUpdateWindowData = JsonHelper.DeserializeFromFile(TitleUpdateJsonPath, _serializerContext.TitleUpdateMetadata);
             }
             catch
             {
-                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {TitleId} at {_titleUpdateJsonPath}");
+                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {TitleId} at {TitleUpdateJsonPath}");
 
-                _titleUpdateWindowData = new TitleUpdateMetadata
+                TitleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
                     Paths = new List<string>()
@@ -99,12 +99,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void LoadUpdates()
         {
-            foreach (string path in _titleUpdateWindowData.Paths)
+            foreach (string path in TitleUpdateWindowData.Paths)
             {
                 AddUpdate(path);
             }
 
-            TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected, null);
+            TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == TitleUpdateWindowData.Selected, null);
 
             SelectedUpdate = selected;
 
@@ -230,20 +230,20 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Save()
         {
-            _titleUpdateWindowData.Paths.Clear();
-            _titleUpdateWindowData.Selected = "";
+            TitleUpdateWindowData.Paths.Clear();
+            TitleUpdateWindowData.Selected = "";
 
             foreach (TitleUpdateModel update in TitleUpdates)
             {
-                _titleUpdateWindowData.Paths.Add(update.Path);
+                TitleUpdateWindowData.Paths.Add(update.Path);
 
                 if (update == SelectedUpdate)
                 {
-                    _titleUpdateWindowData.Selected = update.Path;
+                    TitleUpdateWindowData.Selected = update.Path;
                 }
             }
 
-            JsonHelper.SerializeToFile(_titleUpdateJsonPath, _titleUpdateWindowData, SerializerContext.TitleUpdateMetadata);
+            JsonHelper.SerializeToFile(TitleUpdateJsonPath, TitleUpdateWindowData, _serializerContext.TitleUpdateMetadata);
         }
     }
 }

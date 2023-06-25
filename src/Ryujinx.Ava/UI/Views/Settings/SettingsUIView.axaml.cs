@@ -9,11 +9,11 @@ using System.Linq;
 
 namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public partial class SettingsUIView : UserControl
+    public partial class SettingsUiView : UserControl
     {
         public SettingsViewModel ViewModel;
 
-        public SettingsUIView()
+        public SettingsUiView()
         {
             InitializeComponent();
         }

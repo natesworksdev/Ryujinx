@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _profileName;
         private bool _isLoaded;
 
-        private static readonly InputConfigJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly InputConfigJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
         public IGamepad SelectedGamepad { get; private set; }
@@ -703,7 +703,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 try
                 {
-                    config = JsonHelper.DeserializeFromFile(path, SerializerContext.InputConfig);
+                    config = JsonHelper.DeserializeFromFile(path, _serializerContext.InputConfig);
                 }
                 catch (JsonException) { }
                 catch (InvalidOperationException)
@@ -769,7 +769,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     config.ControllerType = Controllers[_controller].Type;
 
-                    string jsonString = JsonHelper.Serialize(config, SerializerContext.InputConfig);
+                    string jsonString = JsonHelper.Serialize(config, _serializerContext.InputConfig);
 
                     await File.WriteAllTextAsync(path, jsonString);
 

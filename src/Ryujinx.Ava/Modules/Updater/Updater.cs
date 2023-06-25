@@ -31,13 +31,13 @@ namespace Ryujinx.Modules
 {
     internal static class Updater
     {
-        private const string GitHubApiURL = "https://api.github.com";
-        private static readonly GithubReleasesJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private const string GitHubApiUrl = "https://api.github.com";
+        private static readonly GithubReleasesJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        private static readonly string HomeDir = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
-        private static readonly string UpdatePublishDir = Path.Combine(UpdateDir, "publish");
-        private static readonly int ConnectionCount = 4;
+        private static readonly string _homeDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string _updateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
+        private static readonly string _updatePublishDir = Path.Combine(_updateDir, "publish");
+        private static readonly int _connectionCount = 4;
 
         private static string _buildVer;
         private static string _platformExt;
@@ -46,7 +46,7 @@ namespace Ryujinx.Modules
         private static bool _updateSuccessful;
         private static bool _running;
 
-        private static readonly string[] WindowsDependencyDirs = Array.Empty<string>();
+        private static readonly string[] _windowsDependencyDirs = Array.Empty<string>();
 
         public static async Task BeginParse(Window mainWindow, bool showVersionUpToDate)
         {
@@ -99,9 +99,9 @@ namespace Ryujinx.Modules
             {
                 using HttpClient jsonClient = ConstructHttpClient();
 
-                string buildInfoURL = $"{GitHubApiURL}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
-                string fetchedJson = await jsonClient.GetStringAsync(buildInfoURL);
-                var fetched = JsonHelper.Deserialize(fetchedJson, SerializerContext.GithubReleasesJsonResponse);
+                string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+                string fetchedJson = await jsonClient.GetStringAsync(buildInfoUrl);
+                var fetched = JsonHelper.Deserialize(fetchedJson, _serializerContext.GithubReleasesJsonResponse);
                 _buildVer = fetched.Name;
 
                 foreach (var asset in fetched.Assets)
@@ -248,14 +248,14 @@ namespace Ryujinx.Modules
             _updateSuccessful = false;
 
             // Empty update dir, although it shouldn't ever have anything inside it
-            if (Directory.Exists(UpdateDir))
+            if (Directory.Exists(_updateDir))
             {
-                Directory.Delete(UpdateDir, true);
+                Directory.Delete(_updateDir, true);
             }
 
-            Directory.CreateDirectory(UpdateDir);
+            Directory.CreateDirectory(_updateDir);
 
-            string updateFile = Path.Combine(UpdateDir, "update.bin");
+            string updateFile = Path.Combine(_updateDir, "update.bin");
 
             TaskDialog taskDialog = new()
             {
@@ -301,7 +301,7 @@ namespace Ryujinx.Modules
                     if (OperatingSystem.IsMacOS())
                     {
                         string baseBundlePath = Path.GetFullPath(Path.Combine(executableDirectory, "..", ".."));
-                        string newBundlePath = Path.Combine(UpdateDir, "Ryujinx.app");
+                        string newBundlePath = Path.Combine(_updateDir, "Ryujinx.app");
                         string updaterScriptPath = Path.Combine(newBundlePath, "Contents", "Resources", "updater.sh");
                         string currentPid = Environment.ProcessId.ToString();
 
@@ -347,22 +347,22 @@ namespace Ryujinx.Modules
         private static void DoUpdateWithMultipleThreads(TaskDialog taskDialog, string downloadUrl, string updateFile)
         {
             // Multi-Threaded Updater
-            long chunkSize = _buildSize / ConnectionCount;
-            long remainderChunk = _buildSize % ConnectionCount;
+            long chunkSize = _buildSize / _connectionCount;
+            long remainderChunk = _buildSize % _connectionCount;
 
             int completedRequests = 0;
             int totalProgressPercentage = 0;
-            int[] progressPercentage = new int[ConnectionCount];
+            int[] progressPercentage = new int[_connectionCount];
 
-            List<byte[]> list = new(ConnectionCount);
-            List<WebClient> webClients = new(ConnectionCount);
+            List<byte[]> list = new(_connectionCount);
+            List<WebClient> webClients = new(_connectionCount);
 
-            for (int i = 0; i < ConnectionCount; i++)
+            for (int i = 0; i < _connectionCount; i++)
             {
                 list.Add(Array.Empty<byte>());
             }
 
-            for (int i = 0; i < ConnectionCount; i++)
+            for (int i = 0; i < _connectionCount; i++)
             {
 #pragma warning disable SYSLIB0014
                 // TODO: WebClient is obsolete and need to be replaced with a more complex logic using HttpClient.
@@ -371,7 +371,7 @@ namespace Ryujinx.Modules
 
                 webClients.Add(client);
 
-                if (i == ConnectionCount - 1)
+                if (i == _connectionCount - 1)
                 {
                     client.Headers.Add("Range", $"bytes={chunkSize * i}-{(chunkSize * (i + 1) - 1) + remainderChunk}");
                 }
@@ -388,7 +388,7 @@ namespace Ryujinx.Modules
                     Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
                     Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
 
-                    taskDialog.SetProgressBarState(totalProgressPercentage / ConnectionCount, TaskDialogProgressState.Normal);
+                    taskDialog.SetProgressBarState(totalProgressPercentage / _connectionCount, TaskDialogProgressState.Normal);
                 };
 
                 client.DownloadDataCompleted += (_, args) =>
@@ -407,10 +407,10 @@ namespace Ryujinx.Modules
                     list[index] = args.Result;
                     Interlocked.Increment(ref completedRequests);
 
-                    if (Equals(completedRequests, ConnectionCount))
+                    if (Equals(completedRequests, _connectionCount))
                     {
                         byte[] mergedFileBytes = new byte[_buildSize];
-                        for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < ConnectionCount; connectionIndex++)
+                        for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < _connectionCount; connectionIndex++)
                         {
                             Array.Copy(list[connectionIndex], 0, mergedFileBytes, destinationOffset, list[connectionIndex].Length);
                             destinationOffset += list[connectionIndex].Length;
@@ -598,11 +598,11 @@ namespace Ryujinx.Modules
             {
                 if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
-                    ExtractTarGzipFile(taskDialog, updateFile, UpdateDir);
+                    ExtractTarGzipFile(taskDialog, updateFile, _updateDir);
                 }
                 else if (OperatingSystem.IsWindows())
                 {
-                    ExtractZipFile(taskDialog, updateFile, UpdateDir);
+                    ExtractZipFile(taskDialog, updateFile, _updateDir);
                 }
                 else
                 {
@@ -649,10 +649,10 @@ namespace Ryujinx.Modules
                         taskDialog.SetProgressBarState(0, TaskDialogProgressState.Normal);
                     });
 
-                    MoveAllFilesOver(UpdatePublishDir, HomeDir, taskDialog);
+                    MoveAllFilesOver(_updatePublishDir, _homeDir, taskDialog);
                 });
 
-                Directory.Delete(UpdateDir, true);
+                Directory.Delete(_updateDir, true);
             }
 
             _updateSuccessful = true;
@@ -739,15 +739,15 @@ namespace Ryujinx.Modules
         // NOTE: This method should always reflect the latest build layout.
         private static IEnumerable<string> EnumerateFilesToDelete()
         {
-            var files = Directory.EnumerateFiles(HomeDir); // All files directly in base dir.
+            var files = Directory.EnumerateFiles(_homeDir); // All files directly in base dir.
 
             // Determine and exclude user files only when the updater is running, not when cleaning old files
             if (_running && !OperatingSystem.IsMacOS())
             {
                 // Compare the loose files in base directory against the loose files from the incoming update, and store foreign ones in a user list.
-                var oldFiles = Directory.EnumerateFiles(HomeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
-                var newFiles = Directory.EnumerateFiles(UpdatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
-                var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(HomeDir, filename));
+                var oldFiles = Directory.EnumerateFiles(_homeDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+                var newFiles = Directory.EnumerateFiles(_updatePublishDir, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+                var userFiles = oldFiles.Except(newFiles).Select(filename => Path.Combine(_homeDir, filename));
 
                 // Remove user files from the paths in files.
                 files = files.Except(userFiles);
@@ -755,9 +755,9 @@ namespace Ryujinx.Modules
 
             if (OperatingSystem.IsWindows())
             {
-                foreach (string dir in WindowsDependencyDirs)
+                foreach (string dir in _windowsDependencyDirs)
                 {
-                    string dirPath = Path.Combine(HomeDir, dir);
+                    string dirPath = Path.Combine(_homeDir, dir);
                     if (Directory.Exists(dirPath))
                     {
                         files = files.Concat(Directory.EnumerateFiles(dirPath, "*", SearchOption.AllDirectories));
@@ -799,7 +799,7 @@ namespace Ryujinx.Modules
 
         public static void CleanupUpdate()
         {
-            foreach (string file in Directory.GetFiles(HomeDir, "*.ryuold", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(_homeDir, "*.ryuold", SearchOption.AllDirectories))
             {
                 File.Delete(file);
             }

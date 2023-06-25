@@ -39,7 +39,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _search;
         private readonly ulong _titleId;
 
-        private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly DownloadableContentJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public AvaloniaList<DownloadableContentModel> DownloadableContents
         {
@@ -99,7 +99,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             try
             {
-                _downloadableContentContainerList = JsonHelper.DeserializeFromFile(_downloadableContentJsonPath, SerializerContext.ListDownloadableContentContainer);
+                _downloadableContentContainerList = JsonHelper.DeserializeFromFile(_downloadableContentJsonPath, _serializerContext.ListDownloadableContentContainer);
             }
             catch
             {
@@ -329,7 +329,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _downloadableContentContainerList.Add(container);
             }
 
-            JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, SerializerContext.ListDownloadableContentContainer);
+            JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
         }
 
     }

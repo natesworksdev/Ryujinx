@@ -127,7 +127,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public static bool IsMacOS => OperatingSystem.IsMacOS();
+        public static bool IsMacOs => OperatingSystem.IsMacOS();
 
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
@@ -144,7 +144,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool ExpandDramSize { get; set; }
         public bool EnableShaderCache { get; set; }
         public bool EnableTextureRecompression { get; set; }
-        public bool EnableMacroHLE { get; set; }
+        public bool EnableMacroHle { get; set; }
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
         public bool EnableInfo { get; set; }
@@ -156,7 +156,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableDebug { get; set; }
         public bool IsOpenAlEnabled { get; set; }
         public bool IsSoundIoEnabled { get; set; }
-        public bool IsSDL2Enabled { get; set; }
+        public bool IsSdl2Enabled { get; set; }
         public bool EnableCustomTheme { get; set; }
         public bool IsCustomResolutionScaleActive => _resolutionScale == 4;
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
@@ -303,7 +303,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
             IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
-            IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
+            IsSdl2Enabled = SDL2HardwareDeviceDriver.IsSupported;
         }
 
         private void LoadAvailableGpus()
@@ -418,7 +418,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             PreferredGpuIndex = _gpuIds.Contains(config.Graphics.PreferredGpu) ? _gpuIds.IndexOf(config.Graphics.PreferredGpu) : 0;
             EnableShaderCache = config.Graphics.EnableShaderCache;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
-            EnableMacroHLE = config.Graphics.EnableMacroHLE;
+            EnableMacroHle = config.Graphics.EnableMacroHLE;
             ResolutionScale = config.Graphics.ResScale == -1 ? 4 : config.Graphics.ResScale - 1;
             CustomResolutionScale = config.Graphics.ResScaleCustom;
             MaxAnisotropy = config.Graphics.MaxAnisotropy == -1 ? 0 : (int)(MathF.Log2(config.Graphics.MaxAnisotropy));
@@ -505,7 +505,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
             config.Graphics.EnableTextureRecompression.Value = EnableTextureRecompression;
-            config.Graphics.EnableMacroHLE.Value = EnableMacroHLE;
+            config.Graphics.EnableMacroHLE.Value = EnableMacroHle;
             config.Graphics.ResScale.Value = ResolutionScale == 4 ? -1 : ResolutionScale + 1;
             config.Graphics.ResScaleCustom.Value = CustomResolutionScale;
             config.Graphics.MaxAnisotropy.Value = MaxAnisotropy == 0 ? -1 : MathF.Pow(2, MaxAnisotropy);

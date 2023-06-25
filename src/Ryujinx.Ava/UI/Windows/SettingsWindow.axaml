@@ -34,11 +34,11 @@
             IsVisible="False"
             KeyboardNavigation.IsTabStop="False"/>
         <Grid Name="Pages" IsVisible="False" Grid.Row="2">
-            <settings:SettingsUIView Name="UiPage" />
+            <settings:SettingsUiView Name="UiPage" />
             <settings:SettingsInputView Name="InputPage" />
             <settings:SettingsHotkeysView Name="HotkeysPage" />
             <settings:SettingsSystemView Name="SystemPage" />
-            <settings:SettingsCPUView Name="CpuPage" />
+            <settings:SettingsCpuView Name="CpuPage" />
             <settings:SettingsGraphicsView Name="GraphicsPage" />
             <settings:SettingsAudioView Name="AudioPage" />
             <settings:SettingsNetworkView Name="NetworkPage" />
@@ -110,7 +110,7 @@
             Spacing="10"
             Orientation="Horizontal"
             HorizontalAlignment="Right"
-            ReverseOrder="{Binding IsMacOS}">
+            ReverseOrder="{Binding IsMacOs}">
             <Button
                 HotKey="Enter"
                 Classes="accent"

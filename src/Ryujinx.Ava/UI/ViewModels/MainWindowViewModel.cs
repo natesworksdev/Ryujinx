@@ -34,7 +34,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Path = System.IO.Path;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -1213,7 +1212,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         #region PublicMethods
 
-        public void SetUIProgressHandlers(Switch emulationContext)
+        public void SetUiProgressHandlers(Switch emulationContext)
         {
             if (emulationContext.Processes.ActiveApplication.DiskCacheLoadState != null)
             {

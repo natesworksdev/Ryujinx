@@ -2,9 +2,9 @@
 
 namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public partial class SettingsCPUView : UserControl
+    public partial class SettingsCpuView : UserControl
     {
-        public SettingsCPUView()
+        public SettingsCpuView()
         {
             InitializeComponent();
         }

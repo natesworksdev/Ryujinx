@@ -3,11 +3,11 @@ using System;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    internal class OpenTKBindingsContext : IBindingsContext
+    internal class OpenTkBindingsContext : IBindingsContext
     {
         private readonly Func<string, IntPtr> _getProcAddress;
 
-        public OpenTKBindingsContext(Func<string, IntPtr> getProcAddress)
+        public OpenTkBindingsContext(Func<string, IntPtr> getProcAddress)
         {
             _getProcAddress = getProcAddress;
         }

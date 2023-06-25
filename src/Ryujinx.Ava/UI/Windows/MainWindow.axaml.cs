@@ -373,7 +373,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
-            PixelPoint SavedPoint = new(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX,
+            PixelPoint savedPoint = new(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX,
                                                    ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight * Program.WindowScaleFactor;
@@ -381,9 +381,9 @@ namespace Ryujinx.Ava.UI.Windows
 
             ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
 
-            if (CheckScreenBounds(SavedPoint))
+            if (CheckScreenBounds(savedPoint))
             {
-                Position = SavedPoint;
+                Position = savedPoint;
             }
 
             else

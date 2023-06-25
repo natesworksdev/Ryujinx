@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.UI.Windows
             ((ContentDialog)Parent).Hide();
         }
 
-        private void RemoveDLC(object sender, RoutedEventArgs e)
+        private void RemoveDlc(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
             {

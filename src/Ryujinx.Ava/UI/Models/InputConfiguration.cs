@@ -7,16 +7,16 @@ using System;
 
 namespace Ryujinx.Ava.UI.Models
 {
-    internal class InputConfiguration<Key, Stick> : BaseModel
+    internal class InputConfiguration<TKey, TStick> : BaseModel
     {
         private float _deadzoneRight;
         private float _triggerThreshold;
         private float _deadzoneLeft;
         private double _gyroDeadzone;
         private int _sensitivity;
-        private bool enableMotion;
-        private float weakRumble;
-        private float strongRumble;
+        private bool _enableMotion;
+        private float _weakRumble;
+        private float _strongRumble;
         private float _rangeLeft;
         private float _rangeRight;
 
@@ -37,17 +37,17 @@ namespace Ryujinx.Ava.UI.Models
         /// </summary>
         public PlayerIndex PlayerIndex { get; set; }
 
-        public Stick LeftJoystick { get; set; }
+        public TStick LeftJoystick { get; set; }
         public bool LeftInvertStickX { get; set; }
         public bool LeftInvertStickY { get; set; }
         public bool RightRotate90 { get; set; }
-        public Key LeftControllerStickButton { get; set; }
+        public TKey LeftControllerStickButton { get; set; }
 
-        public Stick RightJoystick { get; set; }
+        public TStick RightJoystick { get; set; }
         public bool RightInvertStickX { get; set; }
         public bool RightInvertStickY { get; set; }
         public bool LeftRotate90 { get; set; }
-        public Key RightControllerStickButton { get; set; }
+        public TKey RightControllerStickButton { get; set; }
 
         public float DeadzoneLeft
         {
@@ -106,38 +106,38 @@ namespace Ryujinx.Ava.UI.Models
 
         public MotionInputBackendType MotionBackend { get; set; }
 
-        public Key ButtonMinus { get; set; }
-        public Key ButtonL { get; set; }
-        public Key ButtonZl { get; set; }
-        public Key LeftButtonSl { get; set; }
-        public Key LeftButtonSr { get; set; }
-        public Key DpadUp { get; set; }
-        public Key DpadDown { get; set; }
-        public Key DpadLeft { get; set; }
-        public Key DpadRight { get; set; }
+        public TKey ButtonMinus { get; set; }
+        public TKey ButtonL { get; set; }
+        public TKey ButtonZl { get; set; }
+        public TKey LeftButtonSl { get; set; }
+        public TKey LeftButtonSr { get; set; }
+        public TKey DpadUp { get; set; }
+        public TKey DpadDown { get; set; }
+        public TKey DpadLeft { get; set; }
+        public TKey DpadRight { get; set; }
 
-        public Key ButtonPlus { get; set; }
-        public Key ButtonR { get; set; }
-        public Key ButtonZr { get; set; }
-        public Key RightButtonSl { get; set; }
-        public Key RightButtonSr { get; set; }
-        public Key ButtonX { get; set; }
-        public Key ButtonB { get; set; }
-        public Key ButtonY { get; set; }
-        public Key ButtonA { get; set; }
+        public TKey ButtonPlus { get; set; }
+        public TKey ButtonR { get; set; }
+        public TKey ButtonZr { get; set; }
+        public TKey RightButtonSl { get; set; }
+        public TKey RightButtonSr { get; set; }
+        public TKey ButtonX { get; set; }
+        public TKey ButtonB { get; set; }
+        public TKey ButtonY { get; set; }
+        public TKey ButtonA { get; set; }
 
 
-        public Key LeftStickUp { get; set; }
-        public Key LeftStickDown { get; set; }
-        public Key LeftStickLeft { get; set; }
-        public Key LeftStickRight { get; set; }
-        public Key LeftKeyboardStickButton { get; set; }
+        public TKey LeftStickUp { get; set; }
+        public TKey LeftStickDown { get; set; }
+        public TKey LeftStickLeft { get; set; }
+        public TKey LeftStickRight { get; set; }
+        public TKey LeftKeyboardStickButton { get; set; }
 
-        public Key RightStickUp { get; set; }
-        public Key RightStickDown { get; set; }
-        public Key RightStickLeft { get; set; }
-        public Key RightStickRight { get; set; }
-        public Key RightKeyboardStickButton { get; set; }
+        public TKey RightStickUp { get; set; }
+        public TKey RightStickDown { get; set; }
+        public TKey RightStickLeft { get; set; }
+        public TKey RightStickRight { get; set; }
+        public TKey RightKeyboardStickButton { get; set; }
 
         public int Sensitivity
         {
@@ -163,9 +163,9 @@ namespace Ryujinx.Ava.UI.Models
 
         public bool EnableMotion
         {
-            get => enableMotion; set
+            get => _enableMotion; set
             {
-                enableMotion = value;
+                _enableMotion = value;
 
                 OnPropertyChanged();
             }
@@ -181,18 +181,18 @@ namespace Ryujinx.Ava.UI.Models
         public bool EnableRumble { get; set; }
         public float WeakRumble
         {
-            get => weakRumble; set
+            get => _weakRumble; set
             {
-                weakRumble = value;
+                _weakRumble = value;
 
                 OnPropertyChanged();
             }
         }
         public float StrongRumble
         {
-            get => strongRumble; set
+            get => _strongRumble; set
             {
-                strongRumble = value;
+                _strongRumble = value;
 
                 OnPropertyChanged();
             }
@@ -209,71 +209,71 @@ namespace Ryujinx.Ava.UI.Models
 
                 if (config is StandardKeyboardInputConfig keyboardConfig)
                 {
-                    LeftStickUp = (Key)(object)keyboardConfig.LeftJoyconStick.StickUp;
-                    LeftStickDown = (Key)(object)keyboardConfig.LeftJoyconStick.StickDown;
-                    LeftStickLeft = (Key)(object)keyboardConfig.LeftJoyconStick.StickLeft;
-                    LeftStickRight = (Key)(object)keyboardConfig.LeftJoyconStick.StickRight;
-                    LeftKeyboardStickButton = (Key)(object)keyboardConfig.LeftJoyconStick.StickButton;
+                    LeftStickUp = (TKey)(object)keyboardConfig.LeftJoyconStick.StickUp;
+                    LeftStickDown = (TKey)(object)keyboardConfig.LeftJoyconStick.StickDown;
+                    LeftStickLeft = (TKey)(object)keyboardConfig.LeftJoyconStick.StickLeft;
+                    LeftStickRight = (TKey)(object)keyboardConfig.LeftJoyconStick.StickRight;
+                    LeftKeyboardStickButton = (TKey)(object)keyboardConfig.LeftJoyconStick.StickButton;
 
-                    RightStickUp = (Key)(object)keyboardConfig.RightJoyconStick.StickUp;
-                    RightStickDown = (Key)(object)keyboardConfig.RightJoyconStick.StickDown;
-                    RightStickLeft = (Key)(object)keyboardConfig.RightJoyconStick.StickLeft;
-                    RightStickRight = (Key)(object)keyboardConfig.RightJoyconStick.StickRight;
-                    RightKeyboardStickButton = (Key)(object)keyboardConfig.RightJoyconStick.StickButton;
+                    RightStickUp = (TKey)(object)keyboardConfig.RightJoyconStick.StickUp;
+                    RightStickDown = (TKey)(object)keyboardConfig.RightJoyconStick.StickDown;
+                    RightStickLeft = (TKey)(object)keyboardConfig.RightJoyconStick.StickLeft;
+                    RightStickRight = (TKey)(object)keyboardConfig.RightJoyconStick.StickRight;
+                    RightKeyboardStickButton = (TKey)(object)keyboardConfig.RightJoyconStick.StickButton;
 
-                    ButtonA = (Key)(object)keyboardConfig.RightJoycon.ButtonA;
-                    ButtonB = (Key)(object)keyboardConfig.RightJoycon.ButtonB;
-                    ButtonX = (Key)(object)keyboardConfig.RightJoycon.ButtonX;
-                    ButtonY = (Key)(object)keyboardConfig.RightJoycon.ButtonY;
-                    ButtonR = (Key)(object)keyboardConfig.RightJoycon.ButtonR;
-                    RightButtonSl = (Key)(object)keyboardConfig.RightJoycon.ButtonSl;
-                    RightButtonSr = (Key)(object)keyboardConfig.RightJoycon.ButtonSr;
-                    ButtonZr = (Key)(object)keyboardConfig.RightJoycon.ButtonZr;
-                    ButtonPlus = (Key)(object)keyboardConfig.RightJoycon.ButtonPlus;
+                    ButtonA = (TKey)(object)keyboardConfig.RightJoycon.ButtonA;
+                    ButtonB = (TKey)(object)keyboardConfig.RightJoycon.ButtonB;
+                    ButtonX = (TKey)(object)keyboardConfig.RightJoycon.ButtonX;
+                    ButtonY = (TKey)(object)keyboardConfig.RightJoycon.ButtonY;
+                    ButtonR = (TKey)(object)keyboardConfig.RightJoycon.ButtonR;
+                    RightButtonSl = (TKey)(object)keyboardConfig.RightJoycon.ButtonSl;
+                    RightButtonSr = (TKey)(object)keyboardConfig.RightJoycon.ButtonSr;
+                    ButtonZr = (TKey)(object)keyboardConfig.RightJoycon.ButtonZr;
+                    ButtonPlus = (TKey)(object)keyboardConfig.RightJoycon.ButtonPlus;
 
-                    DpadUp = (Key)(object)keyboardConfig.LeftJoycon.DpadUp;
-                    DpadDown = (Key)(object)keyboardConfig.LeftJoycon.DpadDown;
-                    DpadLeft = (Key)(object)keyboardConfig.LeftJoycon.DpadLeft;
-                    DpadRight = (Key)(object)keyboardConfig.LeftJoycon.DpadRight;
-                    ButtonMinus = (Key)(object)keyboardConfig.LeftJoycon.ButtonMinus;
-                    LeftButtonSl = (Key)(object)keyboardConfig.LeftJoycon.ButtonSl;
-                    LeftButtonSr = (Key)(object)keyboardConfig.LeftJoycon.ButtonSr;
-                    ButtonZl = (Key)(object)keyboardConfig.LeftJoycon.ButtonZl;
-                    ButtonL = (Key)(object)keyboardConfig.LeftJoycon.ButtonL;
+                    DpadUp = (TKey)(object)keyboardConfig.LeftJoycon.DpadUp;
+                    DpadDown = (TKey)(object)keyboardConfig.LeftJoycon.DpadDown;
+                    DpadLeft = (TKey)(object)keyboardConfig.LeftJoycon.DpadLeft;
+                    DpadRight = (TKey)(object)keyboardConfig.LeftJoycon.DpadRight;
+                    ButtonMinus = (TKey)(object)keyboardConfig.LeftJoycon.ButtonMinus;
+                    LeftButtonSl = (TKey)(object)keyboardConfig.LeftJoycon.ButtonSl;
+                    LeftButtonSr = (TKey)(object)keyboardConfig.LeftJoycon.ButtonSr;
+                    ButtonZl = (TKey)(object)keyboardConfig.LeftJoycon.ButtonZl;
+                    ButtonL = (TKey)(object)keyboardConfig.LeftJoycon.ButtonL;
                 }
                 else if (config is StandardControllerInputConfig controllerConfig)
                 {
-                    LeftJoystick = (Stick)(object)controllerConfig.LeftJoyconStick.Joystick;
+                    LeftJoystick = (TStick)(object)controllerConfig.LeftJoyconStick.Joystick;
                     LeftInvertStickX = controllerConfig.LeftJoyconStick.InvertStickX;
                     LeftInvertStickY = controllerConfig.LeftJoyconStick.InvertStickY;
                     LeftRotate90 = controllerConfig.LeftJoyconStick.Rotate90CW;
-                    LeftControllerStickButton = (Key)(object)controllerConfig.LeftJoyconStick.StickButton;
+                    LeftControllerStickButton = (TKey)(object)controllerConfig.LeftJoyconStick.StickButton;
 
-                    RightJoystick = (Stick)(object)controllerConfig.RightJoyconStick.Joystick;
+                    RightJoystick = (TStick)(object)controllerConfig.RightJoyconStick.Joystick;
                     RightInvertStickX = controllerConfig.RightJoyconStick.InvertStickX;
                     RightInvertStickY = controllerConfig.RightJoyconStick.InvertStickY;
                     RightRotate90 = controllerConfig.RightJoyconStick.Rotate90CW;
-                    RightControllerStickButton = (Key)(object)controllerConfig.RightJoyconStick.StickButton;
+                    RightControllerStickButton = (TKey)(object)controllerConfig.RightJoyconStick.StickButton;
 
-                    ButtonA = (Key)(object)controllerConfig.RightJoycon.ButtonA;
-                    ButtonB = (Key)(object)controllerConfig.RightJoycon.ButtonB;
-                    ButtonX = (Key)(object)controllerConfig.RightJoycon.ButtonX;
-                    ButtonY = (Key)(object)controllerConfig.RightJoycon.ButtonY;
-                    ButtonR = (Key)(object)controllerConfig.RightJoycon.ButtonR;
-                    RightButtonSl = (Key)(object)controllerConfig.RightJoycon.ButtonSl;
-                    RightButtonSr = (Key)(object)controllerConfig.RightJoycon.ButtonSr;
-                    ButtonZr = (Key)(object)controllerConfig.RightJoycon.ButtonZr;
-                    ButtonPlus = (Key)(object)controllerConfig.RightJoycon.ButtonPlus;
+                    ButtonA = (TKey)(object)controllerConfig.RightJoycon.ButtonA;
+                    ButtonB = (TKey)(object)controllerConfig.RightJoycon.ButtonB;
+                    ButtonX = (TKey)(object)controllerConfig.RightJoycon.ButtonX;
+                    ButtonY = (TKey)(object)controllerConfig.RightJoycon.ButtonY;
+                    ButtonR = (TKey)(object)controllerConfig.RightJoycon.ButtonR;
+                    RightButtonSl = (TKey)(object)controllerConfig.RightJoycon.ButtonSl;
+                    RightButtonSr = (TKey)(object)controllerConfig.RightJoycon.ButtonSr;
+                    ButtonZr = (TKey)(object)controllerConfig.RightJoycon.ButtonZr;
+                    ButtonPlus = (TKey)(object)controllerConfig.RightJoycon.ButtonPlus;
 
-                    DpadUp = (Key)(object)controllerConfig.LeftJoycon.DpadUp;
-                    DpadDown = (Key)(object)controllerConfig.LeftJoycon.DpadDown;
-                    DpadLeft = (Key)(object)controllerConfig.LeftJoycon.DpadLeft;
-                    DpadRight = (Key)(object)controllerConfig.LeftJoycon.DpadRight;
-                    ButtonMinus = (Key)(object)controllerConfig.LeftJoycon.ButtonMinus;
-                    LeftButtonSl = (Key)(object)controllerConfig.LeftJoycon.ButtonSl;
-                    LeftButtonSr = (Key)(object)controllerConfig.LeftJoycon.ButtonSr;
-                    ButtonZl = (Key)(object)controllerConfig.LeftJoycon.ButtonZl;
-                    ButtonL = (Key)(object)controllerConfig.LeftJoycon.ButtonL;
+                    DpadUp = (TKey)(object)controllerConfig.LeftJoycon.DpadUp;
+                    DpadDown = (TKey)(object)controllerConfig.LeftJoycon.DpadDown;
+                    DpadLeft = (TKey)(object)controllerConfig.LeftJoycon.DpadLeft;
+                    DpadRight = (TKey)(object)controllerConfig.LeftJoycon.DpadRight;
+                    ButtonMinus = (TKey)(object)controllerConfig.LeftJoycon.ButtonMinus;
+                    LeftButtonSl = (TKey)(object)controllerConfig.LeftJoycon.ButtonSl;
+                    LeftButtonSr = (TKey)(object)controllerConfig.LeftJoycon.ButtonSr;
+                    ButtonZl = (TKey)(object)controllerConfig.LeftJoycon.ButtonZl;
+                    ButtonL = (TKey)(object)controllerConfig.LeftJoycon.ButtonL;
 
                     DeadzoneLeft = controllerConfig.DeadzoneLeft;
                     DeadzoneRight = controllerConfig.DeadzoneRight;
