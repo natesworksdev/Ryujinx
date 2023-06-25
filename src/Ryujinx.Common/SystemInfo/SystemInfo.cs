@@ -35,13 +35,11 @@ namespace Ryujinx.Common.SystemInfo
             {
                 return new WindowsSystemInfo();
             }
-
-            if (OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
                 return new LinuxSystemInfo();
             }
-
-            if (OperatingSystem.IsMacOS())
+            else if (OperatingSystem.IsMacOS())
             {
                 return new MacOSSystemInfo();
             }

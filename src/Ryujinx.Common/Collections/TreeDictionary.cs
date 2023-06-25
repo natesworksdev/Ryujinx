@@ -8,9 +8,9 @@ namespace Ryujinx.Common.Collections
     /// <summary>
     /// Dictionary that provides the ability for O(logN) Lookups for keys that exist in the Dictionary, and O(logN) lookups for keys immediately greater than or less than a specified key.
     /// </summary>
-    /// <typeparam name="TK">Key</typeparam>
-    /// <typeparam name="TV">Value</typeparam>
-    public class TreeDictionary<TK, TV> : IntrusiveRedBlackTreeImpl<Node<TK, TV>>, IDictionary<TK, TV> where TK : IComparable<TK>
+    /// <typeparam name="TKey">Key</typeparam>
+    /// <typeparam name="TValue">Value</typeparam>
+    public class TreeDictionary<TKey, TValue> : IntrusiveRedBlackTreeImpl<Node<TKey, TValue>>, IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {
         #region Public Methods
 
@@ -20,11 +20,11 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key of the node value to get</param>
         /// <returns>Value associated w/ <paramref name="key"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public TV Get(TK key)
+        public TValue Get(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            Node<TK, TV> node = GetNode(key);
+            Node<TKey, TValue> node = GetNode(key);
 
             if (node == null)
             {
@@ -42,7 +42,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key of the node to add</param>
         /// <param name="value">Value of the node to add</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> are null</exception>
-        public void Add(TK key, TV value)
+        public void Add(TKey key, TValue value)
         {
             ArgumentNullException.ThrowIfNull(key);
             ArgumentNullException.ThrowIfNull(value);
@@ -55,7 +55,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key of the node to remove</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public void Remove(TK key)
+        public void Remove(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
@@ -71,9 +71,9 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key for which to find the floor value of</param>
         /// <returns>Key of node immediately less than <paramref name="key"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public TK Floor(TK key)
+        public TKey Floor(TKey key)
         {
-            Node<TK, TV> node = FloorNode(key);
+            Node<TKey, TValue> node = FloorNode(key);
             if (node != null)
             {
                 return node.Key;
@@ -87,9 +87,9 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns>Key of node immediately greater than <paramref name="key"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public TK Ceiling(TK key)
+        public TKey Ceiling(TKey key)
         {
-            Node<TK, TV> node = CeilingNode(key);
+            Node<TKey, TValue> node = CeilingNode(key);
             if (node != null)
             {
                 return node.Key;
@@ -102,12 +102,12 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key to find the successor of</param>
         /// <returns>Value</returns>
-        public TK SuccessorOf(TK key)
+        public TKey SuccessorOf(TKey key)
         {
-            Node<TK, TV> node = GetNode(key);
+            Node<TKey, TValue> node = GetNode(key);
             if (node != null)
             {
-                Node<TK, TV> successor = SuccessorOf(node);
+                Node<TKey, TValue> successor = SuccessorOf(node);
 
                 return successor != null ? successor.Key : default;
             }
@@ -119,12 +119,12 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key to find the predecessor of</param>
         /// <returns>Value</returns>
-        public TK PredecessorOf(TK key)
+        public TKey PredecessorOf(TKey key)
         {
-            Node<TK, TV> node = GetNode(key);
+            Node<TKey, TValue> node = GetNode(key);
             if (node != null)
             {
-                Node<TK, TV> predecessor = PredecessorOf(node);
+                Node<TKey, TValue> predecessor = PredecessorOf(node);
 
                 return predecessor != null ? predecessor.Key : default;
             }
@@ -137,19 +137,19 @@ namespace Ryujinx.Common.Collections
         /// The key/value pairs will be added in Level Order.
         /// </summary>
         /// <param name="list">List to add the tree pairs into</param>
-        public List<KeyValuePair<TK, TV>> AsLevelOrderList()
+        public List<KeyValuePair<TKey, TValue>> AsLevelOrderList()
         {
-            List<KeyValuePair<TK, TV>> list = new();
+            List<KeyValuePair<TKey, TValue>> list = new();
 
-            Queue<Node<TK, TV>> nodes = new();
+            Queue<Node<TKey, TValue>> nodes = new();
 
             if (this.Root != null)
             {
                 nodes.Enqueue(this.Root);
             }
-            while (nodes.TryDequeue(out Node<TK, TV> node))
+            while (nodes.TryDequeue(out Node<TKey, TValue> node))
             {
-                list.Add(new KeyValuePair<TK, TV>(node.Key, node.Value));
+                list.Add(new KeyValuePair<TKey, TValue>(node.Key, node.Value));
                 if (node.Left != null)
                 {
                     nodes.Enqueue(node.Left);
@@ -166,9 +166,9 @@ namespace Ryujinx.Common.Collections
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
         /// </summary>
         /// <returns>A list of all KeyValuePairs sorted by Key Order</returns>
-        public List<KeyValuePair<TK, TV>> AsList()
+        public List<KeyValuePair<TKey, TValue>> AsList()
         {
-            List<KeyValuePair<TK, TV>> list = new();
+            List<KeyValuePair<TKey, TValue>> list = new();
 
             AddToList(Root, list);
 
@@ -184,7 +184,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">The node to search for nodes within</param>
         /// <param name="list">The list to add node to</param>
-        private void AddToList(Node<TK, TV> node, List<KeyValuePair<TK, TV>> list)
+        private void AddToList(Node<TKey, TValue> node, List<KeyValuePair<TKey, TValue>> list)
         {
             if (node == null)
             {
@@ -193,7 +193,7 @@ namespace Ryujinx.Common.Collections
 
             AddToList(node.Left, list);
 
-            list.Add(new KeyValuePair<TK, TV>(node.Key, node.Value));
+            list.Add(new KeyValuePair<TKey, TValue>(node.Key, node.Value));
 
             AddToList(node.Right, list);
         }
@@ -204,11 +204,11 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key of the node to get</param>
         /// <returns>Node reference in the tree</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        private Node<TK, TV> GetNode(TK key)
+        private Node<TKey, TValue> GetNode(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            Node<TK, TV> node = Root;
+            Node<TKey, TValue> node = Root;
             while (node != null)
             {
                 int cmp = key.CompareTo(node.Key);
@@ -235,9 +235,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key of the node to insert</param>
         /// <param name="value">Value of the node to insert</param>
-        private void Insert(TK key, TV value)
+        private void Insert(TKey key, TValue value)
         {
-            Node<TK, TV> newNode = BSTInsert(key, value);
+            Node<TKey, TValue> newNode = BSTInsert(key, value);
             RestoreBalanceAfterInsertion(newNode);
         }
 
@@ -251,10 +251,10 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key of the node to insert</param>
         /// <param name="value">Value of the node to insert</param>
         /// <returns>The inserted Node</returns>
-        private Node<TK, TV> BSTInsert(TK key, TV value)
+        private Node<TKey, TValue> BSTInsert(TKey key, TValue value)
         {
-            Node<TK, TV> parent = null;
-            Node<TK, TV> node = Root;
+            Node<TKey, TValue> parent = null;
+            Node<TKey, TValue> node = Root;
 
             while (node != null)
             {
@@ -274,7 +274,7 @@ namespace Ryujinx.Common.Collections
                     return node;
                 }
             }
-            Node<TK, TV> newNode = new(key, value, parent);
+            Node<TKey, TValue> newNode = new(key, value, parent);
             if (newNode.Parent == null)
             {
                 Root = newNode;
@@ -296,17 +296,17 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key of the node to delete</param>
         /// <returns>The deleted Node</returns>
-        private Node<TK, TV> Delete(TK key)
+        private Node<TKey, TValue> Delete(TKey key)
         {
             // O(1) Retrieval
-            Node<TK, TV> nodeToDelete = GetNode(key);
+            Node<TKey, TValue> nodeToDelete = GetNode(key);
 
             if (nodeToDelete == null)
             {
                 return null;
             }
 
-            Node<TK, TV> replacementNode;
+            Node<TKey, TValue> replacementNode;
 
             if (LeftOf(nodeToDelete) == null || RightOf(nodeToDelete) == null)
             {
@@ -317,7 +317,7 @@ namespace Ryujinx.Common.Collections
                 replacementNode = PredecessorOf(nodeToDelete);
             }
 
-            Node<TK, TV> tmp = LeftOf(replacementNode) ?? RightOf(replacementNode);
+            Node<TKey, TValue> tmp = LeftOf(replacementNode) ?? RightOf(replacementNode);
 
             if (tmp != null)
             {
@@ -357,11 +357,11 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key for which to find the floor node of</param>
         /// <returns>Node whose key is immediately less than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        private Node<TK, TV> FloorNode(TK key)
+        private Node<TKey, TValue> FloorNode(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            Node<TK, TV> tmp = Root;
+            Node<TKey, TValue> tmp = Root;
 
             while (tmp != null)
             {
@@ -385,8 +385,8 @@ namespace Ryujinx.Common.Collections
                     }
                     else
                     {
-                        Node<TK, TV> parent = tmp.Parent;
-                        Node<TK, TV> ptr = tmp;
+                        Node<TKey, TValue> parent = tmp.Parent;
+                        Node<TKey, TValue> ptr = tmp;
                         while (parent != null && ptr == parent.Left)
                         {
                             ptr = parent;
@@ -409,11 +409,11 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns>Node whose key is immediately greater than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        private Node<TK, TV> CeilingNode(TK key)
+        private Node<TKey, TValue> CeilingNode(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            Node<TK, TV> tmp = Root;
+            Node<TKey, TValue> tmp = Root;
 
             while (tmp != null)
             {
@@ -437,8 +437,8 @@ namespace Ryujinx.Common.Collections
                     }
                     else
                     {
-                        Node<TK, TV> parent = tmp.Parent;
-                        Node<TK, TV> ptr = tmp;
+                        Node<TKey, TValue> parent = tmp.Parent;
+                        Node<TKey, TValue> ptr = tmp;
                         while (parent != null && ptr == parent.Right)
                         {
                             ptr = parent;
@@ -460,44 +460,44 @@ namespace Ryujinx.Common.Collections
         #region Interface Implementations
 
         // Method descriptions are not provided as they are already included as part of the interface.
-        public bool ContainsKey(TK key)
+        public bool ContainsKey(TKey key)
         {
             ArgumentNullException.ThrowIfNull(key);
 
             return GetNode(key) != null;
         }
 
-        bool IDictionary<TK, TV>.Remove(TK key)
+        bool IDictionary<TKey, TValue>.Remove(TKey key)
         {
             int count = Count;
             Remove(key);
             return count > Count;
         }
 
-        public bool TryGetValue(TK key, [MaybeNullWhen(false)] out TV value)
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            Node<TK, TV> node = GetNode(key);
+            Node<TKey, TValue> node = GetNode(key);
             value = node != null ? node.Value : default;
             return node != null;
         }
 
-        public void Add(KeyValuePair<TK, TV> item)
+        public void Add(KeyValuePair<TKey, TValue> item)
         {
             ArgumentNullException.ThrowIfNull(item.Key);
 
             Add(item.Key, item.Value);
         }
 
-        public bool Contains(KeyValuePair<TK, TV> item)
+        public bool Contains(KeyValuePair<TKey, TValue> item)
         {
             if (item.Key == null)
             {
                 return false;
             }
 
-            Node<TK, TV> node = GetNode(item.Key);
+            Node<TKey, TValue> node = GetNode(item.Key);
             if (node != null)
             {
                 return node.Key.Equals(item.Key) && node.Value.Equals(item.Value);
@@ -505,27 +505,27 @@ namespace Ryujinx.Common.Collections
             return false;
         }
 
-        public void CopyTo(KeyValuePair<TK, TV>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (arrayIndex < 0 || array.Length - arrayIndex < this.Count)
             {
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
-            SortedList<TK, TV> list = GetKeyValues();
+            SortedList<TKey, TValue> list = GetKeyValues();
 
             int offset = 0;
 
             for (int i = arrayIndex; i < array.Length && offset < list.Count; i++)
             {
-                array[i] = new KeyValuePair<TK, TV>(list.Keys[i], list.Values[i]);
+                array[i] = new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
                 offset++;
             }
         }
 
-        public bool Remove(KeyValuePair<TK, TV> item)
+        public bool Remove(KeyValuePair<TKey, TValue> item)
         {
-            Node<TK, TV> node = GetNode(item.Key);
+            Node<TKey, TValue> node = GetNode(item.Key);
 
             if (node == null)
             {
@@ -542,7 +542,7 @@ namespace Ryujinx.Common.Collections
             return false;
         }
 
-        public IEnumerator<KeyValuePair<TK, TV>> GetEnumerator()
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return GetKeyValues().GetEnumerator();
         }
@@ -552,13 +552,13 @@ namespace Ryujinx.Common.Collections
             return GetKeyValues().GetEnumerator();
         }
 
-        public ICollection<TK> Keys => GetKeyValues().Keys;
+        public ICollection<TKey> Keys => GetKeyValues().Keys;
 
-        public ICollection<TV> Values => GetKeyValues().Values;
+        public ICollection<TValue> Values => GetKeyValues().Values;
 
         public bool IsReadOnly => false;
 
-        public TV this[TK key]
+        public TValue this[TKey key]
         {
             get => Get(key);
             set => Add(key, value);
@@ -572,16 +572,16 @@ namespace Ryujinx.Common.Collections
         /// Returns a sorted list of all the node keys / values in the tree.
         /// </summary>
         /// <returns>List of node keys</returns>
-        private SortedList<TK, TV> GetKeyValues()
+        private SortedList<TKey, TValue> GetKeyValues()
         {
-            SortedList<TK, TV> set = new();
-            Queue<Node<TK, TV>> queue = new();
+            SortedList<TKey, TValue> set = new();
+            Queue<Node<TKey, TValue>> queue = new();
             if (Root != null)
             {
                 queue.Enqueue(Root);
             }
 
-            while (queue.TryDequeue(out Node<TK, TV> node))
+            while (queue.TryDequeue(out Node<TKey, TValue> node))
             {
                 set.Add(node.Key, node.Value);
                 if (null != node.Left)
@@ -603,14 +603,14 @@ namespace Ryujinx.Common.Collections
     /// <summary>
     /// Represents a node in the TreeDictionary which contains a key and value of generic type K and V, respectively.
     /// </summary>
-    /// <typeparam name="TK">Key of the node</typeparam>
-    /// <typeparam name="TV">Value of the node</typeparam>
-    public class Node<TK, TV> : IntrusiveRedBlackTreeNode<Node<TK, TV>> where TK : IComparable<TK>
+    /// <typeparam name="TKey">Key of the node</typeparam>
+    /// <typeparam name="TValue">Value of the node</typeparam>
+    public class Node<TKey, TValue> : IntrusiveRedBlackTreeNode<Node<TKey, TValue>> where TKey : IComparable<TKey>
     {
-        internal TK Key;
-        internal TV Value;
+        internal TKey Key;
+        internal TValue Value;
 
-        internal Node(TK key, TV value, Node<TK, TV> parent)
+        internal Node(TKey key, TValue value, Node<TKey, TValue> parent)
         {
             Key = key;
             Value = value;

@@ -97,7 +97,6 @@ namespace Ryujinx.Common.GraphicsDriver
 
             Check(NvAPI_DRS_LoadSettings(handle));
 
-
             // Check if the profile already exists.
 
             int status = NvAPI_DRS_FindProfileByName(handle, new NvapiUnicodeString(ProfileName), out nint profileHandle);

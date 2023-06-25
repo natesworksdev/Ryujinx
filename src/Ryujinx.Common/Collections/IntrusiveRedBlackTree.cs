@@ -180,13 +180,6 @@ namespace Ryujinx.Common.Collections
                     parent.Right = child;
                 }
 
-                if (ParentOf(element) == old)
-                {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                    parent = element;
-#pragma warning restore IDE0059
-                }
-
                 element.Color = old.Color;
                 element.Left = old.Left;
                 element.Right = old.Right;
