@@ -231,7 +231,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public InputConfig Config { get; set; }
 
-        public ControllerInputViewModel() : this()
+        public ControllerInputViewModel(UserControl owner) : this()
         {
             if (Program.PreviewerDetached)
             {
