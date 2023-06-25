@@ -42,6 +42,7 @@ namespace Ryujinx.Cpu
         public static string ReadAsciiString(IVirtualMemoryManager memory, ulong position, long maxSize = -1)
         {
             using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
+
             for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
             {
                 byte value = memory.Read<byte>(position + (ulong)offs);

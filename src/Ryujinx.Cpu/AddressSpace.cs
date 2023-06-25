@@ -7,10 +7,6 @@ namespace Ryujinx.Cpu
 {
     public class AddressSpace : IDisposable
     {
-#pragma warning disable IDE0051 // Remove unused private member
-        private const ulong PageSize = 0x1000;
-#pragma warning restore IDE0051
-
         private const int DefaultBlockAlignment = 1 << 20;
 
         private enum MappingType : byte
