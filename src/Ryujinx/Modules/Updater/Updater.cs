@@ -348,6 +348,7 @@ namespace Ryujinx.Modules
             using (Stream remoteFileStream = response.Content.ReadAsStreamAsync().Result)
             {
                 using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
+
                 long totalBytes = response.Content.Headers.ContentLength.Value;
                 long byteWritten = 0;
 
