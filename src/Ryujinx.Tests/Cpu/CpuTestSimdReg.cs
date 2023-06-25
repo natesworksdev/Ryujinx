@@ -2023,7 +2023,7 @@ namespace Ryujinx.Tests.Cpu
                             [ValueSource(nameof(_8B1D_))] ulong b0,
                             [ValueSource(nameof(_8B1D_))] ulong b1,
                             [Values(0b00u, 0b11u)] uint size, // Q0: <8B,  1D> => <8H, 1Q>
-                            [Values(0b0u, 0b1u)] uint q)    // Q1: <16B, 2D> => <8H, 1Q>
+                            [Values(0b0u, 0b1u)] uint q) // Q1: <16B, 2D> => <8H, 1Q>
         {
             uint opcode = 0x0E20E000; // PMULL V0.8H, V0.8B, V0.8B
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
