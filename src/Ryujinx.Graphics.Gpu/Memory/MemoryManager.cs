@@ -14,15 +14,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
     {
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;
-        public  const int PtPageBits = 12;
+        public const int PtPageBits = 12;
 
         private const ulong PtLvl0Size = 1UL << PtLvl0Bits;
         private const ulong PtLvl1Size = 1UL << PtLvl1Bits;
-        public  const ulong PageSize   = 1UL << PtPageBits;
+        public const ulong PageSize = 1UL << PtPageBits;
 
         private const ulong PtLvl0Mask = PtLvl0Size - 1;
         private const ulong PtLvl1Mask = PtLvl1Size - 1;
-        public  const ulong PageMask   = PageSize   - 1;
+        public const ulong PageMask = PageSize - 1;
 
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;

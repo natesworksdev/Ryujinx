@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _modifiedStale = true;
 
         private ITexture _arrayViewTexture;
-        private Target   _arrayViewTarget;
+        private Target _arrayViewTarget;
 
         private ITexture _flushHostTexture;
         private ITexture _setHostTexture;

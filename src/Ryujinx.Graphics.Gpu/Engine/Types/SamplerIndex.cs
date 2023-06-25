@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
     /// </summary>
     enum SamplerIndex
     {
-        Independently  = 0,
+        Independently = 0,
         ViaHeaderIndex = 1
     }
 }

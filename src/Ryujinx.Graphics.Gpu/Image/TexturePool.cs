@@ -382,7 +382,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private static TextureInfo GetInfo(in TextureDescriptor descriptor, out int layerSize)
         {
             int depthOrLayers = descriptor.UnpackDepth();
-            int levels        = descriptor.UnpackLevels();
+            int levels = descriptor.UnpackLevels();
 
             TextureMsaaMode msaaMode = descriptor.UnpackTextureMsaaMode();
 
@@ -424,7 +424,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             uint format = descriptor.UnpackFormat();
-            bool srgb   = descriptor.UnpackSrgb();
+            bool srgb = descriptor.UnpackSrgb();
 
             ulong gpuVa = descriptor.UnpackAddress();
 
@@ -451,7 +451,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Linear textures don't support mipmaps, so we don't handle this case here.
             if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear)
             {
-                int depth  = TextureInfo.GetDepth(target, depthOrLayers);
+                int depth = TextureInfo.GetDepth(target, depthOrLayers);
                 int layers = TextureInfo.GetLayers(target, depthOrLayers);
 
                 SizeInfo sizeInfo = SizeCalculator.GetBlockLinearTextureSize(

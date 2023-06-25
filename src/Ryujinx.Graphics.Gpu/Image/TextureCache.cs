@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         private const int OverlapsBufferInitialCapacity = 10;
-        private const int OverlapsBufferMaxCapacity     = 10000;
+        private const int OverlapsBufferMaxCapacity = 10000;
 
         private readonly GpuContext _context;
         private readonly PhysicalMemory _physicalMemory;
@@ -1136,7 +1136,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            int width  = info.Width  / info.SamplesInX;
+            int width = info.Width / info.SamplesInX;
             int height = info.Height / info.SamplesInY;
 
             int depth = info.GetDepth() * info.GetLayers();

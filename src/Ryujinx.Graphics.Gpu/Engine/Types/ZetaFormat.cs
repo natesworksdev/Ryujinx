@@ -8,12 +8,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
     /// </summary>
     enum ZetaFormat
     {
-        D32Float       = 0xa,
-        D16Unorm       = 0x13,
+        D32Float = 0xa,
+        D16Unorm = 0x13,
         D24UnormS8Uint = 0x14,
-        D24Unorm       = 0x15,
+        D24Unorm = 0x15,
         S8UintD24Unorm = 0x16,
-        S8Uint         = 0x17,
+        S8Uint = 0x17,
         D32FloatS8Uint = 0x19
     }
 

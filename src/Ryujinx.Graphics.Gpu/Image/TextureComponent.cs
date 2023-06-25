@@ -7,13 +7,13 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     enum TextureComponent
     {
-        Zero  = 0,
-        Red   = 2,
+        Zero = 0,
+        Red = 2,
         Green = 3,
-        Blue  = 4,
+        Blue = 4,
         Alpha = 5,
         OneSI = 6,
-        OneF  = 7
+        OneF = 7
     }
 
     static class TextureComponentConverter

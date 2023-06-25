@@ -318,7 +318,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - If the parent format is not compressed, and the view is, the view
             // size is calculated as described on the first point, but the width and height
             // of the view must be also multiplied by the block width and height.
-            int width  = Math.Max(1, parent.Info.Width  >> firstLevel);
+            int width = Math.Max(1, parent.Info.Width >> firstLevel);
             int height = Math.Max(1, parent.Info.Height >> firstLevel);
 
             if (parent.Info.FormatInfo.IsCompressed && !FormatInfo.IsCompressed)

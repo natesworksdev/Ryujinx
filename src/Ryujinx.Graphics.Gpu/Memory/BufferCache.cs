@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class BufferCache : IDisposable
     {
         private const int OverlapsBufferInitialCapacity = 10;
-        private const int OverlapsBufferMaxCapacity     = 10000;
+        private const int OverlapsBufferMaxCapacity = 10000;
 
         private const ulong BufferAlignmentSize = 0x1000;
         private const ulong BufferAlignmentMask = BufferAlignmentSize - 1;
