@@ -101,27 +101,29 @@ namespace Ryujinx.Horizon.LogManager.Ipc
 
                     continue;
                 }
-                else if (key == LogDataChunkKey.Stop)
+
+                if (key == LogDataChunkKey.Stop)
                 {
                     break;
                 }
-                else if (key == LogDataChunkKey.Line)
+
+                if (key == LogDataChunkKey.Line)
                 {
-                    if (!reader.TryRead<int>(out _logPacket.Line))
+                    if (!reader.TryRead(out _logPacket.Line))
                     {
                         return true;
                     }
                 }
                 else if (key == LogDataChunkKey.DropCount)
                 {
-                    if (!reader.TryRead<long>(out _logPacket.DropCount))
+                    if (!reader.TryRead(out _logPacket.DropCount))
                     {
                         return true;
                     }
                 }
                 else if (key == LogDataChunkKey.Time)
                 {
-                    if (!reader.TryRead<long>(out _logPacket.Time))
+                    if (!reader.TryRead(out _logPacket.Time))
                     {
                         return true;
                     }
@@ -177,7 +179,7 @@ namespace Ryujinx.Horizon.LogManager.Ipc
 
             do
             {
-                if (!reader.TryRead<byte>(out encoded))
+                if (!reader.TryRead(out encoded))
                 {
                     return false;
                 }

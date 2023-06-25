@@ -194,14 +194,13 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             {
                 return WaitTimedOut;
             }
-            else if (result == KernelResult.Cancelled)
+
+            if (result == KernelResult.Cancelled)
             {
                 return WaitCancelled;
             }
-            else
-            {
-                result.AbortOnFailure();
-            }
+
+            result.AbortOnFailure();
 
             return index;
         }

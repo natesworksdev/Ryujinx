@@ -14,11 +14,11 @@ namespace Ryujinx.Horizon.Sdk
 
             using (var tlsRegion = HorizonStatic.AddressSpace.GetWritableRegion(tlsAddress, tlsSize))
             {
-                CmifRequest request = CmifMessage.CreateRequest(tlsRegion.Memory.Span, new CmifRequestFormat()
+                CmifRequest request = CmifMessage.CreateRequest(tlsRegion.Memory.Span, new CmifRequestFormat
                 {
                     DataSize = data.Length,
                     RequestId = requestId,
-                    SendPid = sendPid
+                    SendPid = sendPid,
                 });
 
                 data.CopyTo(request.Data);

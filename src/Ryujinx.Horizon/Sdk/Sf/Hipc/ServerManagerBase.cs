@@ -27,7 +27,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         private enum UserDataTag
         {
             Server = 1,
-            Session = 2
+            Session = 2,
         }
 
         public ServerManagerBase(SmApi sm, ManagerOptions options) : base(options.MaxDomainObjects, options.MaxDomains)
@@ -158,7 +158,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                     {
                         return null;
                     }
-                    else if (selected == _notifyEventHolder)
+
+                    if (selected == _notifyEventHolder)
                     {
                         _notifyEvent.Clear();
                     }
@@ -213,7 +214,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             {
                 UserDataTag.Server => ProcessForServer(holder),
                 UserDataTag.Session => ProcessForSession(holder),
-                _ => throw new NotImplementedException(((UserDataTag)holder.UserData).ToString())
+                _ => throw new NotImplementedException(((UserDataTag)holder.UserData).ToString()),
             };
         }
 

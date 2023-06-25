@@ -6,7 +6,7 @@
         {
             NotInitialized,
             InitializedAsEvent,
-            InitializedAsInterProcess
+            InitializedAsInterProcess,
         }
 
         public InterProcessEventType InterProcessEvent;

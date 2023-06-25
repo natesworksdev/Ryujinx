@@ -26,6 +26,11 @@ namespace Ryujinx.Horizon.Sdk.Sf
             return ref MemoryMarshal.Cast<byte, T>(writableRegion.Memory.Span)[0];
         }
 
+        public static object DeserializeArg<T>(ref ServiceDispatchContext context, ReadOnlySpan<byte> inRawData, int offset) where T : unmanaged
+        {
+            return MemoryMarshal.Cast<byte, T>(inRawData.Slice(offset, Unsafe.SizeOf<T>()))[0];
+        }
+
         public static T DeserializeArg<T>(ReadOnlySpan<byte> inRawData, int offset) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(inRawData.Slice(offset, Unsafe.SizeOf<T>()))[0];

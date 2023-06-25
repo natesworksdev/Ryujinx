@@ -29,7 +29,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
                     5 => _handle5,
                     6 => _handle6,
                     7 => _handle7,
-                    _ => throw new IndexOutOfRangeException()
+                    _ => throw new IndexOutOfRangeException(),
                 };
             }
             set

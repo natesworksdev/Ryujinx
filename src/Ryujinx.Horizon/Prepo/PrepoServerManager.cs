@@ -24,7 +24,7 @@ namespace Ryujinx.Horizon.Prepo
                 PrepoPortIndex.User    => AcceptImpl(server, new PrepoService(PrepoServicePermissionLevel.User)),
                 PrepoPortIndex.System  => AcceptImpl(server, new PrepoService(PrepoServicePermissionLevel.System)),
                 PrepoPortIndex.Debug   => AcceptImpl(server, new PrepoService(PrepoServicePermissionLevel.Debug)),
-                _                      => throw new ArgumentOutOfRangeException(nameof(portIndex))
+                _                      => throw new ArgumentOutOfRangeException(nameof(portIndex)),
 #pragma warning restore IDE0055
             };
         }

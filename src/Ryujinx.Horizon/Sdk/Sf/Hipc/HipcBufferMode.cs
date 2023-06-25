@@ -5,6 +5,6 @@
         Normal = 0,
         NonSecure = 1,
         Invalid = 2,
-        NonDevice = 3
+        NonDevice = 3,
     }
 }

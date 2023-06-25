@@ -35,7 +35,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
                 if (options.CanDeferInvokeRequest)
                 {
-                    _savedMessagesBaseAddress = allocator.Allocate((ulong)maxSessions * (ulong)Api.TlsMessageBufferSize);
+                    _savedMessagesBaseAddress = allocator.Allocate((ulong)maxSessions * Api.TlsMessageBufferSize);
                 }
             }
 
@@ -145,10 +145,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             {
                 return GetObjectBySessionIndex(session, _pointerBuffersBaseAddress, (ulong)_pointerBufferSize);
             }
-            else
-            {
-                return PointerAndSize.Empty;
-            }
+
+            return PointerAndSize.Empty;
         }
 
         protected override PointerAndSize GetSessionSavedMessageBuffer(ServerSession session)
@@ -157,10 +155,8 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             {
                 return GetObjectBySessionIndex(session, _savedMessagesBaseAddress, Api.TlsMessageBufferSize);
             }
-            else
-            {
-                return PointerAndSize.Empty;
-            }
+
+            return PointerAndSize.Empty;
         }
 
         protected virtual void Dispose(bool disposing)

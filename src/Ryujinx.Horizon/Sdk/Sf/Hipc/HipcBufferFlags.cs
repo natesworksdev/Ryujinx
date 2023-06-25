@@ -12,6 +12,6 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         FixedSize = 1 << 4,
         AutoSelect = 1 << 5,
         MapTransferAllowsNonSecure = 1 << 6,
-        MapTransferAllowsNonDevice = 1 << 7
+        MapTransferAllowsNonDevice = 1 << 7,
     }
 }

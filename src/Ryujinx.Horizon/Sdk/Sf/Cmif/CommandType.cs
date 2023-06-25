@@ -9,6 +9,6 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
         Request = 4,
         Control = 5,
         RequestWithContext = 6,
-        ControlWithContext = 7
+        ControlWithContext = 7,
     }
 }

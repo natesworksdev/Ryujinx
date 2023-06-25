@@ -6,6 +6,6 @@
         User = 1,
         System = 2,
         Manager = 6,
-        Debug = unchecked((int)0x80000006)
+        Debug = unchecked((int)0x80000006),
     }
 }

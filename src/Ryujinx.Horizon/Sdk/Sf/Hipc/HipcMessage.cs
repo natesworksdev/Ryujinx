@@ -51,7 +51,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 }
             }
 
-            Meta = new HipcMetadata()
+            Meta = new HipcMetadata
             {
                 Type = (int)header.Type,
                 SendStaticsCount = header.SendStaticsCount,
@@ -62,7 +62,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 ReceiveStaticsCount = receiveStaticsCount,
                 SendPid = specialHeader.SendPid,
                 CopyHandlesCount = specialHeader.CopyHandlesCount,
-                MoveHandlesCount = specialHeader.MoveHandlesCount
+                MoveHandlesCount = specialHeader.MoveHandlesCount,
             };
 
             Data = CreateMessageData(Meta, data, initialLength);
@@ -76,12 +76,12 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             int copyHandlesCount,
             int moveHandlesCount)
         {
-            return WriteMessage(destination, new HipcMetadata()
+            return WriteMessage(destination, new HipcMetadata
             {
                 SendStaticsCount = sendStaticCount,
                 DataWordsCount = dataWordsCount,
                 CopyHandlesCount = copyHandlesCount,
-                MoveHandlesCount = moveHandlesCount
+                MoveHandlesCount = moveHandlesCount,
             });
         }
 
@@ -90,7 +90,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             int initialLength = destination.Length;
             bool hasSpecialHeader = meta.SendPid || meta.CopyHandlesCount != 0 || meta.MoveHandlesCount != 0;
 
-            MemoryMarshal.Cast<byte, Header>(destination)[0] = new Header()
+            MemoryMarshal.Cast<byte, Header>(destination)[0] = new Header
             {
                 Type = (CommandType)meta.Type,
                 SendStaticsCount = meta.SendStaticsCount,
@@ -99,18 +99,18 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 ExchangeBuffersCount = meta.ExchangeBuffersCount,
                 DataWordsCount = meta.DataWordsCount,
                 ReceiveStaticMode = meta.ReceiveStaticsCount != 0 ? (meta.ReceiveStaticsCount != AutoReceiveStatic ? meta.ReceiveStaticsCount + 2 : 2) : 0,
-                HasSpecialHeader = hasSpecialHeader
+                HasSpecialHeader = hasSpecialHeader,
             };
 
             destination = destination[Unsafe.SizeOf<Header>()..];
 
             if (hasSpecialHeader)
             {
-                MemoryMarshal.Cast<byte, SpecialHeader>(destination)[0] = new SpecialHeader()
+                MemoryMarshal.Cast<byte, SpecialHeader>(destination)[0] = new SpecialHeader
                 {
                     SendPid = meta.SendPid,
                     CopyHandlesCount = meta.CopyHandlesCount,
-                    MoveHandlesCount = meta.MoveHandlesCount
+                    MoveHandlesCount = meta.MoveHandlesCount,
                 };
 
                 destination = destination[Unsafe.SizeOf<SpecialHeader>()..];
@@ -202,7 +202,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 receiveList = MemoryMarshal.Cast<byte, HipcReceiveListEntry>(data)[..receiveListSize];
             }
 
-            return new HipcMessageData()
+            return new HipcMessageData
             {
                 SendStatics = sendStatics,
                 SendBuffers = sendBuffers,
@@ -211,7 +211,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 DataWords = dataWords,
                 ReceiveList = receiveList,
                 CopyHandles = copyHandles,
-                MoveHandles = moveHandles
+                MoveHandles = moveHandles,
             };
         }
     }

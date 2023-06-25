@@ -15,7 +15,7 @@ namespace Ryujinx.Horizon.Sdk.Sf
         OutCopyHandle,
         OutMoveHandle,
         OutObject,
-        ProcessId
+        ProcessId,
     }
 
     readonly struct CommandArg
