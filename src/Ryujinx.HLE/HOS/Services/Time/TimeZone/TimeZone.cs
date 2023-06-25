@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private const int SecondsPerMinute = 60;
         private const int MinutesPerHour = 60;
         private const int HoursPerDays = 24;
-        private const int DaysPerWekk = 7;
+        private const int DaysPerWeek = 7;
         private const int DaysPerNYear = 365;
         private const int DaysPerLYear = 366;
         private const int MonthsPerYear = 12;
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             seconds = 0;
 
 
-            bool isValid = GetNum(name, ref namePosition, out int num, 0, HoursPerDays * DaysPerWekk - 1);
+            bool isValid = GetNum(name, ref namePosition, out int num, 0, HoursPerDays * DaysPerWeek - 1);
             if (!isValid)
             {
                 return false;
@@ -348,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     return false;
                 }
 
-                isValid = GetNum(name, ref namePosition, out rule.Day, 0, DaysPerWekk - 1);
+                isValid = GetNum(name, ref namePosition, out rule.Day, 0, DaysPerWeek - 1);
             }
             else if (char.IsDigit((char)name[namePosition]))
             {
@@ -785,7 +785,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     if (dayOfWeek < 0)
                     {
-                        dayOfWeek += DaysPerWekk;
+                        dayOfWeek += DaysPerWeek;
                     }
 
                     // Get the zero origin
@@ -793,17 +793,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     if (d < 0)
                     {
-                        d += DaysPerWekk;
+                        d += DaysPerWeek;
                     }
 
                     for (int i = 1; i < rule.Week; i++)
                     {
-                        if (d + DaysPerWekk >= _monthsLengths[leapYear][rule.Month - 1])
+                        if (d + DaysPerWeek >= _monthsLengths[leapYear][rule.Month - 1])
                         {
                             break;
                         }
 
-                        d += DaysPerWekk;
+                        d += DaysPerWeek;
                     }
 
                     value = d * SecondsPerDay;
@@ -1320,10 +1320,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             calendarTime.Year = year;
             calendarAdditionalInfo.DayOfYear = (uint)dayOfYear;
 
-            long dayOfWeek = (EpochWeekDay + ((year - EpochYear) % DaysPerWekk) * (DaysPerNYear % DaysPerWekk) + GetLeapDays(year - 1) - GetLeapDays(EpochYear - 1) + dayOfYear) % DaysPerWekk;
+            long dayOfWeek = (EpochWeekDay + ((year - EpochYear) % DaysPerWeek) * (DaysPerNYear % DaysPerWeek) + GetLeapDays(year - 1) - GetLeapDays(EpochYear - 1) + dayOfYear) % DaysPerWeek;
             if (dayOfWeek < 0)
             {
-                dayOfWeek += DaysPerWekk;
+                dayOfWeek += DaysPerWeek;
             }
 
             calendarAdditionalInfo.DayOfWeek = (uint)dayOfWeek;
