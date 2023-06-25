@@ -323,6 +323,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private unsafe bool TryGetMirror(CommandBufferScoped cbs, ref int offset, int size, out Auto<DisposableBuffer> buffer)
         {
+            size = Math.Min(size, Size - offset);
+
             // Does this binding need to be mirrored?
 
             if (!_pendingDataRanges.OverlapsWith(offset, size))
