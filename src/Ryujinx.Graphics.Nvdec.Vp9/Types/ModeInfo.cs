@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return RefFrame[1] > Constants.IntraFrame;
         }
 
-        private static readonly int[][] IdxNColumnToSubblock = {
+        private static readonly int[][] _idxNColumnToSubblock = {
             new[] { 1, 2 }, new[] { 1, 3 }, new[] { 3, 2 }, new[] { 3, 3 },
         };
 
@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public Mv GetSubBlockMv(int whichMv, int searchCol, int blockIdx)
         {
             return blockIdx >= 0 && SbType < BlockSize.Block8x8
-                ? Bmi[IdxNColumnToSubblock[blockIdx][searchCol == 0 ? 1 : 0]].Mv[whichMv]
+                ? Bmi[_idxNColumnToSubblock[blockIdx][searchCol == 0 ? 1 : 0]].Mv[whichMv]
                 : Mv[whichMv];
         }
     }

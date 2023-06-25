@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 {
     internal struct Reader
     {
-        private static readonly byte[] Norm = {
+        private static readonly byte[] _norm = {
             0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
             3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             }
 
             {
-                int shift = Norm[range];
+                int shift = _norm[range];
                 range <<= shift;
                 value <<= shift;
                 count -= shift;
@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
                 range -= split;
                 value -= bigsplit;
                 {
-                    int shift = Norm[range];
+                    int shift = _norm[range];
                     range <<= shift;
                     value <<= shift;
                     count -= shift;
@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             }
             range = split;
             {
-                int shift = Norm[range];
+                int shift = _norm[range];
                 range <<= shift;
                 value <<= shift;
                 count -= shift;

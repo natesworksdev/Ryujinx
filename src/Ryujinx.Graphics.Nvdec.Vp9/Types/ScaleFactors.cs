@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             int h,
             int bd);
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16Y16 = {
+        private static readonly unsafe ConvolveFn[][][] _predictX16Y16 = {
             new[]
             {
                 new ConvolveFn[]
@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictX16 = {
+        private static readonly unsafe ConvolveFn[][][] _predictX16 = {
             new[]
             {
                 new ConvolveFn[]
@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe ConvolveFn[][][] PredictY16 = {
+        private static readonly unsafe ConvolveFn[][][] _predictY16 = {
             new[]
             {
                 new ConvolveFn[]
@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe ConvolveFn[][][] Predict = {
+        private static readonly unsafe ConvolveFn[][][] _predict = {
             new[]
             {
                 new ConvolveFn[]
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16Y16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictX16Y16 = {
             new[]
             {
                 new HighbdConvolveFn[]
@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictX16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictX16 = {
             new[]
             {
                 new HighbdConvolveFn[]
@@ -212,7 +212,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredictY16 = {
+        private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictY16 = {
             new[]
             {
                 new HighbdConvolveFn[]
@@ -241,7 +241,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        private static readonly unsafe HighbdConvolveFn[][][] HighbdPredict = {
+        private static readonly unsafe HighbdConvolveFn[][][] _highbdPredict = {
             new[]
             {
                 new HighbdConvolveFn[]
@@ -307,12 +307,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in either direction.
-                    PredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    _predictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
                 }
                 else
                 {
                     // No scaling in x direction. Must always scale in the y direction.
-                    PredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    _predictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
                 }
             }
             else
@@ -320,12 +320,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in the y direction. Must always scale in the x direction.
-                    PredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    _predictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
                 }
                 else
                 {
                     // Must always scale in both directions.
-                    Predict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
+                    _predict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h);
                 }
             }
         }
@@ -353,12 +353,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in either direction.
-                    HighbdPredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    _highbdPredictX16Y16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
                 }
                 else
                 {
                     // No scaling in x direction. Must always scale in the y direction.
-                    HighbdPredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    _highbdPredictX16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
                 }
             }
             else
@@ -366,12 +366,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 if (YStepQ4 == 16)
                 {
                     // No scaling in the y direction. Must always scale in the x direction.
-                    HighbdPredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    _highbdPredictY16[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
                 }
                 else
                 {
                     // Must always scale in both directions.
-                    HighbdPredict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
+                    _highbdPredict[horiz][vert][avg](src, srcStride, dst, dstStride, kernel, subpelX, xs, subpelY, ys, w, h, bd);
                 }
             }
         }

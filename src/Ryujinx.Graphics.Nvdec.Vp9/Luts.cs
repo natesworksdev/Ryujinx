@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // Filter
 
-        private static readonly Array8<short>[] BilinearFilters = {
+        private static readonly Array8<short>[] _bilinearFilters = {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),  NewArray8Short(0, 0, 0, 120, 8, 0, 0, 0),
             NewArray8Short(0, 0, 0, 112, 16, 0, 0, 0), NewArray8Short(0, 0, 0, 104, 24, 0, 0, 0),
             NewArray8Short(0, 0, 0, 96, 32, 0, 0, 0),  NewArray8Short(0, 0, 0, 88, 40, 0, 0, 0),
@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // Lagrangian interpolation filter
-        private static readonly Array8<short>[] SubPelFilters8 = {
+        private static readonly Array8<short>[] _subPelFilters8 = {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),        NewArray8Short(0, 1, -5, 126, 8, -3, 1, 0),
             NewArray8Short(-1, 3, -10, 122, 18, -6, 2, 0),   NewArray8Short(-1, 4, -13, 118, 27, -9, 3, -1),
             NewArray8Short(-1, 4, -16, 112, 37, -11, 4, -1), NewArray8Short(-1, 5, -18, 105, 48, -14, 4, -1),
@@ -232,7 +232,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // DCT based filter
-        private static readonly Array8<short>[] SubPelFilters8S = {
+        private static readonly Array8<short>[] _subPelFilters8S = {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),         NewArray8Short(-1, 3, -7, 127, 8, -3, 1, 0),
             NewArray8Short(-2, 5, -13, 125, 17, -6, 3, -1),   NewArray8Short(-3, 7, -17, 121, 27, -10, 5, -2),
             NewArray8Short(-4, 9, -20, 115, 37, -13, 6, -2),  NewArray8Short(-4, 10, -23, 108, 48, -16, 8, -3),
@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         // freqmultiplier = 0.5
-        private static readonly Array8<short>[] SubPelFilters8Lp = {
+        private static readonly Array8<short>[] _subPelFilters8Lp = {
             NewArray8Short(0, 0, 0, 128, 0, 0, 0, 0),       NewArray8Short(-3, -1, 32, 64, 38, 1, -3, 0),
             NewArray8Short(-2, -2, 29, 63, 41, 2, -3, 0),   NewArray8Short(-2, -2, 26, 63, 43, 4, -4, 0),
             NewArray8Short(-2, -3, 24, 62, 46, 5, -4, 0),   NewArray8Short(-2, -3, 21, 60, 49, 7, -4, 0),
@@ -272,45 +272,45 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         }
 
         public static readonly Array8<short>[][] Vp9FilterKernels = {
-            SubPelFilters8, SubPelFilters8Lp, SubPelFilters8S, BilinearFilters,
+            _subPelFilters8, _subPelFilters8Lp, _subPelFilters8S, _bilinearFilters,
         };
 
         // Scan
 
-        private static readonly short[] DefaultScan4X4 = {
+        private static readonly short[] _defaultScan4X4 = {
             0, 4, 1, 5, 8, 2, 12, 9, 3, 6, 13, 10, 7, 14, 11, 15,
         };
 
-        private static readonly short[] ColScan4X4 = {
+        private static readonly short[] _colScan4X4 = {
             0, 4, 8, 1, 12, 5, 9, 2, 13, 6, 10, 3, 7, 14, 11, 15,
         };
 
-        private static readonly short[] RowScan4X4 = {
+        private static readonly short[] _rowScan4X4 = {
             0, 1, 4, 2, 5, 3, 6, 8, 9, 7, 12, 10, 13, 11, 14, 15,
         };
 
-        private static readonly short[] DefaultScan8X8 = {
+        private static readonly short[] _defaultScan8X8 = {
             0,  8,  1,  16, 9,  2,  17, 24, 10, 3,  18, 25, 32, 11, 4,  26,
             33, 19, 40, 12, 34, 27, 5,  41, 20, 48, 13, 35, 42, 28, 21, 6,
             49, 56, 36, 43, 29, 7,  14, 50, 57, 44, 22, 37, 15, 51, 58, 30,
             45, 23, 52, 59, 38, 31, 60, 53, 46, 39, 61, 54, 47, 62, 55, 63,
         };
 
-        private static readonly short[] ColScan8X8 = {
+        private static readonly short[] _colScan8X8 = {
             0,  8,  16, 1,  24, 9,  32, 17, 2,  40, 25, 10, 33, 18, 48, 3,
             26, 41, 11, 56, 19, 34, 4,  49, 27, 42, 12, 35, 20, 57, 50, 28,
             5,  43, 13, 36, 58, 51, 21, 44, 6,  29, 59, 37, 14, 52, 22, 7,
             45, 60, 30, 15, 38, 53, 23, 46, 31, 61, 39, 54, 47, 62, 55, 63,
         };
 
-        private static readonly short[] RowScan8X8 = {
+        private static readonly short[] _rowScan8X8 = {
             0,  1,  2,  8,  9,  3,  16, 10, 4,  17, 11, 24, 5,  18, 25, 12,
             19, 26, 32, 6,  13, 20, 33, 27, 7,  34, 40, 21, 28, 41, 14, 35,
             48, 42, 29, 36, 49, 22, 43, 15, 56, 37, 50, 44, 30, 57, 23, 51,
             58, 45, 38, 52, 31, 59, 53, 46, 60, 39, 61, 47, 54, 55, 62, 63,
         };
 
-        private static readonly short[] DefaultScan16X16 = {
+        private static readonly short[] _defaultScan16X16 = {
             0,   16,  1,   32,  17,  2,   48,  33,  18,  3,   64,  34,  49,  19,  65,
             80,  50,  4,   35,  66,  20,  81,  96,  51,  5,   36,  82,  97,  67,  112,
             21,  52,  98,  37,  83,  113, 6,   68,  128, 53,  22,  99,  114, 84,  7,
@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255,
         };
 
-        private static readonly short[] ColScan16X16 = {
+        private static readonly short[] _colScan16X16 = {
             0,   16,  32,  48,  1,   64,  17,  80,  33,  96,  49,  2,   65,  112, 18,
             81,  34,  128, 50,  97,  3,   66,  144, 19,  113, 35,  82,  160, 98,  51,
             129, 4,   67,  176, 20,  114, 145, 83,  36,  99,  130, 52,  192, 5,   161,
@@ -352,7 +352,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255,
         };
 
-        private static readonly short[] RowScan16X16 = {
+        private static readonly short[] _rowScan16X16 = {
             0,   1,   2,   16,  3,   17,  4,   18,  32,  5,   33,  19,  6,   34,  48,
             20,  49,  7,   35,  21,  50,  64,  8,   36,  65,  22,  51,  37,  80,  9,
             66,  52,  23,  38,  81,  67,  10,  53,  24,  82,  68,  96,  39,  11,  54,
@@ -373,7 +373,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255,
         };
 
-        private static readonly short[] DefaultScan32X32 = {
+        private static readonly short[] _defaultScan32X32 = {
             0,    32,   1,    64,  33,   2,    96,   65,   34,   128,  3,    97,   66,
             160,  129,  35,   98,  4,    67,   130,  161,  192,  36,   99,   224,  5,
             162,  193,  68,   131, 37,   100,  225,  194,  256,  163,  69,   132,  6,
@@ -457,22 +457,22 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // Neighborhood 2-tuples for various scans and blocksizes,
         // in {top, left} order for each position in corresponding scan order.
-        private static readonly short[] DefaultScan4X4Neighbors = {
+        private static readonly short[] _defaultScan4X4Neighbors = {
             0, 0, 0, 0, 0,  0, 1, 4, 4, 4,  1,  1, 8,  8,  5,  8, 2,
             2, 2, 5, 9, 12, 6, 9, 3, 6, 10, 13, 7, 10, 11, 14, 0, 0,
         };
 
-        private static readonly short[] ColScan4X4Neighbors = {
+        private static readonly short[] _colScan4X4Neighbors = {
             0, 0, 0, 0, 4, 4, 0, 0, 8, 8,  1,  1, 5, 5,  1,  1, 9,
             9, 2, 2, 6, 6, 2, 2, 3, 3, 10, 10, 7, 7, 11, 11, 0, 0,
         };
 
-        private static readonly short[] RowScan4X4Neighbors = {
+        private static readonly short[] _rowScan4X4Neighbors = {
             0, 0, 0, 0, 0, 0, 1, 1,  4,  4,  2,  2,  5,  5,  4,  4, 8,
             8, 6, 6, 8, 8, 9, 9, 12, 12, 10, 10, 13, 13, 14, 14, 0, 0,
         };
 
-        private static readonly short[] ColScan8X8Neighbors = {
+        private static readonly short[] _colScan8X8Neighbors = {
             0,  0,  0,  0,  8,  8,  0,  0,  16, 16, 1,  1,  24, 24, 9,  9,  1,  1,  32,
             32, 17, 17, 2,  2,  25, 25, 10, 10, 40, 40, 2,  2,  18, 18, 33, 33, 3,  3,
             48, 48, 11, 11, 26, 26, 3,  3,  41, 41, 19, 19, 34, 34, 4,  4,  27, 27, 12,
@@ -482,7 +482,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             53, 53, 31, 31, 46, 46, 39, 39, 54, 54, 47, 47, 55, 55, 0,  0,
         };
 
-        private static readonly short[] RowScan8X8Neighbors = {
+        private static readonly short[] _rowScan8X8Neighbors = {
             0,  0,  0,  0,  1,  1,  0,  0,  8,  8,  2,  2,  8,  8,  9,  9,  3,  3,  16,
             16, 10, 10, 16, 16, 4,  4,  17, 17, 24, 24, 11, 11, 18, 18, 25, 25, 24, 24,
             5,  5,  12, 12, 19, 19, 32, 32, 26, 26, 6,  6,  33, 33, 32, 32, 20, 20, 27,
@@ -492,7 +492,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             38, 38, 60, 60, 46, 46, 53, 53, 54, 54, 61, 61, 62, 62, 0,  0,
         };
 
-        private static readonly short[] DefaultScan8X8Neighbors = {
+        private static readonly short[] _defaultScan8X8Neighbors = {
             0,  0,  0,  0,  0,  0,  8,  8,  1,  8,  1,  1,  9,  16, 16, 16, 2,  9,  2,
             2,  10, 17, 17, 24, 24, 24, 3,  10, 3,  3,  18, 25, 25, 32, 11, 18, 32, 32,
             4,  11, 26, 33, 19, 26, 4,  4,  33, 40, 12, 19, 40, 40, 5,  12, 27, 34, 34,
@@ -502,7 +502,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             31, 38, 53, 60, 46, 53, 39, 46, 54, 61, 47, 54, 55, 62, 0,  0,
         };
 
-        private static readonly short[] ColScan16X16Neighbors = {
+        private static readonly short[] _colScan16X16Neighbors = {
             0,   0,   0,   0,   16,  16,  32,  32,  0,   0,   48,  48,  1,   1,   64,
             64,  17,  17,  80,  80,  33,  33,  1,   1,   49,  49,  96,  96,  2,   2,
             65,  65,  18,  18,  112, 112, 34,  34,  81,  81,  2,   2,   50,  50,  128,
@@ -540,7 +540,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             239, 239, 0,   0,
         };
 
-        private static readonly short[] RowScan16X16Neighbors = {
+        private static readonly short[] _rowScan16X16Neighbors = {
             0,   0,   0,   0,   1,   1,   0,   0,   2,   2,   16,  16,  3,   3,   17,
             17,  16,  16,  4,   4,   32,  32,  18,  18,  5,   5,   33,  33,  32,  32,
             19,  19,  48,  48,  6,   6,   34,  34,  20,  20,  49,  49,  48,  48,  7,
@@ -578,7 +578,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             254, 254, 0,   0,
         };
 
-        private static readonly short[] DefaultScan16X16Neighbors = {
+        private static readonly short[] _defaultScan16X16Neighbors = {
             0,   0,   0,   0,   0,   0,   16,  16,  1,   16,  1,   1,   32,  32,  17,
             32,  2,   17,  2,   2,   48,  48,  18,  33,  33,  48,  3,   18,  49,  64,
             64,  64,  34,  49,  3,   3,   19,  34,  50,  65,  4,   19,  65,  80,  80,
@@ -616,7 +616,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             239, 254, 0,   0,
         };
 
-        private static readonly short[] DefaultScan32X32Neighbors = {
+        private static readonly short[] _defaultScan32X32Neighbors = {
             0,   0,    0,   0,    0,   0,    32,  32,   1,   32,  1,   1,    64,  64,
             33,  64,   2,   33,   96,  96,   2,   2,    65,  96,  34,  65,   128, 128,
             97,  128,  3,   34,   66,  97,   3,   3,    35,  66,  98,  129,  129, 160,
@@ -766,40 +766,40 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             959, 990,  991, 1022, 0,   0,
         };
 
-        private static readonly short[] Vp9DefaultIscan4X4 = {
+        private static readonly short[] _vp9DefaultIscan4X4 = {
             0, 2, 5, 8, 1, 3, 9, 12, 4, 7, 11, 14, 6, 10, 13, 15,
         };
 
-        private static readonly short[] Vp9ColIscan4X4 = {
+        private static readonly short[] _vp9ColIscan4X4 = {
             0, 3, 7, 11, 1, 5, 9, 12, 2, 6, 10, 14, 4, 8, 13, 15,
         };
 
-        private static readonly short[] Vp9RowIscan4X4 = {
+        private static readonly short[] _vp9RowIscan4X4 = {
             0, 1, 3, 5, 2, 4, 6, 9, 7, 8, 11, 13, 10, 12, 14, 15,
         };
 
-        private static readonly short[] Vp9ColIscan8X8 = {
+        private static readonly short[] _vp9ColIscan8X8 = {
             0,  3,  8,  15, 22, 32, 40, 47, 1,  5,  11, 18, 26, 34, 44, 51,
             2,  7,  13, 20, 28, 38, 46, 54, 4,  10, 16, 24, 31, 41, 50, 56,
             6,  12, 21, 27, 35, 43, 52, 58, 9,  17, 25, 33, 39, 48, 55, 60,
             14, 23, 30, 37, 45, 53, 59, 62, 19, 29, 36, 42, 49, 57, 61, 63,
         };
 
-        private static readonly short[] Vp9RowIscan8X8 = {
+        private static readonly short[] _vp9RowIscan8X8 = {
             0,  1,  2,  5,  8,  12, 19, 24, 3,  4,  7,  10, 15, 20, 30, 39,
             6,  9,  13, 16, 21, 27, 37, 46, 11, 14, 17, 23, 28, 34, 44, 52,
             18, 22, 25, 31, 35, 41, 50, 57, 26, 29, 33, 38, 43, 49, 55, 59,
             32, 36, 42, 47, 51, 54, 60, 61, 40, 45, 48, 53, 56, 58, 62, 63,
         };
 
-        private static readonly short[] Vp9DefaultIscan8X8 = {
+        private static readonly short[] _vp9DefaultIscan8X8 = {
             0,  2,  5,  9,  14, 22, 31, 37, 1,  4,  8,  13, 19, 26, 38, 44,
             3,  6,  10, 17, 24, 30, 42, 49, 7,  11, 15, 21, 29, 36, 47, 53,
             12, 16, 20, 27, 34, 43, 52, 57, 18, 23, 28, 35, 41, 48, 56, 60,
             25, 32, 39, 45, 50, 55, 59, 62, 33, 40, 46, 51, 54, 58, 61, 63,
         };
 
-        private static readonly short[] Vp9ColIscan16X16 = {
+        private static readonly short[] _vp9ColIscan16X16 = {
             0,  4,  11,  20,  31,  43,  59,  75,  85,  109, 130, 150, 165, 181, 195, 198,
             1,  6,  14,  23,  34,  47,  64,  81,  95,  114, 135, 153, 171, 188, 201, 212,
             2,  8,  16,  25,  38,  52,  67,  83,  101, 116, 136, 157, 172, 190, 205, 216,
@@ -818,7 +818,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             65, 88, 107, 124, 139, 152, 163, 177, 185, 199, 221, 234, 243, 248, 252, 255,
         };
 
-        private static readonly short[] Vp9RowIscan16X16 = {
+        private static readonly short[] _vp9RowIscan16X16 = {
             0,   1,   2,   4,   6,   9,   12,  17,  22,  29,  36,  43,  54,  64,  76,
             86,  3,   5,   7,   11,  15,  19,  25,  32,  38,  48,  59,  68,  84,  99,
             115, 130, 8,   10,  13,  18,  23,  27,  33,  42,  51,  60,  72,  88,  103,
@@ -839,7 +839,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255,
         };
 
-        private static readonly short[] Vp9DefaultIscan16X16 = {
+        private static readonly short[] _vp9DefaultIscan16X16 = {
             0,   2,   5,   9,   17,  24,  36,  44,  55,  72,  88,  104, 128, 143, 166,
             179, 1,   4,   8,   13,  20,  30,  40,  54,  66,  79,  96,  113, 141, 154,
             178, 196, 3,   7,   11,  18,  25,  33,  46,  57,  71,  86,  101, 119, 148,
@@ -860,7 +860,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255,
         };
 
-        private static readonly short[] Vp9DefaultIscan32X32 = {
+        private static readonly short[] _vp9DefaultIscan32X32 = {
             0,    2,    5,    10,   17,   25,   38,   47,   62,   83,   101,  121,  145,
             170,  193,  204,  210,  219,  229,  233,  245,  257,  275,  299,  342,  356,
             377,  405,  455,  471,  495,  527,  1,    4,    8,    15,   22,   30,   45,
@@ -957,40 +957,40 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         }
 
         public static readonly ScanOrder[] Vp9DefaultScanOrders = {
-            new(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors),
-            new(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors),
-            new(DefaultScan16X16, Vp9DefaultIscan16X16, DefaultScan16X16Neighbors),
-            new(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
+            new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
+            new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
+            new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
+            new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
         };
 
         public static readonly ScanOrder[][] Vp9ScanOrders = {
             new ScanOrder[]
             { // TX_4X4
-                new(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors),
-                new(RowScan4X4, Vp9RowIscan4X4, RowScan4X4Neighbors),
-                new(ColScan4X4, Vp9ColIscan4X4, ColScan4X4Neighbors),
-                new(DefaultScan4X4, Vp9DefaultIscan4X4, DefaultScan4X4Neighbors),
+                new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
+                new(_rowScan4X4, _vp9RowIscan4X4, _rowScan4X4Neighbors),
+                new(_colScan4X4, _vp9ColIscan4X4, _colScan4X4Neighbors),
+                new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
             },
             new ScanOrder[]
             { // TX_8X8
-                new(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors),
-                new(RowScan8X8, Vp9RowIscan8X8, RowScan8X8Neighbors),
-                new(ColScan8X8, Vp9ColIscan8X8, ColScan8X8Neighbors),
-                new(DefaultScan8X8, Vp9DefaultIscan8X8, DefaultScan8X8Neighbors),
+                new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
+                new(_rowScan8X8, _vp9RowIscan8X8, _rowScan8X8Neighbors),
+                new(_colScan8X8, _vp9ColIscan8X8, _colScan8X8Neighbors),
+                new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
             },
             new ScanOrder[]
             { // TX_16X16
-                new(DefaultScan16X16, Vp9DefaultIscan16X16, DefaultScan16X16Neighbors),
-                new(RowScan16X16, Vp9RowIscan16X16, RowScan16X16Neighbors),
-                new(ColScan16X16, Vp9ColIscan16X16, ColScan16X16Neighbors),
-                new(DefaultScan16X16, Vp9DefaultIscan16X16, DefaultScan16X16Neighbors),
+                new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
+                new(_rowScan16X16, _vp9RowIscan16X16, _rowScan16X16Neighbors),
+                new(_colScan16X16, _vp9ColIscan16X16, _colScan16X16Neighbors),
+                new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
             },
             new ScanOrder[]
             { // TX_32X32
-                new(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
-                new(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
-                new(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
-                new(DefaultScan32X32, Vp9DefaultIscan32X32, DefaultScan32X32Neighbors),
+                new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
+                new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
+                new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
+                new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
             },
         };
 
@@ -1039,7 +1039,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             255, 255, 255, 255, 254, 254, 54, 252, 249, 243, 230, 196, 177, 153, 140, 133, 130, 129,
         };
 
-        private static readonly byte[] Vp9CoefbandTrans8X8Plus = {
+        private static readonly byte[] _vp9CoefbandTrans8X8Plus = {
             0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5,
             // Beyond MAXBAND_INDEX+1 all values are filled as 5
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -1090,7 +1090,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         public static ReadOnlySpan<byte> GetBandTranslate(TxSize txSize)
         {
-            return txSize == TxSize.Tx4x4 ? Vp9CoefbandTrans4X4 : Vp9CoefbandTrans8X8Plus;
+            return txSize == TxSize.Tx4x4 ? Vp9CoefbandTrans4X4 : _vp9CoefbandTrans8X8Plus;
         }
 
         public static readonly byte[][] Vp9Pareto8Full = {
