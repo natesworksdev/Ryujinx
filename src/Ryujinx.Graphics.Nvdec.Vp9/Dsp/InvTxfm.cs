@@ -183,6 +183,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if ((x0 | x1 | x2 | x3) == 0)
             {
                 output[..4].Clear();
+
                 return;
             }
 
@@ -301,6 +302,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7) == 0)
             {
                 output[..8].Clear();
+
                 return;
             }
 
@@ -534,6 +536,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7 | x8 | x9 | x10 | x11 | x12 | x13 | x14 | x15) == 0)
             {
                 output[..16].Clear();
+
                 return;
             }
 
@@ -1577,12 +1580,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..4].Clear();
+
                 return;
             }
 
             if ((x0 | x1 | x2 | x3) == 0)
             {
                 output[..4].Clear();
+
                 return;
             }
 
@@ -1620,6 +1625,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..4].Clear();
+
                 return;
             }
 
@@ -1708,12 +1714,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..8].Clear();
+
                 return;
             }
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7) == 0)
             {
                 output[..8].Clear();
+
                 return;
             }
 
@@ -1787,6 +1795,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..8].Clear();
+
                 return;
             }
 
@@ -1946,12 +1955,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..16].Clear();
+
                 return;
             }
 
             if ((x0 | x1 | x2 | x3 | x4 | x5 | x6 | x7 | x8 | x9 | x10 | x11 | x12 | x13 | x14 | x15) == 0)
             {
                 output[..16].Clear();
+
                 return;
             }
 
@@ -2108,6 +2119,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..16].Clear();
+
                 return;
             }
 
@@ -2409,6 +2421,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Debug.Assert(false, "invalid highbd txfm input");
                 output[..32].Clear();
+
                 return;
             }
 
