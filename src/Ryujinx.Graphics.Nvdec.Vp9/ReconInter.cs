@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static Mv MiMvPredQ4(ref ModeInfo mi, int idx)
         {
-            Mv res = new()
+            return new Mv
             {
                 Row = (short)RoundMvCompQ4(
                     mi.Bmi[0].Mv[idx].Row + mi.Bmi[1].Mv[idx].Row +
@@ -93,8 +93,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[0].Mv[idx].Col + mi.Bmi[1].Mv[idx].Col +
                     mi.Bmi[2].Mv[idx].Col + mi.Bmi[3].Mv[idx].Col),
             };
-
-            return res;
         }
 
         private static int RoundMvCompQ2(int value)
@@ -104,7 +102,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static Mv MiMvPredQ2(ref ModeInfo mi, int idx, int block0, int block1)
         {
-            Mv res = new()
+            return new Mv
             {
                 Row = (short)RoundMvCompQ2(
                     mi.Bmi[block0].Mv[idx].Row +
@@ -113,8 +111,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     mi.Bmi[block0].Mv[idx].Col +
                     mi.Bmi[block1].Mv[idx].Col),
             };
-
-            return res;
         }
 
         public static Mv ClampMvToUmvBorderSb(ref MacroBlockD xd, ref Mv srcMv, int bw, int bh, int ssX, int ssY)
