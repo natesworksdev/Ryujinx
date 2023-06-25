@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
 {
     class FqdnResolver
     {
-        private const string _dummyAddress = "unknown.dummy.nintendo.net";
+        private const string DummyAddress = "unknown.dummy.nintendo.net";
 
         public static ResultCode GetEnvironmentIdentifier(out string identifier)
         {
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
 
             if (resultCode != ResultCode.Success)
             {
-                resolvedAddress = _dummyAddress;
+                resolvedAddress = DummyAddress;
             }
 
             if (IManager.NsdSettings.TestMode)

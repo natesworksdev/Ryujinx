@@ -11,14 +11,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     class MiiDatabaseManager
     {
-        private static readonly bool IsTestModeEnabled = false;
-        private static uint MountCounter = 0;
+        private static readonly bool _isTestModeEnabled = false;
+        private static uint _mountCounter = 0;
 
         private const ulong DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong DatabaseSaveDataId = 0x8000000000000030;
 
-        private static readonly U8String DatabasePath = new("mii:/MiiDatabase.dat");
-        private static readonly U8String MountName = new("mii");
+        private static readonly U8String _databasePath = new("mii:/MiiDatabase.dat");
+        private static readonly U8String _mountName = new("mii");
 
         private NintendoFigurineDatabase _database;
         private bool _isDirty;
@@ -106,15 +106,15 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private Result MountSave()
         {
-            if (MountCounter != 0)
+            if (_mountCounter != 0)
             {
-                MountCounter++;
+                _mountCounter++;
                 return Result.Success;
             }
 
-            ulong saveDataId = IsTestModeEnabled ? DatabaseTestSaveDataId : DatabaseSaveDataId;
+            ulong saveDataId = _isTestModeEnabled ? DatabaseTestSaveDataId : DatabaseSaveDataId;
 
-            Result result = _horizonClient.Fs.MountSystemSaveData(MountName, SaveDataSpaceId.System, saveDataId);
+            Result result = _horizonClient.Fs.MountSystemSaveData(_mountName, SaveDataSpaceId.System, saveDataId);
 
             if (result.IsFailure())
             {
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                     return result;
                 }
 
-                if (IsTestModeEnabled)
+                if (_isTestModeEnabled)
 #pragma warning disable CS0162
                 {
                     result = _horizonClient.Fs.CreateSystemSaveData(saveDataId, 0x10000, 0x10000,
@@ -144,7 +144,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                     }
                 }
 
-                result = _horizonClient.Fs.MountSystemSaveData(MountName, SaveDataSpaceId.System, saveDataId);
+                result = _horizonClient.Fs.MountSystemSaveData(_mountName, SaveDataSpaceId.System, saveDataId);
                 if (result.IsFailure())
                 {
                     return result;
@@ -153,16 +153,16 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
             if (result == Result.Success)
             {
-                MountCounter++;
+                _mountCounter++;
             }
             return result;
         }
 
         public ResultCode DeleteFile()
         {
-            ResultCode result = (ResultCode)_horizonClient.Fs.DeleteFile(DatabasePath).Value;
+            ResultCode result = (ResultCode)_horizonClient.Fs.DeleteFile(_databasePath).Value;
 
-            _horizonClient.Fs.Commit(MountName);
+            _horizonClient.Fs.Commit(_mountName);
 
             return result;
         }
@@ -171,7 +171,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             isBroken = false;
 
-            if (MountCounter == 0)
+            if (_mountCounter == 0)
             {
                 return ResultCode.InvalidArgument;
             }
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
             ResetDatabase();
 
-            Result result = _horizonClient.Fs.OpenFile(out FileHandle handle, DatabasePath, OpenMode.Read);
+            Result result = _horizonClient.Fs.OpenFile(out FileHandle handle, _databasePath, OpenMode.Read);
 
             if (result.IsSuccess())
             {
@@ -226,11 +226,11 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private Result ForceSaveDatabase()
         {
-            Result result = _horizonClient.Fs.CreateFile(DatabasePath, Unsafe.SizeOf<NintendoFigurineDatabase>());
+            Result result = _horizonClient.Fs.CreateFile(_databasePath, Unsafe.SizeOf<NintendoFigurineDatabase>());
 
             if (result.IsSuccess() || ResultFs.PathAlreadyExists.Includes(result))
             {
-                result = _horizonClient.Fs.OpenFile(out FileHandle handle, DatabasePath, OpenMode.Write);
+                result = _horizonClient.Fs.OpenFile(out FileHandle handle, _databasePath, OpenMode.Write);
 
                 if (result.IsSuccess())
                 {
@@ -243,15 +243,15 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                         {
                             _horizonClient.Fs.CloseFile(handle);
 
-                            result = _horizonClient.Fs.DeleteFile(DatabasePath);
+                            result = _horizonClient.Fs.DeleteFile(_databasePath);
 
                             if (result.IsSuccess())
                             {
-                                result = _horizonClient.Fs.CreateFile(DatabasePath, Unsafe.SizeOf<NintendoFigurineDatabase>());
+                                result = _horizonClient.Fs.CreateFile(_databasePath, Unsafe.SizeOf<NintendoFigurineDatabase>());
 
                                 if (result.IsSuccess())
                                 {
-                                    result = _horizonClient.Fs.OpenFile(out handle, DatabasePath, OpenMode.Write);
+                                    result = _horizonClient.Fs.OpenFile(out handle, _databasePath, OpenMode.Write);
                                 }
                             }
 
@@ -272,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             {
                 _isDirty = false;
 
-                result = _horizonClient.Fs.Commit(MountName);
+                result = _horizonClient.Fs.Commit(_mountName);
             }
 
             return result;

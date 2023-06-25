@@ -110,11 +110,11 @@ namespace Ryujinx.HLE.HOS
         private readonly Dictionary<ulong, ModCache> _appMods; // key is TitleId
         private PatchCache _patches;
 
-        private static readonly EnumerationOptions DirEnumOptions;
+        private static readonly EnumerationOptions _dirEnumOptions;
 
         static ModLoader()
         {
-            DirEnumOptions = new EnumerationOptions
+            _dirEnumOptions = new EnumerationOptions
             {
                 MatchCasing = MatchCasing.CaseInsensitive,
                 MatchType = MatchType.Simple,
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS
         }
 
         private static DirectoryInfo FindTitleDir(DirectoryInfo contentsDir, string titleId)
-            => contentsDir.EnumerateDirectories(titleId, DirEnumOptions).FirstOrDefault();
+            => contentsDir.EnumerateDirectories(titleId, _dirEnumOptions).FirstOrDefault();
 
         private static void AddModsFromDirectory(ModCache mods, DirectoryInfo dir, string titleId)
         {

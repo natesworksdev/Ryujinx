@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
         [GeneratedRegex(@"^accounts\.nintendo\.com$", RegexOpts)]
         private static partial Regex BlockedHost6();
 
-        private static readonly Regex[] BlockedHosts = {
+        private static readonly Regex[] _blockedHosts = {
             BlockedHost1(),
             BlockedHost2(),
             BlockedHost3(),
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
 
         public static bool IsHostBlocked(string host)
         {
-            foreach (Regex regex in BlockedHosts)
+            foreach (Regex regex in _blockedHosts)
             {
                 if (regex.IsMatch(host))
                 {

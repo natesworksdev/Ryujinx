@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService
 {
     public sealed class NotificationEventHandler
     {
-        private static NotificationEventHandler instance;
-        private static readonly object instanceLock = new();
+        private static NotificationEventHandler _instance;
+        private static readonly object _instanceLock = new();
 
         private readonly INotificationService[] _registry;
 
@@ -13,11 +13,11 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService
         {
             get
             {
-                lock (instanceLock)
+                lock (_instanceLock)
                 {
-                    instance ??= new NotificationEventHandler();
+                    _instance ??= new NotificationEventHandler();
 
-                    return instance;
+                    return _instance;
                 }
             }
         }

@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
     class KServerSession : KSynchronizationObject
     {
-        private static readonly MemoryState[] IpcMemoryStates = new MemoryState[]
+        private static readonly MemoryState[] _ipcMemoryStates = new MemoryState[]
         {
             MemoryState.IpcBuffer3,
             MemoryState.IpcBuffer0,
@@ -488,7 +488,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                     bufferAddress = (bufferAddress << 32) | descWord1;
 
-                    MemoryState state = IpcMemoryStates[(descWord2 + 1) & 3];
+                    MemoryState state = _ipcMemoryStates[(descWord2 + 1) & 3];
 
                     clientResult = serverProcess.MemoryManager.MapBufferFromClientProcess(
                         bufferSize,

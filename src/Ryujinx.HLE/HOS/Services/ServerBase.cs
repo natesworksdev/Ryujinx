@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services
         // not large enough.
         private const int PointerBufferSize = 0x8000;
 
-        private readonly static uint[] DefaultCapabilities = new uint[]
+        private readonly static uint[] _defaultCapabilities = new uint[]
         {
             0x030363F7,
             0x1FFFFFCF,
@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services
         };
 
         // The amount of time Dispose() will wait to Join() the thread executing the ServerLoop()
-        private static readonly TimeSpan ThreadJoinTimeout = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan _threadJoinTimeout = TimeSpan.FromSeconds(3);
 
         private readonly KernelContext _context;
         private KProcess _selfProcess;
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
-            KernelStatic.StartInitialProcess(context, creationInfo, DefaultCapabilities, 44, Main);
+            KernelStatic.StartInitialProcess(context, creationInfo, _defaultCapabilities, 44, Main);
         }
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
@@ -483,9 +483,9 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing && _selfThread != null)
             {
-                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(ThreadJoinTimeout) == false)
+                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(_threadJoinTimeout) == false)
                 {
-                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {ThreadJoinTimeout:g}, waiting longer.");
+                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {_threadJoinTimeout:g}, waiting longer.");
 
                     _selfThread.HostThread.Join(Timeout.Infinite);
                 }

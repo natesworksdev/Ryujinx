@@ -18,12 +18,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetSystemEvent() -> handle<copy>
         public ResultCode GetSystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(AsyncExecution.SystemEvent.ReadableEvent, out int _systemEventHandle) != Result.Success)
+            if (context.Process.HandleTable.GenerateHandle(AsyncExecution.SystemEvent.ReadableEvent, out int systemEventHandle) != Result.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_systemEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(systemEventHandle);
 
             return ResultCode.Success;
         }

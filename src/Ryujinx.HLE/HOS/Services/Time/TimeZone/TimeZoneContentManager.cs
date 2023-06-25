@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
     {
         private const long TimeZoneBinaryTitleId = 0x010000000000080E;
 
-        private readonly string TimeZoneSystemTitleMissingErrorMessage = "TimeZoneBinary system title not found! TimeZone conversions will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
+        private readonly string _timeZoneSystemTitleMissingErrorMessage = "TimeZoneBinary system title not found! TimeZone conversions will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
 
         private VirtualFileSystem _virtualFileSystem;
         private IntegrityCheckLevel _fsIntegrityCheckLevel;
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 LocationNameCache = new string[] { "UTC" };
 
-                Logger.Error?.Print(LogClass.ServiceTime, TimeZoneSystemTitleMissingErrorMessage);
+                Logger.Error?.Print(LogClass.ServiceTime, _timeZoneSystemTitleMissingErrorMessage);
             }
         }
 
@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             if (!HasTimeZoneBinaryTitle())
             {
-                throw new InvalidSystemResourceException(TimeZoneSystemTitleMissingErrorMessage);
+                throw new InvalidSystemResourceException(_timeZoneSystemTitleMissingErrorMessage);
             }
 
             ResultCode result = GetTimeZoneBinary(locationName, out Stream timeZoneBinaryStream, out LocalStorage ncaFile);

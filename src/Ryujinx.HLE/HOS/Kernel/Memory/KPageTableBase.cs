@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     abstract class KPageTableBase
     {
-        private static readonly int[] MappingUnitSizes = new int[]
+        private static readonly int[] _mappingUnitSizes = new int[]
         {
             0x1000,
             0x10000,
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _reservedAddressSpaceSize = reservedAddressSpaceSize;
         }
 
-        private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
+        private static readonly int[] _addrSpaceSizes = new int[] { 32, 36, 32, 39 };
 
         public Result InitializeForProcess(
             AddressSpaceType addrSpaceType,
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _contextId = Context.ContextIdManager.GetId();
 
             ulong addrSpaceBase = 0;
-            ulong addrSpaceSize = 1UL << AddrSpaceSizes[(int)addrSpaceType];
+            ulong addrSpaceSize = 1UL << _addrSpaceSizes[(int)addrSpaceType];
 
             Result result = CreateUserAddressSpace(
                 addrSpaceType,
@@ -1829,9 +1829,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong va = 0;
 
-            for (int unit = MappingUnitSizes.Length - 1; unit >= 0 && va == 0; unit--)
+            for (int unit = _mappingUnitSizes.Length - 1; unit >= 0 && va == 0; unit--)
             {
-                int alignment = MappingUnitSizes[unit];
+                int alignment = _mappingUnitSizes[unit];
 
                 va = AllocateVa(AliasRegionStart, regionPagesCount, neededPagesCount, alignment);
             }

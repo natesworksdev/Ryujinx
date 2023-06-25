@@ -32,8 +32,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private const long AverageSecondsPerYear = 31556952;
         private const long SecondsPerRepeat = YearsPerRepeat * AverageSecondsPerYear;
 
-        private static readonly int[] YearLengths = { DaysPerNYear, DaysPerLYear };
-        private static readonly int[][] MonthsLengths = new int[][]
+        private static readonly int[] _yearLengths = { DaysPerNYear, DaysPerLYear };
+        private static readonly int[][] _monthsLengths = new int[][]
         {
             new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
             new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
@@ -512,8 +512,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 {
                     namePosition++;
 
-                    bool IsRuleValid = GetRule(name, ref namePosition, out Rule start);
-                    if (!IsRuleValid)
+                    bool isRuleValid = GetRule(name, ref namePosition, out Rule start);
+                    if (!isRuleValid)
                     {
                         return false;
                     }
@@ -523,8 +523,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         return false;
                     }
 
-                    IsRuleValid = GetRule(name, ref namePosition, out Rule end);
-                    if (!IsRuleValid)
+                    isRuleValid = GetRule(name, ref namePosition, out Rule end);
+                    if (!isRuleValid)
                     {
                         return false;
                     }
@@ -559,7 +559,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     do
                     {
-                        int yearSeconds = YearLengths[IsLeap(yearBegining - 1)] * SecondsPerDay;
+                        int yearSeconds = _yearLengths[IsLeap(yearBegining - 1)] * SecondsPerDay;
                         yearBegining--;
                         if (IncrementOverflow64(ref janFirst, -yearSeconds))
                         {
@@ -576,7 +576,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         int startTime = TransitionTime(year, start, stdOffset);
                         int endTime = TransitionTime(year, end, dstOffset);
 
-                        int yearSeconds = YearLengths[IsLeap(year)] * SecondsPerDay;
+                        int yearSeconds = _yearLengths[IsLeap(year)] * SecondsPerDay;
 
                         bool isReversed = endTime < startTime;
                         if (isReversed)
@@ -798,7 +798,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
                     for (int i = 1; i < rule.Week; i++)
                     {
-                        if (d + DaysPerWekk >= MonthsLengths[leapYear][rule.Month - 1])
+                        if (d + DaysPerWekk >= _monthsLengths[leapYear][rule.Month - 1])
                         {
                             break;
                         }
@@ -809,7 +809,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     value = d * SecondsPerDay;
                     for (int i = 0; i < rule.Month - 1; i++)
                     {
-                        value += MonthsLengths[leapYear][i] * SecondsPerDay;
+                        value += _monthsLengths[leapYear][i] * SecondsPerDay;
                     }
 
                     break;
@@ -1260,7 +1260,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             calendarTime = new CalendarTimeInternal();
             calendarAdditionalInfo = new CalendarAdditionalInfo();
 
-            while (timeDays < 0 || timeDays >= YearLengths[IsLeap((int)year)])
+            while (timeDays < 0 || timeDays >= _yearLengths[IsLeap((int)year)])
             {
                 long timeDelta = timeDays / DaysPerLYear;
                 long delta = timeDelta;
@@ -1304,12 +1304,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     return ResultCode.OutOfRange;
                 }
 
-                dayOfYear += YearLengths[IsLeap((int)year)];
+                dayOfYear += _yearLengths[IsLeap((int)year)];
             }
 
-            while (dayOfYear >= YearLengths[IsLeap((int)year)])
+            while (dayOfYear >= _yearLengths[IsLeap((int)year)])
             {
-                dayOfYear -= YearLengths[IsLeap((int)year)];
+                dayOfYear -= _yearLengths[IsLeap((int)year)];
 
                 if (IncrementOverflow64(ref year, 1))
                 {
@@ -1334,7 +1334,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             calendarTime.Minute = (sbyte)(remainingSeconds / SecondsPerMinute);
             calendarTime.Second = (sbyte)(remainingSeconds % SecondsPerMinute);
 
-            int[] ip = MonthsLengths[IsLeap((int)year)];
+            int[] ip = _monthsLengths[IsLeap((int)year)];
 
             for (calendarTime.Month = 0; dayOfYear >= ip[calendarTime.Month]; ++calendarTime.Month)
             {
@@ -1505,7 +1505,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     li++;
                 }
 
-                day += YearLengths[IsLeap((int)li)];
+                day += _yearLengths[IsLeap((int)li)];
             }
 
             while (day > DaysPerLYear)
@@ -1517,7 +1517,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     li++;
                 }
 
-                day -= YearLengths[IsLeap((int)li)];
+                day -= _yearLengths[IsLeap((int)li)];
 
                 if (IncrementOverflow64(ref year, 1))
                 {
@@ -1527,7 +1527,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             while (true)
             {
-                int i = MonthsLengths[IsLeap((int)year)][calendarTime.Month];
+                int i = _monthsLengths[IsLeap((int)year)][calendarTime.Month];
 
                 if (day <= i)
                 {

@@ -610,23 +610,23 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                     {
                         if (context.Device.System.NfpDevices[i].State == NfpDeviceState.TagMounted || context.Device.System.NfpDevices[i].State == NfpDeviceState.TagFound)
                         {
-                            byte[] Uuid = VirtualAmiibo.GenerateUuid(context.Device.System.NfpDevices[i].AmiiboId, context.Device.System.NfpDevices[i].UseRandomUuid);
+                            byte[] uuid = VirtualAmiibo.GenerateUuid(context.Device.System.NfpDevices[i].AmiiboId, context.Device.System.NfpDevices[i].UseRandomUuid);
 
-                            if (Uuid.Length > AmiiboConstants.UuidMaxLength)
+                            if (uuid.Length > AmiiboConstants.UuidMaxLength)
                             {
-                                throw new InvalidOperationException($"{nameof(Uuid)} is too long: {Uuid.Length}");
+                                throw new InvalidOperationException($"{nameof(uuid)} is too long: {uuid.Length}");
                             }
 
                             TagInfo tagInfo = new()
                             {
-                                UuidLength = (byte)Uuid.Length,
+                                UuidLength = (byte)uuid.Length,
                                 Reserved1 = new Array21<byte>(),
                                 Protocol = uint.MaxValue, // All Protocol
                                 TagType = uint.MaxValue, // All Type
                                 Reserved2 = new Array6<byte>()
                             };
 
-                            Uuid.CopyTo(tagInfo.Uuid.AsSpan());
+                            uuid.CopyTo(tagInfo.Uuid.AsSpan());
 
                             context.Memory.Write(outputPosition, tagInfo);
 

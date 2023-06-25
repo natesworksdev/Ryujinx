@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     {
         private static uint _openedApplicationAreaId;
 
-        private static readonly AmiiboJsonSerializerContext SerializerContext = AmiiboJsonSerializerContext.Default;
+        private static readonly AmiiboJsonSerializerContext _serializerContext = AmiiboJsonSerializerContext.Default;
 
         public static byte[] GenerateUuid(string amiiboId, bool useRandomUuid)
         {
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             if (File.Exists(filePath))
             {
-                virtualAmiiboFile = JsonHelper.DeserializeFromFile(filePath, SerializerContext.VirtualAmiiboFile);
+                virtualAmiiboFile = JsonHelper.DeserializeFromFile(filePath, _serializerContext.VirtualAmiiboFile);
             }
             else
             {
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         private static void SaveAmiiboFile(VirtualAmiiboFile virtualAmiiboFile)
         {
             string filePath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", $"{virtualAmiiboFile.AmiiboId}.json");
-            JsonHelper.SerializeToFile(filePath, virtualAmiiboFile, SerializerContext.VirtualAmiiboFile);
+            JsonHelper.SerializeToFile(filePath, virtualAmiiboFile, _serializerContext.VirtualAmiiboFile);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
 #pragma warning restore IDE0052
         private uint _clockRate;
 
-        private readonly DeviceCode[] allowedDeviceCodeTable = new DeviceCode[]
+        private readonly DeviceCode[] _allowedDeviceCodeTable = new DeviceCode[]
         {
             DeviceCode.Cpu,    DeviceCode.Gpu,      DeviceCode.Disp1,    DeviceCode.Disp2,
             DeviceCode.Tsec,   DeviceCode.Mselect,  DeviceCode.Sor1,     DeviceCode.Host1x,
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
         // SetClockRate(u32 hz)
         public ResultCode SetClockRate(ServiceCtx context)
         {
-            if (!allowedDeviceCodeTable.Contains(_deviceCode))
+            if (!_allowedDeviceCodeTable.Contains(_deviceCode))
             {
                 return ResultCode.InvalidArgument;
             }
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Clkrst.ClkrstManager
         // GetClockRate() -> u32 hz
         public ResultCode GetClockRate(ServiceCtx context)
         {
-            if (!allowedDeviceCodeTable.Contains(_deviceCode))
+            if (!_allowedDeviceCodeTable.Contains(_deviceCode))
             {
                 return ResultCode.InvalidArgument;
             }

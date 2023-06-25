@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private int _swapInterval;
         private int _swapIntervalDelay;
 
-        private readonly object Lock = new();
+        private readonly object _lock = new();
 
         public long RenderLayerId { get; private set; }
 
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             layerId = 1;
 
-            lock (Lock)
+            lock (_lock)
             {
                 foreach (KeyValuePair<long, Layer> pair in _layers)
                 {
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private void CreateLayerFromId(ulong pid, long layerId, LayerState initialState)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
 
@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Vi.ResultCode CloseLayer(long layerId)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Layer layer = GetLayerByIdLocked(layerId);
 
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Vi.ResultCode DestroyManagedLayer(long layerId)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Layer layer = GetLayerByIdLocked(layerId);
 
@@ -208,7 +208,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public Vi.ResultCode DestroyStrayLayer(long layerId)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Layer layer = GetLayerByIdLocked(layerId);
 
@@ -261,7 +261,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void SetRenderLayer(long layerId)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 RenderLayerId = layerId;
             }
@@ -282,7 +282,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public IGraphicBufferProducer GetProducerByLayerId(long layerId)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 Layer layer = GetLayerByIdLocked(layerId);
 
@@ -363,7 +363,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void Compose()
         {
-            lock (Lock)
+            lock (_lock)
             {
                 // TODO: support multilayers (& multidisplay ?)
                 if (RenderLayerId == 0)

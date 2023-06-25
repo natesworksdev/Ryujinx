@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
     {
         private const long CertStoreTitleId = 0x0100000000000800;
 
-        private readonly string CertStoreTitleMissingErrorMessage = "CertStore system title not found! SSL CA retrieving will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
+        private readonly string _certStoreTitleMissingErrorMessage = "CertStore system title not found! SSL CA retrieving will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
 
         private static BuiltInCertificateManager _instance;
 
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
                         if (result.IsFailure())
                         {
-                            Logger.Error?.Print(LogClass.ServiceSsl, CertStoreTitleMissingErrorMessage);
+                            Logger.Error?.Print(LogClass.ServiceSsl, _certStoreTitleMissingErrorMessage);
 
                             return;
                         }
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             {
                 if (!_initialized)
                 {
-                    throw new InvalidSystemResourceException(CertStoreTitleMissingErrorMessage);
+                    throw new InvalidSystemResourceException(_certStoreTitleMissingErrorMessage);
                 }
 
                 requiredSize = 0;

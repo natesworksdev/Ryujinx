@@ -477,7 +477,7 @@ namespace Ryujinx.HLE.FileSystem
         // Only save data IDs added to SystemExtraDataFixInfo will be fixed.
         private static Result FixUnindexedSystemSaves(HorizonClient hos, List<ulong> existingSaveIds)
         {
-            foreach (var fixInfo in SystemExtraDataFixInfo)
+            foreach (var fixInfo in _systemExtraDataFixInfo)
             {
                 if (!existingSaveIds.Contains(fixInfo.StaticSaveDataId))
                 {
@@ -585,7 +585,7 @@ namespace Ryujinx.HLE.FileSystem
             else
             {
                 // Try to match the system save with one of the known saves
-                foreach (ExtraDataFixInfo fixInfo in SystemExtraDataFixInfo)
+                foreach (ExtraDataFixInfo fixInfo in _systemExtraDataFixInfo)
                 {
                     if (extraData.Attribute.StaticSaveDataId == fixInfo.StaticSaveDataId)
                     {
@@ -615,7 +615,7 @@ namespace Ryujinx.HLE.FileSystem
             public long JournalSize;
         }
 
-        private static readonly ExtraDataFixInfo[] SystemExtraDataFixInfo =
+        private static readonly ExtraDataFixInfo[] _systemExtraDataFixInfo =
         {
             new ExtraDataFixInfo()
             {

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 {
     class Demangler
     {
-        private static readonly string Base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+        private static readonly string _base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
         private readonly List<BaseNode> _substitutionList = new();
         private List<BaseNode> _templateParamList = new();
 
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             for (int i = 0; i < reversedEncoded.Length; i++)
             {
-                int value = Base36.IndexOf(reversedEncoded[i]);
+                int value = _base36.IndexOf(reversedEncoded[i]);
                 if (value == -1)
                 {
                     return -1;
@@ -308,7 +308,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             }
 
             Reference referenceQualifier = Reference.None;
-            List<BaseNode> Params = new();
+            List<BaseNode> @params = new();
 
             while (true)
             {
@@ -339,10 +339,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     return null;
                 }
 
-                Params.Add(type);
+                @params.Add(type);
             }
 
-            return new FunctionType(returnType, new NodeArray(Params), new CvType(cvQualifiers, null), new SimpleReferenceType(referenceQualifier, null), exceptionSpec);
+            return new FunctionType(returnType, new NodeArray(@params), new CvType(cvQualifiers, null), new SimpleReferenceType(referenceQualifier, null), exceptionSpec);
         }
 
         //   <array-type> ::= A <positive dimension number> _ <element type>
@@ -3310,7 +3310,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                 return new EncodedFunction(name, null, context.Cv, context.Ref, null, returnType);
             }
 
-            List<BaseNode> Params = new();
+            List<BaseNode> @params = new();
 
             // backup because that can be destroyed by parseType
             CvType cv = context.Cv;
@@ -3324,10 +3324,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     return null;
                 }
 
-                Params.Add(param);
+                @params.Add(param);
             }
 
-            return new EncodedFunction(name, new NodeArray(Params), cv, Ref, null, returnType);
+            return new EncodedFunction(name, new NodeArray(@params), cv, Ref, null, returnType);
         }
 
         // <mangled-name> ::= _Z <encoding>

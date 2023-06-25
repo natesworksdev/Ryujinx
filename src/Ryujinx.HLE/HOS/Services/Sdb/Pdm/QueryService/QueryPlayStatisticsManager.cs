@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 {
     static class QueryPlayStatisticsManager
     {
-        private static readonly Dictionary<UserId, ApplicationPlayStatistics> applicationPlayStatistics = new();
+        private static readonly Dictionary<UserId, ApplicationPlayStatistics> _applicationPlayStatistics = new();
 
         internal static ResultCode GetPlayStatistics(ServiceCtx context, bool byUserId = false)
         {
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
             // Return ResultCode.ServiceUnavailable if data is locked by another process.
-            var filteredApplicationPlayStatistics = applicationPlayStatistics.AsEnumerable();
+            var filteredApplicationPlayStatistics = _applicationPlayStatistics.AsEnumerable();
 
             if (queryCapability == PlayLogQueryCapability.None)
             {

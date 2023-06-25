@@ -321,7 +321,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             ulong pid = context.Request.HandleDesc.PId;
 
             ulong playHistoryRegistrationKeyPosition = context.Request.PtrBuff[0].Position;
-            ulong PlayHistoryRegistrationKeySize = context.Request.PtrBuff[0].Size;
+            ulong playHistoryRegistrationKeySize = context.Request.PtrBuff[0].Size;
 
             ulong inAppScreenName1Position = context.Request.PtrBuff[1].Position;
 #pragma warning restore IDE0059

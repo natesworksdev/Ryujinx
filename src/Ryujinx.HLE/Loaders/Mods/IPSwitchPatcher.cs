@@ -157,7 +157,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
             bool enabled = false;
             bool printValues = false;
-            int offset_shift = 0;
+            int offsetShift = 0;
 
             string line;
             int lineNum = 0;
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
                     if (tokens[1] == "offset_shift")
                     {
-                        if (tokens.Length != 3 || !ParseInt(tokens[2], out offset_shift))
+                        if (tokens.Length != 3 || !ParseInt(tokens[2], out offsetShift))
                         {
                             ParseWarn();
 
@@ -250,7 +250,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                         continue;
                     }
 
-                    offset += offset_shift;
+                    offset += offsetShift;
 
                     if (printValues)
                     {

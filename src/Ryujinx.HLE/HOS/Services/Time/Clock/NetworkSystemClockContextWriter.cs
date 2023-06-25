@@ -11,7 +11,7 @@
 
         protected override ResultCode Update()
         {
-            _sharedMemory.UpdateNetworkSystemClockContext(_context);
+            _sharedMemory.UpdateNetworkSystemClockContext(Context);
 
             return ResultCode.Success;
         }

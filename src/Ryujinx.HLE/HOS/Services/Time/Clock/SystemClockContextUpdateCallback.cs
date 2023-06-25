@@ -7,13 +7,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     abstract class SystemClockContextUpdateCallback
     {
         private readonly List<KWritableEvent> _operationEventList;
-        protected SystemClockContext _context;
+        protected SystemClockContext Context;
         private bool _hasContext;
 
         public SystemClockContextUpdateCallback()
         {
             _operationEventList = new List<KWritableEvent>();
-            _context = new SystemClockContext();
+            Context = new SystemClockContext();
             _hasContext = false;
         }
 
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             if (_hasContext)
             {
-                return _context.Offset != context.Offset || _context.SteadyTimePoint.ClockSourceId != context.SteadyTimePoint.ClockSourceId;
+                return Context.Offset != context.Offset || Context.SteadyTimePoint.ClockSourceId != context.SteadyTimePoint.ClockSourceId;
             }
 
             return true;
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             if (NeedUpdate(context))
             {
-                _context = context;
+                Context = context;
                 _hasContext = true;
 
                 result = Update();
