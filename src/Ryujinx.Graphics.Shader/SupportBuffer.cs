@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Shader
         FragmentIsBgra,
         ViewportInverse,
         FragmentRenderScaleCount,
-        RenderScale
+        RenderScale,
     }
 
     public struct SupportBuffer
@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Shader
                 new StructureField(AggregateType.Array | AggregateType.U32, "s_is_bgra", FragmentIsBgraCount),
                 new StructureField(AggregateType.Vector4 | AggregateType.FP32, "s_viewport_inverse"),
                 new StructureField(AggregateType.S32, "s_frag_scale_count"),
-                new StructureField(AggregateType.Array | AggregateType.FP32, "s_render_scale", RenderScaleMaxCount)
+                new StructureField(AggregateType.Array | AggregateType.FP32, "s_render_scale", RenderScaleMaxCount),
             });
         }
 

@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     SamplerType.Texture3D => Dim.Dim3D,
                     SamplerType.TextureCube => Dim.Cube,
                     SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{descriptor.Type & SamplerType.Mask}\".")
+                    _ => throw new InvalidOperationException($"Invalid sampler type \"{descriptor.Type & SamplerType.Mask}\"."),
                 };
 
                 var imageType = context.TypeImage(
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 SamplerType.Texture3D => Dim.Dim3D,
                 SamplerType.TextureCube => Dim.Cube,
                 SamplerType.TextureBuffer => Dim.Buffer,
-                _ => throw new ArgumentException($"Invalid sampler type \"{type & SamplerType.Mask}\".")
+                _ => throw new ArgumentException($"Invalid sampler type \"{type & SamplerType.Mask}\"."),
             };
         }
 
@@ -329,7 +329,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 TextureFormat.R10G10B10A2Unorm => ImageFormat.Rgb10A2,
                 TextureFormat.R10G10B10A2Uint => ImageFormat.Rgb10a2ui,
                 TextureFormat.R11G11B10Float => ImageFormat.R11fG11fB10f,
-                _ => throw new ArgumentException($"Invalid texture format \"{format}\".")
+                _ => throw new ArgumentException($"Invalid texture format \"{format}\"."),
             };
         }
 
@@ -409,7 +409,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     2 => AggregateType.Vector2,
                     3 => AggregateType.Vector3,
                     4 => AggregateType.Vector4,
-                    _ => AggregateType.Invalid
+                    _ => AggregateType.Invalid,
                 };
             }
 

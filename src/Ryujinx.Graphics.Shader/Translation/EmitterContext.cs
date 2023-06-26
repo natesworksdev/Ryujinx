@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -430,7 +429,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             AlphaTestOp.Less => Instruction.CompareLess,
                             AlphaTestOp.LessOrEqual => Instruction.CompareLessOrEqual,
                             AlphaTestOp.NotEqual => Instruction.CompareNotEqual,
-                            _ => 0
+                            _ => 0,
                         };
 
                         Debug.Assert(comparator != 0, $"Invalid alpha test operation \"{alphaTestOp}\".");

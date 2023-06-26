@@ -684,7 +684,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         Texture2DLodZeroMultisample = 0x6,
         Texture3DLodZero = 0x7,
         Texture2DArrayLodZero = 0x8,
-        Texture2DLodLevelOffset = 0xc
+        Texture2DLodLevelOffset = 0xc,
     }
 
     enum TexComp

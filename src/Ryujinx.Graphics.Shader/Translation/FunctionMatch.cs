@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private enum TreeNodeType : byte
         {
             Op,
-            Label
+            Label,
         }
 
         private class TreeNode
@@ -289,7 +289,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             InstProps.SPd => 30,
                             InstProps.TPd => 51,
                             InstProps.VPd => 45,
-                            _ => throw new InvalidOperationException($"Table has unknown predicate destination {pdType}.")
+                            _ => throw new InvalidOperationException($"Table has unknown predicate destination {pdType}."),
                         };
 
                         byte predIndex = (byte)((op.RawOpCode >> bit) & 7);
@@ -552,7 +552,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             .Use(PT)
                             .Use(orderingTicketValue).Out),
                     Iadd(x: true, 0, 405).Use(PT).Use(RZ),
-                    Ret().Use(PT)
+                    Ret().Use(PT),
                 };
             }
 
@@ -580,7 +580,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 .Use(PT)
                                 .Use(orderingTicketValue).Out).Out),
                     Iadd(x: true, 0, 405).Use(PT).Use(RZ),
-                    Ret().Use(PT)
+                    Ret().Use(PT),
                 };
             }
 
@@ -607,7 +607,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                         .Use(threadKillValue).OutAt(1))
                                     .Use(RZ).Out).OutAt(1)).Out)
                         .Use(laneIdValue),
-                    Ret().Use(PT)
+                    Ret().Use(PT),
                 };
             }
 
@@ -642,7 +642,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             .Use(PT)
                             .Use(addressLowValue).Out).Inv)
                         .Use(label.Out),
-                    Ret().Use(PT)
+                    Ret().Use(PT),
                 };
             }
 
@@ -688,7 +688,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 .Use(incrementValue)
                                 .Use(popcResult)
                                 .Use(RZ).Out).Out),
-                    Ret().Use(PT)
+                    Ret().Use(PT),
                 };
             }
 

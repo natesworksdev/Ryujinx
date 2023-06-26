@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     3 => GprMask3,
                     4 => PredMask,
                     5 => FlagMask,
-                    _ => throw new ArgumentOutOfRangeException(nameof(index))
+                    _ => throw new ArgumentOutOfRangeException(nameof(index)),
                 };
             }
 

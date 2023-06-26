@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
-
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitAluHelper;
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
@@ -106,7 +105,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 LogicOp.And => context.BitwiseAnd(srcA, srcB),
                 LogicOp.Or => context.BitwiseOr(srcA, srcB),
                 LogicOp.Xor => context.BitwiseExclusiveOr(srcA, srcB),
-                _ => srcB
+                _ => srcB,
             };
 
             EmitLopPredWrite(context, res, predOp, destPred);

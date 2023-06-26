@@ -315,7 +315,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     new AstOperand(OperandType.Constant, binding),
                     new AstOperand(OperandType.Constant, 0),
                     new AstOperand(OperandType.Constant, vecIndex),
-                    new AstOperand(OperandType.Constant, elemIndex)
+                    new AstOperand(OperandType.Constant, elemIndex),
                 };
 
                 return new AstOperation(Instruction.Load, StorageKind.ConstantBuffer, false, sources, sources.Length);

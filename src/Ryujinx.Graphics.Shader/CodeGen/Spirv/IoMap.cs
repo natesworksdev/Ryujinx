@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 IoVariable.VertexIndex => (BuiltIn.VertexIndex, AggregateType.S32),
                 IoVariable.ViewportIndex => (BuiltIn.ViewportIndex, AggregateType.S32),
                 IoVariable.ViewportMask => (BuiltIn.ViewportMaskNV, AggregateType.Array | AggregateType.S32),
-                _ => (default, AggregateType.Invalid)
+                _ => (default, AggregateType.Invalid),
             };
         }
 
@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 IoVariable.TessellationLevelOuter => 4,
                 IoVariable.ViewportMask => 1,
                 IoVariable.UserDefined => MaxAttributes,
-                _ => 1
+                _ => 1,
             };
         }
 

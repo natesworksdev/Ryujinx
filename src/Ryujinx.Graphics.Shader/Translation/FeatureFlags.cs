@@ -23,6 +23,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         OaIndexing = 1 << 8,
         FixedFuncAttr = 1 << 9,
         LocalMemory = 1 << 10,
-        SharedMemory = 1 << 11
+        SharedMemory = 1 << 11,
     }
 }

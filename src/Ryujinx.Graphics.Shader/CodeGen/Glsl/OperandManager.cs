@@ -5,7 +5,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
@@ -38,7 +37,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 OperandType.Constant => NumberFormatter.FormatInt(operand.Value),
                 OperandType.LocalVariable => _locals[operand],
                 OperandType.Undefined => DefaultNames.UndefinedName,
-                _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
+                _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\"."),
             };
         }
 

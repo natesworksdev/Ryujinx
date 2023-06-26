@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Instructions
@@ -21,7 +20,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Tessellation = TessellationControl | TessellationEvaluation,
             VertexTessellationGeometry = Vertex | Tessellation | Geometry,
             TessellationGeometryFragment = Tessellation | Geometry | Fragment,
-            AllGraphics = Vertex | Tessellation | Geometry | Fragment
+            AllGraphics = Vertex | Tessellation | Geometry | Fragment,
         }
 
         private readonly struct AttributeEntry
@@ -344,7 +343,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 AggregateType.Vector2 => 2,
                 AggregateType.Vector3 => 3,
                 AggregateType.Vector4 => 4,
-                _ => 1
+                _ => 1,
             };
         }
     }

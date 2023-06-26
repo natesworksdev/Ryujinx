@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 AggregateType.Vector2 => 2,
                 AggregateType.Vector3 => 3,
                 AggregateType.Vector4 => 4,
-                _ => 1
+                _ => 1,
             };
 
             if (elemCount == 1)
@@ -875,7 +875,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 TextureFormat.R16Snorm => short.MaxValue,
                 TextureFormat.R16G16Snorm => short.MaxValue,
                 TextureFormat.R16G16B16A16Snorm => short.MaxValue,
-                _ => 0
+                _ => 0,
             };
 
             // The value being 0 means that the format is not a SNORM format,

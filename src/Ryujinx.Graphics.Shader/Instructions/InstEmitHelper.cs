@@ -3,7 +3,6 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Runtime.CompilerServices;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Instructions
@@ -111,7 +110,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             return new Operand[]
             {
                 ConstF((float)Unsafe.As<ushort, Half>(ref low)),
-                ConstF((float)Unsafe.As<ushort, Half>(ref high))
+                ConstF((float)Unsafe.As<ushort, Half>(ref high)),
             };
         }
 
@@ -123,7 +122,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             return new Operand[]
             {
                 ConstF((float)Unsafe.As<ushort, Half>(ref low)),
-                ConstF((float)Unsafe.As<ushort, Half>(ref high))
+                ConstF((float)Unsafe.As<ushort, Half>(ref high)),
             };
         }
 
@@ -144,18 +143,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 HalfSwizzle.F16 => new Operand[]
                                     {
                         context.UnpackHalf2x16Low (src),
-                        context.UnpackHalf2x16High(src)
+                        context.UnpackHalf2x16High(src),
                                     },
                 HalfSwizzle.F32 => new Operand[] { src, src },
                 HalfSwizzle.H0H0 => new Operand[]
                     {
                         context.UnpackHalf2x16Low(src),
-                        context.UnpackHalf2x16Low(src)
+                        context.UnpackHalf2x16Low(src),
                     },
                 HalfSwizzle.H1H1 => new Operand[]
                     {
                         context.UnpackHalf2x16High(src),
-                        context.UnpackHalf2x16High(src)
+                        context.UnpackHalf2x16High(src),
                     },
                 _ => throw new ArgumentException($"Invalid swizzle \"{swizzle}\"."),
             };

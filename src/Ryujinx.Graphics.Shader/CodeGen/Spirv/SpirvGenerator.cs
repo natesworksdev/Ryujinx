@@ -232,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         InputTopology.LinesAdjacency => ExecutionMode.InputLinesAdjacency,
                         InputTopology.Triangles => ExecutionMode.Triangles,
                         InputTopology.TrianglesAdjacency => ExecutionMode.InputTrianglesAdjacency,
-                        _ => throw new InvalidOperationException($"Invalid input topology \"{inputTopology}\".")
+                        _ => throw new InvalidOperationException($"Invalid input topology \"{inputTopology}\"."),
                     });
 
                     context.AddExecutionMode(spvFunc, ExecutionMode.Invocations, (SpvLiteralInteger)context.Config.ThreadsPerInputPrimitive);
@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         OutputTopology.PointList => ExecutionMode.OutputPoints,
                         OutputTopology.LineStrip => ExecutionMode.OutputLineStrip,
                         OutputTopology.TriangleStrip => ExecutionMode.OutputTriangleStrip,
-                        _ => throw new InvalidOperationException($"Invalid output topology \"{context.Config.OutputTopology}\".")
+                        _ => throw new InvalidOperationException($"Invalid output topology \"{context.Config.OutputTopology}\"."),
                     });
 
                     int maxOutputVertices = context.Config.GpPassthrough ? context.InputVertices : context.Config.MaxOutputVertices;

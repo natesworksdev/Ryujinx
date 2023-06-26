@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         FP32 = 1 << 16,
         FP64 = 1 << 17,
 
-        Mask = 0xffff
+        Mask = 0xffff,
     }
 
     static class InstructionExtensions

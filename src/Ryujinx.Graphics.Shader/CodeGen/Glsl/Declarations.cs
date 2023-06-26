@@ -296,7 +296,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 AggregateType.Vector4 | AggregateType.FP64 => "dvec4",
                 AggregateType.Vector4 | AggregateType.S32 => "ivec4",
                 AggregateType.Vector4 | AggregateType.U32 => "uvec4",
-                _ => throw new ArgumentException($"Invalid variable type \"{type}\".")
+                _ => throw new ArgumentException($"Invalid variable type \"{type}\"."),
             };
         }
 
@@ -317,7 +317,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 string layout = buffer.Layout switch
                 {
                     BufferLayout.Std140 => "std140",
-                    _ => "std430"
+                    _ => "std430",
                 };
 
                 string set = string.Empty;
@@ -509,7 +509,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     PixelImap.Constant => "flat ",
                     PixelImap.ScreenLinear => "noperspective ",
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
             }
 
@@ -526,7 +526,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         2 => "vec2",
                         3 => "vec3",
                         4 => "vec4",
-                        _ => "float"
+                        _ => "float",
                     };
 
                     context.AppendLine($"layout (location = {attr}) in {type} {name};");
@@ -613,7 +613,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         2 => "vec2",
                         3 => "vec3",
                         4 => "vec4",
-                        _ => "float"
+                        _ => "float",
                     };
 
                     string xfb = string.Empty;
@@ -649,7 +649,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         AttributeType.Sint => "ivec4",
                         AttributeType.Uint => "uvec4",
-                        _ => "vec4"
+                        _ => "vec4",
                     };
 
                 if (context.Config.GpuAccessor.QueryHostReducedPrecision() && context.Config.Stage == ShaderStage.Vertex && attr == 0)

@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Shader
     {
         PointList = 1,
         LineStrip = 6,
-        TriangleStrip = 7
+        TriangleStrip = 7,
     }
 
     static class OutputTopologyExtensions

@@ -210,7 +210,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     (int sbCbSlot, int sbCbOffset) = UnpackSbCbInfo(key);
                     descriptors[descriptorIndex++] = new BufferDescriptor(binding, slot, sbCbSlot, sbCbOffset)
                     {
-                        Flags = (_sbSlotWritten & (1u << slot)) != 0 ? BufferUsageFlags.Write : BufferUsageFlags.None
+                        Flags = (_sbSlotWritten & (1u << slot)) != 0 ? BufferUsageFlags.Write : BufferUsageFlags.None,
                     };
                 }
             }
@@ -227,7 +227,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             StructureType type = new(new[]
             {
-                new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16)
+                new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16),
             });
 
             Properties.AddConstantBuffer(binding, new BufferDefinition(BufferLayout.Std140, 0, binding, name, type));
@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             StructureType type = new(new[]
             {
-                new StructureField(AggregateType.Array | AggregateType.U32, "data", 0)
+                new StructureField(AggregateType.Array | AggregateType.U32, "data", 0),
             });
 
             Properties.AddStorageBuffer(binding, new BufferDefinition(BufferLayout.Std430, 1, binding, name, type));

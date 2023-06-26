@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -65,7 +64,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 HelperFunctionName.ConvertFloatToDouble => GenerateConvertFloatToDoubleFunction(),
                 HelperFunctionName.TexelFetchScale => GenerateTexelFetchScaleFunction(),
                 HelperFunctionName.TextureSizeUnscale => GenerateTextureSizeUnscaleFunction(),
-                _ => throw new ArgumentException($"Invalid function name {functionName}")
+                _ => throw new ArgumentException($"Invalid function name {functionName}"),
             };
         }
 
@@ -164,7 +163,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 HelperFunctionName.SharedAtomicMinS32 => GenerateSharedAtomicSigned(id, isMin: true),
                 HelperFunctionName.SharedStore8 => GenerateSharedStore8(id),
                 HelperFunctionName.SharedStore16 => GenerateSharedStore16(id),
-                _ => throw new ArgumentException($"Invalid function name {functionName}")
+                _ => throw new ArgumentException($"Invalid function name {functionName}"),
             };
         }
 

@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         {
                             AggregateType.S32 => NumberFormatter.FormatInt(0),
                             AggregateType.U32 => NumberFormatter.FormatUint(0),
-                            _ => NumberFormatter.FormatFloat(0)
+                            _ => NumberFormatter.FormatFloat(0),
                         };
                     }
                 }
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 {
                     AggregateType.S32 => "i",
                     AggregateType.U32 => "u",
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
 
                 Append($"{prefix}vec4({string.Join(", ", cElems)})");
@@ -161,7 +161,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 {
                     TextureFlags.Increment => NumberFormatter.FormatInt(1, type), // TODO: Clamp value
                     TextureFlags.Decrement => NumberFormatter.FormatInt(-1, type), // TODO: Clamp value
-                    _ => Src(type)
+                    _ => Src(type),
                 };
 
                 Append(value);

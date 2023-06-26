@@ -30,6 +30,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         Atomic = 1 << 11,
         Special = 1 << 12,
 
-        ArityMask = 0xff
+        ArityMask = 0xff,
     }
 }

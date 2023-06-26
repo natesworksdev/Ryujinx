@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Shader
         R32G32B32A32Sint,
         R10G10B10A2Unorm,
         R10G10B10A2Uint,
-        R11G11B10Float
+        R11G11B10Float,
     }
 
     static class TextureFormatExtensions
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Shader
                 TextureFormat.R10G10B10A2Unorm  => "rgb10_a2",
                 TextureFormat.R10G10B10A2Uint   => "rgb10_a2ui",
                 TextureFormat.R11G11B10Float    => "r11f_g11f_b10f",
-                _                               => string.Empty
+                _                               => string.Empty,
 #pragma warning restore IDE0055
             };
         }

@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(sInfo, config)),
                 TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(sInfo, config)),
-                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString())
+                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString()),
             };
         }
 

@@ -390,7 +390,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             {
                 Instruction.ImageLoad or
                 Instruction.TextureSample => true,
-                _ => false
+                _ => false,
             };
         }
 
@@ -401,7 +401,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 Instruction.Branch or
                 Instruction.BranchIfFalse or
                 Instruction.BranchIfTrue => true,
-                _ => false
+                _ => false,
             };
         }
 
@@ -413,7 +413,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 Instruction.BitwiseExclusiveOr or
                 Instruction.BitwiseNot or
                 Instruction.BitwiseOr => true,
-                _ => false
+                _ => false,
             };
         }
 
@@ -425,7 +425,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 Instruction.BitwiseExclusiveOr => Instruction.LogicalExclusiveOr,
                 Instruction.BitwiseNot => Instruction.LogicalNot,
                 Instruction.BitwiseOr => Instruction.LogicalOr,
-                _ => throw new ArgumentException($"Unexpected instruction \"{inst}\".")
+                _ => throw new ArgumentException($"Unexpected instruction \"{inst}\"."),
             };
         }
     }

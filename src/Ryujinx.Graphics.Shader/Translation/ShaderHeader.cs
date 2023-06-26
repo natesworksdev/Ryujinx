@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         Unused = 0,
         Constant = 1,
         Perspective = 2,
-        ScreenLinear = 3
+        ScreenLinear = 3,
     }
 
     readonly struct ImapPixelType

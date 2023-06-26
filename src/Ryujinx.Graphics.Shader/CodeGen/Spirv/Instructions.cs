@@ -1421,7 +1421,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 derivatives = new[]
                 {
                     AssembleDerivativesVector(coordsCount), // dPdx
-                    AssembleDerivativesVector(coordsCount)  // dPdy
+                    AssembleDerivativesVector(coordsCount), // dPdy
                 };
             }
 
@@ -1471,7 +1471,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     AssembleOffsetVector(coordsCount),
                     AssembleOffsetVector(coordsCount),
                     AssembleOffsetVector(coordsCount),
-                    AssembleOffsetVector(coordsCount)
+                    AssembleOffsetVector(coordsCount),
                 };
             }
 

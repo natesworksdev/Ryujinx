@@ -118,7 +118,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 TruthTable.AndXor        => context.BitwiseExclusiveOr(x, context.BitwiseAnd(y, z)),
                 TruthTable.OrXor         => context.BitwiseExclusiveOr(x, context.BitwiseOr(y, z)),
                 TruthTable.Xor3          => context.BitwiseExclusiveOr(x, context.BitwiseExclusiveOr(y, z)),
-                _                        => null
+                _                        => null,
 #pragma warning restore IDE0055
             };
         }

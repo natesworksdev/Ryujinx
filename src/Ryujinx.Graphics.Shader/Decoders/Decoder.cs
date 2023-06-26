@@ -555,7 +555,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             Brk,
             Cont,
-            Sync
+            Sync,
         }
 
         private readonly struct PathBlockState
@@ -566,7 +566,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 None,
                 PopPushOp,
-                PushBranchOp
+                PushBranchOp,
             }
 
             private readonly RestoreType _restoreType;
@@ -760,7 +760,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 InstName.Pbk => MergeType.Brk,
                 InstName.Pcnt => MergeType.Cont,
-                _ => MergeType.Sync
+                _ => MergeType.Sync,
             };
         }
 
@@ -770,7 +770,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 InstName.Brk => MergeType.Brk,
                 InstName.Cont => MergeType.Cont,
-                _ => MergeType.Sync
+                _ => MergeType.Sync,
             };
         }
     }

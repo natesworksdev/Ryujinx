@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             AstOperand local = new(OperandType.LocalVariable)
             {
-                VarType = type
+                VarType = type,
             };
 
             return local;

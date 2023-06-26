@@ -2,7 +2,6 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
@@ -14,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         enum LsMemoryType
         {
             Local,
-            Shared
+            Shared,
         }
 
         private class GtsContext
@@ -400,7 +399,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     Const(0),
                     wordOffset,
                     operation.GetSource(operation.SourcesCount - 2),
-                    operation.GetSource(operation.SourcesCount - 1)
+                    operation.GetSource(operation.SourcesCount - 1),
                 };
             }
             else if (isStore)
@@ -763,7 +762,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 StorageKind.GlobalMemoryS16 => "S16",
                 StorageKind.GlobalMemoryU8 => "U8",
                 StorageKind.GlobalMemoryU16 => "U16",
-                _ => string.Empty
+                _ => string.Empty,
             };
 
             if (isMultiTarget)
@@ -871,7 +870,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     StorageKind.GlobalMemoryU8 => 8,
                     StorageKind.GlobalMemoryS16 or
                     StorageKind.GlobalMemoryU16 => 16,
-                    _ => 32
+                    _ => 32,
                 };
 
                 if (bitSize < 32)

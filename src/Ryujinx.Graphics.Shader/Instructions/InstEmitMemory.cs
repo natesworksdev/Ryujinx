@@ -2,7 +2,6 @@ using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Numerics;
-
 using static Ryujinx.Graphics.Shader.Instructions.InstEmitHelper;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -48,7 +47,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 AtomsSize.S32 => AtomSize.S32,
                 AtomsSize.U64 => AtomSize.U64,
                 AtomsSize.S64 => AtomSize.S64,
-                _ => AtomSize.U32
+                _ => AtomSize.U32,
             };
 
             Operand id = Const(context.Config.ResourceManager.SharedMemoryId);
@@ -309,7 +308,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 LsSize2.B64 => 2,
                 LsSize2.B128 => 4,
-                _ => 1
+                _ => 1,
             };
 
             Operand baseOffset = context.Copy(srcA);
@@ -390,7 +389,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 LsSize2.B64 => 2,
                 LsSize2.B128 => 4,
-                _ => 1
+                _ => 1,
             };
 
             Operand baseOffset = context.Copy(srcA);
@@ -476,7 +475,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 LsSize.S8 => StorageKind.GlobalMemoryS8,
                 LsSize.U16 => StorageKind.GlobalMemoryU16,
                 LsSize.S16 => StorageKind.GlobalMemoryS16,
-                _ => StorageKind.GlobalMemory
+                _ => StorageKind.GlobalMemory,
             };
         }
 

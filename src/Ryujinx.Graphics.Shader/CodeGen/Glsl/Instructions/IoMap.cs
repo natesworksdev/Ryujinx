@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 IoVariable.VertexIndex => ("gl_VertexIndex", AggregateType.S32),
                 IoVariable.ViewportIndex => ("gl_ViewportIndex", AggregateType.S32),
                 IoVariable.ViewportMask => ("gl_ViewportMask", AggregateType.Array | AggregateType.S32),
-                _ => (null, AggregateType.Invalid)
+                _ => (null, AggregateType.Invalid),
             };
         }
 

@@ -12,6 +12,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         ShuffleUp = 1 << 6,
         ShuffleXor = 1 << 7,
         SwizzleAdd = 1 << 10,
-        FSI = 1 << 11
+        FSI = 1 << 11,
     }
 }
