@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _gpuThread = new Thread(gpuLoop)
             {
-                Name = "GPU.MainThread"
+                Name = "GPU.MainThread",
             };
 
             _gpuThread.Start();
@@ -334,7 +334,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 var texture = new ThreadedTexture(this, info, scale)
                 {
-                    Base = _baseRenderer.CreateTexture(info, scale)
+                    Base = _baseRenderer.CreateTexture(info, scale),
                 };
 
                 return texture;

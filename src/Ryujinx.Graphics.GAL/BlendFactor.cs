@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.GAL
         Src1ColorGl = 0xc900,
         OneMinusSrc1ColorGl = 0xc901,
         Src1AlphaGl = 0xc902,
-        OneMinusSrc1AlphaGl = 0xc903
+        OneMinusSrc1AlphaGl = 0xc903,
     }
 
     public static class BlendFactorExtensions

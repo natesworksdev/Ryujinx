@@ -14,6 +14,6 @@ namespace Ryujinx.Graphics.GAL
         PositiveW = 6,
         NegativeW = 7,
 
-        NegativeFlag = 1
+        NegativeFlag = 1,
     }
 }

@@ -18,6 +18,6 @@ namespace Ryujinx.Graphics.GAL
         IncrementAndClampGl = 0x1e02,
         DecrementAndClampGl = 0x1e03,
         IncrementAndWrapGl = 0x8507,
-        DecrementAndWrapGl = 0x8508
+        DecrementAndWrapGl = 0x8508,
     }
 }

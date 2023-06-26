@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.GAL
         TextureAndSampler,
         Image,
         BufferTexture,
-        BufferImage
+        BufferImage,
     }
 
     public enum ResourceAccess : byte
@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.GAL
         None = 0,
         Read = 1,
         Write = 2,
-        ReadWrite = Read | Write
+        ReadWrite = Read | Write,
     }
 
     [Flags]
@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.GAL
         TessellationControl = 1 << 2,
         TessellationEvaluation = 1 << 3,
         Geometry = 1 << 4,
-        Fragment = 1 << 5
+        Fragment = 1 << 5,
     }
 
     public readonly struct ResourceDescriptor : IEquatable<ResourceDescriptor>
