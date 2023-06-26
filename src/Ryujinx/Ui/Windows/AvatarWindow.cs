@@ -163,7 +163,7 @@ namespace Ryujinx.Ui.Windows
                 _listStore.AppendValues(avatar.Key, new Gdk.Pixbuf(ProcessImage(avatar.Value), 96, 96));
             }
 
-            _iconView.SelectPath(new TreePath(new int[] { 0 }));
+            _iconView.SelectPath(new TreePath(new[] { 0 }));
         }
 
         private byte[] ProcessImage(byte[] data)

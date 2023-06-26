@@ -463,7 +463,7 @@ namespace Ryujinx.Ui.Windows
             if (OperatingSystem.IsMacOS())
             {
                 var store = (_graphicsBackend.Model as ListStore);
-                store.GetIter(out TreeIter openglIter, new TreePath(new int[] { 1 }));
+                store.GetIter(out TreeIter openglIter, new TreePath(new[] { 1 }));
                 store.Remove(ref openglIter);
 
                 _graphicsBackend.Model = store;
