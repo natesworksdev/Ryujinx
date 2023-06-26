@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.Input
 {
     internal class AvaloniaKeyboardDriver : IGamepadDriver
     {
-        private static readonly string[] _keyboardIdentifers = new string[1] { "0" };
+        private static readonly string[] _keyboardIdentifiers = { "0" };
         private readonly Control _control;
         private readonly HashSet<AvaKey> _pressedKeys;
 
@@ -21,7 +21,7 @@ namespace Ryujinx.Ava.Input
         public event EventHandler<string> TextInput;
 
         public string DriverName => "AvaloniaKeyboardDriver";
-        public ReadOnlySpan<string> GamepadsIds => _keyboardIdentifers;
+        public ReadOnlySpan<string> GamepadsIds => _keyboardIdentifiers;
 
         public AvaloniaKeyboardDriver(Control control)
         {
@@ -32,6 +32,8 @@ namespace Ryujinx.Ava.Input
             _control.KeyUp += OnKeyRelease;
             _control.TextInput += Control_TextInput;
             _control.AddHandler(InputElement.TextInputEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
+            _control.AddHandler(InputElement.KeyDownEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
+            _control.AddHandler(InputElement.KeyUpEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
         }
 
         private void Control_TextInput(object sender, TextInputEventArgs e)
@@ -39,7 +41,7 @@ namespace Ryujinx.Ava.Input
             TextInput?.Invoke(this, e.Text);
         }
 
-        private void Control_LastChanceTextInput(object sender, TextInputEventArgs e)
+        private void Control_LastChanceTextInput(object sender, RoutedEventArgs e)
         {
             // Swallow event
             e.Handled = true;
@@ -59,12 +61,12 @@ namespace Ryujinx.Ava.Input
 
         public IGamepad GetGamepad(string id)
         {
-            if (!_keyboardIdentifers[0].Equals(id))
+            if (!_keyboardIdentifiers[0].Equals(id))
             {
                 return null;
             }
 
-            return new AvaloniaKeyboard(this, _keyboardIdentifers[0], LocaleManager.Instance[LocaleKeys.AllKeyboards]);
+            return new AvaloniaKeyboard(this, _keyboardIdentifiers[0], LocaleManager.Instance[LocaleKeys.AllKeyboards]);
         }
 
         protected virtual void Dispose(bool disposing)
