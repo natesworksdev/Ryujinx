@@ -42,8 +42,6 @@
 // "Mask" in their name, and a parallel enum that has the shift
 // amount (1 << x) for each corresponding enumerant.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Spv
 {
 
@@ -65,7 +63,6 @@ namespace Spv
             HLSL = 5,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum ExecutionModel
         {
             Vertex = 0,
@@ -78,37 +75,35 @@ namespace Spv
             TaskNV = 5267,
             MeshNV = 5268,
             RayGenerationKHR = 5313,
-            RayGenerationNV = 5313,
+            RayGenerationNV = RayGenerationKHR,
             IntersectionKHR = 5314,
-            IntersectionNV = 5314,
+            IntersectionNV = IntersectionKHR,
             AnyHitKHR = 5315,
-            AnyHitNV = 5315,
+            AnyHitNV = AnyHitKHR,
             ClosestHitKHR = 5316,
-            ClosestHitNV = 5316,
+            ClosestHitNV = ClosestHitKHR,
             MissKHR = 5317,
-            MissNV = 5317,
+            MissNV = MissKHR,
             CallableKHR = 5318,
-            CallableNV = 5318,
+            CallableNV = CallableKHR,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum AddressingModel
         {
             Logical = 0,
             Physical32 = 1,
             Physical64 = 2,
             PhysicalStorageBuffer64 = 5348,
-            PhysicalStorageBuffer64EXT = 5348,
+            PhysicalStorageBuffer64EXT = PhysicalStorageBuffer64,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum MemoryModel
         {
             Simple = 0,
             GLSL450 = 1,
             OpenCL = 2,
             Vulkan = 3,
-            VulkanKHR = 3,
+            VulkanKHR = Vulkan,
         }
 
         public enum ExecutionMode
@@ -175,7 +170,6 @@ namespace Spv
             NumSIMDWorkitemsINTEL = 5896,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum StorageClass
         {
             UniformConstant = 0,
@@ -192,19 +186,19 @@ namespace Spv
             Image = 11,
             StorageBuffer = 12,
             CallableDataKHR = 5328,
-            CallableDataNV = 5328,
+            CallableDataNV = CallableDataKHR,
             IncomingCallableDataKHR = 5329,
-            IncomingCallableDataNV = 5329,
+            IncomingCallableDataNV = IncomingCallableDataKHR,
             RayPayloadKHR = 5338,
-            RayPayloadNV = 5338,
+            RayPayloadNV = RayPayloadKHR,
             HitAttributeKHR = 5339,
-            HitAttributeNV = 5339,
+            HitAttributeNV = HitAttributeKHR,
             IncomingRayPayloadKHR = 5342,
-            IncomingRayPayloadNV = 5342,
+            IncomingRayPayloadNV = IncomingRayPayloadKHR,
             ShaderRecordBufferKHR = 5343,
-            ShaderRecordBufferNV = 5343,
+            ShaderRecordBufferNV = ShaderRecordBufferKHR,
             PhysicalStorageBuffer = 5349,
-            PhysicalStorageBufferEXT = 5349,
+            PhysicalStorageBufferEXT = PhysicalStorageBuffer,
             CodeSectionINTEL = 5605,
         }
 
@@ -325,7 +319,6 @@ namespace Spv
             UnormInt101010_2 = 16,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum ImageOperandsShift
         {
             Bias = 0,
@@ -337,18 +330,17 @@ namespace Spv
             Sample = 6,
             MinLod = 7,
             MakeTexelAvailable = 8,
-            MakeTexelAvailableKHR = 8,
+            MakeTexelAvailableKHR = MakeTexelAvailable,
             MakeTexelVisible = 9,
-            MakeTexelVisibleKHR = 9,
+            MakeTexelVisibleKHR = MakeTexelVisible,
             NonPrivateTexel = 10,
-            NonPrivateTexelKHR = 10,
+            NonPrivateTexelKHR = NonPrivateTexel,
             VolatileTexel = 11,
-            VolatileTexelKHR = 11,
+            VolatileTexelKHR = VolatileTexel,
             SignExtend = 12,
             ZeroExtend = 13,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum ImageOperandsMask
         {
             MaskNone = 0,
@@ -361,13 +353,13 @@ namespace Spv
             Sample = 0x00000040,
             MinLod = 0x00000080,
             MakeTexelAvailable = 0x00000100,
-            MakeTexelAvailableKHR = 0x00000100,
+            MakeTexelAvailableKHR = MakeTexelAvailable,
             MakeTexelVisible = 0x00000200,
-            MakeTexelVisibleKHR = 0x00000200,
+            MakeTexelVisibleKHR = MakeTexelVisible,
             NonPrivateTexel = 0x00000400,
-            NonPrivateTexelKHR = 0x00000400,
+            NonPrivateTexelKHR = NonPrivateTexel,
             VolatileTexel = 0x00000800,
-            VolatileTexelKHR = 0x00000800,
+            VolatileTexelKHR = VolatileTexel,
             SignExtend = 0x00001000,
             ZeroExtend = 0x00002000,
             Offsets = 0x00010000,
@@ -425,7 +417,6 @@ namespace Spv
             NoReadWrite = 7,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum Decoration
         {
             RelaxedPrecision = 0,
@@ -487,16 +478,16 @@ namespace Spv
             PerTaskNV = 5273,
             PerVertexNV = 5285,
             NonUniform = 5300,
-            NonUniformEXT = 5300,
+            NonUniformEXT = NonUniform,
             RestrictPointer = 5355,
-            RestrictPointerEXT = 5355,
+            RestrictPointerEXT = RestrictPointer,
             AliasedPointer = 5356,
-            AliasedPointerEXT = 5356,
+            AliasedPointerEXT = AliasedPointer,
             ReferencedIndirectlyINTEL = 5602,
             CounterBuffer = 5634,
-            HlslCounterBufferGOOGLE = 5634,
+            HlslCounterBufferGOOGLE = CounterBuffer,
             HlslSemanticGOOGLE = 5635,
-            UserSemantic = 5635,
+            UserSemantic = HlslSemanticGOOGLE,
             UserTypeGOOGLE = 5636,
             RegisterINTEL = 5825,
             MemoryINTEL = 5826,
@@ -512,7 +503,6 @@ namespace Spv
             ForcePow2DepthINTEL = 5836,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum BuiltIn
         {
             Position = 0,
@@ -557,15 +547,15 @@ namespace Spv
             VertexIndex = 42,
             InstanceIndex = 43,
             SubgroupEqMask = 4416,
-            SubgroupEqMaskKHR = 4416,
+            SubgroupEqMaskKHR = SubgroupEqMask,
             SubgroupGeMask = 4417,
-            SubgroupGeMaskKHR = 4417,
+            SubgroupGeMaskKHR = SubgroupGeMask,
             SubgroupGtMask = 4418,
-            SubgroupGtMaskKHR = 4418,
+            SubgroupGtMaskKHR = SubgroupGtMask,
             SubgroupLeMask = 4419,
-            SubgroupLeMaskKHR = 4419,
+            SubgroupLeMaskKHR = SubgroupLeMask,
             SubgroupLtMask = 4420,
-            SubgroupLtMaskKHR = 4420,
+            SubgroupLtMaskKHR = SubgroupLtMask,
             BaseVertex = 4424,
             BaseInstance = 4425,
             DrawIndex = 4426,
@@ -598,36 +588,36 @@ namespace Spv
             BaryCoordNV = 5286,
             BaryCoordNoPerspNV = 5287,
             FragSizeEXT = 5292,
-            FragmentSizeNV = 5292,
+            FragmentSizeNV = FragSizeEXT,
             FragInvocationCountEXT = 5293,
-            InvocationsPerPixelNV = 5293,
+            InvocationsPerPixelNV = FragInvocationCountEXT,
             LaunchIdKHR = 5319,
-            LaunchIdNV = 5319,
+            LaunchIdNV = LaunchIdKHR,
             LaunchSizeKHR = 5320,
-            LaunchSizeNV = 5320,
+            LaunchSizeNV = LaunchSizeKHR,
             WorldRayOriginKHR = 5321,
-            WorldRayOriginNV = 5321,
+            WorldRayOriginNV = WorldRayOriginKHR,
             WorldRayDirectionKHR = 5322,
-            WorldRayDirectionNV = 5322,
+            WorldRayDirectionNV = WorldRayDirectionKHR,
             ObjectRayOriginKHR = 5323,
-            ObjectRayOriginNV = 5323,
+            ObjectRayOriginNV = ObjectRayOriginKHR,
             ObjectRayDirectionKHR = 5324,
-            ObjectRayDirectionNV = 5324,
+            ObjectRayDirectionNV = ObjectRayDirectionKHR,
             RayTminKHR = 5325,
-            RayTminNV = 5325,
+            RayTminNV = RayTminKHR,
             RayTmaxKHR = 5326,
-            RayTmaxNV = 5326,
+            RayTmaxNV = RayTmaxKHR,
             InstanceCustomIndexKHR = 5327,
-            InstanceCustomIndexNV = 5327,
+            InstanceCustomIndexNV = InstanceCustomIndexKHR,
             ObjectToWorldKHR = 5330,
-            ObjectToWorldNV = 5330,
+            ObjectToWorldNV = ObjectToWorldKHR,
             WorldToObjectKHR = 5331,
-            WorldToObjectNV = 5331,
+            WorldToObjectNV = WorldToObjectKHR,
             HitTNV = 5332,
             HitKindKHR = 5333,
-            HitKindNV = 5333,
+            HitKindNV = HitKindKHR,
             IncomingRayFlagsKHR = 5351,
-            IncomingRayFlagsNV = 5351,
+            IncomingRayFlagsNV = IncomingRayFlagsKHR,
             RayGeometryIndexKHR = 5352,
             WarpsPerSMNV = 5374,
             SMCountNV = 5375,
@@ -706,7 +696,6 @@ namespace Spv
             Const = 0x00000008,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum MemorySemanticsShift
         {
             Acquire = 1,
@@ -720,15 +709,14 @@ namespace Spv
             AtomicCounterMemory = 10,
             ImageMemory = 11,
             OutputMemory = 12,
-            OutputMemoryKHR = 12,
+            OutputMemoryKHR = OutputMemory,
             MakeAvailable = 13,
-            MakeAvailableKHR = 13,
+            MakeAvailableKHR = MakeAvailable,
             MakeVisible = 14,
-            MakeVisibleKHR = 14,
+            MakeVisibleKHR = MakeVisible,
             Volatile = 15,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum MemorySemanticsMask
         {
             MaskNone = 0,
@@ -743,29 +731,27 @@ namespace Spv
             AtomicCounterMemory = 0x00000400,
             ImageMemory = 0x00000800,
             OutputMemory = 0x00001000,
-            OutputMemoryKHR = 0x00001000,
+            OutputMemoryKHR = OutputMemory,
             MakeAvailable = 0x00002000,
-            MakeAvailableKHR = 0x00002000,
+            MakeAvailableKHR = MakeAvailable,
             MakeVisible = 0x00004000,
-            MakeVisibleKHR = 0x00004000,
+            MakeVisibleKHR = MakeVisible,
             Volatile = 0x00008000,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum MemoryAccessShift
         {
             Volatile = 0,
             Aligned = 1,
             Nontemporal = 2,
             MakePointerAvailable = 3,
-            MakePointerAvailableKHR = 3,
+            MakePointerAvailableKHR = MakePointerAvailable,
             MakePointerVisible = 4,
-            MakePointerVisibleKHR = 4,
+            MakePointerVisibleKHR = MakePointerVisible,
             NonPrivatePointer = 5,
-            NonPrivatePointerKHR = 5,
+            NonPrivatePointerKHR = NonPrivatePointer,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum MemoryAccessMask
         {
             MaskNone = 0,
@@ -773,14 +759,13 @@ namespace Spv
             Aligned = 0x00000002,
             Nontemporal = 0x00000004,
             MakePointerAvailable = 0x00000008,
-            MakePointerAvailableKHR = 0x00000008,
+            MakePointerAvailableKHR = MakePointerAvailable,
             MakePointerVisible = 0x00000010,
-            MakePointerVisibleKHR = 0x00000010,
+            MakePointerVisibleKHR = MakePointerVisible,
             NonPrivatePointer = 0x00000020,
-            NonPrivatePointerKHR = 0x00000020,
+            NonPrivatePointerKHR = NonPrivatePointer,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum Scope
         {
             CrossDevice = 0,
@@ -789,7 +774,7 @@ namespace Spv
             Subgroup = 3,
             Invocation = 4,
             QueueFamily = 5,
-            QueueFamilyKHR = 5,
+            QueueFamilyKHR = QueueFamily,
             ShaderCallKHR = 6,
         }
 
@@ -822,7 +807,6 @@ namespace Spv
             CmdExecTime = 0x00000001,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum Capability
         {
             Matrix = 0,
@@ -899,9 +883,9 @@ namespace Spv
             DrawParameters = 4427,
             SubgroupVoteKHR = 4431,
             StorageBuffer16BitAccess = 4433,
-            StorageUniformBufferBlock16 = 4433,
+            StorageUniformBufferBlock16 = StorageBuffer16BitAccess,
             StorageUniform16 = 4434,
-            UniformAndStorageBuffer16BitAccess = 4434,
+            UniformAndStorageBuffer16BitAccess = StorageUniform16,
             StoragePushConstant16 = 4435,
             StorageInputOutput16 = 4436,
             DeviceGroup = 4437,
@@ -932,7 +916,7 @@ namespace Spv
             SampleMaskOverrideCoverageNV = 5249,
             GeometryShaderPassthroughNV = 5251,
             ShaderViewportIndexLayerEXT = 5254,
-            ShaderViewportIndexLayerNV = 5254,
+            ShaderViewportIndexLayerNV = ShaderViewportIndexLayerEXT,
             ShaderViewportMaskNV = 5255,
             ShaderStereoViewNV = 5259,
             PerViewAttributesNV = 5260,
@@ -942,39 +926,39 @@ namespace Spv
             FragmentBarycentricNV = 5284,
             ComputeDerivativeGroupQuadsNV = 5288,
             FragmentDensityEXT = 5291,
-            ShadingRateNV = 5291,
+            ShadingRateNV = FragmentDensityEXT,
             GroupNonUniformPartitionedNV = 5297,
             ShaderNonUniform = 5301,
-            ShaderNonUniformEXT = 5301,
+            ShaderNonUniformEXT = ShaderNonUniform,
             RuntimeDescriptorArray = 5302,
-            RuntimeDescriptorArrayEXT = 5302,
+            RuntimeDescriptorArrayEXT = RuntimeDescriptorArray,
             InputAttachmentArrayDynamicIndexing = 5303,
-            InputAttachmentArrayDynamicIndexingEXT = 5303,
+            InputAttachmentArrayDynamicIndexingEXT = InputAttachmentArrayDynamicIndexing,
             UniformTexelBufferArrayDynamicIndexing = 5304,
-            UniformTexelBufferArrayDynamicIndexingEXT = 5304,
+            UniformTexelBufferArrayDynamicIndexingEXT = UniformTexelBufferArrayDynamicIndexing,
             StorageTexelBufferArrayDynamicIndexing = 5305,
-            StorageTexelBufferArrayDynamicIndexingEXT = 5305,
+            StorageTexelBufferArrayDynamicIndexingEXT = StorageTexelBufferArrayDynamicIndexing,
             UniformBufferArrayNonUniformIndexing = 5306,
-            UniformBufferArrayNonUniformIndexingEXT = 5306,
+            UniformBufferArrayNonUniformIndexingEXT = UniformBufferArrayNonUniformIndexing,
             SampledImageArrayNonUniformIndexing = 5307,
-            SampledImageArrayNonUniformIndexingEXT = 5307,
+            SampledImageArrayNonUniformIndexingEXT = SampledImageArrayNonUniformIndexing,
             StorageBufferArrayNonUniformIndexing = 5308,
-            StorageBufferArrayNonUniformIndexingEXT = 5308,
+            StorageBufferArrayNonUniformIndexingEXT = StorageBufferArrayNonUniformIndexing,
             StorageImageArrayNonUniformIndexing = 5309,
-            StorageImageArrayNonUniformIndexingEXT = 5309,
+            StorageImageArrayNonUniformIndexingEXT = StorageImageArrayNonUniformIndexing,
             InputAttachmentArrayNonUniformIndexing = 5310,
-            InputAttachmentArrayNonUniformIndexingEXT = 5310,
+            InputAttachmentArrayNonUniformIndexingEXT = InputAttachmentArrayNonUniformIndexing,
             UniformTexelBufferArrayNonUniformIndexing = 5311,
-            UniformTexelBufferArrayNonUniformIndexingEXT = 5311,
+            UniformTexelBufferArrayNonUniformIndexingEXT = UniformTexelBufferArrayNonUniformIndexing,
             StorageTexelBufferArrayNonUniformIndexing = 5312,
-            StorageTexelBufferArrayNonUniformIndexingEXT = 5312,
+            StorageTexelBufferArrayNonUniformIndexingEXT = StorageTexelBufferArrayNonUniformIndexing,
             RayTracingNV = 5340,
             VulkanMemoryModel = 5345,
-            VulkanMemoryModelKHR = 5345,
+            VulkanMemoryModelKHR = VulkanMemoryModel,
             VulkanMemoryModelDeviceScope = 5346,
-            VulkanMemoryModelDeviceScopeKHR = 5346,
+            VulkanMemoryModelDeviceScopeKHR = VulkanMemoryModelDeviceScope,
             PhysicalStorageBufferAddresses = 5347,
-            PhysicalStorageBufferAddressesEXT = 5347,
+            PhysicalStorageBufferAddressesEXT = PhysicalStorageBufferAddresses,
             ComputeDerivativeGroupLinearNV = 5350,
             RayTracingProvisionalKHR = 5353,
             CooperativeMatrixNV = 5357,
@@ -1069,7 +1053,6 @@ namespace Spv
             Horizontal4Pixels = 0x00000008,
         }
 
-        [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum Op
         {
             OpNop = 0,
@@ -1450,12 +1433,12 @@ namespace Spv
             OpGroupNonUniformPartitionNV = 5296,
             OpWritePackedPrimitiveIndices4x8NV = 5299,
             OpReportIntersectionKHR = 5334,
-            OpReportIntersectionNV = 5334,
+            OpReportIntersectionNV = OpReportIntersectionKHR,
             OpIgnoreIntersectionNV = 5335,
             OpTerminateRayNV = 5336,
             OpTraceNV = 5337,
             OpTypeAccelerationStructureKHR = 5341,
-            OpTypeAccelerationStructureNV = 5341,
+            OpTypeAccelerationStructureNV = OpTypeAccelerationStructureKHR,
             OpExecuteCallableNV = 5344,
             OpTypeCooperativeMatrixNV = 5358,
             OpCooperativeMatrixLoadNV = 5359,
@@ -1493,9 +1476,9 @@ namespace Spv
             OpFunctionPointerINTEL = 5600,
             OpFunctionPointerCallINTEL = 5601,
             OpDecorateString = 5632,
-            OpDecorateStringGOOGLE = 5632,
+            OpDecorateStringGOOGLE = OpDecorateString,
             OpMemberDecorateString = 5633,
-            OpMemberDecorateStringGOOGLE = 5633,
+            OpMemberDecorateStringGOOGLE = OpMemberDecorateString,
             OpVmeImageINTEL = 5699,
             OpTypeVmeImageINTEL = 5700,
             OpTypeAvcImePayloadINTEL = 5701,
