@@ -195,23 +195,21 @@ namespace Ryujinx.Modules
             }
 
             // Fetch build size information to learn chunk sizes.
-            using (HttpClient buildSizeClient = ConstructHttpClient())
+            using HttpClient buildSizeClient = ConstructHttpClient();
+            try
             {
-                try
-                {
-                    buildSizeClient.DefaultRequestHeaders.Add("Range", "bytes=0-0");
+                buildSizeClient.DefaultRequestHeaders.Add("Range", "bytes=0-0");
 
-                    HttpResponseMessage message = await buildSizeClient.GetAsync(new Uri(_buildUrl), HttpCompletionOption.ResponseHeadersRead);
+                HttpResponseMessage message = await buildSizeClient.GetAsync(new Uri(_buildUrl), HttpCompletionOption.ResponseHeadersRead);
 
-                    _buildSize = message.Content.Headers.ContentRange.Length.Value;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Warning?.Print(LogClass.Application, ex.Message);
-                    Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, using single-threaded updater");
+                _buildSize = message.Content.Headers.ContentRange.Length.Value;
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning?.Print(LogClass.Application, ex.Message);
+                Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, using single-threaded updater");
 
-                    _buildSize = -1;
-                }
+                _buildSize = -1;
             }
 
             Dispatcher.UIThread.Post(async () =>
@@ -466,31 +464,29 @@ namespace Ryujinx.Modules
             // We do not want to timeout while downloading
             client.Timeout = TimeSpan.FromDays(1);
 
-            using (HttpResponseMessage response = client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).Result)
-            using (Stream remoteFileStream = response.Content.ReadAsStreamAsync().Result)
+            using HttpResponseMessage response = client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).Result;
+            using Stream remoteFileStream = response.Content.ReadAsStreamAsync().Result;
+            using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
+
+            long totalBytes = response.Content.Headers.ContentLength.Value;
+            long byteWritten = 0;
+
+            byte[] buffer = new byte[32 * 1024];
+
+            while (true)
             {
-                using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
+                int readSize = remoteFileStream.Read(buffer);
 
-                long totalBytes = response.Content.Headers.ContentLength.Value;
-                long byteWritten = 0;
-
-                byte[] buffer = new byte[32 * 1024];
-
-                while (true)
+                if (readSize == 0)
                 {
-                    int readSize = remoteFileStream.Read(buffer);
-
-                    if (readSize == 0)
-                    {
-                        break;
-                    }
-
-                    byteWritten += readSize;
-
-                    taskDialog.SetProgressBarState(GetPercentage(byteWritten, totalBytes), TaskDialogProgressState.Normal);
-
-                    updateFileStream.Write(buffer, 0, readSize);
+                    break;
                 }
+
+                byteWritten += readSize;
+
+                taskDialog.SetProgressBarState(GetPercentage(byteWritten, totalBytes), TaskDialogProgressState.Normal);
+
+                updateFileStream.Write(buffer, 0, readSize);
             }
 
             InstallUpdate(taskDialog, updateFile);
@@ -533,10 +529,8 @@ namespace Ryujinx.Modules
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                using (FileStream outStream = File.OpenWrite(outPath))
-                {
-                    tarStream.CopyEntryContents(outStream);
-                }
+                using FileStream outStream = File.OpenWrite(outPath);
+                tarStream.CopyEntryContents(outStream);
 
                 File.SetUnixFileMode(outPath, (UnixFileMode)tarEntry.TarHeader.Mode);
                 File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
@@ -571,11 +565,9 @@ namespace Ryujinx.Modules
 
                 Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                using (Stream zipStream = zipFile.GetInputStream(zipEntry))
-                using (FileStream outStream = File.OpenWrite(outPath))
-                {
-                    zipStream.CopyTo(outStream);
-                }
+                using Stream zipStream = zipFile.GetInputStream(zipEntry);
+                using FileStream outStream = File.OpenWrite(outPath);
+                zipStream.CopyTo(outStream);
 
                 File.SetLastWriteTime(outPath, DateTime.SpecifyKind(zipEntry.DateTime, DateTimeKind.Utc));
 
