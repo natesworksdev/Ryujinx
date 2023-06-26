@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Ryujinx.Graphics.GAL
 {
     public enum Format
@@ -151,7 +149,6 @@ namespace Ryujinx.Graphics.GAL
         B8G8R8A8Srgb,
     }
 
-    [SuppressMessage("Style", "IDE0066: Use switch expression")]
     public static class FormatExtensions
     {
         /// <summary>
