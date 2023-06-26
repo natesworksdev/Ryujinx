@@ -554,7 +554,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            ApplicationLibrary.LoadApplications(ViewModel.AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
             _isLoading = false;
         }

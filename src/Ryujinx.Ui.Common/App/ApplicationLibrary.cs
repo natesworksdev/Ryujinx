@@ -81,7 +81,7 @@ namespace Ryujinx.Ui.App.Common
             controlFile.Get.Read(out _, 0, outProperty, ReadOption.None).ThrowIfFailure();
         }
 
-        public void LoadApplications(List<string> appDirs, Language desiredTitleLanguage)
+        public void LoadApplications(UserId userId, List<string> appDirs, Language desiredTitleLanguage)
         {
             int numApplicationsFound  = 0;
             int numApplicationsLoaded = 0;
@@ -418,7 +418,7 @@ namespace Ryujinx.Ui.App.Common
                         continue;
                     }
 
-                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(titleId, appMetadata =>
+                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(userId, titleId, appMetadata =>
                     {
                         appMetadata.Title = titleName;
 
@@ -508,22 +508,32 @@ namespace Ryujinx.Ui.App.Common
             titleId   = controlNca?.Header.TitleId.ToString("x16");
         }
 
-        public ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
+        public ApplicationMetadata LoadAndSaveMetaData(UserId userId, string titleId, Action<ApplicationMetadata> modifyFunction = null)
         {
-            string metadataFolder = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
+            string guiFolder      = Path.Combine(AppDataManager.GamesDirPath, titleId, "gui");
+            string metadataFolder = Path.Combine(guiFolder, userId.ToString());
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
+            Directory.CreateDirectory(metadataFolder);
+
+            // NOTE: Handle migration from old default to current user. Should be removed later.
+            string oldMetadataFile = Path.Combine(guiFolder, "metadata.json");
+            if (File.Exists(oldMetadataFile) && !File.Exists(metadataFile))
+            {
+                File.Move(oldMetadataFile, metadataFile);
+            }
+
+            // Create metadata file if it doesn't exist yet.
             ApplicationMetadata appMetadata;
 
             if (!File.Exists(metadataFile))
             {
-                Directory.CreateDirectory(metadataFolder);
-
                 appMetadata = new ApplicationMetadata();
 
                 JsonHelper.SerializeToFile(metadataFile, appMetadata, SerializerContext.ApplicationMetadata);
             }
 
+            // Read from the metadata file.
             try
             {
                 appMetadata = JsonHelper.DeserializeFromFile(metadataFile, SerializerContext.ApplicationMetadata);
@@ -535,6 +545,7 @@ namespace Ryujinx.Ui.App.Common
                 appMetadata = new ApplicationMetadata();
             }
 
+            // Modify the metadata and save it back to the file.
             if (modifyFunction != null)
             {
                 modifyFunction(appMetadata);
@@ -711,7 +722,7 @@ namespace Ryujinx.Ui.App.Common
             return applicationIcon ?? _ncaIcon;
         }
 
-        private static string ConvertSecondsToFormattedString(double seconds)
+        public static string ConvertSecondsToFormattedString(double seconds)
         {
             System.TimeSpan time = System.TimeSpan.FromSeconds(seconds);
 

@@ -657,7 +657,7 @@ namespace Ryujinx.Ui
 
             Thread applicationLibraryThread = new Thread(() =>
             {
-                _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                _applicationLibrary.LoadApplications(_accountManager.LastOpenedUser.UserId.ToLibHacFsUid(), ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _updatingGameTable = false;
             });
@@ -874,7 +874,7 @@ namespace Ryujinx.Ui
                 DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Processes.ActiveApplication.ProgramIdText,
                                                               _emulationContext.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString());
 
-                _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
+                _applicationLibrary.LoadAndSaveMetaData(_accountManager.LastOpenedUser.UserId.ToLibHacFsUid(), _emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
                 {
                     appMetadata.LastPlayed = DateTime.UtcNow;
                 });
@@ -1017,7 +1017,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+                _applicationLibrary.LoadAndSaveMetaData(_accountManager.LastOpenedUser.UserId.ToLibHacFsUid(), titleId, appMetadata =>
                 {
                     if (appMetadata.LastPlayed.HasValue)
                     {
@@ -1156,7 +1156,7 @@ namespace Ryujinx.Ui
 
             _tableStore.SetValue(treeIter, 0, newToggleValue);
 
-            _applicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+            _applicationLibrary.LoadAndSaveMetaData(_accountManager.LastOpenedUser.UserId.ToLibHacFsUid(), titleId, appMetadata =>
             {
                 appMetadata.Favorite = newToggleValue;
             });
@@ -1648,7 +1648,7 @@ namespace Ryujinx.Ui
 
         private void ManageUserProfiles_Pressed(object sender, EventArgs args)
         {
-            UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem);
+            UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem, UpdateGameTable);
 
             userProfilesManagerWindow.SetSizeRequest((int)(userProfilesManagerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(userProfilesManagerWindow.DefaultHeight * Program.WindowScaleFactor));
             userProfilesManagerWindow.Show();

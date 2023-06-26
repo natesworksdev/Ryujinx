@@ -1357,12 +1357,35 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void ManageProfiles()
         {
+            var oldLastOpenedUserId = AccountManager.LastOpenedUser.UserId;
+            
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
+            
+            if (oldLastOpenedUserId != AccountManager.LastOpenedUser.UserId)
+            {
+                // Opened user changed, so refresh application metadata.
+                _ = Task.Run(RefreshApplicationsMetadata);
+            }
         }
 
         public void SimulateWakeUpMessage()
         {
             AppHost.Device.System.SimulateWakeUpMessage();
+        }
+
+        private void RefreshApplicationsMetadata()
+        {
+            foreach (var app in _applications)
+            {
+                var metadata = ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), app.TitleId);
+                
+                app.Favorite = metadata.Favorite;
+                app.LastPlayed = metadata.LastPlayed;
+                app.TimePlayedNum = metadata.TimePlayed;
+                app.TimePlayed = ApplicationLibrary.ConvertSecondsToFormattedString(metadata.TimePlayed);
+            }
+
+            RefreshView();
         }
 
         public async void LoadApplications()
@@ -1523,7 +1546,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void UpdateGameMetadata(string titleId)
         {
-            ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
+            ApplicationLibrary.LoadAndSaveMetaData(AccountManager.LastOpenedUser.UserId.ToLibHacFsUid(), titleId, appMetadata =>
             {
                 if (appMetadata.LastPlayed.HasValue)
                 {

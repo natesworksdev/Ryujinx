@@ -74,7 +74,7 @@ namespace Ryujinx.Ava.UI.Models
             }
             else
             {
-                var appMetadata = MainWindow.MainWindowViewModel.ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
+                var appMetadata = MainWindow.MainWindowViewModel.ApplicationLibrary.LoadAndSaveMetaData(UserId, TitleIdString);
                 Title = appMetadata.Title ?? TitleIdString;
             }
 
