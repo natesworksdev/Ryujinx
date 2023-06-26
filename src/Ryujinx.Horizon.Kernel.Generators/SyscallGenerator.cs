@@ -159,7 +159,7 @@ namespace Ryujinx.Horizon.Kernel.Generators
                     syscalls.AddRange(from attributeArg in attribute.ArgumentList.Arguments
                                       where attributeArg.Expression.Kind() == SyntaxKind.NumericLiteralExpression
                                       select (LiteralExpressionSyntax)attributeArg.Expression
-                        into numericLiteral
+                                      into numericLiteral
                                       select new SyscallIdAndName((int)numericLiteral.Token.Value, method.Identifier.Text));
                 }
             }
