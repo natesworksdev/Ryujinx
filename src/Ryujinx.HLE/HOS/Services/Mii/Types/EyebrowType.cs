@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum EyebrowType : byte
     {
         FlatAngledLarge,
@@ -30,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Dotted,
         None,
 
-        Min = 0,
-        Max = 23,
+        Min = FlatAngledLarge,
+        Max = None,
     }
 }

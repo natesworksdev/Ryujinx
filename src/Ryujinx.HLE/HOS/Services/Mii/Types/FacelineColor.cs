@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum FacelineColor : byte
     {
         Beige,
@@ -16,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Almond,
         Espresso,
 
-        Min = 0,
-        Max = 9,
+        Min = Beige,
+        Max = Espresso,
     }
 }

@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum HairType : byte
     {
         NormalLong,
@@ -138,7 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         TwoLongSidedPonyTails,
         LongFrontTwoBackPonyTails,
 
-        Min = 0,
-        Max = 131,
+        Min = NormalLong,
+        Max = LongFrontTwoBackPonyTails,
     }
 }

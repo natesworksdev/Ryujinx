@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum EyeType : byte
     {
         Normal,
@@ -66,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         RoundTired,
         WhiteLarge,
 
-        Min = 0,
-        Max = 59,
+        Min = Normal,
+        Max = WhiteLarge,
     }
 }

@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum FacelineWrinkle : byte
     {
         None,
@@ -18,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         CrowsFeet,
         FoldsCrowsFrown,
 
-        Min = 0,
-        Max = 11,
+        Min = None,
+        Max = FoldsCrowsFrown,
     }
 }

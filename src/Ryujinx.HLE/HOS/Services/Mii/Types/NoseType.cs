@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum NoseType : byte
     {
         Normal,
@@ -24,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         Droopy,
         ArrowLarge,
 
-        Min = 0,
-        Max = 17,
+        Min = Normal,
+        Max = ArrowLarge,
     }
 }

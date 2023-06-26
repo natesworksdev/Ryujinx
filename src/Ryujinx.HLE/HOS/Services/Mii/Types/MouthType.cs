@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum MouthType : byte
     {
         Neutral,
@@ -42,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         SmileDownLine,
         Kiss,
 
-        Min = 0,
-        Max = 35,
+        Min = Neutral,
+        Max = Kiss,
     }
 }

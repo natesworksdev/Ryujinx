@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Ryujinx.HLE.HOS.Services.Mii.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum FacelineType : byte
     {
         Sharp,
@@ -18,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         FlatRounded,
         AngularSmall,
 
-        Min = 0,
-        Max = 11,
+        Min = Sharp,
+        Max = AngularSmall,
     }
 }
