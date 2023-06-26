@@ -263,6 +263,7 @@ namespace Spv.Generator
             int sizeEstimate = 1024 + _functionsDefinitions.Count * 32;
 
             using MemoryStream stream = new(sizeEstimate);
+
             BinaryWriter writer = new(stream, System.Text.Encoding.ASCII);
 
             // Header
