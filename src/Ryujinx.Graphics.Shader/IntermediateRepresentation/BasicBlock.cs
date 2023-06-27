@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
             if (lastOp is Operation operation && IsControlFlowInst(operation.Inst))
             {
-                Operations.AddBefore(Operations.Last!, node);
+                Operations.AddBefore(Operations.Last, node);
             }
             else
             {
