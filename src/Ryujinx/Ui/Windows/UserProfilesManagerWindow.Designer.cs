@@ -10,10 +10,10 @@ namespace Ryujinx.Ui.Windows
         private Label          _selectedLabel;
         private Box            _selectedUserBox;
         private Image          _selectedUserImage;
-        private VBox           _selectedUserInfoBox;
+        private Box            _selectedUserInfoBox;
         private Entry          _selectedUserNameEntry;
         private Label          _selectedUserIdLabel;
-        private VBox           _selectedUserButtonsBox;
+        private Box            _selectedUserButtonsBox;
         private Button         _saveProfileNameButton;
         private Button         _changeProfileImageButton;
         private Box            _usersTreeViewBox;
@@ -76,10 +76,9 @@ namespace Ryujinx.Ui.Windows
             //
             // _selectedUserInfoBox
             //
-            _selectedUserInfoBox = new VBox(IntPtr.Zero)
+            _selectedUserInfoBox = new Box(Orientation.Vertical, 0)
             {
                 Homogeneous = true,
-                Spacing = 0
             };
 
             //
@@ -104,7 +103,7 @@ namespace Ryujinx.Ui.Windows
             //
             // _selectedUserButtonsBox
             //
-            _selectedUserButtonsBox = new VBox(IntPtr.Zero)
+            _selectedUserButtonsBox = new Box(Orientation.Vertical, 0)
             {
                 MarginEnd = 30
             };

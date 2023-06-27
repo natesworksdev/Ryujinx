@@ -71,7 +71,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _lStick;
         [GUI] CheckButton _invertLStickX;
         [GUI] CheckButton _invertLStickY;
-        [GUI] CheckButton _rotateL90Cw;
+        [GUI] CheckButton _rotateL90CW;
         [GUI] ToggleButton _lStickUp;
         [GUI] ToggleButton _lStickDown;
         [GUI] ToggleButton _lStickLeft;
@@ -489,7 +489,7 @@ namespace Ryujinx.Ui.Windows
                     _lStick.Label = controllerConfig.LeftJoyconStick.Joystick.ToString();
                     _invertLStickX.Active = controllerConfig.LeftJoyconStick.InvertStickX;
                     _invertLStickY.Active = controllerConfig.LeftJoyconStick.InvertStickY;
-                    _rotateL90Cw.Active = controllerConfig.LeftJoyconStick.Rotate90CW;
+                    _rotateL90CW.Active = controllerConfig.LeftJoyconStick.Rotate90CW;
                     _lStickButton.Label = controllerConfig.LeftJoyconStick.StickButton.ToString();
                     _dpadUp.Label = controllerConfig.LeftJoycon.DpadUp.ToString();
                     _dpadDown.Label = controllerConfig.LeftJoycon.DpadDown.ToString();
@@ -723,7 +723,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick = lStick,
                         InvertStickY = _invertLStickY.Active,
                         StickButton = lStickButton,
-                        Rotate90CW = _rotateL90Cw.Active,
+                        Rotate90CW = _rotateL90CW.Active,
                     },
                     RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {

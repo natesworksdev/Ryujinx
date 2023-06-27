@@ -57,7 +57,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton _vSyncToggle;
         [GUI] CheckButton _shaderCacheToggle;
         [GUI] CheckButton _textureRecompressionToggle;
-        [GUI] CheckButton _macroHleToggle;
+        [GUI] CheckButton _macroHLEToggle;
         [GUI] CheckButton _ptcToggle;
         [GUI] CheckButton _internetToggle;
         [GUI] CheckButton _fsicToggle;
@@ -257,7 +257,7 @@ namespace Ryujinx.Ui.Windows
 
             if (ConfigurationState.Instance.Graphics.EnableMacroHLE)
             {
-                _macroHleToggle.Click();
+                _macroHLEToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.EnablePtc)
@@ -627,7 +627,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.EnableVsync.Value = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value = _shaderCacheToggle.Active;
             ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
-            ConfigurationState.Instance.Graphics.EnableMacroHLE.Value = _macroHleToggle.Active;
+            ConfigurationState.Instance.Graphics.EnableMacroHLE.Value = _macroHLEToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableInternetAccess.Value = _internetToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value = _fsicToggle.Active;
