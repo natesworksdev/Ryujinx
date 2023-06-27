@@ -268,10 +268,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
-
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isArray = (texOp.Type & SamplerType.Array) != 0;
-#pragma warning restore IDE0059
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -396,10 +392,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-#pragma warning restore IDE0059
 
             int coordsCount = texOp.Type.GetDimensions();
             int coordsIndex = isBindless || isIndexed ? 1 : 0;

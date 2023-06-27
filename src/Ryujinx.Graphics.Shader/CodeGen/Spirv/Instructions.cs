@@ -307,7 +307,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             Debug.Assert(funcId.Type == OperandType.Constant);
 
-            (var function, var spvFunc) = context.GetFunction(funcId.Value);
+            var (function, spvFunc) = context.GetFunction(funcId.Value);
 
             var args = new SpvInstruction[operation.SourcesCount - 1];
             var spvLocals = context.GetLocalForArgsPointers(funcId.Value);
@@ -627,15 +627,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = Src(AggregateType.S32);
-#pragma warning restore IDE0059
+                Src(AggregateType.S32);
             }
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -663,11 +657,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             SpvInstruction value = Src(componentType);
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
+            (SpvInstruction imageType, SpvInstruction imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            var image = context.Load(imageType, imageVariable);
-#pragma warning restore IDE0059
+            context.Load(imageType, imageVariable);
 
             SpvInstruction resultType = context.GetType(componentType);
             SpvInstruction imagePointerType = context.TypePointer(StorageClass.Image, resultType);
@@ -722,15 +714,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = Src(AggregateType.S32);
-#pragma warning restore IDE0059
+                Src(AggregateType.S32);
             }
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -756,7 +742,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
+            var (imageType, imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
             var imageComponentType = context.GetType(componentType);
@@ -790,15 +776,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = Src(AggregateType.S32);
-#pragma warning restore IDE0059
+                Src(AggregateType.S32);
             }
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -849,7 +829,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var texel = context.CompositeConstruct(context.TypeVector(context.GetType(componentType), ComponentsCount), cElems);
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
+            var (imageType, imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
 
@@ -902,15 +882,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = Src(AggregateType.S32);
-#pragma warning restore IDE0059
+                Src(AggregateType.S32);
             }
 
             int pCount = texOp.Type.GetDimensions();
@@ -936,7 +910,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
-            (_, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
+            var (_, sampledImageType, sampledImageVariable) = context.Samplers[meta];
 
             var image = context.Load(sampledImageType, sampledImageVariable);
 
@@ -994,7 +968,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
-            (var loopTarget, var continueTarget) = context.LoopTargets[loopBlock];
+            var (loopTarget, continueTarget) = context.LoopTargets[loopBlock];
 #pragma warning restore IDE0059
 
             context.Branch(continueTarget);
@@ -1329,15 +1303,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return context.Get(type, texOp.GetSource(srcIndex++));
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = Src(AggregateType.S32);
-#pragma warning restore IDE0059
+                Src(AggregateType.S32);
             }
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -1547,7 +1515,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
-            (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
+            var (imageType, sampledImageType, sampledImageVariable) = context.Samplers[meta];
 
             var image = context.Load(sampledImageType, sampledImageVariable);
 
@@ -1621,20 +1589,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            SpvInstruction index = null;
-#pragma warning restore IDE0059
-
             if (isIndexed)
             {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                index = context.GetS32(texOp.GetSource(0));
-#pragma warning restore IDE0059
+                context.GetS32(texOp.GetSource(0));
             }
 
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
-            (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
+            (SpvInstruction imageType, SpvInstruction sampledImageType, SpvInstruction sampledImageVariable) = context.Samplers[meta];
 
             var image = context.Load(sampledImageType, sampledImageVariable);
             image = context.Image(imageType, image);
@@ -1994,7 +1956,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static SpvInstruction GetScalarInput(CodeGenContext context, IoVariable ioVariable)
         {
-            (_, var varType) = IoMap.GetSpirvBuiltIn(ioVariable);
+            var (_, varType) = IoMap.GetSpirvBuiltIn(ioVariable);
             varType &= AggregateType.ElementTypeMask;
 
             var ioDefinition = new IoDefinition(StorageKind.Input, ioVariable);

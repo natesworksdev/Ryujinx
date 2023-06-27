@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void Generate(CodeGenContext context, StructuredProgramInfo info, int funcIndex)
         {
-            (var function, var spvFunc) = context.GetFunction(funcIndex);
+            var (function, spvFunc) = context.GetFunction(funcIndex);
 
             context.CurrentFunction = function;
             context.AddFunction(spvFunc);
@@ -346,7 +346,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         // if the condition is true.
                         AstBlock mergeBlock = e.Block.Parent;
 
-                        (var loopTarget, var continueTarget) = loopTargets[e.Block];
+                        var (loopTarget, continueTarget) = loopTargets[e.Block];
 
                         context.Branch(continueTarget);
                         context.AddLabel(continueTarget);

@@ -437,9 +437,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             DecodedFunction callTarget = program.GetFunctionByAddress(callOp.GetAbsoluteAddress());
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            TreeNode[] callTargetTree = null;
-#pragma warning restore IDE0059
+            TreeNode[] callTargetTree;
 
             if (callTarget == null || !Matches(_fsiIsLastWarpThreadPatternTree, callTargetTree = BuildTree(callTarget.Blocks)))
             {

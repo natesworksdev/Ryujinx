@@ -244,18 +244,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-#pragma warning disable IDE0051 // Remove unused private member
-        private static string GetTfLayout(TransformFeedbackOutput tfOutput)
-        {
-            if (tfOutput.Valid)
-            {
-                return $"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) ";
-            }
-
-            return string.Empty;
-        }
-#pragma warning restore IDE0051
-
         public static void DeclareLocals(CodeGenContext context, StructuredFunction function)
         {
             foreach (AstOperand decl in function.Locals)
