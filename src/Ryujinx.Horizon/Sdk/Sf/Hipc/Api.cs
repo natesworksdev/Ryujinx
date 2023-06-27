@@ -17,8 +17,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
                 return Result.Success;
             }
-
-            if (result == KernelResult.ReceiveListBroken)
+            else if (result == KernelResult.ReceiveListBroken)
             {
                 recvResult = ReceiveResult.NeedsRetry;
 

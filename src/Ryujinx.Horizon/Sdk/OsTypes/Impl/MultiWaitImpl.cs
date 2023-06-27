@@ -2,7 +2,6 @@
 using Ryujinx.Horizon.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 {
@@ -169,7 +168,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
             long minTime = endTime;
 
-            foreach (MultiWaitHolder holder in _multiWaits.Cast<MultiWaitHolder>())
+            foreach (MultiWaitHolder holder in _multiWaits)
             {
                 long currentTime = holder.GetAbsoluteTimeToWakeup();
 
@@ -194,8 +193,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
             {
                 return WaitTimedOut;
             }
-
-            if (result == KernelResult.Cancelled)
+            else if (result == KernelResult.Cancelled)
             {
                 return WaitCancelled;
             }

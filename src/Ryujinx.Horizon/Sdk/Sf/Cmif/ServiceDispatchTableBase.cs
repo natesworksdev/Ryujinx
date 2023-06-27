@@ -50,8 +50,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
 
                     return Result.Success;
                 }
-
-                if (HorizonStatic.Options.ThrowOnInvalidCommandIds)
+                else if (HorizonStatic.Options.ThrowOnInvalidCommandIds)
                 {
                     throw new NotImplementedException($"{objectName} command ID: {commandId} is not implemented");
                 }

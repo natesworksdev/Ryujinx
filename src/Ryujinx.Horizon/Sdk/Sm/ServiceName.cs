@@ -6,11 +6,11 @@ namespace Ryujinx.Horizon.Sdk.Sm
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     readonly struct ServiceName
     {
-        public static ServiceName Invalid { get; } = new ServiceName(0);
+        public static ServiceName Invalid { get; } = new(0);
 
         public bool IsValid => Packed != 0;
 
-        public static int Length => sizeof(ulong);
+        public const int Length = sizeof(ulong);
 
         public ulong Packed { get; }
 

@@ -158,8 +158,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                     {
                         return null;
                     }
-
-                    if (selected == _notifyEventHolder)
+                    else if (selected == _notifyEventHolder)
                     {
                         _notifyEvent.Clear();
                     }

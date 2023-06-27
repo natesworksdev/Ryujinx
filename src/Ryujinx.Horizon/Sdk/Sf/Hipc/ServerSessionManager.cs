@@ -170,8 +170,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
 
                 return Result.Success;
             }
-
-            if (SfResult.RequestContextChanged(result))
+            else if (SfResult.RequestContextChanged(result))
             {
                 return result;
             }

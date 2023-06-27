@@ -87,8 +87,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
                 {
                     return true;
                 }
-
-                if (result == KernelResult.TimedOut)
+                else if (result == KernelResult.TimedOut)
                 {
                     return false;
                 }
@@ -125,8 +124,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 
                     return true;
                 }
-
-                if (result == KernelResult.TimedOut)
+                else if (result == KernelResult.TimedOut)
                 {
                     return false;
                 }
