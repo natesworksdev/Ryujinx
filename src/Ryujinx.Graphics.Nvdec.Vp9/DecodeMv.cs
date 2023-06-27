@@ -958,10 +958,10 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 int idx, idy;
                 PredictionMode bMode = 0;
                 Array2<Mv> bestSub8x8 = new();
-                const uint invalidMv = 0x80008000;
+                const uint InvalidMv = 0x80008000;
                 // Initialize the 2nd element as even though it won't be used meaningfully
                 // if isCompound is false.
-                Unsafe.As<Mv, uint>(ref bestSub8x8[1]) = invalidMv;
+                Unsafe.As<Mv, uint>(ref bestSub8x8[1]) = InvalidMv;
                 for (idy = 0; idy < 2; idy += num4X4H)
                 {
                     for (idx = 0; idx < 2; idx += num4X4W)

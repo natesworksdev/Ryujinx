@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static int GetCoefContext(ReadOnlySpan<short> neighbors, ReadOnlySpan<byte> tokenCache, int c)
         {
-            const int maxNeighbors = 2;
+            const int MaxNeighbors = 2;
 
-            return (1 + tokenCache[neighbors[maxNeighbors * c + 0]] + tokenCache[neighbors[maxNeighbors * c + 1]]) >> 1;
+            return (1 + tokenCache[neighbors[MaxNeighbors * c + 0]] + tokenCache[neighbors[MaxNeighbors * c + 1]]) >> 1;
         }
 
         private static int ReadCoeff(

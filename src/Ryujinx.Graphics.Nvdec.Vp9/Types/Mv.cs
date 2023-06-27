@@ -56,8 +56,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public readonly bool UseMvHp()
         {
-            const int kMvRefThresh = 64; // Threshold for use of high-precision 1/8 mv
-            return Math.Abs(Row) < kMvRefThresh && Math.Abs(Col) < kMvRefThresh;
+            const int KMvRefThresh = 64; // Threshold for use of high-precision 1/8 mv
+            return Math.Abs(Row) < KMvRefThresh && Math.Abs(Col) < KMvRefThresh;
         }
 
         public static bool MvJointVertical(MvJointType type)
