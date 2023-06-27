@@ -171,11 +171,19 @@ dotnet_naming_rule.private_static_readonly_lower_camel_case.symbols = private_st
 dotnet_naming_rule.private_static_readonly_lower_camel_case.severity = suggestion
 dotnet_naming_rule.private_static_readonly_lower_camel_case.style = _lowerCamelCase
 
+dotnet_naming_rule.local_constant_pascal_case.symbols = local_constants
+dotnet_naming_rule.local_constant_pascal_case.severity = suggestion
+dotnet_naming_rule.local_constant_pascal_case.style = pascal_case
+
 # Symbol specifications
 
 dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
+
+dotnet_naming_symbols.local_constants.applicable_kinds = local
+dotnet_naming_symbols.local_constants.applicable_accessibilities = local
+dotnet_naming_symbols.local_constants.required_modifiers = const
 
 # Naming styles
 
@@ -183,3 +191,8 @@ dotnet_naming_style._lowerCamelCase.required_prefix = _
 dotnet_naming_style._lowerCamelCase.required_suffix =
 dotnet_naming_style._lowerCamelCase.word_separator =
 dotnet_naming_style._lowerCamelCase.capitalization = camel_case
+
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
+dotnet_naming_style.pascal_case.capitalization = pascal_case
