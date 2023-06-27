@@ -36,14 +36,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 return true;
             }
+            else
+            {
+                _buffer = new ArrayPtr<byte>(ref buffer[0], size);
+                Value = 0;
+                Count = -8;
+                Range = 255;
+                Fill();
 
-            _buffer = new ArrayPtr<byte>(ref buffer[0], size);
-            Value = 0;
-            Count = -8;
-            Range = 255;
-            Fill();
-
-            return ReadBit() != 0;  // Marker bit
+                return ReadBit() != 0; // Marker bit
+            }
         }
 
         private void Fill()
@@ -158,7 +160,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 
         public int ReadBit()
         {
-            return Read(128);  // vpx_prob_half
+            return Read(128); // vpx_prob_half
         }
 
         public int ReadLiteral(int bits)

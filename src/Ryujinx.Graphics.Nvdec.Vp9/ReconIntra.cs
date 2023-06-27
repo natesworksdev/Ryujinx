@@ -8,16 +8,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     internal static class ReconIntra
     {
         public static readonly TxType[] IntraModeToTxTypeLookup = {
-            TxType.DctDct,  // DC
-            TxType.AdstDct,  // V
-            TxType.DctAdst,  // H
-            TxType.DctDct,  // D45
-            TxType.AdstAdst,  // D135
-            TxType.AdstDct,  // D117
-            TxType.DctAdst,  // D153
-            TxType.DctAdst,  // D207
-            TxType.AdstDct,  // D63
-            TxType.AdstAdst,  // TM
+            TxType.DctDct, // DC
+            TxType.AdstDct, // V
+            TxType.DctAdst, // H
+            TxType.DctDct, // D45
+            TxType.AdstAdst, // D135
+            TxType.AdstDct, // D117
+            TxType.DctAdst, // D153
+            TxType.DctAdst, // D207
+            TxType.AdstDct, // D63
+            TxType.AdstAdst, // TM
         };
 
         private const int NeedLeft = 1 << 1;
@@ -26,16 +26,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static ReadOnlySpan<byte> ExtendModes => new byte[]
         {
-            NeedAbove | NeedLeft,  // DC
-            NeedAbove,  // V
-            NeedLeft,  // H
-            NeedAboveRight,  // D45
-            NeedLeft | NeedAbove,  // D135
-            NeedLeft | NeedAbove,  // D117
-            NeedLeft | NeedAbove,  // D153
-            NeedLeft,  // D207
-            NeedAboveRight,  // D63
-            NeedLeft | NeedAbove,  // TM
+            NeedAbove | NeedLeft, // DC
+            NeedAbove, // V
+            NeedLeft, // H
+            NeedAboveRight, // D45
+            NeedLeft | NeedAbove, // D135
+            NeedLeft | NeedAbove, // D117
+            NeedLeft | NeedAbove, // D153
+            NeedLeft, // D207
+            NeedAboveRight, // D63
+            NeedLeft | NeedAbove, // TM
         };
 
         private unsafe delegate void IntraPredFn(byte* dst, int stride, byte* above, byte* left);

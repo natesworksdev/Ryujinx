@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         r.Range = range;
                         r.Count = count;
 
-                        return c;  // Zero tokens at the end (no eob token)
+                        return c; // Zero tokens at the end (no eob token)
                     }
                     ctx = GetCoefContext(nb, tokenCache, c);
                     band = bandTranslate[0];

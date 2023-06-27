@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             if (!seg.Enabled)
             {
-                return 0;  // Default for disabled segmentation
+                return 0; // Default for disabled segmentation
             }
 
             if (!seg.UpdateMap)
@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             if (!seg.Enabled)
             {
-                return 0;  // Default for disabled segmentation
+                return 0; // Default for disabled segmentation
             }
 
             predictedSegmentId = !cm.LastFrameSegMap.IsNull
@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             else
             {
                 int i;
-                int n = (int)mvClass + Constants.Class0Bits - 1;  // Number of bits
+                int n = (int)mvClass + Constants.Class0Bits - 1; // Number of bits
 
                 d = 0;
                 for (i = 0; i < n; ++i)
@@ -338,7 +338,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     ++xd.Counts.Value.CompInter[ctx][(int)mode];
                 }
 
-                return mode;  // SingleReference or CompoundReference
+                return mode; // SingleReference or CompoundReference
             }
 
             return cm.ReferenceMode;

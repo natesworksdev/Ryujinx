@@ -293,7 +293,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public void SetupSegmentationDequant()
         {
-            const BitDepth bitDepth = BitDepth.Bits8;  // TODO: Configurable
+            const BitDepth bitDepth = BitDepth.Bits8; // TODO: Configurable
             // Build y/uv dequant values based on segmentation.
             if (Seg.Enabled)
             {

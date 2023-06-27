@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public readonly int GetIntraInterContext()
         {
             if (!AboveMi.IsNull && !LeftMi.IsNull)
-            {  // Both edges available
+            { // Both edges available
                 bool aboveIntra = !AboveMi.Value.IsInterBlock();
                 bool leftIntra = !LeftMi.Value.IsInterBlock();
 
@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
 
             if (!AboveMi.IsNull || !LeftMi.IsNull)
-            {  // One edge available
+            { // One edge available
                 return 2 * (!(!AboveMi.IsNull ? AboveMi.Value : LeftMi.Value).IsInterBlock() ? 1 : 0);
             }
             return 0;

@@ -77,7 +77,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             break;
                         default:
                             Debug.Assert(false, "Invalid transform size");
-
                             return;
                     }
                 }
@@ -169,7 +168,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                             break;
                         default:
                             Debug.Assert(false, "Invalid transform size");
-
                             return;
                     }
                 }
@@ -921,7 +919,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
                     if (!less8x8 && eobtotal == 0)
                     {
-                        mi.Skip = 1;  // Skip loopfilter
+                        mi.Skip = 1; // Skip loopfilter
                     }
                 }
             }

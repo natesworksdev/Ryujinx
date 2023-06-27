@@ -10,25 +10,25 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         public static readonly BlockSize[][] SubsizeLookup = {
             new[]
-            {  // PARTITION_NONE
+            { // PARTITION_NONE
                 BlockSize.Block4x4, BlockSize.Block4x8, BlockSize.Block8x4, BlockSize.Block8x8, BlockSize.Block8x16, BlockSize.Block16x8,
                 BlockSize.Block16x16, BlockSize.Block16x32, BlockSize.Block32x16, BlockSize.Block32x32, BlockSize.Block32x64,
                 BlockSize.Block64x32, BlockSize.Block64x64,
             },
             new[]
-            {  // PARTITION_HORZ
+            { // PARTITION_HORZ
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block8x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block16x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x16,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block64x32,
             },
             new[]
-            {  // PARTITION_VERT
+            { // PARTITION_VERT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x8, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x16, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x32,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x64,
             },
             new[]
-            {  // PARTITION_SPLIT
+            { // PARTITION_SPLIT
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block4x4, BlockSize.BlockInvalid,
                 BlockSize.BlockInvalid, BlockSize.Block8x8, BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block16x16,
                 BlockSize.BlockInvalid, BlockSize.BlockInvalid, BlockSize.Block32x32,
@@ -41,11 +41,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         };
 
         public static readonly TxSize[] TxModeToBiggestTxSize = {
-            TxSize.Tx4x4,  // ONLY_4X4
-            TxSize.Tx8x8,  // ALLOW_8X8
-            TxSize.Tx16x16,  // ALLOW_16X16
-            TxSize.Tx32x32,  // ALLOW_32X32
-            TxSize.Tx32x32,  // TX_MODE_SELECT
+            TxSize.Tx4x4, // ONLY_4X4
+            TxSize.Tx8x8, // ALLOW_8X8
+            TxSize.Tx16x16, // ALLOW_16X16
+            TxSize.Tx32x32, // ALLOW_32X32
+            TxSize.Tx32x32, // TX_MODE_SELECT
         };
 
         public static readonly BlockSize[][][] SsSizeLookup = {
@@ -191,19 +191,19 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // a blocksize partition  1111 means we split 64x64, 32x32, 16x16
         // and 8x8. 1000 means we just split the 64x64 to 32x32
         public static readonly PartitionContextPair[] PartitionContextLookup = {
-            new(15, 15),  // 4X4   - {0b1111, 0b1111}
-            new(15, 14),  // 4X8   - {0b1111, 0b1110}
-            new(14, 15),  // 8X4   - {0b1110, 0b1111}
-            new(14, 14),  // 8X8   - {0b1110, 0b1110}
-            new(14, 12),  // 8X16  - {0b1110, 0b1100}
-            new(12, 14),  // 16X8  - {0b1100, 0b1110}
-            new(12, 12),  // 16X16 - {0b1100, 0b1100}
-            new(12, 8),  // 16X32 - {0b1100, 0b1000}
-            new(8, 12),  // 32X16 - {0b1000, 0b1100}
-            new(8, 8),  // 32X32 - {0b1000, 0b1000}
-            new(8, 0),  // 32X64 - {0b1000, 0b0000}
-            new(0, 8),  // 64X32 - {0b0000, 0b1000}
-            new(0, 0),  // 64X64 - {0b0000, 0b0000}
+            new(15, 15), // 4X4   - {0b1111, 0b1111}
+            new(15, 14), // 4X8   - {0b1111, 0b1110}
+            new(14, 15), // 8X4   - {0b1110, 0b1111}
+            new(14, 14), // 8X8   - {0b1110, 0b1110}
+            new(14, 12), // 8X16  - {0b1110, 0b1100}
+            new(12, 14), // 16X8  - {0b1100, 0b1110}
+            new(12, 12), // 16X16 - {0b1100, 0b1100}
+            new(12, 8), // 16X32 - {0b1100, 0b1000}
+            new(8, 12), // 32X16 - {0b1000, 0b1100}
+            new(8, 8), // 32X32 - {0b1000, 0b1000}
+            new(8, 0), // 32X64 - {0b1000, 0b0000}
+            new(0, 8), // 64X32 - {0b0000, 0b1000}
+            new(0, 0), // 64X64 - {0b0000, 0b0000}
         };
 
         // Filter
@@ -965,28 +965,28 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         public static readonly ScanOrder[][] Vp9ScanOrders = {
             new ScanOrder[]
-            {  // TX_4X4
+            { // TX_4X4
                 new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
                 new(_rowScan4X4, _vp9RowIscan4X4, _rowScan4X4Neighbors),
                 new(_colScan4X4, _vp9ColIscan4X4, _colScan4X4Neighbors),
                 new(_defaultScan4X4, _vp9DefaultIscan4X4, _defaultScan4X4Neighbors),
             },
             new ScanOrder[]
-            {  // TX_8X8
+            { // TX_8X8
                 new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
                 new(_rowScan8X8, _vp9RowIscan8X8, _rowScan8X8Neighbors),
                 new(_colScan8X8, _vp9ColIscan8X8, _colScan8X8Neighbors),
                 new(_defaultScan8X8, _vp9DefaultIscan8X8, _defaultScan8X8Neighbors),
             },
             new ScanOrder[]
-            {  // TX_16X16
+            { // TX_16X16
                 new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
                 new(_rowScan16X16, _vp9RowIscan16X16, _rowScan16X16Neighbors),
                 new(_colScan16X16, _vp9ColIscan16X16, _colScan16X16Neighbors),
                 new(_defaultScan16X16, _vp9DefaultIscan16X16, _defaultScan16X16Neighbors),
             },
             new ScanOrder[]
-            {  // TX_32X32
+            { // TX_32X32
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
                 new(_defaultScan32X32, _vp9DefaultIscan32X32, _defaultScan32X32Neighbors),
@@ -1353,15 +1353,15 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // Array indices are identical to previously-existing INTRAMODECONTEXTNODES.
         public static readonly sbyte[] Vp9IntraModeTree = {
-            -(sbyte)PredictionMode.DcPred,   2,                                 /* 0 = DC_NODE */
-            -(sbyte)PredictionMode.TmPred,   4,                                 /* 1 = TM_NODE */
-            -(sbyte)PredictionMode.VPred,    6,                                 /* 2 = V_NODE */
-            8,                                 12,                                /* 3 = COM_NODE */
-            -(sbyte)PredictionMode.HPred,    10,                                /* 4 = H_NODE */
-            -(sbyte)PredictionMode.D135Pred, -(sbyte)PredictionMode.D117Pred, /* 5 = D135_NODE */
-            -(sbyte)PredictionMode.D45Pred,  14,                                /* 6 = D45_NODE */
-            -(sbyte)PredictionMode.D63Pred,  16,                                /* 7 = D63_NODE */
-            -(sbyte)PredictionMode.D153Pred, -(sbyte)PredictionMode.D207Pred, /* 8 = D153_NODE */
+            -(sbyte)PredictionMode.DcPred,   2,                                 // 0 = DC_NODE
+            -(sbyte)PredictionMode.TmPred,   4,                                 // 1 = TM_NODE
+            -(sbyte)PredictionMode.VPred,    6,                                 // 2 = V_NODE
+            8,                               12,                                // 3 = COM_NODE
+            -(sbyte)PredictionMode.HPred,    10,                                // 4 = H_NODE
+            -(sbyte)PredictionMode.D135Pred, -(sbyte)PredictionMode.D117Pred,   // 5 = D135_NODE
+            -(sbyte)PredictionMode.D45Pred,  14,                                // 6 = D45_NODE
+            -(sbyte)PredictionMode.D63Pred,  16,                                // 7 = D63_NODE
+            -(sbyte)PredictionMode.D153Pred, -(sbyte)PredictionMode.D207Pred,   // 8 = D153_NODE
         };
 
         public static readonly sbyte[] Vp9InterModeTree = {
@@ -1391,165 +1391,191 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         // motion vector. This single number is then converted into a context
         // with a single lookup ( CounterToContext ).
         public static readonly int[] Mode2Counter = {
-            9,  // DC_PRED
-            9,  // V_PRED
-            9,  // H_PRED
-            9,  // D45_PRED
-            9,  // D135_PRED
-            9,  // D117_PRED
-            9,  // D153_PRED
-            9,  // D207_PRED
-            9,  // D63_PRED
-            9,  // TM_PRED
-            0,  // NEARESTMV
-            0,  // NEARMV
-            3,  // ZEROMV
-            1,  // NEWMV
+            9, // DC_PRED
+            9, // V_PRED
+            9, // H_PRED
+            9, // D45_PRED
+            9, // D135_PRED
+            9, // D117_PRED
+            9, // D153_PRED
+            9, // D207_PRED
+            9, // D63_PRED
+            9, // TM_PRED
+            0, // NEARESTMV
+            0, // NEARMV
+            3, // ZEROMV
+            1, // NEWMV
         };
 
         // There are 3^3 different combinations of 3 counts that can be either 0,1 or
         // 2. However the actual count can never be greater than 2 so the highest
         // counter we need is 18. 9 is an invalid counter that's never used.
         public static readonly MotionVectorContext[] CounterToContext = {
-            MotionVectorContext.BothPredicted,  // 0
-            MotionVectorContext.NewPlusNonIntra,  // 1
-            MotionVectorContext.BothNew,  // 2
-            MotionVectorContext.ZeroPlusPredicted,  // 3
-            MotionVectorContext.NewPlusNonIntra,  // 4
-            MotionVectorContext.InvalidCase,  // 5
-            MotionVectorContext.BothZero,  // 6
-            MotionVectorContext.InvalidCase,  // 7
-            MotionVectorContext.InvalidCase,  // 8
-            MotionVectorContext.IntraPlusNonIntra,  // 9
-            MotionVectorContext.IntraPlusNonIntra,  // 10
-            MotionVectorContext.InvalidCase,  // 11
-            MotionVectorContext.IntraPlusNonIntra,  // 12
-            MotionVectorContext.InvalidCase,  // 13
-            MotionVectorContext.InvalidCase,  // 14
-            MotionVectorContext.InvalidCase,  // 15
-            MotionVectorContext.InvalidCase,  // 16
-            MotionVectorContext.InvalidCase,  // 17
-            MotionVectorContext.BothIntra,  // 18
+            MotionVectorContext.BothPredicted, // 0
+            MotionVectorContext.NewPlusNonIntra, // 1
+            MotionVectorContext.BothNew, // 2
+            MotionVectorContext.ZeroPlusPredicted, // 3
+            MotionVectorContext.NewPlusNonIntra, // 4
+            MotionVectorContext.InvalidCase, // 5
+            MotionVectorContext.BothZero, // 6
+            MotionVectorContext.InvalidCase, // 7
+            MotionVectorContext.InvalidCase, // 8
+            MotionVectorContext.IntraPlusNonIntra, // 9
+            MotionVectorContext.IntraPlusNonIntra, // 10
+            MotionVectorContext.InvalidCase, // 11
+            MotionVectorContext.IntraPlusNonIntra, // 12
+            MotionVectorContext.InvalidCase, // 13
+            MotionVectorContext.InvalidCase, // 14
+            MotionVectorContext.InvalidCase, // 15
+            MotionVectorContext.InvalidCase, // 16
+            MotionVectorContext.InvalidCase, // 17
+            MotionVectorContext.BothIntra, // 18
         };
 
         public static readonly Position[][] MvRefBlocks = {
             // 4X4
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, -1 ),
-            new( -2, 0 ),
-            new( 0, -2 ),
-            new( -2, -1 ),
-            new( -1, -2 ),
-            new( -2, -2 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, -1),
+                new(-2, 0),
+                new(0, -2),
+                new(-2, -1),
+                new(-1, -2),
+                new(-2, -2),
+            },
             // 4X8
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, -1 ),
-            new( -2, 0 ),
-            new( 0, -2 ),
-            new( -2, -1 ),
-            new( -1, -2 ),
-            new( -2, -2 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, -1),
+                new(-2, 0),
+                new(0, -2),
+                new(-2, -1),
+                new(-1, -2),
+                new(-2, -2),
+            },
             // 8X4
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, -1 ),
-            new( -2, 0 ),
-            new( 0, -2 ),
-            new( -2, -1 ),
-            new( -1, -2 ),
-            new( -2, -2 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, -1),
+                new(-2, 0),
+                new(0, -2),
+                new(-2, -1),
+                new(-1, -2),
+                new(-2, -2),
+            },
             // 8X8
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, -1 ),
-            new( -2, 0 ),
-            new( 0, -2 ),
-            new( -2, -1 ),
-            new( -1, -2 ),
-            new( -2, -2 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, -1),
+                new(-2, 0),
+                new(0, -2),
+                new(-2, -1),
+                new(-1, -2),
+                new(-2, -2),
+            },
             // 8X16
-            new Position[] { new( 0, -1 ),
-            new( -1, 0 ),
-            new( 1, -1 ),
-            new( -1, -1 ),
-            new( 0, -2 ),
-            new( -2, 0 ),
-            new( -2, -1 ),
-            new( -1, -2 ) },
+            new Position[] {
+                new(0, -1),
+                new(-1, 0),
+                new(1, -1),
+                new(-1, -1),
+                new(0, -2),
+                new(-2, 0),
+                new(-2, -1),
+                new(-1, -2),
+            },
             // 16X8
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, 1 ),
-            new( -1, -1 ),
-            new( -2, 0 ),
-            new( 0, -2 ),
-            new( -1, -2 ),
-            new( -2, -1 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, 1),
+                new(-1, -1),
+                new(-2, 0),
+                new(0, -2),
+                new(-1, -2),
+                new(-2, -1),
+            },
             // 16X16
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, 1 ),
-            new( 1, -1 ),
-            new( -1, -1 ),
-            new( -3, 0 ),
-            new( 0, -3 ),
-            new( -3, -3 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, 1),
+                new(1, -1),
+                new(-1, -1),
+                new(-3, 0),
+                new(0, -3),
+                new(-3, -3),
+            },
             // 16X32
-            new Position[] { new( 0, -1 ),
-            new( -1, 0 ),
-            new( 2, -1 ),
-            new( -1, -1 ),
-            new( -1, 1 ),
-            new( 0, -3 ),
-            new( -3, 0 ),
-            new( -3, -3 ) },
+            new Position[] {
+                new(0, -1),
+                new(-1, 0),
+                new(2, -1),
+                new(-1, -1),
+                new(-1, 1),
+                new(0, -3),
+                new(-3, 0),
+                new(-3, -3),
+            },
             // 32X16
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, 2 ),
-            new( -1, -1 ),
-            new( 1, -1 ),
-            new( -3, 0 ),
-            new( 0, -3 ),
-            new( -3, -3 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, 2),
+                new(-1, -1),
+                new(1, -1),
+                new(-3, 0),
+                new(0, -3),
+                new(-3, -3),
+            },
             // 32X32
-            new Position[] { new( -1, 1 ),
-            new( 1, -1 ),
-            new( -1, 2 ),
-            new( 2, -1 ),
-            new( -1, -1 ),
-            new( -3, 0 ),
-            new( 0, -3 ),
-            new( -3, -3 ) },
+            new Position[] {
+                new(-1, 1),
+                new(1, -1),
+                new(-1, 2),
+                new(2, -1),
+                new(-1, -1),
+                new(-3, 0),
+                new(0, -3),
+                new(-3, -3),
+            },
             // 32X64
-            new Position[] { new( 0, -1 ),
-            new( -1, 0 ),
-            new( 4, -1 ),
-            new( -1, 2 ),
-            new( -1, -1 ),
-            new( 0, -3 ),
-            new( -3, 0 ),
-            new( 2, -1 ) },
+            new Position[] {
+                new(0, -1),
+                new(-1, 0),
+                new(4, -1),
+                new(-1, 2),
+                new(-1, -1),
+                new(0, -3),
+                new(-3, 0),
+                new(2, -1),
+            },
             // 64X32
-            new Position[] { new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, 4 ),
-            new( 2, -1 ),
-            new( -1, -1 ),
-            new( -3, 0 ),
-            new( 0, -3 ),
-            new( -1, 2 ) },
+            new Position[] {
+                new(-1, 0),
+                new(0, -1),
+                new(-1, 4),
+                new(2, -1),
+                new(-1, -1),
+                new(-3, 0),
+                new(0, -3),
+                new(-1, 2),
+            },
             // 64X64
-            new Position[] { new( -1, 3 ),
-            new( 3, -1 ),
-            new( -1, 4 ),
-            new( 4, -1 ),
-            new( -1, -1 ),
-            new( -1, 0 ),
-            new( 0, -1 ),
-            new( -1, 6 ) },
+            new Position[] {
+                new(-1, 3),
+                new(3, -1),
+                new(-1, 4),
+                new(4, -1),
+                new(-1, -1),
+                new(-1, 0),
+                new(0, -1),
+                new(-1, 6),
+            },
         };
     }
 }

@@ -41,12 +41,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 return preProb;
             }
+            else
+            {
+                uint count = Math.Min(den, ModeMvCountSat);
+                uint factor = _countToUpdateFactor[(int)count];
+                byte prob = GetProb(ct0, den);
 
-            uint count = Math.Min(den, ModeMvCountSat);
-            uint factor = _countToUpdateFactor[(int)count];
-            byte prob = GetProb(ct0, den);
-
-            return WeightedProb(preProb, prob, (int)factor);
+                return WeightedProb(preProb, prob, (int)factor);
+            }
         }
 
         private static uint TreeMergeProbsImpl(

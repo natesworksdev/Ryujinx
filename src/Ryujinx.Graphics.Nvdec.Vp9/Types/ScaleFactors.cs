@@ -270,8 +270,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             },
         };
 
-        public int XScaleFP;  // Horizontal fixed point scale factor
-        public int YScaleFP;  // Vertical fixed point scale factor
+        public int XScaleFP; // Horizontal fixed point scale factor
+        public int YScaleFP; // Vertical fixed point scale factor
         public int XStepQ4;
         public int YStepQ4;
 

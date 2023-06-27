@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public TxSize TxSize;
         public sbyte Skip;
         public sbyte SegmentId;
-        public sbyte SegIdPredicted;  // Valid only when TemporalUpdate is enabled
+        public sbyte SegIdPredicted; // Valid only when TemporalUpdate is enabled
 
         // Only for Intra blocks
         public PredictionMode UvMode;
