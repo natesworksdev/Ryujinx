@@ -28,18 +28,17 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public int UvAlignedHeight { get; }
         public int UvStride { get; }
 
-#pragma warning disable CA1822 // Mark member as static
-        public readonly bool HighBd => false;
-#pragma warning restore CA1822
+        public bool HighBd { get; }
 
         private readonly IntPtr _pointer;
 
         public Surface(int width, int height)
         {
+            HighBd = false;
+
             const int border = 32;
             const int ssX = 1;
             const int ssY = 1;
-            const bool highbd = false;
 
             int alignedWidth = (width + 7) & ~7;
             int alignedHeight = (height + 7) & ~7;
@@ -52,7 +51,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             int uvBorderH = border >> ssY;
             int uvplaneSize = (uvHeight + 2 * uvBorderH) * uvStride;
 
-            int frameSize = (highbd ? 2 : 1) * (yplaneSize + 2 * uvplaneSize);
+            int frameSize = (HighBd ? 2 : 1) * (yplaneSize + 2 * uvplaneSize);
 
             IntPtr pointer = Marshal.AllocHGlobal(frameSize);
             _pointer = pointer;
