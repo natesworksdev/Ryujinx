@@ -83,18 +83,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             {
                 return leftType;
             }
-
-            if (leftType == Constants.SwitchableFilters)
+            else if (leftType == Constants.SwitchableFilters)
             {
                 return aboveType;
             }
-
-            if (aboveType == Constants.SwitchableFilters)
+            else if (aboveType == Constants.SwitchableFilters)
             {
                 return leftType;
             }
-
-            return Constants.SwitchableFilters;
+            else
+            {
+                return Constants.SwitchableFilters;
+            }
         }
 
         // The mode info data structure has a one element border above and to the
