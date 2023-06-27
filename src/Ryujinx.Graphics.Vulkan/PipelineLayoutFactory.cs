@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
                         Binding = (uint)descriptor.Binding,
                         DescriptorType = descriptor.Type.Convert(),
                         DescriptorCount = (uint)descriptor.Count,
-                        StageFlags = stages.Convert()
+                        StageFlags = stages.Convert(),
                     };
                 }
 
@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
                         SType = StructureType.DescriptorSetLayoutCreateInfo,
                         PBindings = pLayoutBindings,
                         BindingCount = (uint)layoutBindings.Length,
-                        Flags = usePushDescriptors && setIndex == 0 ? DescriptorSetLayoutCreateFlags.PushDescriptorBitKhr : DescriptorSetLayoutCreateFlags.None
+                        Flags = usePushDescriptors && setIndex == 0 ? DescriptorSetLayoutCreateFlags.PushDescriptorBitKhr : DescriptorSetLayoutCreateFlags.None,
                     };
 
                     gd.Api.CreateDescriptorSetLayout(device, descriptorSetLayoutCreateInfo, null, out layouts[setIndex]).ThrowOnError();
@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineLayoutCreateInfo,
                     PSetLayouts = pLayouts,
-                    SetLayoutCount = (uint)layouts.Length
+                    SetLayoutCount = (uint)layouts.Length,
                 };
 
                 gd.Api.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, null, out layout).ThrowOnError();

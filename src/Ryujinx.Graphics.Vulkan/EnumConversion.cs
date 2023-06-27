@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ShaderStage.TessellationEvaluation => ShaderStageFlags.TessellationEvaluationBit,
                 ShaderStage.Fragment => ShaderStageFlags.FragmentBit,
                 ShaderStage.Compute => ShaderStageFlags.ComputeBit,
-                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (ShaderStageFlags)0)
+                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (ShaderStageFlags)0),
             };
         }
 
@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ShaderStage.TessellationEvaluation => PipelineStageFlags.TessellationEvaluationShaderBit,
                 ShaderStage.Fragment => PipelineStageFlags.FragmentShaderBit,
                 ShaderStage.Compute => PipelineStageFlags.ComputeShaderBit,
-                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (PipelineStageFlags)0)
+                _ => LogInvalidAndReturn(stage, nameof(ShaderStage), (PipelineStageFlags)0),
             };
         }
 
@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ResourceType.Image => DescriptorType.StorageImage,
                 ResourceType.BufferTexture => DescriptorType.UniformTexelBuffer,
                 ResourceType.BufferImage => DescriptorType.StorageTexelBuffer,
-                _ => throw new ArgumentException($"Invalid resource type \"{type}\".")
+                _ => throw new ArgumentException($"Invalid resource type \"{type}\"."),
             };
         }
 
@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Vulkan
                 AddressMode.ClampToBorder => SamplerAddressMode.ClampToBorder,
                 AddressMode.MirroredRepeat => SamplerAddressMode.MirroredRepeat,
                 AddressMode.ClampToEdge => SamplerAddressMode.ClampToEdge,
-                _ => LogInvalidAndReturn(mode, nameof(AddressMode), SamplerAddressMode.ClampToEdge) // TODO: Should be clamp.
+                _ => LogInvalidAndReturn(mode, nameof(AddressMode), SamplerAddressMode.ClampToEdge), // TODO: Should be clamp.
             };
         }
 
@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.BlendFactor.OneMinusConstantColor => BlendFactor.OneMinusConstantColor,
                 GAL.BlendFactor.ConstantAlpha => BlendFactor.ConstantAlpha,
                 GAL.BlendFactor.OneMinusConstantAlpha => BlendFactor.OneMinusConstantAlpha,
-                _ => LogInvalidAndReturn(factor, nameof(GAL.BlendFactor), BlendFactor.Zero)
+                _ => LogInvalidAndReturn(factor, nameof(GAL.BlendFactor), BlendFactor.Zero),
             };
         }
 
@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
                 AdvancedBlendOp.HslSaturation => BlendOp.HslSaturationExt,
                 AdvancedBlendOp.HslColor => BlendOp.HslColorExt,
                 AdvancedBlendOp.HslLuminosity => BlendOp.HslLuminosityExt,
-                _ => LogInvalidAndReturn(op, nameof(AdvancedBlendOp), BlendOp.Add)
+                _ => LogInvalidAndReturn(op, nameof(AdvancedBlendOp), BlendOp.Add),
             };
         }
 
@@ -200,7 +200,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.BlendOp.ReverseSubtract or GAL.BlendOp.ReverseSubtractGl => BlendOp.ReverseSubtract,
                 GAL.BlendOp.Minimum or GAL.BlendOp.MinimumGl => BlendOp.Min,
                 GAL.BlendOp.Maximum or GAL.BlendOp.MaximumGl => BlendOp.Max,
-                _ => LogInvalidAndReturn(op, nameof(GAL.BlendOp), BlendOp.Add)
+                _ => LogInvalidAndReturn(op, nameof(GAL.BlendOp), BlendOp.Add),
             };
         }
 
@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Vulkan
                 AdvancedBlendOverlap.Uncorrelated => BlendOverlapEXT.UncorrelatedExt,
                 AdvancedBlendOverlap.Disjoint => BlendOverlapEXT.DisjointExt,
                 AdvancedBlendOverlap.Conjoint => BlendOverlapEXT.ConjointExt,
-                _ => LogInvalidAndReturn(overlap, nameof(AdvancedBlendOverlap), BlendOverlapEXT.UncorrelatedExt)
+                _ => LogInvalidAndReturn(overlap, nameof(AdvancedBlendOverlap), BlendOverlapEXT.UncorrelatedExt),
             };
         }
 
@@ -227,7 +227,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.CompareOp.NotEqual or GAL.CompareOp.NotEqualGl => CompareOp.NotEqual,
                 GAL.CompareOp.GreaterOrEqual or GAL.CompareOp.GreaterOrEqualGl => CompareOp.GreaterOrEqual,
                 GAL.CompareOp.Always or GAL.CompareOp.AlwaysGl => CompareOp.Always,
-                _ => LogInvalidAndReturn(op, nameof(GAL.CompareOp), CompareOp.Never)
+                _ => LogInvalidAndReturn(op, nameof(GAL.CompareOp), CompareOp.Never),
             };
         }
 
@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Face.Back => CullModeFlags.BackBit,
                 Face.Front => CullModeFlags.FrontBit,
                 Face.FrontAndBack => CullModeFlags.FrontAndBack,
-                _ => LogInvalidAndReturn(face, nameof(Face), CullModeFlags.BackBit)
+                _ => LogInvalidAndReturn(face, nameof(Face), CullModeFlags.BackBit),
             };
         }
 
@@ -249,7 +249,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 GAL.FrontFace.Clockwise => FrontFace.CounterClockwise,
                 GAL.FrontFace.CounterClockwise => FrontFace.Clockwise,
-                _ => LogInvalidAndReturn(frontFace, nameof(GAL.FrontFace), FrontFace.Clockwise)
+                _ => LogInvalidAndReturn(frontFace, nameof(GAL.FrontFace), FrontFace.Clockwise),
             };
         }
 
@@ -260,7 +260,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.IndexType.UByte => IndexType.Uint8Ext,
                 GAL.IndexType.UShort => IndexType.Uint16,
                 GAL.IndexType.UInt => IndexType.Uint32,
-                _ => LogInvalidAndReturn(type, nameof(GAL.IndexType), IndexType.Uint16)
+                _ => LogInvalidAndReturn(type, nameof(GAL.IndexType), IndexType.Uint16),
             };
         }
 
@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 MagFilter.Nearest => Filter.Nearest,
                 MagFilter.Linear => Filter.Linear,
-                _ => LogInvalidAndReturn(filter, nameof(MagFilter), Filter.Nearest)
+                _ => LogInvalidAndReturn(filter, nameof(MagFilter), Filter.Nearest),
             };
         }
 
@@ -284,7 +284,7 @@ namespace Ryujinx.Graphics.Vulkan
                 MinFilter.LinearMipmapNearest => (Filter.Linear, SamplerMipmapMode.Nearest),
                 MinFilter.NearestMipmapLinear => (Filter.Nearest, SamplerMipmapMode.Linear),
                 MinFilter.LinearMipmapLinear => (Filter.Linear, SamplerMipmapMode.Linear),
-                _ => LogInvalidAndReturn(filter, nameof(MinFilter), (Filter.Nearest, SamplerMipmapMode.Nearest))
+                _ => LogInvalidAndReturn(filter, nameof(MinFilter), (Filter.Nearest, SamplerMipmapMode.Nearest)),
             };
         }
 
@@ -306,7 +306,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.PrimitiveTopology.Polygon => PrimitiveTopology.TriangleFan,
                 GAL.PrimitiveTopology.Quads => throw new NotSupportedException("Quad topology is not available in Vulkan."),
                 GAL.PrimitiveTopology.QuadStrip => throw new NotSupportedException("QuadStrip topology is not available in Vulkan."),
-                _ => LogInvalidAndReturn(topology, nameof(GAL.PrimitiveTopology), PrimitiveTopology.TriangleList)
+                _ => LogInvalidAndReturn(topology, nameof(GAL.PrimitiveTopology), PrimitiveTopology.TriangleList),
             };
         }
 
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GAL.StencilOp.Invert or GAL.StencilOp.InvertGl => StencilOp.Invert,
                 GAL.StencilOp.IncrementAndWrap or GAL.StencilOp.IncrementAndWrapGl => StencilOp.IncrementAndWrap,
                 GAL.StencilOp.DecrementAndWrap or GAL.StencilOp.DecrementAndWrapGl => StencilOp.DecrementAndWrap,
-                _ => LogInvalidAndReturn(op, nameof(GAL.StencilOp), StencilOp.Keep)
+                _ => LogInvalidAndReturn(op, nameof(GAL.StencilOp), StencilOp.Keep),
             };
         }
 
@@ -336,7 +336,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SwizzleComponent.Green => ComponentSwizzle.G,
                 SwizzleComponent.Blue => ComponentSwizzle.B,
                 SwizzleComponent.Alpha => ComponentSwizzle.A,
-                _ => LogInvalidAndReturn(swizzleComponent, nameof(SwizzleComponent), ComponentSwizzle.Zero)
+                _ => LogInvalidAndReturn(swizzleComponent, nameof(SwizzleComponent), ComponentSwizzle.Zero),
             };
         }
 
@@ -353,7 +353,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Target.Cubemap or
                 Target.CubemapArray => ImageType.Type2D,
                 Target.Texture3D => ImageType.Type3D,
-                _ => LogInvalidAndReturn(target, nameof(Target), ImageType.Type2D)
+                _ => LogInvalidAndReturn(target, nameof(Target), ImageType.Type2D),
             };
         }
 
@@ -368,7 +368,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Target.Texture2DArray => ImageViewType.Type2DArray,
                 Target.Cubemap => ImageViewType.TypeCube,
                 Target.CubemapArray => ImageViewType.TypeCubeArray,
-                _ => LogInvalidAndReturn(target, nameof(Target), ImageViewType.Type2D)
+                _ => LogInvalidAndReturn(target, nameof(Target), ImageViewType.Type2D),
             };
         }
 
@@ -381,7 +381,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Format.D24UnormS8Uint or
                 Format.D32FloatS8Uint or
                 Format.S8UintD24Unorm => ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit,
-                _ => ImageAspectFlags.ColorBit
+                _ => ImageAspectFlags.ColorBit,
             };
         }
 
@@ -394,7 +394,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Format.D24UnormS8Uint or
                 Format.D32FloatS8Uint or
                 Format.S8UintD24Unorm => depthStencilMode == DepthStencilMode.Stencil ? ImageAspectFlags.StencilBit : ImageAspectFlags.DepthBit,
-                _ => ImageAspectFlags.ColorBit
+                _ => ImageAspectFlags.ColorBit,
             };
         }
 
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Vulkan
                 LogicalOp.OrInverted => LogicOp.OrInverted,
                 LogicalOp.Nand => LogicOp.Nand,
                 LogicalOp.Set => LogicOp.Set,
-                _ => LogInvalidAndReturn(op, nameof(LogicalOp), LogicOp.Copy)
+                _ => LogInvalidAndReturn(op, nameof(LogicalOp), LogicOp.Copy),
             };
         }
 
@@ -427,7 +427,7 @@ namespace Ryujinx.Graphics.Vulkan
             return access switch
             {
                 BufferAccess.FlushPersistent => BufferAllocationType.HostMapped,
-                _ => BufferAllocationType.Auto
+                _ => BufferAllocationType.Auto,
             };
         }
 

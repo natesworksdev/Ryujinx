@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PAttachments = attachments,
                 Width = Width,
                 Height = Height,
-                Layers = Layers
+                Layers = Layers,
             };
 
             api.CreateFramebuffer(_device, framebufferCreateInfo, null, out var framebuffer).ThrowOnError();

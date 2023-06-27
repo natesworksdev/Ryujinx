@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Device _device;
         private VkSemaphore _semaphore;
         private int _referenceCount;
-        public bool Disposed;
+        private bool _disposed;
 
         public unsafe SemaphoreHolder(Vk api, Device device)
         {
@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var semaphoreCreateInfo = new SemaphoreCreateInfo
             {
-                SType = StructureType.SemaphoreCreateInfo
+                SType = StructureType.SemaphoreCreateInfo,
             };
 
             api.CreateSemaphore(device, in semaphoreCreateInfo, null, out _semaphore).ThrowOnError();
@@ -50,10 +50,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
-            if (!Disposed)
+            if (!_disposed)
             {
                 Put();
-                Disposed = true;
+                _disposed = true;
             }
         }
     }

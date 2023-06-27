@@ -85,8 +85,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // Gd.ConditionalRenderingApi.CmdEndConditionalRendering(CommandBuffer);
             }
+            else
+            {
+                // throw new NotSupportedException();
+            }
 
-            // throw new NotSupportedException();
             _activeConditionalRender?.ReleaseHostAccess();
             _activeConditionalRender = null;
         }
@@ -113,17 +116,15 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (Gd.Capabilities.SupportsConditionalRendering)
                     {
-                        var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
-                        var flags = isEqual ? ConditionalRenderingFlagsEXT.InvertedBitExt : 0;
+                        // var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
+                        // var flags = isEqual ? ConditionalRenderingFlagsEXT.InvertedBitExt : 0;
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                        var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT
-                        {
-                            SType = StructureType.ConditionalRenderingBeginInfoExt,
-                            Buffer = buffer,
-                            Flags = flags
-                        };
-#pragma warning restore IDE0059
+                        // var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT
+                        // {
+                        //     SType = StructureType.ConditionalRenderingBeginInfoExt,
+                        //     Buffer = buffer,
+                        //     Flags = flags,
+                        // };
 
                         // Gd.ConditionalRenderingApi.CmdBeginConditionalRendering(CommandBuffer, conditionalRenderingBeginInfo);
                     }

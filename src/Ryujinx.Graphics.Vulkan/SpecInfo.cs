@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         Int64,
         Float16,
         Float32,
-        Float64
+        Float64,
     }
 
     sealed class SpecDescription
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
             Info = new SpecializationInfo
             {
                 DataSize = structSize,
-                MapEntryCount = (uint)count
+                MapEntryCount = (uint)count,
             };
         }
 
@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Vulkan
             Info = new SpecializationInfo
             {
                 DataSize = structSize,
-                MapEntryCount = (uint)map.Length
+                MapEntryCount = (uint)map.Length,
             };
         }
 
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Vulkan
             SpecConstType.Int16 or SpecConstType.Float16 => 2,
             SpecConstType.Bool32 or SpecConstType.Int32 or SpecConstType.Float32 => 4,
             SpecConstType.Int64 or SpecConstType.Float64 => 8,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
         };
 
         private SpecDescription()

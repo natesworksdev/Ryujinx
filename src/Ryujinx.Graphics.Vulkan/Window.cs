@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var semaphoreCreateInfo = new SemaphoreCreateInfo
             {
-                SType = StructureType.SemaphoreCreateInfo
+                SType = StructureType.SemaphoreCreateInfo,
             };
 
             gd.Api.CreateSemaphore(device, semaphoreCreateInfo, null, out _imageAvailableSemaphore).ThrowOnError();
@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PreTransform = capabilities.CurrentTransform,
                 CompositeAlpha = ChooseCompositeAlpha(capabilities.SupportedCompositeAlpha),
                 PresentMode = ChooseSwapPresentMode(presentModes, _vsyncEnabled),
-                Clipped = true
+                Clipped = true,
             };
 
             _gd.SwapchainApi.CreateSwapchain(_device, swapchainCreateInfo, null, out _swapchain).ThrowOnError();
@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ViewType = ImageViewType.Type2D,
                 Format = format,
                 Components = componentMapping,
-                SubresourceRange = subresourceRange
+                SubresourceRange = subresourceRange,
             };
 
             _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
@@ -202,13 +202,14 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return CompositeAlphaFlagsKHR.OpaqueBitKhr;
             }
-
-            if (supportedFlags.HasFlag(CompositeAlphaFlagsKHR.PreMultipliedBitKhr))
+            else if (supportedFlags.HasFlag(CompositeAlphaFlagsKHR.PreMultipliedBitKhr))
             {
                 return CompositeAlphaFlagsKHR.PreMultipliedBitKhr;
             }
-
-            return CompositeAlphaFlagsKHR.InheritBitKhr;
+            else
+            {
+                return CompositeAlphaFlagsKHR.InheritBitKhr;
+            }
         }
 
         private static PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] availablePresentModes, bool vsyncEnabled)
@@ -217,13 +218,14 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return PresentModeKHR.ImmediateKhr;
             }
-
-            if (availablePresentModes.Contains(PresentModeKHR.MailboxKhr))
+            else if (availablePresentModes.Contains(PresentModeKHR.MailboxKhr))
             {
                 return PresentModeKHR.MailboxKhr;
             }
-
-            return PresentModeKHR.FifoKhr;
+            else
+            {
+                return PresentModeKHR.FifoKhr;
+            }
         }
 
         public static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
@@ -417,7 +419,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SwapchainCount = 1,
                 PSwapchains = &swapchain,
                 PImageIndices = &nextImage,
-                PResults = &result
+                PResults = &result,
             };
 
             lock (_gd.QueueLock)
@@ -535,7 +537,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 Image = image,
-                SubresourceRange = subresourceRange
+                SubresourceRange = subresourceRange,
             };
 
             _gd.Api.CmdPipelineBarrier(

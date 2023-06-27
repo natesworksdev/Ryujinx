@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Vulkan
             Scissor = 1 << 2,
             Stencil = 1 << 3,
             Viewport = 1 << 4,
-            All = Blend | DepthBias | Scissor | Stencil | Viewport
+            All = Blend | DepthBias | Scissor | Stencil | Viewport,
         }
 
         private DirtyFlags _dirty;

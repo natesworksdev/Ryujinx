@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SrcSubresource = srcSl,
                     SrcOffsets = srcOffsets,
                     DstSubresource = dstSl,
-                    DstOffsets = dstOffsets
+                    DstOffsets = dstOffsets,
                 };
 
                 api.CmdBlitImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
@@ -219,25 +219,18 @@ namespace Ryujinx.Graphics.Vulkan
 
             int dstZ;
             int dstLayer;
-            int dstDepth;
             int dstLayers;
 
             if (dstInfo.Target == Target.Texture3D)
             {
                 dstZ = dstDepthOrLayer;
                 dstLayer = 0;
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                dstDepth = depthOrLayers;
-#pragma warning restore IDE0059
                 dstLayers = 1;
             }
             else
             {
                 dstZ = 0;
                 dstLayer = dstDepthOrLayer;
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                dstDepth = 1;
-#pragma warning restore IDE0059
                 dstLayers = depthOrLayers;
             }
 
@@ -375,7 +368,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.SubpassDescriptionDepthStencilResolve,
                 PDepthStencilResolveAttachment = &dsResolveAttachmentReference,
                 DepthResolveMode = ResolveModeFlags.SampleZeroBit,
-                StencilResolveMode = ResolveModeFlags.SampleZeroBit
+                StencilResolveMode = ResolveModeFlags.SampleZeroBit,
             };
 
             var subpass = new SubpassDescription2
@@ -383,7 +376,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.SubpassDescription2,
                 PipelineBindPoint = PipelineBindPoint.Graphics,
                 PDepthStencilAttachment = &dsAttachmentReference,
-                PNext = &subpassDsResolve
+                PNext = &subpassDsResolve,
             };
 
             AttachmentDescription2[] attachmentDescs = new AttachmentDescription2[2];
@@ -426,7 +419,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PSubpasses = &subpass,
                     SubpassCount = 1,
                     PDependencies = &subpassDependency,
-                    DependencyCount = 1
+                    DependencyCount = 1,
                 };
 
                 gd.Api.CreateRenderPass2(device, renderPassCreateInfo, null, out var renderPass).ThrowOnError();
@@ -449,7 +442,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PAttachments = attachments,
                     Width = (uint)src.Width,
                     Height = (uint)src.Height,
-                    Layers = (uint)src.Layers
+                    Layers = (uint)src.Layers,
                 };
 
                 gd.Api.CreateFramebuffer(device, framebufferCreateInfo, null, out var framebuffer).ThrowOnError();
@@ -465,7 +458,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Framebuffer = fb.Get(cbs).Value,
                     RenderArea = renderArea,
                     PClearValues = &clearValue,
-                    ClearValueCount = 1
+                    ClearValueCount = 1,
                 };
 
                 // The resolve operation happens at the end of the subpass, so let's just do a begin/end

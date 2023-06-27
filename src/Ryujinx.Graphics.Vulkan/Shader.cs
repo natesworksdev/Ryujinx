@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         SType = StructureType.ShaderModuleCreateInfo,
                         CodeSize = (uint)spirv.Length,
-                        PCode = (uint*)pCode
+                        PCode = (uint*)pCode,
                     };
 
                     api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
                 options = new Options(false)
                 {
                     SourceLanguage = SourceLanguage.Glsl,
-                    TargetSpirVVersion = new SpirVVersion(1, 5)
+                    TargetSpirVVersion = new SpirVVersion(1, 5),
                 };
             }
 
@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PipelineShaderStageCreateInfo,
                 Stage = _stage,
                 Module = _module,
-                PName = (byte*)_ptrMainEntryPointName
+                PName = (byte*)_ptrMainEntryPointName,
             };
         }
 

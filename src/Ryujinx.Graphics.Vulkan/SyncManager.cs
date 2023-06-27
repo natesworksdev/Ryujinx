@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 ID = id,
                 Waitable = waitable,
-                FlushId = flushId
+                FlushId = flushId,
             };
 
             lock (_handles)

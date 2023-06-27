@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.ImportMemoryHostPointerInfoExt,
                     HandleType = ExternalMemoryHandleTypeFlags.HostAllocationBitExt,
-                    PHostPointer = (void*)pageAlignedPointer
+                    PHostPointer = (void*)pageAlignedPointer,
                 };
 
                 var memoryAllocateInfo = new MemoryAllocateInfo
@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.MemoryAllocateInfo,
                     AllocationSize = pageAlignedSize,
                     MemoryTypeIndex = (uint)memoryTypeIndex,
-                    PNext = &importInfo
+                    PNext = &importInfo,
                 };
 
                 Result result = _api.AllocateMemory(_device, memoryAllocateInfo, null, out var deviceMemory);

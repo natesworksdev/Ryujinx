@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var subpass = new SubpassDescription
             {
-                PipelineBindPoint = PipelineBindPoint.Graphics
+                PipelineBindPoint = PipelineBindPoint.Graphics,
             };
 
             AttachmentReference* attachmentReferences = stackalloc AttachmentReference[MaxAttachments];
@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PSubpasses = &subpass,
                     SubpassCount = 1,
                     PDependencies = &subpassDependency,
-                    DependencyCount = 1
+                    DependencyCount = 1,
                 };
 
                 gd.Api.CreateRenderPass(device, renderPassCreateInfo, null, out var renderPass).ThrowOnError();

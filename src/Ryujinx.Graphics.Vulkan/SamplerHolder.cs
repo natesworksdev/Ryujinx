@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
                 MinLod = minLod,
                 MaxLod = maxLod,
                 BorderColor = borderColor,
-                UnnormalizedCoordinates = false // TODO: Use unnormalized coordinates.
+                UnnormalizedCoordinates = false, // TODO: Use unnormalized coordinates.
             };
 
             SamplerCustomBorderColorCreateInfoEXT customBorderColor;
@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
                 customBorderColor = new SamplerCustomBorderColorCreateInfoEXT
                 {
                     SType = StructureType.SamplerCustomBorderColorCreateInfoExt,
-                    CustomBorderColor = color
+                    CustomBorderColor = color,
                 };
 
                 samplerCreateInfo.PNext = &customBorderColor;

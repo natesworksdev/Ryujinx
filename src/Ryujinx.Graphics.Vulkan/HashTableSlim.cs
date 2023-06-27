@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Hash = key.GetHashCode(),
                 Key = key,
-                Value = value
+                Value = value,
             };
 
             int hashCode = key.GetHashCode();
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _hashTable[bucketIndex] = new[]
                 {
-                    entry
+                    entry,
                 };
             }
         }

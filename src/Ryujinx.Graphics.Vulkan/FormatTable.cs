@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Format.R8G8B8A8Srgb => Format.R8G8B8A8Unorm,
                 Format.B8G8R8A8Srgb => Format.B8G8R8A8Unorm,
-                _ => format
+                _ => format,
             };
         }
 

@@ -328,7 +328,7 @@ namespace Ryujinx.Graphics.Vulkan
                 StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT
                 {
                     SType = StructureType.PipelineShaderStageRequiredSubgroupSizeCreateInfoExt,
-                    RequiredSubgroupSize = RequiredSubgroupSize
+                    RequiredSubgroupSize = RequiredSubgroupSize,
                 };
             }
 
@@ -362,7 +362,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.ComputePipelineCreateInfo,
                 Stage = Stages[0],
                 BasePipelineIndex = -1,
-                Layout = PipelineLayout
+                Layout = PipelineLayout,
             };
 
             Pipeline pipelineHandle = default;
@@ -431,7 +431,7 @@ namespace Ryujinx.Graphics.Vulkan
                     VertexAttributeDescriptionCount = VertexAttributeDescriptionsCount,
                     PVertexAttributeDescriptions = isMoltenVk ? pVertexAttributeDescriptions2 : pVertexAttributeDescriptions,
                     VertexBindingDescriptionCount = VertexBindingDescriptionsCount,
-                    PVertexBindingDescriptions = pVertexBindingDescriptions
+                    PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
 
                 bool primitiveRestartEnable = PrimitiveRestartEnable;
@@ -457,13 +457,13 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                     PrimitiveRestartEnable = primitiveRestartEnable,
-                    Topology = Topology
+                    Topology = Topology,
                 };
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
                     SType = StructureType.PipelineTessellationStateCreateInfo,
-                    PatchControlPoints = PatchControlPoints
+                    PatchControlPoints = PatchControlPoints,
                 };
 
                 var rasterizationState = new PipelineRasterizationStateCreateInfo
@@ -478,7 +478,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBiasEnable = DepthBiasEnable,
                     DepthBiasClamp = DepthBiasClamp,
                     DepthBiasConstantFactor = DepthBiasConstantFactor,
-                    DepthBiasSlopeFactor = DepthBiasSlopeFactor
+                    DepthBiasSlopeFactor = DepthBiasSlopeFactor,
                 };
 
                 var viewportState = new PipelineViewportStateCreateInfo
@@ -487,7 +487,7 @@ namespace Ryujinx.Graphics.Vulkan
                     ViewportCount = ViewportsCount,
                     PViewports = pViewports,
                     ScissorCount = ScissorsCount,
-                    PScissors = pScissors
+                    PScissors = pScissors,
                 };
 
                 if (gd.Capabilities.SupportsDepthClipControl)
@@ -495,7 +495,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var viewportDepthClipControlState = new PipelineViewportDepthClipControlCreateInfoEXT
                     {
                         SType = StructureType.PipelineViewportDepthClipControlCreateInfoExt,
-                        NegativeOneToOne = DepthMode
+                        NegativeOneToOne = DepthMode,
                     };
 
                     viewportState.PNext = &viewportDepthClipControlState;
@@ -508,7 +508,7 @@ namespace Ryujinx.Graphics.Vulkan
                     RasterizationSamples = TextureStorage.ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, SamplesCount),
                     MinSampleShading = 1,
                     AlphaToCoverageEnable = AlphaToCoverageEnable,
-                    AlphaToOneEnable = AlphaToOneEnable
+                    AlphaToOneEnable = AlphaToOneEnable,
                 };
 
                 var stencilFront = new StencilOpState(
@@ -540,7 +540,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Front = stencilFront,
                     Back = stencilBack,
                     MinDepthBounds = MinDepthBounds,
-                    MaxDepthBounds = MaxDepthBounds
+                    MaxDepthBounds = MaxDepthBounds,
                 };
 
                 uint blendEnables = 0;
@@ -570,7 +570,7 @@ namespace Ryujinx.Graphics.Vulkan
                     LogicOpEnable = LogicOpEnable,
                     LogicOp = LogicOp,
                     AttachmentCount = ColorBlendAttachmentStateCount,
-                    PAttachments = pColorBlendAttachmentState
+                    PAttachments = pColorBlendAttachmentState,
                 };
 
                 PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
@@ -584,7 +584,7 @@ namespace Ryujinx.Graphics.Vulkan
                         SType = StructureType.PipelineColorBlendAdvancedStateCreateInfoExt,
                         SrcPremultiplied = AdvancedBlendSrcPreMultiplied,
                         DstPremultiplied = AdvancedBlendDstPreMultiplied,
-                        BlendOverlap = AdvancedBlendOverlap
+                        BlendOverlap = AdvancedBlendOverlap,
                     };
 
                     colorBlendState.PNext = &colorBlendAdvancedState;
@@ -613,7 +613,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineDynamicStateCreateInfo,
                     DynamicStateCount = (uint)dynamicStatesCount,
-                    PDynamicStates = dynamicStates
+                    PDynamicStates = dynamicStates,
                 };
 
                 if (gd.Capabilities.SupportsSubgroupSizeControl)
@@ -637,7 +637,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicState = &pipelineDynamicStateCreateInfo,
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
-                    BasePipelineIndex = -1
+                    BasePipelineIndex = -1,
                 };
 
                 gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();

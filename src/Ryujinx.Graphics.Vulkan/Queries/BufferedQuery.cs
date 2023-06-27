@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                     SType = StructureType.QueryPoolCreateInfo,
                     QueryCount = 1,
                     QueryType = GetQueryType(type),
-                    PipelineStatistics = flags
+                    PipelineStatistics = flags,
                 };
 
                 gd.Api.CreateQueryPool(device, queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 CounterType.SamplesPassed => true,
                 CounterType.PrimitivesGenerated => gd.Capabilities.SupportsPipelineStatisticsQuery,
                 CounterType.TransformFeedbackPrimitivesWritten => gd.Capabilities.SupportsTransformFeedbackQueries,
-                _ => false
+                _ => false,
             };
         }
 
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 CounterType.SamplesPassed => QueryType.Occlusion,
                 CounterType.PrimitivesGenerated => QueryType.PipelineStatistics,
                 CounterType.TransformFeedbackPrimitivesWritten => QueryType.TransformFeedbackStreamExt,
-                _ => QueryType.Occlusion
+                _ => QueryType.Occlusion,
             };
         }
 

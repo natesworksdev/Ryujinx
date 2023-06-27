@@ -148,12 +148,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceProperties2 properties2 = new()
             {
-                SType = StructureType.PhysicalDeviceProperties2
+                SType = StructureType.PhysicalDeviceProperties2,
             };
 
             PhysicalDeviceBlendOperationAdvancedPropertiesEXT propertiesBlendOperationAdvanced = new()
             {
-                SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt
+                SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt,
             };
 
             bool supportsBlendOperationAdvanced = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_blend_operation_advanced");
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new()
             {
-                SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
+                SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt,
             };
 
             bool supportsSubgroupSizeControl = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_subgroup_size_control");
@@ -180,7 +180,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceTransformFeedbackPropertiesEXT propertiesTransformFeedback = new()
             {
-                SType = StructureType.PhysicalDeviceTransformFeedbackPropertiesExt
+                SType = StructureType.PhysicalDeviceTransformFeedbackPropertiesExt,
             };
 
             if (supportsTransformFeedback)
@@ -191,42 +191,42 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDevicePortabilitySubsetPropertiesKHR propertiesPortabilitySubset = new()
             {
-                SType = StructureType.PhysicalDevicePortabilitySubsetPropertiesKhr
+                SType = StructureType.PhysicalDevicePortabilitySubsetPropertiesKhr,
             };
 
             PhysicalDeviceFeatures2 features2 = new()
             {
-                SType = StructureType.PhysicalDeviceFeatures2
+                SType = StructureType.PhysicalDeviceFeatures2,
             };
 
             PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT featuresPrimitiveTopologyListRestart = new()
             {
-                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt
+                SType = StructureType.PhysicalDevicePrimitiveTopologyListRestartFeaturesExt,
             };
 
             PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2 = new()
             {
-                SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
+                SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
             };
 
             PhysicalDeviceShaderFloat16Int8FeaturesKHR featuresShaderInt8 = new()
             {
-                SType = StructureType.PhysicalDeviceShaderFloat16Int8Features
+                SType = StructureType.PhysicalDeviceShaderFloat16Int8Features,
             };
 
             PhysicalDeviceCustomBorderColorFeaturesEXT featuresCustomBorderColor = new()
             {
-                SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt
+                SType = StructureType.PhysicalDeviceCustomBorderColorFeaturesExt,
             };
 
             PhysicalDeviceDepthClipControlFeaturesEXT featuresDepthClipControl = new()
             {
-                SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt
+                SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
             };
 
             PhysicalDevicePortabilitySubsetFeaturesKHR featuresPortabilitySubset = new()
             {
-                SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr
+                SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr,
             };
 
             if (_physicalDevice.IsDeviceExtensionPresent("VK_EXT_primitive_topology_list_restart"))
@@ -554,13 +554,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             PhysicalDeviceVulkan12Features featuresVk12 = new()
             {
-                SType = StructureType.PhysicalDeviceVulkan12Features
+                SType = StructureType.PhysicalDeviceVulkan12Features,
             };
 
             PhysicalDeviceFeatures2 features2 = new()
             {
                 SType = StructureType.PhysicalDeviceFeatures2,
-                PNext = &featuresVk12
+                PNext = &featuresVk12,
             };
 
             Api.GetPhysicalDeviceFeatures2(_physicalDevice.PhysicalDevice, &features2);
@@ -702,7 +702,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PrimitiveTopology.Quads => PrimitiveTopology.Triangles,
                 PrimitiveTopology.QuadStrip => PrimitiveTopology.TriangleStrip,
                 PrimitiveTopology.TriangleFan => Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.NoTriangleFans) ? PrimitiveTopology.Triangles : topology,
-                _ => topology
+                _ => topology,
             };
         }
 
@@ -712,7 +712,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 PrimitiveTopology.Quads => true,
                 PrimitiveTopology.TriangleFan => Capabilities.PortabilitySubset.HasFlag(PortabilitySubsetFlags.NoTriangleFans),
-                _ => false
+                _ => false,
             };
         }
 
@@ -731,8 +731,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 return true;
             }
-
-            if (Vendor != Vendor.Nvidia)
+            else if (Vendor != Vendor.Nvidia)
             {
                 // Vulkan requires that vertex attributes are globally aligned by their component size,
                 // so buffer strides that don't divide by the largest scalar element are invalid.

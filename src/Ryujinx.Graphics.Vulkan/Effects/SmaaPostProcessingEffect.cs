@@ -118,17 +118,17 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _edgeProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(edgeShader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(edgeShader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, edgeResourceLayout, new[] { specInfo });
 
             _blendProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(blendShader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(blendShader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, blendResourceLayout, new[] { specInfo });
 
             _neighbourProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(neighbourShader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(neighbourShader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, neighbourResourceLayout, new[] { specInfo });
         }
 

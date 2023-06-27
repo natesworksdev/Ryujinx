@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
                     ShaderStageFlags.GeometryBit => 2,
                     ShaderStageFlags.TessellationControlBit => 3,
                     ShaderStageFlags.TessellationEvaluationBit => 4,
-                    _ => 0
+                    _ => 0,
                 };
 
                 if (shader.StageFlags == ShaderStageFlags.ComputeBit)

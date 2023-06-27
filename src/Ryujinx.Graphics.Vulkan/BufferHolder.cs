@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Buffer = new VkBuffer(_bufferHandle),
                 Format = format,
                 Offset = (uint)offset,
-                Range = (uint)size
+                Range = (uint)size,
             };
 
             _gd.Api.CreateBufferView(_device, bufferViewCreateInfo, null, out var bufferView).ThrowOnError();
@@ -285,7 +285,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.MemoryBarrier,
                     SrcAccessMask = DefaultAccessFlags,
-                    DstAccessMask = DefaultAccessFlags
+                    DstAccessMask = DefaultAccessFlags,
                 };
 
                 _gd.Api.CmdPipelineBarrier(
@@ -657,7 +657,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 Buffer = buffer,
                 Offset = (ulong)offset,
-                Size = (ulong)size
+                Size = (ulong)size,
             };
 
             gd.Api.CmdPipelineBarrier(

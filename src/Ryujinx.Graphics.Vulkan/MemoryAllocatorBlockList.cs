@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Size = size;
                 _freeRanges = new List<Range>
                 {
-                    new Range(0, size)
+                    new Range(0, size),
                 };
             }
 
@@ -204,7 +204,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.MemoryAllocateInfo,
                 AllocationSize = blockAlignedSize,
-                MemoryTypeIndex = (uint)MemoryTypeIndex
+                MemoryTypeIndex = (uint)MemoryTypeIndex,
             };
 
             _api.AllocateMemory(_device, memoryAllocateInfo, null, out var deviceMemory).ThrowOnError();

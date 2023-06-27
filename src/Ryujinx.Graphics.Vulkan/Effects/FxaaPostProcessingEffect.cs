@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _shaderProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(shader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(shader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, resourceLayout);
         }
 

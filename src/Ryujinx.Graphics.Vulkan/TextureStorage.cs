@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
-                Flags = flags
+                Flags = flags,
             };
 
             gd.Api.CreateImage(device, imageCreateInfo, null, out _image).ThrowOnError();
@@ -161,7 +161,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Format.D32Float => Format.R32Float,
                 Format.D24UnormS8Uint => Format.R8G8B8A8Unorm,
                 Format.D32FloatS8Uint => Format.R32G32Float,
-                _ => throw new ArgumentException($"\"{format}\" is not a supported depth or stencil format.")
+                _ => throw new ArgumentException($"\"{format}\" is not a supported depth or stencil format."),
             };
 
             return CreateAliasedStorageUnsafe(colorFormat);
@@ -229,8 +229,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return _foreignAllocationAuto.HasCommandBufferDependency(cbs);
             }
-
-            if (_allocationAuto != null)
+            else if (_allocationAuto != null)
             {
                 return _allocationAuto.HasCommandBufferDependency(cbs);
             }
@@ -274,7 +273,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 Image = _imageAuto.Get(cbs).Value,
-                SubresourceRange = subresourceRange
+                SubresourceRange = subresourceRange,
             };
 
             _gd.Api.CmdPipelineBarrier(

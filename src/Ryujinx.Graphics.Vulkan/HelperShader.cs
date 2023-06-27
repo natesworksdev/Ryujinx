@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         Float,
         SignedInteger,
-        UnsignedInteger
+        UnsignedInteger,
     }
 
     class HelperShader : IDisposable
@@ -1437,7 +1437,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Target.Texture1DArray => Target.Texture1D,
                 Target.Texture2DMultisampleArray => Target.Texture2DMultisample,
-                _ => Target.Texture2D
+                _ => Target.Texture2D,
             };
 
             var info = new TextureCreateInfo(
@@ -1469,7 +1469,7 @@ namespace Ryujinx.Graphics.Vulkan
                 4 => Format.R32Uint,
                 8 => Format.R32G32Uint,
                 16 => Format.R32G32B32A32Uint,
-                _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}.")
+                _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}."),
             };
         }
 
@@ -1482,7 +1482,7 @@ namespace Ryujinx.Graphics.Vulkan
                     1 => Format.R8Uint,
                     2 => Format.R8G8Uint,
                     4 => Format.R8G8B8A8Uint,
-                    _ => throw new ArgumentException($"Invalid components count {componentsCount}.")
+                    _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
             }
 
@@ -1493,7 +1493,7 @@ namespace Ryujinx.Graphics.Vulkan
                     1 => Format.R16Uint,
                     2 => Format.R16G16Uint,
                     4 => Format.R16G16B16A16Uint,
-                    _ => throw new ArgumentException($"Invalid components count {componentsCount}.")
+                    _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
             }
 
@@ -1504,7 +1504,7 @@ namespace Ryujinx.Graphics.Vulkan
                     1 => Format.R32Uint,
                     2 => Format.R32G32Uint,
                     4 => Format.R32G32B32A32Uint,
-                    _ => throw new ArgumentException($"Invalid components count {componentsCount}.")
+                    _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
             }
 

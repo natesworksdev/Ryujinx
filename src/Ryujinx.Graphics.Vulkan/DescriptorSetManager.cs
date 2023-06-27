@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan
                     new DescriptorPoolSize(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.StorageImage, Constants.MaxImageBindings * DescriptorPoolMultiplier),
                     new DescriptorPoolSize(DescriptorType.UniformTexelBuffer, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * DescriptorPoolMultiplier)
+                    new DescriptorPoolSize(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * DescriptorPoolMultiplier),
                 };
 
                 uint maxSets = (uint)poolSizes.Length * DescriptorPoolMultiplier;
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
                         SType = StructureType.DescriptorPoolCreateInfo,
                         MaxSets = maxSets,
                         PoolSizeCount = (uint)poolSizes.Length,
-                        PPoolSizes = pPoolsSize
+                        PPoolSizes = pPoolsSize,
                     };
 
                     Api.CreateDescriptorPool(device, descriptorPoolCreateInfo, null, out _pool).ThrowOnError();
@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
                             SType = StructureType.DescriptorSetAllocateInfo,
                             DescriptorPool = _pool,
                             DescriptorSetCount = (uint)layouts.Length,
-                            PSetLayouts = pLayouts
+                            PSetLayouts = pLayouts,
                         };
 
                         var result = Api.AllocateDescriptorSets(Device, &descriptorSetAllocateInfo, pDescriptorSets);

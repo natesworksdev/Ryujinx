@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo
             {
-                SType = StructureType.PipelineCacheCreateInfo
+                SType = StructureType.PipelineCacheCreateInfo,
             };
 
             gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out PipelineCache).ThrowOnError();
@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
-                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit
+                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
             };
 
             Gd.Api.CmdPipelineBarrier(
@@ -178,7 +178,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
-                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit
+                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
             };
 
             Gd.Api.CmdPipelineBarrier(
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = BufferHolder.DefaultAccessFlags,
-                DstAccessMask = AccessFlags.IndirectCommandReadBit
+                DstAccessMask = AccessFlags.IndirectCommandReadBit,
             };
 
             Gd.Api.CmdPipelineBarrier(
@@ -383,7 +383,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PrimitiveTopology.Quads => QuadsToTrisPattern,
                     PrimitiveTopology.TriangleFan or
                     PrimitiveTopology.Polygon => TriFanToTrisPattern,
-                    _ => throw new NotSupportedException($"Unsupported topology: {_topology}")
+                    _ => throw new NotSupportedException($"Unsupported topology: {_topology}"),
                 };
 
                 BufferHandle handle = pattern.GetRepeatingBuffer(vertexCount, out int indexCount);
@@ -415,7 +415,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PrimitiveTopology.Quads => QuadsToTrisPattern,
                     PrimitiveTopology.TriangleFan or
                     PrimitiveTopology.Polygon => TriFanToTrisPattern,
-                    _ => throw new NotSupportedException($"Unsupported topology: {_topology}")
+                    _ => throw new NotSupportedException($"Unsupported topology: {_topology}"),
                 };
             }
 
@@ -724,14 +724,12 @@ namespace Ryujinx.Graphics.Vulkan
             return CommandBuffer.Handle == cb.Handle;
         }
 
-#pragma warning disable CA1822 // Mark member as static
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
         }
-#pragma warning restore CA1822
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
@@ -831,7 +829,6 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-#pragma warning disable CA1822 // Mark member as static
         public void SetDepthMode(DepthMode mode)
         {
             bool oldMode = _newState.DepthMode;
@@ -841,7 +838,6 @@ namespace Ryujinx.Graphics.Vulkan
                 SignalStateChange();
             }
         }
-#pragma warning restore CA1822
 
         public void SetDepthTest(DepthTestDescriptor depthTest)
         {
@@ -1346,7 +1342,7 @@ namespace Ryujinx.Graphics.Vulkan
                     X = scale * 2f / viewports[0].Region.Width,
                     Y = scale * 2f / viewports[0].Region.Height,
                     Z = 1,
-                    W = disableTransformF
+                    W = disableTransformF,
                 });
             }
 
@@ -1379,7 +1375,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.MemoryBarrier,
                 SrcAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
-                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit
+                DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
             };
 
             Gd.Api.CmdPipelineBarrier(
@@ -1521,7 +1517,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var subpass = new SubpassDescription
             {
-                PipelineBindPoint = PipelineBindPoint.Graphics
+                PipelineBindPoint = PipelineBindPoint.Graphics,
             };
 
             AttachmentReference* attachmentReferences = stackalloc AttachmentReference[MaxAttachments];
@@ -1594,7 +1590,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PSubpasses = &subpass,
                     SubpassCount = 1,
                     PDependencies = &subpassDependency,
-                    DependencyCount = 1
+                    DependencyCount = 1,
                 };
 
                 Gd.Api.CreateRenderPass(Device, renderPassCreateInfo, null, out var renderPass).ThrowOnError();
@@ -1709,7 +1705,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Framebuffer = _framebuffer.Get(Cbs).Value,
                     RenderArea = renderArea,
                     PClearValues = &clearValue,
-                    ClearValueCount = 1
+                    ClearValueCount = 1,
                 };
 
                 Gd.Api.CmdBeginRenderPass(CommandBuffer, renderPassBeginInfo, SubpassContents.Inline);

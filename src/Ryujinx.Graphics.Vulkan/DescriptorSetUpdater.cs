@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
             Storage = 1 << 1,
             Texture = 1 << 2,
             Image = 1 << 3,
-            All = Uniform | Storage | Texture | Image
+            All = Uniform | Storage | Texture | Image,
         }
 
         private DirtyFlags _dirty;
@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var initialImageInfo = new DescriptorImageInfo
             {
-                ImageLayout = ImageLayout.General
+                ImageLayout = ImageLayout.General,
             };
 
             _textures.AsSpan().Fill(initialImageInfo);
@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DescriptorBufferInfo info = new()
                 {
                     Offset = (ulong)buffer.Offset,
-                    Range = (ulong)buffer.Size
+                    Range = (ulong)buffer.Size,
                 };
                 ref DescriptorBufferInfo currentInfo = ref _storageBuffers[index];
 
@@ -215,7 +215,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DescriptorBufferInfo info = new()
                 {
                     Offset = 0,
-                    Range = Vk.WholeSize
+                    Range = Vk.WholeSize,
                 };
                 ref DescriptorBufferInfo currentInfo = ref _storageBuffers[index];
 
@@ -295,7 +295,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DescriptorBufferInfo info = new()
                 {
                     Offset = (ulong)buffer.Offset,
-                    Range = (ulong)buffer.Size
+                    Range = (ulong)buffer.Size,
                 };
                 ref DescriptorBufferInfo currentInfo = ref _uniformBuffers[index];
 
@@ -407,7 +407,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         Offset = 0,
                         Range = (ulong)SupportBuffer.RequiredSize,
-                        Buffer = _cachedSupportBuffer
+                        Buffer = _cachedSupportBuffer,
                     };
 
                     dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
@@ -543,7 +543,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DstBinding = (uint)baseBinding,
                     DescriptorType = type,
                     DescriptorCount = (uint)bufferInfo.Length,
-                    PBufferInfo = pBufferInfo
+                    PBufferInfo = pBufferInfo,
                 };
 
                 _gd.PushDescriptorApi.CmdPushDescriptorSet(cbs.CommandBuffer, pbp, _program.PipelineLayout, 0, 1, &writeDescriptorSet);
@@ -561,7 +561,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     Offset = 0,
                     Range = (ulong)SupportBuffer.RequiredSize,
-                    Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value
+                    Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value,
                 };
 
                 _uniformSet[0] = true;

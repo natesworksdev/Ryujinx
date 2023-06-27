@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var usage = new ImageViewUsageCreateInfo
                 {
                     SType = StructureType.ImageViewUsageCreateInfo,
-                    Usage = usageFlags
+                    Usage = usageFlags,
                 };
 
                 var imageCreateInfo = new ImageViewCreateInfo
@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Format = format,
                     Components = cm,
                     SubresourceRange = sr,
-                    PNext = &usage
+                    PNext = &usage,
                 };
 
                 gd.Api.CreateImageView(device, imageCreateInfo, null, out var imageView).ThrowOnError();
@@ -453,7 +453,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Image = image,
                 OldLayout = ImageLayout.General,
                 NewLayout = ImageLayout.General,
-                SubresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, (uint)levels, (uint)firstLayer, (uint)layers)
+                SubresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, (uint)levels, (uint)firstLayer, (uint)layers),
             };
 
             api.CmdPipelineBarrier(

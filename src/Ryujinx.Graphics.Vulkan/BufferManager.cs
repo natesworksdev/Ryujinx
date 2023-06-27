@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)size,
                 Usage = usage,
-                SharingMode = SharingMode.Exclusive
+                SharingMode = SharingMode.Exclusive,
             };
 
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)Environment.SystemPageSize,
                 Usage = usage,
-                SharingMode = SharingMode.Exclusive
+                SharingMode = SharingMode.Exclusive,
             };
 
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)size,
                 Usage = usage,
-                SharingMode = SharingMode.Exclusive
+                SharingMode = SharingMode.Exclusive,
             };
 
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Vulkan
                     BufferAllocationType.HostMapped => DefaultBufferMemoryFlags,
                     BufferAllocationType.DeviceLocal => DeviceLocalBufferMemoryFlags,
                     BufferAllocationType.DeviceLocalMapped => DeviceLocalMappedBufferMemoryFlags,
-                    _ => DefaultBufferMemoryFlags
+                    _ => DefaultBufferMemoryFlags,
                 };
 
                 // If an allocation with this memory type fails, fall back to the previous one.

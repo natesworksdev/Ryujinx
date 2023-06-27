@@ -72,12 +72,12 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _scalingProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(scalingShader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(scalingShader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, scalingResourceLayout);
 
             _sharpeningProgram = _renderer.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(sharpeningShader, ShaderStage.Compute, TargetLanguage.Spirv)
+                new ShaderSource(sharpeningShader, ShaderStage.Compute, TargetLanguage.Spirv),
             }, sharpeningResourceLayout);
         }
 
@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 destination.Y1,
                 destination.Y2,
                 scaleX,
-                scaleY
+                scaleY,
             };
 
             int rangeSize = dimensionsBuffer.Length * sizeof(float);
