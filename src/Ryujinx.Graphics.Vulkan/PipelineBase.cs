@@ -903,11 +903,6 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        public static void SetOrigin(Origin origin)
-        {
-            // TODO.
-        }
-
         public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
             _newState.PatchControlPoints = (uint)vertices;
