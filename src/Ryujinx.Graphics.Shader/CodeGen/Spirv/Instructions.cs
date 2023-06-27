@@ -967,9 +967,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 loopBlock = loopBlock.Parent;
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            var (loopTarget, continueTarget) = context.LoopTargets[loopBlock];
-#pragma warning restore IDE0059
+            (_, SpvInstruction continueTarget) = context.LoopTargets[loopBlock];
 
             context.Branch(continueTarget);
 
