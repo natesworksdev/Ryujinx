@@ -55,6 +55,8 @@ namespace Ryujinx.Ava.UI.Windows
         public static bool ShowKeyErrorOnLoad { get; set; }
         public ApplicationLibrary ApplicationLibrary { get; set; }
 
+        public readonly double StatusBarHeight;
+
         public MainWindow()
         {
             ViewModel = new MainWindowViewModel();
@@ -73,7 +75,8 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.Title = $"Ryujinx {Program.Version}";
 
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
-            double barHeight = MenuBar.MinHeight + StatusBarView.StatusBar.MinHeight;
+            StatusBarHeight = StatusBarView.StatusBar.MinHeight;
+            double barHeight = MenuBar.MinHeight + StatusBarHeight;
             Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
 

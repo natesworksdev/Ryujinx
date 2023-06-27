@@ -29,6 +29,7 @@ namespace Ryujinx.Ava.UI.Helpers
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum WindowsMessages : uint
         {
+            Setcursor = 0x0020,
             Mousemove = 0x0200,
             Lbuttondown = 0x0201,
             Lbuttonup = 0x0202,

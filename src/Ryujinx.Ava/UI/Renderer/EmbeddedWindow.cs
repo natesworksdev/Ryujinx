@@ -36,6 +36,13 @@ namespace Ryujinx.Ava.UI.Renderer
         public event EventHandler<IntPtr> WindowCreated;
         public event EventHandler<Size> SizeChanged;
 
+        [SupportedOSPlatform("windows")]
+        private readonly IntPtr InvisibleCursorWin = CreateEmptyCursor();
+        [SupportedOSPlatform("windows")]
+        private readonly IntPtr DefaultCursorWin = CreateArrowCursor();
+        [SupportedOSPlatform("windows")]
+        private bool _isCursorVisible = !ConfigurationState.Instance.Hid.EnableMouse.Value;
+
         public EmbeddedWindow()
         {
             this.GetObservable(BoundsProperty).Subscribe(StateChanged);
@@ -147,9 +154,12 @@ namespace Ryujinx.Ava.UI.Renderer
                         msg == WindowsMessages.Rbuttondown ||
                         msg == WindowsMessages.Lbuttonup ||
                         msg == WindowsMessages.Rbuttonup ||
-                        msg == WindowsMessages.Mousemove)
+                        msg == WindowsMessages.Mousemove ||
+                        msg == WindowsMessages.Setcursor)
                     {
-                        Point rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), VisualRoot).Value;
+                        var _x = ((long)lParam & 0xFFFF) / Program.WindowScaleFactor;
+                        var _y = ((long)lParam >> 16 & 0xFFFF) / Program.WindowScaleFactor;
+                        Point rootVisualPosition = this.TranslatePoint(new Point(_x, _y), VisualRoot).Value;
                         Pointer pointer = new(0, PointerType.Mouse, true);
 
                         switch (msg)
@@ -211,6 +221,42 @@ namespace Ryujinx.Ava.UI.Renderer
 
                                     break;
                                 }
+                            case WindowsMessages.Setcursor:
+                                {
+                                    if (ConfigurationState.Instance.Hid.EnableMouse.Value)
+                                    {
+                                        if (ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never)
+                                        {
+                                            if (!_isCursorVisible)
+                                            {
+                                                SetCursor(DefaultCursorWin);
+                                                _isCursorVisible = true;
+                                            }
+                                        }
+                                        else if (_isCursorVisible)
+                                        {
+                                            SetCursor(InvisibleCursorWin);
+                                            _isCursorVisible = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Always)
+                                        {
+                                            if (_isCursorVisible)
+                                            {
+                                                SetCursor(InvisibleCursorWin);
+                                                _isCursorVisible = false;
+                                            }
+                                        }
+                                        else if (!_isCursorVisible)
+                                        {
+                                            SetCursor(DefaultCursorWin);
+                                            _isCursorVisible = true;
+                                        }
+                                    }
+                                        return 1;
+                                    }
                         }
                     }
                 }
@@ -225,7 +271,7 @@ namespace Ryujinx.Ava.UI.Renderer
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
                 style = ClassStyles.CsOwndc,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
-                hCursor = CreateArrowCursor(),
+                hCursor = DefaultCursorWin
             };
 
             RegisterClassEx(ref wndClassEx);
