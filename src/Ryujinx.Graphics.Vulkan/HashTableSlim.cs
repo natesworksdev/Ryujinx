@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
         bool Equals(ref T other);
     }
 
-    class HashTableSlim<TK, TV> where TK : IRefEquatable<TK>
+    class HashTableSlim<TKey, TValue> where TKey : IRefEquatable<TKey>
     {
         private const int TotalBuckets = 16; // Must be power of 2
         private const int TotalBucketsMask = TotalBuckets - 1;
@@ -16,13 +16,13 @@ namespace Ryujinx.Graphics.Vulkan
         private struct Entry
         {
             public int Hash;
-            public TK Key;
-            public TV Value;
+            public TKey Key;
+            public TValue Value;
         }
 
         private readonly Entry[][] _hashTable = new Entry[TotalBuckets][];
 
-        public IEnumerable<TK> Keys
+        public IEnumerable<TKey> Keys
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public IEnumerable<TV> Values
+        public IEnumerable<TValue> Values
         {
             get
             {
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void Add(ref TK key, TV value)
+        public void Add(ref TKey key, TValue value)
         {
             var entry = new Entry
             {
@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public bool TryGetValue(ref TK key, out TV value)
+        public bool TryGetValue(ref TKey key, out TValue value)
         {
             int hashCode = key.GetHashCode();
 
