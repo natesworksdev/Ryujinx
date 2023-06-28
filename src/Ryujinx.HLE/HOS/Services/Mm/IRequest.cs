@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
     class IRequest : IpcService
     {
         private static readonly object _sessionListLock = new();
-        private static List<MultiMediaSession> _sessionList     = new List<MultiMediaSession>();
+        private static List<MultiMediaSession> _sessionList = new();
 
         private static uint _uniqueId = 1;
 
