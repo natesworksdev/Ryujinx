@@ -9,6 +9,7 @@ namespace ARMeilleure
 
         public static bool AllowLcqInFunctionTable { get; set; } = true;
         public static bool UseUnmanagedDispatchLoop { get; set; } = true;
+        public static bool EnableDeepCallRecursionProtection { get; set; } = true;
 
         public static bool UseAdvSimdIfAvailable { get; set; } = true;
         public static bool UseArm64AesIfAvailable { get; set; } = true;
