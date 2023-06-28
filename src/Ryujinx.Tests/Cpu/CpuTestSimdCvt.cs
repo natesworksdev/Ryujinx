@@ -15,14 +15,18 @@ namespace Ryujinx.Tests.Cpu
         #region "ValueSource (Types)"
         private static uint[] _W_()
         {
-            return new[] { 0x00000000u, 0x7FFFFFFFu,
-                           0x80000000u, 0xFFFFFFFFu };
+            return new[] {
+                0x00000000u, 0x7FFFFFFFu,
+                0x80000000u, 0xFFFFFFFFu,
+            };
         }
 
         private static ulong[] _X_()
         {
-            return new[] { 0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                           0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul };
+            return new[] {
+                0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
+            };
         }
 
         private static IEnumerable<ulong> _1S_F_WX_()
