@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.GAL
             return HashCode.Combine(Width, Height);
         }
 
-        bool IEquatable<TextureCreateInfo>.Equals(TextureCreateInfo other)
+        public bool Equals(TextureCreateInfo other)
         {
             return Width == other.Width &&
                    Height == other.Height &&
