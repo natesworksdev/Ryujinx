@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Spv.Generator
 {
-    public class LiteralString : IOperand, IEquatable<LiteralString>
+    public sealed class LiteralString : IOperand, IEquatable<LiteralString>
     {
         public OperandType Type => OperandType.String;
 
