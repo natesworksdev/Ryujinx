@@ -753,9 +753,9 @@ namespace Ryujinx.Graphics.Vulkan
             SyncManager.Cleanup();
         }
 
-        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, bool hostReserved)
+        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, float divisor, bool hostReserved)
         {
-            return _counters.QueueReport(type, resultHandler, hostReserved);
+            return _counters.QueueReport(type, resultHandler, divisor, hostReserved);
         }
 
         public void ResetCounter(CounterType type)
