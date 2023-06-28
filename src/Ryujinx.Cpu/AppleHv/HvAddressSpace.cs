@@ -18,9 +18,6 @@ namespace Ryujinx.Cpu.AppleHv
         private const ulong AllocationGranule = 1UL << 14;
 
         private readonly ulong _asBase;
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly ulong _asSize;
-#pragma warning restore IDE0052
         private readonly ulong _backingSize;
 
         private readonly HvAddressSpaceRange _userRange;
@@ -31,7 +28,6 @@ namespace Ryujinx.Cpu.AppleHv
         public HvAddressSpace(MemoryBlock backingMemory, ulong asSize)
         {
             (_asBase, var ipaAllocator) = HvVm.CreateAddressSpace(backingMemory);
-            _asSize = asSize;
             _backingSize = backingMemory.Size;
 
             _userRange = new HvAddressSpaceRange(ipaAllocator);

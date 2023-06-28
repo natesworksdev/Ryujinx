@@ -389,10 +389,6 @@ namespace Ryujinx.Cpu
             ulong vaAligned = BitUtils.AlignDown(va, alignment);
             ulong endAddressAligned = BitUtils.AlignUp(endAddress, alignment);
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong sizeAligned = endAddressAligned - vaAligned;
-#pragma warning restore IDE0059
-
             PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
 
             for (; map != null; map = map.Successor)
@@ -435,10 +431,6 @@ namespace Ryujinx.Cpu
             {
                 return;
             }
-
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            ulong alignedSize = endAddressAligned - vaAligned;
-#pragma warning restore IDE0059
 
             PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
 
