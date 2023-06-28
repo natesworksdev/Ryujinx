@@ -444,15 +444,15 @@ namespace Ryujinx.Common.Collections
     /// <summary>
     /// Represents a value and its start and end keys.
     /// </summary>
-    /// <typeparam name="TK"></typeparam>
-    /// <typeparam name="TV"></typeparam>
-    public readonly struct RangeNode<TK, TV>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    public readonly struct RangeNode<TKey, TValue>
     {
-        public readonly TK Start;
-        public readonly TK End;
-        public readonly TV Value;
+        public readonly TKey Start;
+        public readonly TKey End;
+        public readonly TValue Value;
 
-        public RangeNode(TK start, TK end, TV value)
+        public RangeNode(TKey start, TKey end, TValue value)
         {
             Start = start;
             End = end;
@@ -463,36 +463,36 @@ namespace Ryujinx.Common.Collections
     /// <summary>
     /// Represents a node in the IntervalTree which contains start and end keys of type K, and a value of generic type V.
     /// </summary>
-    /// <typeparam name="TK">Key type of the node</typeparam>
-    /// <typeparam name="TV">Value type of the node</typeparam>
-    public class IntervalTreeNode<TK, TV> : IntrusiveRedBlackTreeNode<IntervalTreeNode<TK, TV>>
+    /// <typeparam name="TKey">Key type of the node</typeparam>
+    /// <typeparam name="TValue">Value type of the node</typeparam>
+    public class IntervalTreeNode<TKey, TValue> : IntrusiveRedBlackTreeNode<IntervalTreeNode<TKey, TValue>>
     {
         /// <summary>
         /// The start of the range.
         /// </summary>
-        internal TK Start;
+        internal TKey Start;
 
         /// <summary>
         /// The end of the range - maximum of all in the Values list.
         /// </summary>
-        internal TK End;
+        internal TKey End;
 
         /// <summary>
         /// The maximum end value of this node and all its children.
         /// </summary>
-        internal TK Max;
+        internal TKey Max;
 
         /// <summary>
         /// Values contained on the node that shares a common Start value.
         /// </summary>
-        internal List<RangeNode<TK, TV>> Values;
+        internal List<RangeNode<TKey, TValue>> Values;
 
-        internal IntervalTreeNode(TK start, TK end, TV value, IntervalTreeNode<TK, TV> parent)
+        internal IntervalTreeNode(TKey start, TKey end, TValue value, IntervalTreeNode<TKey, TValue> parent)
         {
             Start = start;
             End = end;
             Max = end;
-            Values = new List<RangeNode<TK, TV>> { new RangeNode<TK, TV>(start, end, value) };
+            Values = new List<RangeNode<TKey, TValue>> { new RangeNode<TKey, TValue>(start, end, value) };
             Parent = parent;
         }
     }
