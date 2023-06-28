@@ -19,12 +19,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        private static InstInfo[] _infoTbl;
+        private static readonly InstInfo[] _infoTbl;
 
         static InstructionInfo()
         {
             _infoTbl = new InstInfo[(int)Instruction.Count];
 
+#pragma warning disable IDE0055 // Disable formatting
             //  Inst                                  Destination type      Source 1 type          Source 2 type          Source 3 type          Source 4 type
             Add(Instruction.AtomicAdd,                AggregateType.U32,    AggregateType.S32,     AggregateType.S32,     AggregateType.U32);
             Add(Instruction.AtomicAnd,                AggregateType.U32,    AggregateType.S32,     AggregateType.S32,     AggregateType.U32);
@@ -90,8 +91,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.ImageAtomic,              AggregateType.S32);
             Add(Instruction.IsNan,                    AggregateType.Bool,   AggregateType.Scalar);
             Add(Instruction.Load,                     AggregateType.FP32);
-            Add(Instruction.LoadLocal,                AggregateType.U32,    AggregateType.S32);
-            Add(Instruction.LoadShared,               AggregateType.U32,    AggregateType.S32);
             Add(Instruction.Lod,                      AggregateType.FP32);
             Add(Instruction.LogarithmB2,              AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.LogicalAnd,               AggregateType.Bool,   AggregateType.Bool,    AggregateType.Bool);
@@ -121,10 +120,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.Sine,                     AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.SquareRoot,               AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.Store,                    AggregateType.Void);
-            Add(Instruction.StoreLocal,               AggregateType.Void,   AggregateType.S32,     AggregateType.U32);
-            Add(Instruction.StoreShared,              AggregateType.Void,   AggregateType.S32,     AggregateType.U32);
-            Add(Instruction.StoreShared16,            AggregateType.Void,   AggregateType.S32,     AggregateType.U32);
-            Add(Instruction.StoreShared8,             AggregateType.Void,   AggregateType.S32,     AggregateType.U32);
             Add(Instruction.Subtract,                 AggregateType.Scalar, AggregateType.Scalar,  AggregateType.Scalar);
             Add(Instruction.SwizzleAdd,               AggregateType.FP32,   AggregateType.FP32,    AggregateType.FP32,    AggregateType.S32);
             Add(Instruction.TextureSample,            AggregateType.FP32);
@@ -136,6 +131,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.VoteAll,                  AggregateType.Bool,   AggregateType.Bool);
             Add(Instruction.VoteAllEqual,             AggregateType.Bool,   AggregateType.Bool);
             Add(Instruction.VoteAny,                  AggregateType.Bool,   AggregateType.Bool);
+#pragma warning restore IDE0055v
         }
 
         private static void Add(Instruction inst, AggregateType destType, params AggregateType[] srcTypes)

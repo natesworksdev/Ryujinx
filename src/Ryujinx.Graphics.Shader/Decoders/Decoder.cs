@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Decoders
@@ -12,8 +11,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
     {
         public static DecodedProgram Decode(ShaderConfig config, ulong startAddress)
         {
-            Queue<DecodedFunction> functionsQueue = new Queue<DecodedFunction>();
-            Dictionary<ulong, DecodedFunction> functionsVisited = new Dictionary<ulong, DecodedFunction>();
+            Queue<DecodedFunction> functionsQueue = new();
+            Dictionary<ulong, DecodedFunction> functionsVisited = new();
 
             DecodedFunction EnqueueFunction(ulong address)
             {
@@ -30,9 +29,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             while (functionsQueue.TryDequeue(out DecodedFunction currentFunction))
             {
-                List<Block> blocks = new List<Block>();
-                Queue<Block> workQueue = new Queue<Block>();
-                Dictionary<ulong, Block> visited = new Dictionary<ulong, Block>();
+                List<Block> blocks = new();
+                Queue<Block> workQueue = new();
+                Dictionary<ulong, Block> visited = new();
 
                 Block GetBlock(ulong blkAddress)
                 {
@@ -168,7 +167,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             index = 0;
 
-            int left  = 0;
+            int left = 0;
             int right = blocks.Count - 1;
 
             while (left <= right)
@@ -247,6 +246,17 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 {
                     block.AddPushOp(op);
                 }
+                else if (op.Name == InstName.Ldl || op.Name == InstName.Stl)
+                {
+                    config.SetUsedFeature(FeatureFlags.LocalMemory);
+                }
+                else if (op.Name == InstName.Atoms ||
+                         op.Name == InstName.AtomsCas ||
+                         op.Name == InstName.Lds ||
+                         op.Name == InstName.Sts)
+                {
+                    config.SetUsedFeature(FeatureFlags.SharedMemory);
+                }
 
                 block.OpCodes.Add(op);
 
@@ -262,12 +272,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
             int offset;
             int count = 1;
             bool isStore = false;
-            bool indexed = false;
+            bool indexed;
             bool perPatch = false;
 
             if (name == InstName.Ast)
             {
-                InstAst opAst = new InstAst(opCode);
+                InstAst opAst = new(opCode);
                 count = (int)opAst.AlSize + 1;
                 offset = opAst.Imm11;
                 indexed = opAst.Phys;
@@ -276,7 +286,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
             else if (name == InstName.Ald)
             {
-                InstAld opAld = new InstAld(opCode);
+                InstAld opAld = new(opCode);
                 count = (int)opAld.AlSize + 1;
                 offset = opAld.Imm11;
                 indexed = opAld.Phys;
@@ -285,7 +295,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
             else /* if (name == InstName.Ipa) */
             {
-                InstIpa opIpa = new InstIpa(opCode);
+                InstIpa opIpa = new(opCode);
                 offset = opIpa.Imm10;
                 indexed = opIpa.Idx;
             }
@@ -359,7 +369,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         private static bool IsUnconditional(ref InstOp op)
         {
-            InstConditional condOp = new InstConditional(op.RawOpCode);
+            InstConditional condOp = new(op.RawOpCode);
 
             if ((op.Name == InstName.Bra || op.Name == InstName.Exit) && condOp.Ccc != Ccc.T)
             {
@@ -380,9 +390,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 if (lastOp.Name == InstName.Brx && block.Successors.Count == (hasNext ? 1 : 0))
                 {
-                    HashSet<ulong> visited = new HashSet<ulong>();
+                    HashSet<ulong> visited = new();
 
-                    InstBrx opBrx = new InstBrx(lastOp.RawOpCode);
+                    InstBrx opBrx = new(lastOp.RawOpCode);
                     ulong baseOffset = lastOp.GetAbsoluteAddress();
 
                     // An indirect branch could go anywhere,
@@ -426,7 +436,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             // On a successful match, "BaseOffset" is the offset in bytes where the jump offsets are
             // located on the constant buffer, and "UpperBound" is the total number of offsets for the BRX, minus 1.
 
-            HashSet<Block> visited = new HashSet<Block>();
+            HashSet<Block> visited = new();
 
             var ldcLocation = FindFirstRegWrite(visited, new BlockLocation(block, block.OpCodes.Count - 1), brxReg);
             if (ldcLocation.Block == null || ldcLocation.Block.OpCodes[ldcLocation.Index].Name != InstName.Ldc)
@@ -496,7 +506,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         private static BlockLocation FindFirstRegWrite(HashSet<Block> visited, BlockLocation location, int regIndex)
         {
-            Queue<BlockLocation> toVisit = new Queue<BlockLocation>();
+            Queue<BlockLocation> toVisit = new();
             toVisit.Enqueue(location);
             visited.Add(location.Block);
 
@@ -543,10 +553,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             Brk,
             Cont,
-            Sync
+            Sync,
         }
 
-        private struct PathBlockState
+        private readonly struct PathBlockState
         {
             public Block Block { get; }
 
@@ -554,37 +564,37 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 None,
                 PopPushOp,
-                PushBranchOp
+                PushBranchOp,
             }
 
-            private RestoreType _restoreType;
+            private readonly RestoreType _restoreType;
 
-            private ulong _restoreValue;
-            private MergeType _restoreMergeType;
+            private readonly ulong _restoreValue;
+            private readonly MergeType _restoreMergeType;
 
             public bool ReturningFromVisit => _restoreType != RestoreType.None;
 
             public PathBlockState(Block block)
             {
-                Block             = block;
-                _restoreType      = RestoreType.None;
-                _restoreValue     = 0;
+                Block = block;
+                _restoreType = RestoreType.None;
+                _restoreValue = 0;
                 _restoreMergeType = default;
             }
 
             public PathBlockState(int oldStackSize)
             {
-                Block             = null;
-                _restoreType      = RestoreType.PopPushOp;
-                _restoreValue     = (ulong)oldStackSize;
+                Block = null;
+                _restoreType = RestoreType.PopPushOp;
+                _restoreValue = (ulong)oldStackSize;
                 _restoreMergeType = default;
             }
 
             public PathBlockState(ulong syncAddress, MergeType mergeType)
             {
-                Block             = null;
-                _restoreType      = RestoreType.PushBranchOp;
-                _restoreValue     = syncAddress;
+                Block = null;
+                _restoreType = RestoreType.PushBranchOp;
+                _restoreValue = syncAddress;
                 _restoreMergeType = mergeType;
             }
 
@@ -611,9 +621,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             Block target = blocks[pushOp.GetAbsoluteAddress()];
 
-            Stack<PathBlockState> workQueue = new Stack<PathBlockState>();
-            HashSet<Block> visited = new HashSet<Block>();
-            Stack<(ulong, MergeType)> branchStack = new Stack<(ulong, MergeType)>();
+            Stack<PathBlockState> workQueue = new();
+            HashSet<Block> visited = new();
+            Stack<(ulong, MergeType)> branchStack = new();
 
             void Push(PathBlockState pbs)
             {
@@ -748,7 +758,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 InstName.Pbk => MergeType.Brk,
                 InstName.Pcnt => MergeType.Cont,
-                _ => MergeType.Sync
+                _ => MergeType.Sync,
             };
         }
 
@@ -758,7 +768,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 InstName.Brk => MergeType.Brk,
                 InstName.Cont => MergeType.Cont,
-                _ => MergeType.Sync
+                _ => MergeType.Sync,
             };
         }
     }

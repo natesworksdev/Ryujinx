@@ -71,40 +71,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine($"const int {DefaultNames.UndefinedName} = 0;");
             context.AppendLine();
 
-            if (context.Config.Stage == ShaderStage.Compute)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeLocalMemorySize(), 4);
-
-                if (localMemorySize != 0)
-                {
-                    string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                    context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                    context.AppendLine();
-                }
-
-                int sharedMemorySize = BitUtils.DivRoundUp(context.Config.GpuAccessor.QueryComputeSharedMemorySize(), 4);
-
-                if (sharedMemorySize != 0)
-                {
-                    string sharedMemorySizeStr = NumberFormatter.FormatInt(sharedMemorySize);
-
-                    context.AppendLine($"shared uint {DefaultNames.SharedMemoryName}[{sharedMemorySizeStr}];");
-                    context.AppendLine();
-                }
-            }
-            else if (context.Config.LocalMemorySize != 0)
-            {
-                int localMemorySize = BitUtils.DivRoundUp(context.Config.LocalMemorySize, 4);
-
-                string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
-
-                context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
-                context.AppendLine();
-            }
-
             DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
             DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
+            DeclareMemories(context, context.Config.Properties.LocalMemories.Values, isShared: false);
+            DeclareMemories(context, context.Config.Properties.SharedMemories.Values, isShared: true);
 
             var textureDescriptors = context.Config.GetTextureDescriptors();
             if (textureDescriptors.Length != 0)
@@ -238,11 +208,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Shared) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Shared.glsl");
-            }
-
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/MultiplyHighS32.glsl");
@@ -273,25 +238,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleXor.glsl");
             }
 
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreSharedSmallInt) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreSharedSmallInt.glsl");
-            }
-
             if ((info.HelperFunctionsMask & HelperFunctionsMask.SwizzleAdd) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/SwizzleAdd.glsl");
             }
-        }
-
-        private static string GetTfLayout(TransformFeedbackOutput tfOutput)
-        {
-            if (tfOutput.Valid)
-            {
-                return $"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) ";
-            }
-
-            return string.Empty;
         }
 
         public static void DeclareLocals(CodeGenContext context, StructuredFunction function)
@@ -334,7 +284,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 AggregateType.Vector4 | AggregateType.FP64 => "dvec4",
                 AggregateType.Vector4 | AggregateType.S32 => "ivec4",
                 AggregateType.Vector4 | AggregateType.U32 => "uvec4",
-                _ => throw new ArgumentException($"Invalid variable type \"{type}\".")
+                _ => throw new ArgumentException($"Invalid variable type \"{type}\"."),
             };
         }
 
@@ -355,10 +305,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 string layout = buffer.Layout switch
                 {
                     BufferLayout.Std140 => "std140",
-                    _ => "std430"
+                    _ => "std430",
                 };
 
-                context.AppendLine($"layout (binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
+                string set = string.Empty;
+
+                if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+                {
+                    set = $"set = {buffer.Set}, ";
+                }
+
+                context.AppendLine($"layout ({set}binding = {buffer.Binding}, {layout}) {declType} _{buffer.Name}");
                 context.EnterScope();
 
                 foreach (StructureField field in buffer.Type.Fields)
@@ -388,6 +345,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 context.LeaveScope($" {buffer.Name};");
                 context.AppendLine();
+            }
+        }
+
+        private static void DeclareMemories(CodeGenContext context, IEnumerable<MemoryDefinition> memories, bool isShared)
+        {
+            string prefix = isShared ? "shared " : string.Empty;
+
+            foreach (MemoryDefinition memory in memories)
+            {
+                string typeName = GetVarTypeName(context, memory.Type & ~AggregateType.Array);
+
+                if (memory.ArrayLength > 0)
+                {
+                    string arraySize = memory.ArrayLength.ToString(CultureInfo.InvariantCulture);
+
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[{arraySize}];");
+                }
+                else
+                {
+                    context.AppendLine($"{prefix}{typeName} {memory.Name}[];");
+                }
             }
         }
 
@@ -519,7 +497,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     PixelImap.Constant => "flat ",
                     PixelImap.ScreenLinear => "noperspective ",
-                    _ => string.Empty
+                    _ => string.Empty,
                 };
             }
 
@@ -536,7 +514,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         2 => "vec2",
                         3 => "vec3",
                         4 => "vec4",
-                        _ => "float"
+                        _ => "float",
                     };
 
                     context.AppendLine($"layout (location = {attr}) in {type} {name};");
@@ -623,7 +601,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         2 => "vec2",
                         3 => "vec3",
                         4 => "vec4",
-                        _ => "float"
+                        _ => "float",
                     };
 
                     string xfb = string.Empty;
@@ -659,7 +637,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         AttributeType.Sint => "ivec4",
                         AttributeType.Uint => "uvec4",
-                        _ => "vec4"
+                        _ => "vec4",
                     };
 
                 if (context.Config.GpuAccessor.QueryHostReducedPrecision() && context.Config.Stage == ShaderStage.Vertex && attr == 0)
@@ -717,7 +695,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string code = EmbeddedResources.ReadAllText(filename);
 
             code = code.Replace("\t", CodeGenContext.Tab);
-            code = code.Replace("$SHARED_MEM$", DefaultNames.SharedMemoryName);
 
             if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
             {
