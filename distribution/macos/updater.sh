@@ -53,5 +53,5 @@ mv "$NEW_APP_DIRECTORY" "$INSTALL_DIRECTORY"
 if [ "$#" -le 3 ]; then
     open -a "$INSTALL_DIRECTORY"
 else
-    open -a "$INSTALL_DIRECTORY" --args "$APP_ARGUMENTS"
+    open -a "$INSTALL_DIRECTORY" --args "${APP_ARGUMENTS[@]}"
 fi
