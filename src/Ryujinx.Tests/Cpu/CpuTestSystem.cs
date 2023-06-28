@@ -47,9 +47,9 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         [Test, Pairwise]
-        public void MrsMsr_Nzcv([ValueSource("_MrsMsr_Nzcv_")] uint opcodes,
+        public void MrsMsr_Nzcv([ValueSource(nameof(_MrsMsr_Nzcv_))] uint opcodes,
                                 [Values(0u, 1u, 31u)] uint rt,
-                                [ValueSource("_GenNzcv_")] ulong xt)
+                                [ValueSource(nameof(_GenNzcv_))] ulong xt)
         {
             opcodes |= (rt & 31) << 0;
 

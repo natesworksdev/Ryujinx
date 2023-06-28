@@ -37,7 +37,7 @@ namespace Ryujinx.Tests.Cpu
 
 
         [Test, Pairwise]
-        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs([ValueSource("_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_")] uint opcode,
+        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs([ValueSource(nameof(_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_))] uint opcode,
                                                [Values(0u, 13u)] uint rd,
                                                [Values(1u, 13u)] uint rn,
                                                [Values(2u, 13u)] uint rm,
@@ -57,7 +57,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Add_Adds_Rsb_Rsbs([ValueSource("_Add_Adds_Rsb_Rsbs_")] uint opcode,
+        public void Add_Adds_Rsb_Rsbs([ValueSource(nameof(_Add_Adds_Rsb_Rsbs_))] uint opcode,
                                       [Values(0u, 13u)] uint rd,
                                       [Values(1u, 13u)] uint rn,
                                       [Values(2u, 13u)] uint rm,
