@@ -15,16 +15,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _startOffset = -1;
         private int _endOffset = -1;
 
-        private readonly Vector4<float>[] _renderScale = new Vector4<float>[73];
-        private readonly Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private int _fragmentScaleCount;
-
         public SupportBufferUpdater(IRenderer renderer)
         {
             _renderer = renderer;
 
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
-            new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
+            _data.RenderScale.AsSpan().Fill(defaultScale);
+            DirtyRenderScale(0, SupportBuffer.RenderScaleMaxCount);
         }
 
         private void MarkDirty(int startOffset, int byteSize)
@@ -50,33 +47,26 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private void UpdateFragmentRenderScaleCount(int count)
+        private void DirtyFragmentRenderScaleCount()
         {
-            if (_data.FragmentRenderScaleCount.X != count)
-            {
-                _data.FragmentRenderScaleCount.X = count;
-
-                MarkDirty(SupportBuffer.FragmentRenderScaleCountOffset, sizeof(int));
-            }
+            MarkDirty(SupportBuffer.FragmentRenderScaleCountOffset, sizeof(int));
         }
 
-        private void UpdateGenericField<T>(int baseOffset, ReadOnlySpan<T> data, Span<T> target, int offset, int count) where T : unmanaged
+        private void DirtyGenericField<T>(int baseOffset, int offset, int count) where T : unmanaged
         {
-            data.Slice(0, count).CopyTo(target.Slice(offset));
-
             int elemSize = Unsafe.SizeOf<T>();
 
             MarkDirty(baseOffset + offset * elemSize, count * elemSize);
         }
 
-        private void UpdateRenderScale(ReadOnlySpan<Vector4<float>> data, int offset, int count)
+        private void DirtyRenderScale(int offset, int count)
         {
-            UpdateGenericField(SupportBuffer.GraphicsRenderScaleOffset, data, _data.RenderScale.AsSpan(), offset, count);
+            DirtyGenericField<Vector4<float>>(SupportBuffer.GraphicsRenderScaleOffset, offset, count);
         }
 
-        private void UpdateFragmentIsBgra(ReadOnlySpan<Vector4<int>> data, int offset, int count)
+        private void DirtyFragmentIsBgra(int offset, int count)
         {
-            UpdateGenericField(SupportBuffer.FragmentIsBgraOffset, data, _data.FragmentIsBgra.AsSpan(), offset, count);
+            DirtyGenericField<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, offset, count);
         }
 
         private void UpdateViewportInverse(Vector4<float> data)
@@ -88,8 +78,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public void SetRenderTargetScale(float scale)
         {
-            _renderScale[0].X = scale;
-            UpdateRenderScale(_renderScale, 0, 1); // Just the first element.
+            _data.RenderScale[0].X = scale;
+            DirtyRenderScale(0, 1); // Just the first element.
         }
 
         public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
@@ -98,34 +88,34 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             for (int index = 0; index < totalCount; index++)
             {
-                if (_renderScale[1 + index].X != scales[index])
+                if (_data.RenderScale[1 + index].X != scales[index])
                 {
-                    _renderScale[1 + index].X = scales[index];
+                    _data.RenderScale[1 + index].X = scales[index];
                     changed = true;
                 }
             }
 
             // Only update fragment count if there are scales after it for the vertex stage.
-            if (fragmentCount != totalCount && fragmentCount != _fragmentScaleCount)
+            if (fragmentCount != totalCount && fragmentCount != _data.FragmentRenderScaleCount.X)
             {
-                _fragmentScaleCount = fragmentCount;
-                UpdateFragmentRenderScaleCount(_fragmentScaleCount);
+                _data.FragmentRenderScaleCount.X = fragmentCount;
+                DirtyFragmentRenderScaleCount();
             }
 
             if (changed)
             {
-                UpdateRenderScale(_renderScale, 0, 1 + totalCount);
+                DirtyRenderScale(0, 1 + totalCount);
             }
         }
 
         public void SetRenderTargetIsBgra(int index, bool isBgra)
         {
-            bool isBgraChanged = (_fpIsBgra[index].X != 0) != isBgra;
+            bool isBgraChanged = (_data.FragmentIsBgra[index].X != 0) != isBgra;
 
             if (isBgraChanged)
             {
-                _fpIsBgra[index].X = isBgra ? 1 : 0;
-                UpdateFragmentIsBgra(_fpIsBgra, index, 1);
+                _data.FragmentIsBgra[index].X = isBgra ? 1 : 0;
+                DirtyFragmentIsBgra(index, 1);
             }
         }
 
