@@ -115,7 +115,7 @@ namespace Ryujinx.Memory
                 MemoryPermission.ReadAndExecute => MmapProts.PROT_READ | MmapProts.PROT_EXEC,
                 MemoryPermission.ReadWriteExecute => MmapProts.PROT_READ | MmapProts.PROT_WRITE | MmapProts.PROT_EXEC,
                 MemoryPermission.Execute => MmapProts.PROT_EXEC,
-                _ => throw new MemoryProtectionException(permission)
+                _ => throw new MemoryProtectionException(permission),
             };
         }
 

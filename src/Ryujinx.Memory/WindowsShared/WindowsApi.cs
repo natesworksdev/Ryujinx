@@ -96,7 +96,7 @@ namespace Ryujinx.Memory.WindowsShared
                 MemoryPermission.ReadAndExecute => MemoryProtection.ExecuteRead,
                 MemoryPermission.ReadWriteExecute => MemoryProtection.ExecuteReadWrite,
                 MemoryPermission.Execute => MemoryProtection.Execute,
-                _ => throw new MemoryProtectionException(permission)
+                _ => throw new MemoryProtectionException(permission),
             };
         }
     }

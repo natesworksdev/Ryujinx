@@ -34,7 +34,7 @@ namespace Ryujinx.Memory.WindowsShared
             _partialUnmapTrimThread = new Thread(TrimThreadLocalMapLoop)
             {
                 Name = "CPU.PartialUnmapTrimThread",
-                IsBackground = true
+                IsBackground = true,
             };
             _partialUnmapTrimThread.Start();
         }
