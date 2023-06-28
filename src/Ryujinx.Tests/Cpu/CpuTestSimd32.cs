@@ -18,7 +18,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0xf3b10300u, // VABS.S8   D0, D0
                 0xf3b10380u, // VNEG.S8   D0, D0
-                0xf3b00200u  // VPADDL.S8 D0, D0
+                0xf3b00200u, // VPADDL.S8 D0, D0
             };
         }
 
@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0xf3b90700u, // VABS.F32 D0, D0
-                0xf3b90780u  // VNEG.F32 D0, D0
+                0xf3b90780u, // VNEG.F32 D0, D0
             };
         }
         #endregion

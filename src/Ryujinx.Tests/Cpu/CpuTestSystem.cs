@@ -41,7 +41,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0xD53B4200u, // MRS X0, NZCV
-                0xD51B4200u  // MSR NZCV, X0
+                0xD51B4200u, // MSR NZCV, X0
             };
         }
         #endregion

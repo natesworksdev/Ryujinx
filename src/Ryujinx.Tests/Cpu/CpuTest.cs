@@ -256,7 +256,7 @@ namespace Ryujinx.Tests.Cpu
             /// <summary>Round towards Minus Infinity mode.</summary>
             Rm,
             /// <summary>Round towards Zero mode.</summary>
-            Rz
+            Rz,
         }
 
         /// <summary>Floating-point Control Register.</summary>
@@ -269,7 +269,7 @@ namespace Ryujinx.Tests.Cpu
             /// <summary>Default NaN mode control bit.</summary>
             Dn = 25,
             /// <summary>Alternative half-precision control bit.</summary>
-            Ahp = 26
+            Ahp = 26,
         }
 
         /// <summary>Floating-point Status Register.</summary>
@@ -292,7 +292,7 @@ namespace Ryujinx.Tests.Cpu
             Idc = 1 << 7,
 
             /// <summary>Cumulative saturation bit.</summary>
-            Qc = 1 << 27
+            Qc = 1 << 27,
         }
 
         [Flags]
@@ -304,7 +304,7 @@ namespace Ryujinx.Tests.Cpu
             IfNaND = 2,
 
             IfUnderflow = 4,
-            IfOverflow = 8
+            IfOverflow = 8,
         }
 
         protected enum FpTolerances
@@ -312,7 +312,7 @@ namespace Ryujinx.Tests.Cpu
             None,
 
             UpToOneUlpsS,
-            UpToOneUlpsD
+            UpToOneUlpsD,
         }
 
         protected void CompareAgainstUnicorn(

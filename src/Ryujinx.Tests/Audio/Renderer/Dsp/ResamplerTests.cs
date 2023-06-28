@@ -63,7 +63,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
             {
                 VoiceInParameter.SampleRateConversionQuality.High => 3,
                 VoiceInParameter.SampleRateConversionQuality.Default => 1,
-                _ => 0
+                _ => 0,
             };
 
             for (int sample = 0; sample < outputSampleCount; sample++)

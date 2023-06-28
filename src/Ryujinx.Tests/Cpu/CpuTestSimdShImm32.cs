@@ -41,7 +41,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf2880010u, // VSHR.S8  D0, D0, #8
                 0xf2880110u, // VSRA.S8  D0, D0, #8
                 0xf2880210u, // VRSHR.S8 D0, D0, #8
-                0xf2880310u  // VRSRA.S8 D0, D0, #8
+                0xf2880310u, // VRSRA.S8 D0, D0, #8
             };
         }
 
@@ -52,7 +52,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf2900010u, // VSHR.S16  D0, D0, #16
                 0xf2900110u, // VSRA.S16  D0, D0, #16
                 0xf2900210u, // VRSHR.S16 D0, D0, #16
-                0xf2900310u  // VRSRA.S16 D0, D0, #16
+                0xf2900310u, // VRSRA.S16 D0, D0, #16
             };
         }
 
@@ -63,7 +63,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf2a00010u, // VSHR.S32  D0, D0, #32
                 0xf2a00110u, // VSRA.S32  D0, D0, #32
                 0xf2a00210u, // VRSHR.S32 D0, D0, #32
-                0xf2a00310u  // VRSRA.S32 D0, D0, #32
+                0xf2a00310u, // VRSRA.S32 D0, D0, #32
             };
         }
 
@@ -73,7 +73,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0xf2800190u, // VSRA.S64  D0, D0, #64
                 0xf2800290u, // VRSHR.S64 D0, D0, #64
-                0xf2800090u  // VSHR.S64  D0, D0, #64
+                0xf2800090u, // VSHR.S64  D0, D0, #64
             };
         }
 
@@ -83,7 +83,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0xf2800910u, // VORR.I16 D0, #0 (immediate value changes it into QSHRN)
                 0xf2800950u, // VORR.I16 Q0, #0 (immediate value changes it into QRSHRN)
-                0xf2800850u  // VMOV.I16 Q0, #0 (immediate value changes it into RSHRN)
+                0xf2800850u, // VMOV.I16 Q0, #0 (immediate value changes it into RSHRN)
             };
         }
 
@@ -92,7 +92,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0xf3800810u, // VMOV.I16 D0, #0x80 (immediate value changes it into QSHRUN)
-                0xf3800850u  // VMOV.I16 Q0, #0x80 (immediate value changes it into QRSHRUN)
+                0xf3800850u, // VMOV.I16 Q0, #0x80 (immediate value changes it into QRSHRUN)
             };
         }
         #endregion

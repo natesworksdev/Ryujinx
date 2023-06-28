@@ -32,7 +32,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf2000110u, // VAND D0, D0, D0
                 0xf2300110u, // VORN D0, D0, D0
                 0xf2200110u, // VORR D0, D0, D0
-                0xf3000110u  // VEOR D0, D0, D0
+                0xf3000110u, // VEOR D0, D0, D0
             };
         }
 
@@ -43,7 +43,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf2800130u, // VBIC.I32 D0, #0 (A1)
                 0xf2800930u, // VBIC.I16 D0, #0 (A2)
                 0xf2800110u, // VORR.I32 D0, #0 (A1)
-                0xf2800910u  // VORR.I16 D0, #0 (A2)
+                0xf2800910u, // VORR.I16 D0, #0 (A2)
             };
         }
         #endregion

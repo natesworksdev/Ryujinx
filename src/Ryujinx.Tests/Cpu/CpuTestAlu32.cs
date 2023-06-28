@@ -21,7 +21,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe6500f90u, // UADD8  R0, R0, R0
                 0xe6500ff0u, // USUB8  R0, R0, R0
                 0xe6700f90u, // UHADD8 R0, R0, R0
-                0xe6700ff0u  // UHSUB8 R0, R0, R0
+                0xe6700ff0u, // UHSUB8 R0, R0, R0
             };
         }
 
@@ -32,7 +32,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe6a00010u, // SSAT R0, #1, R0, LSL #0
                 0xe6a00050u, // SSAT R0, #1, R0, ASR #32
                 0xe6e00010u, // USAT R0, #0, R0, LSL #0
-                0xe6e00050u  // USAT R0, #0, R0, ASR #32
+                0xe6e00050u, // USAT R0, #0, R0, ASR #32
             };
         }
 
@@ -52,7 +52,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe1b00030u, // LSRS R0, R0, R0
                 0xe1b00010u, // LSLS R0, R0, R0
                 0xe1b00050u, // ASRS R0, R0, R0
-                0xe1b00070u  // RORS R0, R0, R0
+                0xe1b00070u, // RORS R0, R0, R0
             };
         }
         #endregion

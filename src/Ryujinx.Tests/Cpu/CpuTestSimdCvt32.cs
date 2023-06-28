@@ -20,7 +20,7 @@ namespace Ryujinx.Tests.Cpu
                 0xf3ba0500u, // VRINTA.F32 Q0, Q0
                 0xf3ba0680u, // VRINTM.F32 Q0, Q0
                 0xf3ba0400u, // VRINTN.F32 Q0, Q0
-                0xf3ba0780u  // VRINTP.F32 Q0, Q0
+                0xf3ba0780u, // VRINTP.F32 Q0, Q0
             };
         }
         #endregion

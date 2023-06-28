@@ -35,7 +35,7 @@ namespace Ryujinx.Tests.Cpu
                 0b1110_0,
                 0b1111_0,
 
-                0b1110_1
+                0b1110_1,
             };
 
             uint opcode = 0xf2800010u; // VMOV.I32 D0, #0

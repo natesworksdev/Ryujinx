@@ -15,7 +15,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x1E201000u // FMOV S0, #2.0
+                0x1E201000u, // FMOV S0, #2.0
             };
         }
 
@@ -23,7 +23,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x1E601000u // FMOV D0, #2.0
+                0x1E601000u, // FMOV D0, #2.0
             };
         }
         #endregion

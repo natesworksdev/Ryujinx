@@ -95,7 +95,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x2F009400u, // BIC V0.4H, #0
-                0x0F009400u  // ORR V0.4H, #0
+                0x0F009400u, // ORR V0.4H, #0
             };
         }
 
@@ -104,7 +104,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x2F001400u, // BIC V0.2S, #0
-                0x0F001400u  // ORR V0.2S, #0
+                0x0F001400u, // ORR V0.2S, #0
             };
         }
 
@@ -112,7 +112,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x0F00F400u // FMOV V0.2S, #2.0
+                0x0F00F400u, // FMOV V0.2S, #2.0
             };
         }
 
@@ -120,7 +120,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x4F00F400u // FMOV V0.4S, #2.0
+                0x4F00F400u, // FMOV V0.4S, #2.0
             };
         }
 
@@ -128,7 +128,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x6F00F400u // FMOV V0.2D, #2.0
+                0x6F00F400u, // FMOV V0.2D, #2.0
             };
         }
 
@@ -136,7 +136,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x0F00E400u // MOVI V0.8B, #0
+                0x0F00E400u, // MOVI V0.8B, #0
             };
         }
 
@@ -145,7 +145,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0F008400u, // MOVI V0.4H, #0
-                0x2F008400u  // MVNI V0.4H, #0
+                0x2F008400u, // MVNI V0.4H, #0
             };
         }
 
@@ -154,7 +154,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0F000400u, // MOVI V0.2S, #0
-                0x2F000400u  // MVNI V0.2S, #0
+                0x2F000400u, // MVNI V0.2S, #0
             };
         }
 
@@ -163,7 +163,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0F00C400u, // MOVI V0.2S, #0, MSL #8
-                0x2F00C400u  // MVNI V0.2S, #0, MSL #8
+                0x2F00C400u, // MVNI V0.2S, #0, MSL #8
             };
         }
 
@@ -171,7 +171,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x2F00E400u // MOVI D0, #0
+                0x2F00E400u, // MOVI D0, #0
             };
         }
 
@@ -179,7 +179,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new[]
             {
-                0x6F00E400u // MOVI V0.2D, #0
+                0x6F00E400u, // MOVI V0.2D, #0
             };
         }
         #endregion

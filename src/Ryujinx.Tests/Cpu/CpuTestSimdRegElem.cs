@@ -33,7 +33,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2F404000u, // MLS      V0.4H, V0.4H, V0.H[0]
                 0x0F408000u, // MUL      V0.4H, V0.4H, V0.H[0]
                 0x0F40C000u, // SQDMULH  V0.4H, V0.4H, V0.H[0]
-                0x0F40D000u  // SQRDMULH V0.4H, V0.4H, V0.H[0]
+                0x0F40D000u, // SQRDMULH V0.4H, V0.4H, V0.H[0]
             };
         }
 
@@ -45,7 +45,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2F804000u, // MLS      V0.2S, V0.2S, V0.S[0]
                 0x0F808000u, // MUL      V0.2S, V0.2S, V0.S[0]
                 0x0F80C000u, // SQDMULH  V0.2S, V0.2S, V0.S[0]
-                0x0F80D000u  // SQRDMULH V0.2S, V0.2S, V0.S[0]
+                0x0F80D000u, // SQRDMULH V0.2S, V0.2S, V0.S[0]
             };
         }
 
@@ -58,7 +58,7 @@ namespace Ryujinx.Tests.Cpu
                 0x0F40A000u, // SMULL V0.4S, V0.4H, V0.H[0]
                 0x2F402000u, // UMLAL V0.4S, V0.4H, V0.H[0]
                 0x2F406000u, // UMLSL V0.4S, V0.4H, V0.H[0]
-                0x2F40A000u  // UMULL V0.4S, V0.4H, V0.H[0]
+                0x2F40A000u, // UMULL V0.4S, V0.4H, V0.H[0]
             };
         }
 
@@ -71,7 +71,7 @@ namespace Ryujinx.Tests.Cpu
                 0x0F80A000u, // SMULL V0.2D, V0.2S, V0.S[0]
                 0x2F802000u, // UMLAL V0.2D, V0.2S, V0.S[0]
                 0x2F806000u, // UMLSL V0.2D, V0.2S, V0.S[0]
-                0x2F80A000u  // UMULL V0.2D, V0.2S, V0.S[0]
+                0x2F80A000u, // UMULL V0.2D, V0.2S, V0.S[0]
             };
         }
         #endregion

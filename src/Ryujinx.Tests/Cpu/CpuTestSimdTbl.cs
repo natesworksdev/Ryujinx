@@ -101,7 +101,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E000000u, // TBL V0.8B, { V0.16B }, V0.8B
-                0x0E001000u  // TBX V0.8B, { V0.16B }, V0.8B
+                0x0E001000u, // TBX V0.8B, { V0.16B }, V0.8B
             };
         }
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E002000u, // TBL V0.8B, { V0.16B, V1.16B }, V0.8B
-                0x0E003000u  // TBX V0.8B, { V0.16B, V1.16B }, V0.8B
+                0x0E003000u, // TBX V0.8B, { V0.16B, V1.16B }, V0.8B
             };
         }
 
@@ -119,7 +119,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E004000u, // TBL V0.8B, { V0.16B, V1.16B, V2.16B }, V0.8B
-                0x0E005000u  // TBX V0.8B, { V0.16B, V1.16B, V2.16B }, V0.8B
+                0x0E005000u, // TBX V0.8B, { V0.16B, V1.16B, V2.16B }, V0.8B
             };
         }
 
@@ -128,7 +128,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E006000u, // TBL V0.8B, { V0.16B, V1.16B, V2.16B, V3.16B }, V0.8B
-                0x0E006000u  // TBX V0.8B, { V0.16B, V1.16B, V2.16B, V3.16B }, V0.8B
+                0x0E006000u, // TBX V0.8B, { V0.16B, V1.16B, V2.16B, V3.16B }, V0.8B
             };
         }
         #endregion

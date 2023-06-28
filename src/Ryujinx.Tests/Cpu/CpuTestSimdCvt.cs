@@ -203,7 +203,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E280000u, // FCVTPS W0, S0
                 0x1E290000u, // FCVTPU W0, S0
                 0x1E380000u, // FCVTZS W0, S0
-                0x1E390000u  // FCVTZU W0, S0
+                0x1E390000u, // FCVTZU W0, S0
             };
         }
 
@@ -219,7 +219,7 @@ namespace Ryujinx.Tests.Cpu
                 0x9E280000u, // FCVTPS X0, S0
                 0x9E290000u, // FCVTPU X0, S0
                 0x9E380000u, // FCVTZS X0, S0
-                0x9E390000u  // FCVTZU X0, S0
+                0x9E390000u, // FCVTZU X0, S0
             };
         }
 
@@ -235,7 +235,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E680000u, // FCVTPS W0, D0
                 0x1E690000u, // FCVTPU W0, D0
                 0x1E780000u, // FCVTZS W0, D0
-                0x1E790000u  // FCVTZU W0, D0
+                0x1E790000u, // FCVTZU W0, D0
             };
         }
 
@@ -251,7 +251,7 @@ namespace Ryujinx.Tests.Cpu
                 0x9E680000u, // FCVTPS X0, D0
                 0x9E690000u, // FCVTPU X0, D0
                 0x9E780000u, // FCVTZS X0, D0
-                0x9E790000u  // FCVTZU X0, D0
+                0x9E790000u, // FCVTZU X0, D0
             };
         }
 
@@ -260,7 +260,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E188000u, // FCVTZS W0, S0, #32
-                0x1E198000u  // FCVTZU W0, S0, #32
+                0x1E198000u, // FCVTZU W0, S0, #32
             };
         }
 
@@ -269,7 +269,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E180000u, // FCVTZS X0, S0, #64
-                0x9E190000u  // FCVTZU X0, S0, #64
+                0x9E190000u, // FCVTZU X0, S0, #64
             };
         }
 
@@ -278,7 +278,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E588000u, // FCVTZS W0, D0, #32
-                0x1E598000u  // FCVTZU W0, D0, #32
+                0x1E598000u, // FCVTZU W0, D0, #32
             };
         }
 
@@ -287,7 +287,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E580000u, // FCVTZS X0, D0, #64
-                0x9E590000u  // FCVTZU X0, D0, #64
+                0x9E590000u, // FCVTZU X0, D0, #64
             };
         }
 
@@ -296,7 +296,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E220000u, // SCVTF S0, W0
-                0x1E230000u  // UCVTF S0, W0
+                0x1E230000u, // UCVTF S0, W0
             };
         }
 
@@ -305,7 +305,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E620000u, // SCVTF D0, W0
-                0x1E630000u  // UCVTF D0, W0
+                0x1E630000u, // UCVTF D0, W0
             };
         }
 
@@ -314,7 +314,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E220000u, // SCVTF S0, X0
-                0x9E230000u  // UCVTF S0, X0
+                0x9E230000u, // UCVTF S0, X0
             };
         }
 
@@ -323,7 +323,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E620000u, // SCVTF D0, X0
-                0x9E630000u  // UCVTF D0, X0
+                0x9E630000u, // UCVTF D0, X0
             };
         }
 
@@ -332,7 +332,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E028000u, // SCVTF S0, W0, #32
-                0x1E038000u  // UCVTF S0, W0, #32
+                0x1E038000u, // UCVTF S0, W0, #32
             };
         }
 
@@ -341,7 +341,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E428000u, // SCVTF D0, W0, #32
-                0x1E438000u  // UCVTF D0, W0, #32
+                0x1E438000u, // UCVTF D0, W0, #32
             };
         }
 
@@ -350,7 +350,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E020000u, // SCVTF S0, X0, #64
-                0x9E030000u  // UCVTF S0, X0, #64
+                0x9E030000u, // UCVTF S0, X0, #64
             };
         }
 
@@ -359,7 +359,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x9E420000u, // SCVTF D0, X0, #64
-                0x9E430000u  // UCVTF D0, X0, #64
+                0x9E430000u, // UCVTF D0, X0, #64
             };
         }
         #endregion

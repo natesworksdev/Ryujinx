@@ -32,7 +32,7 @@ namespace Ryujinx.Tests.Cpu
 
             // LD4
             0b0000,
-            0b0001
+            0b0001,
         };
 
         [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
@@ -204,7 +204,7 @@ namespace Ryujinx.Tests.Cpu
                 // Note: 3rd 0 leaves a space for "D".
                 0b0100, // Increment after.
                 0b0101, // Increment after. (!)
-                0b1001  // Decrement before. (!)
+                0b1001, // Decrement before. (!)
             };
 
             opcode |= ((vldmModes[mode] & 15) << 21);

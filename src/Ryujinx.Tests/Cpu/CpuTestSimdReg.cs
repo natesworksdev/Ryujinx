@@ -218,7 +218,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E220820u, // FMUL  S0, S1, S2
                 0x5E22DC20u, // FMULX S0, S1, S2
                 0x1E228820u, // FNMUL S0, S1, S2
-                0x1E223820u  // FSUB  S0, S1, S2
+                0x1E223820u, // FSUB  S0, S1, S2
             };
         }
 
@@ -232,7 +232,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E620820u, // FMUL  D0, D1, D2
                 0x5E62DC20u, // FMULX D0, D1, D2
                 0x1E628820u, // FNMUL D0, D1, D2
-                0x1E623820u  // FSUB  D0, D1, D2
+                0x1E623820u, // FSUB  D0, D1, D2
             };
         }
 
@@ -246,7 +246,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2E20FC00u, // FDIV  V0.2S, V0.2S, V0.2S
                 0x2E20DC00u, // FMUL  V0.2S, V0.2S, V0.2S
                 0x0E20DC00u, // FMULX V0.2S, V0.2S, V0.2S
-                0x0EA0D400u  // FSUB  V0.2S, V0.2S, V0.2S
+                0x0EA0D400u, // FSUB  V0.2S, V0.2S, V0.2S
             };
         }
 
@@ -260,7 +260,7 @@ namespace Ryujinx.Tests.Cpu
                 0x6E60FC00u, // FDIV  V0.2D, V0.2D, V0.2D
                 0x6E60DC00u, // FMUL  V0.2D, V0.2D, V0.2D
                 0x4E60DC00u, // FMULX V0.2D, V0.2D, V0.2D
-                0x4EE0D400u  // FSUB  V0.2D, V0.2D, V0.2D
+                0x4EE0D400u, // FSUB  V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -272,7 +272,7 @@ namespace Ryujinx.Tests.Cpu
                 0x7EA2EC20u, // FACGT S0, S1, S2
                 0x5E22E420u, // FCMEQ S0, S1, S2
                 0x7E22E420u, // FCMGE S0, S1, S2
-                0x7EA2E420u  // FCMGT S0, S1, S2
+                0x7EA2E420u, // FCMGT S0, S1, S2
             };
         }
 
@@ -284,7 +284,7 @@ namespace Ryujinx.Tests.Cpu
                 0x7EE2EC20u, // FACGT D0, D1, D2
                 0x5E62E420u, // FCMEQ D0, D1, D2
                 0x7E62E420u, // FCMGE D0, D1, D2
-                0x7EE2E420u  // FCMGT D0, D1, D2
+                0x7EE2E420u, // FCMGT D0, D1, D2
             };
         }
 
@@ -296,7 +296,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2EA0EC00u, // FACGT V0.2S, V0.2S, V0.2S
                 0x0E20E400u, // FCMEQ V0.2S, V0.2S, V0.2S
                 0x2E20E400u, // FCMGE V0.2S, V0.2S, V0.2S
-                0x2EA0E400u  // FCMGT V0.2S, V0.2S, V0.2S
+                0x2EA0E400u, // FCMGT V0.2S, V0.2S, V0.2S
             };
         }
 
@@ -308,7 +308,7 @@ namespace Ryujinx.Tests.Cpu
                 0x6EE0EC00u, // FACGT V0.2D, V0.2D, V0.2D
                 0x4E60E400u, // FCMEQ V0.2D, V0.2D, V0.2D
                 0x6E60E400u, // FCMGE V0.2D, V0.2D, V0.2D
-                0x6EE0E400u  // FCMGT V0.2D, V0.2D, V0.2D
+                0x6EE0E400u, // FCMGT V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -317,7 +317,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E222020u, // FCMP  S1, S2
-                0x1E222030u  // FCMPE S1, S2
+                0x1E222030u, // FCMPE S1, S2
             };
         }
 
@@ -326,7 +326,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x1E622020u, // FCMP  D1, D2
-                0x1E622030u  // FCMPE D1, D2
+                0x1E622030u, // FCMPE D1, D2
             };
         }
 
@@ -337,7 +337,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1F020C20u, // FMADD  S0, S1, S2, S3
                 0x1F028C20u, // FMSUB  S0, S1, S2, S3
                 0x1F220C20u, // FNMADD S0, S1, S2, S3
-                0x1F228C20u  // FNMSUB S0, S1, S2, S3
+                0x1F228C20u, // FNMSUB S0, S1, S2, S3
             };
         }
 
@@ -348,7 +348,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1F420C20u, // FMADD  D0, D1, D2, D3
                 0x1F428C20u, // FMSUB  D0, D1, D2, D3
                 0x1F620C20u, // FNMADD D0, D1, D2, D3
-                0x1F628C20u  // FNMSUB D0, D1, D2, D3
+                0x1F628C20u, // FNMSUB D0, D1, D2, D3
             };
         }
 
@@ -359,7 +359,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E224820u, // FMAX   S0, S1, S2
                 0x1E226820u, // FMAXNM S0, S1, S2
                 0x1E225820u, // FMIN   S0, S1, S2
-                0x1E227820u  // FMINNM S0, S1, S2
+                0x1E227820u, // FMINNM S0, S1, S2
             };
         }
 
@@ -370,7 +370,7 @@ namespace Ryujinx.Tests.Cpu
                 0x1E624820u, // FMAX   D0, D1, D2
                 0x1E626820u, // FMAXNM D0, D1, D2
                 0x1E625820u, // FMIN   D0, D1, D2
-                0x1E627820u  // FMINNM D0, D1, D2
+                0x1E627820u, // FMINNM D0, D1, D2
             };
         }
 
@@ -385,7 +385,7 @@ namespace Ryujinx.Tests.Cpu
                 0x0EA0F400u, // FMIN    V0.2S, V0.2S, V0.2S
                 0x0EA0C400u, // FMINNM  V0.2S, V0.2S, V0.2S
                 0x2EA0C400u, // FMINNMP V0.2S, V0.2S, V0.2S
-                0x2EA0F400u  // FMINP   V0.2S, V0.2S, V0.2S
+                0x2EA0F400u, // FMINP   V0.2S, V0.2S, V0.2S
             };
         }
 
@@ -400,7 +400,7 @@ namespace Ryujinx.Tests.Cpu
                 0x4EE0F400u, // FMIN    V0.2D, V0.2D, V0.2D
                 0x4EE0C400u, // FMINNM  V0.2D, V0.2D, V0.2D
                 0x6EE0C400u, // FMINNMP V0.2D, V0.2D, V0.2D
-                0x6EE0F400u  // FMINP   V0.2D, V0.2D, V0.2D
+                0x6EE0F400u, // FMINP   V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -409,7 +409,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E20CC00u, // FMLA V0.2S, V0.2S, V0.2S
-                0x0EA0CC00u  // FMLS V0.2S, V0.2S, V0.2S
+                0x0EA0CC00u, // FMLS V0.2S, V0.2S, V0.2S
             };
         }
 
@@ -418,7 +418,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x4E60CC00u, // FMLA V0.2D, V0.2D, V0.2D
-                0x4EE0CC00u  // FMLS V0.2D, V0.2D, V0.2D
+                0x4EE0CC00u, // FMLS V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -427,7 +427,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x5E22FC20u, // FRECPS  S0, S1, S2
-                0x5EA2FC20u  // FRSQRTS S0, S1, S2
+                0x5EA2FC20u, // FRSQRTS S0, S1, S2
             };
         }
 
@@ -436,7 +436,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x5E62FC20u, // FRECPS  D0, D1, D2
-                0x5EE2FC20u  // FRSQRTS D0, D1, D2
+                0x5EE2FC20u, // FRSQRTS D0, D1, D2
             };
         }
 
@@ -445,7 +445,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x0E20FC00u, // FRECPS  V0.2S, V0.2S, V0.2S
-                0x0EA0FC00u  // FRSQRTS V0.2S, V0.2S, V0.2S
+                0x0EA0FC00u, // FRSQRTS V0.2S, V0.2S, V0.2S
             };
         }
 
@@ -454,7 +454,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x4E60FC00u, // FRECPS  V0.2D, V0.2D, V0.2D
-                0x4EE0FC00u  // FRSQRTS V0.2D, V0.2D, V0.2D
+                0x4EE0FC00u, // FRSQRTS V0.2D, V0.2D, V0.2D
             };
         }
 
@@ -464,7 +464,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x0E209400u, // MLA V0.8B, V0.8B, V0.8B
                 0x2E209400u, // MLS V0.8B, V0.8B, V0.8B
-                0x0E209C00u  // MUL V0.8B, V0.8B, V0.8B
+                0x0E209C00u, // MUL V0.8B, V0.8B, V0.8B
             };
         }
 
@@ -474,7 +474,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x4E209400u, // MLA V0.16B, V0.16B, V0.16B
                 0x6E209400u, // MLS V0.16B, V0.16B, V0.16B
-                0x4E209C00u  // MUL V0.16B, V0.16B, V0.16B
+                0x4E209C00u, // MUL V0.16B, V0.16B, V0.16B
             };
         }
 
@@ -485,7 +485,7 @@ namespace Ryujinx.Tests.Cpu
                 0x5E000000u, // SHA1C   Q0,    S0,    V0.4S
                 0x5E002000u, // SHA1M   Q0,    S0,    V0.4S
                 0x5E001000u, // SHA1P   Q0,    S0,    V0.4S
-                0x5E003000u  // SHA1SU0 V0.4S, V0.4S, V0.4S
+                0x5E003000u, // SHA1SU0 V0.4S, V0.4S, V0.4S
             };
         }
 
@@ -495,7 +495,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 0x5E004000u, // SHA256H   Q0,    Q0,    V0.4S
                 0x5E005000u, // SHA256H2  Q0,    Q0,    V0.4S
-                0x5E006000u  // SHA256SU1 V0.4S, V0.4S, V0.4S
+                0x5E006000u, // SHA256SU1 V0.4S, V0.4S, V0.4S
             };
         }
 
@@ -510,7 +510,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2E206400u, // UMAX  V0.8B, V0.8B, V0.8B
                 0x2E20A400u, // UMAXP V0.8B, V0.8B, V0.8B
                 0x2E206C00u, // UMIN  V0.8B, V0.8B, V0.8B
-                0x2E20AC00u  // UMINP V0.8B, V0.8B, V0.8B
+                0x2E20AC00u, // UMINP V0.8B, V0.8B, V0.8B
             };
         }
 
@@ -523,7 +523,7 @@ namespace Ryujinx.Tests.Cpu
                 0x0E20C000u, // SMULL V0.8H, V0.8B, V0.8B
                 0x2E208000u, // UMLAL V0.8H, V0.8B, V0.8B
                 0x2E20A000u, // UMLSL V0.8H, V0.8B, V0.8B
-                0x2E20C000u  // UMULL V0.8H, V0.8B, V0.8B
+                0x2E20C000u, // UMULL V0.8H, V0.8B, V0.8B
             };
         }
 
@@ -536,7 +536,7 @@ namespace Ryujinx.Tests.Cpu
                 0x4E20C000u, // SMULL2 V0.8H, V0.16B, V0.16B
                 0x6E208000u, // UMLAL2 V0.8H, V0.16B, V0.16B
                 0x6E20A000u, // UMLSL2 V0.8H, V0.16B, V0.16B
-                0x6E20C000u  // UMULL2 V0.8H, V0.16B, V0.16B
+                0x6E20C000u, // UMULL2 V0.8H, V0.16B, V0.16B
             };
         }
 
@@ -545,7 +545,7 @@ namespace Ryujinx.Tests.Cpu
             return new[]
             {
                 0x5EE04400u, // SSHL D0, D0, D0
-                0x7EE04400u  // USHL D0, D0, D0
+                0x7EE04400u, // USHL D0, D0, D0
             };
         }
 
@@ -560,7 +560,7 @@ namespace Ryujinx.Tests.Cpu
                 0x2E205C00u, // UQRSHL V0.8B, V0.8B, V0.8B
                 0x2E204C00u, // UQSHL  V0.8B, V0.8B, V0.8B
                 0x2E205400u, // URSHL  V0.8B, V0.8B, V0.8B
-                0x2E204400u  // USHL   V0.8B, V0.8B, V0.8B
+                0x2E204400u, // USHL   V0.8B, V0.8B, V0.8B
             };
         }
 
@@ -575,7 +575,7 @@ namespace Ryujinx.Tests.Cpu
                 0x6E205C00u, // UQRSHL V0.16B, V0.16B, V0.16B
                 0x6E204C00u, // UQSHL  V0.16B, V0.16B, V0.16B
                 0x6E205400u, // URSHL  V0.16B, V0.16B, V0.16B
-                0x6E204400u  // USHL   V0.16B, V0.16B, V0.16B
+                0x6E204400u, // USHL   V0.16B, V0.16B, V0.16B
             };
         }
         #endregion

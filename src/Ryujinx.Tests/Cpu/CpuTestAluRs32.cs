@@ -17,7 +17,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe0800000u, // ADD R0, R0, R0, LSL #0
                 0xe0900000u, // ADDS R0, R0, R0, LSL #0
                 0xe0600000u, // RSB R0, R0, R0, LSL #0
-                0xe0700000u  // RSBS R0, R0, R0, LSL #0
+                0xe0700000u, // RSBS R0, R0, R0, LSL #0
             };
         }
 
@@ -30,7 +30,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe0e00000u, // RSC R0, R0, R0
                 0xe0f00000u, // RSCS R0, R0, R0
                 0xe0c00000u, // SBC R0, R0, R0
-                0xe0d00000u  // SBCS R0, R0, R0
+                0xe0d00000u, // SBCS R0, R0, R0
             };
         }
         #endregion
