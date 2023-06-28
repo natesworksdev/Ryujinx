@@ -320,21 +320,21 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             QueueCommand();
         }
 
-        public ITexture CreateTexture(TextureCreateInfo info, float scale)
+        public ITexture CreateTexture(TextureCreateInfo info)
         {
             if (IsGpuThread())
             {
-                var texture = new ThreadedTexture(this, info, scale);
-                New<CreateTextureCommand>().Set(Ref(texture), info, scale);
+                var texture = new ThreadedTexture(this, info);
+                New<CreateTextureCommand>().Set(Ref(texture), info);
                 QueueCommand();
 
                 return texture;
             }
             else
             {
-                var texture = new ThreadedTexture(this, info, scale)
+                var texture = new ThreadedTexture(this, info)
                 {
-                    Base = _baseRenderer.CreateTexture(info, scale),
+                    Base = _baseRenderer.CreateTexture(info),
                 };
 
                 return texture;

@@ -432,26 +432,26 @@ namespace Ryujinx.Graphics.Vulkan
             return new SamplerHolder(this, _device, info);
         }
 
-        public ITexture CreateTexture(TextureCreateInfo info, float scale)
+        public ITexture CreateTexture(TextureCreateInfo info)
         {
             if (info.Target == Target.TextureBuffer)
             {
-                return new TextureBuffer(this, info, scale);
+                return new TextureBuffer(this, info);
             }
 
-            return CreateTextureView(info, scale);
+            return CreateTextureView(info);
         }
 
-        internal TextureView CreateTextureView(TextureCreateInfo info, float scale)
+        internal TextureView CreateTextureView(TextureCreateInfo info)
         {
             // This should be disposed when all views are destroyed.
-            var storage = CreateTextureStorage(info, scale);
+            var storage = CreateTextureStorage(info);
             return storage.CreateView(info, 0, 0);
         }
 
-        internal TextureStorage CreateTextureStorage(TextureCreateInfo info, float scale)
+        internal TextureStorage CreateTextureStorage(TextureCreateInfo info)
         {
-            return new TextureStorage(this, _device, info, scale);
+            return new TextureStorage(this, _device, info);
         }
 
         public void DeleteBuffer(BufferHandle buffer)

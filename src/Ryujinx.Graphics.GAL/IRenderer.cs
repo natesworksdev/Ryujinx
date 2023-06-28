@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.GAL
         IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info);
 
         ISampler CreateSampler(SamplerCreateInfo info);
-        ITexture CreateTexture(TextureCreateInfo info, float scale);
+        ITexture CreateTexture(TextureCreateInfo info);
         bool PrepareHostMapping(nint address, ulong size);
 
         void CreateSync(ulong id, bool strict);
