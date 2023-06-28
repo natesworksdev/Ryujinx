@@ -600,6 +600,8 @@ namespace Ryujinx.Headless.SDL2
 
             _window = window;
 
+            _window.IsFullscreen = options.IsFullscreen;
+
             _emulationContext = InitializeEmulationContext(window, renderer, options);
 
             SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
