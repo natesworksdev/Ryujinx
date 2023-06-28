@@ -21,7 +21,7 @@ namespace Ryujinx.Common.SystemInfo
 
             ulong totalRAM = 0;
 
-            if (SysctlByName("hw.memsize", ref totalRAM) != 0)  // Bytes
+            if (SysctlByName("hw.memsize", ref totalRAM) != 0) // Bytes
             {
                 totalRAM = 0;
             }
