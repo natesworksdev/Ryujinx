@@ -19,7 +19,7 @@ namespace Ryujinx.Common.Configuration
         {
             UserProfile,
             Portable,
-            Custom
+            Custom,
         }
 
         public static LaunchMode Mode { get; private set; }
@@ -36,7 +36,7 @@ namespace Ryujinx.Common.Configuration
         private const string DefaultModsDir = "mods";
 
         public static string CustomModsPath { get; set; }
-        public static string CustomSdModsPath {get; set; }
+        public static string CustomSdModsPath { get; set; }
         public static string CustomNandPath { get; set; } // TODO: Actually implement this into VFS
         public static string CustomSdCardPath { get; set; } // TODO: Actually implement this into VFS
 
@@ -154,7 +154,7 @@ namespace Ryujinx.Common.Configuration
             }
         }
 
-        public static string GetModsPath()   => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
+        public static string GetModsPath() => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
         public static string GetSdModsPath() => CustomSdModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultSdcardDir, "atmosphere")).FullName;
     }
 }
