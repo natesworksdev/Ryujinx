@@ -162,23 +162,8 @@ namespace Ryujinx.Headless.SDL2
             string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText) ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-            Console.Write("YOLO IsFullscreen :\n");
-            Console.Write(IsFullscreen);
-            Console.Write("YOLO IsExclusiveFullscreen :\n");
-            Console.Write(IsExclusiveFullscreen);
-            Console.Write("YOLO ExclusiveFullscreenWidth :\n");
-            Console.Write(ExclusiveFullscreenWidth);
-            Console.Write("YOLO ExclusiveFullscreenHeight :\n");
-            Console.Write(ExclusiveFullscreenHeight);
-
             if (IsExclusiveFullscreen)
             {
-                Console.Write("YOLO GOT 111\n");
-                Console.Write("YOLO GOT 111\n");
-                Console.Write("YOLO GOT 111\n");
-                Console.Write("YOLO GOT 111\n");
-                Console.Write("YOLO GOT 111\n");
-
                 SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
 
@@ -187,25 +172,12 @@ namespace Ryujinx.Headless.SDL2
 
             else if (IsFullscreen)
             {
-                Console.Write("YOLO GOT 222\n");
-                Console.Write("YOLO GOT 222\n");
-                Console.Write("YOLO GOT 222\n");
-                Console.Write("YOLO GOT 222\n");
-                Console.Write("YOLO GOT 222\n");
-
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
 
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
 
             else {
-
-                Console.Write("YOLO GOT 333\n");
-                Console.Write("YOLO GOT 333\n");
-                Console.Write("YOLO GOT 333\n");
-                Console.Write("YOLO GOT 333\n");
-                Console.Write("YOLO GOT 333\n");
-
                 SDL_WindowFlags fullscreenFlag = 0;
 
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
