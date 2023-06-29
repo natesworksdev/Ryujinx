@@ -159,11 +159,8 @@ namespace Ryujinx.Headless.SDL2
             string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText) ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-
-
             SDL_WindowFlags fullscreenFlag = IsFullscreen ? SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 
-            // WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, displayBounds.w, displayBounds.h, DefaultFlags | fullscreenFlag | GetWindowFlags());
             WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
 
             if (WindowHandle == IntPtr.Zero)
@@ -179,14 +176,6 @@ namespace Ryujinx.Headless.SDL2
 
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
-
-
-            // SDL_GetRendererOutputSize(Renderer, Width, Height);
-
-            // Console.WriteLine(Width);
-            // Console.WriteLine(Height);
-
-
 
             Width = DefaultWidth;
             Height = DefaultHeight;
