@@ -4,6 +4,8 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
+using Ryujinx.Graphics.Gpu;
+using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.Ui;
@@ -30,7 +32,7 @@ namespace Ryujinx.Headless.SDL2
         private const SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
         private const int TargetFps = 60;
 
-        private static ConcurrentQueue<Action> MainThreadActions = new ConcurrentQueue<Action>();
+        private static readonly ConcurrentQueue<Action> _mainThreadActions = new();
 
         [LibraryImport("SDL2")]
         // TODO: Remove this as soon as SDL2-CS was updated to expose this method publicly
@@ -38,7 +40,7 @@ namespace Ryujinx.Headless.SDL2
 
         public static void QueueMainThreadAction(Action action)
         {
-            MainThreadActions.Enqueue(action);
+            _mainThreadActions.Enqueue(action);
         }
 
         public NpadManager NpadManager { get; }
@@ -56,9 +58,9 @@ namespace Ryujinx.Headless.SDL2
         public bool IsFullscreen { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
-        private InputManager _inputManager;
-        private IKeyboard _keyboardInterface;
-        private GraphicsDebugLevel _glLogLevel;
+        private readonly InputManager _inputManager;
+        private readonly IKeyboard _keyboardInterface;
+        private readonly GraphicsDebugLevel _glLogLevel;
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
@@ -72,8 +74,8 @@ namespace Ryujinx.Headless.SDL2
 
         private string _gpuVendorName;
 
-        private AspectRatio _aspectRatio;
-        private bool _enableMouse;
+        private readonly AspectRatio _aspectRatio;
+        private readonly bool _enableMouse;
 
         public WindowBase(
             InputManager inputManager,
@@ -195,9 +197,6 @@ namespace Ryujinx.Headless.SDL2
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
                         break;
-
-                    default:
-                        break;
                 }
             }
             else
@@ -263,7 +262,7 @@ namespace Ryujinx.Headless.SDL2
                     if (_ticks >= _ticksPerFrame)
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
-                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        float scale = GraphicsConfig.ResScale;
                         if (scale != 1)
                         {
                             dockedMode += $" ({scale}x)";
@@ -312,9 +311,9 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent.Dispose();
         }
 
-        public void ProcessMainThreadQueue()
+        public static void ProcessMainThreadQueue()
         {
-            while (MainThreadActions.TryDequeue(out Action action))
+            while (_mainThreadActions.TryDequeue(out Action action))
             {
                 action();
             }
@@ -337,7 +336,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent.Set();
         }
 
-        private void NVStutterWorkaround()
+        private void NvidiaStutterWorkaround()
         {
             while (_isActive)
             {
@@ -351,7 +350,7 @@ namespace Ryujinx.Headless.SDL2
 
                 // TODO: This should be removed when the issue with the GateThread is resolved.
 
-                ThreadPool.QueueUserWorkItem((state) => { });
+                ThreadPool.QueueUserWorkItem(state => { });
                 Thread.Sleep(300);
             }
         }
@@ -399,20 +398,20 @@ namespace Ryujinx.Headless.SDL2
 
             InitializeWindow();
 
-            Thread renderLoopThread = new Thread(Render)
+            Thread renderLoopThread = new(Render)
             {
-                Name = "GUI.RenderLoop"
+                Name = "GUI.RenderLoop",
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = null;
-            if (Renderer is Graphics.OpenGL.OpenGLRenderer)
+            Thread nvidiaStutterWorkaround = null;
+            if (Renderer is OpenGLRenderer)
             {
-                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                nvidiaStutterWorkaround = new Thread(NvidiaStutterWorkaround)
                 {
-                    Name = "GUI.NVStutterWorkaround"
+                    Name = "GUI.NvidiaStutterWorkaround",
                 };
-                nvStutterWorkaround.Start();
+                nvidiaStutterWorkaround.Start();
             }
 
             MainLoop();
@@ -421,7 +420,7 @@ namespace Ryujinx.Headless.SDL2
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
             _gpuDoneEvent.WaitOne();
             _gpuDoneEvent.Dispose();
-            nvStutterWorkaround?.Join();
+            nvidiaStutterWorkaround?.Join();
 
             Exit();
         }
@@ -468,13 +467,13 @@ namespace Ryujinx.Headless.SDL2
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText)
         {
-            SDL_MessageBoxData data = new SDL_MessageBoxData
+            SDL_MessageBoxData data = new()
             {
                 title = title,
                 message = message,
                 buttons = new SDL_MessageBoxButtonData[buttonsText.Length],
                 numbuttons = buttonsText.Length,
-                window = WindowHandle
+                window = WindowHandle,
             };
 
             for (int i = 0; i < buttonsText.Length; i++)
@@ -482,7 +481,7 @@ namespace Ryujinx.Headless.SDL2
                 data.buttons[i] = new SDL_MessageBoxButtonData
                 {
                     buttonid = i,
-                    text = buttonsText[i]
+                    text = buttonsText[i],
                 };
             }
 

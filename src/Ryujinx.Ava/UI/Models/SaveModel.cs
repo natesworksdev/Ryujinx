@@ -3,6 +3,7 @@ using LibHac.Ncm;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.App.Common;
 using System;
 using System.IO;
 using System.Linq;
@@ -40,9 +41,9 @@ namespace Ryujinx.Ava.UI.Models
 
         private string GetSizeString()
         {
-            const int scale = 1024;
+            const int Scale = 1024;
             string[] orders = { "GiB", "MiB", "KiB" };
-            long max = (long)Math.Pow(scale, orders.Length);
+            long max = (long)Math.Pow(Scale, orders.Length);
 
             foreach (string order in orders)
             {
@@ -51,7 +52,7 @@ namespace Ryujinx.Ava.UI.Models
                     return $"{decimal.Divide(Size, max):##.##} {order}";
                 }
 
-                max /= scale;
+                max /= Scale;
             }
 
             return "0 KiB";
@@ -74,7 +75,7 @@ namespace Ryujinx.Ava.UI.Models
             }
             else
             {
-                var appMetadata = MainWindow.MainWindowViewModel.ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
+                var appMetadata = ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
                 Title = appMetadata.Title ?? TitleIdString;
             }
 
