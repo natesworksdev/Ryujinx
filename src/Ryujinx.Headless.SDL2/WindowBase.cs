@@ -54,6 +54,9 @@ namespace Ryujinx.Headless.SDL2
         public int Width { get; private set; }
         public int Height { get; private set; }
         public bool IsFullscreen { get; set; }
+        public bool IsExclusiveFullscreen { get; set; }
+        public int ExclusiveFullscreenWidth { get; set; }
+        public int ExclusiveFullscreenHeight { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
@@ -157,9 +160,56 @@ namespace Ryujinx.Headless.SDL2
             string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText) ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
-            SDL_WindowFlags fullscreenFlag = IsFullscreen ? SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+            Console.Write("YOLO IsFullscreen :\n");
+            Console.Write(IsFullscreen);
+            Console.Write("YOLO IsExclusiveFullscreen :\n");
+            Console.Write(IsExclusiveFullscreen);
+            Console.Write("YOLO ExclusiveFullscreenWidth :\n");
+            Console.Write(ExclusiveFullscreenWidth);
+            Console.Write("YOLO ExclusiveFullscreenHeight :\n");
+            Console.Write(ExclusiveFullscreenHeight);
 
-            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+            if (IsExclusiveFullscreen)
+            {
+                Console.Write("YOLO GOT 111\n");
+                Console.Write("YOLO GOT 111\n");
+                Console.Write("YOLO GOT 111\n");
+                Console.Write("YOLO GOT 111\n");
+                Console.Write("YOLO GOT 111\n");
+
+                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
+                SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
+
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", 0, 0, ExclusiveFullscreenWidth, ExclusiveFullscreenHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+            }
+
+            else if (IsFullscreen)
+            {
+                Console.Write("YOLO GOT 222\n");
+                Console.Write("YOLO GOT 222\n");
+                Console.Write("YOLO GOT 222\n");
+                Console.Write("YOLO GOT 222\n");
+                Console.Write("YOLO GOT 222\n");
+
+                SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+            }
+
+            else {
+
+                Console.Write("YOLO GOT 333\n");
+                Console.Write("YOLO GOT 333\n");
+                Console.Write("YOLO GOT 333\n");
+                Console.Write("YOLO GOT 333\n");
+                Console.Write("YOLO GOT 333\n");
+
+                SDL_WindowFlags fullscreenFlag = 0;
+
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+            }
+
+
 
             if (WindowHandle == IntPtr.Zero)
             {
@@ -175,8 +225,18 @@ namespace Ryujinx.Headless.SDL2
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
 
-            Width = DefaultWidth;
-            Height = DefaultHeight;
+             if (IsExclusiveFullscreen)
+            {
+                Width = ExclusiveFullscreenWidth;
+                Height = ExclusiveFullscreenHeight;
+            }
+
+            else
+            {
+                Width = DefaultWidth;
+                Height = DefaultHeight;
+            }
+
         }
 
         private void HandleWindowEvent(SDL_Event evnt)

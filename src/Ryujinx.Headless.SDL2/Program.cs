@@ -601,6 +601,9 @@ namespace Ryujinx.Headless.SDL2
             _window = window;
 
             _window.IsFullscreen = options.IsFullscreen;
+            _window.IsExclusiveFullscreen = options.IsExclusiveFullscreen;
+            _window.ExclusiveFullscreenWidth = options.ExclusiveFullscreenWidth;
+            _window.ExclusiveFullscreenHeight = options.ExclusiveFullscreenHeight;
 
             _emulationContext = InitializeEmulationContext(window, renderer, options);
 
