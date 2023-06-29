@@ -177,13 +177,12 @@ namespace Ryujinx.Headless.SDL2
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
 
-            else {
+            else
+            {
                 SDL_WindowFlags fullscreenFlag = 0;
 
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
-
-
 
             if (WindowHandle == IntPtr.Zero)
             {
@@ -274,12 +273,6 @@ namespace Ryujinx.Headless.SDL2
                     {
                         return;
                     }
-
-
-                    // NO NO
-                    // Renderer?.Window.SetSize(2560, 1440);
-
-
 
                     _ticks += _chrono.ElapsedTicks;
 

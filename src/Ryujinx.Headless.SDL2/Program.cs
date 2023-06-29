@@ -66,7 +66,6 @@ namespace Ryujinx.Headless.SDL2
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
-            WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
 
             Console.Title = $"Ryujinx Console {Version} (Headless SDL2)";
 
