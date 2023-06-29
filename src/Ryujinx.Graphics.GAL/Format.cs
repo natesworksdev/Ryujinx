@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.GAL
         B5G5R5A1Unorm,
         A1B5G5R5Unorm,
         B8G8R8A8Unorm,
-        B8G8R8A8Srgb
+        B8G8R8A8Srgb,
     }
 
     public static class FormatExtensions
@@ -383,6 +383,7 @@ namespace Ryujinx.Graphics.GAL
                 case Format.R10G10B10A2Unorm:
                 case Format.R10G10B10A2Uint:
                 case Format.R11G11B10Float:
+                case Format.B8G8R8A8Unorm:
                     return true;
             }
 

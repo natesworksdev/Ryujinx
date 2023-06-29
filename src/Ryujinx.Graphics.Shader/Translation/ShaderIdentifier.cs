@@ -43,12 +43,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 foreach (INode node in block.Operations)
                 {
-                    if (!(node is Operation operation))
+                    if (node is not Operation operation)
                     {
                         continue;
                     }
 
-                    if (IsResourceWrite(operation.Inst))
+                    if (IsResourceWrite(operation.Inst, operation.StorageKind))
                     {
                         return false;
                     }
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 }
 
                                 writesLayer = true;
-                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;;
+                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;
                             }
                             else
                             {
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return totalVerticesCount + verticesCount == 3 && writesLayer;
         }
 
-        private static bool IsResourceWrite(Instruction inst)
+        private static bool IsResourceWrite(Instruction inst, StorageKind storageKind)
         {
             switch (inst)
             {
@@ -170,13 +170,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                 case Instruction.AtomicXor:
                 case Instruction.ImageAtomic:
                 case Instruction.ImageStore:
-                case Instruction.StoreGlobal:
-                case Instruction.StoreGlobal16:
-                case Instruction.StoreGlobal8:
-                case Instruction.StoreStorage:
-                case Instruction.StoreStorage16:
-                case Instruction.StoreStorage8:
                     return true;
+                case Instruction.Store:
+                    return storageKind == StorageKind.StorageBuffer ||
+                           storageKind == StorageKind.SharedMemory ||
+                           storageKind == StorageKind.LocalMemory;
             }
 
             return false;

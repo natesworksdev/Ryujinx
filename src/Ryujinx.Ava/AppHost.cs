@@ -32,6 +32,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -40,6 +41,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.Exceptions;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -92,6 +94,8 @@ namespace Ryujinx.Ava
         private bool _isActive;
         private bool _renderingStarted;
 
+        private ManualResetEvent _gpuDoneEvent;
+
         private IRenderer                        _renderer;
         private readonly Thread                  _renderingThread;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
@@ -131,7 +135,7 @@ namespace Ryujinx.Ava
             _inputManager           = inputManager;
             _accountManager         = accountManager;
             _userChannelPersistence = userChannelPersistence;
-            _renderingThread        = new Thread(RenderLoop, 1 * 1024 * 1024) { Name = "GUI.RenderThread" };
+            _renderingThread        = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
             _lastCursorMoveTime     = Stopwatch.GetTimestamp();
             _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
             _topLevel               = topLevel;
@@ -183,6 +187,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event   += UpdateLanInterfaceIdState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
+            _gpuDoneEvent = new ManualResetEvent(false);
         }
 
         private void TopLevel_PointerEnterOrMoved(object sender, PointerEventArgs e)
@@ -423,10 +428,10 @@ namespace Ryujinx.Ava
 
             _isActive = false;
 
-            if (_renderingThread.IsAlive)
-            {
-                _renderingThread.Join();
-            }
+            // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
+            // We only need to wait for all commands submitted during the main gpu loop to be processed.
+            _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.Dispose();
 
             DisplaySleep.Restore();
 
@@ -472,11 +477,20 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = null;
             }
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent();
+            if (_rendererHost.EmbeddedWindow is EmbeddedWindowOpenGL openGlWindow)
+            {
+                // Try to bind the OpenGL context before calling the shutdown event.
+                openGlWindow.MakeCurrent(false, false);
 
-            Device.DisposeGpu();
+                Device.DisposeGpu();
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+                // Unbind context and destroy everything.
+                openGlWindow.MakeCurrent(true, false);
+            }
+            else
+            {
+                Device.DisposeGpu();
+            }
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<HideCursorMode> state)
@@ -679,7 +693,7 @@ namespace Ryujinx.Ava
 
             DiscordIntegrationModule.SwitchToPlayingState(Device.Processes.ActiveApplication.ProgramIdText, Device.Processes.ActiveApplication.Name);
 
-            _viewModel.ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveApplication.ProgramIdText, appMetadata =>
+            ApplicationLibrary.LoadAndSaveMetaData(Device.Processes.ActiveApplication.ProgramIdText, appMetadata =>
             {
                 appMetadata.LastPlayed = DateTime.UtcNow;
             });
@@ -917,9 +931,17 @@ namespace Ryujinx.Ava
                         UpdateStatus();
                     }
                 }
+
+                // Make sure all commands in the run loop are fully executed before leaving the loop.
+                if (Device.Gpu.Renderer is ThreadedRenderer threaded)
+                {
+                    threaded.FlushThreadedCommands();
+                }
+
+                _gpuDoneEvent.Set();
             });
 
-            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(null);
+            (_rendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
         }
 
         public void UpdateStatus()
@@ -1033,7 +1055,7 @@ namespace Ryujinx.Ava
                             ScreenshotRequested = true;
                             break;
                         case KeyboardHotkeyState.ShowUi:
-                            _viewModel.ShowMenuAndStatusBar = true;
+                            _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)

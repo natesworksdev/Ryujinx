@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private bool                     _canAcceptController     = false;
         private KeyboardInputMode        _inputMode               = KeyboardInputMode.ControllerAndKeyboard;
 
-        private object _lock = new object();
+        private readonly object _lock = new();
 
         public event EventHandler AppletStateChanged;
 
@@ -209,6 +209,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 // Call the configured GUI handler to get user's input.
                 var args = new SoftwareKeyboardUiArgs
                 {
+                    KeyboardMode = _keyboardForegroundConfig.Mode,
                     HeaderText = StripUnicodeControlCodes(_keyboardForegroundConfig.HeaderText),
                     SubtitleText = StripUnicodeControlCodes(_keyboardForegroundConfig.SubtitleText),
                     GuideText = StripUnicodeControlCodes(_keyboardForegroundConfig.GuideText),

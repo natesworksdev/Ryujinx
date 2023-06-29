@@ -10,8 +10,8 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.App.Common;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.SelectedApplication.Favorite = !viewModel.SelectedApplication.Favorite;
 
-                viewModel.ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
+                ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
                 {
                     appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
@@ -321,6 +321,16 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 await ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName);
+            }
+        }
+
+        public void RunApplication_Click(object sender, RoutedEventArgs args)
+        {
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel?.SelectedApplication != null)
+            {
+                viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
         }
     }

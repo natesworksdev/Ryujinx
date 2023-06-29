@@ -21,13 +21,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IWindow Window => _window;
 
-        private TextureCopy _textureCopy;
-        private TextureCopy _backgroundTextureCopy;
+        private readonly TextureCopy _textureCopy;
+        private readonly TextureCopy _backgroundTextureCopy;
         internal TextureCopy TextureCopy => BackgroundContextWorker.InBackground ? _backgroundTextureCopy : _textureCopy;
         internal TextureCopyIncompatible TextureCopyIncompatible { get; }
         internal TextureCopyMS TextureCopyMS { get; }
 
-        private Sync _sync;
+        private readonly Sync _sync;
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -127,6 +127,7 @@ namespace Ryujinx.Graphics.OpenGL
         public Capabilities GetCapabilities()
         {
             bool intelWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows;
+            bool intelUnix = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelUnix;
             bool amdWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows;
 
             return new Capabilities(
@@ -152,12 +153,15 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShader: true,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
+                supportsTransformFeedback: true,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsLayerVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
                 supportsCubemapView: true,
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
                 supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
+                supportsShaderBarrierDivergence: !(intelWindows || intelUnix),
+                supportsShaderFloat64: true,
                 supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,
                 supportsViewportIndexVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsViewportMask: HwCapabilities.SupportsViewportArray2,
@@ -218,9 +222,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PrintGpuInformation()
         {
-            GpuVendor   = GL.GetString(StringName.Vendor);
+            GpuVendor = GL.GetString(StringName.Vendor);
             GpuRenderer = GL.GetString(StringName.Renderer);
-            GpuVersion  = GL.GetString(StringName.Version);
+            GpuVersion = GL.GetString(StringName.Version);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }

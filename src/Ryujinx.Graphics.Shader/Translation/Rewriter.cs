@@ -1,11 +1,10 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.Translation.Optimizations;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
-using static Ryujinx.Graphics.Shader.Translation.GlobalMemory;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
@@ -23,11 +22,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 BasicBlock block = blocks[blkIndex];
 
-                for (LinkedListNode<INode> node = block.Operations.First; node != null;)
+                for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
                 {
                     if (node.Value is not Operation operation)
                     {
-                        node = node.Next;
                         continue;
                     }
 
@@ -56,8 +54,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                         InsertVectorComponentSelect(node, config);
                     }
 
-                    LinkedListNode<INode> nextNode = node.Next;
-
                     if (operation is TextureOperation texOp)
                     {
                         node = InsertTexelFetchScale(hfm, node, config);
@@ -74,15 +70,16 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 node = InsertSnormNormalization(node, config);
                             }
                         }
-
-                        nextNode = node.Next;
                     }
-                    else if (UsesGlobalMemory(operation.Inst, operation.StorageKind))
+                    else
                     {
-                        nextNode = RewriteGlobalAccess(node, config)?.Next ?? nextNode;
-                    }
+                        node = InsertSharedStoreSmallInt(hfm, node);
 
-                    node = nextNode;
+                        if (config.Options.TargetLanguage != TargetLanguage.Spirv)
+                        {
+                            node = InsertSharedAtomicSigned(hfm, node);
+                        }
+                    }
                 }
             }
         }
@@ -136,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 AggregateType.Vector2 => 2,
                 AggregateType.Vector3 => 3,
                 AggregateType.Vector4 => 4,
-                _ => 1
+                _ => 1,
             };
 
             if (elemCount == 1)
@@ -156,9 +153,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                     inputs[srcIndex] = operation.GetSource(srcIndex);
                 }
 
-                inputs[inputs.Length - 1] = Const(i);
+                inputs[^1] = Const(i);
 
-                Operation loadOp = new Operation(Instruction.Load, StorageKind.ConstantBuffer, value, inputs);
+                Operation loadOp = new(Instruction.Load, StorageKind.ConstantBuffer, value, inputs);
 
                 node.List.AddBefore(node, loadOp);
 
@@ -171,8 +168,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Operand isCurrentIndex = Local();
                     Operand selection = Local();
 
-                    Operation compareOp = new Operation(Instruction.CompareEqual, isCurrentIndex, new Operand[] { elemIndex, Const(i) });
-                    Operation selectOp = new Operation(Instruction.ConditionalSelect, selection, new Operand[] { isCurrentIndex, value, result });
+                    Operation compareOp = new(Instruction.CompareEqual, isCurrentIndex, new Operand[] { elemIndex, Const(i) });
+                    Operation selectOp = new(Instruction.ConditionalSelect, selection, new Operand[] { isCurrentIndex, value, result });
 
                     node.List.AddBefore(node, compareOp);
                     node.List.AddBefore(node, selectOp);
@@ -184,204 +181,93 @@ namespace Ryujinx.Graphics.Shader.Translation
             operation.TurnIntoCopy(result);
         }
 
-        private static LinkedListNode<INode> RewriteGlobalAccess(LinkedListNode<INode> node, ShaderConfig config)
+        private static LinkedListNode<INode> InsertSharedStoreSmallInt(HelperFunctionManager hfm, LinkedListNode<INode> node)
         {
             Operation operation = (Operation)node.Value;
+            HelperFunctionName name;
 
-            bool isAtomic = operation.Inst.IsAtomic();
-            bool isStg16Or8 = operation.Inst == Instruction.StoreGlobal16 || operation.Inst == Instruction.StoreGlobal8;
-            bool isWrite = isAtomic || operation.Inst == Instruction.StoreGlobal || isStg16Or8;
-
-            Operation storageOp = null;
-
-            Operand PrependOperation(Instruction inst, params Operand[] sources)
+            if (operation.StorageKind == StorageKind.SharedMemory8)
             {
-                Operand local = Local();
-
-                node.List.AddBefore(node, new Operation(inst, local, sources));
-
-                return local;
+                name = HelperFunctionName.SharedStore8;
             }
-
-            Operand PrependStorageOperation(Instruction inst, StorageKind storageKind, params Operand[] sources)
+            else if (operation.StorageKind == StorageKind.SharedMemory16)
             {
-                Operand local = Local();
-
-                node.List.AddBefore(node, new Operation(inst, storageKind, local, sources));
-
-                return local;
-            }
-
-            Operand PrependExistingOperation(Operation operation)
-            {
-                Operand local = Local();
-
-                operation.Dest = local;
-                node.List.AddBefore(node, operation);
-
-                return local;
-            }
-
-            Operand addrLow  = operation.GetSource(0);
-            Operand addrHigh = operation.GetSource(1);
-
-            Operand sbBaseAddrLow = Const(0);
-            Operand sbSlot        = Const(0);
-
-            Operand alignMask = Const(-config.GpuAccessor.QueryHostStorageBufferOffsetAlignment());
-
-            Operand BindingRangeCheck(int cbOffset, out Operand baseAddrLow)
-            {
-                baseAddrLow          = Cbuf(DriverReservedCb, cbOffset);
-                Operand baseAddrHigh = Cbuf(DriverReservedCb, cbOffset + 1);
-                Operand size         = Cbuf(DriverReservedCb, cbOffset + 2);
-
-                Operand offset = PrependOperation(Instruction.Subtract, addrLow, baseAddrLow);
-                Operand borrow = PrependOperation(Instruction.CompareLessU32, addrLow, baseAddrLow);
-
-                Operand inRangeLow = PrependOperation(Instruction.CompareLessU32, offset, size);
-
-                Operand addrHighBorrowed = PrependOperation(Instruction.Add, addrHigh, borrow);
-
-                Operand inRangeHigh = PrependOperation(Instruction.CompareEqual, addrHighBorrowed, baseAddrHigh);
-
-                return PrependOperation(Instruction.BitwiseAnd, inRangeLow, inRangeHigh);
-            }
-
-            int sbUseMask = config.AccessibleStorageBuffersMask;
-
-            while (sbUseMask != 0)
-            {
-                int slot = BitOperations.TrailingZeroCount(sbUseMask);
-
-                sbUseMask &= ~(1 << slot);
-
-                int cbOffset = GetStorageCbOffset(config.Stage, slot);
-                slot = config.GetSbSlot(DriverReservedCb, (ushort)cbOffset);
-
-                config.SetUsedStorageBuffer(slot, isWrite);
-
-                Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
-
-                sbBaseAddrLow = PrependOperation(Instruction.ConditionalSelect, inRange, baseAddrLow, sbBaseAddrLow);
-                sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(slot), sbSlot);
-            }
-
-            if (config.AccessibleStorageBuffersMask != 0)
-            {
-                Operand baseAddrTrunc = PrependOperation(Instruction.BitwiseAnd, sbBaseAddrLow, alignMask);
-                Operand byteOffset    = PrependOperation(Instruction.Subtract, addrLow, baseAddrTrunc);
-
-                Operand[] sources = new Operand[operation.SourcesCount];
-
-                sources[0] = sbSlot;
-
-                if (isStg16Or8)
-                {
-                    sources[1] = byteOffset;
-                }
-                else
-                {
-                    sources[1] = PrependOperation(Instruction.ShiftRightU32, byteOffset, Const(2));
-                }
-
-                for (int index = 2; index < operation.SourcesCount; index++)
-                {
-                    sources[index] = operation.GetSource(index);
-                }
-
-                if (isAtomic)
-                {
-                    storageOp = new Operation(operation.Inst, StorageKind.StorageBuffer, operation.Dest, sources);
-                }
-                else if (operation.Inst == Instruction.LoadGlobal)
-                {
-                    storageOp = new Operation(Instruction.LoadStorage, operation.Dest, sources);
-                }
-                else
-                {
-                    Instruction storeInst = operation.Inst switch
-                    {
-                        Instruction.StoreGlobal16 => Instruction.StoreStorage16,
-                        Instruction.StoreGlobal8 => Instruction.StoreStorage8,
-                        _ => Instruction.StoreStorage
-                    };
-
-                    storageOp = new Operation(storeInst, null, sources);
-                }
-            }
-            else if (operation.Dest != null)
-            {
-                storageOp = new Operation(Instruction.Copy, operation.Dest, Const(0));
-            }
-
-            if (operation.Inst == Instruction.LoadGlobal)
-            {
-                int cbeUseMask = config.AccessibleConstantBuffersMask;
-
-                while (cbeUseMask != 0)
-                {
-                    int slot = BitOperations.TrailingZeroCount(cbeUseMask);
-                    int cbSlot = UbeFirstCbuf + slot;
-
-                    cbeUseMask &= ~(1 << slot);
-
-                    Operand previousResult = PrependExistingOperation(storageOp);
-
-                    int cbOffset = GetConstantUbeOffset(slot);
-
-                    Operand inRange = BindingRangeCheck(cbOffset, out Operand baseAddrLow);
-
-                    Operand baseAddrTruncConst = PrependOperation(Instruction.BitwiseAnd, baseAddrLow, alignMask);
-                    Operand byteOffsetConst = PrependOperation(Instruction.Subtract, addrLow, baseAddrTruncConst);
-
-                    Operand cbIndex = PrependOperation(Instruction.ShiftRightU32, byteOffsetConst, Const(2));
-                    Operand vecIndex = PrependOperation(Instruction.ShiftRightU32, cbIndex, Const(2));
-                    Operand elemIndex = PrependOperation(Instruction.BitwiseAnd, cbIndex, Const(3));
-
-                    Operand[] sourcesCb = new Operand[4];
-
-                    sourcesCb[0] = Const(config.ResourceManager.GetConstantBufferBinding(cbSlot));
-                    sourcesCb[1] = Const(0);
-                    sourcesCb[2] = vecIndex;
-                    sourcesCb[3] = elemIndex;
-
-                    Operand ldcResult = PrependStorageOperation(Instruction.Load, StorageKind.ConstantBuffer, sourcesCb);
-
-                    storageOp = new Operation(Instruction.ConditionalSelect, operation.Dest, inRange, ldcResult, previousResult);
-                }
-            }
-
-            for (int index = 0; index < operation.SourcesCount; index++)
-            {
-                operation.SetSource(index, null);
-            }
-
-            LinkedListNode<INode> oldNode = node;
-            LinkedList<INode> oldNodeList = oldNode.List;
-
-            if (storageOp != null)
-            {
-                node = node.List.AddBefore(node, storageOp);
+                name = HelperFunctionName.SharedStore16;
             }
             else
             {
-                node = null;
+                return node;
             }
 
-            oldNodeList.Remove(oldNode);
+            if (operation.Inst != Instruction.Store)
+            {
+                return node;
+            }
 
-            return node;
+            Operand memoryId = operation.GetSource(0);
+            Operand byteOffset = operation.GetSource(1);
+            Operand value = operation.GetSource(2);
+
+            Debug.Assert(memoryId.Type == OperandType.Constant);
+
+            int functionId = hfm.GetOrCreateFunctionId(name, memoryId.Value);
+
+            Operand[] callArgs = new Operand[] { Const(functionId), byteOffset, value };
+
+            LinkedListNode<INode> newNode = node.List.AddBefore(node, new Operation(Instruction.Call, 0, (Operand)null, callArgs));
+
+            Utils.DeleteNode(node, operation);
+
+            return newNode;
+        }
+
+        private static LinkedListNode<INode> InsertSharedAtomicSigned(HelperFunctionManager hfm, LinkedListNode<INode> node)
+        {
+            Operation operation = (Operation)node.Value;
+            HelperFunctionName name;
+
+            if (operation.Inst == Instruction.AtomicMaxS32)
+            {
+                name = HelperFunctionName.SharedAtomicMaxS32;
+            }
+            else if (operation.Inst == Instruction.AtomicMinS32)
+            {
+                name = HelperFunctionName.SharedAtomicMinS32;
+            }
+            else
+            {
+                return node;
+            }
+
+            if (operation.StorageKind != StorageKind.SharedMemory)
+            {
+                return node;
+            }
+
+            Operand result = operation.Dest;
+            Operand memoryId = operation.GetSource(0);
+            Operand byteOffset = operation.GetSource(1);
+            Operand value = operation.GetSource(2);
+
+            Debug.Assert(memoryId.Type == OperandType.Constant);
+
+            int functionId = hfm.GetOrCreateFunctionId(name, memoryId.Value);
+
+            Operand[] callArgs = new Operand[] { Const(functionId), byteOffset, value };
+
+            LinkedListNode<INode> newNode = node.List.AddBefore(node, new Operation(Instruction.Call, 0, result, callArgs));
+
+            Utils.DeleteNode(node, operation);
+
+            return newNode;
         }
 
         private static LinkedListNode<INode> InsertTexelFetchScale(HelperFunctionManager hfm, LinkedListNode<INode> node, ShaderConfig config)
         {
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
-
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -429,10 +315,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
-
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             if (texOp.Inst == Instruction.TextureSize &&
@@ -494,8 +377,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool isBindless = (texOp.Flags & TextureFlags.Bindless)  != 0;
-            bool intCoords  = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
             bool isCoordNormalized = isBindless || config.GpuAccessor.QueryTextureCoordNormalized(texOp.Handle, texOp.CbufSlot);
 
@@ -504,7 +387,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             int coordsCount = texOp.Type.GetDimensions();
@@ -564,7 +446,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureOperation texOp = (TextureOperation)node.Value;
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
-            bool isGather   = (texOp.Flags & TextureFlags.Gather)   != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
 
             int gatherBiasPrecision = config.GpuAccessor.QueryHostGatherBiasPrecision();
 
@@ -573,10 +455,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
 
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+#pragma warning restore IDE0059
 
             int coordsCount = texOp.Type.GetDimensions();
             int coordsIndex = isBindless || isIndexed ? 1 : 0;
@@ -647,7 +531,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            bool hasOffset  = (texOp.Flags & TextureFlags.Offset)  != 0;
+            bool hasOffset = (texOp.Flags & TextureFlags.Offset) != 0;
             bool hasOffsets = (texOp.Flags & TextureFlags.Offsets) != 0;
 
             bool hasInvalidOffset = (hasOffset || hasOffsets) && !config.GpuAccessor.QueryHostSupportsNonConstantTextureOffset();
@@ -659,16 +543,16 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return node;
             }
 
-            bool isGather       = (texOp.Flags & TextureFlags.Gather)      != 0;
+            bool isGather = (texOp.Flags & TextureFlags.Gather) != 0;
             bool hasDerivatives = (texOp.Flags & TextureFlags.Derivatives) != 0;
-            bool intCoords      = (texOp.Flags & TextureFlags.IntCoords)   != 0;
-            bool hasLodBias     = (texOp.Flags & TextureFlags.LodBias)     != 0;
-            bool hasLodLevel    = (texOp.Flags & TextureFlags.LodLevel)    != 0;
+            bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
+            bool hasLodBias = (texOp.Flags & TextureFlags.LodBias) != 0;
+            bool hasLodLevel = (texOp.Flags & TextureFlags.LodLevel) != 0;
 
-            bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
-            bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
+            bool isShadow = (texOp.Type & SamplerType.Shadow) != 0;
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -758,12 +642,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (hasLodBias)
             {
-               sources[dstIndex++] = texOp.GetSource(srcIndex++);
+                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
             if (isGather && !isShadow)
             {
-               sources[dstIndex++] = texOp.GetSource(srcIndex++);
+                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
             int coordsIndex = isBindless || isIndexed ? 1 : 0;
@@ -823,7 +707,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         newSources[coordsIndex + index] = coordPlusOffset;
                     }
 
-                    TextureOperation newTexOp = new TextureOperation(
+                    TextureOperation newTexOp = new(
                         Instruction.TextureSample,
                         texOp.Type,
                         texOp.Format,
@@ -882,7 +766,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     }
                 }
 
-                TextureOperation newTexOp = new TextureOperation(
+                TextureOperation newTexOp = new(
                     Instruction.TextureSample,
                     texOp.Type,
                     texOp.Format,
@@ -973,13 +857,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             int maxPositive = format switch
             {
-                TextureFormat.R8Snorm           => sbyte.MaxValue,
-                TextureFormat.R8G8Snorm         => sbyte.MaxValue,
-                TextureFormat.R8G8B8A8Snorm     => sbyte.MaxValue,
-                TextureFormat.R16Snorm          => short.MaxValue,
-                TextureFormat.R16G16Snorm       => short.MaxValue,
+                TextureFormat.R8Snorm => sbyte.MaxValue,
+                TextureFormat.R8G8Snorm => sbyte.MaxValue,
+                TextureFormat.R8G8B8A8Snorm => sbyte.MaxValue,
+                TextureFormat.R16Snorm => short.MaxValue,
+                TextureFormat.R16G16Snorm => short.MaxValue,
                 TextureFormat.R16G16B16A16Snorm => short.MaxValue,
-                _                               => 0
+                _ => 0,
             };
 
             // The value being 0 means that the format is not a SNORM format,
@@ -997,8 +881,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 INode[] uses = dest.UseOps.ToArray();
 
-                Operation convOp = new Operation(Instruction.ConvertS32ToFP32, Local(), dest);
-                Operation normOp = new Operation(Instruction.FP32 | Instruction.Multiply, Local(), convOp.Dest, ConstF(1f / maxPositive));
+                Operation convOp = new(Instruction.ConvertS32ToFP32, Local(), dest);
+                Operation normOp = new(Instruction.FP32 | Instruction.Multiply, Local(), convOp.Dest, ConstF(1f / maxPositive));
 
                 node = node.List.AddAfter(node, convOp);
                 node = node.List.AddAfter(node, normOp);

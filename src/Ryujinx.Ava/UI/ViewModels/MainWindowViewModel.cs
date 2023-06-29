@@ -258,6 +258,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EnableNonGameRunningControls));
+                OnPropertyChanged(nameof(IsAppletMenuActive));
                 OnPropertyChanged(nameof(StatusBarVisible));
                 OnPropertyChanged(nameof(ShowFirmwareStatus));
             }
@@ -633,7 +634,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public double WindowWidth
         {
             get => _windowWidth;
@@ -1135,13 +1136,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             var dominantColor = IconColorPicker.GetFilteredColor(gameIconBmp).ToPixel<Bgra32>();
 
-            const float colorMultiple = 0.5f;
+            const float ColorMultiple = 0.5f;
 
             Color progressFgColor = Color.FromRgb(dominantColor.R, dominantColor.G, dominantColor.B);
             Color progressBgColor = Color.FromRgb(
-                (byte)(dominantColor.R * colorMultiple),
-                (byte)(dominantColor.G * colorMultiple),
-                (byte)(dominantColor.B * colorMultiple));
+                (byte)(dominantColor.R * ColorMultiple),
+                (byte)(dominantColor.G * ColorMultiple),
+                (byte)(dominantColor.B * ColorMultiple));
 
             ProgressBarForegroundColor = new SolidColorBrush(progressFgColor);
             ProgressBarBackgroundColor = new SolidColorBrush(progressBgColor);
