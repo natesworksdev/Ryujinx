@@ -151,8 +151,21 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit);
             SwapBuffers();
 
-            Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
-            MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
+            if (IsFullscreen)
+            {
+                SDL_Rect displayBounds;
+                SDL_GetDisplayBounds(0, out displayBounds);
+
+                Renderer?.Window.SetSize(displayBounds.w, displayBounds.h);
+                MouseDriver.SetClientSize(displayBounds.w, displayBounds.h);
+            }
+
+            else
+            {
+                Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
+                MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
+            }
+
         }
 
         protected override void InitializeRenderer() { }

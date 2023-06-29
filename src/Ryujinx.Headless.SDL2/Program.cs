@@ -64,6 +64,9 @@ namespace Ryujinx.Headless.SDL2
         {
             Version = ReleaseInformation.GetVersion();
 
+            // Make process DPI aware for proper window sizing on high-res screens.
+            ForceDpiAware.Windows();
+
             Console.Title = $"Ryujinx Console {Version} (Headless SDL2)";
 
             if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
