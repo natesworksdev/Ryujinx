@@ -227,7 +227,7 @@ namespace Ryujinx.Headless.SDL2
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
 
-             if (IsExclusiveFullscreen)
+            if (IsExclusiveFullscreen)
             {
                 Width = ExclusiveFullscreenWidth;
                 Height = ExclusiveFullscreenHeight;
@@ -302,6 +302,12 @@ namespace Ryujinx.Headless.SDL2
                     {
                         return;
                     }
+
+
+                    // NO NO
+                    // Renderer?.Window.SetSize(2560, 1440);
+
+
 
                     _ticks += _chrono.ElapsedTicks;
 
