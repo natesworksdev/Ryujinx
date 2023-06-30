@@ -2,6 +2,7 @@ using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using Path = LibHac.FsSrv.Sf.Path;
+using Ryujinx.Common.Logging;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
@@ -148,7 +149,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // Commit()
         public ResultCode Commit(ServiceCtx context)
         {
-            return (ResultCode)_fileSystem.Get.Commit().Value;
+            Result result = _fileSystem.Get.Commit();
+            ResultCode resultCode = (ResultCode)result.Value;
+
+            if (result.IsFailure() && resultCode == ResultCode.PathAlreadyInUse)
+            {
+                Logger.Warning?.Print(LogClass.ServiceFs, "The filesystem resource is already in use by another process.");
+            }
+
+            return resultCode;
         }
 
         [CommandCmif(11)]
