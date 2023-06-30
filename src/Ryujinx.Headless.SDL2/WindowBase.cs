@@ -188,7 +188,7 @@ namespace Ryujinx.Headless.SDL2
                 switch (evnt.window.windowEvent)
                 {
                     case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-                        // This event fires on macOS on Window when going fullscreen using the Headless --fulscreen argument (Windows doesn't do this)
+                        // This event fires on macOS when triggering fullscreen mode using the Headless --fulscreen argument (Windows doesn't do this).
                         // And crashes the process because the Renderer?.window is undefined.
                         // As we don't need this to fire in either case we can test for isFullscreen
                         if (!IsFullscreen)
