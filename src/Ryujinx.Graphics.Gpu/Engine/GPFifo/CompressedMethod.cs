@@ -1,17 +1,14 @@
 ﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
-    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum TertOp
     {
         Grp0IncMethod = 0,
         Grp0SetSubDevMask = 1,
         Grp0StoreSubDevMask = 2,
         Grp0UseSubDevMask = 3,
-        Grp2NonIncMethod = 0,
+        Grp2NonIncMethod = Grp0IncMethod,
     }
 
     enum SecOp

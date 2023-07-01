@@ -1313,19 +1313,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if both targets have the same number of dimensions, false otherwise</returns>
         private bool IsSameDimensionsTarget(Target target)
         {
-            return Info.Target switch
+            switch (Info.Target)
             {
-                Target.Texture1D or Target.Texture1DArray => target == Target.Texture1D ||
-                                           target == Target.Texture1DArray,
-                Target.Texture2D or Target.Texture2DArray => target == Target.Texture2D ||
-                                           target == Target.Texture2DArray,
-                Target.Cubemap or Target.CubemapArray => target == Target.Cubemap ||
-                                           target == Target.CubemapArray,
-                Target.Texture2DMultisample or Target.Texture2DMultisampleArray => target == Target.Texture2DMultisample ||
-                                           target == Target.Texture2DMultisampleArray,
-                Target.Texture3D => target == Target.Texture3D,
-                _ => false,
-            };
+                case Target.Texture1D:
+                case Target.Texture1DArray:
+                    return target == Target.Texture1D || target == Target.Texture1DArray;
+                case Target.Texture2D:
+                case Target.Texture2DArray:
+                    return target == Target.Texture2D || target == Target.Texture2DArray;
+                case Target.Cubemap:
+                case Target.CubemapArray:
+                    return target == Target.Cubemap || target == Target.CubemapArray;
+                case Target.Texture2DMultisample:
+                case Target.Texture2DMultisampleArray:
+                    return target == Target.Texture2DMultisample || target == Target.Texture2DMultisampleArray;
+                case Target.Texture3D:
+                    return target == Target.Texture3D;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>
