@@ -70,13 +70,13 @@ namespace Ryujinx.HLE.HOS.Services
             Name = name;
             SmObjectFactory = smObjectFactory;
 
-            const ProcessCreationFlags flags =
+            const ProcessCreationFlags Flags =
                 ProcessCreationFlags.EnableAslr |
                 ProcessCreationFlags.AddressSpace64Bit |
                 ProcessCreationFlags.Is64Bit |
                 ProcessCreationFlags.PoolPartitionSystem;
 
-            ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
+            ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
             KernelStatic.StartInitialProcess(context, creationInfo, DefaultCapabilities, 44, Main);
         }
@@ -439,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Services
         {
             const int messageSize = 0x100;
 
-            using IMemoryOwner<byte> reqDataOwner = ByteMemoryPool.Shared.Rent(messageSize);
+            using IMemoryOwner<byte> reqDataOwner = ByteMemoryPool.Rent(messageSize);
 
             Span<byte> reqDataSpan = reqDataOwner.Memory.Span;
 
