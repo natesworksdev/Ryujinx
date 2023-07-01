@@ -566,6 +566,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     }
                     else if (command.CommandType == CommandType.Performance || !command.Enabled)
                     {
+                        continue;
                     }
                     else
                     {

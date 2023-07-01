@@ -166,7 +166,8 @@ namespace Ryujinx.Audio.Input
         /// </summary>
         /// <param name="filtered">If true, filter disconnected devices</param>
         /// <returns>The list of all audio inputs name</returns>
-        public static string[] ListAudioIns(bool filtered)
+#pragma warning disable CA1822 // Mark member as static
+        public string[] ListAudioIns(bool filtered)
         {
             if (filtered)
             {
@@ -175,6 +176,7 @@ namespace Ryujinx.Audio.Input
 
             return new[] { Constants.DefaultDeviceInputName };
         }
+#pragma warning restore CA1822
 
         /// <summary>
         /// Open a new <see cref="AudioInputSystem"/>.

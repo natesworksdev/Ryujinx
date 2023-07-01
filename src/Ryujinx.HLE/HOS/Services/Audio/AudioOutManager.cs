@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         public string[] ListAudioOuts()
         {
-            return AudioOutManagerImpl.ListAudioOuts();
+            return _impl.ListAudioOuts();
         }
 
         public ResultCode OpenAudioOut(ServiceCtx context, out string outputDeviceName, out AudioOutputConfiguration outputConfiguration, out IAudioOut obj, string inputDeviceName, ref AudioInputConfiguration parameter, ulong appletResourceUserId, uint processHandle, float volume)

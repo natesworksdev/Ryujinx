@@ -275,14 +275,13 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// <returns>Returns true if the sample offset are in range of the size.</returns>
             public readonly bool IsSampleOffsetValid(SampleFormat format)
             {
-                var result = format switch
+                return format switch
                 {
                     SampleFormat.PcmInt16 => IsSampleOffsetInRangeForPcm<ushort>(),
                     SampleFormat.PcmFloat => IsSampleOffsetInRangeForPcm<float>(),
                     SampleFormat.Adpcm => AdpcmHelper.GetAdpcmDataSize((int)StartSampleOffset) <= Size && AdpcmHelper.GetAdpcmDataSize((int)EndSampleOffset) <= Size,
                     _ => throw new NotImplementedException($"{format} not implemented!"),
                 };
-                return result;
             }
         }
 

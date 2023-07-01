@@ -165,10 +165,12 @@ namespace Ryujinx.Audio.Output
         /// Get the list of all audio outputs name.
         /// </summary>
         /// <returns>The list of all audio outputs name</returns>
-        public static string[] ListAudioOuts()
+#pragma warning disable CA1822 // Mark member as static
+        public string[] ListAudioOuts()
         {
             return new[] { Constants.DefaultDeviceOutputName };
         }
+#pragma warning restore CA1822
 
         /// <summary>
         /// Open a new <see cref="AudioOutputSystem"/>.
