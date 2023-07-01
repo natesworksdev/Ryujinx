@@ -64,7 +64,7 @@ namespace Ryujinx.Ava
 {
     internal class AppHost
     {
-        private const int CursorHideIdleTime = 5;    // Hide Cursor seconds.
+        private const int CursorHideIdleTime = 5; // Hide Cursor seconds.
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
         private const int TargetFps = 60;
         private const float VolumeDelta = 0.05f;
