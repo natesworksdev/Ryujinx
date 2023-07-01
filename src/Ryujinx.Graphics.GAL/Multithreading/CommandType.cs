@@ -5,6 +5,7 @@
         Action,
         CreateBuffer,
         CreateBufferAccess,
+        CreateBufferSparse,
         CreateHostBuffer,
         CreateProgram,
         CreateSampler,

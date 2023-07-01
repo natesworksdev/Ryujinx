@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Indicates that the backing memory for the buffer does not exist.
         /// </summary>
-        public bool IsUnmapped => Range.Count == 1 && Range.GetSubRange(0).Address == MemoryManager.PteUnmapped;
+        public bool IsUnmapped => Range.IsUnmapped;
 
         /// <summary>
         /// Creates a new buffer region.

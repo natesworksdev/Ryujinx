@@ -8,5 +8,6 @@
         HostMapped,
         DeviceLocal,
         DeviceLocalMapped,
+        Sparse,
     }
 }

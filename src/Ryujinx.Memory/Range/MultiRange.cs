@@ -16,6 +16,11 @@ namespace Ryujinx.Memory.Range
         private bool HasSingleRange => _ranges == null;
 
         /// <summary>
+        /// Indicates that the range is fully unmapped.
+        /// </summary>
+        public bool IsUnmapped => HasSingleRange && _singleRange.Address == InvalidAddress;
+
+        /// <summary>
         /// Total of physical sub-ranges on the virtual memory region.
         /// </summary>
         public int Count => HasSingleRange ? 1 : _ranges.Length;

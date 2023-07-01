@@ -290,6 +290,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return handle;
         }
 
+        public BufferHandle CreateBufferSparse(ReadOnlySpan<BufferRange> storageBuffers)
+        {
+            BufferHandle handle = Buffers.CreateBufferHandle();
+            New<CreateBufferSparseCommand>().Set(handle, CopySpan(storageBuffers));
+            QueueCommand();
+
+            return handle;
+        }
+
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
         {
             var program = new ThreadedProgram(this);

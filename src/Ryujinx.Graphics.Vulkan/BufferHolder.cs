@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _lastAccessIsWrite;
 
-        private readonly BufferAllocationType _baseType;
+        private BufferAllocationType _baseType;
         private BufferAllocationType _currentType;
         private bool _swapQueued;
 
@@ -105,6 +105,22 @@ namespace Ryujinx.Graphics.Vulkan
             _baseType = type;
             _currentType = currentType;
             DesiredType = currentType;
+
+            _flushLock = new ReaderWriterLockSlim();
+        }
+
+        public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, int size, Auto<MemoryAllocation>[] storageAllocations)
+        {
+            _gd = gd;
+            _device = device;
+            _waitable = new MultiFenceHolder(size);
+            _buffer = new Auto<DisposableBuffer>(new DisposableBuffer(gd.Api, device, buffer), _waitable, storageAllocations);
+            _bufferHandle = buffer.Handle;
+            Size = size;
+
+            _baseType = BufferAllocationType.Sparse;
+            _currentType = BufferAllocationType.Sparse;
+            DesiredType = BufferAllocationType.Sparse;
 
             _flushLock = new ReaderWriterLockSlim();
         }
@@ -250,6 +266,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                     _gd.PipelineInternal.AddBackingSwap(this);
                 }
+            }
+        }
+
+        public void Pin()
+        {
+            if (_baseType == BufferAllocationType.Auto)
+            {
+                _baseType = _currentType;
             }
         }
 
@@ -504,6 +528,16 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
             }
+        }
+
+        public Auto<MemoryAllocation> GetAllocation()
+        {
+            return _allocationAuto;
+        }
+
+        public (DeviceMemory, ulong) GetDeviceMemoryAndOffset()
+        {
+            return (_allocation.Memory, _allocation.Offset);
         }
 
         public void SignalWrite(int offset, int size)
@@ -1070,7 +1104,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _allocationAuto.DecrementReferenceCount();
             }
-            else
+            else if (_allocationAuto != null)
             {
                 _allocationAuto.Dispose();
             }

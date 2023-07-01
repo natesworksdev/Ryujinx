@@ -85,6 +85,11 @@ namespace Ryujinx.Graphics.OpenGL
             throw new NotSupportedException();
         }
 
+        public BufferHandle CreateBufferSparse(ReadOnlySpan<BufferRange> storageBuffers)
+        {
+            throw new NotSupportedException();
+        }
+
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
         {
             return new Program(shaders, info.FragmentOutputMap);
@@ -148,6 +153,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsR4G4B4A4Format: true,
                 supportsSnormBufferTextureFormat: false,
                 supports5BitComponentFormat: true,
+                supportsSparseBuffer: false,
                 supportsBlendEquationAdvanced: HwCapabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,

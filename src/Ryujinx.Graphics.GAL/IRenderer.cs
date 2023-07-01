@@ -23,6 +23,7 @@ namespace Ryujinx.Graphics.GAL
         }
         BufferHandle CreateBuffer(nint pointer, int size);
         BufferHandle CreateBuffer(int size, BufferAccess access);
+        BufferHandle CreateBufferSparse(ReadOnlySpan<BufferRange> storageBuffers);
 
         IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info);
 
