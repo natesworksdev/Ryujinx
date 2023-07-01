@@ -7,12 +7,12 @@ using SPB.Windowing;
 
 namespace Ryujinx.Ava.UI.Renderer
 {
-    class SpbOpenGLContext : IOpenGLContext
+    class SPBOpenGLContext : IOpenGLContext
     {
         private readonly OpenGLContextBase _context;
         private readonly NativeWindowBase _window;
 
-        private SpbOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
+        private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
         {
             _context = context;
             _window = window;
@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.Renderer
             _context.MakeCurrent(_window);
         }
 
-        public static SpbOpenGLContext CreateBackgroundContext(OpenGLContextBase sharedContext)
+        public static SPBOpenGLContext CreateBackgroundContext(OpenGLContextBase sharedContext)
         {
             OpenGLContextBase context = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, 3, 3, OpenGLContextFlags.Compat, true, sharedContext);
             NativeWindowBase window = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100);
@@ -37,11 +37,11 @@ namespace Ryujinx.Ava.UI.Renderer
             context.Initialize(window);
             context.MakeCurrent(window);
 
-            GL.LoadBindings(new OpenTkBindingsContext(context.GetProcAddress));
+            GL.LoadBindings(new OpenTKBindingsContext(context.GetProcAddress));
 
             context.MakeCurrent(null);
 
-            return new SpbOpenGLContext(context, window);
+            return new SPBOpenGLContext(context, window);
         }
     }
 }

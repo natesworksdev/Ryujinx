@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.UI.Renderer
             Context.Initialize(_window);
             Context.MakeCurrent(_window);
 
-            GL.LoadBindings(new OpenTkBindingsContext(Context.GetProcAddress));
+            GL.LoadBindings(new OpenTKBindingsContext(Context.GetProcAddress));
 
             Context.MakeCurrent(null);
         }
@@ -86,7 +86,7 @@ namespace Ryujinx.Ava.UI.Renderer
 
         public void InitializeBackgroundContext(IRenderer renderer)
         {
-            (renderer as OpenGLRenderer)?.InitializeBackgroundContext(SpbOpenGLContext.CreateBackgroundContext(Context));
+            (renderer as OpenGLRenderer)?.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(Context));
 
             MakeCurrent();
         }

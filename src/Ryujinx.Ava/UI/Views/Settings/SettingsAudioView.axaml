@@ -43,7 +43,7 @@
                         <ComboBoxItem IsEnabled="{Binding IsSoundIoEnabled}">
                             <TextBlock Text="{locale:Locale SettingsTabSystemAudioBackendSoundIO}" />
                         </ComboBoxItem>
-                        <ComboBoxItem IsEnabled="{Binding IsSdl2Enabled}">
+                        <ComboBoxItem IsEnabled="{Binding IsSDL2Enabled}">
                             <TextBlock Text="{locale:Locale SettingsTabSystemAudioBackendSDL2}" />
                         </ComboBoxItem>
                     </ComboBox>

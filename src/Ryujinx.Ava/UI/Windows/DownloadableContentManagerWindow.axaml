@@ -130,7 +130,7 @@
                                         Padding="10"
                                         MinWidth="0"
                                         MinHeight="0"
-                                        Click="RemoveDlc">
+                                        Click="RemoveDLC">
                                         <ui:SymbolIcon
                                             Symbol="Cancel"
                                             HorizontalAlignment="Center"

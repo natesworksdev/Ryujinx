@@ -38,7 +38,7 @@
             <settings:SettingsInputView Name="InputPage" />
             <settings:SettingsHotkeysView Name="HotkeysPage" />
             <settings:SettingsSystemView Name="SystemPage" />
-            <settings:SettingsCpuView Name="CpuPage" />
+            <settings:SettingsCPUView Name="CpuPage" />
             <settings:SettingsGraphicsView Name="GraphicsPage" />
             <settings:SettingsAudioView Name="AudioPage" />
             <settings:SettingsNetworkView Name="NetworkPage" />
@@ -110,7 +110,7 @@
             Spacing="10"
             Orientation="Horizontal"
             HorizontalAlignment="Right"
-            ReverseOrder="{Binding IsMacOs}">
+            ReverseOrder="{Binding IsMacOS}">
             <Button
                 HotKey="Enter"
                 Classes="accent"
