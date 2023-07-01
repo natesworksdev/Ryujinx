@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _device.Hid.Npads.Configure(npadConfig);
         }
 
-        public ControllerKeys UpdateStickButtons(JoystickPosition leftStick, JoystickPosition rightStick)
+        public static ControllerKeys UpdateStickButtons(JoystickPosition leftStick, JoystickPosition rightStick)
         {
             const int StickButtonThreshold = short.MaxValue / 2;
             ControllerKeys result = 0;

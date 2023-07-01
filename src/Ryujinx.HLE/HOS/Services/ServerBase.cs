@@ -439,9 +439,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private IpcMessage ReadRequest()
         {
-            const int messageSize = 0x100;
+            const int MessageSize = 0x100;
 
-            using IMemoryOwner<byte> reqDataOwner = ByteMemoryPool.Rent(messageSize);
+            using IMemoryOwner<byte> reqDataOwner = ByteMemoryPool.Rent(MessageSize);
 
             Span<byte> reqDataSpan = reqDataOwner.Memory.Span;
 
