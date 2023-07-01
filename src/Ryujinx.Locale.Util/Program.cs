@@ -19,6 +19,12 @@ foreach (var file in Directory.EnumerateFiles(localesDir, "*.json")) {
             mergedDict[key] = localeDict[key];
         }
     }
+    // keep outdated keys in json locales.
+    foreach (var key in localeDict.Keys) {
+        if (!defaultLocaleDict.ContainsKey(key)) {
+            mergedDict[key] = localeDict[key];
+        }
+    }
     var newFile = file;
     WriteLocaleFile(newFile, mergedDict);
 }
