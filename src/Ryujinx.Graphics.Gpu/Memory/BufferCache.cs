@@ -108,6 +108,36 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Performs address translation of the GPU virtual address, and creates
+        /// new buffers, if needed, for the specified range.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
+        /// <returns>CPU virtual addresses of the buffer, after address translation</returns>
+        public MultiRange TranslateAndCreateBuffers(MemoryManager memoryManager, ulong gpuVa, ulong size)
+        {
+            if (gpuVa == 0)
+            {
+                return new MultiRange(MemoryManager.PteUnmapped, size);
+            }
+
+            MultiRange range = memoryManager.GetPhysicalRegions(gpuVa, size);
+
+            for (int i = 0; i < range.Count; i++)
+            {
+                MemoryRange subRange = range.GetSubRange(i);
+
+                if (subRange.Address != MemoryManager.PteUnmapped)
+                {
+                    CreateBuffer(subRange.Address, subRange.Size);
+                }
+            }
+
+            return range;
+        }
+
+        /// <summary>
         /// Creates a new buffer for the specified range, if it does not yet exist.
         /// This can be used to ensure the existance of a buffer.
         /// </summary>
@@ -372,7 +402,33 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets a buffer sub-range from a start address til a page boundary after the given size.
+        /// Gets a buffer sub-range starting at a given memory address.
+        /// </summary>
+        /// <param name="range">Physical regions of memory where the buffer is mapped</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
+        /// <returns>The buffer sub-range starting at the given memory address</returns>
+        public BufferRange GetBufferRangeAligned(MultiRange range, bool write = false)
+        {
+            // TODO: Support discontinuous ranges.
+            MemoryRange subRange = range.GetSubRange(0);
+            return GetBuffer(subRange.Address, subRange.Size, write).GetRangeAligned(subRange.Address, subRange.Size, write);
+        }
+
+        /// <summary>
+        /// Gets a buffer sub-range for a given memory range.
+        /// </summary>
+        /// <param name="range">Physical regions of memory where the buffer is mapped</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
+        /// <returns>The buffer sub-range for the given range</returns>
+        public BufferRange GetBufferRange(MultiRange range, bool write = false)
+        {
+            // TODO: Support discontinuous ranges.
+            MemoryRange subRange = range.GetSubRange(0);
+            return GetBuffer(subRange.Address, subRange.Size, write).GetRange(subRange.Address, subRange.Size, write);
+        }
+
+        /// <summary>
+        /// Gets a buffer sub-range starting at a given memory address.
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
@@ -424,6 +480,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             return buffer;
+        }
+
+        /// <summary>
+        /// Performs guest to host memory synchronization of a given memory range.
+        /// </summary>
+        /// <param name="range">Physical regions of memory where the buffer is mapped</param>
+        public void SynchronizeBufferRange(MultiRange range)
+        {
+            SynchronizeBufferRange(range.GetSubRange(0).Address, range.GetSubRange(0).Size);
         }
 
         /// <summary>
