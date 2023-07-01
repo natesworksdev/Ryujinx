@@ -914,7 +914,7 @@ namespace Ryujinx.Ui
 
                 Thread windowThread = new(CreateGameWindow)
                 {
-                    Name = "GUI.WindowThread"
+                    Name = "GUI.WindowThread",
                 };
 
                 windowThread.Start();
@@ -1308,7 +1308,7 @@ namespace Ryujinx.Ui
 
             FileFilter filter = new()
             {
-                Name = "Switch Executables"
+                Name = "Switch Executables",
             };
             filter.AddPattern("*.xci");
             filter.AddPattern("*.nsp");
@@ -1458,7 +1458,7 @@ namespace Ryujinx.Ui
 
             FileFilter filter = new()
             {
-                Name = "Switch Firmware Files"
+                Name = "Switch Firmware Files",
             };
             filter.AddPattern("*.zip");
             filter.AddPattern("*.xci");
@@ -1561,7 +1561,7 @@ namespace Ryujinx.Ui
                             }
                         })
                         {
-                            Name = "GUI.FirmwareInstallerThread"
+                            Name = "GUI.FirmwareInstallerThread",
                         };
                         thread.Start();
                     }
@@ -1730,7 +1730,7 @@ namespace Ryujinx.Ui
                     LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
                     LastScannedAmiiboId = _lastScannedAmiiboId,
                     DeviceId = deviceId,
-                    TitleId = _emulationContext.Processes.ActiveApplication.ProgramIdText.ToUpper()
+                    TitleId = _emulationContext.Processes.ActiveApplication.ProgramIdText.ToUpper(),
                 };
 
                 amiiboWindow.DeleteEvent += AmiiboWindow_DeleteEvent;
