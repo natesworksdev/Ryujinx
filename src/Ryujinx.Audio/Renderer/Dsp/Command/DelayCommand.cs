@@ -137,7 +137,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     X = *((float*)inputBuffers[0] + i) * 64,
                     Y = *((float*)inputBuffers[1] + i) * 64,
                     Z = *((float*)inputBuffers[2] + i) * 64,
-                    W = *((float*)inputBuffers[3] + i) * 64
+                    W = *((float*)inputBuffers[3] + i) * 64,
                 };
 
                 Vector4 delayLineValues = new()
@@ -145,7 +145,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     X = state.DelayLines[0].Read(),
                     Y = state.DelayLines[1].Read(),
                     Z = state.DelayLines[2].Read(),
-                    W = state.DelayLines[3].Read()
+                    W = state.DelayLines[3].Read(),
                 };
 
                 Vector4 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;
@@ -187,7 +187,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     Z = *((float*)inputBuffers[2] + i) * 64,
                     W = *((float*)inputBuffers[3] + i) * 64,
                     V = *((float*)inputBuffers[4] + i) * 64,
-                    U = *((float*)inputBuffers[5] + i) * 64
+                    U = *((float*)inputBuffers[5] + i) * 64,
                 };
 
                 Vector6 delayLineValues = new()
@@ -197,7 +197,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     Z = state.DelayLines[2].Read(),
                     W = state.DelayLines[3].Read(),
                     V = state.DelayLines[4].Read(),
-                    U = state.DelayLines[5].Read()
+                    U = state.DelayLines[5].Read(),
                 };
 
                 Vector6 temp = MatrixHelper.Transform(ref delayLineValues, ref delayFeedback) + channelInput * inGain;

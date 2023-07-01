@@ -44,7 +44,7 @@ namespace Ryujinx.Audio
 
             _workerThread = new Thread(Update)
             {
-                Name = "AudioManager.Worker"
+                Name = "AudioManager.Worker",
             };
         }
 

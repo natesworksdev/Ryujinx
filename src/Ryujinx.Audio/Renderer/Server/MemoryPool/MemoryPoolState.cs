@@ -26,7 +26,7 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
             /// <summary>
             /// <see cref="MemoryPoolState"/> located on the DSP side for system use.
             /// </summary>
-            Dsp
+            Dsp,
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
                 CpuAddress = 0,
                 DspAddress = 0,
                 Size = 0,
-                Location = location
+                Location = location,
             };
         }
 

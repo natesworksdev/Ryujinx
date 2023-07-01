@@ -46,7 +46,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Cathedral
             33.1f, 43.3f, 22.8f, 37.9f, 14.9f, 35.3f, 17.9f, 34.2f, 0.0f, 43.3f,
             // Disabled
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         };
 
         private static readonly float[] _earlyGainBase = new float[50]
@@ -60,7 +60,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Cathedral
             0.93f, 0.92f, 0.87f, 0.86f, 0.94f, 0.81f, 0.80f, 0.77f, 0.76f, 0.65f,
             // Disabled
-            0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f
+            0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
         };
 
         private static readonly float[] _preDelayTimes = new float[5]
@@ -74,7 +74,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Cathedral
             50.0f,
             // Disabled
-            0.0f
+            0.0f,
         };
 
         public DelayLine[] FdnDelayLines { get; }

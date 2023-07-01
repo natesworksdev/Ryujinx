@@ -504,7 +504,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
                 BiquadFilterParameter parameter = new()
                 {
-                    Enable = true
+                    Enable = true,
                 };
                 effect.Parameter.Denominator.AsSpan().CopyTo(parameter.Denominator.AsSpan());
                 effect.Parameter.Numerator.AsSpan().CopyTo(parameter.Numerator.AsSpan());

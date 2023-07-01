@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 6 => SelectHardwareChannelCount(2),
                 2 => SelectHardwareChannelCount(1),
                 1 => throw new ArgumentException("No valid channel configuration found!"),
-                _ => throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}")
+                _ => throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}"),
             };
         }
 

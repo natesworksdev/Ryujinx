@@ -18,7 +18,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             Start,
             Stop,
             RenderStart,
-            RenderEnd
+            RenderEnd,
         }
 
         private class RendererSession
@@ -110,7 +110,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             {
                 CommandList = commands,
                 RenderingLimit = renderingLimit,
-                AppletResourceId = appletResourceId
+                AppletResourceId = appletResourceId,
             };
         }
 
@@ -171,7 +171,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         {
             _workerThread = new Thread(Work)
             {
-                Name = "AudioProcessor.Worker"
+                Name = "AudioProcessor.Worker",
             };
 
             _workerThread.Start();

@@ -211,7 +211,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
             performanceEntry = new PerformanceEntryAddresses
             {
                 BaseMemory = SpanMemoryManager<int>.Cast(CurrentBuffer),
-                EntryCountOffset = (uint)CurrentHeader.GetEntryCountOffset()
+                EntryCountOffset = (uint)CurrentHeader.GetEntryCountOffset(),
             };
 
             uint baseEntryOffset = (uint)(Unsafe.SizeOf<THeader>() + Unsafe.SizeOf<TEntry>() * _entryIndex);
@@ -242,7 +242,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
             performanceEntry = new PerformanceEntryAddresses
             {
                 BaseMemory = SpanMemoryManager<int>.Cast(CurrentBuffer),
-                EntryCountOffset = (uint)CurrentHeader.GetEntryCountOffset()
+                EntryCountOffset = (uint)CurrentHeader.GetEntryCountOffset(),
             };
 
             uint baseEntryOffset = (uint)(Unsafe.SizeOf<THeader>() + GetEntriesSize() + Unsafe.SizeOf<IPerformanceDetailEntry>() * _entryDetailIndex);

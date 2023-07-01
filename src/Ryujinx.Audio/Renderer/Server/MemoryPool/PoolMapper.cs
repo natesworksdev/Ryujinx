@@ -40,7 +40,7 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
             /// <summary>
             /// <see cref="Dsp.AudioProcessor"/> unmapping failed.
             /// </summary>
-            UnmapError = 3
+            UnmapError = 3,
         }
 
         /// <summary>

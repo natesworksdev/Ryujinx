@@ -306,7 +306,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// <summary>
             /// Skip pitch and Sample Rate Conversion (SRC).
             /// </summary>
-            SkipPitchAndSampleRateConversion = 2
+            SkipPitchAndSampleRateConversion = 2,
         }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace Ryujinx.Audio.Renderer.Parameter
             /// <summary>
             /// Resample interpolating 1 samples per output sample.
             /// </summary>
-            Low
+            Low,
         }
     }
 }

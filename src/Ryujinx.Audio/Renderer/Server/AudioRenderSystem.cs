@@ -719,7 +719,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 DepopBuffer = _depopBuffer,
                 MixBufferCount = GetMixBufferCount(),
                 SessionId = _sessionId,
-                UpsamplerManager = _upsamplerManager
+                UpsamplerManager = _upsamplerManager,
             };
         }
 

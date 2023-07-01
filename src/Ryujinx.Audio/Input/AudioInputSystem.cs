@@ -191,7 +191,7 @@ namespace Ryujinx.Audio.Input
                 {
                     BufferTag = bufferTag,
                     DataPointer = userBuffer.Data,
-                    DataSize = userBuffer.DataSize
+                    DataSize = userBuffer.DataSize,
                 };
 
                 if (_session.AppendBuffer(buffer))
@@ -219,7 +219,7 @@ namespace Ryujinx.Audio.Input
                 {
                     BufferTag = bufferTag,
                     DataPointer = userBuffer.Data,
-                    DataSize = userBuffer.DataSize
+                    DataSize = userBuffer.DataSize,
                 };
 
                 if (AudioDeviceSession.AppendUacBuffer(buffer, handle))

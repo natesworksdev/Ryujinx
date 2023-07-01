@@ -186,7 +186,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
             _workerThread = new Thread(SendCommands)
             {
-                Name = "AudioRendererManager.Worker"
+                Name = "AudioRendererManager.Worker",
             };
 
             _workerThread.Start();

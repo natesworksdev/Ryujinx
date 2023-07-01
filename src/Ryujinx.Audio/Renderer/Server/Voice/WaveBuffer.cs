@@ -74,7 +74,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             Common.WaveBuffer waveBuffer = new()
             {
                 Buffer = BufferAddressInfo.GetReference(true),
-                BufferSize = (uint)BufferAddressInfo.Size
+                BufferSize = (uint)BufferAddressInfo.Size,
             };
 
             if (ContextAddressInfo.CpuAddress != 0)

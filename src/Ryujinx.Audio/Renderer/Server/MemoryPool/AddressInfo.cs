@@ -55,7 +55,7 @@ namespace Ryujinx.Audio.Renderer.Server.MemoryPool
                     CpuAddress = cpuAddress,
                     _memoryPools = MemoryPoolState.Null,
                     Size = size,
-                    ForceMappedDspAddress = 0
+                    ForceMappedDspAddress = 0,
                 };
             }
         }

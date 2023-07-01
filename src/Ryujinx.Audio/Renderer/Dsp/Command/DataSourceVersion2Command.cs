@@ -97,7 +97,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 ExtraParameterSize = ExtraParameterSize,
                 ChannelIndex = (int)ChannelIndex,
                 ChannelCount = (int)ChannelCount,
-                SrcQuality = SrcQuality
+                SrcQuality = SrcQuality,
             };
 
             DataSourceHelper.ProcessWaveBuffers(context.MemoryManager, outputBuffer, ref info, WaveBuffers, ref State.Span[0], context.SampleRate, (int)context.SampleCount);

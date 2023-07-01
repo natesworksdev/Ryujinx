@@ -36,13 +36,13 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             RawQ15One,
             Minus3dBInQ15,
             Minus12dBInQ15,
-            Minus3dBInQ15
+            Minus3dBInQ15,
         };
 
         private static readonly int[] _defaultStereoToMonoCoefficients = new int[2]
         {
             Minus6dBInQ15,
-            Minus6dBInQ15
+            Minus6dBInQ15,
         };
 
         private const int SurroundChannelCount = 6;

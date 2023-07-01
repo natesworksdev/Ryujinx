@@ -435,7 +435,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     errorInfos[i] = new ErrorInfo
                     {
                         ErrorCode = 0,
-                        ExtraErrorInfo = 0
+                        ExtraErrorInfo = 0,
                     };
                 }
             }

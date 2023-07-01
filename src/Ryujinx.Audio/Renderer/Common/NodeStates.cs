@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Common
         {
             Unknown,
             Discovered,
-            Finished
+            Finished,
         }
 
         public NodeStates()
