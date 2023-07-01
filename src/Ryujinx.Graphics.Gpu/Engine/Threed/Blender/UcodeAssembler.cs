@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         Max = 3,
         Rcp = 4,
         Add = 5,
-        Sub = 6
+        Sub = 6,
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         LT = 4,
         LE = 5,
         GT = 6,
-        GE = 7
+        GE = 7,
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         Temp1 = 0xa,
         Temp2 = 0xb,
         PBR = 0xc,
-        ConstantRGB = 0xd
+        ConstantRGB = 0xd,
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         Temp0 = 4,
         Temp1 = 5,
         Temp2 = 6,
-        PBR = 7
+        PBR = 7,
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         Temp0 = 0,
         Temp1 = 1,
         Temp2 = 2,
-        PBR = 3
+        PBR = 3,
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         RRR = 2,
         GGG = 3,
         BBB = 4,
-        RToA = 5
+        RToA = 5,
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
         RGB = 0,
         R = 1,
         G = 2,
-        B = 3
+        B = 3,
     }
 
     /// <summary>

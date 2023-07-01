@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         Texture2DArray,
         TextureBuffer,
         Texture2DRect,
-        CubemapArray
+        CubemapArray,
     }
 
     static class TextureTargetConverter
@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 TextureTarget.TextureBuffer => SamplerType.TextureBuffer,
                 TextureTarget.Texture2DRect => SamplerType.Texture2D,
                 TextureTarget.CubemapArray => SamplerType.TextureCube | SamplerType.Array,
-                _ => SamplerType.Texture2D
+                _ => SamplerType.Texture2D,
             };
         }
     }

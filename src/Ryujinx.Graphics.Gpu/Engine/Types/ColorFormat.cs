@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         R8Uint = 0xf6,
         B5G5R5X1Unorm = 0xf8,
         R8G8B8X8Unorm = 0xf9,
-        R8G8B8X8Srgb = 0xfa
+        R8G8B8X8Srgb = 0xfa,
     }
 
     static class ColorFormatConverter
@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 ColorFormat.B5G5R5X1Unorm     => new FormatInfo(Format.B5G5R5A1Unorm,     1, 1, 2,  4),
                 ColorFormat.R8G8B8X8Unorm     => new FormatInfo(Format.R8G8B8A8Unorm,     1, 1, 4,  4),
                 ColorFormat.R8G8B8X8Srgb      => new FormatInfo(Format.R8G8B8A8Srgb,      1, 1, 4,  4),
-                _                             => FormatInfo.Default
+                _                             => FormatInfo.Default,
 #pragma warning restore IDE0055
             };
         }

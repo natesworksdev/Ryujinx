@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// A default, generic RGBA8 texture format.
         /// </summary>
-        public static FormatInfo Default { get; } = new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
+        public static FormatInfo Default { get; } = new(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
 
         /// <summary>
         /// The format of the texture data.

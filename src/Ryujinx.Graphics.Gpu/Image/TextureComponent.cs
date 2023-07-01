@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         Blue = 4,
         Alpha = 5,
         OneSI = 6,
-        OneF = 7
+        OneF = 7,
     }
 
     static class TextureComponentConverter

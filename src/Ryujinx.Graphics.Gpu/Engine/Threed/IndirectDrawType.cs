@@ -36,6 +36,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <summary>
         /// Draw count flag.
         /// </summary>
-        Count = 1 << 1
+        Count = 1 << 1,
     }
 }

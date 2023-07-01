@@ -209,7 +209,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.Blender
             new AdvancedBlendUcode(AdvancedBlendOp.HslHue,           AdvancedBlendOverlap.Conjoint,     false, GenConjointHslHue),
             new AdvancedBlendUcode(AdvancedBlendOp.HslSaturation,    AdvancedBlendOverlap.Conjoint,     false, GenConjointHslSaturation),
             new AdvancedBlendUcode(AdvancedBlendOp.HslColor,         AdvancedBlendOverlap.Conjoint,     false, GenConjointHslColor),
-            new AdvancedBlendUcode(AdvancedBlendOp.HslLuminosity,    AdvancedBlendOverlap.Conjoint,     false, GenConjointHslLuminosity)
+            new AdvancedBlendUcode(AdvancedBlendOp.HslLuminosity,    AdvancedBlendOverlap.Conjoint,     false, GenConjointHslLuminosity),
         };
 
         public static string GenTable()

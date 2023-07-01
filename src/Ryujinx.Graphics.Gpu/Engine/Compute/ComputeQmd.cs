@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum DependentQmdType
     {
         Queue,
-        Grid
+        Grid,
     }
 
     /// <summary>
@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum ReleaseMembarType
     {
         FeNone,
-        FeSysmembar
+        FeSysmembar,
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     {
         L1None,
         L1Sysmembar,
-        L1Membar
+        L1Membar,
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum Fp32NanBehavior
     {
         Legacy,
-        Fp64Compatible
+        Fp64Compatible,
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum Fp32F2iNanBehavior
     {
         PassZero,
-        PassIndefinite
+        PassIndefinite,
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum ApiVisibleCallLimit
     {
         _32,
-        NoCheck
+        NoCheck,
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum SharedMemoryBankMapping
     {
         FourBytesPerBank,
-        EightBytesPerBank
+        EightBytesPerBank,
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum Fp32NarrowInstruction
     {
         KeepDenorms,
-        FlushDenorms
+        FlushDenorms,
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     {
         DirectlyAddressableMemorySize16kb,
         DirectlyAddressableMemorySize32kb,
-        DirectlyAddressableMemorySize48kb
+        DirectlyAddressableMemorySize48kb,
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         RedDec,
         RedAnd,
         RedOr,
-        RedXor
+        RedXor,
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum ReductionFormat
     {
         Unsigned32,
-        Signed32
+        Signed32,
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     enum StructureSize
     {
         FourWords,
-        OneWord
+        OneWord,
     }
 
     /// <summary>

@@ -937,7 +937,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     {
                         VertexAttribType.Sint => Format.R32G32B32A32Sint,
                         VertexAttribType.Uint => Format.R32G32B32A32Uint,
-                        _ => Format.R32G32B32A32Float
+                        _ => Format.R32G32B32A32Float,
                     };
                 }
 

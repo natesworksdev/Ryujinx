@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         Release = 2,
         AcqGeq = 4,
         AcqAnd = 8,
-        Reduction = 16
+        Reduction = 16,
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SemaphoredAcquireSwitch
     {
         Disabled = 0,
-        Enabled = 1
+        Enabled = 1,
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SemaphoredReleaseWfi
     {
         En = 0,
-        Dis = 1
+        Dis = 1,
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SemaphoredReleaseSize
     {
         SixteenBytes = 0,
-        FourBytes = 1
+        FourBytes = 1,
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         Or = 4,
         Add = 5,
         Inc = 6,
-        Dec = 7
+        Dec = 7,
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SemaphoredFormat
     {
         Signed = 0,
-        Unsigned = 1
+        Unsigned = 1,
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum MemOpCTlbInvalidatePdb
     {
         One = 0,
-        All = 1
+        All = 1,
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum MemOpCTlbInvalidateGpc
     {
         Enable = 0,
-        Disable = 1
+        Disable = 1,
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     {
         VidMem = 0,
         SysMemCoherent = 2,
-        SysMemNoncoherent = 3
+        SysMemNoncoherent = 3,
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         L2PeermemInvalidate = 13,
         L2SysmemInvalidate = 14,
         L2CleanComptags = 15,
-        L2FlushDirty = 16
+        L2FlushDirty = 16,
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SyncpointbOperation
     {
         Wait = 0,
-        Incr = 1
+        Incr = 1,
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum SyncpointbWaitSwitch
     {
         Dis = 0,
-        En = 1
+        En = 1,
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
     enum WfiScope
     {
         CurrentScgType = 0,
-        All = 1
+        All = 1,
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         Nop = 0,
         PbdmaTimeslice = 1,
         RunlistTimeslice = 2,
-        Tsg = 3
+        Tsg = 3,
     }
 
     /// <summary>

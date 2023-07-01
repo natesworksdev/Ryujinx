@@ -6,6 +6,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
     enum SamplerIndex
     {
         Independently = 0,
-        ViaHeaderIndex = 1
+        ViaHeaderIndex = 1,
     }
 }

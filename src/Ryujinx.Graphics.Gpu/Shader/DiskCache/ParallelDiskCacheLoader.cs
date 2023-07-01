@@ -234,7 +234,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             {
                 workThreads[index] = new Thread(ProcessAsyncQueue)
                 {
-                    Name = $"GPU.AsyncTranslationThread.{index}"
+                    Name = $"GPU.AsyncTranslationThread.{index}",
                 };
             }
 

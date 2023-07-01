@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Astc10x8,
             Astc10x10,
             Astc12x10,
-            Astc12x12
+            Astc12x12,
         }
 
         /// <summary>
@@ -629,7 +629,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     TextureMatchQuality.Perfect => TextureViewCompatibility.Full,
                     TextureMatchQuality.FormatAlias => TextureViewCompatibility.FormatAlias,
-                    _ => TextureViewCompatibility.Incompatible
+                    _ => TextureViewCompatibility.Incompatible,
                 };
             }
 

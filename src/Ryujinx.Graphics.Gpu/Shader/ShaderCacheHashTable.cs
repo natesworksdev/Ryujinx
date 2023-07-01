@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 2 => TessEvaluationCode,
                 3 => GeometryCode,
                 4 => FragmentCode,
-                _ => VertexBCode
+                _ => VertexBCode,
             };
         }
     }

@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private enum CommandBufferType
         {
             Prefetch,
-            NoPrefetch
+            NoPrefetch,
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 Type = CommandBufferType.Prefetch,
                 Words = commandBuffer,
                 EntryAddress = ulong.MaxValue,
-                EntryCount = (uint)commandBuffer.Length
+                EntryCount = (uint)commandBuffer.Length,
             });
         }
 
@@ -155,7 +155,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 Type = type,
                 Words = null,
                 EntryAddress = startAddress,
-                EntryCount = (uint)entry.Entry1Length
+                EntryCount = (uint)entry.Entry1Length,
             };
         }
 

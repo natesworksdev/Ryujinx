@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 3 => 2, // Geometry
                 1 => 3, // Tessellation control
                 2 => 4, // Tessellation evaluation
-                _ => 0 // Vertex/Compute
+                _ => 0, // Vertex/Compute
             };
         }
 
@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 Format.R10G10B10A2Unorm  => TextureFormat.R10G10B10A2Unorm,
                 Format.R10G10B10A2Uint   => TextureFormat.R10G10B10A2Uint,
                 Format.R11G11B10Float    => TextureFormat.R11G11B10Float,
-                _                        => TextureFormat.Unknown
+                _                        => TextureFormat.Unknown,
 #pragma warning restore IDE0055
             };
         }
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 PrimitiveTopology.Patches => tessellationMode.UnpackPatchType() == TessPatchType.Isolines
                     ? InputTopology.Lines
                     : InputTopology.Triangles,
-                _ => InputTopology.Points
+                _ => InputTopology.Points,
             };
         }
     }

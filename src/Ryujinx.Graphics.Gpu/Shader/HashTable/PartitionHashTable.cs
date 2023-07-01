@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             /// <summary>
             /// A full entry was found, the search was concluded and the item can be retrieved.
             /// </summary>
-            FoundFull
+            FoundFull,
         }
 
         /// <summary>

@@ -714,7 +714,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ShaderStage.TessellationEvaluation => 2,
                 ShaderStage.Geometry => 3,
                 ShaderStage.Fragment => 4,
-                _ => 0
+                _ => 0,
             };
         }
 

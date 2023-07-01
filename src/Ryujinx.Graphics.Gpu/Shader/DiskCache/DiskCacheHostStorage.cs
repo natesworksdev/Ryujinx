@@ -574,7 +574,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             DataEntry entry = new()
             {
-                StagesBitMask = stagesBitMask
+                StagesBitMask = stagesBitMask,
             };
 
             dataWriter.BeginCompression(DiskCacheCommon.GetCompressionAlgorithm());
@@ -679,7 +679,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             OffsetAndSize offsetAndSize = new()
             {
                 Offset = (ulong)dataFileStream.Position,
-                UncompressedSize = (uint)hostCode.Length
+                UncompressedSize = (uint)hostCode.Length,
             };
 
             long dataStartPosition = dataFileStream.Position;
@@ -811,7 +811,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 UsesDrawParameters = info.UsesDrawParameters,
                 UsesRtLayer = info.UsesRtLayer,
                 ClipDistancesWritten = info.ClipDistancesWritten,
-                FragmentOutputMap = info.FragmentOutputMap
+                FragmentOutputMap = info.FragmentOutputMap,
             };
 
             dataWriter.WriteWithMagicAndSize(ref dataInfo, ShdiMagic);

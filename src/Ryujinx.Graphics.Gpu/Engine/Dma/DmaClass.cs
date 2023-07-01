@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             SrcLinear = 1 << 7,
             DstLinear = 1 << 8,
             MultiLineEnable = 1 << 9,
-            RemapEnable = 1 << 10
+            RemapEnable = 1 << 10,
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             _3dEngine = threedEngine;
             _state = new DeviceState<DmaClassState>(new Dictionary<string, RwCallback>
             {
-                { nameof(DmaClassState.LaunchDma), new RwCallback(LaunchDma, null) }
+                { nameof(DmaClassState.LaunchDma), new RwCallback(LaunchDma, null) },
             });
         }
 
@@ -548,7 +548,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     0 => _state.State.SetRemapComponentsDstX,
                     1 => _state.State.SetRemapComponentsDstY,
                     2 => _state.State.SetRemapComponentsDstZ,
-                    _ => _state.State.SetRemapComponentsDstW
+                    _ => _state.State.SetRemapComponentsDstW,
                 };
 
                 switch (componentsDst)

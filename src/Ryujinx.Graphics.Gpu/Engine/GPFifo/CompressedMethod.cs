@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         Grp0SetSubDevMask = 1,
         Grp0StoreSubDevMask = 2,
         Grp0UseSubDevMask = 3,
-        Grp2NonIncMethod = 0
+        Grp2NonIncMethod = 0,
     }
 
     enum SecOp
@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         ImmdDataMethod = 4,
         OneInc = 5,
         Reserved6 = 6,
-        EndPbSegment = 7
+        EndPbSegment = 7,
     }
 
     struct CompressedMethod

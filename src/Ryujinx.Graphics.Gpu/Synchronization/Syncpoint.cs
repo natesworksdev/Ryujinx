@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                     SyncpointWaiterHandle waiterInformation = new()
                     {
                         Threshold = threshold,
-                        Callback = callback
+                        Callback = callback,
                     };
 
                     _waiters.Add(waiterInformation);

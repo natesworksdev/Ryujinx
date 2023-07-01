@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 CompareOp.Greater or CompareOp.GreaterGl => AlphaTestOp.Greater,
                 CompareOp.NotEqual or CompareOp.NotEqualGl => AlphaTestOp.NotEqual,
                 CompareOp.GreaterOrEqual or CompareOp.GreaterOrEqualGl => AlphaTestOp.GreaterOrEqual,
-                _ => AlphaTestOp.Always
+                _ => AlphaTestOp.Always,
             };
         }
 

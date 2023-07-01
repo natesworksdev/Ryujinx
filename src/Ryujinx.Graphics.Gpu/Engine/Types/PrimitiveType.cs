@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         LineStripAdjacency,
         TrianglesAdjacency,
         TriangleStripAdjacency,
-        Patches
+        Patches,
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
         LineStripAdjacency = 11,
         TrianglesAdjacency = 12,
         TriangleStripAdjacency = 13,
-        Patches = 14
+        Patches = 14,
     }
 
     static class PrimitiveTypeConverter
@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 PrimitiveType.TrianglesAdjacency     => PrimitiveTopology.TrianglesAdjacency,
                 PrimitiveType.TriangleStripAdjacency => PrimitiveTopology.TriangleStripAdjacency,
                 PrimitiveType.Patches                => PrimitiveTopology.Patches,
-                _                                    => PrimitiveTopology.Triangles
+                _                                    => PrimitiveTopology.Triangles,
 #pragma warning restore IDE0055
             };
         }
@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Types
                 PrimitiveTypeOverride.TrianglesAdjacency     => PrimitiveTopology.TrianglesAdjacency,
                 PrimitiveTypeOverride.TriangleStripAdjacency => PrimitiveTopology.TriangleStripAdjacency,
                 PrimitiveTypeOverride.Patches                => PrimitiveTopology.Patches,
-                _                                            => PrimitiveTopology.Triangles
+                _                                            => PrimitiveTopology.Triangles,
 #pragma warning restore IDE0055
             };
         }

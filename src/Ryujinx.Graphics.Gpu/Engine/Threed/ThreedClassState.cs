@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         TessellationControl,
         TessellationEvaluation,
         Geometry,
-        Fragment
+        Fragment,
     }
 
     /// <summary>
@@ -223,7 +223,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         Disabled = 0,
         EnableRGB = 1,
         EnableAlpha = 2,
-        EnableRGBA = 3
+        EnableRGBA = 3,
     }
 
     /// <summary>
@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         Size16 = 0x1b,
         Size8 = 0x1d,
         Rgb10A2 = 0x30,
-        Rg11B10 = 0x31
+        Rg11B10 = 0x31,
     }
 
     /// <summary>
@@ -311,7 +311,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         Uint = 4,
         Uscaled = 5,
         Sscaled = 6,
-        Float = 7
+        Float = 7,
     }
 
     /// <summary>
@@ -443,7 +443,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     enum YControl
     {
         NegateY = 1 << 0,
-        TriangleRastFlip = 1 << 4
+        TriangleRastFlip = 1 << 4,
     }
 
     /// <summary>
@@ -498,7 +498,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         Always,
         ResultNonZero,
         Equal,
-        NotEqual
+        NotEqual,
     }
 
     /// <summary>
@@ -570,7 +570,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     enum ViewVolumeClipControl
     {
         ForceDepthRangeZeroToOne = 1 << 0,
-        DepthClampDisabled = 1 << 11
+        DepthClampDisabled = 1 << 11,
     }
 
     /// <summary>

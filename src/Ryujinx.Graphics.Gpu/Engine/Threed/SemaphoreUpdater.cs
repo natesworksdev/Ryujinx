@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             Release = 0,
             Acquire = 1,
-            Counter = 2
+            Counter = 2,
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             ClipperInputPrimitives = 0x1c,
             ClipperOutputPrimitives = 0x1d,
             FragmentShaderInvocations = 0x1e,
-            PrimitivesGenerated = 0x1f
+            PrimitivesGenerated = 0x1f,
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             TransformFeedbackOffset = 0x1a,
             TessControlShaderInvocations = 0x1b,
             TessEvaluationShaderInvocations = 0x1d,
-            TessEvaluationShaderPrimitives = 0x1f
+            TessEvaluationShaderPrimitives = 0x1f,
         }
 
         private readonly GpuContext _context;
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 CounterData counterData = new()
                 {
                     Counter = result,
-                    Timestamp = ticks
+                    Timestamp = ticks,
                 };
 
                 if (counter?.Invalid != true)

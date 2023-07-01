@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 { nameof(GPFifoClassState.SetReference), new RwCallback(SetReference, null) },
                 { nameof(GPFifoClassState.LoadMmeInstructionRam), new RwCallback(LoadMmeInstructionRam, null) },
                 { nameof(GPFifoClassState.LoadMmeStartAddressRam), new RwCallback(LoadMmeStartAddressRam, null) },
-                { nameof(GPFifoClassState.SetMmeShadowRamControl), new RwCallback(SetMmeShadowRamControl, null) }
+                { nameof(GPFifoClassState.SetMmeShadowRamControl), new RwCallback(SetMmeShadowRamControl, null) },
             });
 
             _macros = new Macro[MacrosCount];

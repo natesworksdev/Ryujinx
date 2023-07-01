@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             EarlyZForce = 1 << 0,
             PrimitiveTopology = 1 << 1,
             TessellationMode = 1 << 2,
-            TransformFeedback = 1 << 3
+            TransformFeedback = 1 << 3,
         }
 
         private QueriedStateFlags _queriedState;
@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             TextureFormat = 1 << 0,
             SamplerType = 1 << 1,
-            CoordNormalized = 1 << 2
+            CoordNormalized = 1 << 2,
         }
 
         /// <summary>

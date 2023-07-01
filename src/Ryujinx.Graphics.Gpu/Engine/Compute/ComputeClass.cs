@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             {
                 { nameof(ComputeClassState.LaunchDma), new RwCallback(LaunchDma, null) },
                 { nameof(ComputeClassState.LoadInlineData), new RwCallback(LoadInlineData, null) },
-                { nameof(ComputeClassState.SendSignalingPcasB), new RwCallback(SendSignalingPcasB, null) }
+                { nameof(ComputeClassState.SendSignalingPcasB), new RwCallback(SendSignalingPcasB, null) },
             });
 
             _i2mClass = new InlineToMemoryClass(context, channel, initializeState: false);

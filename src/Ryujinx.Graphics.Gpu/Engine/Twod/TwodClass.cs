@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
             _channel = channel;
             _state = new DeviceState<TwodClassState>(new Dictionary<string, RwCallback>
             {
-                { nameof(TwodClassState.PixelsFromMemorySrcY0Int), new RwCallback(PixelsFromMemorySrcY0Int, null) }
+                { nameof(TwodClassState.PixelsFromMemorySrcY0Int), new RwCallback(PixelsFromMemorySrcY0Int, null) },
             });
         }
 

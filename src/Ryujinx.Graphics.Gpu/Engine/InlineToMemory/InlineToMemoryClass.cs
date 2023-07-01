@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                 _state = new DeviceState<InlineToMemoryClassState>(new Dictionary<string, RwCallback>
                 {
                     { nameof(InlineToMemoryClassState.LaunchDma), new RwCallback(LaunchDma, null) },
-                    { nameof(InlineToMemoryClassState.LoadInlineData), new RwCallback(LoadInlineData, null) }
+                    { nameof(InlineToMemoryClassState.LoadInlineData), new RwCallback(LoadInlineData, null) },
                 });
             }
         }

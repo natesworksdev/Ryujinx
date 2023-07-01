@@ -404,7 +404,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 Offset = dataOffset,
                 CodeSize = codeSize,
                 Cb1DataSize = cb1DataSize,
-                Hash = hash
+                Hash = hash,
             };
 
             tocFileStream.Seek(0, SeekOrigin.End);
