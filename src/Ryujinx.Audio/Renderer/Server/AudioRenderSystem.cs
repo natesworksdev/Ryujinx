@@ -351,6 +351,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 5 => new CommandProcessingTimeEstimatorVersion5(_sampleCount, _mixBufferCount),
                 _ => throw new NotImplementedException($"Unsupported processing time estimator version {_behaviourContext.GetCommandProcessingTimeEstimatorVersion()}."),
             };
+
             return ResultCode.Success;
         }
 
@@ -802,6 +803,7 @@ namespace Ryujinx.Audio.Renderer.Server
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+
             if (Interlocked.CompareExchange(ref _disposeState, 1, 0) == 0)
             {
                 Dispose(true);

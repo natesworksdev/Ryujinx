@@ -506,6 +506,7 @@ namespace Ryujinx.Audio.Renderer.Server
                 {
                     Enable = true,
                 };
+
                 effect.Parameter.Denominator.AsSpan().CopyTo(parameter.Denominator.AsSpan());
                 effect.Parameter.Numerator.AsSpan().CopyTo(parameter.Numerator.AsSpan());
 
