@@ -741,13 +741,13 @@ namespace Ryujinx.Ava
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
 
-            var isGaLthreaded = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
-            if (isGaLthreaded)
+            var isGALThreaded = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            if (isGALThreaded)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
 
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {isGaLthreaded}");
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {isGALThreaded}");
 
             // Initialize Configuration.
             var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB;
