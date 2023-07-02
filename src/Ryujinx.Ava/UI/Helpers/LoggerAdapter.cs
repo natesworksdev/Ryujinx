@@ -3,11 +3,10 @@ using Avalonia.Utilities;
 using Ryujinx.Common.Logging;
 using System;
 using System.Text;
-using Logger = Avalonia.Logging.Logger;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    using AvaLogger = Logger;
+    using AvaLogger = Avalonia.Logging.Logger;
     using AvaLogLevel = LogEventLevel;
     using RyuLogClass = LogClass;
     using RyuLogger = Ryujinx.Common.Logging.Logger;
