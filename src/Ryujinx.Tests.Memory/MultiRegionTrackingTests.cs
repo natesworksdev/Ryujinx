@@ -119,7 +119,7 @@ namespace Ryujinx.Tests.Memory
 
             int oddRegionCount = ExpectQueryInOrder(handle, 0, PageSize * PageCount, (address) => (address / PageSize) % 2 == 1);
 
-            Assert.AreEqual(oddRegionCount, PageCount / 2); // Must have written to all odd pages.
+            Assert.AreEqual(PageCount / 2, oddRegionCount); // Must have written to all odd pages.
 
             // Write to all the even pages.
             RandomOrder(random, even, (i) =>
@@ -129,7 +129,7 @@ namespace Ryujinx.Tests.Memory
 
             int evenRegionCount = ExpectQueryInOrder(handle, 0, PageSize * PageCount, (address) => (address / PageSize) % 2 == 0);
 
-            Assert.AreEqual(evenRegionCount, PageCount / 2);
+            Assert.AreEqual(PageCount / 2, evenRegionCount);
         }
 
         [Test]
@@ -172,7 +172,7 @@ namespace Ryujinx.Tests.Memory
                 }, 1);
             }
 
-            Assert.AreEqual(oddRegionCount, PageCount / 2); // Must have written to all odd pages.
+            Assert.AreEqual(PageCount / 2, oddRegionCount); // Must have written to all odd pages.
 
             // Write to all pages.
 
@@ -182,19 +182,19 @@ namespace Ryujinx.Tests.Memory
 
             int evenRegionCount = ExpectQueryInOrder(handle, 0, PageSize * PageCount, (address) => (address / PageSize) % 2 == 0, 1);
 
-            Assert.AreEqual(evenRegionCount, PageCount / 2); // Must have written to all even pages.
+            Assert.AreEqual(PageCount / 2, evenRegionCount); // Must have written to all even pages.
 
             oddRegionCount = 0;
 
             handle.QueryModified(0, PageSize * PageCount, (address, range) => { oddRegionCount++; }, 1);
 
-            Assert.AreEqual(oddRegionCount, 0); // Sequence number has not changed, so found no dirty subregions.
+            Assert.AreEqual(0, oddRegionCount); // Sequence number has not changed, so found no dirty subregions.
 
             // With sequence number 2, all all pages should be reported as modified.
 
             oddRegionCount = ExpectQueryInOrder(handle, 0, PageSize * PageCount, (address) => (address / PageSize) % 2 == 1, 2);
 
-            Assert.AreEqual(oddRegionCount, PageCount / 2); // Must have written to all odd pages.
+            Assert.AreEqual(PageCount / 2, oddRegionCount); // Must have written to all odd pages.
         }
 
         [Test]
