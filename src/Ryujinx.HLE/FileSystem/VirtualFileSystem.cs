@@ -448,8 +448,7 @@ namespace Ryujinx.HLE.FileSystem
                         break;
                     }
 
-                    if (Utf8Parser.TryParse(entry.Name, out ulong saveDataId, out int bytesRead, 'x') &&
-                        bytesRead == 16 && (long)saveDataId < 0)
+                    if (Utf8Parser.TryParse(entry.Name, out ulong saveDataId, out int bytesRead, 'x') && bytesRead == 16 && (long)saveDataId < 0)
                     {
                         localList.Add(saveDataId);
                     }
@@ -546,8 +545,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             wasFixNeeded = true;
 
-            Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId,
-                info.SaveDataId);
+            Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.SpaceId, info.SaveDataId);
             if (rc.IsFailure())
             {
                 return rc;

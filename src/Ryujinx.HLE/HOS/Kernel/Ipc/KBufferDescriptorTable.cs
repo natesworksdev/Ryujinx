@@ -76,7 +76,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     case MemoryState.IpcBuffer3:
                         stateMask = MemoryState.IpcSendAllowedType3;
                         break;
-
                     default:
                         return KernelResult.InvalidCombination;
                 }

@@ -90,6 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             if (HasTimeZoneBinaryTitle())
             {
                 using IStorage ncaFileStream = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+
                 Nca nca = new(_virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
 

@@ -7,10 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     {
         private readonly RandomNumberGenerator _rng;
 
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly object _lock = new();
-#pragma warning restore IDE0052
-
         public IRandomInterface(ServiceCtx context)
         {
             _rng = RandomNumberGenerator.Create();

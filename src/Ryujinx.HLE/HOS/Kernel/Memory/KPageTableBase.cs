@@ -239,7 +239,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         stackAndTlsIoEnd = 0;
                     }
                     break;
-
                 default:
                     throw new ArgumentException($"AddressSpaceType bigger than {(uint)AddressSpaceType.Addr39Bits}: {(uint)addrSpaceType}", nameof(addrSpaceType));
             }
@@ -1689,7 +1688,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 case MemoryState.IpcBuffer3:
                     stateMask = MemoryState.IpcSendAllowedType3;
                     break;
-
                 default:
                     return KernelResult.InvalidCombination;
             }
@@ -2090,7 +2088,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 case MemoryState.IpcBuffer3:
                     stateMask = MemoryState.IpcSendAllowedType3;
                     break;
-
                 default:
                     return KernelResult.InvalidCombination;
             }

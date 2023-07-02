@@ -163,6 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             using BinaryReader reader = new(bfttfStream);
             using MemoryStream ttfStream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter output = new(ttfStream);
+
             if (KXor(reader.ReadUInt32()) != BFTTFMagic)
             {
                 throw new InvalidDataException("Error: Input file is not in BFTTF format!");

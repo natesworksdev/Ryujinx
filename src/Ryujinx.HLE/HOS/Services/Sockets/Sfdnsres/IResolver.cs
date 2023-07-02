@@ -633,6 +633,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 #pragma warning restore IDE0059
 
             using WritableRegion region = context.Memory.GetWritableRegion(responseBufferPosition, (int)responseBufferSize);
+
             Span<byte> data = region.Memory.Span;
 
             for (int i = 0; i < hostEntry.AddressList.Length; i++)

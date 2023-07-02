@@ -57,6 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             // http://switchbrew.org/index.php?title=System_Version_Title
             using MemoryStream ms = new(0x100);
+
             BinaryWriter writer = new(ms);
 
             writer.Write(MajorFwVersion);

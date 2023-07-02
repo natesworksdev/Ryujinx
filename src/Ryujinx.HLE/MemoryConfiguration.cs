@@ -17,11 +17,11 @@ namespace Ryujinx.HLE
     {
         private const ulong GiB = 1024 * 1024 * 1024;
 
+#pragma warning disable IDE0055 // Disable formatting
         public static MemoryArrange ToKernelMemoryArrange(this MemoryConfiguration configuration)
         {
             return configuration switch
             {
-#pragma warning disable IDE0055 // Disable formatting
                 MemoryConfiguration.MemoryConfiguration4GiB          => MemoryArrange.MemoryArrange4GiB,
                 MemoryConfiguration.MemoryConfiguration4GiBAppletDev => MemoryArrange.MemoryArrange4GiBAppletDev,
                 MemoryConfiguration.MemoryConfiguration4GiBSystemDev => MemoryArrange.MemoryArrange4GiBSystemDev,
@@ -29,7 +29,6 @@ namespace Ryujinx.HLE
                 MemoryConfiguration.MemoryConfiguration6GiBAppletDev => MemoryArrange.MemoryArrange6GiBAppletDev,
                 MemoryConfiguration.MemoryConfiguration8GiB          => MemoryArrange.MemoryArrange8GiB,
                 _ => throw new AggregateException($"Invalid memory configuration \"{configuration}\"."),
-#pragma warning restore IDE0055
             };
         }
 
@@ -37,7 +36,6 @@ namespace Ryujinx.HLE
         {
             return configuration switch
             {
-#pragma warning disable IDE0055 // Disable formatting
                 MemoryConfiguration.MemoryConfiguration4GiB or
                 MemoryConfiguration.MemoryConfiguration4GiBAppletDev or
                 MemoryConfiguration.MemoryConfiguration4GiBSystemDev => MemorySize.MemorySize4GiB,
@@ -45,7 +43,6 @@ namespace Ryujinx.HLE
                 MemoryConfiguration.MemoryConfiguration6GiBAppletDev => MemorySize.MemorySize6GiB,
                 MemoryConfiguration.MemoryConfiguration8GiB          => MemorySize.MemorySize8GiB,
                 _ => throw new AggregateException($"Invalid memory configuration \"{configuration}\"."),
-#pragma warning restore IDE0055
             };
         }
 
@@ -53,7 +50,6 @@ namespace Ryujinx.HLE
         {
             return configuration switch
             {
-#pragma warning disable IDE0055 // Disable formatting
                 MemoryConfiguration.MemoryConfiguration4GiB or
                 MemoryConfiguration.MemoryConfiguration4GiBAppletDev or
                 MemoryConfiguration.MemoryConfiguration4GiBSystemDev => 4 * GiB,
@@ -61,8 +57,8 @@ namespace Ryujinx.HLE
                 MemoryConfiguration.MemoryConfiguration6GiBAppletDev => 6 * GiB,
                 MemoryConfiguration.MemoryConfiguration8GiB          => 8 * GiB,
                 _ => throw new AggregateException($"Invalid memory configuration \"{configuration}\"."),
-#pragma warning restore IDE0055
             };
         }
+#pragma warning restore IDE0055
     }
 }

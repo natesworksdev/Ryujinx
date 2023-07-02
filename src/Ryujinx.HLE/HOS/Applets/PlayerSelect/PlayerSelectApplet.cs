@@ -48,6 +48,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
+
             writer.Write((ulong)PlayerSelectResult.Success);
 
             currentUser.UserId.Write(writer);

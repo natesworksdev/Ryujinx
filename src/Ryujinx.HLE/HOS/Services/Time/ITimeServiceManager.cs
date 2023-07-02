@@ -134,6 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             context.Memory.Read(bufferPosition, temp);
 
             using MemoryStream timeZoneBinaryStream = new(temp);
+
             _timeManager.SetupTimeZoneManager(locationName, timeZoneUpdateTimePoint, totalLocationNameCount, timeZoneRuleVersion, timeZoneBinaryStream);
 
             return ResultCode.Success;

@@ -33,7 +33,6 @@ namespace Ryujinx.HLE.Ui
                    Size == other.Size;
         }
 
-
         public override bool Equals(object obj)
         {
             return obj is RenderingSurfaceInfo info && Equals(info);

@@ -37,6 +37,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             ulong address = InstructionHelper.GetImmediate(instruction, OffsetImmediateIndex, OffsetImmediateSize);
 
             Pointer sourceMemory;
+
             switch (useDestinationAsSourceIndex)
             {
                 case 0:

@@ -111,6 +111,7 @@ namespace Ryujinx.HLE.Utilities
             ulong size = context.Request.SendBuff[index].Size;
 
             using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
+
             while (size-- > 0)
             {
                 byte value = context.Memory.Read<byte>(position++);

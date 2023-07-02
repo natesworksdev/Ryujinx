@@ -54,13 +54,11 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 _displayInfo.Add(displayInfo);
             }
 
-#pragma warning disable IDE0055 // Disable formatting
-            AddDisplayInfo("Default",  true,  1, 1920, 1080);
-            AddDisplayInfo("External", true,  1, 1920, 1080);
-            AddDisplayInfo("Edid",     true,  1, 0,    0);
-            AddDisplayInfo("Internal", true,  1, 1920, 1080);
-            AddDisplayInfo("Null",     false, 0, 1920, 1080);
-#pragma warning restore IDE0055
+            AddDisplayInfo("Default", true, 1, 1920, 1080);
+            AddDisplayInfo("External", true, 1, 1920, 1080);
+            AddDisplayInfo("Edid", true, 1, 0, 0);
+            AddDisplayInfo("Internal", true, 1, 1920, 1080);
+            AddDisplayInfo("Null", false, 0, 1920, 1080);
         }
 
         [CommandCmif(100)]
@@ -278,9 +276,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)
         public static ResultCode CreateStrayLayer(ServiceCtx context)
         {
-            _ = context.RequestData.ReadInt64();
-
-            _ = context.RequestData.ReadInt64();
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
+            long layerFlags = context.RequestData.ReadInt64();
+            long displayId = context.RequestData.ReadInt64();
+#pragma warning restore IDE0059
 
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 

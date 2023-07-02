@@ -374,7 +374,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                                            MemoryManager.AliasRegionEnd -
                                            MemoryManager.AliasRegionStart;
                     break;
-
                 default:
                     throw new InvalidOperationException($"Invalid MMU flags value 0x{Flags:x2}.");
             }

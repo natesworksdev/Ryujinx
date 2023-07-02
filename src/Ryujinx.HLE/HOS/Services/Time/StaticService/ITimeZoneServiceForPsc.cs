@@ -165,6 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             using MemoryStream timeZoneBinaryStream = new(temp);
             using WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>());
+
             ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
 
             result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);

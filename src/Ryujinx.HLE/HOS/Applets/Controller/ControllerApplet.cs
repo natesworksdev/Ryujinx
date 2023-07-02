@@ -82,10 +82,8 @@ namespace Ryujinx.HLE.HOS.Applets
                 playerMin = playerMax = 1;
             }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            int configuredCount = 0;
-            PlayerIndex primaryIndex = PlayerIndex.Unknown;
-#pragma warning restore IDE0059
+            int configuredCount;
+            PlayerIndex primaryIndex;
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
                 ControllerAppletUiArgs uiArgs = new()
@@ -128,6 +126,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
+
             writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
 
             return stream.ToArray();
@@ -137,6 +136,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
+
             writer.Write((ulong)ResultCode.Success);
 
             return stream.ToArray();

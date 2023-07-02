@@ -104,6 +104,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             string locationName = StringUtils.ReadInlinedAsciiString(context.RequestData, 0x24);
 
             using WritableRegion region = context.Memory.GetWritableRegion(bufferPosition, Unsafe.SizeOf<TimeZoneRule>());
+
             ref TimeZoneRule rules = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
 
             return _timeZoneContentManager.LoadTimeZoneRule(ref rules, locationName);

@@ -74,22 +74,18 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
             string keyModeIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
 
-#pragma warning disable IDE0055 // Disable formatting
-            _padAcceptIcon = LoadResource(Assembly.GetExecutingAssembly(), padAcceptIconPath  , 0, 0);
-            _padCancelIcon = LoadResource(Assembly.GetExecutingAssembly(), padCancelIconPath  , 0, 0);
-            _keyModeIcon   = LoadResource(Assembly.GetExecutingAssembly(), keyModeIconPath    , 0, 0);
-#pragma warning restore IDE0055
+            _padAcceptIcon = LoadResource(Assembly.GetExecutingAssembly(), padAcceptIconPath, 0, 0);
+            _padCancelIcon = LoadResource(Assembly.GetExecutingAssembly(), padCancelIconPath, 0, 0);
+            _keyModeIcon = LoadResource(Assembly.GetExecutingAssembly(), keyModeIconPath, 0, 0);
 
             Color panelColor = ToColor(uiTheme.DefaultBackgroundColor, 255);
             Color panelTransparentColor = ToColor(uiTheme.DefaultBackgroundColor, 150);
             Color borderColor = ToColor(uiTheme.DefaultBorderColor);
             Color selectionBackgroundColor = ToColor(uiTheme.SelectionBackgroundColor);
 
-#pragma warning disable IDE0055 // Disable formatting
-            _textNormalColor     = ToColor(uiTheme.DefaultForegroundColor);
-            _textSelectedColor   = ToColor(uiTheme.SelectionForegroundColor);
+            _textNormalColor = ToColor(uiTheme.DefaultForegroundColor);
+            _textSelectedColor = ToColor(uiTheme.SelectionForegroundColor);
             _textOverCursorColor = ToColor(uiTheme.DefaultForegroundColor, null, true);
-#pragma warning restore IDE0055
 
             float cursorWidth = 2;
 
@@ -127,11 +123,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             {
                 try
                 {
-#pragma warning disable IDE0055 // Disable formatting
-                    _messageFont    = SystemFonts.CreateFont(fontFamily, 26,                 FontStyle.Regular);
-                    _inputTextFont  = SystemFonts.CreateFont(fontFamily, _inputTextFontSize, FontStyle.Regular);
-                    _labelsTextFont = SystemFonts.CreateFont(fontFamily, 24,                 FontStyle.Regular);
-#pragma warning restore IDE0055
+                    _messageFont = SystemFonts.CreateFont(fontFamily, 26, FontStyle.Regular);
+                    _inputTextFont = SystemFonts.CreateFont(fontFamily, _inputTextFontSize, FontStyle.Regular);
+                    _labelsTextFont = SystemFonts.CreateFont(fontFamily, 24, FontStyle.Regular);
 
                     return;
                 }

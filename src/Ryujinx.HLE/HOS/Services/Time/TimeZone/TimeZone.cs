@@ -308,9 +308,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             rule = new Rule();
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            bool isValid = false;
-#pragma warning restore IDE0059
+            bool isValid;
 
             if (name[namePosition] == 'J')
             {
@@ -650,9 +648,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         }
                     }
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                    long theirDstOffset = 0;
-#pragma warning restore IDE0059
+                    long theirDstOffset;
                     for (int i = 0; i < outRules.TimeCount; i++)
                     {
                         int j = outRules.Types[i];

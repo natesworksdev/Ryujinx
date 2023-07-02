@@ -39,14 +39,14 @@ namespace Ryujinx.HLE.HOS.Tamper
             {
                 return CompileImpl(name, rawInstructions);
             }
-            catch (TamperCompilationException exception)
+            catch (TamperCompilationException ex)
             {
                 // Just print the message without the stack trace.
-                Logger.Error?.Print(LogClass.TamperMachine, exception.Message);
+                Logger.Error?.Print(LogClass.TamperMachine, ex.Message);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.TamperMachine, exception.ToString());
+                Logger.Error?.Print(LogClass.TamperMachine, ex.ToString());
             }
 
             Logger.Error?.Print(LogClass.TamperMachine, "There was a problem while compiling the Atmosphere cheat");

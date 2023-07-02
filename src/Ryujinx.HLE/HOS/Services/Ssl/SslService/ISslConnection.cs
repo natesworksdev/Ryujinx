@@ -207,6 +207,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
                 if (_getServerCertChain)
                 {
                     using WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+
                     result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
 
                     context.ResponseData.Write(bufferSize);
@@ -294,6 +295,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             ResultCode result;
 
             using WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+
+
             // TODO: Better error management.
             result = _connection.Peek(out int peekCount, region.Memory);
 

@@ -62,6 +62,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.FinishedInitialize, writer);
             writer.Write((byte)1); // Data (ignored by the program)
 
@@ -74,6 +75,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.Default, writer);
 
             return stream.ToArray();
@@ -85,6 +87,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.ChangedString, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF16, Encoding.Unicode, true);
 
@@ -97,6 +100,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.MovedCursor, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF16, Encoding.Unicode, false);
 
@@ -111,6 +115,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.MovedTab, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF16, Encoding.Unicode, false);
 
@@ -123,6 +128,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.DecidedEnter, writer);
             WriteString(text, writer, MaxStrLenUTF16, Encoding.Unicode);
 
@@ -135,6 +141,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.DecidedCancel, writer);
 
             return stream.ToArray();
@@ -146,6 +153,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.ChangedStringUtf8, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF8, Encoding.UTF8, true);
 
@@ -158,6 +166,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.MovedCursorUtf8, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF8, Encoding.UTF8, false);
 
@@ -170,6 +179,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.DecidedEnterUtf8, writer);
             WriteString(text, writer, MaxStrLenUTF8, Encoding.UTF8);
 
@@ -182,6 +192,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.UnsetCustomizeDic, writer);
 
             return stream.ToArray();
@@ -193,6 +204,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.ReleasedUserWordInfo, writer);
 
             return stream.ToArray();
@@ -204,6 +216,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.UnsetCustomizedDictionaries, writer);
 
             return stream.ToArray();
@@ -215,6 +228,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.ChangedStringV2, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF16, Encoding.Unicode, true);
             writer.Write((byte)0); // Flag == 0
@@ -228,6 +242,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.MovedCursorV2, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF16, Encoding.Unicode, false);
             writer.Write((byte)0); // Flag == 0
@@ -241,6 +256,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.ChangedStringUtf8V2, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF8, Encoding.UTF8, true);
             writer.Write((byte)0); // Flag == 0
@@ -254,6 +270,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             using MemoryStream stream = new(new byte[resSize]);
             using BinaryWriter writer = new(stream);
+
             BeginResponse(state, InlineKeyboardResponse.MovedCursorUtf8V2, writer);
             WriteStringWithCursor(text, cursor, writer, MaxStrLenUTF8, Encoding.UTF8, false);
             writer.Write((byte)0); // Flag == 0

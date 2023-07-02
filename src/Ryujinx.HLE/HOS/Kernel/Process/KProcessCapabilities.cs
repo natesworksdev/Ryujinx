@@ -304,7 +304,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                         break;
                     }
-
                 default:
                     return KernelResult.InvalidCapability;
             }

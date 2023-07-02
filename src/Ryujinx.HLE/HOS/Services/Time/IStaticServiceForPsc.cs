@@ -420,6 +420,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             context.Memory.Read(ipcDesc.Position, temp);
 
             using BinaryReader bufferReader = new(new MemoryStream(temp));
+
             return bufferReader.ReadStruct<ClockSnapshot>();
         }
 

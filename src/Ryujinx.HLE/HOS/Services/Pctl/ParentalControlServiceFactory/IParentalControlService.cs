@@ -11,20 +11,16 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         private readonly int _permissionFlag;
         private ulong _titleId;
         private ParentalControlFlagValue _parentalControlFlag;
-#pragma warning disable IDE0052 // Remove unread private member
+#pragma warning disable IDE0052, CS0414 // Remove unread private member
         private int[] _ratingAge;
-#pragma warning restore IDE0052
 
-#pragma warning disable CS0414 // Remove unread private member
         // TODO: Find where they are set.
         private readonly bool _restrictionEnabled = false;
         private readonly bool _featuresRestriction = false;
-#pragma warning disable IDE0052 // Remove unread private member
         private bool _freeCommunicationEnabled = false;
-#pragma warning restore IDE0052
         private readonly bool _stereoVisionRestrictionConfigurable = true;
         private bool _stereoVisionRestriction = false;
-#pragma warning restore CS0414
+#pragma warning restore IDE0052, CS0414
 
         public IParentalControlService(ServiceCtx context, ulong pid, bool withInitialize, int permissionFlag)
         {
@@ -162,11 +158,11 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 return ResultCode.Success;
             }
             else
-#pragma warning disable CS0162
             {
+#pragma warning disable CS0162 // Unreachable code
                 return ResultCode.StereoVisionRestrictionConfigurableDisabled;
-            }
 #pragma warning restore CS0162
+            }
         }
 
         [CommandCmif(1062)] // 4.0.0+

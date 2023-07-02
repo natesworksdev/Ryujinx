@@ -106,20 +106,16 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return false;
         }
 
-#pragma warning disable CS8632 // The annotation for nullable reference types should only be used within a '#nullable' context
-        public void UpdateTextState(string? inputText, int? cursorBegin, int? cursorEnd, bool? overwriteMode, bool? typingEnabled)
-#pragma warning restore CS8632
+        public void UpdateTextState(string inputText, int? cursorBegin, int? cursorEnd, bool? overwriteMode, bool? typingEnabled)
         {
             lock (_stateLock)
             {
-#pragma warning disable IDE0055 // Disable formatting
                 // Update the parameters that were provided.
-                _state.InputText     = inputText ?? _state.InputText;
-                _state.CursorBegin   = cursorBegin.GetValueOrDefault(_state.CursorBegin);
-                _state.CursorEnd     = cursorEnd.GetValueOrDefault(_state.CursorEnd);
+                _state.InputText = inputText ?? _state.InputText;
+                _state.CursorBegin = cursorBegin.GetValueOrDefault(_state.CursorBegin);
+                _state.CursorEnd = cursorEnd.GetValueOrDefault(_state.CursorEnd);
                 _state.OverwriteMode = overwriteMode.GetValueOrDefault(_state.OverwriteMode);
                 _state.TypingEnabled = typingEnabled.GetValueOrDefault(_state.TypingEnabled);
-#pragma warning restore IDE0055
 
                 // Reset the cursor blink.
                 _state.TextBoxBlinkCounter = 0;

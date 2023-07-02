@@ -323,6 +323,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
             using MemoryStream stream = new(data);
             using BinaryReader reader = new(stream);
+
             var request = (InlineKeyboardRequest)reader.ReadUInt32();
 
             long remaining;

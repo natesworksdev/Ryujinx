@@ -141,10 +141,7 @@ namespace Ryujinx.HLE.FileSystem
                             // Change path format to switch's
                             switchPath = switchPath.Replace('\\', '/');
 
-                            LocationEntry entry = new(switchPath,
-                                                                        0,
-                                                                        nca.Header.TitleId,
-                                                                        nca.Header.ContentType);
+                            LocationEntry entry = new(switchPath, 0, nca.Header.TitleId, nca.Header.ContentType);
 
                             AddEntry(entry);
 
@@ -166,10 +163,7 @@ namespace Ryujinx.HLE.FileSystem
                             // Change path format to switch's
                             switchPath = switchPath.Replace('\\', '/');
 
-                            LocationEntry entry = new(switchPath,
-                                                                        0,
-                                                                        nca.Header.TitleId,
-                                                                        nca.Header.ContentType);
+                            LocationEntry entry = new(switchPath, 0, nca.Header.TitleId, nca.Header.ContentType);
 
                             AddEntry(entry);
 
@@ -504,6 +498,7 @@ namespace Ryujinx.HLE.FileSystem
             FileInfo info = new(firmwareSource);
 
             using FileStream file = File.OpenRead(firmwareSource);
+
             switch (info.Extension)
             {
                 case ".zip":
@@ -566,32 +561,29 @@ namespace Ryujinx.HLE.FileSystem
 
         private static void InstallFromZip(ZipArchive archive, string temporaryDirectory)
         {
-            using (archive)
+            foreach (var entry in archive.Entries)
             {
-                foreach (var entry in archive.Entries)
+                if (entry.FullName.EndsWith(".nca") || entry.FullName.EndsWith(".nca/00"))
                 {
-                    if (entry.FullName.EndsWith(".nca") || entry.FullName.EndsWith(".nca/00"))
+                    // Clean up the name and get the NcaId
+
+                    string[] pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
+
+                    string ncaId = pathComponents[^1];
+
+                    // If this is a fragmented nca, we need to get the previous element.GetZip
+                    if (ncaId.Equals("00"))
                     {
-                        // Clean up the name and get the NcaId
+                        ncaId = pathComponents[^2];
+                    }
 
-                        string[] pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
+                    if (ncaId.Contains(".nca"))
+                    {
+                        string newPath = Path.Combine(temporaryDirectory, ncaId);
 
-                        string ncaId = pathComponents[^1];
+                        Directory.CreateDirectory(newPath);
 
-                        // If this is a fragmented nca, we need to get the previous element.GetZip
-                        if (ncaId.Equals("00"))
-                        {
-                            ncaId = pathComponents[^2];
-                        }
-
-                        if (ncaId.Contains(".nca"))
-                        {
-                            string newPath = Path.Combine(temporaryDirectory, ncaId);
-
-                            Directory.CreateDirectory(newPath);
-
-                            entry.ExtractToFile(Path.Combine(newPath, "00"));
-                        }
+                        entry.ExtractToFile(Path.Combine(newPath, "00"));
                     }
                 }
             }
@@ -659,6 +651,7 @@ namespace Ryujinx.HLE.FileSystem
             FileInfo info = new(firmwarePackage);
 
             using FileStream file = File.OpenRead(firmwarePackage);
+
             switch (info.Extension)
             {
                 case ".zip":

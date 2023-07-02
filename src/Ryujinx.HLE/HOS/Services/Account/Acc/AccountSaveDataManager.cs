@@ -36,9 +36,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
                     LastOpened = new UserId(profilesJson.LastOpened);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Logger.Error?.Print(LogClass.Application, $"Failed to parse {_profilesJsonPath}: {e.Message} Loading default profile!");
+                    Logger.Error?.Print(LogClass.Application, $"Failed to parse {_profilesJsonPath}: {ex.Message} Loading default profile!");
 
                     LastOpened = AccountManager.DefaultUserId;
                 }

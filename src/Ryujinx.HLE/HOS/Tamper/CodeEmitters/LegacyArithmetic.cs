@@ -44,15 +44,23 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
 
             switch (operation)
             {
-#pragma warning disable IDE0055 // Disable formatting
-                case Add: Emit(typeof(OpAdd<>)); break;
-                case Sub: Emit(typeof(OpSub<>)); break;
-                case Mul: Emit(typeof(OpMul<>)); break;
-                case Lsh: Emit(typeof(OpLsh<>)); break;
-                case Rsh: Emit(typeof(OpRsh<>)); break;
+                case Add:
+                    Emit(typeof(OpAdd<>));
+                    break;
+                case Sub:
+                    Emit(typeof(OpSub<>));
+                    break;
+                case Mul:
+                    Emit(typeof(OpMul<>));
+                    break;
+                case Lsh:
+                    Emit(typeof(OpLsh<>));
+                    break;
+                case Rsh:
+                    Emit(typeof(OpRsh<>));
+                    break;
                 default:
                     throw new TamperCompilationException($"Invalid arithmetic operation {operation} in Atmosphere cheat");
-#pragma warning restore IDE0055
             }
         }
     }
