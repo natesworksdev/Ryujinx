@@ -6,8 +6,8 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class PhysicalMemory : IDisposable
     {
         private readonly GpuContext _context;
-        private IVirtualMemoryManagerTracked _cpuMemory;
+        private readonly IVirtualMemoryManagerTracked _cpuMemory;
         private int _referenceCount;
 
         /// <summary>
