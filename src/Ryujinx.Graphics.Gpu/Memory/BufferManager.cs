@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="divisor">Vertex divisor of the buffer, for instanced draws</param>
         public void SetVertexBuffer(int index, ulong gpuVa, ulong size, int stride, int divisor)
         {
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 
             _vertexBuffers[index].Range = range;
             _vertexBuffers[index].Stride = stride;
@@ -298,7 +298,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the storage buffer</param>
         public void SetComputeUniformBuffer(int index, ulong gpuVa, ulong size)
         {
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 
             _cpUniformBuffers.SetBounds(index, range);
         }
@@ -313,7 +313,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the storage buffer</param>
         public void SetGraphicsUniformBuffer(int stage, int index, ulong gpuVa, ulong size)
         {
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffer(_channel.MemoryManager, gpuVa, size);
 
             _gpUniformBuffers[stage].SetBounds(index, range);
             _gpUniformBuffersDirty = true;
