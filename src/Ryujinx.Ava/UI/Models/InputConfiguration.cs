@@ -126,7 +126,6 @@ namespace Ryujinx.Ava.UI.Models
         public TKey ButtonY { get; set; }
         public TKey ButtonA { get; set; }
 
-
         public TKey LeftStickUp { get; set; }
         public TKey LeftStickDown { get; set; }
         public TKey LeftStickLeft { get; set; }

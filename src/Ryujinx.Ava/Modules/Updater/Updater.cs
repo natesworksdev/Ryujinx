@@ -567,6 +567,7 @@ namespace Ryujinx.Modules
 
                 using Stream zipStream = zipFile.GetInputStream(zipEntry);
                 using FileStream outStream = File.OpenWrite(outPath);
+
                 zipStream.CopyTo(outStream);
 
                 File.SetLastWriteTime(outPath, DateTime.SpecifyKind(zipEntry.DateTime, DateTimeKind.Utc));
