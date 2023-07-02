@@ -43,8 +43,21 @@ namespace Ryujinx.Memory.Range
         /// <exception cref="ArgumentNullException"><paramref name="ranges"/> is null</exception>
         public MultiRange(MemoryRange[] ranges)
         {
-            _singleRange = MemoryRange.Empty;
-            _ranges = ranges ?? throw new ArgumentNullException(nameof(ranges));
+            if (ranges == null)
+            {
+                throw new ArgumentNullException(nameof(ranges));
+            }
+
+            if (ranges.Length == 1)
+            {
+                _singleRange = ranges[0];
+                _ranges = null;
+            }
+            else
+            {
+                _singleRange = MemoryRange.Empty;
+                _ranges = ranges;
+            }
         }
 
         /// <summary>
@@ -96,7 +109,7 @@ namespace Ryujinx.Memory.Range
                     offset -= range.Size;
                 }
 
-                return new MultiRange(ranges.ToArray());
+                return ranges.Count == 1 ? new MultiRange(ranges[0].Address, ranges[0].Size) : new MultiRange(ranges.ToArray());
             }
         }
 

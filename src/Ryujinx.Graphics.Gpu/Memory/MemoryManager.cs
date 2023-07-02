@@ -515,6 +515,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 regionSize += Math.Min(endVa - va, PageSize);
             }
 
+            if (regions.Count == 0)
+            {
+                return new MultiRange(regionStart, regionSize);
+            }
+
             regions.Add(new MemoryRange(regionStart, regionSize));
 
             return new MultiRange(regions.ToArray());

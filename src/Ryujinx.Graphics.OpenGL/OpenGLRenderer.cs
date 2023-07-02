@@ -57,16 +57,11 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool = new ResourcePool();
         }
 
-        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
-        {
-            return CreateBuffer(size, GAL.BufferAccess.Default);
-        }
-
         public BufferHandle CreateBuffer(int size, GAL.BufferAccess access)
         {
             BufferCount++;
 
-            if (access == GAL.BufferAccess.FlushPersistent)
+            if (access.HasFlag(GAL.BufferAccess.FlushPersistent))
             {
                 BufferHandle handle = Buffer.CreatePersistent(size);
 
@@ -78,6 +73,11 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return Buffer.Create(size);
             }
+        }
+
+        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access, BufferHandle storageHint)
+        {
+            return CreateBuffer(size, access);
         }
 
         public BufferHandle CreateBuffer(nint pointer, int size)

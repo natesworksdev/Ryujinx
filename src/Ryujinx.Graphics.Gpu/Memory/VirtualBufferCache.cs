@@ -202,14 +202,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 // Check if address is aligned. The address of the first sub-range can
                 // be misaligned as it is at the start.
-                if (i > 0 && (subRange.Address & (BufferCache.SparseBufferAlignmentSize - 1)) != 0)
+                if (i > 0 &&
+                    subRange.Address != MemoryManager.PteUnmapped &&
+                    (subRange.Address & (BufferCache.SparseBufferAlignmentSize - 1)) != 0)
                 {
                     return false;
                 }
 
-                // Check if the end address is aligned. The end address of the last sub-range can
+                // Check if the size is aligned. The size of the last sub-range can
                 // be misaligned as it is at the end.
-                if (i < range.Count - 1 && (subRange.EndAddress & (BufferCache.SparseBufferAlignmentSize - 1)) != 0)
+                if (i < range.Count - 1 && (subRange.Size & (BufferCache.SparseBufferAlignmentSize - 1)) != 0)
                 {
                     return false;
                 }

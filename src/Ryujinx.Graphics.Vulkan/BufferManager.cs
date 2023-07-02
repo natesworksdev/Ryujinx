@@ -203,22 +203,24 @@ namespace Ryujinx.Graphics.Vulkan
         public BufferHandle CreateWithHandle(
             VulkanRenderer gd,
             int size,
+            bool sparseCompatible = false,
             BufferAllocationType baseType = BufferAllocationType.HostMapped,
             BufferHandle storageHint = default,
             bool forceMirrors = false)
         {
-            return CreateWithHandle(gd, size, out _, baseType, storageHint, forceMirrors);
+            return CreateWithHandle(gd, size, out _, sparseCompatible, baseType, storageHint, forceMirrors);
         }
 
         public BufferHandle CreateWithHandle(
             VulkanRenderer gd,
             int size,
             out BufferHolder holder,
+            bool sparseCompatible = false,
             BufferAllocationType baseType = BufferAllocationType.HostMapped,
             BufferHandle storageHint = default,
             bool forceMirrors = false)
         {
-            holder = Create(gd, size, baseType: baseType, storageHint: storageHint);
+            holder = Create(gd, size, forConditionalRendering: false, sparseCompatible, baseType, storageHint);
             if (holder == null)
             {
                 return BufferHandle.Null;
@@ -267,6 +269,7 @@ namespace Ryujinx.Graphics.Vulkan
             int size,
             BufferAllocationType type,
             bool forConditionalRendering = false,
+            bool sparseCompatible = false,
             BufferAllocationType fallbackType = BufferAllocationType.Auto)
         {
             var usage = DefaultBufferUsageFlags;
@@ -291,9 +294,9 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
             gd.Api.GetBufferMemoryRequirements(_device, buffer, out var requirements);
 
-            if ((size & 0xffff) == 0)
+            if (sparseCompatible)
             {
-                requirements.Alignment = Math.Max(requirements.Alignment, 0x10000);
+                requirements.Alignment = Math.Max(requirements.Alignment, Constants.SparseBufferAlignment);
             }
 
             MemoryAllocation allocation;
@@ -336,6 +339,7 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanRenderer gd,
             int size,
             bool forConditionalRendering = false,
+            bool sparseCompatible = false,
             BufferAllocationType baseType = BufferAllocationType.HostMapped,
             BufferHandle storageHint = default)
         {
@@ -364,7 +368,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) =
-                CreateBacking(gd, size, type, forConditionalRendering);
+                CreateBacking(gd, size, type, forConditionalRendering, sparseCompatible);
 
             if (buffer.Handle != 0)
             {

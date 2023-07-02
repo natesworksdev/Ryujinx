@@ -401,12 +401,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.Convert(), default, access == BufferAccess.Stream);
+            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), default, access == BufferAccess.Stream);
         }
 
-        public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
+        public BufferHandle CreateBuffer(int size, BufferAccess access, BufferHandle storageHint)
         {
-            return BufferManager.CreateWithHandle(this, size, BufferAllocationType.Auto, storageHint);
+            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), storageHint);
         }
 
         public BufferHandle CreateBuffer(nint pointer, int size)

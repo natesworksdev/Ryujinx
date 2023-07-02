@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var currentBuffer = _buffer;
                     IntPtr currentMap = _map;
 
-                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, DesiredType, false, _currentType);
+                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, DesiredType, false, false, _currentType);
 
                     if (buffer.Handle != 0)
                     {
