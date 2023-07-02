@@ -308,7 +308,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             }
 
             Reference referenceQualifier = Reference.None;
-            List<BaseNode> @params = new();
+            List<BaseNode> paramsList = new();
 
             while (true)
             {
@@ -339,10 +339,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     return null;
                 }
 
-                @params.Add(type);
+                paramsList.Add(type);
             }
 
-            return new FunctionType(returnType, new NodeArray(@params), new CvType(cvQualifiers, null), new SimpleReferenceType(referenceQualifier, null), exceptionSpec);
+            return new FunctionType(returnType, new NodeArray(paramsList), new CvType(cvQualifiers, null), new SimpleReferenceType(referenceQualifier, null), exceptionSpec);
         }
 
         //   <array-type> ::= A <positive dimension number> _ <element type>
@@ -418,9 +418,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
             // Temporary context
             context ??= new NameParserContext();
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            BaseNode result = null;
-#pragma warning restore IDE0059
+            BaseNode result;
             switch (Peek())
             {
                 case 'r':
@@ -544,8 +542,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                         case 'h':
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
-                            return new NameType("half");
-                        // return new NameType("decimal16");
+                            return new NameType("half"); // return new NameType("decimal16");
                         case 'i':
                             _position += 2;
                             return new NameType("char32_t");
@@ -558,8 +555,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                         case 'n':
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
-                            return new NameType("decltype(nullptr)");
-                        // return new NameType("std::nullptr_t");
+                            return new NameType("decltype(nullptr)"); // return new NameType("std::nullptr_t");
                         case 't':
                         case 'T':
                             _position += 2;
@@ -1444,9 +1440,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 
             _position++;
 
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            string operatorName = null;
-#pragma warning restore IDE0059
+            string operatorName;
 
             switch (PeekString(0, 2))
             {
@@ -1823,9 +1817,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
         private BaseNode ParseExpression()
         {
             bool isGlobal = ConsumeIf("gs");
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            BaseNode expression = null;
-#pragma warning restore IDE0059
+            BaseNode expression;
             if (Count() < 2)
             {
                 return null;
@@ -1930,10 +1922,8 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     }
                     return null;
                 case 'd':
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                    BaseNode leftNode = null;
-                    BaseNode rightNode = null;
-#pragma warning restore IDE0059
+                    BaseNode leftNode;
+                    BaseNode rightNode;
                     switch (Peek(1))
                     {
                         case 'a':
@@ -2313,9 +2303,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                             return new EnclosedExpression("sizeof (", expression, ")");
                         case 'Z':
                             _position += 2;
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-                            BaseNode sizeofParamNode = null;
-#pragma warning restore IDE0059
+                            BaseNode sizeofParamNode;
                             switch (Peek())
                             {
                                 case 'T':
@@ -3310,7 +3298,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                 return new EncodedFunction(name, null, context.Cv, context.Ref, null, returnType);
             }
 
-            List<BaseNode> @params = new();
+            List<BaseNode> paramsList = new();
 
             // backup because that can be destroyed by parseType
             CvType cv = context.Cv;
@@ -3324,10 +3312,10 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
                     return null;
                 }
 
-                @params.Add(param);
+                paramsList.Add(param);
             }
 
-            return new EncodedFunction(name, new NodeArray(@params), cv, Ref, null, returnType);
+            return new EncodedFunction(name, new NodeArray(paramsList), cv, Ref, null, returnType);
         }
 
         // <mangled-name> ::= _Z <encoding>
