@@ -904,7 +904,7 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     if (updateNcas.TryGetValue(metaEntry.TitleId, out var ncaEntry))
                     {
-                        var (type, path) = ncaEntry.Find(x => x.type == NcaContentType.Meta);
+                        string metaNcaPath = ncaEntry.Find(x => x.type == NcaContentType.Meta).path;
                         string contentPath = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
 
                         // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
@@ -916,7 +916,7 @@ namespace Ryujinx.HLE.FileSystem
                             continue;
                         }
 
-                        IStorage metaStorage = OpenPossibleFragmentedFile(filesystem, path, OpenMode.Read).AsStorage();
+                        IStorage metaStorage = OpenPossibleFragmentedFile(filesystem, metaNcaPath, OpenMode.Read).AsStorage();
                         IStorage contentStorage = OpenPossibleFragmentedFile(filesystem, contentPath, OpenMode.Read).AsStorage();
 
                         Nca metaNca = new(_virtualFileSystem.KeySet, metaStorage);
