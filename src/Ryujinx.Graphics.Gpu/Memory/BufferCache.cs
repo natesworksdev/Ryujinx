@@ -267,6 +267,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 if (range.Contains(overlaps[index].Range))
                 {
                     _multiRangeBuffers.Remove(overlaps[index]);
+                    overlaps[index].Dispose();
                 }
             }
 
@@ -431,7 +432,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                         anySparseCompatible |= buffer.SparseCompatible;
 
-                        address = Math.Min(address,    buffer.Address);
+                        address = Math.Min(address, buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
 
                         lock (_buffers)
@@ -497,7 +498,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         {
                             Buffer buffer = overlaps[index];
 
-                            address    = Math.Min(address,    buffer.Address);
+                            address = Math.Min(address, buffer.Address);
                             endAddress = Math.Max(endAddress, buffer.EndAddress);
                         }
 
@@ -593,6 +594,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             for (int index = 0; index < overlapCount; index++)
             {
                 _multiRangeBuffers.Remove(overlaps[index]);
+                overlaps[index].Dispose();
             }
 
             for (int index = 0; index < overlapCount; index++)

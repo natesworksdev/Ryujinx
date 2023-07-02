@@ -7,8 +7,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer, used to store vertex and index data, uniform and storage buffers, and others.
     /// </summary>
-    class MultiRangeBuffer : IMultiRangeItem
+    class MultiRangeBuffer : IMultiRangeItem, IDisposable
     {
+        private readonly GpuContext _context;
+
         /// <summary>
         /// Host buffer handle.
         /// </summary>
@@ -27,6 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="storages">Backing memory for the buffers</param>
         public MultiRangeBuffer(GpuContext context, MultiRange range, ReadOnlySpan<BufferRange> storages)
         {
+            _context = context;
             Range = range;
             Handle = context.Renderer.CreateBufferSparse(storages);
         }
@@ -44,6 +47,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             int offset = Range.FindOffset(range);
 
             return new BufferRange(Handle, offset, (int)range.GetSize());
+        }
+
+        /// <summary>
+        /// Disposes the host buffer.
+        /// </summary>
+        public void Dispose()
+        {
+            _context.Renderer.DeleteBuffer(Handle);
         }
     }
 }
