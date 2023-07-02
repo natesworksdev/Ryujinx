@@ -320,8 +320,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             await Task.Run(() =>
             {
                 AvailableGpus.Clear();
-
-                string preferredGpuIdFromConfig = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
                 
                 var devices = VulkanRenderer.GetPhysicalDevices();
 
