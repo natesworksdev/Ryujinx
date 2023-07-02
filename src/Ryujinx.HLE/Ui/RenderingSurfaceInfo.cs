@@ -3,7 +3,6 @@ using System;
 
 namespace Ryujinx.HLE.Ui
 {
-#pragma warning disable CS0659 // Class overrides Object.Equals(object o) but does not override Object.GetHashCode()
     /// <summary>
     /// Information about the indirect layer that is being drawn to.
     /// </summary>
@@ -37,6 +36,10 @@ namespace Ryujinx.HLE.Ui
         {
             return obj is RenderingSurfaceInfo info && Equals(info);
         }
+
+        public override int GetHashCode()
+        {
+            return BitConverter.ToInt32(BitConverter.GetBytes(((ulong)ColorFormat) ^ Width ^ Height ^ Pitch ^ Size));
+        }
     }
-#pragma warning restore CS0659
 }
