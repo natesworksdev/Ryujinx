@@ -47,7 +47,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _directoryChanged;
 
         private List<string> _gpuIds = new();
-        private List<string> _gpuNames = new();
 
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
@@ -321,6 +320,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             await Task.Run(() =>
             {
+                AvailableGpus.Clear();
+
+                string preferredGpuIdFromConfig = ConfigurationState.Instance.Graphics.PreferredGpu.Value;
+                
                 var devices = VulkanRenderer.GetPhysicalDevices();
 
                 if (devices.Length == 0)
@@ -332,26 +335,31 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     foreach (var device in devices)
                     {
-                        _gpuIds.Add(device.Id);
-                        _gpuNames.Add($"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}");
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            _gpuIds.Add(device.Id);
+
+                            AvailableGpus.Add(new ComboBoxItem { Content = $"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}" });
+                        });
                     }
                 }
             });
 
-            AvailableGpus.Clear();
-            AvailableGpus.AddRange(_gpuNames.Select(x => new ComboBoxItem { Content = x }));
+            // GPU configuration needs to be loaded after the async method or it will always return 0.
+            PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ? 
+                                _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
 
             OnPropertyChanged(nameof(PreferredGpuIndex));
         }
 
         public async void LoadTimeZones()
         {
-            _timeZoneContentManager = new TimeZoneContentManager();
-
-            _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
-
             await Task.Run(() =>
             {
+                _timeZoneContentManager = new TimeZoneContentManager();
+
+                _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
+                
                 foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
                 {
                     int hours = Math.DivRem(offset, 3600, out int seconds);
@@ -359,9 +367,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
 
-                    TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
 
-                    _validTzRegions.Add(location);
+                        _validTzRegions.Add(location);
+                    });
                 }
             });
 
@@ -375,9 +386,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             await Task.Run(() =>
             {
-                foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+                var allInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (NetworkInterface networkInterface in allInterfaces)
                 {
-                    _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
+                    });
                 }
             });
 
@@ -439,7 +455,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Graphics
             GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
-            PreferredGpuIndex = _gpuIds.Contains(config.Graphics.PreferredGpu) ? _gpuIds.IndexOf(config.Graphics.PreferredGpu) : 0;
+            // Physical devices are queried asynchronously hence the prefered index config value is loaded in LoadAvailableGpus().
             EnableShaderCache = config.Graphics.EnableShaderCache;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
