@@ -13,9 +13,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public event EventHandler AppletStateChanged;
 
         private AppletSession _normalSession;
-#pragma warning disable IDE0052 // Remove unread private member
-        private AppletSession _interactiveSession;
-#pragma warning restore IDE0052
 
         private CommonArguments _commonArguments;
         private List<BrowserArgument> _arguments;
@@ -31,7 +28,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
             _normalSession = normalSession;
-            _interactiveSession = interactiveSession;
 
             _commonArguments = IApplet.ReadStruct<CommonArguments>(_normalSession.Pop());
 

@@ -5,15 +5,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KReadableEvent : KSynchronizationObject
     {
-#pragma warning disable IDE0052 // Remove unread private member
-        private readonly KEvent _parent;
-#pragma warning restore IDE0052
-
         private bool _signaled;
 
-        public KReadableEvent(KernelContext context, KEvent parent) : base(context)
+        public KReadableEvent(KernelContext context) : base(context)
         {
-            _parent = parent;
         }
 
         public override void Signal()

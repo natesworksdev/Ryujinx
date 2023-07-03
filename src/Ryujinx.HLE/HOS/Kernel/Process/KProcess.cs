@@ -66,17 +66,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsApplication { get; private set; }
         public ulong Pid { get; private set; }
 
-#pragma warning disable IDE0052 // Remove unread private member
-        private long _creationTimestamp;
-#pragma warning restore IDE0052
         private ulong _entrypoint;
         private ThreadStart _customThreadStart;
         private ulong _imageSize;
         private ulong _mainThreadStackSize;
         private ulong _memoryUsageCapacity;
-#pragma warning disable IDE0052 // Remove unread private member
-        private int _version;
-#pragma warning restore IDE0052
 
         public KHandleTable HandleTable { get; private set; }
 
@@ -111,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             PinnedThreads = new KThread[KScheduler.CpuCoresCount];
 
             // TODO: Remove once we no longer need to initialize it externally.
-            HandleTable = new KHandleTable(context);
+            HandleTable = new KHandleTable();
 
             _threads = new LinkedList<KThread>();
 
@@ -351,10 +345,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             State = ProcessState.Created;
 
-            _creationTimestamp = PerformanceCounter.ElapsedMilliseconds;
-
             Flags = creationInfo.Flags;
-            _version = creationInfo.Version;
             TitleId = creationInfo.TitleId;
             _entrypoint = creationInfo.CodeAddress;
             _imageSize = (ulong)creationInfo.CodePagesCount * KPageTableBase.PageSize;
@@ -528,10 +519,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return result;
         }
 
-        private static void GenerateRandomEntropy()
+#pragma warning disable CA1822 // Mark member as static
+        private void GenerateRandomEntropy()
         {
             // TODO.
         }
+#pragma warning restore CA1822
 
         public Result Start(int mainThreadPriority, ulong stackSize)
         {
@@ -552,7 +545,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 if (_mainThreadStackSize != 0)
                 {
-                    throw new InvalidOperationException("Trying to start a process with a invalid state!");
+                    throw new InvalidOperationException("Trying to start a process with an invalid state!");
                 }
 
                 ulong stackSizeRounded = BitUtils.AlignUp<ulong>(stackSize, KPageTableBase.PageSize);
@@ -651,7 +644,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     return result;
                 }
 
-                HandleTable = new KHandleTable(KernelContext);
+                HandleTable = new KHandleTable();
 
                 result = HandleTable.Initialize(Capabilities.HandleTableSize);
 
