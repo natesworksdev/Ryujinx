@@ -11,16 +11,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         [CommandCmif(0)]
         // CheckAvailability()
-        public static ResultCode CheckAvailability(ServiceCtx context)
+        public ResultCode CheckAvailability(ServiceCtx context)
         {
-            return ManagerServer.CheckAvailability(context);
+            return _managerServer.CheckAvailability(context);
         }
 
         [CommandCmif(1)]
         // GetAccountId() -> nn::account::NetworkServiceAccountId
-        public static ResultCode GetAccountId(ServiceCtx context)
+        public ResultCode GetAccountId(ServiceCtx context)
         {
-            return ManagerServer.GetAccountId(context);
+            return _managerServer.GetAccountId(context);
         }
 
         [CommandCmif(2)]
@@ -39,9 +39,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         [CommandCmif(3)]
         // LoadIdTokenCache() -> (u32 id_token_cache_size, buffer<bytes, 6>)
-        public static ResultCode LoadIdTokenCache(ServiceCtx context)
+        public ResultCode LoadIdTokenCache(ServiceCtx context)
         {
-            return ManagerServer.LoadIdTokenCache(context);
+            return _managerServer.LoadIdTokenCache(context);
         }
     }
 }

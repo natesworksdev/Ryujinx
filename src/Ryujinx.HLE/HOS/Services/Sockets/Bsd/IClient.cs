@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     [Service("bsd:u", false)]
     class IClient : IpcService
     {
-        private static readonly List<IPollManager> _pollManagers = new()
+        private static readonly List<IPollManager> _pollManagers = new List<IPollManager>
         {
             EventFileDescriptorPollManager.Instance,
             ManagedSocketPollManager.Instance,
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             _isPrivileged = isPrivileged;
         }
 
-        private static ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
+        private ResultCode WriteBsdResult(ServiceCtx context, int result, LinuxError errorCode = LinuxError.SUCCESS)
         {
             if (errorCode != LinuxError.SUCCESS)
             {
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             };
         }
 
-        private static LinuxError SetResultErrno(IFileDescriptor socket, int result)
+        private LinuxError SetResultErrno(IFileDescriptor socket, int result)
         {
             return result == 0 && !socket.Blocking ? LinuxError.EWOULDBLOCK : LinuxError.SUCCESS;
         }
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return WriteBsdResult(context, newSockFd, errno);
         }
 
-        private static void WriteSockAddr(ServiceCtx context, ulong bufferPosition, ISocket socket, bool isRemote)
+        private void WriteSockAddr(ServiceCtx context, ulong bufferPosition, ISocket socket, bool isRemote)
         {
             IPEndPoint endPoint = isRemote ? socket.RemoteEndPoint : socket.LocalEndPoint;
 
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(1)]
         // StartMonitoring(u64, pid)
-        public static ResultCode StartMonitoring(ServiceCtx context)
+        public ResultCode StartMonitoring(ServiceCtx context)
         {
             ulong unknown0 = context.RequestData.ReadUInt64();
 
@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(4)]
         // Open(u32 flags, array<unknown, 0x21> path) -> (i32 ret, u32 bsd_errno)
-        public static ResultCode Open(ServiceCtx context)
+        public ResultCode Open(ServiceCtx context)
         {
             (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21();
 
@@ -387,7 +387,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (fdsCount != 0)
             {
-                static bool IsUnexpectedLinuxError(LinuxError error)
+                bool IsUnexpectedLinuxError(LinuxError error)
                 {
                     return error != LinuxError.SUCCESS && error != LinuxError.ETIMEDOUT;
                 }
@@ -463,7 +463,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         [CommandCmif(7)]
         // Sysctl(buffer<unknown, 0x21, 0>, buffer<unknown, 0x21, 0>) -> (i32 ret, u32 bsd_errno, u32, buffer<unknown, 0x22, 0>)
-        public static ResultCode Sysctl(ServiceCtx context)
+        public ResultCode Sysctl(ServiceCtx context)
         {
             WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
 

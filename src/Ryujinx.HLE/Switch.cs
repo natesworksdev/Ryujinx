@@ -126,7 +126,7 @@ namespace Ryujinx.HLE
 
         public void EnableCheats()
         {
-            ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);
+            FileSystem.ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);
         }
 
         public bool IsAudioMuted()

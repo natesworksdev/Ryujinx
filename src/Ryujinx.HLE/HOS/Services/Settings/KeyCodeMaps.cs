@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Settings
 {
-    class KeyCodeMaps
+    static class KeyCodeMaps
     {
         public static byte[] Default =
         {

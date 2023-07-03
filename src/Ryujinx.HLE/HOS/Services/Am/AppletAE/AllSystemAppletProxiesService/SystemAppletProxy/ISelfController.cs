@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(0)]
         // Exit()
-        public static ResultCode Exit(ServiceCtx context)
+        public ResultCode Exit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(1)]
         // LockExit()
-        public static ResultCode LockExit(ServiceCtx context)
+        public ResultCode LockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(2)]
         // UnlockExit()
-        public static ResultCode UnlockExit(ServiceCtx context)
+        public ResultCode UnlockExit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(13)]
         // SetFocusHandlingMode(b8, b8, b8)
-        public static ResultCode SetFocusHandlingMode(ServiceCtx context)
+        public ResultCode SetFocusHandlingMode(ServiceCtx context)
         {
             bool unknownFlag1 = context.RequestData.ReadBoolean();
             bool unknownFlag2 = context.RequestData.ReadBoolean();
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(41)] // 4.0.0+
         // IsSystemBufferSharingEnabled()
-        public static ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
+        public ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
         {
             // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
 
@@ -293,7 +293,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(65)]
         // ReportUserIsActive()
-        public static ResultCode ReportUserIsActive(ServiceCtx context)
+        public ResultCode ReportUserIsActive(ServiceCtx context)
         {
             // TODO: Call idle:sys ReportUserIsActive when implemented.
 
@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(67)] //3.0.0+
         // IsIlluminanceAvailable() -> bool
-        public static ResultCode IsIlluminanceAvailable(ServiceCtx context)
+        public ResultCode IsIlluminanceAvailable(ServiceCtx context)
         {
             // NOTE: This should call IsAmbientLightSensorAvailable through to Lbl, but there's no situation where we'd want false.
             context.ResponseData.Write(true);
@@ -336,7 +336,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(71)] //5.0.0+
         // GetCurrentIlluminanceEx() -> (bool, f32)
-        public static ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
+        public ResultCode GetCurrentIlluminanceEx(ServiceCtx context)
         {
             // TODO: The light value should be configurable - presumably users using software that takes advantage will want control.
             context.ResponseData.Write(1); // OverLimit
@@ -349,7 +349,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(80)] // 4.0.0+
         // SetWirelessPriorityMode(s32 wireless_priority_mode)
-        public static ResultCode SetWirelessPriorityMode(ServiceCtx context)
+        public ResultCode SetWirelessPriorityMode(ServiceCtx context)
         {
             WirelessPriorityMode wirelessPriorityMode = (WirelessPriorityMode)context.RequestData.ReadInt32();
 
@@ -406,7 +406,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(120)] // 11.0.0+
         // SaveCurrentScreenshot(s32 album_report_option)
-        public static ResultCode SaveCurrentScreenshot(ServiceCtx context)
+        public ResultCode SaveCurrentScreenshot(ServiceCtx context)
         {
             AlbumReportOption albumReportOption = (AlbumReportOption)context.RequestData.ReadInt32();
 

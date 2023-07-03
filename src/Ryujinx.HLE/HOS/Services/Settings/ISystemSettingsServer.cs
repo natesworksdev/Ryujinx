@@ -21,14 +21,14 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(3)]
         // GetFirmwareVersion() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
-        public static ResultCode GetFirmwareVersion(ServiceCtx context)
+        public ResultCode GetFirmwareVersion(ServiceCtx context)
         {
             return GetFirmwareVersion2(context);
         }
 
         [CommandCmif(4)]
         // GetFirmwareVersion2() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
-        public static ResultCode GetFirmwareVersion2(ServiceCtx context)
+        public ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
             ulong replyPos = context.Request.RecvListBuff[0].Position;
 
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(23)]
         // GetColorSetId() -> i32
-        public static ResultCode GetColorSetId(ServiceCtx context)
+        public ResultCode GetColorSetId(ServiceCtx context)
         {
             context.ResponseData.Write((int)context.Device.System.State.ThemeColor);
 
@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(24)]
         // GetColorSetId() -> i32
-        public static ResultCode SetColorSetId(ServiceCtx context)
+        public ResultCode SetColorSetId(ServiceCtx context)
         {
             int colorSetId = context.RequestData.ReadInt32();
 
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(37)]
         // GetSettingsItemValueSize(buffer<nn::settings::SettingsName, 0x19>, buffer<nn::settings::SettingsItemKey, 0x19>) -> u64
-        public static ResultCode GetSettingsItemValueSize(ServiceCtx context)
+        public ResultCode GetSettingsItemValueSize(ServiceCtx context)
         {
             ulong classPos = context.Request.PtrBuff[0].Position;
             ulong classSize = context.Request.PtrBuff[0].Size;
@@ -157,7 +157,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(38)]
         // GetSettingsItemValue(buffer<nn::settings::SettingsName, 0x19, 0x48>, buffer<nn::settings::SettingsItemKey, 0x19, 0x48>) -> (u64, buffer<unknown, 6, 0>)
-        public static ResultCode GetSettingsItemValue(ServiceCtx context)
+        public ResultCode GetSettingsItemValue(ServiceCtx context)
         {
             ulong classPos = context.Request.PtrBuff[0].Position;
             ulong classSize = context.Request.PtrBuff[0].Size;
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(60)]
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
-        public static ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
             // NOTE: When set to true, is automatically synced with the internet.
             context.ResponseData.Write(true);
@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(62)]
         // GetDebugModeFlag() -> bool
-        public static ResultCode GetDebugModeFlag(ServiceCtx context)
+        public ResultCode GetDebugModeFlag(ServiceCtx context)
         {
             context.ResponseData.Write(false);
 
@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(77)]
         // GetDeviceNickName() -> buffer<nn::settings::system::DeviceNickName, 0x16>
-        public static ResultCode GetDeviceNickName(ServiceCtx context)
+        public ResultCode GetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong deviceNickNameBufferSize = context.Request.ReceiveBuff[0].Size;
@@ -268,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(78)]
         // SetDeviceNickName(buffer<nn::settings::system::DeviceNickName, 0x15>)
-        public static ResultCode SetDeviceNickName(ServiceCtx context)
+        public ResultCode SetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.SendBuff[0].Position;
             ulong deviceNickNameBufferSize = context.Request.SendBuff[0].Size;
@@ -284,7 +284,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(90)]
         // GetMiiAuthorId() -> nn::util::Uuid
-        public static ResultCode GetMiiAuthorId(ServiceCtx context)
+        public ResultCode GetMiiAuthorId(ServiceCtx context)
         {
             // NOTE: If miiAuthorId is null ResultCode.NullMiiAuthorIdBuffer is returned.
             //       Doesn't occur in our case.
@@ -294,7 +294,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        public static byte[] GetFirmwareData(Switch device)
+        public byte[] GetFirmwareData(Switch device)
         {
             const ulong SystemVersionTitleId = 0x0100000000000809;
 

@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(1101)]
         // SetDisplayEnabled(u32 enabled_bool, u64 display_id)
-        public static ResultCode SetDisplayEnabled(ServiceCtx context)
+        public ResultCode SetDisplayEnabled(ServiceCtx context)
         {
             // NOTE: Stubbed in original service.
             return ResultCode.Success;
@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(1102)]
         // GetDisplayResolution(u64 display_id) -> (u64 width, u64 height)
-        public static ResultCode GetDisplayResolution(ServiceCtx context)
+        public ResultCode GetDisplayResolution(ServiceCtx context)
         {
             // NOTE: Not used in original service.
             // ulong displayId = context.RequestData.ReadUInt64();
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2020)]
         // OpenLayer(nn::vi::DisplayName, u64, nn::applet::AppletResourceUserId, pid) -> (u64, buffer<bytes, 6>)
-        public static ResultCode OpenLayer(ServiceCtx context)
+        public ResultCode OpenLayer(ServiceCtx context)
         {
             // TODO: support multi display.
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2021)]
         // CloseLayer(u64)
-        public static ResultCode CloseLayer(ServiceCtx context)
+        public ResultCode CloseLayer(ServiceCtx context)
         {
             long layerId = context.RequestData.ReadInt64();
 
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2030)]
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)
-        public static ResultCode CreateStrayLayer(ServiceCtx context)
+        public ResultCode CreateStrayLayer(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             long layerFlags = context.RequestData.ReadInt64();
@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2031)]
         // DestroyStrayLayer(u64)
-        public static ResultCode DestroyStrayLayer(ServiceCtx context)
+        public ResultCode DestroyStrayLayer(ServiceCtx context)
         {
             long layerId = context.RequestData.ReadInt64();
 
@@ -313,7 +313,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2101)]
         // SetLayerScalingMode(u32, u64)
-        public static ResultCode SetLayerScalingMode(ServiceCtx context)
+        public ResultCode SetLayerScalingMode(ServiceCtx context)
         {
             /*
             uint  sourceScalingMode = context.RequestData.ReadUInt32();
@@ -326,7 +326,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2102)] // 5.0.0+
         // ConvertScalingMode(u32 source_scaling_mode) -> u64 destination_scaling_mode
-        public static ResultCode ConvertScalingMode(ServiceCtx context)
+        public ResultCode ConvertScalingMode(ServiceCtx context)
         {
             SourceScalingMode scalingMode = (SourceScalingMode)context.RequestData.ReadInt32();
 
@@ -357,7 +357,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             return ResultCode.Success;
         }
 
-        private static ulong GetA8B8G8R8LayerSize(int width, int height, out int pitch, out int alignment)
+        private ulong GetA8B8G8R8LayerSize(int width, int height, out int pitch, out int alignment)
         {
             const int DefaultAlignment = 0x1000;
             const ulong DefaultSize = 0x20000;
@@ -373,7 +373,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2450)]
         // GetIndirectLayerImageMap(s64 width, s64 height, u64 handle, nn::applet::AppletResourceUserId, pid) -> (s64, s64, buffer<bytes, 0x46>)
-        public static ResultCode GetIndirectLayerImageMap(ServiceCtx context)
+        public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
             // The size of the layer buffer should be an aligned multiple of width * height
             // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide.
@@ -420,7 +420,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
         [CommandCmif(2460)]
         // GetIndirectLayerImageRequiredMemoryInfo(u64 width, u64 height) -> (u64 size, u64 alignment)
-        public static ResultCode GetIndirectLayerImageRequiredMemoryInfo(ServiceCtx context)
+        public ResultCode GetIndirectLayerImageRequiredMemoryInfo(ServiceCtx context)
         {
             /*
             // Doesn't occur in our case.

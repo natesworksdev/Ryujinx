@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         [CommandCmif(0)]
         // GetConfig(u32 config_item) -> u64 config_value
-        public static ResultCode GetConfig(ServiceCtx context)
+        public ResultCode GetConfig(ServiceCtx context)
         {
             ConfigItem configItem = (ConfigItem)context.RequestData.ReadUInt32();
 
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Spl
             return (ResultCode)((int)result << 9) | ResultCode.ModuleId;
         }
 
-        private static SmcResult SmcGetConfig(ServiceCtx context, out ulong configValue, ConfigItem configItem)
+        private SmcResult SmcGetConfig(ServiceCtx context, out ulong configValue, ConfigItem configItem)
         {
             configValue = default;
 

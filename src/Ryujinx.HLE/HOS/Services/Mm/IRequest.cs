@@ -7,16 +7,16 @@ namespace Ryujinx.HLE.HOS.Services.Mm
     [Service("mm:u")]
     class IRequest : IpcService
     {
-        private static readonly object _sessionListLock = new();
-        private static readonly List<MultiMediaSession> _sessionList = new();
+        private readonly object _sessionListLock = new();
+        private readonly List<MultiMediaSession> _sessionList = new();
 
-        private static uint _uniqueId = 1;
+        private uint _uniqueId = 1;
 
         public IRequest(ServiceCtx context) { }
 
         [CommandCmif(0)]
         // InitializeOld(u32, u32, u32)
-        public static ResultCode InitializeOld(ServiceCtx context)
+        public ResultCode InitializeOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             int fgmId = context.RequestData.ReadInt32();
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(1)]
         // FinalizeOld(u32)
-        public static ResultCode FinalizeOld(ServiceCtx context)
+        public ResultCode FinalizeOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
 
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(2)]
         // SetAndWaitOld(u32, u32, u32)
-        public static ResultCode SetAndWaitOld(ServiceCtx context)
+        public ResultCode SetAndWaitOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             uint frequenceHz = context.RequestData.ReadUInt32();
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(3)]
         // GetOld(u32) -> u32
-        public static ResultCode GetOld(ServiceCtx context)
+        public ResultCode GetOld(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
 
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(4)]
         // Initialize(u32, u32, u32) -> u32
-        public static ResultCode Initialize(ServiceCtx context)
+        public ResultCode Initialize(ServiceCtx context)
         {
             MultiMediaOperationType operationType = (MultiMediaOperationType)context.RequestData.ReadUInt32();
             int fgmId = context.RequestData.ReadInt32();
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(5)]
         // Finalize(u32)
-        public static ResultCode Finalize(ServiceCtx context)
+        public ResultCode Finalize(ServiceCtx context)
         {
             uint id = context.RequestData.ReadUInt32();
 
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(6)]
         // SetAndWait(u32, u32, u32)
-        public static ResultCode SetAndWait(ServiceCtx context)
+        public ResultCode SetAndWait(ServiceCtx context)
         {
             uint id = context.RequestData.ReadUInt32();
             uint frequenceHz = context.RequestData.ReadUInt32();
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
         [CommandCmif(7)]
         // Get(u32) -> u32
-        public static ResultCode Get(ServiceCtx context)
+        public ResultCode Get(ServiceCtx context)
         {
             uint id = context.RequestData.ReadUInt32();
 
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return ResultCode.Success;
         }
 
-        private static MultiMediaSession GetSessionById(uint id)
+        private MultiMediaSession GetSessionById(uint id)
         {
             foreach (MultiMediaSession session in _sessionList)
             {
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return null;
         }
 
-        private static MultiMediaSession GetSessionByType(MultiMediaOperationType type)
+        private MultiMediaSession GetSessionByType(MultiMediaOperationType type)
         {
             foreach (MultiMediaSession session in _sessionList)
             {
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
             return null;
         }
 
-        private static uint Register(MultiMediaOperationType type, int fgmId, bool isAutoClearEvent)
+        private uint Register(MultiMediaOperationType type, int fgmId, bool isAutoClearEvent)
         {
             lock (_sessionListLock)
             {

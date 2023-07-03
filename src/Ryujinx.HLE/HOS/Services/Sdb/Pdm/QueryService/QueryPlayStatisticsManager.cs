@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 {
-    static class QueryPlayStatisticsManager
+    class QueryPlayStatisticsManager
     {
         private static readonly Dictionary<UserId, ApplicationPlayStatistics> _applicationPlayStatistics = new();
 

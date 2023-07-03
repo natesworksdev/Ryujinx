@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(0)]
         // GetLanguageCode() -> nn::settings::LanguageCode
-        public static ResultCode GetLanguageCode(ServiceCtx context)
+        public ResultCode GetLanguageCode(ServiceCtx context)
         {
             context.ResponseData.Write(context.Device.System.State.DesiredLanguageCode);
 
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(1)]
         // GetAvailableLanguageCodes() -> (u32, buffer<nn::settings::LanguageCode, 0xa>)
-        public static ResultCode GetAvailableLanguageCodes(ServiceCtx context)
+        public ResultCode GetAvailableLanguageCodes(ServiceCtx context)
         {
             return GetAvailableLanguagesCodesImpl(
                     context,
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(2)] // 4.0.0+
         // MakeLanguageCode(nn::settings::Language language_index) -> nn::settings::LanguageCode
-        public static ResultCode MakeLanguageCode(ServiceCtx context)
+        public ResultCode MakeLanguageCode(ServiceCtx context)
         {
             int languageIndex = context.RequestData.ReadInt32();
 
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(3)]
         // GetAvailableLanguageCodeCount() -> u32
-        public static ResultCode GetAvailableLanguageCodeCount(ServiceCtx context)
+        public ResultCode GetAvailableLanguageCodeCount(ServiceCtx context)
         {
             context.ResponseData.Write(Math.Min(SystemStateMgr.LanguageCodes.Length, 0xF));
 
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(4)]
         // GetRegionCode() -> u32 nn::settings::RegionCode
-        public static ResultCode GetRegionCode(ServiceCtx context)
+        public ResultCode GetRegionCode(ServiceCtx context)
         {
             // NOTE: Service mount 0x8000000000000050 savedata and read the region code here.
 
@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(5)]
         // GetAvailableLanguageCodes2() -> (u32, buffer<nn::settings::LanguageCode, 6>)
-        public static ResultCode GetAvailableLanguageCodes2(ServiceCtx context)
+        public ResultCode GetAvailableLanguageCodes2(ServiceCtx context)
         {
             return GetAvailableLanguagesCodesImpl(
                     context,
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(6)]
         // GetAvailableLanguageCodeCount2() -> u32
-        public static ResultCode GetAvailableLanguageCodeCount2(ServiceCtx context)
+        public ResultCode GetAvailableLanguageCodeCount2(ServiceCtx context)
         {
             context.ResponseData.Write(SystemStateMgr.LanguageCodes.Length);
 
@@ -95,14 +95,14 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(7)] // 4.0.0+
         // GetKeyCodeMap() -> buffer<nn::kpr::KeyCodeMap, 0x16>
-        public static ResultCode GetKeyCodeMap(ServiceCtx context)
+        public ResultCode GetKeyCodeMap(ServiceCtx context)
         {
             return GetKeyCodeMapImpl(context, 1);
         }
 
         [CommandCmif(8)] // 5.0.0+
         // GetQuestFlag() -> bool
-        public static ResultCode GetQuestFlag(ServiceCtx context)
+        public ResultCode GetQuestFlag(ServiceCtx context)
         {
             context.ResponseData.Write(false);
 
@@ -113,14 +113,14 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         [CommandCmif(9)] // 6.0.0+
         // GetKeyCodeMap2() -> buffer<nn::kpr::KeyCodeMap, 0x16>
-        public static ResultCode GetKeyCodeMap2(ServiceCtx context)
+        public ResultCode GetKeyCodeMap2(ServiceCtx context)
         {
             return GetKeyCodeMapImpl(context, 2);
         }
 
         [CommandCmif(11)] // 10.1.0+
         // GetDeviceNickName() -> buffer<nn::settings::system::DeviceNickName, 0x16>
-        public static ResultCode GetDeviceNickName(ServiceCtx context)
+        public ResultCode GetDeviceNickName(ServiceCtx context)
         {
             ulong deviceNickNameBufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong deviceNickNameBufferSize = context.Request.ReceiveBuff[0].Size;
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        private static ResultCode GetKeyCodeMapImpl(ServiceCtx context, int version)
+        private ResultCode GetKeyCodeMapImpl(ServiceCtx context, int version)
         {
             if (context.Request.ReceiveBuff[0].Size != 0x1000)
             {
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        private static ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, ulong position, ulong size, int maxSize)
+        private ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, ulong position, ulong size, int maxSize)
         {
             int count = (int)(size / 8);
 

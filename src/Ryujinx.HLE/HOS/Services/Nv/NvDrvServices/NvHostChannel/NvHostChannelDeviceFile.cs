@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return NvInternalResult.Success;
         }
 
-        private static Span<T> GetSpanAndSkip<T>(ref Span<byte> arguments, int count) where T : unmanaged
+        private Span<T> GetSpanAndSkip<T>(ref Span<byte> arguments, int count) where T : unmanaged
         {
             Span<T> output = MemoryMarshal.Cast<byte, T>(arguments)[..count];
 
@@ -477,7 +477,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return ChannelSyncpoints[index];
         }
 
-        public static uint GetSyncpointDevice(NvHostSyncpt syncpointManager, uint index, bool isClientManaged)
+        public uint GetSyncpointDevice(NvHostSyncpt syncpointManager, uint index, bool isClientManaged)
         {
             if (DeviceSyncpoints[index] != 0)
             {
@@ -504,7 +504,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return commandBuffer;
         }
 
-        private static int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
+        private int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
         {
             bool hasWfi = !flags.HasFlag(SubmitGpfifoFlags.SuppressWfi);
 

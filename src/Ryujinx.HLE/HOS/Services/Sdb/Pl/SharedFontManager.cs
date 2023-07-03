@@ -156,9 +156,9 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return _fontData[fontType].Offset + 8;
         }
 
-        private static byte[] DecryptFont(Stream bfttfStream)
+        private byte[] DecryptFont(Stream bfttfStream)
         {
-            static uint KXor(uint data) => data ^ FontKey;
+            uint KXor(uint data) => data ^ FontKey;
 
             using BinaryReader reader = new(bfttfStream);
             using MemoryStream ttfStream = MemoryStreamManager.Shared.GetStream();

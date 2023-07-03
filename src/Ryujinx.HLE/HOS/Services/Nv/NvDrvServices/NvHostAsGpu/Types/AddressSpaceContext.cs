@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
             return _reservations.Remove(gpuVa);
         }
 
-        private static Range BinarySearch(SortedList<ulong, Range> list, ulong address)
+        private Range BinarySearch(SortedList<ulong, Range> list, ulong address)
         {
             int left = 0;
             int right = list.Count - 1;
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
             return null;
         }
 
-        private static Range BinarySearchLt(SortedList<ulong, Range> list, ulong address)
+        private Range BinarySearchLt(SortedList<ulong, Range> list, ulong address)
         {
             Range ltRg = null;
 

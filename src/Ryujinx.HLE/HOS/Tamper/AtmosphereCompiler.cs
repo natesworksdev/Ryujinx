@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             if (context.BlockStack.Count != 1)
             {
-                throw new TamperCompilationException($"Reached end of compilation with unmatched conditional(s) or loop(s)");
+                throw new TamperCompilationException("Reached end of compilation with unmatched conditional(s) or loop(s)");
             }
 
             return new AtmosphereProgram(name, _process, context.PressedKeys, new Block(context.CurrentOperations));

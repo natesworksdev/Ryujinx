@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(10)]
         // RequestToGetForeground()
-        public static ResultCode RequestToGetForeground(ServiceCtx context)
+        public ResultCode RequestToGetForeground(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 

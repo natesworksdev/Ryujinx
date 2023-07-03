@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(50)] // 4.0.0+
         // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
-        public static ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
+        public ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(51)] // 9.0.0+
         // GetStandardSteadyClockRtcValue() -> u64
-        public static ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
+        public ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(102)] // 5.0.0+
         // GetStandardUserSystemClockInitialYear() -> u32
-        public static ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
+        public ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
         {
             // This is only implemented in glue's StaticService.
             return ResultCode.NotImplemented;
@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(500)] // 4.0.0+
         // CalculateStandardUserSystemClockDifferenceByUser(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public static ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
+        public ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
         {
             ClockSnapshot clockSnapshotA = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[0]);
             ClockSnapshot clockSnapshotB = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[1]);
@@ -322,7 +322,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         [CommandCmif(501)] // 4.0.0+
         // CalculateSpanBetween(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
-        public static ResultCode CalculateSpanBetween(ServiceCtx context)
+        public ResultCode CalculateSpanBetween(ServiceCtx context)
         {
             ClockSnapshot clockSnapshotA = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[0]);
             ClockSnapshot clockSnapshotB = ReadClockSnapshotFromBuffer(context, context.Request.PtrBuff[1]);
@@ -411,7 +411,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return result;
         }
 
-        private static ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, IpcPtrBuffDesc ipcDesc)
+        private ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, IpcPtrBuffDesc ipcDesc)
         {
             Debug.Assert(ipcDesc.Size == (ulong)Unsafe.SizeOf<ClockSnapshot>());
 
@@ -424,7 +424,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return bufferReader.ReadStruct<ClockSnapshot>();
         }
 
-        private static void WriteClockSnapshotFromBuffer(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
+        private void WriteClockSnapshotFromBuffer(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
         {
             MemoryHelper.Write(context.Memory, ipcDesc.Position, clockSnapshot);
         }

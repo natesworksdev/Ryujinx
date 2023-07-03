@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             // If the else operations are already set, then the upper block must not be another end.
             if (operationsElse != null && codeType == CodeType.EndConditionalBlock)
             {
-                throw new TamperCompilationException($"Expected an upper 'if' conditional instead of 'end conditional'");
+                throw new TamperCompilationException("Expected an upper 'if' conditional instead of 'end conditional'");
             }
 
             ICondition condition;

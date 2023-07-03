@@ -491,7 +491,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void ActivateFrontend()
         {
-            Logger.Debug?.Print(LogClass.ServiceAm, $"Activating software keyboard frontend");
+            Logger.Debug?.Print(LogClass.ServiceAm, "Activating software keyboard frontend");
 
             _inputMode = KeyboardInputMode.ControllerAndKeyboard;
 
@@ -510,7 +510,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void DeactivateFrontend()
         {
-            Logger.Debug?.Print(LogClass.ServiceAm, $"Deactivating software keyboard frontend");
+            Logger.Debug?.Print(LogClass.ServiceAm, "Deactivating software keyboard frontend");
 
             _inputMode = KeyboardInputMode.ControllerAndKeyboard;
             _canAcceptController = false;
@@ -521,7 +521,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void DestroyFrontend()
         {
-            Logger.Debug?.Print(LogClass.ServiceAm, $"Destroying software keyboard frontend");
+            Logger.Debug?.Print(LogClass.ServiceAm, "Destroying software keyboard frontend");
 
             _keyboardRenderer?.Dispose();
             _keyboardRenderer = null;

@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        private static ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
+        private ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
         {
             KPageTableBase memMgr = process.MemoryManager;
 
@@ -244,7 +244,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.InsufficientAddressSpace;
         }
 
-        private static bool CanAddGuardRegionsInProcess(KProcess process, ulong baseAddress, ulong size)
+        private bool CanAddGuardRegionsInProcess(KProcess process, ulong baseAddress, ulong size)
         {
             KPageTableBase memMgr = process.MemoryManager;
 
@@ -262,7 +262,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return false;
         }
 
-        private static ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
+        private ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
         {
             KPageTableBase memMgr = process.MemoryManager;
 
@@ -313,7 +313,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        private static Result SetNroMemoryPermissions(KProcess process, IExecutable relocatableObject, ulong baseAddress)
+        private Result SetNroMemoryPermissions(KProcess process, IExecutable relocatableObject, ulong baseAddress)
         {
             ulong textStart = baseAddress + relocatableObject.TextOffset;
             ulong roStart = baseAddress + relocatableObject.RoOffset;

@@ -18,7 +18,6 @@ using static Ryujinx.HLE.Utilities.StringUtils;
 using GameCardHandle = System.UInt32;
 using IFileSystem = LibHac.FsSrv.Sf.IFileSystem;
 using IStorage = LibHac.FsSrv.Sf.IStorage;
-using RightsId = LibHac.Fs.RightsId;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
@@ -1267,7 +1266,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1004)]
         // SetGlobalAccessLogMode(u32 mode)
-        public static ResultCode SetGlobalAccessLogMode(ServiceCtx context)
+        public ResultCode SetGlobalAccessLogMode(ServiceCtx context)
         {
             int mode = context.RequestData.ReadInt32();
 
@@ -1278,7 +1277,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1005)]
         // GetGlobalAccessLogMode() -> u32 logMode
-        public static ResultCode GetGlobalAccessLogMode(ServiceCtx context)
+        public ResultCode GetGlobalAccessLogMode(ServiceCtx context)
         {
             int mode = context.Device.System.GlobalAccessLogMode;
 
@@ -1289,7 +1288,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         [CommandCmif(1006)]
         // OutputAccessLogToSdCard(buffer<bytes, 5> log_text)
-        public static ResultCode OutputAccessLogToSdCard(ServiceCtx context)
+        public ResultCode OutputAccessLogToSdCard(ServiceCtx context)
         {
             string message = ReadUtf8StringSend(context);
 

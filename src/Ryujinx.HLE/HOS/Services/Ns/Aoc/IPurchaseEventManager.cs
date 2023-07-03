@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
         [CommandCmif(0)]
         // SetDefaultDeliveryTarget(pid, buffer<bytes, 5> unknown)
-        public static ResultCode SetDefaultDeliveryTarget(ServiceCtx context)
+        public ResultCode SetDefaultDeliveryTarget(ServiceCtx context)
         {
             ulong inBufferPosition = context.Request.SendBuff[0].Position;
             ulong inBufferSize = context.Request.SendBuff[0].Size;
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
         [CommandCmif(3)]
         // PopPurchasedProductInfo(nn::ec::detail::PurchasedProductInfo)
-        public static ResultCode PopPurchasedProductInfo(ServiceCtx context)
+        public ResultCode PopPurchasedProductInfo(ServiceCtx context)
         {
             byte[] purchasedProductInfo = new byte[0x80];
 

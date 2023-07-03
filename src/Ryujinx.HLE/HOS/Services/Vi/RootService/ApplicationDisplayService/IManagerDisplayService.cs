@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(1102)]
         // GetDisplayResolution(u64 display_id) -> (u64 width, u64 height)
-        public static ResultCode GetDisplayResolution(ServiceCtx context)
+        public ResultCode GetDisplayResolution(ServiceCtx context)
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2010)]
         // CreateManagedLayer(u32, u64, nn::applet::AppletResourceUserId) -> u64
-        public static ResultCode CreateManagedLayer(ServiceCtx context)
+        public ResultCode CreateManagedLayer(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             long layerFlags = context.RequestData.ReadInt64();
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2011)]
         // DestroyManagedLayer(u64)
-        public static ResultCode DestroyManagedLayer(ServiceCtx context)
+        public ResultCode DestroyManagedLayer(ServiceCtx context)
         {
             long layerId = context.RequestData.ReadInt64();
 
@@ -58,14 +58,14 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(2012)] // 7.0.0+
         // CreateStrayLayer(u32, u64) -> (u64, u64, buffer<bytes, 6>)
-        public static ResultCode CreateStrayLayer(ServiceCtx context)
+        public ResultCode CreateStrayLayer(ServiceCtx context)
         {
-            return IApplicationDisplayService.CreateStrayLayer(context);
+            return _applicationDisplayService.CreateStrayLayer(context);
         }
 
         [CommandCmif(6000)]
         // AddToLayerStack(u32, u64)
-        public static ResultCode AddToLayerStack(ServiceCtx context)
+        public ResultCode AddToLayerStack(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
         [CommandCmif(6002)]
         // SetLayerVisibility(b8, u64)
-        public static ResultCode SetLayerVisibility(ServiceCtx context)
+        public ResultCode SetLayerVisibility(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceVi);
 

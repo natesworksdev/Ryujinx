@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(0)]
         // GetRequestState() -> u32
-        public static ResultCode GetRequestState(ServiceCtx context)
+        public ResultCode GetRequestState(ServiceCtx context)
         {
             RequestState requestState = context.Device.Configuration.EnableInternetAccess
                 ? RequestState.Available
@@ -50,14 +50,14 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(1)]
         // GetResult()
-        public static ResultCode GetResult(ServiceCtx context)
+        public ResultCode GetResult(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return GetResultImpl();
         }
 
-        private static ResultCode GetResultImpl()
+        private ResultCode GetResultImpl()
         {
             return ResultCode.Success;
         }
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(3)]
         // Cancel()
-        public static ResultCode Cancel(ServiceCtx context)
+        public ResultCode Cancel(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(4)]
         // Submit()
-        public static ResultCode Submit(ServiceCtx context)
+        public ResultCode Submit(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(11)]
         // SetConnectionConfirmationOption(i8)
-        public static ResultCode SetConnectionConfirmationOption(ServiceCtx context)
+        public ResultCode SetConnectionConfirmationOption(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(21)]
         // GetAppletInfo(u32) -> (u32, u32, u32, buffer<bytes, 6>)
-        public static ResultCode GetAppletInfo(ServiceCtx context)
+        public ResultCode GetAppletInfo(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             uint themeColor = context.RequestData.ReadUInt32();

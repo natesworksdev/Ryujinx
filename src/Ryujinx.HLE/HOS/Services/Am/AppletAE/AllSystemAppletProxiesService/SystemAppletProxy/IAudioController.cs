@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(0)]
         // SetExpectedMasterVolume(f32, f32)
-        public static ResultCode SetExpectedMasterVolume(ServiceCtx context)
+        public ResultCode SetExpectedMasterVolume(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             float appletVolume = context.RequestData.ReadSingle();
@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(1)]
         // GetMainAppletExpectedMasterVolume() -> f32
-        public static ResultCode GetMainAppletExpectedMasterVolume(ServiceCtx context)
+        public ResultCode GetMainAppletExpectedMasterVolume(ServiceCtx context)
         {
             context.ResponseData.Write(1f);
 
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(2)]
         // GetLibraryAppletExpectedMasterVolume() -> f32
-        public static ResultCode GetLibraryAppletExpectedMasterVolume(ServiceCtx context)
+        public ResultCode GetLibraryAppletExpectedMasterVolume(ServiceCtx context)
         {
             context.ResponseData.Write(1f);
 
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(3)]
         // ChangeMainAppletMasterVolume(f32, u64)
-        public static ResultCode ChangeMainAppletMasterVolume(ServiceCtx context)
+        public ResultCode ChangeMainAppletMasterVolume(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             float unknown0 = context.RequestData.ReadSingle();
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         [CommandCmif(4)]
         // SetTransparentVolumeRate(f32)
-        public static ResultCode SetTransparentVolumeRate(ServiceCtx context)
+        public ResultCode SetTransparentVolumeRate(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             float unknown0 = context.RequestData.ReadSingle();

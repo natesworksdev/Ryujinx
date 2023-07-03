@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(12)] // 4.0.0+
         // CreateApplicationAndRequestToStart(u64 title_id)
-        public static ResultCode CreateApplicationAndRequestToStart(ServiceCtx context)
+        public ResultCode CreateApplicationAndRequestToStart(ServiceCtx context)
         {
             ulong titleId = context.RequestData.ReadUInt64();
 
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(20)]
         // EnsureSaveData(nn::account::Uid) -> u64
-        public static ResultCode EnsureSaveData(ServiceCtx context)
+        public ResultCode EnsureSaveData(ServiceCtx context)
         {
             Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
 
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(21)]
         // GetDesiredLanguage() -> nn::settings::LanguageCode
-        public static ResultCode GetDesiredLanguage(ServiceCtx context)
+        public ResultCode GetDesiredLanguage(ServiceCtx context)
         {
             // This seems to be calling ns:am GetApplicationDesiredLanguage followed by ConvertApplicationLanguageToLanguageCode
             // Calls are from a IReadOnlyApplicationControlDataInterface object
@@ -165,7 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(22)]
         // SetTerminateResult(u32)
-        public static ResultCode SetTerminateResult(ServiceCtx context)
+        public ResultCode SetTerminateResult(ServiceCtx context)
         {
             LibHac.Result result = new(context.RequestData.ReadUInt32());
 
@@ -176,7 +176,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(23)]
         // GetDisplayVersion() -> nn::oe::DisplayVersion
-        public static ResultCode GetDisplayVersion(ServiceCtx context)
+        public ResultCode GetDisplayVersion(ServiceCtx context)
         {
             // If an NACP isn't found, the buffer will be all '\0' which seems to be the correct implementation.
             context.ResponseData.Write(context.Device.Processes.ActiveApplication.ApplicationControlProperties.DisplayVersion);
@@ -271,7 +271,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(30)]
         // BeginBlockingHomeButtonShortAndLongPressed()
-        public static ResultCode BeginBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
+        public ResultCode BeginBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x8B to value 1 then it signals an internal event.
 
@@ -282,7 +282,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(31)]
         // EndBlockingHomeButtonShortAndLongPressed()
-        public static ResultCode EndBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
+        public ResultCode EndBlockingHomeButtonShortAndLongPressed(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x8B to value 0 then it signals an internal event.
 
@@ -293,7 +293,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(32)] // 2.0.0+
         // BeginBlockingHomeButton(u64 nano_second)
-        public static ResultCode BeginBlockingHomeButton(ServiceCtx context)
+        public ResultCode BeginBlockingHomeButton(ServiceCtx context)
         {
             ulong nanoSeconds = context.RequestData.ReadUInt64();
 
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(33)] // 2.0.0+
         // EndBlockingHomeButton()
-        public static ResultCode EndBlockingHomeButton(ServiceCtx context)
+        public ResultCode EndBlockingHomeButton(ServiceCtx context)
         {
             // NOTE: This set two internal fields at offsets 0x89 and 0x90 to value 0 then it signals an internal event.
 
@@ -317,7 +317,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(40)]
         // NotifyRunning() -> b8
-        public static ResultCode NotifyRunning(ServiceCtx context)
+        public ResultCode NotifyRunning(ServiceCtx context)
         {
             context.ResponseData.Write(true);
 
@@ -326,7 +326,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(50)] // 2.0.0+
         // GetPseudoDeviceId() -> nn::util::Uuid
-        public static ResultCode GetPseudoDeviceId(ServiceCtx context)
+        public ResultCode GetPseudoDeviceId(ServiceCtx context)
         {
             context.ResponseData.Write(0L);
             context.ResponseData.Write(0L);
@@ -338,7 +338,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(60)] // 2.0.0+
         // SetMediaPlaybackStateForApplication(bool enabled)
-        public static ResultCode SetMediaPlaybackStateForApplication(ServiceCtx context)
+        public ResultCode SetMediaPlaybackStateForApplication(ServiceCtx context)
         {
             bool enabled = context.RequestData.ReadBoolean();
 
@@ -360,7 +360,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(66)] // 3.0.0+
         // InitializeGamePlayRecording(u64, handle<copy>)
-        public static ResultCode InitializeGamePlayRecording(ServiceCtx context)
+        public ResultCode InitializeGamePlayRecording(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -380,7 +380,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(90)] // 4.0.0+
         // EnableApplicationCrashReport(u8)
-        public static ResultCode EnableApplicationCrashReport(ServiceCtx context)
+        public ResultCode EnableApplicationCrashReport(ServiceCtx context)
         {
             bool applicationCrashReportEnabled = context.RequestData.ReadBoolean();
 
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(100)] // 5.0.0+
         // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
-        public static ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
+        public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
         {
             int width = context.RequestData.ReadInt32();
             int height = context.RequestData.ReadInt32();
@@ -414,7 +414,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return resultCode;
         }
 
-        private static ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemoryAddress, ulong transferMemorySize, int width, int height)
+        private ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemoryAddress, ulong transferMemorySize, int width, int height)
         {
             if ((transferMemorySize & 0x3FFFF) != 0)
             {
@@ -437,7 +437,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(101)] // 5.0.0+
         // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
-        public static ResultCode SetApplicationCopyrightImage(ServiceCtx context)
+        public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
         {
             ulong frameBufferPos = context.Request.SendBuff[0].Position;
             ulong frameBufferSize = context.Request.SendBuff[0].Size;
@@ -468,7 +468,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return resultCode;
         }
 
-        private static ResultCode SetApplicationCopyrightImageImpl(int x, int y, int width, int height, ulong frameBufferPos, ulong frameBufferSize, uint windowOriginMode)
+        private ResultCode SetApplicationCopyrightImageImpl(int x, int y, int width, int height, ulong frameBufferPos, ulong frameBufferSize, uint windowOriginMode)
         {
             /*
             if (_copyrightBuffer == null)
@@ -484,7 +484,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(102)] // 5.0.0+
         // SetApplicationCopyrightVisibility(bool visible)
-        public static ResultCode SetApplicationCopyrightVisibility(ServiceCtx context)
+        public ResultCode SetApplicationCopyrightVisibility(ServiceCtx context)
         {
             bool visible = context.RequestData.ReadBoolean();
 
@@ -497,7 +497,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(110)] // 5.0.0+
         // QueryApplicationPlayStatistics(buffer<bytes, 5> title_id_list) -> (buffer<bytes, 6> entries, s32 entries_count)
-        public static ResultCode QueryApplicationPlayStatistics(ServiceCtx context)
+        public ResultCode QueryApplicationPlayStatistics(ServiceCtx context)
         {
             // TODO: Call pdm:qry cmd 13 when IPC call between services will be implemented.
             return (ResultCode)QueryPlayStatisticsManager.GetPlayStatistics(context);
@@ -505,7 +505,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(111)] // 6.0.0+
         // QueryApplicationPlayStatisticsByUid(nn::account::Uid, buffer<bytes, 5> title_id_list) -> (buffer<bytes, 6> entries, s32 entries_count)
-        public static ResultCode QueryApplicationPlayStatisticsByUid(ServiceCtx context)
+        public ResultCode QueryApplicationPlayStatisticsByUid(ServiceCtx context)
         {
             // TODO: Call pdm:qry cmd 16 when IPC call between services will be implemented.
             return (ResultCode)QueryPlayStatisticsManager.GetPlayStatistics(context, true);
@@ -513,7 +513,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(120)] // 5.0.0+
         // ExecuteProgram(ProgramSpecifyKind kind, u64 value)
-        public static ResultCode ExecuteProgram(ServiceCtx context)
+        public ResultCode ExecuteProgram(ServiceCtx context)
         {
             ProgramSpecifyKind kind = (ProgramSpecifyKind)context.RequestData.ReadUInt32();
 
@@ -531,7 +531,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(121)] // 5.0.0+
         // ClearUserChannel()
-        public static ResultCode ClearUserChannel(ServiceCtx context)
+        public ResultCode ClearUserChannel(ServiceCtx context)
         {
             context.Device.Configuration.UserChannelPersistence.Clear();
 
@@ -551,7 +551,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(123)] // 5.0.0+
         // GetPreviousProgramIndex() -> s32 program_index
-        public static ResultCode GetPreviousProgramIndex(ServiceCtx context)
+        public ResultCode GetPreviousProgramIndex(ServiceCtx context)
         {
             int previousProgramIndex = context.Device.Configuration.UserChannelPersistence.PreviousIndex;
 
@@ -602,7 +602,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         [CommandCmif(141)] // 9.0.0+
         // TryPopFromFriendInvitationStorageChannel() -> object<nn::am::service::IStorage>
-        public static ResultCode TryPopFromFriendInvitationStorageChannel(ServiceCtx context)
+        public ResultCode TryPopFromFriendInvitationStorageChannel(ServiceCtx context)
         {
             // NOTE: IStorage are pushed in the channel with IApplicationAccessor PushToFriendInvitationStorageChannel
             //       If _friendInvitationStorageChannelEvent is signaled, the event is cleared.
@@ -659,7 +659,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
                 if (string.IsNullOrWhiteSpace(filePath))
                 {
-                    throw new InvalidSystemResourceException($"JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
+                    throw new InvalidSystemResourceException("JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
                 }
 
                 context.Device.LoadNca(filePath);

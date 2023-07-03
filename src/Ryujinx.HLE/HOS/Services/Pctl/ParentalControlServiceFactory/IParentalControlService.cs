@@ -62,12 +62,12 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
                 if (_titleId != 0)
                 {
-                    // TODO: Service store some private fields in another static object.
+                    // TODO: Service store some private fields in another object.
 
                     if ((_permissionFlag & 0x8040) == 0)
                     {
-                        // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
-                        //       When it's done it signal an event in this static object.
+                        // TODO: Service store TitleId and FreeCommunicationEnabled in another object.
+                        //       When it's done it signal an event in this object.
                         Logger.Stub?.PrintStub(LogClass.ServicePctl);
                     }
                 }
@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
         [CommandCmif(1064)] // 5.0.0+
         // ResetConfirmedStereoVisionPermission()
-        public static ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
+        public ResultCode ResetConfirmedStereoVisionPermission(ServiceCtx context)
         {
             return ResultCode.Success;
         }

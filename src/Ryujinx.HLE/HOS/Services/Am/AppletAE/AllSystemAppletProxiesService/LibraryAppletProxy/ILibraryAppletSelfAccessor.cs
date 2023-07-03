@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         [CommandCmif(14)]
         // GetCallerAppletIdentityInfo() -> nn::am::service::AppletIdentityInfo
-        public static ResultCode GetCallerAppletIdentityInfo(ServiceCtx context)
+        public ResultCode GetCallerAppletIdentityInfo(ServiceCtx context)
         {
             AppletIdentifyInfo appletIdentifyInfo = new()
             {

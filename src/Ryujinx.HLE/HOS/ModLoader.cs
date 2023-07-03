@@ -531,7 +531,7 @@ namespace Ryujinx.HLE.HOS
                 Logger.Warning?.Print(LogClass.ModLoader, "Multiple ExeFS partition replacements detected");
             }
 
-            Logger.Info?.Print(LogClass.ModLoader, $"Using replacement ExeFS partition");
+            Logger.Info?.Print(LogClass.ModLoader, "Using replacement ExeFS partition");
 
             exefs = new PartitionFileSystem(mods.ExefsContainers[0].Path.OpenRead().AsStorage());
 
@@ -688,7 +688,7 @@ namespace Ryujinx.HLE.HOS
             EnableCheats(titleId, tamperMachine);
         }
 
-        internal static void EnableCheats(ulong titleId, TamperMachine tamperMachine)
+        internal void EnableCheats(ulong titleId, TamperMachine tamperMachine)
         {
             var contentDirectory = FindTitleDir(new DirectoryInfo(Path.Combine(GetModsBasePath(), AmsContentsDir)), $"{titleId:x16}");
             string enabledCheatsPath = Path.Combine(contentDirectory.FullName, CheatDir, "enabled.txt");

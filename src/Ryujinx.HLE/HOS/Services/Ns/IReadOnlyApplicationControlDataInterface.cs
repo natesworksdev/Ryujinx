@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [CommandCmif(0)]
         // GetApplicationControlData(u8, u64) -> (unknown<4>, buffer<unknown, 6>)
-        public static ResultCode GetApplicationControlData(ServiceCtx context)
+        public ResultCode GetApplicationControlData(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             byte source = (byte)context.RequestData.ReadInt64();

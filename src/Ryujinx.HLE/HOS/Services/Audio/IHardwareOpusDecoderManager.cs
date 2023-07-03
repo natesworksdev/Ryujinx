@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         [CommandCmif(1)]
         // GetWorkBufferSize(bytes<8, 4>) -> u32
-        public static ResultCode GetWorkBufferSize(ServiceCtx context)
+        public ResultCode GetWorkBufferSize(ServiceCtx context)
         {
             int sampleRate = context.RequestData.ReadInt32();
             int channelsCount = context.RequestData.ReadInt32();
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         [CommandCmif(3)] // 3.0.0+
         // GetWorkBufferSizeForMultiStream(buffer<unknown<0x110>, 0x19>) -> u32
-        public static ResultCode GetWorkBufferSizeForMultiStream(ServiceCtx context)
+        public ResultCode GetWorkBufferSizeForMultiStream(ServiceCtx context)
         {
             ulong parametersAddress = context.Request.PtrBuff[0].Position;
 
@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         [CommandCmif(5)] // 12.0.0+
         // GetWorkBufferSizeEx(OpusParametersEx) -> u32
-        public static ResultCode GetWorkBufferSizeEx(ServiceCtx context)
+        public ResultCode GetWorkBufferSizeEx(ServiceCtx context)
         {
             OpusParametersEx parameters = context.RequestData.ReadStruct<OpusParametersEx>();
 
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         [CommandCmif(7)] // 12.0.0+
         // GetWorkBufferSizeForMultiStreamEx(buffer<unknown<0x118>, 0x19>) -> u32
-        public static ResultCode GetWorkBufferSizeForMultiStreamEx(ServiceCtx context)
+        public ResultCode GetWorkBufferSizeForMultiStreamEx(ServiceCtx context)
         {
             ulong parametersAddress = context.Request.PtrBuff[0].Position;
 

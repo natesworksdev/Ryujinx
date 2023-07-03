@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private ControllerType[] _configuredTypes;
         private readonly KEvent[] _styleSetUpdateEvents;
         private readonly bool[] _supportedPlayers;
-        private static VibrationValue _neutralVibrationValue = new()
+        private VibrationValue _neutralVibrationValue = new()
         {
             AmplitudeLow = 0f,
             FrequencyLow = 160f,
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Logger.Info?.Print(LogClass.Hid, $"Connected Controller {type} to {player}");
         }
 
-        private static ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
+        private ref RingLifo<NpadCommonState> GetCommonStateLifo(ref NpadInternalState npad)
         {
             switch (npad.StyleSet)
             {
@@ -327,7 +327,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private static void UpdateUnusedInputIfNotEqual(ref RingLifo<NpadCommonState> currentlyUsed, ref RingLifo<NpadCommonState> possiblyUnused)
+        private void UpdateUnusedInputIfNotEqual(ref RingLifo<NpadCommonState> currentlyUsed, ref RingLifo<NpadCommonState> possiblyUnused)
         {
             if (!Unsafe.AreSame(ref currentlyUsed, ref possiblyUnused))
             {
@@ -337,7 +337,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private static void WriteNewInputEntry(ref RingLifo<NpadCommonState> lifo, ref NpadCommonState state)
+        private void WriteNewInputEntry(ref RingLifo<NpadCommonState> lifo, ref NpadCommonState state)
         {
             ref NpadCommonState previousEntry = ref lifo.GetCurrentEntryRef();
 
@@ -346,7 +346,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             lifo.Write(ref state);
         }
 
-        private static void UpdateUnusedSixInputIfNotEqual(ref RingLifo<SixAxisSensorState> currentlyUsed, ref RingLifo<SixAxisSensorState> possiblyUnused)
+        private void UpdateUnusedSixInputIfNotEqual(ref RingLifo<SixAxisSensorState> currentlyUsed, ref RingLifo<SixAxisSensorState> possiblyUnused)
         {
             if (!Unsafe.AreSame(ref currentlyUsed, ref possiblyUnused))
             {
@@ -356,7 +356,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private static void WriteNewSixInputEntry(ref RingLifo<SixAxisSensorState> lifo, ref SixAxisSensorState state)
+        private void WriteNewSixInputEntry(ref RingLifo<SixAxisSensorState> lifo, ref SixAxisSensorState state)
         {
             ref SixAxisSensorState previousEntry = ref lifo.GetCurrentEntryRef();
 
@@ -475,7 +475,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        private static ref RingLifo<SixAxisSensorState> GetSixAxisSensorLifo(ref NpadInternalState npad, bool isRightPair)
+        private ref RingLifo<SixAxisSensorState> GetSixAxisSensorLifo(ref NpadInternalState npad, bool isRightPair)
         {
             switch (npad.StyleSet)
             {

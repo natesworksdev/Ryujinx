@@ -11,16 +11,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         [CommandCmif(0)]
         // CheckAvailability()
-        public static ResultCode CheckAvailability(ServiceCtx context)
+        public ResultCode CheckAvailability(ServiceCtx context)
         {
-            return ManagerServer.CheckAvailability(context);
+            return _managerServer.CheckAvailability(context);
         }
 
         [CommandCmif(1)]
         // GetAccountId() -> nn::account::NetworkServiceAccountId
-        public static ResultCode GetAccountId(ServiceCtx context)
+        public ResultCode GetAccountId(ServiceCtx context)
         {
-            return ManagerServer.GetAccountId(context);
+            return _managerServer.GetAccountId(context);
         }
 
         [CommandCmif(2)]
@@ -39,23 +39,23 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         [CommandCmif(3)]
         // LoadIdTokenCache() -> (u32 id_token_cache_size, buffer<bytes, 6>)
-        public static ResultCode LoadIdTokenCache(ServiceCtx context)
+        public ResultCode LoadIdTokenCache(ServiceCtx context)
         {
-            return ManagerServer.LoadIdTokenCache(context);
+            return _managerServer.LoadIdTokenCache(context);
         }
 
         [CommandCmif(130)]
         // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, nn::account::nas::NasUserBaseForApplication, buffer<bytes, 6>)
-        public static ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
+        public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
-            return ManagerServer.GetNintendoAccountUserResourceCacheForApplication(context);
+            return _managerServer.GetNintendoAccountUserResourceCacheForApplication(context);
         }
 
         [CommandCmif(160)] // 5.0.0+
         // StoreOpenContext()
-        public static ResultCode StoreOpenContext(ServiceCtx context)
+        public ResultCode StoreOpenContext(ServiceCtx context)
         {
-            return ManagerServer.StoreOpenContext(context);
+            return _managerServer.StoreOpenContext(context);
         }
 
         [CommandCmif(170)] // 6.0.0+

@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(302)]
         // ActivateIrsensor(nn::applet::AppletResourceUserId, pid)
-        public static ResultCode ActivateIrsensor(ServiceCtx context)
+        public ResultCode ActivateIrsensor(ServiceCtx context)
         {
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(303)]
         // DeactivateIrsensor(nn::applet::AppletResourceUserId, pid)
-        public static ResultCode DeactivateIrsensor(ServiceCtx context)
+        public ResultCode DeactivateIrsensor(ServiceCtx context)
         {
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(305)]
         // StopImageProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId)
-        public static ResultCode StopImageProcessor(ServiceCtx context)
+        public ResultCode StopImageProcessor(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(306)]
         // RunMomentProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedMomentProcessorConfig)
-        public static ResultCode RunMomentProcessor(ServiceCtx context)
+        public ResultCode RunMomentProcessor(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(307)]
         // RunClusteringProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedClusteringProcessorConfig)
-        public static ResultCode RunClusteringProcessor(ServiceCtx context)
+        public ResultCode RunClusteringProcessor(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(308)]
         // RunImageTransferProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedImageTransferProcessorConfig, u64 TransferMemorySize, TransferMemoryHandle)
-        public static ResultCode RunImageTransferProcessor(ServiceCtx context)
+        public ResultCode RunImageTransferProcessor(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(309)]
         // GetImageTransferProcessorState(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId)
-        public static ResultCode GetImageTransferProcessorState(ServiceCtx context)
+        public ResultCode GetImageTransferProcessorState(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -153,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(310)]
         // RunTeraPluginProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedTeraPluginProcessorConfig)
-        public static ResultCode RunTeraPluginProcessor(ServiceCtx context)
+        public ResultCode RunTeraPluginProcessor(ServiceCtx context)
         {
             IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(311)]
         // GetNpadIrCameraHandle(u32) -> nn::irsensor::IrCameraHandle
-        public static ResultCode GetNpadIrCameraHandle(ServiceCtx context)
+        public ResultCode GetNpadIrCameraHandle(ServiceCtx context)
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
 
@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(314)] // 3.0.0+
         // CheckFirmwareVersion(nn::irsensor::IrCameraHandle, nn::irsensor::PackedMcuVersion, nn::applet::AppletResourceUserId, pid)
-        public static ResultCode CheckFirmwareVersion(ServiceCtx context)
+        public ResultCode CheckFirmwareVersion(ServiceCtx context)
         {
             int irCameraHandle = context.RequestData.ReadInt32();
             short packedMcuVersionMajor = context.RequestData.ReadInt16();
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(318)] // 4.0.0+
         // StopImageProcessorAsync(nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, pid)
-        public static ResultCode StopImageProcessorAsync(ServiceCtx context)
+        public ResultCode StopImageProcessorAsync(ServiceCtx context)
         {
             int irCameraHandle = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         [CommandCmif(319)] // 4.0.0+
         // ActivateIrsensorWithFunctionLevel(nn::applet::AppletResourceUserId, nn::irsensor::PackedFunctionLevel, pid)
-        public static ResultCode ActivateIrsensorWithFunctionLevel(ServiceCtx context)
+        public ResultCode ActivateIrsensorWithFunctionLevel(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
             long packedFunctionLevel = context.RequestData.ReadInt64();
@@ -227,7 +227,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             return ResultCode.Success;
         }
 
-        private static ResultCode CheckCameraHandle(IrCameraHandle irCameraHandle)
+        private ResultCode CheckCameraHandle(IrCameraHandle irCameraHandle)
         {
             if (irCameraHandle.DeviceType == 1 || (PlayerIndex)irCameraHandle.PlayerNumber >= PlayerIndex.Unknown)
             {

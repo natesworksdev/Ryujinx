@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
     {
         private const long CertStoreTitleId = 0x0100000000000800;
 
-        private readonly string _certStoreTitleMissingErrorMessage = "CertStore system title not found! SSL CA retrieving will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
+        private const string CertStoreTitleMissingErrorMessage = "CertStore system title not found! SSL CA retrieving will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide#initial-setup-continued---installation-of-firmware for more information)";
 
         private static BuiltInCertificateManager _instance;
 
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             return !string.IsNullOrEmpty(GetCertStoreTitleContentPath());
         }
 
-        private static CertStoreEntry ReadCertStoreEntry(ReadOnlySpan<byte> buffer, CertStoreFileEntry entry)
+        private CertStoreEntry ReadCertStoreEntry(ReadOnlySpan<byte> buffer, CertStoreFileEntry entry)
         {
             string customCertificatePath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "ssl", $"{entry.Id}.der");
 
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
                         if (result.IsFailure())
                         {
-                            Logger.Error?.Print(LogClass.ServiceSsl, _certStoreTitleMissingErrorMessage);
+                            Logger.Error?.Print(LogClass.ServiceSsl, CertStoreTitleMissingErrorMessage);
 
                             return;
                         }
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             {
                 if (!_initialized)
                 {
-                    throw new InvalidSystemResourceException(_certStoreTitleMissingErrorMessage);
+                    throw new InvalidSystemResourceException(CertStoreTitleMissingErrorMessage);
                 }
 
                 requiredSize = 0;

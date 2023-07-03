@@ -23,6 +23,6 @@
             set => _raw[index] = value;
         }
 
-        public static int Length => NumBufferSlots;
+        public int Length => NumBufferSlots;
     }
 }

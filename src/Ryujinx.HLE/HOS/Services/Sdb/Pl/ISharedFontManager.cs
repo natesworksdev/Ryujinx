@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(0)]
         // RequestLoad(u32)
-        public static ResultCode RequestLoad(ServiceCtx context)
+        public ResultCode RequestLoad(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(1)]
         // GetLoadState(u32) -> u32
-        public static ResultCode GetLoadState(ServiceCtx context)
+        public ResultCode GetLoadState(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(2)]
         // GetFontSize(u32) -> u32
-        public static ResultCode GetFontSize(ServiceCtx context)
+        public ResultCode GetFontSize(ServiceCtx context)
         {
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
 
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(3)]
         // GetSharedMemoryAddressOffset(u32) -> u32
-        public static ResultCode GetSharedMemoryAddressOffset(ServiceCtx context)
+        public ResultCode GetSharedMemoryAddressOffset(ServiceCtx context)
         {
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
 
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(5)]
         // GetSharedFontInOrderOfPriority(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
-        public static ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
+        public ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             long languageCode = context.RequestData.ReadInt64();
@@ -111,14 +111,14 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         [CommandCmif(6)] // 4.0.0+
         // GetSharedFontInOrderOfPriorityForSystem(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
-        public static ResultCode GetSharedFontInOrderOfPriorityForSystem(ServiceCtx context)
+        public ResultCode GetSharedFontInOrderOfPriorityForSystem(ServiceCtx context)
         {
             // TODO: Check the differencies with GetSharedFontInOrderOfPriority.
 
             return GetSharedFontInOrderOfPriority(context);
         }
 
-        private static bool AddFontToOrderOfPriorityList(ServiceCtx context, SharedFontType fontType, uint offset)
+        private bool AddFontToOrderOfPriorityList(ServiceCtx context, SharedFontType fontType, uint offset)
         {
             ulong typesPosition = context.Request.ReceiveBuff[0].Position;
             ulong typesSize = context.Request.ReceiveBuff[0].Size;

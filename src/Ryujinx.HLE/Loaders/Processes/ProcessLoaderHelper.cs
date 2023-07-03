@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.Loaders.Processes
 
             if (result != Result.Success)
             {
-                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
+                Logger.Error?.Print(LogClass.Loader, "Process initialization failed setting resource limit values.");
 
                 return ProcessResult.Failed;
             }
@@ -346,7 +346,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             MemoryRegion memoryRegion = (MemoryRegion)(npdm.Acid.Flags >> 2 & 0xf);
             if (memoryRegion > MemoryRegion.NvServices)
             {
-                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed due to invalid ACID flags.");
+                Logger.Error?.Print(LogClass.Loader, "Process initialization failed due to invalid ACID flags.");
 
                 return ProcessResult.Failed;
             }

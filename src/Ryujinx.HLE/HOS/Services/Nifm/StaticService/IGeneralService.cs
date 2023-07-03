@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 IsAnyInternetRequestAccepted = true, // NOTE: Why not accept any internet request?
             };
 
-            NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(LocalInterfaceCacheHandler);
+            NetworkChange.NetworkAddressChanged += LocalInterfaceCacheHandler;
 
             GeneralServiceManager.Add(_generalServiceDetail);
         }
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(18)]
         // GetInternetConnectionStatus() -> nn::nifm::detail::sf::InternetConnectionStatus
-        public static ResultCode GetInternetConnectionStatus(ServiceCtx context)
+        public ResultCode GetInternetConnectionStatus(ServiceCtx context)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
@@ -151,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         [CommandCmif(21)]
         // IsAnyInternetRequestAccepted(buffer<nn::nifm::ClientId, 0x19, 4>) -> bool
-        public static ResultCode IsAnyInternetRequestAccepted(ServiceCtx context)
+        public ResultCode IsAnyInternetRequestAccepted(ServiceCtx context)
         {
             ulong position = context.Request.PtrBuff[0].Position;
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
@@ -186,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         private void LocalInterfaceCacheHandler(object sender, EventArgs e)
         {
-            Logger.Info?.Print(LogClass.ServiceNifm, $"NetworkAddress changed, invalidating cached data.");
+            Logger.Info?.Print(LogClass.ServiceNifm, "NetworkAddress changed, invalidating cached data.");
 
             _targetPropertiesCache = null;
             _targetAddressInfoCache = null;

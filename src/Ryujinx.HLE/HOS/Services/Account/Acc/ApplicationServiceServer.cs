@@ -19,14 +19,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             _serviceFlag = serviceFlag;
         }
 
-        public static ResultCode GetUserCountImpl(ServiceCtx context)
+        public ResultCode GetUserCountImpl(ServiceCtx context)
         {
             context.ResponseData.Write(context.Device.System.AccountManager.GetUserCount());
 
             return ResultCode.Success;
         }
 
-        public static ResultCode GetUserExistenceImpl(ServiceCtx context)
+        public ResultCode GetUserExistenceImpl(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId userId);
 
@@ -40,17 +40,17 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public static ResultCode ListAllUsers(ServiceCtx context)
+        public ResultCode ListAllUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
-        public static ResultCode ListOpenUsers(ServiceCtx context)
+        public ResultCode ListOpenUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetOpenedUsers());
         }
 
-        private static ResultCode WriteUserList(ServiceCtx context, IEnumerable<UserProfile> profiles)
+        private ResultCode WriteUserList(ServiceCtx context, IEnumerable<UserProfile> profiles)
         {
             if (context.Request.RecvListBuff.Count == 0)
             {
@@ -80,14 +80,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public static ResultCode GetLastOpenedUser(ServiceCtx context)
+        public ResultCode GetLastOpenedUser(ServiceCtx context)
         {
             context.Device.System.AccountManager.LastOpenedUser.UserId.Write(context.ResponseData);
 
             return ResultCode.Success;
         }
 
-        public static ResultCode GetProfile(ServiceCtx context, out IProfile profile)
+        public ResultCode GetProfile(ServiceCtx context, out IProfile profile)
         {
             profile = default;
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public static ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
+        public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
             if (context.Device.System.AccountManager.GetUserCount() < 1)
             {
@@ -168,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             await Task.CompletedTask;
         }
 
-        public static ResultCode StoreSaveDataThumbnail(ServiceCtx context)
+        public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId _);
 
@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public static ResultCode ClearSaveDataThumbnail(ServiceCtx context)
+        public ResultCode ClearSaveDataThumbnail(ServiceCtx context)
         {
             ResultCode resultCode = CheckUserId(context, out UserId _);
 
@@ -227,19 +227,19 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public static ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.AccountManager.GetStoredOpenedUsers());
         }
 
-        public static ResultCode ListQualifiedUsers(ServiceCtx context)
+        public ResultCode ListQualifiedUsers(ServiceCtx context)
         {
             // TODO: Determine how users are "qualified". We assume all users are "qualified" for now.
 
             return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
-        public static ResultCode CheckUserId(ServiceCtx context, out UserId userId)
+        public ResultCode CheckUserId(ServiceCtx context, out UserId userId)
         {
             userId = context.RequestData.ReadStruct<UserId>();
 

@@ -119,7 +119,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
         [CommandCmif(9)] // 10.0.0+
         // GetAddOnContentLostErrorCode() -> u64
-        public static ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
+        public ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
         {
             // NOTE: 0x7D0A4 -> 2164-1000
             context.ResponseData.Write(GetAddOnContentLostErrorCodeImpl(0x7D0A4));
@@ -187,7 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
         [CommandCmif(50)] // 13.0.0+
         // CheckAddOnContentMountStatus(pid)
-        public static ResultCode CheckAddOnContentMountStatus(ServiceCtx context)
+        public ResultCode CheckAddOnContentMountStatus(ServiceCtx context)
         {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
             ulong pid = context.Request.HandleDesc.PId;

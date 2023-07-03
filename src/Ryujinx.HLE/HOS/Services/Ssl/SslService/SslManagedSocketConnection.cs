@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         // NOTE: We silence warnings about TLS 1.0 and 1.1 as games will likely use it.
 #pragma warning disable SYSLIB0039
-        private static SslProtocols TranslateSslVersion(SslVersion version)
+        private SslProtocols TranslateSslVersion(SslVersion version)
         {
             return (version & SslVersion.VersionMask) switch
             {
@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             return 0;
         }
 
-        private static bool TryTranslateWinSockError(bool isBlocking, WsaError error, out ResultCode resultCode)
+        private bool TryTranslateWinSockError(bool isBlocking, WsaError error, out ResultCode resultCode)
         {
             switch (error)
             {

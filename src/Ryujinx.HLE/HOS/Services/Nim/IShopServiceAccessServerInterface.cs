@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim
 
         [CommandCmif(4)] // 10.0.0+
         // IsLargeResourceAvailable(pid) -> b8
-        public static ResultCode IsLargeResourceAvailable(ServiceCtx context)
+        public ResultCode IsLargeResourceAvailable(ServiceCtx context)
         {
             // TODO: Service calls arp:r GetApplicationInstanceId (10.0.0+) then if it fails it calls arp:r GetMicroApplicationInstanceId (10.0.0+)
             //       then if it fails it returns the arp:r result code.

@@ -62,9 +62,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         [CommandCmif(400)]
         // InitializeOld(u64, pid)
-        public static ResultCode InitializeOld(ServiceCtx context)
+        public ResultCode InitializeOld(ServiceCtx context)
         {
-            return NetworkInterface.Initialize(UnknownValue, 0, null, null);
+            return _networkInterface.Initialize(UnknownValue, 0, null, null);
         }
 
         [CommandCmif(401)]
@@ -76,13 +76,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         [CommandCmif(402)] // 7.0.0+
         // Initialize(u64 ip_addresses, u64, pid)
-        public static ResultCode Initialize(ServiceCtx context)
+        public ResultCode Initialize(ServiceCtx context)
         {
             // TODO(Ac_K): Determine what addresses are.
             IPAddress unknownAddress1 = new(context.RequestData.ReadUInt32());
             IPAddress unknownAddress2 = new(context.RequestData.ReadUInt32());
 
-            return NetworkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
+            return _networkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
         }
     }
 }

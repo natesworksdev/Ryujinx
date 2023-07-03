@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             _isSystem = isSystem;
         }
 
-        public static bool IsDatabaseTestModeEnabled()
+        public bool IsDatabaseTestModeEnabled()
         {
             if (NxSettings.Settings.TryGetValue("mii!is_db_test_mode_enabled", out object isDatabaseTestModeEnabled))
             {
@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         protected override void SetInterfaceVersion(uint interfaceVersion)
         {
-            DatabaseImpl.SetInterfaceVersion(_metadata, interfaceVersion);
+            _database.SetInterfaceVersion(_metadata, interfaceVersion);
         }
 
         protected override ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo)
@@ -260,7 +260,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         protected override ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
         {
-            return DatabaseImpl.ConvertCharInfoToCoreData(charInfo, out coreData);
+            return _database.ConvertCharInfoToCoreData(charInfo, out coreData);
         }
     }
 }

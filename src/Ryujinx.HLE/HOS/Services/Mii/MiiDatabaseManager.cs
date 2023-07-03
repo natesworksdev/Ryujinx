@@ -11,14 +11,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     class MiiDatabaseManager
     {
-        private static readonly bool _isTestModeEnabled = false;
-        private static uint _mountCounter = 0;
+        private readonly bool _isTestModeEnabled = false;
+        private uint _mountCounter = 0;
 
         private const ulong DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong DatabaseSaveDataId = 0x8000000000000030;
 
-        private static readonly U8String _databasePath = new("mii:/MiiDatabase.dat");
-        private static readonly U8String _mountName = new("mii");
+        private readonly U8String _databasePath = new("mii:/MiiDatabase.dat");
+        private readonly U8String _mountName = new("mii");
 
         private NintendoFigurineDatabase _database;
         private bool _isDirty;
@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return new DatabaseSessionMetadata(UpdateCounter, miiKeyCode);
         }
 
-        public static void SetInterfaceVersion(DatabaseSessionMetadata metadata, uint interfaceVersion)
+        public void SetInterfaceVersion(DatabaseSessionMetadata metadata, uint interfaceVersion)
         {
             metadata.InterfaceVersion = interfaceVersion;
         }

@@ -65,14 +65,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         [CommandCmif(3)]
         // LoadLocationNameList(u32 index) -> (u32 outCount, buffer<nn::time::LocationName, 6>)
-        public static ResultCode LoadLocationNameList(ServiceCtx context)
+        public ResultCode LoadLocationNameList(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
 
         [CommandCmif(4)]
         // LoadTimeZoneRule(nn::time::LocationName locationName) -> buffer<nn::time::TimeZoneRule, 0x16>
-        public static ResultCode LoadTimeZoneRule(ServiceCtx context)
+        public ResultCode LoadTimeZoneRule(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
@@ -175,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
         [CommandCmif(20)] // 9.0.0+
         // GetDeviceLocationNameOperationEventReadableHandle() -> handle<copy>
-        public static ResultCode GetDeviceLocationNameOperationEventReadableHandle(ServiceCtx context)
+        public ResultCode GetDeviceLocationNameOperationEventReadableHandle(ServiceCtx context)
         {
             return ResultCode.NotImplemented;
         }
@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             return resultCode;
         }
 
-        private static void WriteLocationName(ServiceCtx context, string locationName)
+        private void WriteLocationName(ServiceCtx context, string locationName)
         {
             char[] locationNameArray = locationName.ToCharArray();
 

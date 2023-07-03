@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
 
         [CommandCmif(1)]
         // GetTemperature(Location location) -> u32
-        public static ResultCode GetTemperature(ServiceCtx context)
+        public ResultCode GetTemperature(ServiceCtx context)
         {
             Location location = (Location)context.RequestData.ReadByte();
 
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
 
         [CommandCmif(3)]
         // GetTemperatureMilliC(Location location) -> u32
-        public static ResultCode GetTemperatureMilliC(ServiceCtx context)
+        public ResultCode GetTemperatureMilliC(ServiceCtx context)
         {
             Location location = (Location)context.RequestData.ReadByte();
 

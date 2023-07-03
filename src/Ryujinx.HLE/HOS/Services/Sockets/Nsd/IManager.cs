@@ -65,13 +65,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(11)]
         // GetEnvironmentIdentifier() -> buffer<bytes<8> environment_identifier, 0x16>
-        public static ResultCode GetEnvironmentIdentifier(ServiceCtx context)
+        public ResultCode GetEnvironmentIdentifier(ServiceCtx context)
         {
             (ulong outputPosition, ulong outputSize) = context.Request.GetBufferType0x22();
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-            ResultCode result = FqdnResolver.GetEnvironmentIdentifier(out string identifier);
+            ResultCode result = _fqdnResolver.GetEnvironmentIdentifier(out string identifier);
 
             if (result == ResultCode.Success)
             {
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(12)]
         // GetDeviceId() -> bytes<0x10, 1>
-        public static ResultCode GetDeviceId(ServiceCtx context)
+        public ResultCode GetDeviceId(ServiceCtx context)
         {
             // NOTE: Stubbed in system module.
 
@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(15)] // 4.0.0+
         // SetChangeEnvironmentIdentifierDisabled(bytes<1>)
-        public static ResultCode SetChangeEnvironmentIdentifierDisabled(ServiceCtx context)
+        public ResultCode SetChangeEnvironmentIdentifierDisabled(ServiceCtx context)
         {
             byte disabled = context.RequestData.ReadByte();
 
@@ -157,12 +157,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(20)]
         // Resolve(buffer<unknown<0x100>, 0x15>) -> buffer<unknown<0x100>, 0x16>
-        public static ResultCode Resolve(ServiceCtx context)
+        public ResultCode Resolve(ServiceCtx context)
         {
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode result = FqdnResolver.ResolveEx(context, out _, out string resolvedAddress);
+            ResultCode result = _fqdnResolver.ResolveEx(context, out _, out string resolvedAddress);
 
             if ((ulong)resolvedAddress.Length > outputSize)
             {
@@ -180,12 +180,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(21)]
         // ResolveEx(buffer<unknown<0x100>, 0x15>) -> (u32, buffer<unknown<0x100>, 0x16>)
-        public static ResultCode ResolveEx(ServiceCtx context)
+        public ResultCode ResolveEx(ServiceCtx context)
         {
             ulong outputPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputSize = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode result = FqdnResolver.ResolveEx(context, out ResultCode errorCode, out string resolvedAddress);
+            ResultCode result = _fqdnResolver.ResolveEx(context, out ResultCode errorCode, out string resolvedAddress);
 
             if ((ulong)resolvedAddress.Length > outputSize)
             {
@@ -346,7 +346,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(63)] // 4.0.0+
         // IsChangeEnvironmentIdentifierDisabled() -> bytes<1>
-        public static ResultCode IsChangeEnvironmentIdentifierDisabled(ServiceCtx context)
+        public ResultCode IsChangeEnvironmentIdentifierDisabled(ServiceCtx context)
         {
             // TODO: When sys:set service calls will be implemented use nn::settings::detail::GetServiceDiscoveryControlSettings()
 
@@ -361,12 +361,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
 
         [CommandCmif(100)] // 10.0.0+
         // GetApplicationServerEnvironmentType() -> bytes<1>
-        public static ResultCode GetApplicationServerEnvironmentType(ServiceCtx context)
+        public ResultCode GetApplicationServerEnvironmentType(ServiceCtx context)
         {
             // TODO: Mount the savedata 0x80000000000000B0 (nsdsave:/test_parameter) and returns the environment type stored inside if the mount succeed.
             //       Returns ResultCode.NullOutputObject if failed.
 
-            ResultCode result = FqdnResolver.GetEnvironmentIdentifier(out string identifier);
+            ResultCode result = _fqdnResolver.GetEnvironmentIdentifier(out string identifier);
 
             if (result != ResultCode.Success)
             {

@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(303)]
         // ApplyNpadSystemCommonPolicy(u64)
-        public static ResultCode ApplyNpadSystemCommonPolicy(ServiceCtx context)
+        public ResultCode ApplyNpadSystemCommonPolicy(ServiceCtx context)
         {
             ulong commonPolicy = context.RequestData.ReadUInt64();
 
@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(306)]
         // GetLastActiveNpad(u32) -> u8, u8
-        public static ResultCode GetLastActiveNpad(ServiceCtx context)
+        public ResultCode GetLastActiveNpad(ServiceCtx context)
         {
             // TODO: RequestData seems to have garbage data, reading an extra uint seems to fix the issue.
             context.RequestData.ReadUInt32();
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(307)]
         // GetNpadSystemExtStyle() -> u64
-        public static ResultCode GetNpadSystemExtStyle(ServiceCtx context)
+        public ResultCode GetNpadSystemExtStyle(ServiceCtx context)
         {
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
             {
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         [CommandCmif(314)] // 9.0.0+
         // GetAppletFooterUiType(u32) -> u8
-        public static ResultCode GetAppletFooterUiType(ServiceCtx context)
+        public ResultCode GetAppletFooterUiType(ServiceCtx context)
         {
             ResultCode resultCode = GetAppletFooterUiTypeImpl(context, out AppletFooterUiType appletFooterUiType);
 
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return resultCode;
         }
 
-        private static ResultCode GetAppletFooterUiTypeImpl(ServiceCtx context, out AppletFooterUiType appletFooterUiType)
+        private ResultCode GetAppletFooterUiTypeImpl(ServiceCtx context, out AppletFooterUiType appletFooterUiType)
         {
             NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadUInt32();
             PlayerIndex playerIndex = HidUtils.GetIndexFromNpadIdType(npadIdType);

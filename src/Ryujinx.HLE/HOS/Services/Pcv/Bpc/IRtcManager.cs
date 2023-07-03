@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv.Bpc
 
         [CommandCmif(0)]
         // GetRtcTime() -> u64
-        public static ResultCode GetRtcTime(ServiceCtx context)
+        public ResultCode GetRtcTime(ServiceCtx context)
         {
             ResultCode result = GetExternalRtcValue(out ulong rtcValue);
 

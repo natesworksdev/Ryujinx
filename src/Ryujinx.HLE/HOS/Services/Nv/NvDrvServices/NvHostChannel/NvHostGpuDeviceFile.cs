@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             _errorNotifierEvent = CreateEvent(context, out _errorNotifierEventHandle);
         }
 
-        private static KEvent CreateEvent(ServiceCtx context, out int handle)
+        private KEvent CreateEvent(ServiceCtx context, out int handle)
         {
             KEvent evnt = new(context.Device.System.KernelContext);
 

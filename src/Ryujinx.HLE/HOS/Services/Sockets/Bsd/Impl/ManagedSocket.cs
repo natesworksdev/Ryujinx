@@ -367,7 +367,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             return Send(out writeSize, buffer, BsdSocketFlags.None);
         }
 
-        private static bool CanSupportMMsgHdr(BsdMMsgHdr message)
+        private bool CanSupportMMsgHdr(BsdMMsgHdr message)
         {
             for (int i = 0; i < message.Messages.Length; i++)
             {
@@ -462,7 +462,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
             if (!CanSupportMMsgHdr(message))
             {
-                Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported BsdMMsgHdr");
+                Logger.Warning?.Print(LogClass.ServiceBsd, "Unsupported BsdMMsgHdr");
 
                 return LinuxError.EOPNOTSUPP;
             }
@@ -500,7 +500,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
             if (!CanSupportMMsgHdr(message))
             {
-                Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported BsdMMsgHdr");
+                Logger.Warning?.Print(LogClass.ServiceBsd, "Unsupported BsdMMsgHdr");
 
                 return LinuxError.EOPNOTSUPP;
             }

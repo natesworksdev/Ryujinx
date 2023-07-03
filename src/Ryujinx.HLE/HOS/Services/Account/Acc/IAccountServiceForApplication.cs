@@ -16,44 +16,44 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(0)]
         // GetUserCount() -> i32
-        public static ResultCode GetUserCount(ServiceCtx context)
+        public ResultCode GetUserCount(ServiceCtx context)
         {
-            return ApplicationServiceServer.GetUserCountImpl(context);
+            return _applicationServiceServer.GetUserCountImpl(context);
         }
 
         [CommandCmif(1)]
         // GetUserExistence(nn::account::Uid) -> bool
-        public static ResultCode GetUserExistence(ServiceCtx context)
+        public ResultCode GetUserExistence(ServiceCtx context)
         {
-            return ApplicationServiceServer.GetUserExistenceImpl(context);
+            return _applicationServiceServer.GetUserExistenceImpl(context);
         }
 
         [CommandCmif(2)]
         // ListAllUsers() -> array<nn::account::Uid, 0xa>
-        public static ResultCode ListAllUsers(ServiceCtx context)
+        public ResultCode ListAllUsers(ServiceCtx context)
         {
-            return ApplicationServiceServer.ListAllUsers(context);
+            return _applicationServiceServer.ListAllUsers(context);
         }
 
         [CommandCmif(3)]
         // ListOpenUsers() -> array<nn::account::Uid, 0xa>
-        public static ResultCode ListOpenUsers(ServiceCtx context)
+        public ResultCode ListOpenUsers(ServiceCtx context)
         {
-            return ApplicationServiceServer.ListOpenUsers(context);
+            return _applicationServiceServer.ListOpenUsers(context);
         }
 
         [CommandCmif(4)]
         // GetLastOpenedUser() -> nn::account::Uid
-        public static ResultCode GetLastOpenedUser(ServiceCtx context)
+        public ResultCode GetLastOpenedUser(ServiceCtx context)
         {
-            return ApplicationServiceServer.GetLastOpenedUser(context);
+            return _applicationServiceServer.GetLastOpenedUser(context);
         }
 
         [CommandCmif(5)]
         // GetProfile(nn::account::Uid) -> object<nn::account::profile::IProfile>
         public ResultCode GetProfile(ServiceCtx context)
         {
-            ResultCode resultCode = ApplicationServiceServer.GetProfile(context, out IProfile iProfile);
+            ResultCode resultCode = _applicationServiceServer.GetProfile(context, out IProfile iProfile);
 
             if (resultCode == ResultCode.Success)
             {
@@ -73,16 +73,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(51)]
         // TrySelectUserWithoutInteraction(bool) -> nn::account::Uid
-        public static ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
+        public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
-            return ApplicationServiceServer.TrySelectUserWithoutInteraction(context);
+            return _applicationServiceServer.TrySelectUserWithoutInteraction(context);
         }
 
         [CommandCmif(100)]
         [CommandCmif(140)] // 6.0.0+
         [CommandCmif(160)] // 13.0.0+
         // InitializeApplicationInfo(u64 pid_placeholder, pid)
-        public static ResultCode InitializeApplicationInfo(ServiceCtx context)
+        public ResultCode InitializeApplicationInfo(ServiceCtx context)
         {
             // NOTE: In call 100, account service use the pid_placeholder instead of the real pid, which is wrong, call 140 fix that.
 
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetBaasAccountManagerForApplication(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode GetBaasAccountManagerForApplication(ServiceCtx context)
         {
-            ResultCode resultCode = ApplicationServiceServer.CheckUserId(context, out UserId userId);
+            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
 
             if (resultCode != ResultCode.Success)
             {
@@ -140,23 +140,23 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         [CommandCmif(110)]
         // StoreSaveDataThumbnail(nn::account::Uid, buffer<bytes, 5>)
-        public static ResultCode StoreSaveDataThumbnail(ServiceCtx context)
+        public ResultCode StoreSaveDataThumbnail(ServiceCtx context)
         {
-            return ApplicationServiceServer.StoreSaveDataThumbnail(context);
+            return _applicationServiceServer.StoreSaveDataThumbnail(context);
         }
 
         [CommandCmif(111)]
         // ClearSaveDataThumbnail(nn::account::Uid)
-        public static ResultCode ClearSaveDataThumbnail(ServiceCtx context)
+        public ResultCode ClearSaveDataThumbnail(ServiceCtx context)
         {
-            return ApplicationServiceServer.ClearSaveDataThumbnail(context);
+            return _applicationServiceServer.ClearSaveDataThumbnail(context);
         }
 
         [CommandCmif(130)] // 5.0.0+
         // LoadOpenContext(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode LoadOpenContext(ServiceCtx context)
         {
-            ResultCode resultCode = ApplicationServiceServer.CheckUserId(context, out UserId userId);
+            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
 
             if (resultCode != ResultCode.Success)
             {
@@ -171,21 +171,21 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         [CommandCmif(60)] // 5.0.0-5.1.0
         [CommandCmif(131)] // 6.0.0+
         // ListOpenContextStoredUsers() -> array<nn::account::Uid, 0xa>
-        public static ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
         {
-            return ApplicationServiceServer.ListOpenContextStoredUsers(context);
+            return _applicationServiceServer.ListOpenContextStoredUsers(context);
         }
 
         [CommandCmif(141)] // 6.0.0+
         // ListQualifiedUsers() -> array<nn::account::Uid, 0xa>
-        public static ResultCode ListQualifiedUsers(ServiceCtx context)
+        public ResultCode ListQualifiedUsers(ServiceCtx context)
         {
-            return ApplicationServiceServer.ListQualifiedUsers(context);
+            return _applicationServiceServer.ListQualifiedUsers(context);
         }
 
         [CommandCmif(150)] // 6.0.0+
         // IsUserAccountSwitchLocked() -> bool
-        public static ResultCode IsUserAccountSwitchLocked(ServiceCtx context)
+        public ResultCode IsUserAccountSwitchLocked(ServiceCtx context)
         {
             // TODO: Account actually calls nn::arp::detail::IReader::GetApplicationControlProperty() with the current Pid and store the result (NACP file) internally.
             //       But since we use LibHac and we load one Application at a time, it's not necessary.

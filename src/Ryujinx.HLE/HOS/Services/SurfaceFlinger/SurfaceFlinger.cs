@@ -491,7 +491,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             ReleaseBuffer((TextureCallbackInformation)obj);
         }
 
-        private static void ReleaseBuffer(TextureCallbackInformation information)
+        private void ReleaseBuffer(TextureCallbackInformation information)
         {
             AndroidFence fence = AndroidFence.NoFence;
 
