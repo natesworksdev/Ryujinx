@@ -773,7 +773,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             return hashCode.ToHashCode();
         }
 
-        private ReadOnlySpan<ElementInfo> ElementInfos => MemoryMarshal.Cast<byte, ElementInfo>(ElementInfoArray);
+        private readonly ReadOnlySpan<ElementInfo> ElementInfos => MemoryMarshal.Cast<byte, ElementInfo>(ElementInfoArray);
 
         private enum ElementInfoIndex
         {
@@ -829,7 +829,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         }
 
         #region "Element Info Array"
-        private ReadOnlySpan<byte> ElementInfoArray => new byte[]
+        private readonly ReadOnlySpan<byte> ElementInfoArray => new byte[]
         {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x83, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

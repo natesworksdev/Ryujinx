@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     [Service("bsd:u", false)]
     class IClient : IpcService
     {
-        private static readonly List<IPollManager> _pollManagers = new List<IPollManager>
+        private static readonly List<IPollManager> _pollManagers = new()
         {
             EventFileDescriptorPollManager.Instance,
             ManagedSocketPollManager.Instance,
@@ -387,7 +387,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (fdsCount != 0)
             {
-                bool IsUnexpectedLinuxError(LinuxError error)
+                static bool IsUnexpectedLinuxError(LinuxError error)
                 {
                     return error != LinuxError.SUCCESS && error != LinuxError.ETIMEDOUT;
                 }

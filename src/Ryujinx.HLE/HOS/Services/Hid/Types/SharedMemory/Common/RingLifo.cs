@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ulong GetNextIndexForWrite(ulong index)
+        private readonly ulong GetNextIndexForWrite(ulong index)
         {
             return (index + 1) % MaxEntries;
         }

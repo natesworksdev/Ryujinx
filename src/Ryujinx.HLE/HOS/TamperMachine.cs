@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        private bool IsProcessValid(ITamperedProcess process)
+        private static bool IsProcessValid(ITamperedProcess process)
         {
             return process.State != ProcessState.Crashed && process.State != ProcessState.Exiting && process.State != ProcessState.Exited;
         }
