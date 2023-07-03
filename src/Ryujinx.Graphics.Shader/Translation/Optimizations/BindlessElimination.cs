@@ -232,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
                 else if (texOp.Type == SamplerType.TextureBuffer && newType == SamplerType.Texture1D)
                 {
-                    int coordsCount = 1;
+                    int coordsCount = 2;
 
                     if (InstEmit.Sample1DAs2D)
                     {
