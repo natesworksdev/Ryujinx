@@ -63,6 +63,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 Bindings = new BufferDescriptor[count];
                 Buffers = new BufferBounds[count];
                 Unaligned = new bool[count];
+
+                Buffers.AsSpan().Fill(new BufferBounds(new MultiRange(MemoryManager.PteUnmapped, 0UL)));
             }
 
             /// <summary>
