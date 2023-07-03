@@ -43,10 +43,7 @@ namespace Ryujinx.Memory.Range
         /// <exception cref="ArgumentNullException"><paramref name="ranges"/> is null</exception>
         public MultiRange(MemoryRange[] ranges)
         {
-            if (ranges == null)
-            {
-                throw new ArgumentNullException(nameof(ranges));
-            }
+            ArgumentNullException.ThrowIfNull(ranges);
 
             if (ranges.Length == 1)
             {
