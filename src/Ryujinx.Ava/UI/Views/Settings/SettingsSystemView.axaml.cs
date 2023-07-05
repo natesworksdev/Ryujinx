@@ -2,7 +2,6 @@
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Ryujinx.Ava.UI.ViewModels;
-using System;
 using System.Linq;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 

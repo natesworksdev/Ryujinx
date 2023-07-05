@@ -22,7 +22,6 @@ using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;

@@ -4,7 +4,6 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using System;
-using System.ComponentModel;
 
 namespace Ryujinx.Ava.UI.Windows
 {

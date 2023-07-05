@@ -1,6 +1,4 @@
-using Avalonia.Data;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Collections.Generic;
