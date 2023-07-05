@@ -260,11 +260,7 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetScalingFilter()
         {
-            if (ScalingFilter.ToLower() == "bilinear")
-            {
-                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)0);
-            }
-            else if (ScalingFilter.ToLower() == "nearest")
+            if (ScalingFilter.ToLower() == "nearest")
             {
                 Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)1);
             }
@@ -273,15 +269,16 @@ namespace Ryujinx.Headless.SDL2
                 Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)2);
                 Renderer?.Window.SetScalingFilterLevel(ScalingFilterLevel);
             }
+            else
+            {
+                // bilinear
+                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)0);
+            }
         }
 
         private void SetAntiAliasing()
         {
-            if (AntiAliasing.ToLower() == "none")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)0);
-            }
-            else if (AntiAliasing.ToLower() == "fxaa")
+            if (AntiAliasing.ToLower() == "fxaa")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)1);
             }
@@ -300,6 +297,11 @@ namespace Ryujinx.Headless.SDL2
             else if (AntiAliasing.ToLower() == "smaa ultra")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)5);
+            }
+            else
+            {
+                // none
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)0);
             }
         }
 
