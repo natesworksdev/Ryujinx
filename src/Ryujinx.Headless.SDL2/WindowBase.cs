@@ -56,6 +56,7 @@ namespace Ryujinx.Headless.SDL2
         public int Width { get; private set; }
         public int Height { get; private set; }
         public bool IsFullscreen { get; set; }
+        public int FullscreenDisplayId { get; set; }
         public bool IsExclusiveFullscreen { get; set; }
         public int ExclusiveFullscreenWidth { get; set; }
         public int ExclusiveFullscreenHeight { get; set; }
@@ -167,22 +168,20 @@ namespace Ryujinx.Headless.SDL2
                 SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", 0, 0, ExclusiveFullscreenWidth, ExclusiveFullscreenHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), ExclusiveFullscreenWidth, ExclusiveFullscreenHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
-
             else if (IsFullscreen)
             {
                 SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
-
             else
             {
                 SDL_WindowFlags fullscreenFlag = 0;
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
             }
 
             if (WindowHandle == IntPtr.Zero)
@@ -204,7 +203,6 @@ namespace Ryujinx.Headless.SDL2
                 Width = ExclusiveFullscreenWidth;
                 Height = ExclusiveFullscreenHeight;
             }
-
             else
             {
                 Width = DefaultWidth;
