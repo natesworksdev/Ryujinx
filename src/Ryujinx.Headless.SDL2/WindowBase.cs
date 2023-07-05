@@ -260,15 +260,15 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetScalingFilter()
         {
-            if (ScalingFilter == "Bilinear")
+            if (ScalingFilter.ToLower() == "bilinear")
             {
                 Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)0);
             }
-            else if (ScalingFilter == "Nearest")
+            else if (ScalingFilter.ToLower() == "nearest")
             {
                 Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)1);
             }
-            else if (ScalingFilter == "FSR")
+            else if (ScalingFilter.ToLower() == "fsr")
             {
                 Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)2);
                 Renderer?.Window.SetScalingFilterLevel(ScalingFilterLevel);
@@ -277,27 +277,27 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetAntiAliasing()
         {
-            if (AntiAliasing == "None")
+            if (AntiAliasing.ToLower() == "none")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)0);
             }
-            else if (AntiAliasing == "FXAA")
+            else if (AntiAliasing.ToLower() == "fxaa")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)1);
             }
-            else if (AntiAliasing == "SMAA Low")
+            else if (AntiAliasing.ToLower() == "smaa Low")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)2);
             }
-            else if (AntiAliasing == "SMAA Medium")
+            else if (AntiAliasing.ToLower() == "smaa medium")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)3);
             }
-            else if (AntiAliasing == "SMAA High")
+            else if (AntiAliasing.ToLower() == "smaa high")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)4);
             }
-            else if (AntiAliasing == "SMAA Ultra")
+            else if (AntiAliasing.ToLower() == "smaa ultra")
             {
                 Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)5);
             }
