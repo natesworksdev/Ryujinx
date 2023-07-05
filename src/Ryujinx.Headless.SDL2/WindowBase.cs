@@ -164,7 +164,7 @@ namespace Ryujinx.Headless.SDL2
 
             if (IsExclusiveFullscreen)
             {
-                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS | SDL_WindowFlags.SDL_WINDOW_SHOWN;
+                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
 
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", 0, 0, ExclusiveFullscreenWidth, ExclusiveFullscreenHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
@@ -172,6 +172,7 @@ namespace Ryujinx.Headless.SDL2
 
             else if (IsFullscreen)
             {
+                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
                 SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
 
                 WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
@@ -219,10 +220,16 @@ namespace Ryujinx.Headless.SDL2
                 switch (evnt.window.windowEvent)
                 {
                     case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-                        Width = evnt.window.data1;
-                        Height = evnt.window.data2;
-                        Renderer?.Window.SetSize(Width, Height);
-                        MouseDriver.SetClientSize(Width, Height);
+                        // Unlike on Windows, this event fires on macOS when triggering fullscreen mode.
+                        // And promptly crashes the process because `Renderer?.window.SetSize` is undefined.
+                        // As we don't need this to fire in either case we can test for fullscreen.
+                        if (!IsFullscreen || !IsExclusiveFullscreen)
+                        {
+                            Width = evnt.window.data1;
+                            Height = evnt.window.data2;
+                            Renderer?.Window.SetSize(Width, Height);
+                            MouseDriver.SetClientSize(Width, Height);
+                        }
                         break;
 
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
