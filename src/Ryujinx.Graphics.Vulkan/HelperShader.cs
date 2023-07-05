@@ -69,40 +69,40 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programColorBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, blitResourceLayout);
 
             _programColorBlitMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, blitResourceLayout);
 
             _programColorBlitClearAlpha = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorBlitClearAlphaFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitClearAlphaFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, blitResourceLayout);
 
             var colorClearResourceLayout = new ResourceLayoutBuilder().Add(ResourceStages.Vertex, ResourceType.UniformBuffer, 1).Build();
 
             _programColorClearF = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorClearFFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearFFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorClearResourceLayout);
 
             _programColorClearSI = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorClearSIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearSIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorClearResourceLayout);
 
             _programColorClearUI = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorClearUIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearUIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorClearResourceLayout);
 
             var strideChangeResourceLayout = new ResourceLayoutBuilder()
@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programStrideChange = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Change", "ChangeBufferStride.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ChangeBufferStride.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, strideChangeResourceLayout);
 
             var colorCopyResourceLayout = new ResourceLayoutBuilder()
@@ -122,17 +122,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programColorCopyShortening = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorCopyShorteningCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorCopyShorteningCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, colorCopyResourceLayout);
 
             _programColorCopyToNonMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorCopyToNonMsCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorCopyToNonMsCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, colorCopyResourceLayout);
 
             _programColorCopyWidening = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorCopyWideningCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorCopyWideningCompute.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, colorCopyResourceLayout);
 
             var colorDrawToMsResourceLayout = new ResourceLayoutBuilder()
@@ -141,8 +141,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programColorDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Color", "ColorDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorDrawToMsResourceLayout);
 
             var convertD32S8ToD24S8ResourceLayout = new ResourceLayoutBuilder()
@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertD32S8ToD24S8 = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Convert", "ConvertD32S8ToD24S8.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ConvertD32S8ToD24S8.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, convertD32S8ToD24S8ResourceLayout);
 
             var convertIndexBufferResourceLayout = new ResourceLayoutBuilder()
@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertIndexBuffer = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Convert", "ConvertIndexBuffer.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ConvertIndexBuffer.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, convertIndexBufferResourceLayout);
 
             var convertIndirectDataResourceLayout = new ResourceLayoutBuilder()
@@ -173,64 +173,64 @@ namespace Ryujinx.Graphics.Vulkan
 
             _programConvertIndirectData = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Convert", "ConvertIndirectData.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ConvertIndirectData.spv"), ShaderStage.Compute, TargetLanguage.Spirv),
             }, convertIndirectDataResourceLayout);
 
             _programDepthBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Depth", "DepthBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("DepthBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, blitResourceLayout);
 
             _programDepthBlitMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Depth", "DepthBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("DepthBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, blitResourceLayout);
 
             _programDepthDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Depth", "DepthDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("DepthDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorDrawToMsResourceLayout);
 
             _programDepthDrawToNonMs = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ReadSpirv("Color", "ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("Depth", "DepthDrawToNonMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("DepthDrawToNonMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorDrawToMsResourceLayout);
 
             if (gd.Capabilities.SupportsShaderStencilExport)
             {
                 _programStencilBlit = gd.CreateProgramWithMinimalLayout(new[]
                 {
-                    new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ReadSpirv("Stencil", "StencilBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("StencilBlitFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
                 }, blitResourceLayout);
 
                 _programStencilBlitMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
-                    new ShaderSource(ReadSpirv("Color", "ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ReadSpirv("Stencil", "StencilBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("ColorBlitVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("StencilBlitMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
                 }, blitResourceLayout);
 
                 _programStencilDrawToMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
-                    new ShaderSource(ReadSpirv("Color", "ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ReadSpirv("Stencil", "StencilDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("StencilDrawToMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
                 }, colorDrawToMsResourceLayout);
 
                 _programStencilDrawToNonMs = gd.CreateProgramWithMinimalLayout(new[]
                 {
-                    new ShaderSource(ReadSpirv("Color", "ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                    new ShaderSource(ReadSpirv("Stencil", "StencilDrawToNonMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("ColorDrawToMsVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
+                    new ShaderSource(ReadSpirv("StencilDrawToNonMsFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
                 }, colorDrawToMsResourceLayout);
             }
         }
 
-        private static byte[] ReadSpirv(string folder, string fileName)
+        private static byte[] ReadSpirv(string fileName)
         {
-            return EmbeddedResources.Read(string.Join('/', ShaderBinariesPath, folder, fileName));
+            return EmbeddedResources.Read(string.Join('/', ShaderBinariesPath, fileName));
         }
 
         public void Blit(
