@@ -60,6 +60,9 @@ namespace Ryujinx.Headless.SDL2
         public bool IsExclusiveFullscreen { get; set; }
         public int ExclusiveFullscreenWidth { get; set; }
         public int ExclusiveFullscreenHeight { get; set; }
+        public string AntiAliasing {get; set; }
+        public string ScalingFilter { get; set; }
+        public int ScalingFilterLevel { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
         private readonly InputManager _inputManager;
@@ -165,23 +168,34 @@ namespace Ryujinx.Headless.SDL2
 
             if (IsExclusiveFullscreen)
             {
-                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
-                SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
+                Width = ExclusiveFullscreenWidth;
+                Height = ExclusiveFullscreenHeight;
+            }
+            else
+            {
+                Width = DefaultWidth;
+                Height = DefaultHeight;
+            }
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), ExclusiveFullscreenWidth, ExclusiveFullscreenHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+            if (IsExclusiveFullscreen)
+            {
+                SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
+                SDL_WindowFlags FullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
+
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
             }
             else if (IsFullscreen)
             {
                 SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI;
-                SDL_WindowFlags fullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+                SDL_WindowFlags FullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
             }
             else
             {
-                SDL_WindowFlags fullscreenFlag = 0;
+                SDL_WindowFlags FullscreenFlag = 0;
 
-                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), DefaultWidth, DefaultHeight, DefaultFlags | fullscreenFlag | GetWindowFlags());
+                WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
             }
 
             if (WindowHandle == IntPtr.Zero)
@@ -197,18 +211,6 @@ namespace Ryujinx.Headless.SDL2
 
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
-
-            if (IsExclusiveFullscreen)
-            {
-                Width = ExclusiveFullscreenWidth;
-                Height = ExclusiveFullscreenHeight;
-            }
-            else
-            {
-                Width = DefaultWidth;
-                Height = DefaultHeight;
-            }
-
         }
 
         private void HandleWindowEvent(SDL_Event evnt)
@@ -256,6 +258,51 @@ namespace Ryujinx.Headless.SDL2
             return Renderer.GetHardwareInfo().GpuVendor;
         }
 
+        private void SetScalingFilter()
+        {
+            if (ScalingFilter == "Bilinear")
+            {
+                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)0);
+            }
+            else if (ScalingFilter == "Nearest")
+            {
+                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)1);
+            }
+            else if (ScalingFilter == "FSR")
+            {
+                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)2);
+                Renderer?.Window.SetScalingFilterLevel(ScalingFilterLevel);
+            }
+        }
+
+        private void SetAntiAliasing()
+        {
+            if (AntiAliasing == "None")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)0);
+            }
+            else if (AntiAliasing == "FXAA")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)1);
+            }
+            else if (AntiAliasing == "SMAA Low")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)2);
+            }
+            else if (AntiAliasing == "SMAA Medium")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)3);
+            }
+            else if (AntiAliasing == "SMAA High")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)4);
+            }
+            else if (AntiAliasing == "SMAA Ultra")
+            {
+                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)5);
+            }
+        }
+
         public void Render()
         {
             InitializeWindowRenderer();
@@ -263,6 +310,10 @@ namespace Ryujinx.Headless.SDL2
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
             InitializeRenderer();
+
+            SetScalingFilter();
+
+            SetAntiAliasing();
 
             _gpuVendorName = GetGpuVendorName();
 

@@ -208,6 +208,15 @@ namespace Ryujinx.Headless.SDL2
         [Option("preferred-gpu-vendor", Required = false, Default = "", HelpText = "When using the Vulkan backend, prefer using the GPU from the specified vendor.")]
         public string PreferredGPUVendor { get; set; }
 
+        [Option("anti-aliasing", Required = false, Default = "None", HelpText = "Set the type of anti aliasing being used. [None|FXAA|SMAA Low|SMAA Medium|SMAA High|SMAA Ultra]")]
+        public string AntiAliasing { get; set; }
+
+        [Option("scaling-filter", Required = false, Default = "Bilinear", HelpText = "Set the scaling filter. [Bilinear(=default)|Nearest|FSR]")]
+        public string ScalingFilter { get; set; }
+
+        [Option("scaling-filter-level", Required = false, Default = 0, HelpText = "Set the scaling filter intensity (only applies to FSR). [0-100]")]
+        public int ScalingFilterLevel { get; set; }
+
         // Hacks
 
         [Option("expand-ram", Required = false, Default = false, HelpText = "Expands the RAM amount on the emulated system from 4GiB to 6GiB.")]

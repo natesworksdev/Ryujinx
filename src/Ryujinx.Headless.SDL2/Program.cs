@@ -600,6 +600,9 @@ namespace Ryujinx.Headless.SDL2
             _window.IsExclusiveFullscreen = options.IsExclusiveFullscreen;
             _window.ExclusiveFullscreenWidth = options.ExclusiveFullscreenWidth;
             _window.ExclusiveFullscreenHeight = options.ExclusiveFullscreenHeight;
+            _window.AntiAliasing = options.AntiAliasing;
+            _window.ScalingFilter = options.ScalingFilter;
+            _window.ScalingFilterLevel = options.ScalingFilterLevel;
 
             _emulationContext = InitializeEmulationContext(window, renderer, options);
 
