@@ -156,18 +156,14 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                 Renderer?.Window.SetSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
                 MouseDriver.SetClientSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
             }
-
             else if (IsFullscreen)
             {
-                // NOTE: grabbing the main display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
-                // we might have to amend this if people run this on a non-primary display set to a different resolution.
-                SDL_Rect displayBounds;
-                SDL_GetDisplayBounds(0, out displayBounds);
+                // NOTE: grabbing the active display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
+                SDL_GetDisplayBounds(FullscreenDisplayId, out SDL_Rect displayBounds);
 
                 Renderer?.Window.SetSize(displayBounds.w, displayBounds.h);
                 MouseDriver.SetClientSize(displayBounds.w, displayBounds.h);
             }
-
             else
             {
                 Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
