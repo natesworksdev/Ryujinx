@@ -1,5 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -73,6 +76,52 @@ namespace Ryujinx.Common.SystemInfo
             string name = Encoding.ASCII.GetString(MemoryMarshal.Cast<int, byte>(regs)).Replace('\0', ' ').Trim();
 
             return string.IsNullOrEmpty(name) ? null : name;
+        }
+
+        public static int GetPhysicalCoreCount()
+        {
+            int coreCount = Environment.ProcessorCount;
+                
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    coreCount = 0;
+                    foreach (var item in new System.Management.ManagementObjectSearcher("Select NumberOfCores from Win32_Processor").Get())
+                    {
+                        coreCount += int.Parse(item["NumberOfCores"].ToString());
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    coreCount = File.ReadLines("/proc/cpuinfo")
+                        .Count(line => line.Contains("cpu cores"));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "sysctl",
+                            Arguments = "-n hw.physicalcpu",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
+                        }
+                    };
+
+                    process.Start();
+                    coreCount = int.Parse(process.StandardOutput.ReadToEnd());
+                    process.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while trying to get the physical core count: " + ex.Message);
+            }
+
+            return coreCount;
         }
     }
 }

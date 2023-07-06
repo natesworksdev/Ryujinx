@@ -10,6 +10,7 @@ using ARMeilleure.State;
 using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
 using Ryujinx.Common;
+using Ryujinx.Common.SystemInfo;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -103,6 +104,7 @@ namespace ARMeilleure.Translation
 
         public void Execute(State.ExecutionContext context, ulong address)
         {
+            int physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
                 IsReadyForTranslation.WaitOne();
@@ -122,10 +124,7 @@ namespace ARMeilleure.Translation
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
                 // as the os lets it with a low priority. If we only have one rejit thread, it should be normal priority
                 // as highCq code is performance critical.
-                //
-                // TODO: Use physical cores rather than logical. This only really makes sense for processors with
-                // hyperthreading. Requires OS specific code.
-                int unboundedThreadCount = Math.Max(1, (Environment.ProcessorCount - 6) / 3);
+                int unboundedThreadCount = Math.Max(1, (physicalCoreCount - 6) / 3);
                 int threadCount = Math.Min(4, unboundedThreadCount);
 
                 Thread[] backgroundTranslationThreads = new Thread[threadCount];
