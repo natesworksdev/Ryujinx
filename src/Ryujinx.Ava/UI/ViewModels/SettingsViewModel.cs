@@ -112,9 +112,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public static bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
+        public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
 
-        public static bool IsHypervisorAvailable => OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+        public bool IsHypervisorAvailable => OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
 
         public bool DirectoryChanged
         {
@@ -127,7 +127,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public static bool IsMacOS => OperatingSystem.IsMacOS();
+        public bool IsMacOS => OperatingSystem.IsMacOS();
 
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
@@ -560,7 +560,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _directoryChanged = false;
         }
 
-        public static void RevertIfNotSaved()
+        private static void RevertIfNotSaved()
         {
             Program.ReloadConfig();
         }
