@@ -94,8 +94,18 @@ namespace Ryujinx.Common.SystemInfo
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    coreCount = File.ReadLines("/proc/cpuinfo")
-                        .Count(line => line.Contains("cpu cores"));
+                    string cpuCoresLine = File.ReadLines("/proc/cpuinfo")
+                        .FirstOrDefault(line => line.Contains("cpu cores"));
+
+                    if (cpuCoresLine != null)
+                    {
+                        string[] parts = cpuCoresLine.Split(':');
+                        if (parts.Length == 2 && int.TryParse(parts[1].Trim(), out int cores))
+                        {
+                            coreCount = cores;
+                            Console.WriteLine("Number of physical cores: " + coreCount);
+                        }
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
