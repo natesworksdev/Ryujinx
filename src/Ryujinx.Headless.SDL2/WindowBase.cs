@@ -223,7 +223,7 @@ namespace Ryujinx.Headless.SDL2
                         // Unlike on Windows, this event fires on macOS when triggering fullscreen mode.
                         // And promptly crashes the process because `Renderer?.window.SetSize` is undefined.
                         // As we don't need this to fire in either case we can test for fullscreen.
-                        if (!IsFullscreen || !IsExclusiveFullscreen)
+                        if (!IsFullscreen && !IsExclusiveFullscreen)
                         {
                             Width = evnt.window.data1;
                             Height = evnt.window.data2;
