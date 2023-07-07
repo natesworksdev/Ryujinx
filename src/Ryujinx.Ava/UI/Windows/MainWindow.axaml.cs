@@ -386,7 +386,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (CheckScreenBounds(SavedPoint))
             {
-                Position = savedPoint;
+                Position = SavedPoint;
             }
             else
             {

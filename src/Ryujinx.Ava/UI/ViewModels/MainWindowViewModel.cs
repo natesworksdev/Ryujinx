@@ -1440,6 +1440,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                             "application/x-nx-nso"
                         }
                     }
+                }
             });
 
             if (result.Count > 0)

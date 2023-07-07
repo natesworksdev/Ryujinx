@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
         public SettingsHotkeysView()
         {
             InitializeComponent();
-            _avaloniaKeyboardDriver = new AvaloniaKeyboardDriver(this);
+            AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(this);
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)
@@ -46,7 +46,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
 
                     PointerPressed += MouseClick;
 
-                    var keyboard = (IKeyboard)_avaloniaKeyboardDriver.GetGamepad(_avaloniaKeyboardDriver.GamepadsIds[0]);
+                    var keyboard = (IKeyboard)AvaloniaKeyboardDriver.GetGamepad(AvaloniaKeyboardDriver.GamepadsIds[0]);
                     IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
 
                     _currentAssigner.GetInputAndAssign(assigner);

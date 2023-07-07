@@ -92,13 +92,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public IStorageProvider StorageProvider;
 
-        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
+        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             _virtualFileSystem = virtualFileSystem;
 
             _titleId = titleId;
 
-            if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 StorageProvider = desktop.MainWindow.StorageProvider;
             }

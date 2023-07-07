@@ -202,7 +202,7 @@ namespace Ryujinx.Ava
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
                 var point = e.GetCurrentPoint(window).Position;
-                var bounds = _rendererHost.EmbeddedWindow.Bounds;
+                var bounds = RendererHost.EmbeddedWindow.Bounds;
 
                 _isCursorInRenderer = point.X >= bounds.X &&
                                       point.X <= bounds.Width + bounds.X &&
@@ -352,7 +352,7 @@ namespace Ryujinx.Ava
 
             _viewModel.SetUiProgressHandlers(Device);
 
-            _rendererHost.BoundsChanged += WindowBoundsChanged;
+            RendererHost.BoundsChanged += WindowBoundsChanged;
 
             _isActive = true;
 
