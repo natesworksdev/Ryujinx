@@ -247,7 +247,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public AvaloniaList<string> NetworkInterfaceList
         {
-            get => new AvaloniaList<string>(_networkInterfaces.Keys);
+            get => new(_networkInterfaces.Keys);
         }
 
         public KeyboardHotkeys KeyboardHotkeys
@@ -560,7 +560,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _directoryChanged = false;
         }
 
-        public void RevertIfNotSaved()
+        private static void RevertIfNotSaved()
         {
             Program.ReloadConfig();
         }

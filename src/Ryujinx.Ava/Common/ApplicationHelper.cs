@@ -26,6 +26,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common
@@ -56,7 +57,7 @@ namespace Ryujinx.Ava.Common
 
                 Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: {titleName} [{titleId:x16}]");
 
-                if (Utilities.IsZeros(controlHolder.ByteSpan))
+                if (controlHolder.ByteSpan.IsZeros())
                 {
                     // If the current application doesn't have a loaded control property, create a dummy one
                     // and set the savedata sizes so a user savedata will be created.
@@ -71,7 +72,7 @@ namespace Ryujinx.Ava.Common
 
                 Uid user = new((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
 
-                result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
+                result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new ApplicationId(titleId), in control, in user);
                 if (result.IsFailure())
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
@@ -166,7 +167,7 @@ namespace Ryujinx.Ava.Common
 
                     using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
-                    Nca mainNca  = null;
+                    Nca mainNca = null;
                     Nca patchNca = null;
 
                     string extension = Path.GetExtension(titleFilePath).ToLower();
@@ -293,10 +294,11 @@ namespace Ryujinx.Ava.Common
                             await ContentDialogHelper.CreateErrorDialog(ex.Message);
                         });
                     }
-                });
-
-                extractorThread.Name = "GUI.NcaSectionExtractorThread";
-                extractorThread.IsBackground = true;
+                })
+                {
+                    Name = "GUI.NcaSectionExtractorThread",
+                    IsBackground = true,
+                };
                 extractorThread.Start();
             }
         }

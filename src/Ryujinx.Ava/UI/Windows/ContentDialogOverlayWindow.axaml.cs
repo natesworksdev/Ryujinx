@@ -1,5 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+#if DEBUG
+using Avalonia;
+#endif
 
 namespace Ryujinx.Ava.UI.Windows
 {

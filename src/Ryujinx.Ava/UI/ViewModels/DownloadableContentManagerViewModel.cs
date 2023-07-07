@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Application = Avalonia.Application;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -29,18 +30,17 @@ namespace Ryujinx.Ava.UI.ViewModels
     public class DownloadableContentManagerViewModel : BaseModel
     {
         private readonly List<DownloadableContentContainer> _downloadableContentContainerList;
-        private readonly string                             _downloadableContentJsonPath;
+        private readonly string _downloadableContentJsonPath;
 
-        private VirtualFileSystem                      _virtualFileSystem;
+        private readonly VirtualFileSystem _virtualFileSystem;
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _views = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
 
         private string _search;
-        private ulong _titleId;
-        private string _titleName;
+        private readonly ulong _titleId;
 
-        private static readonly DownloadableContentJsonSerializerContext SerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private static readonly DownloadableContentJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public AvaloniaList<DownloadableContentModel> DownloadableContents
         {
@@ -96,8 +96,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _virtualFileSystem = virtualFileSystem;
 
-            _titleId   = titleId;
-            _titleName = titleName;
+            _titleId = titleId;
 
             if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -108,7 +107,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             try
             {
-                _downloadableContentContainerList = JsonHelper.DeserializeFromFile(_downloadableContentJsonPath, SerializerContext.ListDownloadableContentContainer);
+                _downloadableContentContainerList = JsonHelper.DeserializeFromFile(_downloadableContentJsonPath, _serializerContext.ListDownloadableContentContainer);
             }
             catch
             {
@@ -232,8 +231,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             using FileStream containerFile = File.OpenRead(path);
 
-            PartitionFileSystem partitionFileSystem         = new(containerFile.AsStorage());
-            bool                containsDownloadableContent = false;
+            PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+            bool containsDownloadableContent = false;
 
             _virtualFileSystem.ImportTickets(partitionFileSystem);
 
@@ -314,16 +313,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     container = new DownloadableContentContainer
                     {
-                        ContainerPath              = downloadableContent.ContainerPath,
-                        DownloadableContentNcaList = new List<DownloadableContentNca>()
+                        ContainerPath = downloadableContent.ContainerPath,
+                        DownloadableContentNcaList = new List<DownloadableContentNca>(),
                     };
                 }
 
                 container.DownloadableContentNcaList.Add(new DownloadableContentNca
                 {
-                    Enabled  = downloadableContent.Enabled,
-                    TitleId  = Convert.ToUInt64(downloadableContent.TitleId, 16),
-                    FullPath = downloadableContent.FullPath
+                    Enabled = downloadableContent.Enabled,
+                    TitleId = Convert.ToUInt64(downloadableContent.TitleId, 16),
+                    FullPath = downloadableContent.FullPath,
                 });
             }
 
@@ -332,7 +331,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _downloadableContentContainerList.Add(container);
             }
 
-            JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, SerializerContext.ListDownloadableContentContainer);
+            JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
         }
 
     }

@@ -11,7 +11,7 @@ namespace Ryujinx.Ava.UI.Renderer
         public readonly EmbeddedWindow EmbeddedWindow;
 
         public event EventHandler<EventArgs> WindowCreated;
-        public event Action<object, Size>    BoundsChanged;
+        public event Action<object, Size> BoundsChanged;
 
         public RendererHost()
         {
@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.UI.Renderer
         private void Initialize()
         {
             EmbeddedWindow.WindowCreated += CurrentWindow_WindowCreated;
-            EmbeddedWindow.BoundsChanged   += CurrentWindowBoundsChanged;
+            EmbeddedWindow.BoundsChanged += CurrentWindowBoundsChanged;
 
             Content = EmbeddedWindow;
         }
@@ -42,7 +42,7 @@ namespace Ryujinx.Ava.UI.Renderer
             if (EmbeddedWindow != null)
             {
                 EmbeddedWindow.WindowCreated -= CurrentWindow_WindowCreated;
-                EmbeddedWindow.BoundsChanged   -= CurrentWindowBoundsChanged;
+                EmbeddedWindow.BoundsChanged -= CurrentWindowBoundsChanged;
             }
 
             GC.SuppressFinalize(this);

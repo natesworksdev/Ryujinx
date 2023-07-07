@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.ViewModels;

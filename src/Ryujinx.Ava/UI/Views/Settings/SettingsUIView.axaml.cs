@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
@@ -10,11 +10,11 @@ using System.Linq;
 
 namespace Ryujinx.Ava.UI.Views.Settings
 {
-    public partial class SettingsUIView : UserControl
+    public partial class SettingsUiView : UserControl
     {
         public SettingsViewModel ViewModel;
 
-        public SettingsUIView()
+        public SettingsUiView()
         {
             InitializeComponent();
         }
