@@ -99,6 +99,7 @@ namespace Ryujinx.Common.SystemInfo
                     if (cpuCoresLine != null)
                     {
                         string[] parts = cpuCoresLine.Split(':');
+                        coreCount = int.Parse(parts[1]);
                     }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -124,7 +125,7 @@ namespace Ryujinx.Common.SystemInfo
             }
             catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Application,"An error occurred while trying to get the physical core count:  {ex.Message}");
+                Logger.Error?.Print(LogClass.Application,$"An error occurred while trying to get the physical core count:  {ex.Message}");
             }
 
             return coreCount;
