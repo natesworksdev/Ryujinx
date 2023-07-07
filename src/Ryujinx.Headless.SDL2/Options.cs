@@ -211,10 +211,10 @@ namespace Ryujinx.Headless.SDL2
         [Option("anti-aliasing", Required = false, Default = "None", HelpText = "Set the type of anti aliasing being used. [None|FXAA|SMAA Low|SMAA Medium|SMAA High|SMAA Ultra]")]
         public string AntiAliasing { get; set; }
 
-        [Option("scaling-filter", Required = false, Default = "Bilinear", HelpText = "Set the scaling filter. [Bilinear(=default)|Nearest|FSR]")]
+        [Option("scaling-filter", Required = false, Default = "Bilinear", HelpText = "Set the scaling filter. [Bilinear|Nearest|FSR]")]
         public string ScalingFilter { get; set; }
 
-        [Option("scaling-filter-level", Required = false, Default = 0, HelpText = "Set the scaling filter intensity (only applies to FSR). [0-100]")]
+        [Option("scaling-filter-level", Required = false, Default = 0, HelpText = "Set the scaling filter intensity (currently only applies to FSR). [0-100]")]
         public int ScalingFilterLevel { get; set; }
 
         // Hacks

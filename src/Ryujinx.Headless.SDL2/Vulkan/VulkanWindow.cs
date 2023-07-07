@@ -34,7 +34,6 @@ namespace Ryujinx.Headless.SDL2.Vulkan
                 Renderer?.Window.SetSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
                 MouseDriver.SetClientSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
             }
-
             else
             {
                 Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
