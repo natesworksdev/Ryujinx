@@ -94,17 +94,11 @@ namespace Ryujinx.Common.SystemInfo
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    string cpuCoresLine = File.ReadLines("/proc/cpuinfo")
-                        .FirstOrDefault(line => line.Contains("cpu cores"));
+                    string cpuCoresLine = File.ReadLines("/proc/cpuinfo").FirstOrDefault(line => line.Contains("cpu cores"));
 
                     if (cpuCoresLine != null)
                     {
                         string[] parts = cpuCoresLine.Split(':');
-                        if (parts.Length == 2 && int.TryParse(parts[1].Trim(), out int cores))
-                        {
-                            coreCount = cores;
-                            Console.WriteLine("Number of physical cores: " + coreCount);
-                        }
                     }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -122,13 +116,15 @@ namespace Ryujinx.Common.SystemInfo
                     };
 
                     process.Start();
+                    
                     coreCount = int.Parse(process.StandardOutput.ReadToEnd());
+                    
                     process.WaitForExit();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while trying to get the physical core count: " + ex.Message);
+                Logger.Error?.Print(LogClass.Application,"An error occurred while trying to get the physical core count:  {ex.Message}");
             }
 
             return coreCount;

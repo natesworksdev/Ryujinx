@@ -105,6 +105,7 @@ namespace ARMeilleure.Translation
         public void Execute(State.ExecutionContext context, ulong address)
         {
             int physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
+            
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
                 IsReadyForTranslation.WaitOne();
