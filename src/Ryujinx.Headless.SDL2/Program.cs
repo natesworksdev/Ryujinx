@@ -596,7 +596,7 @@ namespace Ryujinx.Headless.SDL2
             _window = window;
 
             _window.IsFullscreen = options.IsFullscreen;
-            _window.FullscreenDisplayId = options.FullscreenDisplayId;
+            _window.DisplayId = options.DisplayId;
             _window.IsExclusiveFullscreen = options.IsExclusiveFullscreen;
             _window.ExclusiveFullscreenWidth = options.ExclusiveFullscreenWidth;
             _window.ExclusiveFullscreenHeight = options.ExclusiveFullscreenHeight;

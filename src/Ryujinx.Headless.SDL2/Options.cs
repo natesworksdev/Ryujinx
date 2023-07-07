@@ -14,11 +14,11 @@ namespace Ryujinx.Headless.SDL2
         [Option("profile", Required = false, HelpText = "Set the user profile to launch the game with.")]
         public string UserProfile { get; set; }
 
+        [Option("display-id", Required = false, Default = 0, HelpText = "Set the display to use - especially helpful for fullscreen mode. [0-n]")]
+        public int DisplayId { get; set; }
+
         [Option("fullscreen", Required = false, Default = false, HelpText = "Launch the game in fullscreen mode.")]
         public bool IsFullscreen { get; set; }
-
-        [Option("fullscreen-display-id", Required = false, Default = 0, HelpText = "Set the display to use for fullscreen mode. [0-n]")]
-        public int FullscreenDisplayId { get; set; }
 
         [Option("exclusive-fullscreen", Required = false, Default = false, HelpText = "Launch the game in exclusive fullscreen mode.")]
         public bool IsExclusiveFullscreen { get; set; }

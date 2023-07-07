@@ -56,8 +56,8 @@ namespace Ryujinx.Headless.SDL2
         public IHostUiTheme HostUiTheme { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public int DisplayId { get; set; }
         public bool IsFullscreen { get; set; }
-        public int FullscreenDisplayId { get; set; }
         public bool IsExclusiveFullscreen { get; set; }
         public int ExclusiveFullscreenWidth { get; set; }
         public int ExclusiveFullscreenHeight { get; set; }
@@ -184,7 +184,7 @@ namespace Ryujinx.Headless.SDL2
                 FullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
 
-            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(FullscreenDisplayId), Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
+            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", SDL_WINDOWPOS_CENTERED_DISPLAY(DisplayId), SDL_WINDOWPOS_CENTERED_DISPLAY(DisplayId), Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
 
             if (WindowHandle == IntPtr.Zero)
             {
