@@ -169,9 +169,9 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursor.Event += HideCursorState_Changed;
 
-            _topLevel.PointerMoved   += TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerMoved += TopLevel_PointerEnteredOrMoved;
             _topLevel.PointerEntered += TopLevel_PointerEnteredOrMoved;
-            _topLevel.PointerExited  += TopLevel_PointerExited;
+            _topLevel.PointerExited += TopLevel_PointerExited;
 
             if (OperatingSystem.IsWindows())
             {
@@ -461,9 +461,9 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event -= UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event -= UpdateAntiAliasing;
 
-            _topLevel.PointerMoved   -= TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerMoved -= TopLevel_PointerEnteredOrMoved;
             _topLevel.PointerEntered -= TopLevel_PointerEnteredOrMoved;
-            _topLevel.PointerExited  -= TopLevel_PointerExited;
+            _topLevel.PointerExited -= TopLevel_PointerExited;
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
