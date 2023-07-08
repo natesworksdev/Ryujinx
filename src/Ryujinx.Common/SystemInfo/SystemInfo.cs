@@ -16,6 +16,7 @@ namespace Ryujinx.Common.SystemInfo
         public ulong RamTotal { get; protected set; }
         public ulong RamAvailable { get; protected set; }
         protected static int LogicalCoreCount => Environment.ProcessorCount;
+        private static int? _cachedPhysicalCoreCount = null;
 
         protected SystemInfo()
         {
@@ -80,6 +81,11 @@ namespace Ryujinx.Common.SystemInfo
 
         public static int GetPhysicalCoreCount()
         {
+            if (_cachedPhysicalCoreCount.HasValue)
+            {
+                return _cachedPhysicalCoreCount.Value;
+            }
+
             int coreCount = Environment.ProcessorCount;
                 
             try
@@ -127,6 +133,8 @@ namespace Ryujinx.Common.SystemInfo
             {
                 Logger.Error?.Print(LogClass.Application,$"An error occurred while trying to get the physical core count:  {ex.Message}");
             }
+
+            _cachedPhysicalCoreCount = coreCount;
 
             return coreCount;
         }
