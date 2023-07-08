@@ -1,5 +1,5 @@
 using ARMeilleure.CodeGen.Arm64;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -14,7 +14,7 @@ namespace Ryujinx.Tests.Cpu
             public int ImmR;
         }
 
-        public static readonly TestCase[] TestCases =
+        private static readonly TestCase[] _testCases =
         {
             new() { Value = 0, Valid = false, ImmN = 0, ImmS = 0, ImmR = 0 },
             new() { Value = 0x970977f35f848714, Valid = false, ImmN = 0, ImmS = 0, ImmR = 0 },
@@ -32,15 +32,18 @@ namespace Ryujinx.Tests.Cpu
             new() { Value = 0x000000000ffff800, Valid = true, ImmN = 1, ImmS = 0x10, ImmR = 53 },
         };
 
-        [Test]
-        public void BitImmTests([ValueSource(nameof(TestCases))] TestCase test)
+        public static readonly EnumerableTheoryData<TestCase> TestData = new(_testCases);
+
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void BitImmTests(TestCase test)
         {
             bool valid = CodeGenCommon.TryEncodeBitMask(test.Value, out int immN, out int immS, out int immR);
 
-            Assert.That(valid, Is.EqualTo(test.Valid));
-            Assert.That(immN, Is.EqualTo(test.ImmN));
-            Assert.That(immS, Is.EqualTo(test.ImmS));
-            Assert.That(immR, Is.EqualTo(test.ImmR));
+            Assert.Equal(test.Valid, valid);
+            Assert.Equal(test.ImmN, immN);
+            Assert.Equal(test.ImmS, immS);
+            Assert.Equal(test.ImmR, immR);
         }
     }
 }
