@@ -1,5 +1,6 @@
-﻿// #define T32Mem
+﻿#define T32Mem
 
+using System;
 using Xunit;
 
 namespace Ryujinx.Tests.Cpu
@@ -8,12 +9,6 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestT32Mem : CpuTest32
     {
 #if T32Mem
-        [Test]
-        public void TestT32MemImm([ValueSource(nameof(ImmTestCases))] PrecomputedMemoryThumbTestCase test)
-        {
-            RunPrecomputedTestCase(test);
-        }
-
         public static readonly PrecomputedMemoryThumbTestCase[] ImmTestCases =
         {
             // STRB (imm8)
@@ -519,6 +514,15 @@ namespace Ryujinx.Tests.Cpu
                 MemoryDelta = Array.Empty<(ulong Address, ushort Value)>(),
             },
         };
+
+        public static readonly EnumerableTheoryData<PrecomputedMemoryThumbTestCase> TestData = new(ImmTestCases);
+
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void TestT32MemImm(PrecomputedMemoryThumbTestCase test)
+        {
+            RunPrecomputedTestCase(test);
+        }
 #endif
     }
 }

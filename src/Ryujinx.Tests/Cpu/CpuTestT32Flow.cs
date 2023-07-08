@@ -1,4 +1,4 @@
-﻿// #define T32Flow
+﻿#define T32Flow
 
 using ARMeilleure.State;
 using Xunit;
@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestT32Flow : CpuTest32
     {
 #if T32Flow
-        [Test]
+        [Fact]
         public void TestT32B1()
         {
             // BNE label
@@ -27,7 +27,7 @@ namespace Ryujinx.Tests.Cpu
             ExecuteOpcodes(runUnicorn: false);
         }
 
-        [Test]
+        [Fact]
         public void TestT32B2()
         {
             // BNE label1
@@ -51,7 +51,7 @@ namespace Ryujinx.Tests.Cpu
             ExecuteOpcodes(runUnicorn: false);
         }
 
-        [Test]
+        [Fact]
         public void TestT32B3()
         {
             // B.W label
@@ -69,7 +69,7 @@ namespace Ryujinx.Tests.Cpu
             ExecuteOpcodes(runUnicorn: false);
         }
 
-        [Test]
+        [Fact]
         public void TestT32B4()
         {
             // B.W label1
@@ -93,7 +93,7 @@ namespace Ryujinx.Tests.Cpu
             ExecuteOpcodes(runUnicorn: false);
         }
 
-        [Test]
+        [Fact]
         public void TestT32Bl()
         {
             // BL label
@@ -112,10 +112,10 @@ namespace Ryujinx.Tests.Cpu
 
             ExecuteOpcodes(runUnicorn: false);
 
-            Assert.That(GetContext().GetX(0), Is.EqualTo(CodeBaseAddress + 0x5));
+            Assert.Equal(CodeBaseAddress + 0x5, GetContext().GetX(0));
         }
 
-        [Test]
+        [Fact]
         public void TestT32Blx1()
         {
             // BLX label
@@ -136,11 +136,11 @@ namespace Ryujinx.Tests.Cpu
 
             ExecuteOpcodes(runUnicorn: false);
 
-            Assert.That(GetContext().GetX(0), Is.EqualTo(CodeBaseAddress + 0x5));
-            Assert.That(GetContext().GetPstateFlag(PState.TFlag), Is.EqualTo(false));
+            Assert.Equal(CodeBaseAddress + 0x5, GetContext().GetX(0));
+            Assert.False(GetContext().GetPstateFlag(PState.TFlag));
         }
 
-        [Test]
+        [Fact]
         public void TestT32Blx2()
         {
             // NOP
@@ -163,8 +163,8 @@ namespace Ryujinx.Tests.Cpu
 
             ExecuteOpcodes(runUnicorn: false);
 
-            Assert.That(GetContext().GetX(0), Is.EqualTo(CodeBaseAddress + 0x7));
-            Assert.That(GetContext().GetPstateFlag(PState.TFlag), Is.EqualTo(false));
+            Assert.Equal(CodeBaseAddress + 0x7, GetContext().GetX(0));
+            Assert.False(GetContext().GetPstateFlag(PState.TFlag));
         }
 #endif
     }
