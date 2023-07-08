@@ -1,5 +1,6 @@
-﻿// #define AluRs32
+﻿#define AluRs32
 
+using System;
 using Xunit;
 
 namespace Ryujinx.Tests.Cpu
@@ -35,43 +36,63 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
+        private static readonly uint[] _testData_rd =
+        {
+            0u, 13u,
+        };
+        private static readonly uint[] _testData_rn =
+        {
+            1u, 13u,
+        };
+        private static readonly uint[] _testData_rm =
+        {
+            2u, 13u,
+        };
+        private static readonly uint[] _testData_wn =
+        {
+            0x00000000u, 0x7FFFFFFFu,
+            0x80000000u, 0xFFFFFFFFu,
+        };
+        private static readonly bool[] _testData_carry =
+        {
+            false,
+            true,
+        };
 
-        [Test, Pairwise]
-        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs([ValueSource(nameof(_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_))] uint opcode,
-                                               [Values(0u, 13u)] uint rd,
-                                               [Values(1u, 13u)] uint rn,
-                                               [Values(2u, 13u)] uint rm,
-                                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
-                                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
-                                               [Values] bool carryIn)
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, bool> TestData = new(_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_(), _testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_carry);
+
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs(uint opcode, uint rd, uint rn, uint rm, uint wn, uint wm, bool carryIn)
         {
             opcode |= ((rm & 15) << 0) | ((rn & 15) << 16) | ((rd & 15) << 12);
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: wn, r2: wm, sp: sp, carry: carryIn);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Add_Adds_Rsb_Rsbs([ValueSource(nameof(_Add_Adds_Rsb_Rsbs_))] uint opcode,
-                                      [Values(0u, 13u)] uint rd,
-                                      [Values(1u, 13u)] uint rn,
-                                      [Values(2u, 13u)] uint rm,
-                                      [Values(0x00000000u, 0x7FFFFFFFu,
-                                              0x80000000u, 0xFFFFFFFFu)] uint wn,
-                                      [Values(0x00000000u, 0x7FFFFFFFu,
-                                              0x80000000u, 0xFFFFFFFFu)] uint wm,
-                                      [Values(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
-                                      [Values(0u, 15u, 16u, 31u)] uint amount)
+        private static readonly uint[] _testData_shift =
+        {
+            0b00u, 0b01u, 0b10u, 0b11u, // <LSL, LSR, ASR, ROR>
+        };
+        private static readonly uint[] _testData_amount =
+        {
+            0u, 15u, 16u, 31u,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint, uint> TestData_Add = new(_Add_Adds_Rsb_Rsbs_(), _testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_shift, _testData_amount);
+
+        [Theory]
+        [MemberData(nameof(TestData_Add))]
+        public void Add_Adds_Rsb_Rsbs(uint opcode, uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
         {
             opcode |= ((rm & 15) << 0) | ((rn & 15) << 16) | ((rd & 15) << 12);
             opcode |= ((shift & 3) << 5) | ((amount & 31) << 7);
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: wn, r2: wm, sp: sp);
 
