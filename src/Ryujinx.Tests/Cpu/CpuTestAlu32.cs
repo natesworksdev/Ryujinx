@@ -1,5 +1,6 @@
-﻿// #define Alu32
+﻿#define Alu32
 
+using System;
 using Xunit;
 
 namespace Ryujinx.Tests.Cpu
@@ -59,27 +60,35 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        [Test, Pairwise, Description("RBIT <Rd>, <Rn>")]
-        public void Rbit_32bit([Values(0u, 0xdu)] uint rd,
-                               [Values(1u, 0xdu)] uint rm,
-                               [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] uint wn)
+        private static readonly uint[] _testData_rd = {0u, 0xdu};
+        private static readonly uint[] _testData_rm = {1u, 0xdu};
+        private static readonly uint[] _testData_wn =
+        {
+            0x00000000u, 0x7FFFFFFFu,
+            0x80000000u, 0xFFFFFFFFu,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint> TestData_32bit = new(_testData_rd, _testData_rm, _testData_wn);
+
+        [Theory(DisplayName = "RBIT <Rd>, <Rn>")]
+        [MemberData(nameof(TestData_32bit))]
+        public void Rbit_32bit(uint rd, uint rm, uint wn)
         {
             uint opcode = 0xe6ff0f30u; // RBIT R0, R0
             opcode |= ((rm & 15) << 0) | ((rd & 15) << 12);
 
-            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Lsr_Lsl_Asr_Ror([ValueSource(nameof(LsrLslAsrRor))] uint opcode,
-                                    [Values(0x00000000u, 0x7FFFFFFFu,
-                                            0x80000000u, 0xFFFFFFFFu)] uint shiftValue,
-                                    [Range(0, 31)] int shiftAmount)
+        public static readonly MatrixTheoryData<uint, uint, int> TestData_Lsr = new(LsrLslAsrRor(), _testData_wn, RangeUtils.RangeData(0, 31, 1));
+
+        [Theory]
+        [MemberData(nameof(TestData_Lsr))]
+        public void Lsr_Lsl_Asr_Ror(uint opcode, uint shiftValue, int shiftAmount)
         {
             uint rd = 0;
             uint rm = 1;
@@ -91,104 +100,113 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Shadd8([Values(0u, 0xdu)] uint rd,
-                           [Values(1u)] uint rm,
-                           [Values(2u)] uint rn,
-                           [Random(RndCnt)] uint w0,
-                           [Random(RndCnt)] uint w1,
-                           [Random(RndCnt)] uint w2)
+        private static readonly uint[] _testData_Sh_rm =
+        {
+            1u,
+        };
+
+        private static readonly uint[] _testData_Sh_rn =
+        {
+            2u,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Sh = new(_testData_rd, _testData_Sh_rm, _testData_Sh_rn, Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt));
+
+        [Theory]
+        [MemberData(nameof(TestData_Sh))]
+        public void Shadd8(uint rd, uint rm, uint rn, uint w0, uint w1, uint w2)
         {
             uint opcode = 0xE6300F90u; // SHADD8 R0, R0, R0
 
             opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Shsub8([Values(0u, 0xdu)] uint rd,
-                           [Values(1u)] uint rm,
-                           [Values(2u)] uint rn,
-                           [Random(RndCnt)] uint w0,
-                           [Random(RndCnt)] uint w1,
-                           [Random(RndCnt)] uint w2)
+        [Theory]
+        [MemberData(nameof(TestData_Sh))]
+        public void Shsub8(uint rd, uint rm, uint rn, uint w0, uint w1, uint w2)
         {
             uint opcode = 0xE6300FF0u; // SHSUB8 R0, R0, R0
 
             opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Ssat_Usat([ValueSource(nameof(SsatUsat))] uint opcode,
-                              [Values(0u, 0xdu)] uint rd,
-                              [Values(1u, 0xdu)] uint rn,
-                              [Values(0u, 7u, 8u, 0xfu, 0x10u, 0x1fu)] uint sat,
-                              [Values(0u, 7u, 8u, 0xfu, 0x10u, 0x1fu)] uint shift,
-                              [Values(0x00000000u, 0x7FFFFFFFu,
-                                      0x80000000u, 0xFFFFFFFFu)] uint wn)
+        private static readonly uint[] _testData_sat =
+        {
+            0u, 7u, 8u, 0xfu, 0x10u, 0x1fu,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Ssat = new(SsatUsat(), _testData_rd, _testData_rm, _testData_sat, _testData_sat, _testData_wn);
+
+        [Theory]
+        [MemberData(nameof(TestData_Ssat))]
+        public void Ssat_Usat(uint opcode, uint rd, uint rn, uint sat, uint shift, uint wn)
         {
             opcode |= ((rn & 15) << 0) | ((shift & 31) << 7) | ((rd & 15) << 12) | ((sat & 31) << 16);
 
-            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Ssat16_Usat16([ValueSource(nameof(Ssat16Usat16))] uint opcode,
-                                  [Values(0u, 0xdu)] uint rd,
-                                  [Values(1u, 0xdu)] uint rn,
-                                  [Values(0u, 7u, 8u, 0xfu)] uint sat,
-                                  [Values(0x00000000u, 0x7FFFFFFFu,
-                                          0x80000000u, 0xFFFFFFFFu)] uint wn)
+        private static readonly uint[] _testData_sat16 =
+        {
+            0u, 7u, 8u, 0xfu,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint> TestData_Ssat16 = new(Ssat16Usat16(), _testData_rd, _testData_rm, _testData_sat16, _testData_wn);
+
+        [Theory]
+        [MemberData(nameof(TestData_Ssat16))]
+        public void Ssat16_Usat16(uint opcode, uint rd, uint rn, uint sat, uint wn)
         {
             opcode |= ((rn & 15) << 0) | ((rd & 15) << 12) | ((sat & 15) << 16);
 
-            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+            uint w31 = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void SU_H_AddSub_8([ValueSource(nameof(SuHAddSub8))] uint opcode,
-                                  [Values(0u, 0xdu)] uint rd,
-                                  [Values(1u)] uint rm,
-                                  [Values(2u)] uint rn,
-                                  [Random(RndCnt)] uint w0,
-                                  [Random(RndCnt)] uint w1,
-                                  [Random(RndCnt)] uint w2)
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint> TestData_Su = new(SuHAddSub8(), _testData_rd, _testData_Sh_rm, _testData_Sh_rn, Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt));
+
+        [Theory]
+        [MemberData(nameof(TestData_Su))]
+        public void SU_H_AddSub_8(uint opcode, uint rd, uint rm, uint rn, uint w0, uint w1, uint w2)
         {
             opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rn & 15) << 16);
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise]
-        public void Uadd8_Sel([Values(0u)] uint rd,
-                              [Values(1u)] uint rm,
-                              [Values(2u)] uint rn,
-                              [Random(RndCnt)] uint w0,
-                              [Random(RndCnt)] uint w1,
-                              [Random(RndCnt)] uint w2)
+        private static readonly uint[] _testData_Uadd_rd=
+        {
+            0u,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Uadd = new(_testData_Uadd_rd, _testData_Sh_rm, _testData_Sh_rn, Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt));
+
+        [Theory]
+        [MemberData(nameof(TestData_Uadd))]
+        public void Uadd8_Sel(uint rd, uint rm, uint rn, uint w0, uint w1, uint w2)
         {
             uint opUadd8 = 0xE6500F90; // UADD8 R0, R0, R0
             uint opSel = 0xE6800FB0; // SEL R0, R0, R0
