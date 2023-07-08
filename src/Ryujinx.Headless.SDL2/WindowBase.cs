@@ -61,8 +61,8 @@ namespace Ryujinx.Headless.SDL2
         public bool IsExclusiveFullscreen { get; set; }
         public int ExclusiveFullscreenWidth { get; set; }
         public int ExclusiveFullscreenHeight { get; set; }
-        public string AntiAliasing {get; set; }
-        public string ScalingFilter { get; set; }
+        public Ryujinx.Common.Configuration.AntiAliasing AntiAliasing { get; set; }
+        public Ryujinx.Common.Configuration.ScalingFilter ScalingFilter { get; set; }
         public int ScalingFilterLevel { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
@@ -248,49 +248,13 @@ namespace Ryujinx.Headless.SDL2
 
         private void SetAntiAliasing()
         {
-            if (AntiAliasing.ToLower() == "fxaa")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)1);
-            }
-            else if (AntiAliasing.ToLower() == "smaa Low")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)2);
-            }
-            else if (AntiAliasing.ToLower() == "smaa medium")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)3);
-            }
-            else if (AntiAliasing.ToLower() == "smaa high")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)4);
-            }
-            else if (AntiAliasing.ToLower() == "smaa ultra")
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)5);
-            }
-            // This forces the default output to be "Bilinear" (similar to GTK/Ava)
-            else
-            {
-                Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)0);
-            }
+            Renderer?.Window.SetAntiAliasing((Graphics.GAL.AntiAliasing)AntiAliasing);
         }
 
         private void SetScalingFilter()
         {
-            if (ScalingFilter.ToLower() == "nearest")
-            {
-                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)1);
-            }
-            else if (ScalingFilter.ToLower() == "fsr")
-            {
-                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)2);
-                Renderer?.Window.SetScalingFilterLevel(ScalingFilterLevel);
-            }
-            // This forces the default to be "None" (similar to GTK/Ava)
-            else
-            {
-                Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)0);
-            }
+            Renderer?.Window.SetScalingFilter((Graphics.GAL.ScalingFilter)ScalingFilter);
+            Renderer?.Window.SetScalingFilterLevel(ScalingFilterLevel);
         }
 
         public void Render()

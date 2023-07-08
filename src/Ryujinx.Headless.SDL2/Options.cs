@@ -208,11 +208,11 @@ namespace Ryujinx.Headless.SDL2
         [Option("preferred-gpu-vendor", Required = false, Default = "", HelpText = "When using the Vulkan backend, prefer using the GPU from the specified vendor.")]
         public string PreferredGPUVendor { get; set; }
 
-        [Option("anti-aliasing", Required = false, Default = "None", HelpText = "Set the type of anti aliasing being used. [None|FXAA|SMAA Low|SMAA Medium|SMAA High|SMAA Ultra]")]
-        public string AntiAliasing { get; set; }
+        [Option("anti-aliasing", Required = false, Default = AntiAliasing.None, HelpText = "Set the type of anti aliasing being used. [None|Fxaa|SmaaLow|SmaaMedium|SmaaHigh|SmaaUltra]")]
+        public AntiAliasing AntiAliasing { get; set; }
 
-        [Option("scaling-filter", Required = false, Default = "Bilinear", HelpText = "Set the scaling filter. [Bilinear|Nearest|FSR]")]
-        public string ScalingFilter { get; set; }
+        [Option("scaling-filter", Required = false, Default = ScalingFilter.Bilinear, HelpText = "Set the scaling filter. [Bilinear|Nearest|Fsr]")]
+        public ScalingFilter ScalingFilter { get; set; }
 
         [Option("scaling-filter-level", Required = false, Default = 0, HelpText = "Set the scaling filter intensity (currently only applies to FSR). [0-100]")]
         public int ScalingFilterLevel { get; set; }
