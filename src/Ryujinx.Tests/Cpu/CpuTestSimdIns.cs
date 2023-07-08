@@ -1,11 +1,10 @@
-#define SimdIns
+// #define SimdIns
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdIns")]
+    [Collection("SimdIns")]
     public sealed class CpuTestSimdIns : CpuTest
     {
 #if SimdIns

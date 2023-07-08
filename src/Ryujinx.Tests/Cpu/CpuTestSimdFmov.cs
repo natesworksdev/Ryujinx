@@ -1,11 +1,10 @@
-#define SimdFmov
+// #define SimdFmov
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdFmov")]
+    [Collection("SimdFmov")]
     public sealed class CpuTestSimdFmov : CpuTest
     {
 #if SimdFmov

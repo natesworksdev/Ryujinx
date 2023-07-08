@@ -1,13 +1,10 @@
-#define SimdCvt
+// #define SimdCvt
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdCvt")]
+    [Collection("SimdCvt")]
     public sealed class CpuTestSimdCvt : CpuTest
     {
 #if SimdCvt

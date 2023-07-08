@@ -1,12 +1,10 @@
-#define Misc32
+// #define Misc32
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Misc32")]
+    [Collection("Misc32")]
     public sealed class CpuTestMisc32 : CpuTest32
     {
 #if Misc32

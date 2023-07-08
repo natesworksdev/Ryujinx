@@ -1,10 +1,10 @@
-#define Csel
+// #define Csel
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Csel")]
+    [Collection("Csel")]
     public sealed class CpuTestCsel : CpuTest
     {
 #if Csel

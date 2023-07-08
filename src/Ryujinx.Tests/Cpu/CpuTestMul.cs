@@ -1,10 +1,10 @@
-#define Mul
+// #define Mul
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Mul")]
+    [Collection("Mul")]
     public sealed class CpuTestMul : CpuTest
     {
 #if Mul

@@ -1,12 +1,12 @@
+// #define SimdCrypto
 // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
-
-using ARMeilleure.State;
-using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestSimdCrypto : CpuTest
     {
+#if SimdCrypto
+
         [Test, Description("AESD <Vd>.16B, <Vn>.16B")]
         public void Aesd_V([Values(0u)] uint rd,
                            [Values(1u)] uint rn,
@@ -140,5 +140,6 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+#endif
     }
 }

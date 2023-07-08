@@ -1,12 +1,11 @@
-#define AluBinary32
+﻿// #define AluBinary32
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
 
-    [Category("AluBinary32")]
+    [Collection("AluBinary32")]
     public sealed class CpuTestAluBinary32 : CpuTest32
     {
 #if AluBinary32

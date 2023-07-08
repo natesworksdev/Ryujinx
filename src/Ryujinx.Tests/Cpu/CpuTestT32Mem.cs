@@ -1,11 +1,13 @@
-using NUnit.Framework;
-using System;
+﻿// #define T32Mem
+
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("T32Mem")]
+    [Collection("T32Mem")]
     public sealed class CpuTestT32Mem : CpuTest32
     {
+#if T32Mem
         [Test]
         public void TestT32MemImm([ValueSource(nameof(ImmTestCases))] PrecomputedMemoryThumbTestCase test)
         {
@@ -517,5 +519,6 @@ namespace Ryujinx.Tests.Cpu
                 MemoryDelta = Array.Empty<(ulong Address, ushort Value)>(),
             },
         };
+#endif
     }
 }

@@ -1,13 +1,10 @@
-#define SimdShImm
+// #define SimdShImm
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdShImm")]
+    [Collection("SimdShImm")]
     public sealed class CpuTestSimdShImm : CpuTest
     {
 #if SimdShImm

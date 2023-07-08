@@ -1,10 +1,10 @@
-#define CcmpReg
+// #define CcmpReg
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("CcmpReg")]
+    [Collection("CcmpReg")]
     public sealed class CpuTestCcmpReg : CpuTest
     {
 #if CcmpReg

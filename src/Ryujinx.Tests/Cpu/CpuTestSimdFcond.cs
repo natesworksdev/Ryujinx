@@ -1,12 +1,10 @@
-#define SimdFcond
+// #define SimdFcond
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdFcond")]
+    [Collection("SimdFcond")]
     public sealed class CpuTestSimdFcond : CpuTest
     {
 #if SimdFcond

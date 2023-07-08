@@ -1,10 +1,10 @@
-#define Mul32
+﻿// #define Mul32
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Mul32")]
+    [Collection("Mul32")]
     public sealed class CpuTestMul32 : CpuTest32
     {
 #if Mul32

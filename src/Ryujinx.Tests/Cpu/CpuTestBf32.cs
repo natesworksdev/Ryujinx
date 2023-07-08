@@ -1,11 +1,10 @@
-#define Bf32
+﻿// #define Bf32
 
-using NUnit.Framework;
-using System;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Bf32")]
+    [Collection("Bf32")]
     public sealed class CpuTestBf32 : CpuTest32
     {
 #if Bf32

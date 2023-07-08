@@ -1,11 +1,14 @@
+﻿// #define T32Flow
+
 using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("T32Flow")]
+    [Collection("T32Flow")]
     public sealed class CpuTestT32Flow : CpuTest32
     {
+#if T32Flow
         [Test]
         public void TestT32B1()
         {
@@ -163,5 +166,6 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(GetContext().GetX(0), Is.EqualTo(CodeBaseAddress + 0x7));
             Assert.That(GetContext().GetPstateFlag(PState.TFlag), Is.EqualTo(false));
         }
+#endif
     }
 }

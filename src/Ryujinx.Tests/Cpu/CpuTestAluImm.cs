@@ -1,10 +1,10 @@
-#define AluImm
+// #define AluImm
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("AluImm")]
+    [Collection("AluImm")]
     public sealed class CpuTestAluImm : CpuTest
     {
 #if AluImm

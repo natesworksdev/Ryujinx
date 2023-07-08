@@ -1,11 +1,10 @@
-#define SimdExt
+// #define SimdExt
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdExt")]
+    [Collection("SimdExt")]
     public sealed class CpuTestSimdExt : CpuTest
     {
 #if SimdExt

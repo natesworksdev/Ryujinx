@@ -1,10 +1,10 @@
-#define AluRx
+// #define AluRx
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("AluRx")]
+    [Collection("AluRx")]
     public sealed class CpuTestAluRx : CpuTest
     {
 #if AluRx

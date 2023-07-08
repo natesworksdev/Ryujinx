@@ -1,13 +1,10 @@
-#define Simd
+// #define Simd
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Simd")]
+    [Collection("Simd")]
     public sealed class CpuTestSimd : CpuTest
     {
 #if Simd

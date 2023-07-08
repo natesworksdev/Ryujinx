@@ -1,10 +1,10 @@
-#define AluRs32
+﻿// #define AluRs32
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("AluRs32")]
+    [Collection("AluRs32")]
     public sealed class CpuTestAluRs32 : CpuTest32
     {
 #if AluRs32

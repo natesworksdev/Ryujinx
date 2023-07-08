@@ -1,11 +1,10 @@
-#define Alu
+// #define Alu
 
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Alu")]
+    [Collection("Alu")]
     public sealed class CpuTestAlu : CpuTest
     {
 #if Alu

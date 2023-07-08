@@ -1,11 +1,10 @@
-#define SimdLogical32
+﻿// #define SimdLogical32
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdLogical32")]
+    [Collection("SimdLogical32")]
     public sealed class CpuTestSimdLogical32 : CpuTest32
     {
 #if SimdLogical32

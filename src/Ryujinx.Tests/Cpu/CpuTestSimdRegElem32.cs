@@ -1,11 +1,10 @@
-#define SimdRegElem32
+﻿// #define SimdRegElem32
 
-using ARMeilleure.State;
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdRegElem32")]
+    [Collection("SimdRegElem32")]
     public sealed class CpuTestSimdRegElem32 : CpuTest32
     {
 #if SimdRegElem32

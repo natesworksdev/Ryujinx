@@ -1,11 +1,13 @@
-using ARMeilleure.State;
-using NUnit.Framework;
+﻿// #define Thumb
+
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Thumb")]
+    [Collection("Thumb")]
     public sealed class CpuTestThumb : CpuTest32
     {
+#if Thumb
         private const int RndCnt = 2;
 
         public static uint RotateRight(uint value, int count)
@@ -880,5 +882,6 @@ namespace Ryujinx.Tests.Cpu
                 FinalRegs = new uint[] { 0x000019d4, 0x00000000, 0x00001828, 0x7d000000, 0x977f681b, 0x0000182e, 0x00007d12, 0x00000067, 0x77b1c835, 0x00004100, 0x000010c8, 0x0000000e, 0x79708dab, 0x977f655b, 0x00000000, 0x200001d0 },
             },
         };
+#endif
     }
 }

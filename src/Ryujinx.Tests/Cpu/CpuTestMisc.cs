@@ -1,13 +1,10 @@
-#define Misc
+// #define Misc
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Misc")]
+    [Collection("Misc")]
     public sealed class CpuTestMisc : CpuTest
     {
 #if Misc

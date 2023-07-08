@@ -1,12 +1,10 @@
-#define SimdTbl
+// #define SimdTbl
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdTbl")]
+    [Collection("SimdTbl")]
     public sealed class CpuTestSimdTbl : CpuTest
     {
 #if SimdTbl

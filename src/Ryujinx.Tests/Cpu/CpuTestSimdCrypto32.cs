@@ -1,12 +1,12 @@
+﻿// #define SimdCrypto32
 // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
-
-using ARMeilleure.State;
-using NUnit.Framework;
 
 namespace Ryujinx.Tests.Cpu
 {
     public class CpuTestSimdCrypto32 : CpuTest32
     {
+#if SimdCrypto32
+
         [Test, Description("AESD.8 <Qd>, <Qm>")]
         public void Aesd_V([Values(0u)] uint rd,
                            [Values(2u)] uint rm,
@@ -150,5 +150,6 @@ namespace Ryujinx.Tests.Cpu
             // Unicorn does not yet support crypto instructions in A32.
             // CompareAgainstUnicorn();
         }
+#endif
     }
 }

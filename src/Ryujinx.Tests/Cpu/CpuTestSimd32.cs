@@ -1,12 +1,10 @@
-#define Simd32
+// #define Simd32
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Simd32")]
+    [Collection("Simd32")]
     public sealed class CpuTestSimd32 : CpuTest32
     {
 #if Simd32

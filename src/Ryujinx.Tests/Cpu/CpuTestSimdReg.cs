@@ -1,12 +1,10 @@
-#define SimdReg
+// #define SimdReg
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdReg")]
+    [Collection("SimdReg")]
     public sealed class CpuTestSimdReg : CpuTest
     {
 #if SimdReg

@@ -1,13 +1,10 @@
-#define SimdMemory32
+﻿// #define SimdMemory32
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using Ryujinx.Memory;
-using System;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("SimdMemory32")]
+    [Collection("SimdMemory32")]
     public sealed class CpuTestSimdMemory32 : CpuTest32
     {
         private static readonly uint _testOffset = DataBaseAddress + 0x500;

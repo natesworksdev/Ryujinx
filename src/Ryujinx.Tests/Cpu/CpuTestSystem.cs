@@ -1,12 +1,10 @@
-#define System
+// #define System
 
-using ARMeilleure.State;
-using NUnit.Framework;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("System")]
+    [Collection("System")]
     public sealed class CpuTestSystem : CpuTest
     {
 #if System

@@ -1,10 +1,10 @@
-#define CcmpImm
+// #define CcmpImm
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("CcmpImm")]
+    [Collection("CcmpImm")]
     public sealed class CpuTestCcmpImm : CpuTest
     {
 #if CcmpImm

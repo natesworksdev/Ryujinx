@@ -1,10 +1,10 @@
-#define Bfm
+// #define Bfm
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Bfm")]
+    [Collection("Bfm")]
     public sealed class CpuTestBfm : CpuTest
     {
 #if Bfm

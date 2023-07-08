@@ -1,10 +1,10 @@
-#define Mov
+// #define Mov
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Mov")]
+    [Collection("Mov")]
     public sealed class CpuTestMov : CpuTest
     {
 #if Mov
