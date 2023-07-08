@@ -130,6 +130,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // RequestToAcquireSleepLock()
         public ResultCode RequestToAcquireSleepLock(ServiceCtx context)
         {
+            _acquiredSleepLockEvent.ReadableEvent.Signal();
+
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;

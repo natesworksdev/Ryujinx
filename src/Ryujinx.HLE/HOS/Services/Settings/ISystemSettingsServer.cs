@@ -7,6 +7,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Settings.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
@@ -87,6 +88,28 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(17)]
+        // GetAccountSettings() -> nn::settings::system::AccountSettings
+        public ResultCode GetAccountSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new AccountSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(21)]
+        // GetEulaVersions() -> (u32, buffer<nn::settings::system::EulaVersion, 6>)
+        public ResultCode GetEulaVersions(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(23)]
         // GetColorSetId() -> i32
         public ResultCode GetColorSetId(ServiceCtx context)
@@ -103,6 +126,28 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             int colorSetId = context.RequestData.ReadInt32();
 
             context.Device.System.State.ThemeColor = (ColorSet)colorSetId;
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(29)]
+        // GetNotificationSettings() -> nn::settings::system::NotificationSettings
+        public ResultCode GetNotificationSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new NotificationSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(31)]
+        // GetAccountNotificationSettings() -> (s32, buffer<AccountNotificationSettings, 6>)
+        public ResultCode GetAccountNotificationSettings(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }
@@ -222,6 +267,29 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(39)]
+        // GetTvSettings() -> nn::settings::system::TvSettings
+        public ResultCode GetTvSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new TvSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(47)]
+        // GetQuestFlag() -> bool
+        public ResultCode GetQuestFlag(ServiceCtx context)
+        {
+            // NOTE: When set to true, console is in kiosk mode.
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(60)]
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
@@ -239,6 +307,39 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         public ResultCode GetDebugModeFlag(ServiceCtx context)
         {
             context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(63)]
+        // GetPrimaryAlbumStorage() -> nn::settings::system::PrimaryAlbumStorage
+        public ResultCode GetPrimaryAlbumStorage(ServiceCtx context)
+        {
+            context.ResponseData.Write((uint) PrimaryAlbumStorage.SdCard);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(71)]
+        // GetSleepSettings() -> nn::settings::system::SleepSettings
+        public ResultCode GetSleepSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new SleepSettings());
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(75)]
+        // GetInitialLaunchSettings() -> nn::settings::system::InitialLaunchSettings
+        public ResultCode GetInitialLaunchSettings(ServiceCtx context)
+        {
+            context.ResponseData.WriteStruct(new InitialLaunchSettings());
 
             Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
@@ -283,6 +384,17 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
+        [CommandCmif(79)]
+        // GetProductModel() -> s32
+        public ResultCode GetProductModel(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(90)]
         // GetMiiAuthorId() -> nn::util::Uuid
         public ResultCode GetMiiAuthorId(ServiceCtx context)
@@ -291,6 +403,84 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             //       Doesn't occur in our case.
 
             context.ResponseData.Write(Mii.Helper.GetDeviceId());
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(95)]
+        // GetAutoUpdateEnableFlag() -> bool
+        public ResultCode GetAutoUpdateEnableFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(99)]
+        // GetBatteryPercentageFlag() -> b8
+        public ResultCode GetBatteryPercentageFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(true);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(124)]
+        // GetErrorReportSharePermission() -> nn::settings::system::ErrorReportSharePermission
+        public ResultCode GetErrorReportSharePermission(ServiceCtx context)
+        {
+            context.ResponseData.Write((uint) ErrorReportSharePermission.Denied);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(126)]
+        // GetAppletLaunchFlags() -> nn::settings::system::AppletLaunchFlag
+        public ResultCode GetAppletLaunchFlags(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(136)]
+        // GetKeyboardLayout() -> nn::settings::KeyboardLayout
+        public ResultCode GetKeyboardLayout(ServiceCtx context)
+        {
+            context.ResponseData.Write((uint) KeyboardLayout.Default);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(170)]
+        // GetChineseTraditionalInputMethod() -> nn::settings::ChineseTraditionalInputMethod
+        public ResultCode GetChineseTraditionalInputMethod(ServiceCtx context)
+        {
+            context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(201)]
+        // GetFieldTestingFlag() -> bool
+        public ResultCode GetFieldTestingFlag(ServiceCtx context)
+        {
+            // NOTE: When set to true, console is in field testing mode.
+            context.ResponseData.Write(false);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }

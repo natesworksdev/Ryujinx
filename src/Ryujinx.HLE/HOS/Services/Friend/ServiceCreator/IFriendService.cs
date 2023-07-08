@@ -348,5 +348,16 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             return ResultCode.Success;
         }
+
+        [CommandCmif(20701)]
+        // GetPlayHistoryStatistics(nn::account::Uid) -> nn::friends::PlayHistoryStatistics
+        public ResultCode GetPlayHistoryStatistics(ServiceCtx context)
+        {
+            context.ResponseData.Write(new byte[0x10]);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceFriend);
+
+            return ResultCode.Success;
+        }
     }
 }
