@@ -57,6 +57,8 @@ namespace ARMeilleure.Translation
 
         private Thread[] _backgroundTranslationThreads;
         private volatile int _threadCount;
+        private static int physicalCoreCount;
+
 
         // FIXME: Remove this once the init logic of the emulator will be redone.
         public static readonly ManualResetEvent IsReadyForTranslation = new(false);
@@ -104,8 +106,6 @@ namespace ARMeilleure.Translation
 
         public void Execute(State.ExecutionContext context, ulong address)
         {
-            int physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
-            
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
                 IsReadyForTranslation.WaitOne();
@@ -120,6 +120,8 @@ namespace ARMeilleure.Translation
                 _ptc.Profiler.Start();
 
                 _ptc.Disable();
+                
+                physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core + ht
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
