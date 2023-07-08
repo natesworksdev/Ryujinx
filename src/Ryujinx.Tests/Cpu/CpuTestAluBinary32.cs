@@ -1,5 +1,7 @@
-﻿// #define AluBinary32
+﻿#define AluBinary32
 
+using ARMeilleure.State;
+using System;
 using Xunit;
 
 namespace Ryujinx.Tests.Cpu
@@ -64,12 +66,24 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        [Test, Combinatorial]
-        public void Crc32_Crc32c_b_h_w([Values(0u)] uint rd,
-                                       [Values(1u)] uint rn,
-                                       [Values(2u)] uint rm,
-                                       [Range(0u, 2u)] uint size,
-                                       [ValueSource(nameof(_CRC32_Test_Values_))] CrcTest32 test)
+        private static uint[] _testData_rd =
+        {
+            0u,
+        };
+        private static uint[] _testData_rn =
+        {
+            1u,
+        };
+        private static uint[] _testData_rm =
+        {
+            2u,
+        };
+
+        public static readonly MatrixTheoryData<uint, uint, uint, uint, CrcTest32> TestData = new(_testData_rd, _testData_rn, _testData_rm, RangeUtils.RangeData(0u, 2u, 1u), _CRC32_Test_Values_());
+
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void Crc32_Crc32c_b_h_w(uint rd, uint rn, uint rm, uint size, CrcTest32 test)
         {
             // Unicorn does not yet support 32bit crc instructions, so test against a known table of results/values.
 
@@ -81,13 +95,13 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 9;
             }
 
-            uint sp = TestContext.CurrentContext.Random.NextUInt();
+            uint sp = Random.Shared.NextUInt();
 
             SingleOpcode(opcode, r1: test.Crc, r2: test.Value, sp: sp, runUnicorn: false);
 
             ExecutionContext context = GetContext();
             ulong result = context.GetX((int)rd);
-            Assert.That(result == test.Results[size]);
+            Assert.True(result == test.Results[size]);
         }
 #endif
     }
