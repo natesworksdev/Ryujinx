@@ -7,7 +7,7 @@ namespace Ryujinx.Tests
     {
         public RangeTheoryData(T from, T to, T step)
         {
-            for (T i = from; i < to; i += step)
+            for (T i = from; i <= to; i += step)
             {
                 Add(i);
             }
