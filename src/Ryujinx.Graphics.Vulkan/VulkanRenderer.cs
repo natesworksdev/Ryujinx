@@ -291,11 +291,6 @@ namespace Ryujinx.Graphics.Vulkan
                                              featuresCustomBorderColor.CustomBorderColors &&
                                              featuresCustomBorderColor.CustomBorderColorWithoutFormat;
 
-            // AMD GPUs using MoltenVK don't render correctly with the MultiViewPort feature enabled.
-            // Using it without geometry shader support may also not conform to the Vulkan spec.
-            // May be possible to re-enable on MoltenVK once geometry shader support is added.
-            bool supportsMultiView = features2.Features.MultiViewport && !IsMoltenVk;
-
             ref var properties = ref properties2.Properties;
 
             SampleCountFlags supportedSampleCounts =
@@ -320,7 +315,7 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.ShaderStorageImageMultisample,
                 _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
-                supportsMultiView,
+                features2.Features.MultiViewport && !(IsMoltenVk && Vendor == Vendor.Amd), // Workaround for AMD on MoltenVK issue
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 _physicalDevice.IsDeviceExtensionPresent(KhrPushDescriptor.ExtensionName),
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
