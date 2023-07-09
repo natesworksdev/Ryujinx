@@ -3,6 +3,6 @@
   "diagnosticMessages": true,
   "longRunningTestSeconds": 20,
   "parallelizeAssembly": true,
-  "preEnumerateTheories": true,
+  "preEnumerateTheories": false,
   "stopOnFail": true
 }
