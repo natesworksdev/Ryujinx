@@ -3,6 +3,7 @@
 using ARMeilleure.State;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -10,7 +11,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestAluBinary : CpuTest
     {
 #if AluBinary
-        public struct CrcTest
+        public struct CrcTest : IXunitSerializable
         {
             public uint Crc;
             public ulong Value;
@@ -24,6 +25,22 @@ namespace Ryujinx.Tests.Cpu
                 Value = value;
                 C = c;
                 Results = results;
+            }
+
+            public void Deserialize(IXunitSerializationInfo info)
+            {
+                Crc = info.GetValue<uint>(nameof(Crc));
+                Value = info.GetValue<ulong>(nameof(Value));
+                C = info.GetValue<bool>(nameof(C));
+                Results = info.GetValue<uint[]>(nameof(Results));
+            }
+
+            public void Serialize(IXunitSerializationInfo info)
+            {
+                info.AddValue(nameof(Crc), Crc, Crc.GetType());
+                info.AddValue(nameof(Value), Value, Value.GetType());
+                info.AddValue(nameof(C), C, C.GetType());
+                info.AddValue(nameof(Results), Results, Results.GetType());
             }
         }
 

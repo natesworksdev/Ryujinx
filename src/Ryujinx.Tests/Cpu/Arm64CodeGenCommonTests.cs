@@ -1,17 +1,36 @@
 using ARMeilleure.CodeGen.Arm64;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     public class Arm64CodeGenCommonTests
     {
-        public struct TestCase
+        public struct TestCase : IXunitSerializable
         {
             public ulong Value;
             public bool Valid;
             public int ImmN;
             public int ImmS;
             public int ImmR;
+
+            public void Deserialize(IXunitSerializationInfo info)
+            {
+                Value = info.GetValue<ulong>(nameof(Value));
+                Valid = info.GetValue<bool>(nameof(Valid));
+                ImmN = info.GetValue<int>(nameof(ImmN));
+                ImmS = info.GetValue<int>(nameof(ImmS));
+                ImmR = info.GetValue<int>(nameof(ImmR));
+            }
+
+            public void Serialize(IXunitSerializationInfo info)
+            {
+                info.AddValue(nameof(Value), Value, Value.GetType());
+                info.AddValue(nameof(Valid), Valid, Valid.GetType());
+                info.AddValue(nameof(ImmN), ImmN, ImmN.GetType());
+                info.AddValue(nameof(ImmS), ImmS, ImmS.GetType());
+                info.AddValue(nameof(ImmR), ImmR, ImmR.GetType());
+            }
         }
 
         private static readonly TestCase[] _testCases =
