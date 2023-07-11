@@ -57,7 +57,7 @@ namespace ARMeilleure.Translation
 
         private Thread[] _backgroundTranslationThreads;
         private volatile int _threadCount;
-        private static int physicalCoreCount;
+        private static int _physicalCoreCount;
 
 
         // FIXME: Remove this once the init logic of the emulator will be redone.
@@ -121,13 +121,13 @@ namespace ARMeilleure.Translation
 
                 _ptc.Disable();
                 
-                physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
+                _physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core + ht
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
                 // as the os lets it with a low priority. If we only have one rejit thread, it should be normal priority
                 // as highCq code is performance critical.
-                int unboundedThreadCount = Math.Max(1, (physicalCoreCount - 6) / 3);
+                int unboundedThreadCount = Math.Max(1, (_physicalCoreCount - 6) / 3);
                 int threadCount = Math.Min(4, unboundedThreadCount);
 
                 Thread[] backgroundTranslationThreads = new Thread[threadCount];

@@ -118,7 +118,7 @@ namespace Ryujinx.Common.SystemInfo
                             Arguments = "-n hw.physicalcpu",
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
-                            CreateNoWindow = true
+                            CreateNoWindow = true,
                         }
                     };
 
