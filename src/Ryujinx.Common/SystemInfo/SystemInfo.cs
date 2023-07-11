@@ -92,10 +92,9 @@ namespace Ryujinx.Common.SystemInfo
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    coreCount = 0;
                     foreach (var item in new System.Management.ManagementObjectSearcher("Select NumberOfCores from Win32_Processor").Get())
                     {
-                        coreCount += int.Parse(item["NumberOfCores"].ToString());
+                        coreCount = int.Parse(item["NumberOfCores"].ToString());
                     }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
