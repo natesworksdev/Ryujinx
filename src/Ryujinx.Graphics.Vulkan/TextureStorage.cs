@@ -304,7 +304,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
-            if ((forceStorage && !format.IsDepthOrStencil()) || (format.IsImageCompatible() && (supportsMsStorage || !target.IsMultisample())))
+            if (((forceStorage && !format.IsDepthOrStencil()) || format.IsImageCompatible()) && (supportsMsStorage || !target.IsMultisample()))
             {
                 usage |= ImageUsageFlags.StorageBit;
             }
