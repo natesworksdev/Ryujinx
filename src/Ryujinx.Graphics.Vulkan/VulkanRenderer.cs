@@ -315,7 +315,7 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.ShaderStorageImageMultisample,
                 _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
-                features2.Features.MultiViewport,
+                features2.Features.MultiViewport && !(IsMoltenVk && Vendor == Vendor.Amd), // Workaround for AMD on MoltenVK issue
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 _physicalDevice.IsDeviceExtensionPresent(KhrPushDescriptor.ExtensionName),
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
@@ -432,26 +432,26 @@ namespace Ryujinx.Graphics.Vulkan
             return new SamplerHolder(this, _device, info);
         }
 
-        public ITexture CreateTexture(TextureCreateInfo info, float scale)
+        public ITexture CreateTexture(TextureCreateInfo info)
         {
             if (info.Target == Target.TextureBuffer)
             {
-                return new TextureBuffer(this, info, scale);
+                return new TextureBuffer(this, info);
             }
 
-            return CreateTextureView(info, scale);
+            return CreateTextureView(info);
         }
 
-        internal TextureView CreateTextureView(TextureCreateInfo info, float scale)
+        internal TextureView CreateTextureView(TextureCreateInfo info)
         {
             // This should be disposed when all views are destroyed.
-            var storage = CreateTextureStorage(info, scale);
+            var storage = CreateTextureStorage(info);
             return storage.CreateView(info, 0, 0);
         }
 
-        internal TextureStorage CreateTextureStorage(TextureCreateInfo info, float scale)
+        internal TextureStorage CreateTextureStorage(TextureCreateInfo info)
         {
-            return new TextureStorage(this, _device, info, scale);
+            return new TextureStorage(this, _device, info);
         }
 
         public void DeleteBuffer(BufferHandle buffer)
@@ -680,7 +680,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             IsAmdWindows = Vendor == Vendor.Amd && OperatingSystem.IsWindows();
             IsIntelWindows = Vendor == Vendor.Intel && OperatingSystem.IsWindows();
-            IsTBDR = IsMoltenVk ||
+            IsTBDR =
+                Vendor == Vendor.Apple ||
                 Vendor == Vendor.Qualcomm ||
                 Vendor == Vendor.ARM ||
                 Vendor == Vendor.Broadcom ||
@@ -752,9 +753,9 @@ namespace Ryujinx.Graphics.Vulkan
             SyncManager.Cleanup();
         }
 
-        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, bool hostReserved)
+        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, float divisor, bool hostReserved)
         {
-            return _counters.QueueReport(type, resultHandler, hostReserved);
+            return _counters.QueueReport(type, resultHandler, divisor, hostReserved);
         }
 
         public void ResetCounter(CounterType type)
