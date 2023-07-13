@@ -202,7 +202,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            var result = StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
                 AllowMultiple = true,
@@ -215,7 +215,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         MimeTypes = new[] { "application/x-nx-nsp" }
                     }
                 }
-            }).Result;
+            });
 
             foreach (var file in result) {
                 await AddDownloadableContent(file.Path.LocalPath);
