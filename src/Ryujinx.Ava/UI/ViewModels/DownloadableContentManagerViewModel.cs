@@ -202,7 +202,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            // Delete this later
             var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],

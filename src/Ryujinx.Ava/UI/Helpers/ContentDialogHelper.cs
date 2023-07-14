@@ -363,7 +363,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 if (contentDialogOverlayWindow is not null)
                 {
-                    result = await contentDialog.ShowAsync();
+                    result = await contentDialog.ShowAsync(contentDialogOverlayWindow);
 
                     contentDialogOverlayWindow!.Close();
                 }
