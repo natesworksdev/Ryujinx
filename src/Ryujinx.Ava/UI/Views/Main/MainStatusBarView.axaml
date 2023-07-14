@@ -63,7 +63,7 @@
                     Grid.Column="2"
                     Height="6"
                     VerticalAlignment="Center"
-                    Foreground="{DynamicResource HighlightColor}"
+                    Foreground="{DynamicResource SystemAccentColorLight2}"
                     IsVisible="{Binding StatusBarVisible}"
                     Maximum="{Binding StatusBarProgressMaximum}"
                     Value="{Binding StatusBarProgressValue}" />

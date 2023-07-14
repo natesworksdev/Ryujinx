@@ -248,7 +248,7 @@
         <Setter Property="BorderBrush"
                 Value="{DynamicResource ThemeButtonForegroundColor}" />
         <Setter Property="Background"
-                Value="{DynamicResource HighlightColor}" />
+                Value="{DynamicResource SystemAccentColorLight2}" />
     </Style>
     <Style Selector="TabItem:pointerover">
         <Setter Property="Foreground"
@@ -256,7 +256,7 @@
     </Style>
     <Style Selector="TabItem:selected">
         <Setter Property="Background"
-                Value="{DynamicResource HighlightColor}" />
+                Value="{DynamicResource SystemAccentColorLight2}" />
         <Setter Property="Foreground"
                 Value="{DynamicResource ThemeBackgroundColor}" />
     </Style>
@@ -292,7 +292,7 @@
     </Style>
     <Style Selector=":is(Button).DateTimeFlyoutButtonStyle">
         <Setter Property="Background"
-                Value="{DynamicResource HighlightColor}" />
+                Value="{DynamicResource SystemAccentColorLight2}" />
         <Setter Property="Foreground"
                 Value="{DynamicResource ThemeBackgroundColor}" />
     </Style>
