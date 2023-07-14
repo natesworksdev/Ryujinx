@@ -127,7 +127,7 @@ namespace ARMeilleure.Translation
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
                 // as the os lets it with a low priority. If we only have one rejit thread, it should be normal priority
                 // as highCq code is performance critical.
-                int unboundedThreadCount = Math.Max(1, (_physicalCoreCount - 6) / 3);
+                int unboundedThreadCount = Math.Max(1, (_physicalCoreCount - 4));
                 int threadCount = Math.Min(4, unboundedThreadCount);
 
                 Thread[] backgroundTranslationThreads = new Thread[threadCount];
