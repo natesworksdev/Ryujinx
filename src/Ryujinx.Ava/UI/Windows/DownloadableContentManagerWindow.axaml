@@ -52,8 +52,8 @@
                 </StackPanel>
                 <TextBox
                     Grid.Column="2"
-                    MinHeight="27"
-                    MaxHeight="27"
+                    MinHeight="29"
+                    MaxHeight="29"
                     HorizontalAlignment="Stretch"
                     Watermark="{locale:Locale Search}"
                     Text="{Binding Search}" />
