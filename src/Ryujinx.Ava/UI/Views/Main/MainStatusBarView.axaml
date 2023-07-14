@@ -135,14 +135,20 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 VerticalContentAlignment="Center"
-                Background="{DynamicResource ThemeContentBackgroundColor}"
-                BorderThickness="0"
                 Content="{Binding VolumeStatusText}"
                 IsChecked="{Binding VolumeMuted}"
-                IsVisible="{Binding !ShowLoadProgress}">
+                IsVisible="{Binding !ShowLoadProgress}"
+                Background="Transparent"
+                BorderThickness="0"
+                CornerRadius="0">
                 <ToggleSplitButton.Styles>
-                    <Style Selector="Border">
-                       <Setter Property="Background" Value="{DynamicResource ThemeContentBackgroundColor}" />
+                    <Style Selector=":checked">
+                        <Style Selector="^:checked ContentPresenter">
+                            <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundColor}" />
+                        </Style>
+                    </Style>
+                    <Style Selector="Border#SeparatorBorder">
+                        <Setter Property="Opacity" Value="0" />
                     </Style>
                 </ToggleSplitButton.Styles>
                 <ToggleSplitButton.Flyout>
