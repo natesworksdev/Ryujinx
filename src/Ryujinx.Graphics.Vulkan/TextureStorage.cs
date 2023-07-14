@@ -54,19 +54,16 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly ulong _size;
 
         public VkFormat VkFormat { get; }
-        public float ScaleFactor { get; }
 
         public unsafe TextureStorage(
             VulkanRenderer gd,
             Device device,
             TextureCreateInfo info,
-            float scaleFactor,
             Auto<MemoryAllocation> foreignAllocation = null)
         {
             _gd = gd;
             _device = device;
             _info = info;
-            ScaleFactor = scaleFactor;
 
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
             var levels = (uint)info.Levels;
@@ -81,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
-            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
+            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample, forceStorage: true);
 
             var flags = ImageCreateFlags.CreateMutableFormatBit;
 
@@ -175,7 +172,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var info = NewCreateInfoWith(ref _info, format, _info.BytesPerPixel);
 
-                storage = new TextureStorage(_gd, _device, info, ScaleFactor, _allocationAuto);
+                storage = new TextureStorage(_gd, _device, info, _allocationAuto);
 
                 _aliasedStorages.Add(format, storage);
             }
@@ -294,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static ImageUsageFlags GetImageUsage(Format format, Target target, bool supportsMsStorage)
+        public static ImageUsageFlags GetImageUsage(Format format, Target target, bool supportsMsStorage, bool forceStorage = false)
         {
             var usage = DefaultUsageFlags;
 
@@ -307,7 +304,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
-            if (format.IsImageCompatible() && (supportsMsStorage || !target.IsMultisample()))
+            if (((forceStorage && !format.IsDepthOrStencil()) || format.IsImageCompatible()) && (supportsMsStorage || !target.IsMultisample()))
             {
                 usage |= ImageUsageFlags.StorageBit;
             }
