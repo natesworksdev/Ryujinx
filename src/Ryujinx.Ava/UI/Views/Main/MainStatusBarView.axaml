@@ -92,6 +92,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
@@ -108,6 +109,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
@@ -124,6 +126,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <ToggleSplitButton
@@ -137,6 +140,11 @@
                 Content="{Binding VolumeStatusText}"
                 IsChecked="{Binding VolumeMuted}"
                 IsVisible="{Binding !ShowLoadProgress}">
+                <ToggleSplitButton.Styles>
+                    <Style Selector="Border">
+                       <Setter Property="Background" Value="{DynamicResource ThemeContentBackgroundColor}" />
+                    </Style>
+                </ToggleSplitButton.Styles>
                 <ToggleSplitButton.Flyout>
                     <Flyout Placement="Bottom" ShowMode="TransientWithDismissOnPointerMoveAway">
                         <Grid Margin="0">
@@ -162,6 +170,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
@@ -176,6 +185,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
@@ -190,6 +200,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
@@ -204,6 +215,7 @@
                 Height="12"
                 Margin="0"
                 BorderBrush="Gray"
+                Background="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
             <TextBlock
