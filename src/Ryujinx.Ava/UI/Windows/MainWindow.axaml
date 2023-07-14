@@ -32,19 +32,19 @@
     <Window.Resources>
         <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
     </Window.Resources>
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Alt+Return" Command="{Binding ToggleFullscreen}" />
+        <KeyBinding Gesture="F11" Command="{Binding ToggleFullscreen}" />
+        <KeyBinding Gesture="Ctrl+Cmd+F" Command="{Binding ToggleFullscreen}" />
+        <KeyBinding Gesture="F9" Command="{Binding ToggleDockMode}" />
+        <KeyBinding Gesture="Escape" Command="{Binding ExitCurrentState}" />
+    </Window.KeyBindings>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <helpers:OffscreenTextBox Name="HiddenTextBox" Grid.Row="0" />
-        <StackPanel Grid.Row="0" IsVisible="False">
-            <helpers:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="FullscreenHotKeyMacOS" Command="{Binding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}" />
-            <helpers:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}" />
-        </StackPanel>
         <Grid
             Grid.Row="1"
             HorizontalAlignment="Stretch"

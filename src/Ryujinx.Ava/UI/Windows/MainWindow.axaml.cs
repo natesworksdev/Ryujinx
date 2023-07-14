@@ -370,8 +370,6 @@ namespace Ryujinx.Ava.UI.Windows
             ApplicationList.ApplicationOpened += Application_Opened;
 
             ApplicationList.DataContext = ViewModel;
-
-            LoadHotKeys();
         }
 
         private void SetWindowSizePosition()
@@ -447,17 +445,6 @@ namespace Ryujinx.Ava.UI.Windows
             GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
             GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
-#pragma warning restore IDE0055
-        }
-
-        public void LoadHotKeys()
-        {
-#pragma warning disable IDE0055 // Disable formatting
-            HotKeyManager.SetHotKey(FullscreenHotKey,      new KeyGesture(Key.Enter, KeyModifiers.Alt));
-            HotKeyManager.SetHotKey(FullscreenHotKey2,     new KeyGesture(Key.F11));
-            HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta));
-            HotKeyManager.SetHotKey(DockToggleHotKey,      new KeyGesture(Key.F9));
-            HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
 #pragma warning restore IDE0055
         }
 
