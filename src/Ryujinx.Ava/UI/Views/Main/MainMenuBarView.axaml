@@ -65,10 +65,11 @@
                     Command="{Binding ToggleStartGamesInFullscreen}"
                     Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}">
                     <MenuItem.Icon>
-                        <CheckBox MinWidth="{DynamicResource CheckBoxSize}"
-                                  MinHeight="{DynamicResource CheckBoxSize}"
-                                  IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
-                                  Padding="0"/>
+                        <CheckBox
+                            MinWidth="{DynamicResource CheckBoxSize}"
+                            MinHeight="{DynamicResource CheckBoxSize}"
+                            IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
+                            Padding="0" />
                     </MenuItem.Icon>
                     <MenuItem.Styles>
                         <Style Selector="Viewbox#PART_IconPresenter">
@@ -78,8 +79,8 @@
                             <Setter Property="MinWidth" Value="36" />
                         </Style>
                         <Style Selector="ContentPresenter#PART_HeaderPresenter">
-							<Setter Property="Padding" Value="-10,0,0,0" />
-						</Style>
+                            <Setter Property="Padding" Value="-10,0,0,0" />
+                        </Style>
                     </MenuItem.Styles>
                 </MenuItem>
                 <MenuItem
@@ -88,10 +89,11 @@
                     Command="{Binding ToggleShowConsole}"
                     Header="{locale:Locale MenuBarOptionsShowConsole}">
                     <MenuItem.Icon>
-                        <CheckBox MinWidth="{DynamicResource CheckBoxSize}"
-                                  MinHeight="{DynamicResource CheckBoxSize}"
-                                  IsChecked="{Binding ShowConsole, Mode=TwoWay}"
-                                  Padding="0"/>
+                        <CheckBox 
+                            MinWidth="{DynamicResource CheckBoxSize}"
+                            MinHeight="{DynamicResource CheckBoxSize}"
+                            IsChecked="{Binding ShowConsole, Mode=TwoWay}"
+                            Padding="0" />
                     </MenuItem.Icon>
                     <MenuItem.Styles>
                         <Style Selector="Viewbox#PART_IconPresenter">
@@ -101,8 +103,8 @@
                             <Setter Property="MinWidth" Value="36" />
                         </Style>
                         <Style Selector="ContentPresenter#PART_HeaderPresenter">
-							<Setter Property="Padding" Value="-10,0,0,0" />
-						</Style>
+                            <Setter Property="Padding" Value="-10,0,0,0" />
+                        </Style>
                     </MenuItem.Styles>
                 </MenuItem>
                 <Separator />
@@ -110,7 +112,7 @@
                     Name="ChangeLanguageMenuItem" 
                     Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarOptionsChangeLanguage}" />
-				<MenuItem 
+                <MenuItem 
                     Name="ToggleFileTypesMenuItem" 
                     Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarShowFileTypes}" />
