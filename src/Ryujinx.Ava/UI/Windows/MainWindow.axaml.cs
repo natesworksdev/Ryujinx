@@ -131,13 +131,6 @@ namespace Ryujinx.Ava.UI.Windows
             _isLoading = false;
         }
 
-        // TODO: Deal with this
-        /*protected override void HandleScalingChanged(double scale)
-        {
-            Program.DesktopScaleFactor = scale;
-            base.HandleScalingChanged(scale);
-        }*/
-
         public void AddApplication(ApplicationData applicationData)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -222,18 +215,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             });
         }
-
-        // TODO: Deal with this
-        /*protected override void HandleWindowStateChanged(WindowState state)
-        {
-            ViewModel.WindowState = state;
-
-            if (state != WindowState.Minimized)
-            {
-                Renderer.Start();
-            }
-        }*/
-
+        
         private void Initialize()
         {
             _userChannelPersistence = new UserChannelPersistence();

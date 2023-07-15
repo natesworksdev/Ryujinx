@@ -56,10 +56,12 @@
             </MenuItem>
             <MenuItem VerticalAlignment="Center" Header="{locale:Locale MenuBarOptions}">
                 <MenuItem
+                    Padding="-10,0,0,0"
                     Command="{Binding ToggleFullscreen}"
                     Header="{locale:Locale MenuBarOptionsToggleFullscreen}"
                     InputGesture="F11" />
                 <MenuItem
+                    Padding="0"
                     Command="{Binding ToggleStartGamesInFullscreen}"
                     Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}">
                     <MenuItem.Icon>
@@ -75,9 +77,13 @@
                             <Setter Property="MaxWidth" Value="36" />
                             <Setter Property="MinWidth" Value="36" />
                         </Style>
+                        <Style Selector="ContentPresenter#PART_HeaderPresenter">
+							<Setter Property="Padding" Value="-10,0,0,0" />
+						</Style>
                     </MenuItem.Styles>
                 </MenuItem>
                 <MenuItem
+                    Padding="0"
                     IsVisible="{Binding ShowConsoleVisible}"
                     Command="{Binding ToggleShowConsole}"
                     Header="{locale:Locale MenuBarOptionsShowConsole}">
@@ -94,18 +100,29 @@
                             <Setter Property="MaxWidth" Value="36" />
                             <Setter Property="MinWidth" Value="36" />
                         </Style>
+                        <Style Selector="ContentPresenter#PART_HeaderPresenter">
+							<Setter Property="Padding" Value="-10,0,0,0" />
+						</Style>
                     </MenuItem.Styles>
                 </MenuItem>
                 <Separator />
-                <MenuItem Name="ChangeLanguageMenuItem" Header="{locale:Locale MenuBarOptionsChangeLanguage}" />
-				<MenuItem Name="ToggleFileTypesMenuItem" Header="{locale:Locale MenuBarShowFileTypes}" />
+                <MenuItem
+                    Name="ChangeLanguageMenuItem" 
+                    Padding="-10,0,0,0"
+                    Header="{locale:Locale MenuBarOptionsChangeLanguage}" />
+				<MenuItem 
+                    Name="ToggleFileTypesMenuItem" 
+                    Padding="-10,0,0,0"
+                    Header="{locale:Locale MenuBarShowFileTypes}" />
                 <Separator />
                 <MenuItem
                     Click="OpenSettings"
+                    Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarOptionsSettings}"
                     ToolTip.Tip="{locale:Locale OpenSettingsTooltip}" />
                 <MenuItem
                     Command="{Binding ManageProfiles}"
+                    Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarOptionsManageUserProfiles}"
                     IsEnabled="{Binding EnableNonGameRunningControls}"
                     ToolTip.Tip="{locale:Locale OpenProfileManagerTooltip}" />
