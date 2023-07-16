@@ -40,7 +40,7 @@ namespace Ryujinx.Common.SystemInfo
             ulong.TryParse(memDict["MemTotal"]?.Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong totalKiB);
             ulong.TryParse(memDict["MemAvailable"]?.Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong availableKiB);
 
-            CpuName = $"{cpuName} ; {LogicalCoreCount} logical";
+            CpuName = $"{cpuName} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
             RamTotal = totalKiB * 1024;
             RamAvailable = availableKiB * 1024;
         }

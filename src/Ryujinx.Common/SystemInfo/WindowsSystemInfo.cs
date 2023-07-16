@@ -11,7 +11,7 @@ namespace Ryujinx.Common.SystemInfo
     {
         internal WindowsSystemInfo()
         {
-            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWMI()} ; {LogicalCoreCount} logical"; // WMI is very slow
+            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWMI()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical"; // WMI is very slow
             (RamTotal, RamAvailable) = GetMemoryStats();
         }
 
