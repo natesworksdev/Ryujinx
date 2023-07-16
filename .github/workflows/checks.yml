@@ -4,9 +4,9 @@ on:
   pull_request:
     branches: [ master ]
     paths:
+      - '**'
       - '!.github/**'
       - '!*.yml'
-      - '!*.json'
       - '!*.config'
       - '!README.md'
       - '.github/workflows/*.yml'
