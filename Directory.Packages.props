@@ -47,6 +47,7 @@
     <PackageVersion Include="System.Management" Version="8.0.0" />
     <PackageVersion Include="UnicornEngine.Unicorn" Version="2.0.2-rc1-fb78016" />
     <PackageVersion Include="xunit" Version="2.4.2" />
+    <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
     <PackageVersion Include="xunit.runner.console" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
