@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Ryujinx.Tests.HLE
 {
-    public class SoftwareKeyboardTests
+    public class SoftwareKeyboardFacts
     {
         [Fact]
         public void StripUnicodeControlCodes_NullInput()

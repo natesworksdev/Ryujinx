@@ -60,8 +60,7 @@ namespace Ryujinx.Tests.Memory
         [InlineData(true)]
         public void PartialUnmap(bool readOnly)
         {
-            // Memory aliasing tests fail on CI at the moment.
-            Skip.If(OperatingSystem.IsMacOS());
+            Skip.If(OperatingSystem.IsMacOS(), "Memory aliasing tests fail on CI at the moment.");
 
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
@@ -205,8 +204,7 @@ namespace Ryujinx.Tests.Memory
         [SkippableFact]
         public unsafe void PartialUnmapNative()
         {
-            // Memory aliasing tests fail on CI at the moment.
-            Skip.If(OperatingSystem.IsMacOS());
+            Skip.If(OperatingSystem.IsMacOS(), "Memory aliasing tests fail on CI at the moment.");
 
             // Set up an address space to test partial unmapping.
             // Should register the signal handler to deal with this on Windows.
@@ -286,8 +284,7 @@ namespace Ryujinx.Tests.Memory
         [SuppressMessage("Interoperability", "CA1416: Validate platform compatibility")]
         public void ThreadLocalMap()
         {
-            // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
-            Skip.IfNot(OperatingSystem.IsWindows());
+            Skip.IfNot(OperatingSystem.IsWindows(), "This is only used on Windows and uses Windows APIs for trimming");
 
             PartialUnmapState.Reset();
             ref var state = ref PartialUnmapState.GetRef();
@@ -323,8 +320,7 @@ namespace Ryujinx.Tests.Memory
         [SkippableFact]
         public unsafe void ThreadLocalMapNative()
         {
-            // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
-            Skip.IfNot(OperatingSystem.IsWindows());
+            Skip.IfNot(OperatingSystem.IsWindows(), "This is only used on Windows and uses Windows APIs for trimming");
 
             EnsureTranslator();
 
