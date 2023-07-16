@@ -233,3 +233,7 @@ dotnet_diagnostic.CA1822.severity = none
 [src/Ryujinx.Ava/UI/ViewModels/**.cs]
 # Disable "mark members as static" rule for ViewModels
 dotnet_diagnostic.CA1822.severity = none
+
+[src/Ryujinx.Tests/Cpu/*.cs]
+# Disable naming rules for CPU tests
+dotnet_diagnostic.IDE1006.severity = none
