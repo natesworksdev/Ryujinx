@@ -13,7 +13,9 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         public CounterType Type { get; }
         public bool Disposed { get; private set; }
 
+#pragma warning disable IDE0052 // Private member is never read
         private readonly Pipeline _pipeline;
+#pragma warning restore IDE0052
 
         private readonly Queue<CounterQueueEvent> _events = new();
         private CounterQueueEvent _current;

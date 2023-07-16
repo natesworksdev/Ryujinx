@@ -13,8 +13,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 {
     static class Declarations
     {
-        private static readonly string[] _stagePrefixes = { "cp", "vp", "tcp", "tep", "gp", "fp" };
-
         public static void DeclareParameters(CodeGenContext context, StructuredFunction function)
         {
             DeclareParameters(context, function.InArguments, 0);
