@@ -315,8 +315,10 @@ namespace Ryujinx.Ava.UI.Helpers
 
             Window parent = GetMainWindow();
 
-            if (parent is { IsActive: true } and MainWindow window && window.ViewModel.IsGameRunning)
+            if (parent is MainWindow window && window.ViewModel.IsGameRunning)
             {
+                parent.Activate();
+
                 contentDialogOverlayWindow = new()
                 {
                     Height = parent.Bounds.Height,
@@ -390,7 +392,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 foreach (Window item in al.Windows)
                 {
-                    if (item.IsActive && item is MainWindow window)
+                    if (item is MainWindow window)
                     {
                         return window;
                     }
