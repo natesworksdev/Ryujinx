@@ -12,9 +12,9 @@ namespace Ryujinx.Tests.Memory
         private const ulong MemorySize = 0x8000;
         private const int PageSize = 4096;
 
-        private MemoryBlock _memoryBlock;
-        private MemoryTracking _tracking;
-        private MockVirtualMemoryManager _memoryManager;
+        private readonly MemoryBlock _memoryBlock;
+        private readonly MemoryTracking _tracking;
+        private readonly MockVirtualMemoryManager _memoryManager;
 
         public MultiRegionTrackingTests()
         {
@@ -26,6 +26,7 @@ namespace Ryujinx.Tests.Memory
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+
             _memoryBlock.Dispose();
         }
 
@@ -92,7 +93,7 @@ namespace Ryujinx.Tests.Memory
                 {
                     resultAddress = address;
                 });
-                Assert.Equal((ulong)i * PageSize + address, resultAddress);
+                Assert.Equal(resultAddress, (ulong)i * PageSize + address);
             });
         }
 

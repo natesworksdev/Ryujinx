@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Memory
     {
         private static readonly ulong _memorySize = MemoryBlock.GetPageSize() * 8;
 
-        private MemoryBlock _memoryBlock;
+        private readonly MemoryBlock _memoryBlock;
 
         public Tests()
         {
@@ -19,6 +19,7 @@ namespace Ryujinx.Tests.Memory
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+
             _memoryBlock.Dispose();
         }
 
@@ -38,9 +39,11 @@ namespace Ryujinx.Tests.Memory
             Assert.Equal(0xbadc0de, Marshal.ReadInt32(_memoryBlock.Pointer, 0x2040));
         }
 
-        [Fact]
+        [SkippableFact]
         public void Test_Alias()
         {
+            Skip.If(OperatingSystem.IsMacOS(), "Memory aliasing tests fail on CI at the moment.");
+
             ulong pageSize = MemoryBlock.GetPageSize();
             ulong blockSize = MemoryBlock.GetPageSize() * 16;
 
@@ -54,11 +57,10 @@ namespace Ryujinx.Tests.Memory
             Assert.Equal(0xbadc0de, Marshal.ReadInt32(backing.Pointer, (int)pageSize));
         }
 
-        [Fact]
+        [SkippableFact]
         public void Test_AliasRandom()
         {
-            // Memory aliasing tests fail on CI at the moment.
-            Skip.If(OperatingSystem.IsMacOS());
+            Skip.If(OperatingSystem.IsMacOS(), "Memory aliasing tests fail on CI at the moment.");
 
             ulong pageSize = MemoryBlock.GetPageSize();
             int pageBits = (int)ulong.Log2(pageSize);
@@ -91,11 +93,10 @@ namespace Ryujinx.Tests.Memory
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void Test_AliasMapLeak()
         {
-            // Memory aliasing tests fail on CI at the moment.
-            Skip.If(OperatingSystem.IsMacOS());
+            Skip.If(OperatingSystem.IsMacOS(), "Memory aliasing tests fail on CI at the moment.");
 
             ulong pageSize = MemoryBlock.GetPageSize();
             ulong size = 100000 * pageSize; // The mappings limit on Linux is usually around 65K, so let's make sure we are above that.

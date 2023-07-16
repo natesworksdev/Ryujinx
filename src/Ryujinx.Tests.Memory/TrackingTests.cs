@@ -10,14 +10,12 @@ namespace Ryujinx.Tests.Memory
 {
     public class TrackingTests : IDisposable
     {
-        private const int RndCnt = 3;
-
         private const ulong MemorySize = 0x8000;
         private const int PageSize = 4096;
 
-        private MemoryBlock _memoryBlock;
-        private MemoryTracking _tracking;
-        private MockVirtualMemoryManager _memoryManager;
+        private readonly MemoryBlock _memoryBlock;
+        private readonly MemoryTracking _tracking;
+        private readonly MockVirtualMemoryManager _memoryManager;
 
         public TrackingTests()
         {
@@ -29,6 +27,7 @@ namespace Ryujinx.Tests.Memory
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+
             _memoryBlock.Dispose();
         }
 
@@ -156,16 +155,25 @@ namespace Ryujinx.Tests.Memory
             }
         }
 
-        public static readonly RandomRangeUL2TheoryData TestDataPageAlignment = new(1ul, 65536ul, RndCnt);
+        public static readonly ulong[] RandomAddresses =
+        {
+            Random.Shared.NextULong(1ul, 65536ul),
+            Random.Shared.NextULong(1ul, 65536ul),
+            Random.Shared.NextULong(1ul, 65536ul),
+        };
+
+        public static readonly ulong[] RandomSizes =
+        {
+            Random.Shared.NextULong(1ul, 65536ul),
+            Random.Shared.NextULong(1ul, 65536ul),
+            Random.Shared.NextULong(1ul, 65536ul),
+        };
 
         [Theory]
-        [InlineData(1ul, 1ul)]
-        [InlineData(512ul, 4ul)]
-        [InlineData(2048ul, 1024ul)]
-        [InlineData(4096ul, 4096ul)]
-        [InlineData(65536ul, 65536ul)]
-        [MemberData(nameof(TestDataPageAlignment))]
-        public void PageAlignment(ulong address, ulong size)
+        [CombinatorialData]
+        public void PageAlignment(
+            [CombinatorialValues(1ul, 512ul, 2048ul, 4096ul, 65536ul)][CombinatorialMemberData(nameof(RandomAddresses))] ulong address,
+            [CombinatorialValues(1ul, 4ul, 1024ul, 4096ul, 65536ul)][CombinatorialMemberData(nameof(RandomSizes))] ulong size)
         {
             ulong alignedStart = (address / PageSize) * PageSize;
             ulong alignedEnd = ((address + size + PageSize - 1) / PageSize) * PageSize;
@@ -294,8 +302,8 @@ namespace Ryujinx.Tests.Memory
             }
 
             Assert.True(dirtyFlagReprotects > 10);
-            Assert.True(writeTriggers >= 10);
-            Assert.True(handleLifecycles >= 10);
+            Assert.True(writeTriggers > 10);
+            Assert.True(handleLifecycles > 10);
         }
 
         [Fact]
