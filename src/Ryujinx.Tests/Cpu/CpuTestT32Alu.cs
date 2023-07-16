@@ -1,12 +1,17 @@
-﻿#define T32Alu
+#define T32Alu
 
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("T32Alu")]
     public sealed class CpuTestT32Alu : CpuTest32
     {
+        public CpuTestT32Alu(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if T32Alu
         public static readonly PrecomputedThumbTestCase[] RsImmTestCases =
         {

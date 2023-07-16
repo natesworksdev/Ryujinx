@@ -4,12 +4,17 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("SimdTbl")]
     public sealed class CpuTestSimdTbl : CpuTest
     {
+        public CpuTestSimdTbl(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if SimdTbl
 
         #region "Helper methods"
@@ -138,28 +143,16 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCntIdxs = 2;
 
-        private static readonly uint[] _testData_rd =
-        {
-            0u,
-        };
-        private static readonly uint[] _testData_rn =
-        {
-            1u,
-        };
-        private static readonly uint[] _testData_rm =
-        {
-            2u,
-        };
-        private static readonly uint[] _testData_q =
-        {
-            0b0u, 0b1u, // <8B, 16B>
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, uint> TestData = new(_SingleRegisterTable_V_8B_16B_(), _testData_rd, _testData_rn, _testData_rm, _8B_(), _8B_(), _GenIdxsForTbl1_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData))]
-        public void SingleRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void SingleRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_SingleRegisterTable_V_8B_16B_))] uint opcodes,
+                                                 [CombinatorialValues(0u)] uint rd,
+                                                 [CombinatorialValues(1u)] uint rn,
+                                                 [CombinatorialValues(2u)] uint rm,
+                                                 [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                                 [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                                 [CombinatorialMemberData(nameof(_GenIdxsForTbl1_))] ulong indexes,
+                                                 [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -173,17 +166,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_Two_rm =
-        {
-            3u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, uint> TestData_Two =
-            new(_TwoRegisterTable_V_8B_16B_(), _testData_rd, _testData_rn, _testData_Two_rm, _8B_(), _8B_(), _8B_(), _GenIdxsForTbl2_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_Two))]
-        public void TwoRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void TwoRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_TwoRegisterTable_V_8B_16B_))] uint opcodes,
+                                              [CombinatorialValues(0u)] uint rd,
+                                              [CombinatorialValues(1u)] uint rn,
+                                              [CombinatorialValues(3u)] uint rm,
+                                              [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                              [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                              [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                              [CombinatorialMemberData(nameof(_GenIdxsForTbl2_))] ulong indexes,
+                                              [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -198,25 +191,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_ModTwo_rd =
-        {
-            30u, 1u,
-        };
-        private static readonly uint[] _testData_ModTwo_rn =
-        {
-            31u,
-        };
-        private static readonly uint[] _testData_ModTwo_rm =
-        {
-            1u, 30u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, uint> TestData_ModTwo =
-            new(_TwoRegisterTable_V_8B_16B_(), _testData_ModTwo_rd, _testData_ModTwo_rn, _testData_ModTwo_rm, _8B_(), _8B_(), _8B_(), _GenIdxsForTbl2_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_ModTwo))]
-        public void Mod_TwoRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Mod_TwoRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_TwoRegisterTable_V_8B_16B_))] uint opcodes,
+                                                  [CombinatorialValues(30u, 1u)] uint rd,
+                                                  [CombinatorialValues(31u)] uint rn,
+                                                  [CombinatorialValues(1u, 30u)] uint rm,
+                                                  [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                                  [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                                  [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                                  [CombinatorialMemberData(nameof(_GenIdxsForTbl2_))] ulong indexes,
+                                                  [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -231,17 +216,18 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_Three_rm =
-        {
-            4u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, ulong, uint> TestData_Three =
-            new(_TwoRegisterTable_V_8B_16B_(), _testData_rd, _testData_rn, _testData_Three_rm, _8B_(), _8B_(), _8B_(), _8B_(), _GenIdxsForTbl3_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_Three))]
-        public void ThreeRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong table2, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void ThreeRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_ThreeRegisterTable_V_8B_16B_))] uint opcodes,
+                                                [CombinatorialValues(0u)] uint rd,
+                                                [CombinatorialValues(1u)] uint rn,
+                                                [CombinatorialValues(4u)] uint rm,
+                                                [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                                [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                                [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                                [CombinatorialMemberData(nameof(_8B_))] ulong table2,
+                                                [CombinatorialMemberData(nameof(_GenIdxsForTbl3_))] ulong indexes,
+                                                [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -257,21 +243,18 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_ModThree_rd =
-        {
-            30u, 2u,
-        };
-        private static readonly uint[] _testData_ModThree_rm =
-        {
-            2u, 30u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, ulong, uint> TestData_ModThree =
-            new(_ThreeRegisterTable_V_8B_16B_(), _testData_ModThree_rd, _testData_ModTwo_rn, _testData_ModThree_rm, _8B_(), _8B_(), _8B_(), _8B_(), _GenIdxsForTbl3_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_ModThree))]
-        public void Mod_ThreeRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong table2, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Mod_ThreeRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_ThreeRegisterTable_V_8B_16B_))] uint opcodes,
+                                                    [CombinatorialValues(30u, 2u)] uint rd,
+                                                    [CombinatorialValues(31u)] uint rn,
+                                                    [CombinatorialValues(2u, 30u)] uint rm,
+                                                    [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                                    [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                                    [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                                    [CombinatorialMemberData(nameof(_8B_))] ulong table2,
+                                                    [CombinatorialMemberData(nameof(_GenIdxsForTbl3_))] ulong indexes,
+                                                    [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -287,17 +270,19 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_Four_rm =
-        {
-            5u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, ulong, ulong, uint> TestData_Four =
-            new(_FourRegisterTable_V_8B_16B_(), _testData_rd, _testData_rn, _testData_Four_rm, _8B_(), _8B_(), _8B_(), _8B_(), _8B_(), _GenIdxsForTbl4_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_Four))]
-        public void FourRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong table2, ulong table3, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void FourRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_FourRegisterTable_V_8B_16B_))] uint opcodes,
+                                               [CombinatorialValues(0u)] uint rd,
+                                               [CombinatorialValues(1u)] uint rn,
+                                               [CombinatorialValues(5u)] uint rm,
+                                               [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                               [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                               [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                               [CombinatorialMemberData(nameof(_8B_))] ulong table2,
+                                               [CombinatorialMemberData(nameof(_8B_))] ulong table3,
+                                               [CombinatorialMemberData(nameof(_GenIdxsForTbl4_))] ulong indexes,
+                                               [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);
@@ -314,21 +299,19 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_ModFour_rd =
-        {
-            30u, 3u,
-        };
-        private static readonly uint[] _testData_ModFour_rm =
-        {
-            3u, 30u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong, ulong, ulong, ulong, ulong, ulong, uint> TestData_ModFour =
-            new(_FourRegisterTable_V_8B_16B_(), _testData_ModFour_rd, _testData_ModTwo_rn, _testData_ModFour_rm, _8B_(), _8B_(), _8B_(), _8B_(), _8B_(), _GenIdxsForTbl4_(), _testData_q);
-
-        [Theory]
-        [MemberData(nameof(TestData_ModFour))]
-        public void Mod_FourRegisterTable_V_8B_16B(uint opcodes, uint rd, uint rn, uint rm, ulong z, ulong table0, ulong table1, ulong table2, ulong table3, ulong indexes, uint q)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Mod_FourRegisterTable_V_8B_16B([CombinatorialMemberData(nameof(_FourRegisterTable_V_8B_16B_))] uint opcodes,
+                                                   [CombinatorialValues(30u, 3u)] uint rd,
+                                                   [CombinatorialValues(31u)] uint rn,
+                                                   [CombinatorialValues(3u, 30u)] uint rm,
+                                                   [CombinatorialMemberData(nameof(_8B_))] ulong z,
+                                                   [CombinatorialMemberData(nameof(_8B_))] ulong table0,
+                                                   [CombinatorialMemberData(nameof(_8B_))] ulong table1,
+                                                   [CombinatorialMemberData(nameof(_8B_))] ulong table2,
+                                                   [CombinatorialMemberData(nameof(_8B_))] ulong table3,
+                                                   [CombinatorialMemberData(nameof(_GenIdxsForTbl4_))] ulong indexes,
+                                                   [CombinatorialValues(0b0u, 0b1u)] uint q) // <8B, 16B>
         {
             opcodes |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= ((q & 1) << 30);

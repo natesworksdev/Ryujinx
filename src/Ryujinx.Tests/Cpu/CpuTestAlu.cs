@@ -3,12 +3,17 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Alu")]
     public sealed class CpuTestAlu : CpuTest
     {
+        public CpuTestAlu(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Alu
 
         #region "Helper methods"
@@ -105,30 +110,11 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static readonly uint[] _testData_rd = { 0u, 31u };
-        private static readonly uint[] _testData_rn = { 1u, 31u };
-        private static readonly ulong[] _testData_xn =
-        {
-            0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
-        };
-        private static readonly uint[] _testData_wn =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, ulong> TestData_CLS_x = new(_testData_rd, _testData_rn, GenLeadingSignsX());
-        public static readonly MatrixTheoryData<uint, uint, uint> TestData_CLS_w = new(_testData_rd, _testData_rn, GenLeadingSignsW());
-        public static readonly MatrixTheoryData<uint, uint, ulong> TestData_CLZ_x = new(_testData_rd, _testData_rn, GenLeadingZerosX());
-        public static readonly MatrixTheoryData<uint, uint, uint> TestData_CLZ_w = new(_testData_rd, _testData_rn, GenLeadingZerosW());
-
-        public static readonly MatrixTheoryData<uint, uint, ulong> TestData_64bit = new(_testData_rd, _testData_rn, _testData_xn);
-        public static readonly MatrixTheoryData<uint, uint, uint> TestData_32bit = new(_testData_rd, _testData_rn, _testData_wn);
-
-        [Theory(DisplayName = "CLS <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_CLS_x))]
-        public void Cls_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "CLS <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Cls_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialMemberData(nameof(GenLeadingSignsX))] ulong xn)
         {
             uint opcode = 0xDAC01400; // CLS X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -140,9 +126,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CLS <Wd>, <Wn>")]
-        [MemberData(nameof(TestData_CLS_w))]
-        public void Cls_32bit(uint rd, uint rn, uint wn)
+        [SkippableTheory(DisplayName = "CLS <Wd>, <Wn>")]
+        [PairwiseData]
+        public void Cls_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialMemberData(nameof(GenLeadingSignsW))] uint wn)
         {
             uint opcode = 0x5AC01400; // CLS W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -154,9 +142,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CLZ <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_CLZ_x))]
-        public void Clz_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "CLZ <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Clz_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialMemberData(nameof(GenLeadingZerosX))] ulong xn)
         {
             uint opcode = 0xDAC01000; // CLZ X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -168,9 +158,11 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CLZ <Wd>, <Wn>")]
-        [MemberData(nameof(TestData_CLZ_w))]
-        public void Clz_32bit(uint rd, uint rn, uint wn)
+        [SkippableTheory(DisplayName = "CLZ <Wd>, <Wn>")]
+        [PairwiseData]
+        public void Clz_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialMemberData(nameof(GenLeadingZerosW))] uint wn)
         {
             uint opcode = 0x5AC01000; // CLZ W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -182,9 +174,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "RBIT <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_64bit))]
-        public void Rbit_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "RBIT <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Rbit_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn)
         {
             uint opcode = 0xDAC00000; // RBIT X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -196,9 +191,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "RBIT <Wd>, <Wn>")]
-        [MemberData(nameof(TestData_32bit))]
-        public void Rbit_32bit(uint rd, uint rn, uint wn)
+        [SkippableTheory(DisplayName = "RBIT <Wd>, <Wn>")]
+        [PairwiseData]
+        public void Rbit_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn)
         {
             uint opcode = 0x5AC00000; // RBIT W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -210,9 +208,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "REV16 <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_64bit))]
-        public void Rev16_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "REV16 <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Rev16_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                                [CombinatorialValues(1u, 31u)] uint rn,
+                                [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn)
         {
             uint opcode = 0xDAC00400; // REV16 X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -224,9 +225,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "REV16 <Wd>, <Wn>")]
-        [MemberData(nameof(TestData_32bit))]
-        public void Rev16_32bit(uint rd, uint rn, uint wn)
+        [SkippableTheory(DisplayName = "REV16 <Wd>, <Wn>")]
+        [PairwiseData]
+        public void Rev16_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                                [CombinatorialValues(1u, 31u)] uint rn,
+                                [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                        0x80000000u, 0xFFFFFFFFu)] uint wn)
         {
             uint opcode = 0x5AC00400; // REV16 W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -238,9 +242,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "REV32 <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_64bit))]
-        public void Rev32_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "REV32 <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Rev32_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                                [CombinatorialValues(1u, 31u)] uint rn,
+                                [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn)
         {
             uint opcode = 0xDAC00800; // REV32 X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -252,9 +259,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "REV <Wd>, <Wn>")]
-        [MemberData(nameof(TestData_32bit))]
-        public void Rev32_32bit(uint rd, uint rn, uint wn)
+        [SkippableTheory(DisplayName = "REV <Wd>, <Wn>")]
+        [PairwiseData]
+        public void Rev32_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                                [CombinatorialValues(1u, 31u)] uint rn,
+                                [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                        0x80000000u, 0xFFFFFFFFu)] uint wn)
         {
             uint opcode = 0x5AC00800; // REV W0, W0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -266,9 +276,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "REV64 <Xd>, <Xn>")]
-        [MemberData(nameof(TestData_64bit))]
-        public void Rev64_64bit(uint rd, uint rn, ulong xn)
+        [SkippableTheory(DisplayName = "REV64 <Xd>, <Xn>")]
+        [PairwiseData]
+        public void Rev64_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                                [CombinatorialValues(1u, 31u)] uint rn,
+                                [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn)
         {
             uint opcode = 0xDAC00C00; // REV64 X0, X0
             opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);

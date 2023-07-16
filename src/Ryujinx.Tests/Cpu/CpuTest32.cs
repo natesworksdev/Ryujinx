@@ -6,12 +6,15 @@ using Ryujinx.Memory;
 using Ryujinx.Tests.Unicorn;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 using MemoryPermission = Ryujinx.Tests.Unicorn.MemoryPermission;
 
 namespace Ryujinx.Tests.Cpu
 {
     public class CpuTest32 : IDisposable
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
         protected static readonly uint Size = (uint)MemoryBlock.GetPageSize();
 #pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static uint CodeBaseAddress = Size;
@@ -31,8 +34,9 @@ namespace Ryujinx.Tests.Cpu
 
         private bool _usingMemory;
 
-        public CpuTest32()
+        public CpuTest32(ITestOutputHelper testOutputHelper)
         {
+            _testOutputHelper = testOutputHelper;
             Setup();
         }
 
@@ -506,7 +510,7 @@ namespace Ryujinx.Tests.Cpu
                             Assert.Equal(_unicornEmu.Q[0].GetFloat(3), _context.GetV(0).Extract<float>(3), 1f);
                         });
 
-                        Console.WriteLine(fpTolerances);
+                        _testOutputHelper.WriteLine(fpTolerances.ToString());
                     }
                     else
                     {
@@ -525,7 +529,7 @@ namespace Ryujinx.Tests.Cpu
                             Assert.Equal(_unicornEmu.Q[0].GetDouble(1), _context.GetV(0).Extract<double>(1), 1d);
                         });
 
-                        Console.WriteLine(fpTolerances);
+                        _testOutputHelper.WriteLine(fpTolerances.ToString());
                     }
                     else
                     {

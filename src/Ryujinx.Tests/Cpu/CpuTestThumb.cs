@@ -1,26 +1,30 @@
-﻿#define Thumb
+#define Thumb
 
 using ARMeilleure.State;
-using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Thumb")]
     public sealed class CpuTestThumb : CpuTest32
     {
+        public CpuTestThumb(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Thumb
+
+        private const int RndCnt = 2;
 
         private static uint RotateRight(uint value, int count)
         {
             return (value >> count) | (value << (32 - count));
         }
 
-        public static readonly StaticTheoryData TestData_Imm = new(new[] {0u, 2u}, new[] { 1u, 0x1fu }, Random.Shared.NextUInt(), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_Imm))]
-        public void ShiftImm(uint shiftType, uint shiftImm, uint w1, uint w2)
+        [PairwiseData]
+        public void ShiftImm([CombinatorialRange(0u, 2u, 1u)] uint shiftType, [CombinatorialRange(1u, 0x1fu, 1u)] uint shiftImm, [CombinatorialRandomData(Count = RndCnt)] uint w1, [CombinatorialRandomData(Count = RndCnt)] uint w2)
         {
             uint opcode = 0x0000; // MOVS <Rd>, <Rm>, <shift> #<amount>
 
@@ -33,22 +37,20 @@ namespace Ryujinx.Tests.Cpu
             switch (shiftType)
             {
                 case 0:
-                    Assert.Equal(((w2 << (int)shiftImm) & 0xffffffffu), GetContext().GetX(1));
+                    Assert.Equal((w2 << (int)shiftImm) & 0xffffffffu, GetContext().GetX(1));
                     break;
                 case 1:
-                    Assert.Equal(((w2 >> (int)shiftImm) & 0xffffffffu), GetContext().GetX(1));
+                    Assert.Equal((w2 >> (int)shiftImm) & 0xffffffffu, GetContext().GetX(1));
                     break;
                 case 2:
-                    Assert.Equal((ulong)(((int)w2 >> (int)shiftImm) & 0xffffffffu), GetContext().GetX(1));
+                    Assert.Equal((ulong)((int)w2 >> (int)shiftImm) & 0xffffffffu, GetContext().GetX(1));
                     break;
             }
         }
 
-        public static readonly StaticTheoryData TestData_Reg = new(RangeUtils.RangeData(0u, 1u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_Reg))]
-        public void AddSubReg(uint op, uint w1, uint w2)
+        [PairwiseData]
+        public void AddSubReg([CombinatorialRange(0u, 1u, 1u)] uint op, [CombinatorialRandomData(Count = RndCnt)] uint w1, [CombinatorialRandomData(Count = RndCnt)] uint w2)
         {
             uint opcode = 0x1800; // ADDS <Rd>, <Rn>, <Rm>
 
@@ -70,14 +72,9 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-        // TODO: Change StaticTheoryData to work with differently sized lists
-        public static readonly StaticTheoryData TestData_Imm3_1 = new(0u, RangeUtils.RangeData(0u, 7u, 1u), Random.Shared.NextUInt());
-        public static readonly StaticTheoryData TestData_Imm3_2 = new(1u, RangeUtils.RangeData(0u, 7u, 1u), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_Imm3_1))]
-        [MemberData(nameof(TestData_Imm3_2))]
-        public void AddSubImm3(uint op, uint imm, uint w1)
+        [PairwiseData]
+        public void AddSubImm3([CombinatorialRange(0u, 1u, 1u)] uint op, [CombinatorialRange(0u, 7u, 1u)] uint imm, [CombinatorialRandomData(Count = RndCnt)] uint w1)
         {
             uint opcode = 0x1c00; // ADDS <Rd>, <Rn>, #<imm3>
 
@@ -98,13 +95,9 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-        public static readonly StaticTheoryData TestData_AluImm1 = new(RangeUtils.RangeData(0u, 3u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-        public static readonly StaticTheoryData TestData_AluImm2 = new(RangeUtils.RangeData(0u, 3u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_AluImm1))]
-        [MemberData(nameof(TestData_AluImm2))]
-        public void AluImm8(uint op, uint imm, uint w1)
+        [PairwiseData]
+        public void AluImm8([CombinatorialRange(0u, 3u, 1u)] uint op, [CombinatorialRandomData(Count = RndCnt)] uint imm, [CombinatorialRandomData(Count = RndCnt)] uint w1)
         {
             imm &= 0xff;
 
@@ -141,13 +134,9 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-        public static readonly StaticTheoryData TestData_AluRegLow1 = new(RangeUtils.RangeData(0u, 0xfu, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-        public static readonly StaticTheoryData TestData_AluRegLow2 = new(RangeUtils.RangeData(0u, 0xfu, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_AluRegLow1))]
-        [MemberData(nameof(TestData_AluRegLow2))]
-        public void AluRegLow(uint op, uint w1, uint w2)
+        [PairwiseData]
+        public void AluRegLow([CombinatorialRange(0u, 0xfu, 1u)] uint op, [CombinatorialRandomData(Count = RndCnt)] uint w1, [CombinatorialRandomData(Count = RndCnt)] uint w2)
         {
             uint opcode = 0x4000; // ANDS <Rdn>, <Rm>
 
@@ -232,15 +221,9 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-        public static readonly StaticTheoryData TestData_AluRegHigh1 = new(0u, RangeUtils.RangeData(0u, 13u, 1u), RangeUtils.RangeData(0u, 13u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-        public static readonly StaticTheoryData TestData_AluRegHigh2 = new(1u, RangeUtils.RangeData(0u, 13u, 1u), RangeUtils.RangeData(0u, 13u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-        public static readonly StaticTheoryData TestData_AluRegHigh3 = new(2u, RangeUtils.RangeData(0u, 13u, 1u), RangeUtils.RangeData(0u, 13u, 1u), Random.Shared.NextUInt(), Random.Shared.NextUInt());
-
         [Theory]
-        [MemberData(nameof(TestData_AluRegHigh1))]
-        [MemberData(nameof(TestData_AluRegHigh2))]
-        [MemberData(nameof(TestData_AluRegHigh3))]
-        public void AluRegHigh(uint op, uint rd, uint rm, uint w1, uint w2)
+        [PairwiseData]
+        public void AluRegHigh([CombinatorialRange(0u, 2u, 1u)] uint op, [CombinatorialRange(0u, 13u, 1u)] uint rd, [CombinatorialRange(0u, 13u, 1u)] uint rm, [CombinatorialRandomData(Count = RndCnt)] uint w1, [CombinatorialRandomData(Count = RndCnt)] uint w2)
         {
             if (rd == rm)
             {

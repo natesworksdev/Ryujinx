@@ -2,12 +2,17 @@
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Mul32")]
     public sealed class CpuTestMul32 : CpuTest32
     {
+        public CpuTestMul32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Mul32
 
         #region "ValueSource (Opcodes)"
@@ -52,33 +57,19 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static readonly uint[] _testData_rn =
-        {
-            0u, 0xdu,
-        };
-        private static readonly uint[] _testData_rm =
-        {
-            1u, 0xdu,
-        };
-        private static readonly uint[] _testData_ra =
-        {
-            2u, 0xdu,
-        };
-        private static readonly uint[] _testData_rd =
-        {
-            3u, 0xdu,
-        };
-        private static readonly uint[] _testData_wn =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint, uint> TestData_Smla = new(_Smlabb_Smlabt_Smlatb_Smlatt_(), _testData_rn, _testData_rm, _testData_ra, _testData_rd, _testData_wn, _testData_wn, _testData_wn);
-
         [Theory(DisplayName = "SMLA<x><y> <Rd>, <Rn>, <Rm>, <Ra>")]
-        [MemberData(nameof(TestData_Smla))]
-        public void Smla___32bit(uint opcode, uint rn, uint rm, uint ra, uint rd, uint wn, uint wm, uint wa)
+        [PairwiseData]
+        public void Smla___32bit([CombinatorialMemberData(nameof(_Smlabb_Smlabt_Smlatb_Smlatt_))] uint opcode,
+                                 [CombinatorialValues(0u, 0xdu)] uint rn,
+                                 [CombinatorialValues(1u, 0xdu)] uint rm,
+                                 [CombinatorialValues(2u, 0xdu)] uint ra,
+                                 [CombinatorialValues(3u, 0xdu)] uint rd,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wm,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wa)
         {
             opcode |= ((rn & 15) << 0) | ((rm & 15) << 8) | ((ra & 15) << 12) | ((rd & 15) << 16);
 
@@ -88,12 +79,20 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint, uint> TestData_Smlaw = new(_Smlawb_Smlawt_(), _testData_rn, _testData_rm, _testData_ra, _testData_rd, _testData_wn, _testData_wn, _testData_wn);
 
         [Theory(DisplayName = "SMLAW<x> <Rd>, <Rn>, <Rm>, <Ra>")]
-        [MemberData(nameof(TestData_Smlaw))]
-        public void Smlaw__32bit(uint opcode, uint rn, uint rm, uint ra, uint rd, uint wn, uint wm, uint wa)
+        [PairwiseData]
+        public void Smlaw__32bit([CombinatorialMemberData(nameof(_Smlawb_Smlawt_))] uint opcode,
+                                 [CombinatorialValues(0u, 0xdu)] uint rn,
+                                 [CombinatorialValues(1u, 0xdu)] uint rm,
+                                 [CombinatorialValues(2u, 0xdu)] uint ra,
+                                 [CombinatorialValues(3u, 0xdu)] uint rd,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wm,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wa)
         {
             opcode |= ((rn & 15) << 0) | ((rm & 15) << 8) | ((ra & 15) << 12) | ((rd & 15) << 16);
 
@@ -104,11 +103,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Smul = new(_Smulbb_Smulbt_Smultb_Smultt_(), _testData_rn, _testData_rm, _testData_rd, _testData_wn, _testData_wn);
-
         [Theory(DisplayName = "SMUL<x><y> <Rd>, <Rn>, <Rm>")]
-        [MemberData(nameof(TestData_Smul))]
-        public void Smul___32bit(uint opcode, uint rn, uint rm, uint rd, uint wn, uint wm)
+        [PairwiseData]
+        public void Smul___32bit([CombinatorialMemberData(nameof(_Smulbb_Smulbt_Smultb_Smultt_))] uint opcode,
+                                 [CombinatorialValues(0u, 0xdu)] uint rn,
+                                 [CombinatorialValues(1u, 0xdu)] uint rm,
+                                 [CombinatorialValues(2u, 0xdu)] uint rd,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             opcode |= ((rn & 15) << 0) | ((rm & 15) << 8) | ((rd & 15) << 16);
 
@@ -119,11 +123,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Smulw = new(_Smulwb_Smulwt_(), _testData_rn, _testData_rm, _testData_rd, _testData_wn, _testData_wn);
-
         [Theory(DisplayName = "SMULW<x> <Rd>, <Rn>, <Rm>")]
-        [MemberData(nameof(TestData_Smulw))]
-        public void Smulw__32bit(uint opcode, uint rn, uint rm, uint rd, uint wn, uint wm)
+        [PairwiseData]
+        public void Smulw__32bit([CombinatorialMemberData(nameof(_Smulwb_Smulwt_))] uint opcode,
+                                 [CombinatorialValues(0u, 0xdu)] uint rn,
+                                 [CombinatorialValues(1u, 0xdu)] uint rm,
+                                 [CombinatorialValues(2u, 0xdu)] uint rd,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                 [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             opcode |= ((rn & 15) << 0) | ((rm & 15) << 8) | ((rd & 15) << 16);
 

@@ -2,12 +2,17 @@
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("AluRs32")]
     public sealed class CpuTestAluRs32 : CpuTest32
     {
+        public CpuTestAluRs32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if AluRs32
 
         #region "ValueSource (Opcodes)"
@@ -36,34 +41,18 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static readonly uint[] _testData_rd =
-        {
-            0u, 13u,
-        };
-        private static readonly uint[] _testData_rn =
-        {
-            1u, 13u,
-        };
-        private static readonly uint[] _testData_rm =
-        {
-            2u, 13u,
-        };
-        private static readonly uint[] _testData_wn =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-        private static readonly bool[] _testData_carry =
-        {
-            false,
-            true,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, bool> TestData = new(_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_(), _testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_carry);
 
         [Theory]
-        [MemberData(nameof(TestData))]
-        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs(uint opcode, uint rd, uint rn, uint rm, uint wn, uint wm, bool carryIn)
+        [PairwiseData]
+        public void Adc_Adcs_Rsc_Rscs_Sbc_Sbcs([CombinatorialMemberData(nameof(_Adc_Adcs_Rsc_Rscs_Sbc_Sbcs_))] uint opcode,
+                                               [CombinatorialValues(0u, 13u)] uint rd,
+                                               [CombinatorialValues(1u, 13u)] uint rn,
+                                               [CombinatorialValues(2u, 13u)] uint rm,
+                                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                                               bool carryIn)
         {
             opcode |= ((rm & 15) << 0) | ((rn & 15) << 16) | ((rd & 15) << 12);
 
@@ -74,20 +63,18 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_shift =
-        {
-            0b00u, 0b01u, 0b10u, 0b11u, // <LSL, LSR, ASR, ROR>
-        };
-        private static readonly uint[] _testData_amount =
-        {
-            0u, 15u, 16u, 31u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint, uint> TestData_Add = new(_Add_Adds_Rsb_Rsbs_(), _testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_shift, _testData_amount);
-
         [Theory]
-        [MemberData(nameof(TestData_Add))]
-        public void Add_Adds_Rsb_Rsbs(uint opcode, uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [PairwiseData]
+        public void Add_Adds_Rsb_Rsbs([CombinatorialMemberData(nameof(_Add_Adds_Rsb_Rsbs_))] uint opcode,
+                                      [CombinatorialValues(0u, 13u)] uint rd,
+                                      [CombinatorialValues(1u, 13u)] uint rn,
+                                      [CombinatorialValues(2u, 13u)] uint rm,
+                                      [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                              0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                      [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                              0x80000000u, 0xFFFFFFFFu)] uint wm,
+                                      [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                                      [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             opcode |= ((rm & 15) << 0) | ((rn & 15) << 16) | ((rd & 15) << 12);
             opcode |= ((shift & 3) << 5) | ((amount & 31) << 7);

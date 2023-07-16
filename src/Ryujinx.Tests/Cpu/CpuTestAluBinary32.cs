@@ -11,6 +11,10 @@ namespace Ryujinx.Tests.Cpu
     [Collection("AluBinary32")]
     public sealed class CpuTestAluBinary32 : CpuTest32
     {
+        public CpuTestAluBinary32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if AluBinary32
         public struct CrcTest32 : IXunitSerializable
         {
@@ -83,24 +87,13 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static uint[] _testData_rd =
-        {
-            0u,
-        };
-        private static uint[] _testData_rn =
-        {
-            1u,
-        };
-        private static uint[] _testData_rm =
-        {
-            2u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, CrcTest32> TestData = new(_testData_rd, _testData_rn, _testData_rm, RangeUtils.RangeData(0u, 2u, 1u), _CRC32_Test_Values_());
-
         [Theory]
-        [MemberData(nameof(TestData))]
-        public void Crc32_Crc32c_b_h_w(uint rd, uint rn, uint rm, uint size, CrcTest32 test)
+        [CombinatorialData]
+        public void Crc32_Crc32c_b_h_w([CombinatorialValues(0u)] uint rd,
+                                       [CombinatorialValues(1u)] uint rn,
+                                       [CombinatorialValues(2u)] uint rm,
+                                       [CombinatorialRange(0u, 2u, 1u)] uint size,
+                                       [CombinatorialMemberData(nameof(_CRC32_Test_Values_))] CrcTest32 test)
         {
             // Unicorn does not yet support 32bit crc instructions, so test against a known table of results/values.
 
@@ -118,7 +111,7 @@ namespace Ryujinx.Tests.Cpu
 
             ExecutionContext context = GetContext();
             ulong result = context.GetX((int)rd);
-            Assert.True(result == test.Results[size]);
+            Assert.Equal(test.Results[size], result);
         }
 #endif
     }

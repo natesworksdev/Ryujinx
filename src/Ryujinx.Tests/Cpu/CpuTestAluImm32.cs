@@ -2,12 +2,17 @@
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("AluImm32")]
     public sealed class CpuTestAluImm32 : CpuTest32
     {
+        public CpuTestAluImm32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if AluImm32
 
         #region "ValueSource (Opcodes)"
@@ -35,25 +40,14 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        private static readonly uint[] _testData_rd =
-        {
-            0u, 13u,
-        };
-        private static readonly uint[] _testData_rn =
-        {
-            1u, 13u,
-        };
-        private static readonly bool[] _testData_carry =
-        {
-            false,
-            true,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, bool> TestData = new(Opcodes(), _testData_rd, _testData_rn, Random.Shared.NextUIntEnumerable(RndCnt), Random.Shared.NextUIntEnumerable(RndCnt), _testData_carry);
-
         [Theory]
-        [MemberData(nameof(TestData))]
-        public void TestCpuTestAluImm32(uint opcode, uint rd, uint rn, uint imm, uint wn, bool carryIn)
+        [PairwiseData]
+        public void TestCpuTestAluImm32([CombinatorialMemberData(nameof(Opcodes))] uint opcode,
+                                        [CombinatorialValues(0u, 13u)] uint rd,
+                                        [CombinatorialValues(1u, 13u)] uint rn,
+                                        [CombinatorialRandomData(Count = RndCnt)] uint imm,
+                                        [CombinatorialRandomData(Count = RndCnt)] uint wn,
+                                        [CombinatorialValues(true, false)] bool carryIn)
         {
             opcode |= ((imm & 0xfff) << 0) | ((rn & 15) << 16) | ((rd & 15) << 12);
 

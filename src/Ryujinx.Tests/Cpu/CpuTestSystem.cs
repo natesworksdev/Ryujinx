@@ -4,12 +4,17 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("System")]
     public sealed class CpuTestSystem : CpuTest
     {
+        public CpuTestSystem(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if System
 
         #region "ValueSource (Types)"
@@ -47,16 +52,11 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static readonly uint[] _testData_rt =
-        {
-            0u, 1u, 31u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, ulong> TestData = new(_MrsMsr_Nzcv_(), _testData_rt, _GenNzcv_());
-
-        [Theory]
-        [MemberData(nameof(TestData))]
-        public void MrsMsr_Nzcv(uint opcodes, uint rt, ulong xt)
+        [SkippableTheory]
+        [PairwiseData]
+        public void MrsMsr_Nzcv([CombinatorialMemberData(nameof(_MrsMsr_Nzcv_))] uint opcodes,
+                                [CombinatorialValues(0u, 1u, 31u)] uint rt,
+                                [CombinatorialMemberData(nameof(_GenNzcv_))] ulong xt)
         {
             opcodes |= (rt & 31) << 0;
 

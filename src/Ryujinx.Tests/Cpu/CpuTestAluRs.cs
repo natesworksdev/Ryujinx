@@ -2,42 +2,29 @@
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("AluRs")]
     public sealed class CpuTestAluRs : CpuTest
     {
+        public CpuTestAluRs(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if AluRs
 
-        private static readonly uint[] _testData_rd =
-        {
-            0u, 31u,
-        };
-        private static readonly uint[] _testData_rn =
-        {
-            1u, 31u,
-        };
-        private static readonly uint[] _testData_rm =
-        {
-            2u, 31u,
-        };
-        private static readonly ulong[] _testData_xn =
-        {
-            0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
-        };
-        private static readonly bool[] _testData_bools =
-        {
-            false,
-            true,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong, bool> TestData_Adc = new(_testData_rd, _testData_rn, _testData_rm, _testData_xn, _testData_xn, _testData_bools);
-
-        [Theory(DisplayName = "ADC <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Adc))]
-        public void Adc_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, bool carryIn)
+        [SkippableTheory(DisplayName = "ADC <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Adc_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              bool carryIn)
         {
             uint opcode = 0x9A000000; // ADC X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -49,16 +36,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_wn = {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-         };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, bool> TestData_Adc32 = new(_testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_bools);
-
-        [Theory(DisplayName = "ADC <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Adc32))]
-        public void Adc_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, bool carryIn)
+        [SkippableTheory(DisplayName = "ADC <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Adc_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              bool carryIn)
         {
             uint opcode = 0x1A000000; // ADC W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -70,9 +57,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ADCS <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Adc))]
-        public void Adcs_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, bool carryIn)
+        [SkippableTheory(DisplayName = "ADCS <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Adcs_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               bool carryIn)
         {
             uint opcode = 0xBA000000; // ADCS X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -84,9 +78,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ADCS <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Adc32))]
-        public void Adcs_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, bool carryIn)
+        [SkippableTheory(DisplayName = "ADCS <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Adcs_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               bool carryIn)
         {
             uint opcode = 0x3A000000; // ADCS W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -98,20 +99,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_shift =
-        {
-            0b00u, 0b01u, 0b10u, // <LSL, LSR, ASR>
-        };
-        private static readonly uint[] _testData_amount =
-        {
-            0u, 31u, 32u, 63u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong, uint, uint> TestData_Add = new(_testData_rd, _testData_rn, _testData_rm, _testData_xn, _testData_xn, _testData_shift, _testData_amount);
-
-        [Theory(DisplayName = "ADD <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add))]
-        public void Add_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ADD <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Add_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0x8B000000; // ADD X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -124,11 +122,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint> TestData_Add32 = new(_testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_shift, _testData_amount);
-
-        [Theory(DisplayName = "ADD <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add32))]
-        public void Add_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ADD <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Add_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x0B000000; // ADD W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -141,9 +145,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ADDS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add))]
-        public void Adds_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ADDS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Adds_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                               [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xAB000000; // ADDS X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -156,9 +168,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ADDS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add32))]
-        public void Adds_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ADDS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Adds_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                               [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x2B000000; // ADDS W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -171,15 +191,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_And_shift = {
-            0b00u, 0b01u, 0b10u, 0b11u, // <LSL, LSR, ASR, ROR>
-         };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong, uint, uint> TestData_And = new(_testData_rd, _testData_rn, _testData_rm, _testData_xn, _testData_xn, _testData_And_shift, _testData_amount);
-
-        [Theory(DisplayName = "AND <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void And_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "AND <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void And_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0x8A000000; // AND X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -192,11 +214,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint, uint> TestData_And32 = new(_testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_And_shift, _testData_amount);
-
-        [Theory(DisplayName = "AND <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void And_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "AND <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void And_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x0A000000; // AND W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -209,9 +237,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ANDS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Ands_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ANDS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Ands_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                               [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xEA000000; // ANDS X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -224,9 +260,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ANDS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Ands_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "ANDS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Ands_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                               [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x6A000000; // ANDS W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -239,16 +283,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly ulong[] _testData_xm = {
-            0ul, 31ul, 32ul, 63ul, 0x7FFFFFFFFFFFFFFFul,
-            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
-         };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong> TestData_Asrv = new(_testData_rd, _testData_rn, _testData_rm, _testData_xn, _testData_xm);
-
-        [Theory(DisplayName = "ASRV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Asrv))]
-        public void Asrv_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm)
+        [SkippableTheory(DisplayName = "ASRV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Asrv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0ul, 31ul, 32ul, 63ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC02800; // ASRV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -260,16 +303,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_wm = {
-            0u, 15u, 16u, 31u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint> TestData_Asrv32 = new(_testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wm);
-
-        [Theory(DisplayName = "ASRV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Asrv32))]
-        public void Asrv_32bit(uint rd, uint rn, uint rm, uint wn, uint wm)
+        [SkippableTheory(DisplayName = "ASRV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Asrv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0u, 15u, 16u, 31u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC02800; // ASRV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -281,9 +323,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "BIC <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Bic_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "BIC <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Bic_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0x8A200000; // BIC X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -296,9 +346,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "BIC <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Bic_32bit(uint rd, uint rn, uint rm, uint wn, uint wm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "BIC <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Bic_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x0A200000; // BIC W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -311,9 +369,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "BICS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Bics_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm, uint shift, uint amount)
+        [SkippableTheory(DisplayName = "BICS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Bics_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                               [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xEA200000; // BICS X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -326,15 +392,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "BICS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Bics_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm,
-                               uint shift, // <LSL, LSR, ASR, ROR>
-                               uint amount)
+        [SkippableTheory(DisplayName = "BICS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Bics_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                               [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x6A200000; // BICS W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -347,15 +415,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "EON <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Eon_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "EON <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Eon_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xCA200000; // EON X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -368,15 +438,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "EON <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Eon_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "EON <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Eon_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x4A200000; // EON W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -389,15 +461,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "EOR <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Eor_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "EOR <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Eor_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xCA000000; // EOR X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -410,15 +484,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "EOR <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Eor_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "EOR <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Eor_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x4A000000; // EOR W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -431,16 +507,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong, uint> TestData_Extr = new(_testData_rd, _testData_rn, _testData_rm, _testData_xn, _testData_xn, _testData_amount);
-
-        [Theory(DisplayName = "EXTR <Xd>, <Xn>, <Xm>, #<lsb>")]
-        [MemberData(nameof(TestData_Extr))]
-        public void Extr_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm,
-                               uint lsb)
+        [SkippableTheory(DisplayName = "EXTR <Xd>, <Xn>, <Xm>, #<lsb>")]
+        [PairwiseData]
+        public void Extr_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               [CombinatorialValues(0u, 31u, 32u, 63u)] uint lsb)
         {
             uint opcode = 0x93C00000; // EXTR X0, X0, X0, #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -453,16 +529,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Extr32 = new(_testData_rd, _testData_rn, _testData_rm, _testData_wn, _testData_wn, _testData_amount);
-
-        [Theory(DisplayName = "EXTR <Wd>, <Wn>, <Wm>, #<lsb>")]
-        [MemberData(nameof(TestData_Extr32))]
-        public void Extr_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm,
-                               uint lsb)
+        [SkippableTheory(DisplayName = "EXTR <Wd>, <Wn>, <Wm>, #<lsb>")]
+        [PairwiseData]
+        public void Extr_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               [CombinatorialValues(0u, 15u, 16u, 31u)] uint lsb)
         {
             uint opcode = 0x13800000; // EXTR W0, W0, W0, #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -475,13 +551,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "LSLV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Asrv))]
-        public void Lslv_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm)
+        [SkippableTheory(DisplayName = "LSLV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Lslv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0ul, 31ul, 32ul, 63ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC02000; // LSLV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -493,13 +571,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "LSLV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Asrv32))]
-        public void Lslv_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm)
+        [SkippableTheory(DisplayName = "LSLV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Lslv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0u, 15u, 16u, 31u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC02000; // LSLV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -511,13 +591,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "LSRV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Asrv))]
-        public void Lsrv_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm)
+        [SkippableTheory(DisplayName = "LSRV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Lsrv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0ul, 31ul, 32ul, 63ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC02400; // LSRV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -529,13 +611,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "LSRV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Asrv32))]
-        public void Lsrv_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm)
+        [SkippableTheory(DisplayName = "LSRV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Lsrv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0u, 15u, 16u, 31u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC02400; // LSRV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -547,15 +631,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ORN <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Orn_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "ORN <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Orn_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xAA200000; // ORN X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -568,15 +654,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ORN <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Orn_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "ORN <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Orn_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x2A200000; // ORN W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -589,15 +677,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ORR <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And))]
-        public void Orr_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "ORR <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Orr_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xAA000000; // ORR X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -610,15 +700,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "ORR <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_And32))]
-        public void Orr_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
-                              uint shift, // <LSL, LSR, ASR, ROR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "ORR <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Orr_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u, 0b11u)] uint shift, // <LSL, LSR, ASR, ROR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x2A000000; // ORR W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -631,13 +723,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "RORV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Asrv))]
-        public void Rorv_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm)
+        [SkippableTheory(DisplayName = "RORV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Rorv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0ul, 31ul, 32ul, 63ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC02C00; // RORV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -649,13 +743,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "RORV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Asrv32))]
-        public void Rorv_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm)
+        [SkippableTheory(DisplayName = "RORV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Rorv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0u, 15u, 16u, 31u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC02C00; // RORV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -667,13 +763,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SBC <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Adc))]
-        public void Sbc_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
+        [SkippableTheory(DisplayName = "SBC <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Sbc_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
                               bool carryIn)
         {
             uint opcode = 0xDA000000; // SBC X0, X0, X0
@@ -686,13 +784,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SBC <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Adc32))]
-        public void Sbc_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
+        [SkippableTheory(DisplayName = "SBC <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Sbc_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
                               bool carryIn)
         {
             uint opcode = 0x5A000000; // SBC W0, W0, W0
@@ -705,13 +805,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SBCS <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Adc))]
-        public void Sbcs_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm,
+        [SkippableTheory(DisplayName = "SBCS <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Sbcs_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
                                bool carryIn)
         {
             uint opcode = 0xFA000000; // SBCS X0, X0, X0
@@ -724,13 +826,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SBCS <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Adc32))]
-        public void Sbcs_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm,
+        [SkippableTheory(DisplayName = "SBCS <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Sbcs_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
                                bool carryIn)
         {
             uint opcode = 0x7A000000; // SBCS W0, W0, W0
@@ -743,15 +847,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SUB <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add))]
-        public void Sub_64bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              ulong xn,
-                              ulong xm,
-                              uint shift, // <LSL, LSR, ASR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "SUB <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Sub_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                              [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                              [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xCB000000; // SUB X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -764,15 +870,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SUB <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add32))]
-        public void Sub_32bit(uint rd,
-                              uint rn,
-                              uint rm,
-                              uint wn,
-                              uint wm,
-                              uint shift, // <LSL, LSR, ASR>
-                              uint amount)
+        [SkippableTheory(DisplayName = "SUB <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Sub_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                              [CombinatorialValues(1u, 31u)] uint rn,
+                              [CombinatorialValues(2u, 31u)] uint rm,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wn,
+                              [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                      0x80000000u, 0xFFFFFFFFu)] uint wm,
+                              [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                              [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x4B000000; // SUB W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -785,15 +893,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SUBS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add))]
-        public void Subs_64bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               ulong xn,
-                               ulong xm,
-                               uint shift, // <LSL, LSR, ASR>
-                               uint amount)
+        [SkippableTheory(DisplayName = "SUBS <Xd>, <Xn>, <Xm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Subs_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                               [CombinatorialValues(0u, 31u, 32u, 63u)] uint amount)
         {
             uint opcode = 0xEB000000; // SUBS X0, X0, X0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -806,15 +916,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "SUBS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
-        [MemberData(nameof(TestData_Add32))]
-        public void Subs_32bit(uint rd,
-                               uint rn,
-                               uint rm,
-                               uint wn,
-                               uint wm,
-                               uint shift, // <LSL, LSR, ASR>
-                               uint amount)
+        [SkippableTheory(DisplayName = "SUBS <Wd>, <Wn>, <Wm>{, <shift> #<amount>}")]
+        [PairwiseData]
+        public void Subs_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm,
+                               [CombinatorialValues(0b00u, 0b01u, 0b10u)] uint shift, // <LSL, LSR, ASR>
+                               [CombinatorialValues(0u, 15u, 16u, 31u)] uint amount)
         {
             uint opcode = 0x6B000000; // SUBS W0, W0, W0, LSL #0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);

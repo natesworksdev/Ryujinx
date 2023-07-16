@@ -10,6 +10,10 @@ namespace Ryujinx.Tests.Cpu
     [Collection("AluBinary")]
     public sealed class CpuTestAluBinary : CpuTest
     {
+        public CpuTestAluBinary(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if AluBinary
         public struct CrcTest : IXunitSerializable
         {
@@ -71,35 +75,13 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private static readonly ulong[] _testData_xn =
-        {
-            0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
-        };
-        private static readonly uint[] _testData_wn =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-
-        private static readonly uint[] _testData_Crc32_rd =
-        {
-            0u,
-        };
-        private static readonly uint[] _testData_Crc32_rn =
-        {
-            1u,
-        };
-        private static readonly uint[] _testData_Crc32_rm =
-        {
-            2u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, CrcTest> TestData_Crc32 = new(_testData_Crc32_rd, _testData_Crc32_rn, _testData_Crc32_rm, RangeUtils.RangeData(0u, 3u, 1u), _CRC32_Test_Values_());
-
         [Theory]
-        [MemberData(nameof(TestData_Crc32))]
-        public void Crc32_b_h_w_x(uint rd, uint rn, uint rm, uint size, CrcTest test)
+        [CombinatorialData]
+        public void Crc32_b_h_w_x([CombinatorialValues(0u)] uint rd,
+                                  [CombinatorialValues(1u)] uint rn,
+                                  [CombinatorialValues(2u)] uint rm,
+                                  [CombinatorialRange(0u, 3u, 1u)] uint size,
+                                  [CombinatorialMemberData(nameof(_CRC32_Test_Values_))] CrcTest test)
         {
             uint opcode = 0x1AC04000; // CRC32B W0, W0, W0
 
@@ -117,32 +99,19 @@ namespace Ryujinx.Tests.Cpu
 
             ExecutionContext context = GetContext();
             ulong result = context.GetX((int)rd);
-            Assert.True(result == test.Results[size]);
+            Assert.Equal(test.Results[size], result);
         }
 
-        private static readonly uint[] _testData_Crc32x_rd =
-        {
-            0u, 31u,
-        };
-        private static readonly uint[] _testData_Crc32x_rn =
-        {
-            1u, 31u,
-        };
-        private static readonly uint[] _testData_Crc32x_rm =
-        {
-            2u, 31u,
-        };
-
-        private static readonly uint[] _testData_Crc32x_wn =
-        {
-            0x00000000u, 0xFFFFFFFFu,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ulong> TestData_Crc32x = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_Crc32x_wn, _testData_xn);
-
-        [Theory(DisplayName = "CRC32X <Wd>, <Wn>, <Xm>", Skip = "Unicorn fails.")]
-        [MemberData(nameof(TestData_Crc32x))]
-        public void Crc32x(uint rd, uint rn, uint rm, uint wn, ulong xm)
+        [SkippableTheory(DisplayName = "CRC32X <Wd>, <Wn>, <Xm>", Skip = "Unicorn fails.")]
+        [PairwiseData]
+        public void Crc32x([CombinatorialValues(0u, 31u)] uint rd,
+                           [CombinatorialValues(1u, 31u)] uint rn,
+                           [CombinatorialValues(2u, 31u)] uint rm,
+                           [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                           [CombinatorialValues((ulong)0x00_00_00_00_00_00_00_00,
+                                   (ulong)0x7F_FF_FF_FF_FF_FF_FF_FF,
+                                   0x80_00_00_00_00_00_00_00,
+                                   0xFF_FF_FF_FF_FF_FF_FF_FF)] ulong xm)
         {
             uint opcode = 0x9AC04C00; // CRC32X W0, W0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -154,11 +123,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint> TestData_Crc32w = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_Crc32x_wn, _testData_wn);
-
-        [Theory(DisplayName = "CRC32W <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
-        [MemberData(nameof(TestData_Crc32w))]
-        public void Crc32w(uint rd, uint rn, uint rm, uint wn, uint wm)
+        [SkippableTheory(DisplayName = "CRC32W <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
+        [PairwiseData]
+        public void Crc32w([CombinatorialValues(0u, 31u)] uint rd,
+                           [CombinatorialValues(1u, 31u)] uint rn,
+                           [CombinatorialValues(2u, 31u)] uint rm,
+                           [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                           [CombinatorialValues((uint)0x00_00_00_00, (uint)0x7F_FF_FF_FF,
+                                   0x80_00_00_00, 0xFF_FF_FF_FF)] uint wm)
         {
             uint opcode = 0x1AC04800; // CRC32W W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -170,17 +142,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly ushort[] _testData_Crc32h_wm =
-        {
-            0x00_00, 0x7F_FF,
-            0x80_00, 0xFF_FF,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, ushort> TestData_Crc32h = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_Crc32x_wn, _testData_Crc32h_wm);
-
-        [Theory(DisplayName = "CRC32H <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
-        [MemberData(nameof(TestData_Crc32h))]
-        public void Crc32h(uint rd, uint rn, uint rm, uint wn, ushort wm)
+        [SkippableTheory(DisplayName = "CRC32H <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
+        [PairwiseData]
+        public void Crc32h([CombinatorialValues(0u, 31u)] uint rd,
+                           [CombinatorialValues(1u, 31u)] uint rn,
+                           [CombinatorialValues(2u, 31u)] uint rm,
+                           [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                           [CombinatorialValues((ushort)0x00_00, (ushort)0x7F_FF,
+                                   (ushort)0x80_00, (ushort)0xFF_FF)] ushort wm)
         {
             uint opcode = 0x1AC04400; // CRC32H W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -192,17 +161,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly byte[] _testData_Crc32b_wm =
-        {
-            0x00, 0x7F,
-            0x80, 0xFF,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, byte> TestData_Crc32b = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_Crc32x_wn, _testData_Crc32b_wm);
-
-        [Theory(DisplayName = "CRC32B <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
-        [MemberData(nameof(TestData_Crc32b))]
-        public void Crc32b(uint rd, uint rn, uint rm, uint wn, byte wm)
+        [SkippableTheory(DisplayName = "CRC32B <Wd>, <Wn>, <Wm>", Skip = "Unicorn fails.")]
+        [PairwiseData]
+        public void Crc32b([CombinatorialValues(0u, 31u)] uint rd,
+                           [CombinatorialValues(1u, 31u)] uint rn,
+                           [CombinatorialValues(2u, 31u)] uint rm,
+                           [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                           [CombinatorialValues((byte)0x00, (byte)0x7F,
+                                   (byte)0x80, (byte)0xFF)] byte wm)
         {
             uint opcode = 0x1AC04000; // CRC32B W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -214,9 +180,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CRC32CX <Wd>, <Wn>, <Xm>")]
-        [MemberData(nameof(TestData_Crc32x))]
-        public void Crc32cx(uint rd, uint rn, uint rm, uint wn, ulong xm)
+        [SkippableTheory(DisplayName = "CRC32CX <Wd>, <Wn>, <Xm>")]
+        [PairwiseData]
+        public void Crc32cx([CombinatorialValues(0u, 31u)] uint rd,
+                            [CombinatorialValues(1u, 31u)] uint rn,
+                            [CombinatorialValues(2u, 31u)] uint rm,
+                            [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                            [CombinatorialValues((ulong)0x00_00_00_00_00_00_00_00,
+                                    (ulong)0x7F_FF_FF_FF_FF_FF_FF_FF,
+                                    0x80_00_00_00_00_00_00_00,
+                                    0xFF_FF_FF_FF_FF_FF_FF_FF)] ulong xm)
         {
             uint opcode = 0x9AC05C00; // CRC32CX W0, W0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -228,9 +201,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CRC32CW <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Crc32w))]
-        public void Crc32cw(uint rd, uint rn, uint rm, uint wn, uint wm)
+        [SkippableTheory(DisplayName = "CRC32CW <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Crc32cw([CombinatorialValues(0u, 31u)] uint rd,
+                            [CombinatorialValues(1u, 31u)] uint rn,
+                            [CombinatorialValues(2u, 31u)] uint rm,
+                            [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                            [CombinatorialValues((uint)0x00_00_00_00, (uint)0x7F_FF_FF_FF,
+                                    0x80_00_00_00, 0xFF_FF_FF_FF)] uint wm)
         {
             uint opcode = 0x1AC05800; // CRC32CW W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -242,9 +220,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CRC32CH <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Crc32h))]
-        public void Crc32ch(uint rd, uint rn, uint rm, uint wn, ushort wm)
+        [SkippableTheory(DisplayName = "CRC32CH <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Crc32ch([CombinatorialValues(0u, 31u)] uint rd,
+                            [CombinatorialValues(1u, 31u)] uint rn,
+                            [CombinatorialValues(2u, 31u)] uint rm,
+                            [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                            [CombinatorialValues((ushort)0x00_00, (ushort)0x7F_FF,
+                                    (ushort)0x80_00, (ushort)0xFF_FF)] ushort wm)
         {
             uint opcode = 0x1AC05400; // CRC32CH W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -256,9 +239,14 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "CRC32CB <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Crc32b))]
-        public void Crc32cb(uint rd, uint rn, uint rm, uint wn, byte wm)
+        [SkippableTheory(DisplayName = "CRC32CB <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Crc32cb([CombinatorialValues(0u, 31u)] uint rd,
+                            [CombinatorialValues(1u, 31u)] uint rn,
+                            [CombinatorialValues(2u, 31u)] uint rm,
+                            [CombinatorialValues(0x00000000u, 0xFFFFFFFFu)] uint wn,
+                            [CombinatorialValues((byte)0x00, (byte)0x7F,
+                                    (byte)0x80, (byte)0xFF)] byte wm)
         {
             uint opcode = 0x1AC05000; // CRC32CB W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -270,11 +258,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, ulong, ulong> TestData_Sdiv64 = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_xn, _testData_xn);
-
-        [Theory(DisplayName = "SDIV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Sdiv64))]
-        public void Sdiv_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm)
+        [SkippableTheory(DisplayName = "SDIV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Sdiv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC00C00; // SDIV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -286,11 +278,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint> TestData_Sdiv32 = new(_testData_Crc32x_rd, _testData_Crc32x_rn, _testData_Crc32x_rm, _testData_wn, _testData_wn);
-
-        [Theory(DisplayName = "SDIV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Sdiv32))]
-        public void Sdiv_32bit(uint rd, uint rn, uint rm, uint wn, uint wm)
+        [SkippableTheory(DisplayName = "SDIV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Sdiv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC00C00; // SDIV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -302,9 +298,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "UDIV <Xd>, <Xn>, <Xm>")]
-        [MemberData(nameof(TestData_Sdiv64))]
-        public void Udiv_64bit(uint rd, uint rn, uint rm, ulong xn, ulong xm)
+        [SkippableTheory(DisplayName = "UDIV <Xd>, <Xn>, <Xm>")]
+        [PairwiseData]
+        public void Udiv_64bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                               [CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xm)
         {
             uint opcode = 0x9AC00800; // UDIV X0, X0, X0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
@@ -316,9 +318,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory(DisplayName = "UDIV <Wd>, <Wn>, <Wm>")]
-        [MemberData(nameof(TestData_Sdiv32))]
-        public void Udiv_32bit(uint rd, uint rn, uint rm, uint wn, uint wm)
+        [SkippableTheory(DisplayName = "UDIV <Wd>, <Wn>, <Wm>")]
+        [PairwiseData]
+        public void Udiv_32bit([CombinatorialValues(0u, 31u)] uint rd,
+                               [CombinatorialValues(1u, 31u)] uint rn,
+                               [CombinatorialValues(2u, 31u)] uint rm,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wn,
+                               [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                       0x80000000u, 0xFFFFFFFFu)] uint wm)
         {
             uint opcode = 0x1AC00800; // UDIV W0, W0, W0
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);

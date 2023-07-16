@@ -4,12 +4,17 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Misc")]
     public sealed class CpuTestMisc : CpuTest
     {
+        public CpuTestMisc(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Misc
 
         #region "ValueSource (Types)"
@@ -63,44 +68,16 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool _noNaNs = false;
 
         #region "AluImm & Csel"
-        private static readonly ulong[] _testDataXn =
-        {
-            0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-            0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
-        };
-
-        private static readonly uint[] _testDataWn =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-
-        private static readonly uint[] _testDataImm =
-        {
-            0u, 4095u,
-        };
-
-        private static readonly uint[] _testDataShift =
-        {
-            0b00u, 0b01u,
-        };
-
-        private static readonly uint[] _testDataCond =
-        {
-            0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
-            0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
-            0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
-            0b1100u, 0b1101u, //  GT, LE>
-        };
-
-        public static readonly MatrixTheoryData<ulong, uint, uint, uint> TestMatrixData_64bit = new(_testDataXn, _testDataImm, _testDataShift, _testDataCond);
-        public static readonly MatrixTheoryData<uint, uint, uint, uint> TestMatrixData_32bit = new(_testDataWn, _testDataImm, _testDataShift, _testDataCond);
-
-        public static readonly RangeTheoryData<uint> TestRangeData = new(0u, 92u, 1u);
-
-        [Theory]
-        [MemberData(nameof(TestMatrixData_64bit))]
-        public void Adds_Csinc_64bit(ulong xn, uint imm, uint shift, uint cond)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Adds_Csinc_64bit([CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                                     [CombinatorialValues(0u, 4095u)] uint imm,
+                                     [CombinatorialValues(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [CombinatorialValues(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
             uint opCmn = 0xB100001F; // ADDS  X31, X0,  #0,  LSL #0 -> CMN  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
@@ -117,9 +94,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory]
-        [MemberData(nameof(TestMatrixData_32bit))]
-        public void Adds_Csinc_32bit(uint wn, uint imm, uint shift, uint cond)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Adds_Csinc_32bit([CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                             0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                     [CombinatorialValues(0u, 4095u)] uint imm,
+                                     [CombinatorialValues(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [CombinatorialValues(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
             uint opCmn = 0x3100001F; // ADDS  W31, W0,  #0,  LSL #0 -> CMN  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
@@ -136,9 +120,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory]
-        [MemberData(nameof(TestMatrixData_64bit))]
-        public void Subs_Csinc_64bit(ulong xn, uint imm, uint shift, uint cond)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Subs_Csinc_64bit([CombinatorialValues(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] ulong xn,
+                                     [CombinatorialValues(0u, 4095u)] uint imm,
+                                     [CombinatorialValues(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [CombinatorialValues(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
             uint opCmp = 0xF100001F; // SUBS  X31, X0,  #0,  LSL #0 -> CMP  X0, #0, LSL #0
             uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
@@ -155,9 +146,16 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Theory]
-        [MemberData(nameof(TestMatrixData_32bit))]
-        public void Subs_Csinc_32bit(uint wn, uint imm, uint shift, uint cond)
+        [SkippableTheory]
+        [PairwiseData]
+        public void Subs_Csinc_32bit([CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                             0x80000000u, 0xFFFFFFFFu)] uint wn,
+                                     [CombinatorialValues(0u, 4095u)] uint imm,
+                                     [CombinatorialValues(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [CombinatorialValues(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
         {
             uint opCmp = 0x7100001F; // SUBS  W31, W0,  #0,  LSL #0 -> CMP  W0, #0, LSL #0
             uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
@@ -303,8 +301,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Theory(Skip = "The Tester supports only one return point.")]
-        [MemberData(nameof(TestRangeData))]
-        public void MiscF(uint a)
+        [CombinatorialData]
+        public void MiscF([CombinatorialRange(0u, 92u, 1u)] uint a)
         {
             static ulong Fn(uint n)
             {
@@ -423,40 +421,28 @@ namespace Ryujinx.Tests.Cpu
             Assert.Equal(a, context.GetX(0));
         }
 
-        private static readonly ulong[] _testDataMisc4Displacement =
-        {
-            0ul, 1ul, 2ul, 3ul,
-        };
-
-        public static readonly MatrixTheoryData<ulong, ulong, ulong, ulong> TestDataMisc4 = new(_1S_F_(), _1S_F_(), _1S_F_(), _testDataMisc4Displacement);
-
-        // This test used to be skipped unless explicitly executed
-        [SkippableTheory]
-        [MemberData(nameof(TestDataMisc4))]
-        public void Misc4(ulong a, ulong b, ulong c, ulong displacement)
+        [Theory]
+        [PairwiseData]
+        public void Misc4([CombinatorialMemberData(nameof(_1S_F_))] ulong a,
+                          [CombinatorialMemberData(nameof(_1S_F_))] ulong b,
+                          [CombinatorialMemberData(nameof(_1S_F_))] ulong c,
+                          [CombinatorialValues(0ul, 1ul, 2ul, 3ul)] ulong displacement)
         {
             Skip.IfNot(BitConverter.IsLittleEndian);
 
-            byte[] data = new byte[1];
-
             for (ulong gapOffset = 0; gapOffset < displacement; gapOffset++)
             {
-                Random.Shared.NextBytes(data);
-                SetWorkingMemory(gapOffset, data[0]);
+                SetWorkingMemory(gapOffset, Random.Shared.NextByte());
             }
 
             SetWorkingMemory(0x0 + displacement, BitConverter.GetBytes((uint)b));
 
             SetWorkingMemory(0x4 + displacement, BitConverter.GetBytes((uint)c));
 
-            Random.Shared.NextBytes(data);
-            SetWorkingMemory(0x8 + displacement, data[0]);
-            Random.Shared.NextBytes(data);
-            SetWorkingMemory(0x9 + displacement, data[0]);
-            Random.Shared.NextBytes(data);
-            SetWorkingMemory(0xA + displacement, data[0]);
-            Random.Shared.NextBytes(data);
-            SetWorkingMemory(0xB + displacement, data[0]);
+            SetWorkingMemory(0x8 + displacement, Random.Shared.NextByte());
+            SetWorkingMemory(0x9 + displacement, Random.Shared.NextByte());
+            SetWorkingMemory(0xA + displacement, Random.Shared.NextByte());
+            SetWorkingMemory(0xB + displacement, Random.Shared.NextByte());
 
             SetContext(
                 x0: DataBaseAddress + displacement,
@@ -480,12 +466,10 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        public static readonly EnumerableTheoryData<ulong> TestDataMisc5 = new(_1S_F_());
-
         // This test used to be skipped unless explicitly executed
         [Theory]
-        [MemberData(nameof(TestDataMisc5))]
-        public void Misc5(ulong a)
+        [CombinatorialData]
+        public void Misc5([CombinatorialMemberData(nameof(_1S_F_))] ulong a)
         {
             SetContext(
                 v0: MakeVectorE0E1(a, Random.Shared.NextULong()),

@@ -4,12 +4,17 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Misc32")]
     public sealed class CpuTestMisc32 : CpuTest32
     {
+        public CpuTestMisc32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Misc32
 
         #region "ValueSource (Types)"
@@ -62,17 +67,13 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool _noInfs = false;
         private static readonly bool _noNaNs = false;
 
-        private static readonly bool[] _testData_bool =
-        {
-            false,
-            true,
-        };
-
-        public static readonly MatrixTheoryData<ulong, ulong, bool, bool, bool> TestData = new(_1S_F_(), _1S_F_(), _testData_bool, _testData_bool, _testData_bool);
-
         [Theory]
-        [MemberData(nameof(TestData))]
-        public void Vmsr_Vcmp_Vmrs(ulong a, ulong b, bool mode1, bool mode2, bool mode3)
+        [PairwiseData]
+        public void Vmsr_Vcmp_Vmrs([CombinatorialMemberData(nameof(_1S_F_))] ulong a,
+                                   [CombinatorialMemberData(nameof(_1S_F_))] ulong b,
+                                   bool mode1,
+                                   bool mode2,
+                                   bool mode3)
         {
             V128 v4 = MakeVectorE0(a);
             V128 v5 = MakeVectorE0(b);

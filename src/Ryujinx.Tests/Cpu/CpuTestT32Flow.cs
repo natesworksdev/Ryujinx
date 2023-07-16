@@ -1,14 +1,20 @@
-﻿#define T32Flow
+#define T32Flow
 
 using ARMeilleure.State;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("T32Flow")]
     public sealed class CpuTestT32Flow : CpuTest32
     {
+        public CpuTestT32Flow(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if T32Flow
+
         [Fact]
         public void TestT32B1()
         {

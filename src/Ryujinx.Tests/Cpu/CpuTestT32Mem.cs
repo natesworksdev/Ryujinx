@@ -1,13 +1,18 @@
-﻿#define T32Mem
+#define T32Mem
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("T32Mem")]
     public sealed class CpuTestT32Mem : CpuTest32
     {
+        public CpuTestT32Mem(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if T32Mem
         public static readonly PrecomputedMemoryThumbTestCase[] ImmTestCases =
         {

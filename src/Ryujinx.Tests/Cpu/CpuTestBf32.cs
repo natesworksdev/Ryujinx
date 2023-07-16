@@ -2,34 +2,27 @@
 
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Collection("Bf32")]
     public sealed class CpuTestBf32 : CpuTest32
     {
+        public CpuTestBf32(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+        {
+        }
+
 #if Bf32
         private const int RndCnt = 2;
 
-        private static readonly uint[] _testData_rd =
-        {
-            0u, 0xdu,
-        };
-        private static readonly uint[] _testData_wd =
-        {
-            0x00000000u, 0x7FFFFFFFu,
-            0x80000000u, 0xFFFFFFFFu,
-        };
-        private static readonly uint[] _testData_lsb =
-        {
-            0u, 15u, 16u, 31u,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint> TestData_Bfc = new(_testData_rd, _testData_wd, _testData_lsb, _testData_lsb);
-
         [Theory(DisplayName = "BFC <Rd>, #<lsb>, #<width>")]
-        [MemberData(nameof(TestData_Bfc))]
-        public void Bfc(uint rd, uint wd, uint lsb, uint msb)
+        [PairwiseData]
+        public void Bfc([CombinatorialValues(0u, 0xdu)] uint rd,
+                        [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                0x80000000u, 0xFFFFFFFFu)] uint wd,
+                        [CombinatorialValues(0u, 15u, 16u, 31u)] uint lsb,
+                        [CombinatorialValues(0u, 15u, 16u, 31u)] uint msb)
         {
             msb = Math.Max(lsb, msb); // Don't test unpredictable for now.
             uint opcode = 0xe7c0001fu; // BFC R0, #0, #1
@@ -43,16 +36,15 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        private static readonly uint[] _testData_rn =
-        {
-            1u, 0xdu,
-        };
-
-        public static readonly MatrixTheoryData<uint, uint, uint, uint, uint, uint> TestData_Bfi = new(_testData_rd, _testData_rn, Random.Shared.NextUIntEnumerable(RndCnt), _testData_wd, _testData_lsb, _testData_lsb);
-
         [Theory(DisplayName = "BFI <Rd>, <Rn>, #<lsb>, #<width>")]
-        [MemberData(nameof(TestData_Bfi))]
-        public void Bfi(uint rd, uint rn, uint wd, uint wn, uint lsb, uint msb)
+        [PairwiseData]
+        public void Bfi([CombinatorialValues(0u, 0xdu)] uint rd,
+                        [CombinatorialValues(1u, 0xdu)] uint rn,
+                        [CombinatorialRandomData(Count = RndCnt)] uint wd,
+                        [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                0x80000000u, 0xFFFFFFFFu)] uint wn,
+                        [CombinatorialValues(0u, 15u, 16u, 31u)] uint lsb,
+                        [CombinatorialValues(0u, 15u, 16u, 31u)] uint msb)
         {
             msb = Math.Max(lsb, msb); // Don't test unpredictable for now.
             uint opcode = 0xe7c00010u; // BFI R0, R0, #0, #1
@@ -68,8 +60,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Theory(DisplayName = "UBFX <Rd>, <Rn>, #<lsb>, #<width>")]
-        [MemberData(nameof(TestData_Bfi))]
-        public void Ubfx(uint rd, uint rn, uint wd, uint wn, uint lsb, uint widthm1)
+        [PairwiseData]
+        public void Ubfx([CombinatorialValues(0u, 0xdu)] uint rd,
+                         [CombinatorialValues(1u, 0xdu)] uint rn,
+                         [CombinatorialRandomData(Count = RndCnt)] uint wd,
+                         [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                 0x80000000u, 0xFFFFFFFFu)] uint wn,
+                         [CombinatorialValues(0u, 15u, 16u, 31u)] uint lsb,
+                         [CombinatorialValues(0u, 15u, 16u, 31u)] uint widthm1)
         {
             if (lsb + widthm1 > 31)
             {
@@ -88,8 +86,14 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Theory(DisplayName = "SBFX <Rd>, <Rn>, #<lsb>, #<width>")]
-        [MemberData(nameof(TestData_Bfi))]
-        public void Sbfx(uint rd, uint rn, uint wd, uint wn, uint lsb, uint widthm1)
+        [PairwiseData]
+        public void Sbfx([CombinatorialValues(0u, 0xdu)] uint rd,
+                         [CombinatorialValues(1u, 0xdu)] uint rn,
+                         [CombinatorialRandomData(Count = RndCnt)] uint wd,
+                         [CombinatorialValues(0x00000000u, 0x7FFFFFFFu,
+                                 0x80000000u, 0xFFFFFFFFu)] uint wn,
+                         [CombinatorialValues(0u, 15u, 16u, 31u)] uint lsb,
+                         [CombinatorialValues(0u, 15u, 16u, 31u)] uint widthm1)
         {
             if (lsb + widthm1 > 31)
             {
