@@ -4,5 +4,5 @@
   "longRunningTestSeconds": 20,
   "parallelizeAssembly": true,
   "preEnumerateTheories": false,
-  "stopOnFail": true
+  "stopOnFail": false
 }
