@@ -155,8 +155,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             {
                 // NOTE: grabbing the main display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
                 // we might have to amend this if people run this on a non-primary display set to a different resolution.
-                SDL_Rect displayBounds;
-                SDL_GetDisplayBounds(0, out displayBounds);
+                SDL_GetDisplayBounds(0, out SDL_Rect displayBounds);
 
                 Renderer?.Window.SetSize(displayBounds.w, displayBounds.h);
                 MouseDriver.SetClientSize(displayBounds.w, displayBounds.h);

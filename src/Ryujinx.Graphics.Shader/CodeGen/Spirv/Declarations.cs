@@ -519,10 +519,5 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 : (isOutput ? context.Outputs : context.Inputs);
             dict.Add(ioDefinition, spvVar);
         }
-
-        private static string GetStagePrefix(ShaderStage stage)
-        {
-            return _stagePrefixes[(int)stage];
-        }
     }
 }
