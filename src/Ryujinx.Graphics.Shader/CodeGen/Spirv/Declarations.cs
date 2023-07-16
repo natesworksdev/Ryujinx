@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     SamplerType.Texture3D => Dim.Dim3D,
                     SamplerType.TextureCube => Dim.Cube,
                     SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{sampler.Type & SamplerType.Mask}\".")
+                    _ => throw new InvalidOperationException($"Invalid sampler type \"{sampler.Type & SamplerType.Mask}\"."),
                 };
 
                 var imageType = context.TypeImage(

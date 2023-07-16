@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     X = scale * 2f / viewportWidth,
                     Y = scale * 2f / viewportHeight,
                     Z = 1,
-                    W = disableTransformF
+                    W = disableTransformF,
                 });
             }
         }
