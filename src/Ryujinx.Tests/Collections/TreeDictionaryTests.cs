@@ -1,5 +1,4 @@
 using Ryujinx.Common.Collections;
-using System;
 using System.Collections.Generic;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,7 +43,7 @@ namespace Ryujinx.Tests.Collections
              *
              */
 
-            Assert.Equal(list.Count, dictionary.Count);
+            Assert.Equal(dictionary.Count, list.Count);
             Assert.Equal(2, list[0].Key);
             Assert.Equal(1, list[1].Key);
             Assert.Equal(4, list[2].Key);
@@ -92,7 +91,7 @@ namespace Ryujinx.Tests.Collections
             {
                 _testOutputHelper.WriteLine($"{node.Key} -> {node.Value}");
             }
-            Assert.Equal(list.Count, dictionary.Count);
+            Assert.Equal(dictionary.Count, list.Count);
             Assert.Equal(4, list[0].Key);
             Assert.Equal(2, list[1].Key);
             Assert.Equal(10, list[2].Key);
@@ -196,7 +195,7 @@ namespace Ryujinx.Tests.Collections
 
             foreach (KeyValuePair<int, int> node in list)
             {
-                Console.WriteLine($"{node.Key} -> {node.Value}");
+                _testOutputHelper.WriteLine($"{node.Key} -> {node.Value}");
             }
 
             /*
