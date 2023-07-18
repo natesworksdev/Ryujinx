@@ -35,6 +35,7 @@ jobs:
 
       - name: Run dotnet format
         run: |
+          dotnet format --version
           dotnet format --verify-no-changes --report ./report.json -v d
 
       - name: Upload report
