@@ -35,17 +35,14 @@ jobs:
 
       - name: Run dotnet format
         run: |
-          dotnet tool install -g dotnet-format
-          dotnet format whitespace --verify-no-changes --report ./whitespace-report.json -v d
-          dotnet format style --severity info --verify-no-changes --report ./style-report.json -v d
-          dotnet format analyzers --severity info --verify-no-changes --report ./analyzers-report.json -v d
+          dotnet format --verify-no-changes --report ./report.json -v d
 
       - name: Upload report
         if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: dotnet-format
-          path: ./*-report.json
+          path: ./report.json
 
   pr_build:
     uses: ./.github/workflows/build.yml
