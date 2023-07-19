@@ -54,6 +54,7 @@ using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
+using CursorStates = Ryujinx.Ava.Input.AvaloniaMouse.CursorStates;
 using Key = Ryujinx.Input.Key;
 using MouseButton = Ryujinx.Input.MouseButton;
 using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
@@ -92,13 +93,6 @@ namespace Ryujinx.Ava
 
         private long _latestCursorMoveTime;
         private bool _isCursorInRenderer = true;
-
-        private enum CursorStates
-        {
-            CursorIsHidden,
-            CursorIsVisible,
-            ForceChangeCursor
-        };
 
         private CursorStates _cursorState = !ConfigurationState.Instance.Hid.EnableMouse.Value ? 
                                              CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
@@ -217,13 +211,6 @@ namespace Ryujinx.Ava
                 return;
             }
 
-            if (_viewModel.WindowState == WindowState.FullScreen)
-            {
-                _isCursorInRenderer = true;
-
-                return;
-            }
-
             var point = e.GetPosition(_topLevel);
             var bounds = RendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
             var windowYLimit = (int)window.Bounds.Height - window.StatusBarHeight;
@@ -239,7 +226,14 @@ namespace Ryujinx.Ava
 
         private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
         {
-            _isCursorInRenderer = false;
+            if (RendererHost.EmbeddedWindow.TransformedBounds is not null)
+            {
+                _isCursorInRenderer = true;
+            }
+            else
+            {
+                _isCursorInRenderer = false;
+            }
             _cursorState = CursorStates.ForceChangeCursor;
         }
 
@@ -1070,7 +1064,7 @@ namespace Ryujinx.Ava
 
         private void UpdateCursorState()
         {
-            if (_isCursorInRenderer)
+            if (_isCursorInRenderer && !_viewModel.ShowLoadProgress)
             {
                 if (ConfigurationState.Instance.Hid.EnableMouse.Value)
                 {

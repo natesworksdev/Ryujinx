@@ -29,6 +29,7 @@ namespace Ryujinx.Ava.UI.Helpers
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum WindowsMessages : uint
         {
+            Cursorleave = 0x00000002,
             Setcursor = 0x0020,
             Mousemove = 0x0200,
             Lbuttondown = 0x0201,
@@ -46,10 +47,21 @@ namespace Ryujinx.Ava.UI.Helpers
             Xbuttondblclk = 0x020D,
             Mousehwheel = 0x020E,
             Mouselast = 0x020E,
+            Mouseleave = 0x02A3,
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]
         internal delegate IntPtr WindowProc(IntPtr hWnd, WindowsMessages msg, IntPtr wParam, IntPtr lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct TRACKMOUSEEVENT
+        {
+            public uint cbSize;
+            public WindowsMessages dwFlags;
+            public IntPtr hwndTrack;
+            public uint dwHoverTime;
+            public static readonly TRACKMOUSEEVENT Empty;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct WndClassEx
@@ -82,6 +94,12 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             return LoadCursor(IntPtr.Zero, (IntPtr)Cursors.IdcArrow);
         }
+
+        [LibraryImport("user32.dll")]
+        internal static partial IntPtr GetActiveWindow();
+
+        [LibraryImport("user32.dll")]
+        internal static partial int TrackMouseEvent(ref TRACKMOUSEEVENT lpEventTrack);
 
         [LibraryImport("user32.dll")]
         public static partial IntPtr SetCursor(IntPtr handle);
