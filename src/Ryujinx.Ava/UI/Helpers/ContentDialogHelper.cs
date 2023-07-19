@@ -371,7 +371,9 @@ namespace Ryujinx.Ava.UI.Helpers
                 }
                 else
                 {
-                    result = await contentDialog.ShowAsync();
+                    result = ContentDialogResult.None;
+
+                    Logger.Warning?.Print(LogClass.Ui, "Content dialog overlay failed to populate. Default value has been returned.");
                 }
 
                 return result;
