@@ -9,9 +9,12 @@ namespace Ryujinx.Graphics.Shader.Translation
         public readonly ShaderDefinitions Definitions;
         public readonly ResourceManager ResourceManager;
         public readonly IGpuAccessor GpuAccessor;
+        public readonly TargetApi TargetApi;
         public readonly TargetLanguage TargetLanguage;
         public readonly ShaderStage Stage;
         public readonly ref FeatureFlags UsedFeatures;
+        public readonly ref BindlessTextureFlags BindlessTextureFlags;
+        public readonly ref bool BindlessTexturesAllowed;
 
         public TransformContext(
             HelperFunctionManager hfm,
@@ -19,18 +22,24 @@ namespace Ryujinx.Graphics.Shader.Translation
             ShaderDefinitions definitions,
             ResourceManager resourceManager,
             IGpuAccessor gpuAccessor,
+            TargetApi targetApi,
             TargetLanguage targetLanguage,
             ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+            ref FeatureFlags usedFeatures,
+            ref BindlessTextureFlags bindlessTextureFlags,
+            ref bool bindlessTexturesAllowed)
         {
             Hfm = hfm;
             Blocks = blocks;
             Definitions = definitions;
             ResourceManager = resourceManager;
             GpuAccessor = gpuAccessor;
+            TargetApi = targetApi;
             TargetLanguage = targetLanguage;
             Stage = stage;
             UsedFeatures = ref usedFeatures;
+            BindlessTextureFlags = ref bindlessTextureFlags;
+            BindlessTexturesAllowed = ref bindlessTexturesAllowed;
         }
     }
 }

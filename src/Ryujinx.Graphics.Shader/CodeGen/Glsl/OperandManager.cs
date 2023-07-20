@@ -13,9 +13,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         private readonly Dictionary<AstOperand, string> _locals;
 
+        public Dictionary<SamplerType, string> BindlessTextures { get; }
+        public Dictionary<SamplerType, string> BindlessImages { get; }
+
         public OperandManager()
         {
-            _locals = new Dictionary<AstOperand, string>();
+            _locals = new();
+
+            BindlessTextures = new();
+            BindlessImages = new();
         }
 
         public string DeclareLocal(AstOperand operand)
@@ -68,8 +74,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             }
 
                             BufferDefinition buffer = operation.StorageKind == StorageKind.ConstantBuffer
-                                ? context.Properties.ConstantBuffers[bindingIndex.Value]
-                                : context.Properties.StorageBuffers[bindingIndex.Value];
+                                ? context.Properties.ConstantBuffers[SetBindingPair.Unpack(bindingIndex.Value)]
+                                : context.Properties.StorageBuffers[SetBindingPair.Unpack(bindingIndex.Value)];
                             StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
                             return field.Type & AggregateType.ElementTypeMask;

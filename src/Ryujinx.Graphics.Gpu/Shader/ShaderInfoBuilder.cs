@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Shader
@@ -10,11 +11,17 @@ namespace Ryujinx.Graphics.Gpu.Shader
     class ShaderInfoBuilder
     {
         private const int TotalSets = 4;
+        private const int TotalBindlessSets = 9;
 
         private const int UniformSetIndex = 0;
         private const int StorageSetIndex = 1;
         private const int TextureSetIndex = 2;
         private const int ImageSetIndex = 3;
+        private const int BindlessTextureSetIndex = 4;
+        private const int BindlessBufferTextureSetIndex = 5;
+        private const int BindlessSamplerSetIndex = 6;
+        private const int BindlessImageSetIndex = 7;
+        private const int BindlessBufferImageSetIndex = 8;
 
         private const ResourceStages SupportBufferStages =
             ResourceStages.Compute |
@@ -27,17 +34,20 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ResourceStages.TessellationEvaluation |
             ResourceStages.Geometry;
 
+        private const ResourceStages GraphicsStages = VtgStages | ResourceStages.Fragment;
+
         private readonly GpuContext _context;
 
         private int _fragmentOutputMap;
+        private bool _anyBindless;
 
         private readonly int _reservedConstantBuffers;
         private readonly int _reservedStorageBuffers;
         private readonly int _reservedTextures;
         private readonly int _reservedImages;
 
-        private readonly List<ResourceDescriptor>[] _resourceDescriptors;
-        private readonly List<ResourceUsage>[] _resourceUsages;
+        private List<ResourceDescriptor>[] _resourceDescriptors;
+        private List<ResourceUsage>[] _resourceUsages;
 
         /// <summary>
         /// Creates a new shader info builder.
@@ -63,7 +73,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
             AddDescriptor(SupportBufferStages, ResourceType.UniformBuffer, UniformSetIndex, 0, 1);
             AddUsage(SupportBufferStages, ResourceType.UniformBuffer, UniformSetIndex, 0, 1);
 
-            ResourceReservationCounts rrc = new(!context.Capabilities.SupportsTransformFeedback && tfEnabled, vertexAsCompute);
+            ResourceReservationCounts rrc = new(
+                context.Capabilities.Api,
+                !context.Capabilities.SupportsTransformFeedback && tfEnabled,
+                vertexAsCompute);
 
             _reservedConstantBuffers = rrc.ReservedConstantBuffers;
             _reservedStorageBuffers = rrc.ReservedStorageBuffers;
@@ -95,6 +108,30 @@ namespace Ryujinx.Graphics.Gpu.Shader
             if (info.Stage == ShaderStage.Fragment)
             {
                 _fragmentOutputMap = info.FragmentOutputMap;
+            }
+
+            if (info.BindlessTextureFlags != BindlessTextureFlags.None && !_anyBindless)
+            {
+                Array.Resize(ref _resourceDescriptors, TotalBindlessSets);
+                Array.Resize(ref _resourceUsages, TotalBindlessSets);
+
+                for (int index = TotalSets; index < TotalBindlessSets; index++)
+                {
+                    _resourceDescriptors[index] = new();
+                    _resourceUsages[index] = new();
+                }
+
+                ResourceStages bindlessStages = info.Stage == ShaderStage.Compute ? ResourceStages.Compute : GraphicsStages;
+
+                AddDescriptor(bindlessStages, ResourceType.UniformBuffer, BindlessTextureSetIndex, 0, 1);
+                AddDescriptor(bindlessStages, ResourceType.StorageBuffer, BindlessTextureSetIndex, 1, 1);
+                AddArrayDescriptor(bindlessStages, ResourceType.Texture, BindlessTextureSetIndex, 2, 0);
+                AddArrayDescriptor(bindlessStages, ResourceType.BufferTexture, BindlessBufferTextureSetIndex, 0, 0);
+                AddArrayDescriptor(bindlessStages, ResourceType.Sampler, BindlessSamplerSetIndex, 0, 0);
+                AddArrayDescriptor(bindlessStages, ResourceType.Image, BindlessImageSetIndex, 0, 0);
+                AddArrayDescriptor(bindlessStages, ResourceType.BufferImage, BindlessBufferImageSetIndex, 0, 0);
+
+                _anyBindless = true;
             }
 
             int stageIndex = GpuAccessorBase.GetStageIndex(info.Stage switch
@@ -152,6 +189,19 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 _resourceDescriptors[setIndex].Add(new ResourceDescriptor(binding + index, 1, type, stages));
             }
+        }
+
+        /// <summary>
+        /// Adds an array of resource descriptors to the list of descriptors.
+        /// </summary>
+        /// <param name="stages">Shader stages where the resource is used</param>
+        /// <param name="type">Type of the resource</param>
+        /// <param name="setIndex">Descriptor set number where the resource will be bound</param>
+        /// <param name="binding">Binding number where the resource will be bound</param>
+        /// <param name="count">Number of array elements</param>
+        private void AddArrayDescriptor(ResourceStages stages, ResourceType type, int setIndex, int binding, int count)
+        {
+            _resourceDescriptors[setIndex].Add(new ResourceDescriptor(binding, count, type, stages));
         }
 
         /// <summary>
@@ -235,10 +285,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Shader information</returns>
         public ShaderInfo Build(ProgramPipelineState? pipeline, bool fromCache = false)
         {
-            var descriptors = new ResourceDescriptorCollection[TotalSets];
-            var usages = new ResourceUsageCollection[TotalSets];
+            var descriptors = new ResourceDescriptorCollection[_resourceDescriptors.Length];
+            var usages = new ResourceUsageCollection[_resourceUsages.Length];
 
-            for (int index = 0; index < TotalSets; index++)
+            for (int index = 0; index < _resourceDescriptors.Length; index++)
             {
                 descriptors[index] = new ResourceDescriptorCollection(_resourceDescriptors[index].ToArray().AsReadOnly());
                 usages[index] = new ResourceUsageCollection(_resourceUsages[index].ToArray().AsReadOnly());
@@ -248,11 +298,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             if (pipeline.HasValue)
             {
-                return new ShaderInfo(_fragmentOutputMap, resourceLayout, pipeline.Value, fromCache);
+                return new ShaderInfo(_fragmentOutputMap, _anyBindless, resourceLayout, pipeline.Value, fromCache);
             }
             else
             {
-                return new ShaderInfo(_fragmentOutputMap, resourceLayout, fromCache);
+                return new ShaderInfo(_fragmentOutputMap, _anyBindless, resourceLayout, fromCache);
             }
         }
 

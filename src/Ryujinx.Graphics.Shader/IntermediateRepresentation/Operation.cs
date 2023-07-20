@@ -144,6 +144,26 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             }
         }
 
+        public void PrependSources(Operand[] operands)
+        {
+            int endIndex = operands.Length;
+
+            Array.Resize(ref _sources, endIndex + _sources.Length);
+            Array.Copy(_sources, 0, _sources, endIndex, _sources.Length - endIndex);
+
+            for (int index = 0; index < operands.Length; index++)
+            {
+                Operand source = operands[index];
+
+                if (source.Type == OperandType.LocalVariable)
+                {
+                    source.UseOps.Add(this);
+                }
+
+                _sources[index] = source;
+            }
+        }
+
         public void AppendSources(Operand[] operands)
         {
             int startIndex = _sources.Length;

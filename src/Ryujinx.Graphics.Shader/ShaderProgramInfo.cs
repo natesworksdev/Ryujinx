@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Shader
         public ReadOnlyCollection<TextureDescriptor> Images { get; }
 
         public ShaderStage Stage { get; }
+        public BindlessTextureFlags BindlessTextureFlags { get; }
         public int GeometryVerticesPerPrimitive { get; }
         public int GeometryMaxOutputVertices { get; }
         public int ThreadsPerInputPrimitive { get; }
@@ -27,6 +28,7 @@ namespace Ryujinx.Graphics.Shader
             TextureDescriptor[] textures,
             TextureDescriptor[] images,
             ShaderStage stage,
+            BindlessTextureFlags bindlessTextureFlags,
             int geometryVerticesPerPrimitive,
             int geometryMaxOutputVertices,
             int threadsPerInputPrimitive,
@@ -43,6 +45,7 @@ namespace Ryujinx.Graphics.Shader
             Images = Array.AsReadOnly(images);
 
             Stage = stage;
+            BindlessTextureFlags = bindlessTextureFlags;
             GeometryVerticesPerPrimitive = geometryVerticesPerPrimitive;
             GeometryMaxOutputVertices = geometryMaxOutputVertices;
             ThreadsPerInputPrimitive = threadsPerInputPrimitive;

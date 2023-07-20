@@ -114,6 +114,24 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Unpacks the font filter width.
+        /// </summary>
+        /// <returns>Font filter width</returns>
+        public int UnpackFontFilterWidth()
+        {
+            return (int)(Word0 >> 14) & 7;
+        }
+
+        /// <summary>
+        /// Unpacks the font filter height.
+        /// </summary>
+        /// <returns>Font filter height</returns>
+        public int UnpackFontFilterHeight()
+        {
+            return (int)(Word0 >> 17) & 7;
+        }
+
+        /// <summary>
         /// Unpacks and converts the maximum anisotropy value used for texture anisotropic filtering.
         /// </summary>
         /// <returns>The maximum anisotropy</returns>

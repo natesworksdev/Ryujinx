@@ -311,9 +311,20 @@ namespace Ryujinx.Graphics.Vulkan
             set => Internal.Id9 = (Internal.Id9 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
         }
 
+        public uint BindlessTexturesCount
+        {
+            get => (uint)((Internal.Id10 >> 0) & 0xFFFFFFFF);
+            set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
+        }
+
+        public uint BindlessSamplersCount
+        {
+            get => (uint)((Internal.Id10 >> 32) & 0xFFFFFFFF);
+            set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF) | ((ulong)value << 32);
+        }
+
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
         public NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT> StageRequiredSubgroupSizes;
-        public PipelineLayout PipelineLayout;
         public SpecData SpecializationData;
 
         private Array32<VertexInputAttributeDescription> _vertexAttributeDescriptions2;
@@ -339,6 +350,7 @@ namespace Ryujinx.Graphics.Vulkan
             LineWidth = 1f;
             SamplesCount = 1;
             DepthMode = true;
+            Internal.Id11 = 0; // Unused.
         }
 
         public unsafe Auto<DisposablePipeline> CreateComputePipeline(
@@ -357,7 +369,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.ComputePipelineCreateInfo,
                 Stage = Stages[0],
                 BasePipelineIndex = -1,
-                Layout = PipelineLayout,
+                Layout = program.GetPipelineLayout(gd, BindlessTexturesCount, BindlessSamplersCount),
             };
 
             Pipeline pipelineHandle = default;
@@ -625,7 +637,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PDepthStencilState = &depthStencilState,
                     PColorBlendState = &colorBlendState,
                     PDynamicState = &pipelineDynamicStateCreateInfo,
-                    Layout = PipelineLayout,
+                    Layout = program.GetPipelineLayout(gd, BindlessTexturesCount, BindlessSamplersCount),
                     RenderPass = renderPass,
                     BasePipelineIndex = -1,
                 };

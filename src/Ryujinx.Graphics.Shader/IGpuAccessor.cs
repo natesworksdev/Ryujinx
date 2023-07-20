@@ -405,6 +405,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries the number of the constant buffer where the texture handles are located.
+        /// </summary>
+        /// <returns>Constant buffer where the texture handles are located</returns>
+        int QueryTextureBufferIndex()
+        {
+            return 2; // NVN default.
+        }
+
+        /// <summary>
         /// Queries texture coordinate normalization information.
         /// </summary>
         /// <param name="handle">Texture handle</param>

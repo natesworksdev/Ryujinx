@@ -10,6 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\GetBindlessHandle.glsl" />
+    <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\GetBindlessHandleVk.glsl" />
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\MultiplyHighS32.glsl" />
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\MultiplyHighU32.glsl" />
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\SwizzleAdd.glsl" />

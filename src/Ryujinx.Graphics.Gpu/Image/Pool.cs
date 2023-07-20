@@ -22,6 +22,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         protected T1[] Items;
         protected T2[] DescriptorCache;
 
+        protected readonly BitMap ModifiedEntries;
+
+        private int _minimumAccessedId;
+        private int _maximumAccessedId;
+
         /// <summary>
         /// The maximum ID value of resources on the pool (inclusive).
         /// </summary>
@@ -60,6 +65,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             MaximumId = maximumId;
 
             int count = maximumId + 1;
+
+            ModifiedEntries = new BitMap(count);
+
+            _minimumAccessedId = int.MaxValue;
+            _maximumAccessedId = 0;
 
             ulong size = (ulong)(uint)count * DescriptorSize;
 
@@ -195,6 +205,41 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Updates the set of entries that have been modified.
+        /// </summary>
+        /// <param name="address">Start address of the region of the pool that has been modfied</param>
+        /// <param name="endAddress">End address of the region of the pool that has been modified, exclusive</param>
+        protected void UpdateModifiedEntries(ulong address, ulong endAddress)
+        {
+            int startId = (int)((address - Address) / DescriptorSize);
+            int endId = (int)((endAddress - Address + (DescriptorSize - 1)) / DescriptorSize) - 1;
+
+            if (endId < startId)
+            {
+                return;
+            }
+
+            ModifiedEntries.SetRange(startId, endId);
+
+            _minimumAccessedId = Math.Min(_minimumAccessedId, startId);
+            _maximumAccessedId = Math.Max(_maximumAccessedId, endId);
+        }
+
+        /// <summary>
+        /// Forces all entries as modified, to be updated if any shader uses bindless textures.
+        /// </summary>
+        public void ForceModifiedEntries()
+        {
+            for (int id = _minimumAccessedId; id <= _maximumAccessedId; id++)
+            {
+                if (Items[id] != null)
+                {
+                    ModifiedEntries.Set(id);
+                }
+            }
         }
 
         protected abstract void InvalidateRangeImpl(ulong address, ulong size);

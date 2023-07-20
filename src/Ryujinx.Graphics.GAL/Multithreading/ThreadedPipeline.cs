@@ -123,6 +123,24 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void RegisterBindlessSampler(int samplerId, ISampler sampler)
+        {
+            _renderer.New<RegisterBindlessSamplerCommand>().Set(samplerId, Ref(sampler));
+            _renderer.QueueCommand();
+        }
+
+        public void RegisterBindlessTexture(int textureId, ITexture texture, float textureScale)
+        {
+            _renderer.New<RegisterBindlessTextureCommand>().Set(textureId, Ref(texture), textureScale);
+            _renderer.QueueCommand();
+        }
+
+        public void RegisterBindlessTextureAndSampler(int textureId, ITexture texture, float textureScale, int samplerId, ISampler sampler)
+        {
+            _renderer.New<RegisterBindlessTextureAndSamplerCommand>().Set(textureId, Ref(texture), textureScale, samplerId, Ref(sampler));
+            _renderer.QueueCommand();
+        }
+
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             _renderer.New<SetAlphaTestCommand>().Set(enable, reference, op);

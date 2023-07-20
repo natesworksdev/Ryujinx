@@ -43,12 +43,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public static void DeclareAll(CodeGenContext context, StructuredProgramInfo info)
         {
-            DeclareConstantBuffers(context, context.Properties.ConstantBuffers.Values);
-            DeclareStorageBuffers(context, context.Properties.StorageBuffers.Values);
+            DeclareConstantBuffers(context, context.Properties.ConstantBuffers);
+            DeclareStorageBuffers(context, context.Properties.StorageBuffers);
             DeclareMemories(context, context.Properties.LocalMemories, context.LocalMemories, StorageClass.Private);
             DeclareMemories(context, context.Properties.SharedMemories, context.SharedMemories, StorageClass.Workgroup);
-            DeclareSamplers(context, context.Properties.Textures.Values);
-            DeclareImages(context, context.Properties.Images.Values);
+            DeclareSamplers(context, context.Properties.Textures);
+            DeclareImages(context, context.Properties.Images);
             DeclareInputsAndOutputs(context, info);
         }
 
@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Dictionary<int, SpvInstruction> dict,
             StorageClass storage)
         {
-            foreach ((int id, MemoryDefinition memory) in memories)
+            foreach ((int id, var memory) in memories)
             {
                 var pointerType = context.TypePointer(storage, context.GetType(memory.Type, memory.ArrayLength));
                 var variable = context.Variable(pointerType, storage);
@@ -69,21 +69,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static void DeclareConstantBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
+        private static void DeclareConstantBuffers(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, BufferDefinition> buffers)
         {
             DeclareBuffers(context, buffers, isBuffer: false);
         }
 
-        private static void DeclareStorageBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers)
+        private static void DeclareStorageBuffers(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, BufferDefinition> buffers)
         {
             DeclareBuffers(context, buffers, isBuffer: true);
         }
 
-        private static void DeclareBuffers(CodeGenContext context, IEnumerable<BufferDefinition> buffers, bool isBuffer)
+        private static void DeclareBuffers(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, BufferDefinition> buffers, bool isBuffer)
         {
             HashSet<SpvInstruction> decoratedTypes = new();
 
-            foreach (BufferDefinition buffer in buffers)
+            foreach ((SetBindingPair sbPair, var buffer) in buffers)
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? buffer.Set : 0;
                 int alignment = buffer.Layout == BufferLayout.Std140 ? 16 : 4;
@@ -145,46 +145,71 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (isBuffer)
                 {
-                    context.StorageBuffers.Add(buffer.Binding, variable);
+                    context.StorageBuffers.Add(sbPair.Pack(), variable);
                 }
                 else
                 {
-                    context.ConstantBuffers.Add(buffer.Binding, variable);
+                    context.ConstantBuffers.Add(sbPair.Pack(), variable);
                 }
             }
         }
 
-        private static void DeclareSamplers(CodeGenContext context, IEnumerable<TextureDefinition> samplers)
+        private static void DeclareSamplers(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, TextureDefinition> samplers)
         {
-            foreach (var sampler in samplers)
+            foreach ((SetBindingPair sbPair, var sampler) in samplers)
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? sampler.Set : 0;
 
-                var dim = (sampler.Type & SamplerType.Mask) switch
+                SpvInstruction imageType;
+                SpvInstruction sampledImageType;
+
+                if (sampler.Type != SamplerType.None)
                 {
-                    SamplerType.Texture1D => Dim.Dim1D,
-                    SamplerType.Texture2D => Dim.Dim2D,
-                    SamplerType.Texture3D => Dim.Dim3D,
-                    SamplerType.TextureCube => Dim.Cube,
-                    SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{sampler.Type & SamplerType.Mask}\"."),
-                };
+                    var dim = GetDim(sampler.Type);
 
-                var imageType = context.TypeImage(
-                    context.TypeFP32(),
-                    dim,
-                    sampler.Type.HasFlag(SamplerType.Shadow),
-                    sampler.Type.HasFlag(SamplerType.Array),
-                    sampler.Type.HasFlag(SamplerType.Multisample),
-                    1,
-                    ImageFormat.Unknown);
+                    imageType = context.TypeImage(
+                        context.TypeFP32(),
+                        dim,
+                        sampler.Type.HasFlag(SamplerType.Shadow),
+                        sampler.Type.HasFlag(SamplerType.Array),
+                        sampler.Type.HasFlag(SamplerType.Multisample),
+                        1,
+                        ImageFormat.Unknown);
 
-                var sampledImageType = context.TypeSampledImage(imageType);
-                var sampledImagePointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageType);
-                var sampledImageVariable = context.Variable(sampledImagePointerType, StorageClass.UniformConstant);
+                    sampledImageType = context.TypeSampledImage(imageType);
+                }
+                else
+                {
+                    imageType = sampledImageType = context.TypeSampler();
+                }
 
-                context.Samplers.Add(sampler.Binding, (imageType, sampledImageType, sampledImageVariable));
-                context.SamplersTypes.Add(sampler.Binding, sampler.Type);
+                var imageTypeForSampler = sampler.Type.HasFlag(SamplerType.Separate) ? imageType : sampledImageType;
+                var sampledImagePointerType = context.TypePointer(StorageClass.UniformConstant, imageTypeForSampler);
+
+                SpvInstruction sampledImageArrayPointerType = sampledImagePointerType;
+
+                if (sampler.ArraySize == 0)
+                {
+                    var sampledImageArrayType = context.TypeRuntimeArray(imageTypeForSampler);
+                    sampledImageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageArrayType);
+                }
+                else if (sampler.ArraySize != 1)
+                {
+                    var sampledImageArrayType = context.TypeArray(imageTypeForSampler, context.Constant(context.TypeU32(), sampler.ArraySize));
+                    sampledImageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageArrayType);
+                }
+
+                var sampledImageVariable = context.Variable(sampledImageArrayPointerType, StorageClass.UniformConstant);
+
+                if (sampler.ArraySize != 1)
+                {
+                    context.BindlessTextures[sampler.Type & ~(SamplerType.Shadow | SamplerType.Separate)] = (imageType, sampledImageType, sampledImagePointerType, sampledImageVariable);
+                }
+                else
+                {
+                    context.Samplers.Add(sbPair.Pack(), (imageType, sampledImageType, sampledImageVariable));
+                    context.SamplersTypes.Add(sbPair.Pack(), sampler.Type);
+                }
 
                 context.Name(sampledImageVariable, sampler.Name);
                 context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
@@ -193,9 +218,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static void DeclareImages(CodeGenContext context, IEnumerable<TextureDefinition> images)
+        private static void DeclareImages(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, TextureDefinition> images)
         {
-            foreach (var image in images)
+            foreach ((SetBindingPair sbPair, var image) in images)
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? image.Set : 0;
 
@@ -211,9 +236,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     GetImageFormat(image.Format));
 
                 var imagePointerType = context.TypePointer(StorageClass.UniformConstant, imageType);
-                var imageVariable = context.Variable(imagePointerType, StorageClass.UniformConstant);
 
-                context.Images.Add(image.Binding, (imageType, imageVariable));
+                SpvInstruction imageArrayPointerType = imagePointerType;
+
+                if (image.ArraySize == 0)
+                {
+                    var imageArrayType = context.TypeRuntimeArray(imageType);
+                    imageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, imageArrayType);
+                }
+                else if (image.ArraySize != 1)
+                {
+                    var imageArrayType = context.TypeArray(imageType, context.Constant(context.TypeU32(), image.ArraySize));
+                    imageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, imageArrayType);
+                }
+
+                var imageVariable = context.Variable(imageArrayPointerType, StorageClass.UniformConstant);
+
+                if (image.ArraySize != 1)
+                {
+                    context.BindlessImages[image.Type] = (imageType, imagePointerType, imageVariable);
+                }
+                else
+                {
+                    context.Images.Add(sbPair.Pack(), (imageType, imageVariable));
+                }
 
                 context.Name(imageVariable, image.Name);
                 context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);

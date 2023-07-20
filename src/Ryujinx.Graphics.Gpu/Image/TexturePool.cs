@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
+using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
@@ -213,6 +214,94 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Loads all the textures currently registered by the guest application on the pool.
+        /// This is required for bindless access, as it's not possible to predict which textures will be used.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="activeSamplerPool">The currently active sampler pool</param>
+        public void LoadAll(IRenderer renderer, SamplerPool activeSamplerPool)
+        {
+            activeSamplerPool?.LoadAll();
+
+            if (SequenceNumber != Context.SequenceNumber)
+            {
+                SequenceNumber = Context.SequenceNumber;
+
+                SynchronizeMemory();
+            }
+
+            ModifiedEntries.BeginIterating();
+
+            int id;
+
+            while ((id = ModifiedEntries.GetNextAndClear()) >= 0)
+            {
+                Texture texture = Items[id] ?? GetValidated(id);
+
+                if (texture != null)
+                {
+                    if (texture.Target == Target.TextureBuffer)
+                    {
+                        _channel.BufferManager.SetBufferTextureStorage(
+                            texture.HostTexture,
+                            texture.Range.GetSubRange(0).Address,
+                            texture.Size,
+                            default,
+                            0,
+                            false,
+                            id);
+                    }
+                    else
+                    {
+                        renderer.Pipeline.RegisterBindlessTexture(id, texture.HostTexture, texture.ScaleFactor);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the texture at the given <paramref name="id"/> from the cache,
+        /// or creates a new one if not found.
+        /// This will return null if the texture entry is considered invalid.
+        /// </summary>
+        /// <param name="id">Index of the texture on the pool</param>
+        /// <returns>Texture for the given pool index</returns>
+        private Texture GetValidated(int id)
+        {
+            TextureDescriptor descriptor = GetDescriptor(id);
+
+            if (!FormatTable.TryGetTextureFormat(descriptor.UnpackFormat(), descriptor.UnpackSrgb(), out _))
+            {
+                return null;
+            }
+
+            TextureInfo info = GetInfo(descriptor, out int layerSize);
+            TextureValidationResult validationResult = TextureValidation.Validate(ref info);
+
+            if (validationResult != TextureValidationResult.Valid)
+            {
+                return null;
+            }
+
+            // TODO: Eventually get rid of that...
+            // For now it avoids creating textures for garbage entries in some cases, but it is not
+            // correct as a width or height of 8192 is valid (although extremely unlikely).
+            if (info.Width > 8192 || info.Height > 8192 || info.DepthOrLayers > 8192)
+            {
+                return null;
+            }
+
+            try
+            {
+                return Get(id);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Forcibly remove a texture from this pool's items.
         /// If deferred, the dereference will be queued to occur on the render thread.
         /// </summary>
@@ -342,6 +431,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             ulong endAddress = address + size;
 
+            UpdateModifiedEntries(address, endAddress);
+
             for (; address < endAddress; address += DescriptorSize)
             {
                 int id = (int)((address - Address) / DescriptorSize);
@@ -371,6 +462,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Forces a entry as modified, to be updated if any shader uses bindless textures.
+        /// </summary>
+        /// <param name="id">ID of the entry to be updated</param>
+        public void ForceModifiedEntry(int id)
+        {
+            ModifiedEntries.Set(id);
         }
 
         /// <summary>

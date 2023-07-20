@@ -10,5 +10,16 @@ namespace Ryujinx.Graphics.Shader
         public const int NvnBaseVertexByteOffset = 0x640;
         public const int NvnBaseInstanceByteOffset = 0x644;
         public const int NvnDrawIndexByteOffset = 0x648;
+
+        public const int VkConstantBufferSetIndex = 0;
+        public const int VkStorageBufferSetIndex = 1;
+        public const int VkTextureSetIndex = 2;
+        public const int VkImageSetIndex = 3;
+
+        // Bindless emulation.
+
+        public const int BindlessTextureSetIndex = 4;
+        public const int BindlessTableBinding = 0;
+        public const int BindlessScalesBinding = 1;
     }
 }

@@ -124,6 +124,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
+        public int QueryTextureBufferIndex()
+        {
+            byte textureBufferIndex = _oldSpecState.GetTextureBufferIndex();
+            _newSpecState.RecordTextureBufferIndex(textureBufferIndex);
+            return textureBufferIndex;
+        }
+
+        /// <inheritdoc/>
         public bool QueryTextureCoordNormalized(int handle, int cbufSlot)
         {
             _newSpecState.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);

@@ -105,6 +105,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddCapability(Capability.ShaderViewportMaskNV);
             }
 
+            if (parameters.BindlessTextureFlags != BindlessTextureFlags.None)
+            {
+                context.AddExtension("SPV_EXT_descriptor_indexing");
+                context.AddCapability(Capability.Sampled1D);
+                context.AddCapability(Capability.Image1D);
+                context.AddCapability(Capability.SampledCubeArray);
+                context.AddCapability(Capability.ImageCubeArray);
+                context.AddCapability(Capability.StorageImageMultisample);
+                context.AddCapability(Capability.RuntimeDescriptorArray);
+            }
+
             if ((info.HelperFunctionsMask & NeedsInvocationIdMask) != 0)
             {
                 info.IoDefinitions.Add(new IoDefinition(StorageKind.Input, IoVariable.SubgroupLaneId));

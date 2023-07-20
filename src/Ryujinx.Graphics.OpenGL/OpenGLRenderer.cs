@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public OpenGLRenderer()
         {
-            _pipeline = new Pipeline();
+            _pipeline = new Pipeline(this);
             _counters = new Counters();
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);

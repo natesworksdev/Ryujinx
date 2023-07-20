@@ -8,8 +8,9 @@ namespace Ryujinx.Graphics.Shader
         public SamplerType Type { get; }
         public TextureFormat Format { get; }
         public TextureUsageFlags Flags { get; }
+        public int ArraySize { get; }
 
-        public TextureDefinition(int set, int binding, string name, SamplerType type, TextureFormat format, TextureUsageFlags flags)
+        public TextureDefinition(int set, int binding, string name, SamplerType type, TextureFormat format, TextureUsageFlags flags, int arraySize = 1)
         {
             Set = set;
             Binding = binding;
@@ -17,11 +18,12 @@ namespace Ryujinx.Graphics.Shader
             Type = type;
             Format = format;
             Flags = flags;
+            ArraySize = arraySize;
         }
 
         public TextureDefinition SetFlag(TextureUsageFlags flag)
         {
-            return new TextureDefinition(Set, Binding, Name, Type, Format, Flags | flag);
+            return new TextureDefinition(Set, Binding, Name, Type, Format, Flags | flag, ArraySize);
         }
     }
 }

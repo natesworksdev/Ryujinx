@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanRenderer gd,
             Device device,
             ReadOnlyCollection<ResourceDescriptorCollection> setDescriptors,
-            bool usePushDescriptors)
+            PipelineLayoutUsageInfo usageInfo)
         {
             DescriptorSetLayout[] layouts = new DescriptorSetLayout[setDescriptors.Count];
 
@@ -30,6 +30,8 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
+                bool hasRuntimeArray = false;
+
                 DescriptorSetLayoutBinding[] layoutBindings = new DescriptorSetLayoutBinding[rdc.Descriptors.Count];
 
                 for (int descIndex = 0; descIndex < rdc.Descriptors.Count; descIndex++)
@@ -45,11 +47,22 @@ namespace Ryujinx.Graphics.Vulkan
                         stages = activeStages;
                     }
 
+                    uint count = (uint)descriptor.Count;
+
+                    if (count == 0)
+                    {
+                        count = descriptor.Type == ResourceType.Sampler
+                            ? usageInfo.BindlessSamplersCount
+                            : usageInfo.BindlessTexturesCount;
+
+                        hasRuntimeArray = true;
+                    }
+
                     layoutBindings[descIndex] = new DescriptorSetLayoutBinding
                     {
                         Binding = (uint)descriptor.Binding,
                         DescriptorType = descriptor.Type.Convert(),
-                        DescriptorCount = (uint)descriptor.Count,
+                        DescriptorCount = count,
                         StageFlags = stages.Convert(),
                     };
                 }
@@ -61,10 +74,40 @@ namespace Ryujinx.Graphics.Vulkan
                         SType = StructureType.DescriptorSetLayoutCreateInfo,
                         PBindings = pLayoutBindings,
                         BindingCount = (uint)layoutBindings.Length,
-                        Flags = usePushDescriptors && setIndex == 0 ? DescriptorSetLayoutCreateFlags.PushDescriptorBitKhr : DescriptorSetLayoutCreateFlags.None,
+                        Flags = usageInfo.UsePushDescriptors && setIndex == 0 ? DescriptorSetLayoutCreateFlags.PushDescriptorBitKhr : DescriptorSetLayoutCreateFlags.None,
                     };
 
-                    gd.Api.CreateDescriptorSetLayout(device, descriptorSetLayoutCreateInfo, null, out layouts[setIndex]).ThrowOnError();
+                    if (hasRuntimeArray)
+                    {
+                        var bindingFlags = new DescriptorBindingFlags[rdc.Descriptors.Count];
+
+                        for (int descIndex = 0; descIndex < rdc.Descriptors.Count; descIndex++)
+                        {
+                            if (rdc.Descriptors.Count == 0)
+                            {
+                                bindingFlags[descIndex] = DescriptorBindingFlags.UpdateAfterBindBit;
+                            }
+                        }
+
+                        fixed (DescriptorBindingFlags* pBindingFlags = bindingFlags)
+                        {
+                            var descriptorSetLayoutFlagsCreateInfo = new DescriptorSetLayoutBindingFlagsCreateInfo()
+                            {
+                                SType = StructureType.DescriptorSetLayoutBindingFlagsCreateInfo,
+                                PBindingFlags = pBindingFlags,
+                                BindingCount = (uint)bindingFlags.Length,
+                            };
+
+                            descriptorSetLayoutCreateInfo.PNext = &descriptorSetLayoutFlagsCreateInfo;
+                            descriptorSetLayoutCreateInfo.Flags |= DescriptorSetLayoutCreateFlags.UpdateAfterBindPoolBit;
+
+                            gd.Api.CreateDescriptorSetLayout(device, descriptorSetLayoutCreateInfo, null, out layouts[setIndex]).ThrowOnError();
+                        }
+                    }
+                    else
+                    {
+                        gd.Api.CreateDescriptorSetLayout(device, descriptorSetLayoutCreateInfo, null, out layouts[setIndex]).ThrowOnError();
+                    }
                 }
             }
 

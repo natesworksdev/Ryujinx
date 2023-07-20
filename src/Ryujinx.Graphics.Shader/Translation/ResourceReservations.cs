@@ -32,12 +32,12 @@ namespace Ryujinx.Graphics.Shader.Translation
         private readonly Dictionary<IoDefinition, int> _offsets;
         internal IReadOnlyDictionary<IoDefinition, int> Offsets => _offsets;
 
-        internal ResourceReservations(bool isTransformFeedbackEmulated, bool vertexAsCompute)
+        internal ResourceReservations(TargetApi targetApi, bool isTransformFeedbackEmulated, bool vertexAsCompute)
         {
             // All stages reserves the first constant buffer binding for the support buffer.
             ReservedConstantBuffers = 1;
             ReservedStorageBuffers = 0;
-            ReservedTextures = 0;
+            ReservedTextures = targetApi == TargetApi.OpenGL ? 2 : 0; // Reserve 2 texture bindings on OpenGL for bindless emulation.
             ReservedImages = 0;
 
             if (isTransformFeedbackEmulated)
@@ -71,10 +71,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         internal ResourceReservations(
             IGpuAccessor gpuAccessor,
+            TargetApi targetApi,
             bool isTransformFeedbackEmulated,
             bool vertexAsCompute,
             IoUsage? vacInput,
-            IoUsage vacOutput) : this(isTransformFeedbackEmulated, vertexAsCompute)
+            IoUsage vacOutput) : this(targetApi, isTransformFeedbackEmulated, vertexAsCompute)
         {
             if (vertexAsCompute)
             {

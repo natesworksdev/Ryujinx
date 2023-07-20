@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -13,6 +14,11 @@ namespace Ryujinx.Graphics.Shader
 
     public static class TextureHandle
     {
+        // Maximum is actually 32 for OpenGL, but we reserve 2 textures for bindless emulation.
+        private const int MaxTexturesPerStageGl = 30;
+        private const int MaxTexturesPerStageVk = 64;
+        public const int NvnTextureBufferIndex = 2;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PackSlots(int cbufSlot0, int cbufSlot1)
         {
@@ -119,6 +125,12 @@ namespace Ryujinx.Graphics.Shader
             }
 
             return handle;
+        }
+
+        public static int GetMaxTexturesPerStage(TargetApi api)
+        {
+            // TODO: Query that value from the backend since those limits are not really fixed per API.
+            return api == TargetApi.Vulkan ? MaxTexturesPerStageVk : MaxTexturesPerStageGl;
         }
     }
 }

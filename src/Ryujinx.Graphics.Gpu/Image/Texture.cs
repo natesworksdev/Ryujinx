@@ -1462,6 +1462,19 @@ namespace Ryujinx.Graphics.Gpu.Image
             DisposeTextures();
 
             HostTexture = hostTexture;
+
+            ForceTexturePoolUpdate();
+        }
+
+        /// <summary>
+        /// Forces the entries on all texture pool where this texture is present to be updated.
+        /// </summary>
+        private void ForceTexturePoolUpdate()
+        {
+            foreach (TexturePoolOwner poolOwner in _poolOwners)
+            {
+                poolOwner.Pool.ForceModifiedEntry(poolOwner.ID);
+            }
         }
 
         /// <summary>

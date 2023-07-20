@@ -97,6 +97,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void Dispose()
         {
+            RevokeBindlessAccess();
+
             if (Handle != 0)
             {
                 GL.DeleteTexture(Handle);

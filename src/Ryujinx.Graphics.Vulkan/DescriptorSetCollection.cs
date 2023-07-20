@@ -88,6 +88,22 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public unsafe void UpdateImage(int setIndex, int bindingIndex, int elementIndex, DescriptorImageInfo imageInfo, DescriptorType type)
+        {
+            var writeDescriptorSet = new WriteDescriptorSet
+            {
+                SType = StructureType.WriteDescriptorSet,
+                DstSet = _descriptorSets[setIndex],
+                DstBinding = (uint)bindingIndex,
+                DstArrayElement = (uint)elementIndex,
+                DescriptorType = type,
+                DescriptorCount = 1,
+                PImageInfo = &imageInfo
+            };
+
+            _holder.Api.UpdateDescriptorSets(_holder.Device, 1, writeDescriptorSet, 0, null);
+        }
+
         public unsafe void UpdateImages(int setIndex, int baseBinding, ReadOnlySpan<DescriptorImageInfo> imageInfo, DescriptorType type)
         {
             if (imageInfo.Length == 0)
@@ -152,7 +168,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe void UpdateBufferImage(int setIndex, int bindingIndex, BufferView texelBufferView, DescriptorType type)
+        public unsafe void UpdateBufferImage(int setIndex, int bindingIndex, int elementIndex, BufferView texelBufferView, DescriptorType type)
         {
             if (texelBufferView.Handle != 0UL)
             {
@@ -161,6 +177,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.WriteDescriptorSet,
                     DstSet = _descriptorSets[setIndex],
                     DstBinding = (uint)bindingIndex,
+                    DstArrayElement = (uint)elementIndex,
                     DescriptorType = type,
                     DescriptorCount = 1,
                     PTexelBufferView = &texelBufferView,

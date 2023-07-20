@@ -347,7 +347,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
-            DescriptorSetManager = new DescriptorSetManager(_device, PipelineBase.DescriptorSetLayouts);
+            DescriptorSetManager = new DescriptorSetManager(_device, PipelineBase.DescriptorSetLayoutsBindless);
 
             PipelineLayoutCache = new PipelineLayoutCache();
 
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (info.State.HasValue || isCompute)
             {
-                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.FromCache);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.HasBindless, info.FromCache);
             }
 
             return new ShaderCollection(this, _device, sources, info.ResourceLayout);

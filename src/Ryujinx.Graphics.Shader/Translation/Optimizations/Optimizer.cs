@@ -16,11 +16,34 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             GlobalToStorage.RunPass(context.Hfm, context.Blocks, context.ResourceManager, context.GpuAccessor, context.TargetLanguage);
 
             bool hostSupportsShaderFloat64 = context.GpuAccessor.QueryHostSupportsShaderFloat64();
+            int textureBufferIndex = context.GpuAccessor.QueryTextureBufferIndex();
 
             // Those passes are looking for specific patterns and only needs to run once.
             for (int blkIndex = 0; blkIndex < context.Blocks.Length; blkIndex++)
             {
-                BindlessToIndexed.RunPass(context.Blocks[blkIndex], context.ResourceManager);
+                if (textureBufferIndex == TextureHandle.NvnTextureBufferIndex)
+                {
+                    BasicBlock block = context.Blocks[blkIndex];
+
+                    for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
+                    {
+                        for (int index = 0; index < node.Value.SourcesCount; index++)
+                        {
+                            Operand src = node.Value.GetSource(index);
+
+                            // The shader accessing constant buffer 2 is an indication that
+                            // the bindless access is for separate texture/sampler combinations.
+                            // Bindless elimination should be able to take care of that, but if it doesn't,
+                            // we still don't want to use full bindless for those cases
+                            if (src.Type == OperandType.ConstantBuffer && src.GetCbufSlot() == textureBufferIndex)
+                            {
+                                context.BindlessTexturesAllowed = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 BindlessElimination.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
 
                 // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.

@@ -40,7 +40,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="vertexAsCompute">Indicates that the vertex shader will be emulated on a compute shader</param>
         public void InitializeReservedCounts(bool tfEnabled, bool vertexAsCompute)
         {
-            ResourceReservationCounts rrc = new(!_context.Capabilities.SupportsTransformFeedback && tfEnabled, vertexAsCompute);
+            ResourceReservationCounts rrc = new(
+                _context.Capabilities.Api,
+                !_context.Capabilities.SupportsTransformFeedback && tfEnabled,
+                vertexAsCompute);
 
             _reservedConstantBuffers = rrc.ReservedConstantBuffers;
             _reservedStorageBuffers = rrc.ReservedStorageBuffers;

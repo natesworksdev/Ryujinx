@@ -16,33 +16,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0/do nothing.
-            if (isBindless)
-            {
-                switch (texOp.Inst)
-                {
-                    case Instruction.ImageStore:
-                        return "// imageStore(bindless)";
-                    case Instruction.ImageLoad:
-                        AggregateType componentType = texOp.Format.GetComponentType();
-
-                        NumberFormatter.TryFormat(0, componentType, out string imageConst);
-
-                        AggregateType outputType = texOp.GetVectorType(componentType);
-
-                        if ((outputType & AggregateType.ElementCountMask) != 0)
-                        {
-                            return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({imageConst})";
-                        }
-
-                        return imageConst;
-                    default:
-                        return NumberFormatter.FormatInt(0);
-                }
-            }
-
             bool isArray = (texOp.Type & SamplerType.Array) != 0;
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             var texCallBuilder = new StringBuilder();
 
@@ -70,21 +44,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCallBuilder.Append(texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore");
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            AggregateType type = texOp.Format.GetComponentType();
 
-            if (isIndexed)
+            string bindlessHandle = null;
+            string imageName;
+
+            if (isBindless)
             {
-                indexExpr = Src(AggregateType.S32);
+                bindlessHandle = Src(AggregateType.S32);
+                imageName = GetBindlessImage(context, texOp.Type, type, bindlessHandle);
             }
-
-            string imageName = GetImageName(context.Properties, texOp, indexExpr);
+            else
+            {
+                imageName = GetImageName(context.Properties, texOp);
+            }
 
             texCallBuilder.Append('(');
             texCallBuilder.Append(imageName);
@@ -117,8 +97,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                AggregateType type = texOp.Format.GetComponentType();
-
                 string[] cElems = new string[4];
 
                 for (int index = 0; index < 4; index++)
@@ -150,8 +128,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                AggregateType type = texOp.Format.GetComponentType();
-
                 if ((texOp.Flags & TextureFlags.AtomicMask) == TextureFlags.CAS)
                 {
                     Append(Src(type)); // Compare value.
@@ -207,18 +183,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return NumberFormatter.FormatFloat(0);
             }
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            string samplerName = GetSamplerName(context.Properties, texOp);
 
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
-            }
-
-            string samplerName = GetSamplerName(context.Properties, texOp, indexExpr);
-
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = isBindless ? 1 : 0;
 
             string coordsExpr;
 
@@ -260,7 +227,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool hasOffsets = (texOp.Flags & TextureFlags.Offsets) != 0;
 
             bool isArray = (texOp.Type & SamplerType.Array) != 0;
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow = (texOp.Type & SamplerType.Shadow) != 0;
 
@@ -284,24 +250,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (isShadow && isCube && !context.HostCapabilities.SupportsTextureShadowLod)
             {
                 hasLodLevel = false;
-            }
-
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                string scalarValue = NumberFormatter.FormatFloat(0);
-
-                if (colorIsVector)
-                {
-                    AggregateType outputType = texOp.GetVectorType(AggregateType.FP32);
-
-                    if ((outputType & AggregateType.ElementCountMask) != 0)
-                    {
-                        return $"{Declarations.GetVarTypeName(context, outputType, precise: false)}({scalarValue})";
-                    }
-                }
-
-                return scalarValue;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -328,23 +276,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(AggregateType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            string bindlessHandle = null;
 
-            if (isIndexed)
+            if (isBindless)
             {
-                indexExpr = Src(AggregateType.S32);
+                bindlessHandle = Src(AggregateType.S32);
+                texCall += "(" + GetBindlessSampler(context, texOp.Type, bindlessHandle);
             }
-
-            string samplerName = GetSamplerName(context.Properties, texOp, indexExpr);
-
-            texCall += "(" + samplerName;
+            else
+            {
+                texCall += "(" + GetSamplerName(context.Properties, texOp);
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -523,22 +472,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                return NumberFormatter.FormatInt(0);
-            }
+            string bindlessHandle = isBindless ? GetSoureExpr(context, operation.GetSource(0), AggregateType.S32) : null;
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
-            }
-
-            string samplerName = GetSamplerName(context.Properties, texOp, indexExpr);
+            string samplerName = isBindless
+                ? GetBindlessSampler(context, texOp.Type, bindlessHandle)
+                : GetSamplerName(context.Properties, texOp);
 
             return $"textureSamples({samplerName})";
         }
@@ -549,22 +487,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                return NumberFormatter.FormatInt(0);
-            }
+            string bindlessHandle = isBindless ? GetSoureExpr(context, operation.GetSource(0), AggregateType.S32) : null;
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
-            }
-
-            string samplerName = GetSamplerName(context.Properties, texOp, indexExpr);
+            string samplerName = isBindless
+                ? GetBindlessSampler(context, texOp.Type, bindlessHandle)
+                : GetSamplerName(context.Properties, texOp);
 
             if (texOp.Index == 3)
             {
@@ -572,13 +499,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                context.Properties.Textures.TryGetValue(texOp.Binding, out TextureDefinition definition);
+                context.Properties.Textures.TryGetValue(SetBindingPair.Unpack(texOp.Binding), out TextureDefinition definition);
                 bool hasLod = !definition.Type.HasFlag(SamplerType.Multisample) && (definition.Type & SamplerType.Mask) != SamplerType.TextureBuffer;
                 string texCall;
 
                 if (hasLod)
                 {
-                    int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+                    int lodSrcIndex = isBindless ? 1 : 0;
                     IAstNode lod = operation.GetSource(lodSrcIndex);
                     string lodExpr = GetSoureExpr(context, lod, GetSrcVarType(operation.Inst, lodSrcIndex));
 
@@ -619,8 +546,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     int binding = bindingIndex.Value;
                     BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
-                        ? context.Properties.ConstantBuffers[binding]
-                        : context.Properties.StorageBuffers[binding];
+                        ? context.Properties.ConstantBuffers[SetBindingPair.Unpack(binding)]
+                        : context.Properties.StorageBuffers[SetBindingPair.Unpack(binding)];
 
                     if (operation.GetSource(srcIndex++) is not AstOperand fieldIndex || fieldIndex.Type != OperandType.Constant)
                     {
@@ -748,28 +675,52 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return varName;
         }
 
-        private static string GetSamplerName(ShaderProperties resourceDefinitions, AstTextureOperation texOp, string indexExpr)
+        private static string GetBindlessSampler(CodeGenContext context, SamplerType type, string bindlessHandle)
         {
-            string name = resourceDefinitions.Textures[texOp.Binding].Name;
+            string samplerType = type.ToGlslSamplerType();
 
-            if (texOp.Type.HasFlag(SamplerType.Indexed))
+            if (context.TargetApi == TargetApi.Vulkan)
             {
-                name = $"{name}[{indexExpr}]";
-            }
+                string textureIndex = $"{HelperFunctionNames.GetBindlessTextureIndexVk}({bindlessHandle})";
+                string samplerIndex = $"{HelperFunctionNames.GetBindlessSamplerIndexVk}({bindlessHandle})";
 
-            return name;
+                string bindlessTextureArrayName = context.OperandManager.BindlessTextures[type & ~SamplerType.Shadow];
+                string bindlessSamplerArrayName = context.OperandManager.BindlessTextures[SamplerType.None];
+
+                return $"{samplerType}({bindlessTextureArrayName}[{textureIndex}], {bindlessSamplerArrayName}[{samplerIndex}])";
+            }
+            else
+            {
+                return $"{samplerType}({HelperFunctionNames.GetBindlessHandle}({bindlessHandle}))";
+            }
         }
 
-        private static string GetImageName(ShaderProperties resourceDefinitions, AstTextureOperation texOp, string indexExpr)
+        private static string GetBindlessImage(CodeGenContext context, SamplerType type, AggregateType componentType, string bindlessHandle)
         {
-            string name = resourceDefinitions.Images[texOp.Binding].Name;
+            string imageType = type.ToGlslImageType(componentType);
 
-            if (texOp.Type.HasFlag(SamplerType.Indexed))
+            if (context.TargetApi == TargetApi.Vulkan)
             {
-                name = $"{name}[{indexExpr}]";
-            }
+                string textureIndex = $"{HelperFunctionNames.GetBindlessTextureIndexVk}({bindlessHandle})";
 
-            return name;
+                string bindlessImageArrayName = context.OperandManager.BindlessImages[type];
+
+                return $"{bindlessImageArrayName}[{textureIndex}]";
+            }
+            else
+            {
+                return $"{imageType}({HelperFunctionNames.GetBindlessHandle}({bindlessHandle}))";
+            }
+        }
+
+        private static string GetSamplerName(ShaderProperties resourceDefinitions, AstTextureOperation texOp)
+        {
+            return resourceDefinitions.Textures[SetBindingPair.Unpack(texOp.Binding)].Name;
+        }
+
+        private static string GetImageName(ShaderProperties resourceDefinitions, AstTextureOperation texOp)
+        {
+            return resourceDefinitions.Images[SetBindingPair.Unpack(texOp.Binding)].Name;
         }
 
         private static string GetMask(int index)

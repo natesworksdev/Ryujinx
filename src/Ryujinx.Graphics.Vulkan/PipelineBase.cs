@@ -19,11 +19,17 @@ namespace Ryujinx.Graphics.Vulkan
     class PipelineBase : IDisposable
     {
         public const int DescriptorSetLayouts = 4;
+        public const int DescriptorSetLayoutsBindless = 9;
 
         public const int UniformSetIndex = 0;
         public const int StorageSetIndex = 1;
         public const int TextureSetIndex = 2;
         public const int ImageSetIndex = 3;
+        public const int BindlessTexturesSetIndex = 4;
+        public const int BindlessBufferTextureSetIndex = 5;
+        public const int BindlessSamplersSetIndex = 6;
+        public const int BindlessImagesSetIndex = 7;
+        public const int BindlessBufferImageSetIndex = 8;
 
         protected readonly VulkanRenderer Gd;
         protected readonly Device Device;
@@ -714,6 +720,42 @@ namespace Ryujinx.Graphics.Vulkan
             _tfEnabled = false;
         }
 
+        public void RegisterBindlessSampler(int samplerId, ISampler sampler)
+        {
+            _descriptorSetUpdater.SetBindlessSampler(samplerId, sampler);
+
+            bool hasBindless = _program?.HasBindless ?? false;
+            uint bindlessSamplersCount = hasBindless ? _descriptorSetUpdater.BindlessSamplersCount : 0;
+
+            if (_newState.BindlessSamplersCount != bindlessSamplersCount)
+            {
+                _newState.BindlessSamplersCount = bindlessSamplersCount;
+
+                SignalStateChange();
+            }
+        }
+
+        public void RegisterBindlessTexture(int textureId, ITexture texture, float textureScale)
+        {
+            _descriptorSetUpdater.SetBindlessTexture(textureId, texture, textureScale);
+
+            bool hasBindless = _program?.HasBindless ?? false;
+            uint bindlessTexturesCount = hasBindless ? _descriptorSetUpdater.BindlessTexturesCount : 0;
+
+            if (_newState.BindlessTexturesCount != bindlessTexturesCount)
+            {
+                _newState.BindlessTexturesCount = bindlessTexturesCount;
+
+                SignalStateChange();
+            }
+        }
+
+        public void RegisterBindlessTextureAndSampler(int textureId, ITexture texture, float textureScale, int samplerId, ISampler sampler)
+        {
+            RegisterBindlessSampler(samplerId, sampler);
+            RegisterBindlessTexture(textureId, texture, textureScale);
+        }
+
         public bool IsCommandBufferActive(CommandBuffer cb)
         {
             return CommandBuffer.Handle == cb.Handle;
@@ -967,10 +1009,23 @@ namespace Ryujinx.Graphics.Vulkan
 
             _descriptorSetUpdater.SetProgram(internalProgram);
 
-            _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.StagesCount = (uint)stages.Length;
 
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
+
+            if (internalProgram.HasBindless)
+            {
+                uint bindlessTexturesCount = _descriptorSetUpdater.BindlessTexturesCount;
+                uint bindlessSamplersCount = _descriptorSetUpdater.BindlessSamplersCount;
+
+                _newState.BindlessTexturesCount = bindlessTexturesCount;
+                _newState.BindlessSamplersCount = bindlessSamplersCount;
+            }
+            else
+            {
+                _newState.BindlessTexturesCount = 0;
+                _newState.BindlessSamplersCount = 0;
+            }
 
             SignalStateChange();
 

@@ -264,6 +264,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             HelperFunctionManager hfm = new(funcs, Definitions.Stage);
 
+            BindlessTextureFlags bindlessTextureFlags = BindlessTextureFlags.None;
+            bool bindlessTexturesAllowed = true;
+
             for (int i = 0; i < functions.Length; i++)
             {
                 var cfg = cfgs[i];
@@ -294,9 +297,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Definitions,
                         resourceManager,
                         GpuAccessor,
+                        Options.TargetApi,
                         Options.TargetLanguage,
                         Definitions.Stage,
-                        ref usedFeatures);
+                        ref usedFeatures,
+                        ref bindlessTextureFlags,
+                        ref bindlessTexturesAllowed);
 
                     Optimizer.RunPass(context);
                     TransformPasses.RunPass(context);
@@ -312,6 +318,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 Definitions,
                 resourceManager,
                 usedFeatures,
+                bindlessTextureFlags,
                 clipDistancesWritten);
         }
 
@@ -322,6 +329,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             ShaderDefinitions originalDefinitions,
             ResourceManager resourceManager,
             FeatureFlags usedFeatures,
+            BindlessTextureFlags bindlessTextureFlags,
             byte clipDistancesWritten)
         {
             var sInfo = StructuredProgram.MakeStructuredProgram(
@@ -345,6 +353,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager.GetTextureDescriptors(),
                 resourceManager.GetImageDescriptors(),
                 originalDefinitions.Stage,
+                bindlessTextureFlags,
                 geometryVerticesPerPrimitive,
                 originalDefinitions.MaxOutputVertices,
                 originalDefinitions.ThreadsPerInputPrimitive,
@@ -365,7 +374,14 @@ namespace Ryujinx.Graphics.Shader.Translation
                 GpuAccessor.QueryHostSupportsTextureShadowLod(),
                 GpuAccessor.QueryHostSupportsViewportMask());
 
-            var parameters = new CodeGenParameters(attributeUsage, definitions, resourceManager.Properties, hostCapabilities, GpuAccessor, Options.TargetApi);
+            var parameters = new CodeGenParameters(
+                attributeUsage,
+                definitions,
+                resourceManager.Properties,
+                hostCapabilities,
+                GpuAccessor,
+                Options.TargetApi,
+                bindlessTextureFlags);
 
             return Options.TargetLanguage switch
             {
@@ -474,7 +490,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 ioUsage = ioUsage.Combine(_vertexOutput);
             }
 
-            return new ResourceReservations(GpuAccessor, IsTransformFeedbackEmulated, vertexAsCompute: true, _vertexOutput, ioUsage);
+            return new ResourceReservations(GpuAccessor, Options.TargetApi, IsTransformFeedbackEmulated, vertexAsCompute: true, _vertexOutput, ioUsage);
         }
 
         public void SetVertexOutputMapForGeometryAsCompute(TranslatorContext vertexContext)
@@ -569,6 +585,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 definitions,
                 resourceManager,
                 FeatureFlags.None,
+                BindlessTextureFlags.None,
                 0);
         }
 
@@ -665,6 +682,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 definitions,
                 resourceManager,
                 FeatureFlags.RtLayer,
+                BindlessTextureFlags.None,
                 0);
         }
     }
