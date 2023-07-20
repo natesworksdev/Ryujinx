@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -90,6 +91,13 @@ namespace Ryujinx.Ava.UI.Windows
                         throw new NotImplementedException();
                 }
             }
+        }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            HotkeysPage.Dispose();
+            InputPage.Dispose();
+            base.OnClosing(e);
         }
     }
 }
