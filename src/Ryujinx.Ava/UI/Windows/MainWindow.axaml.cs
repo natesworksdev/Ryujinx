@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -103,6 +104,7 @@ namespace Ryujinx.Ava.UI.Windows
                 LoadGameList();
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
+                this.ScalingChanged += OnScalingChanged;
             }
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
@@ -129,6 +131,11 @@ namespace Ryujinx.Ava.UI.Windows
             LoadApplications();
 
             _isLoading = false;
+        }
+        
+        private void OnScalingChanged(object sender, EventArgs e)
+        {
+            Program.DesktopScaleFactor = this.RenderScaling;
         }
 
         public void AddApplication(ApplicationData applicationData)
