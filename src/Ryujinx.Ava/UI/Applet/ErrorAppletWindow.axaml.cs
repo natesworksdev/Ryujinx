@@ -4,9 +4,6 @@ using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Windows;
 using System.Threading.Tasks;
-#if DEBUG
-using Avalonia;
-#endif
 
 namespace Ryujinx.Ava.UI.Applet
 {

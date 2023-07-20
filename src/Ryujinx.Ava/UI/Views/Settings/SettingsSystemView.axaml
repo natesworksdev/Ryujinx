@@ -6,8 +6,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     mc:Ignorable="d"
     x:DataType="viewModels:SettingsViewModel">
+    <UserControl.Resources>
+        <helpers:TimeZoneConverter x:Key="TimeZone" />
+    </UserControl.Resources>
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
@@ -150,7 +154,8 @@
                             SelectionChanged="TimeZoneBox_OnSelectionChanged"
                             Text="{Binding Path=TimeZone, Mode=OneWay}"
                             TextChanged="TimeZoneBox_OnTextChanged"
-                            ToolTip.Tip="{locale:Locale TimezoneTooltip}" />
+                            ToolTip.Tip="{locale:Locale TimezoneTooltip}" 
+                            ValueMemberBinding="{Binding Mode=OneWay, Converter={StaticResource TimeZone}}" />
                     </StackPanel>
                     <StackPanel
                         Margin="0,0,0,10"

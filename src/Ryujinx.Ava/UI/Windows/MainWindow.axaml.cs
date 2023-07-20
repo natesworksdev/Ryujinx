@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -132,7 +130,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = false;
         }
-        
+
         private void OnScalingChanged(object sender, EventArgs e)
         {
             Program.DesktopScaleFactor = this.RenderScaling;
@@ -222,7 +220,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             });
         }
-        
+
         private void Initialize()
         {
             _userChannelPersistence = new UserChannelPersistence();
