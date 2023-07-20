@@ -628,6 +628,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 identification,
                 GpLayerInputAttribute,
                 Stage,
+                UsedFeatures.HasFlag(FeatureFlags.FragCoordXY),
                 UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
                 UsedFeatures.HasFlag(FeatureFlags.RtLayer),
