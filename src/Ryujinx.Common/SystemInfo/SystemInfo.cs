@@ -114,23 +114,22 @@ namespace Ryujinx.Common.SystemInfo
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    var process = new Process
+                    using (var process = new Process
+                           {
+                               StartInfo = new ProcessStartInfo
+                               {
+                                   FileName = "sysctl",
+                                   Arguments = "-n hw.physicalcpu",
+                                   UseShellExecute = false,
+                                   RedirectStandardOutput = true,
+                                   CreateNoWindow = true,
+                               }
+                           })
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "sysctl",
-                            Arguments = "-n hw.physicalcpu",
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            CreateNoWindow = true,
-                        }
-                    };
-
-                    process.Start();
-                    
-                    coreCount = int.Parse(process.StandardOutput.ReadToEnd());
-                    
-                    process.WaitForExit();
+                        process.Start();
+                        coreCount = int.Parse(process.StandardOutput.ReadToEnd());
+                        process.WaitForExit();
+                    }
                 }
             }
             catch (Exception ex)
