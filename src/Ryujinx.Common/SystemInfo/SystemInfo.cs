@@ -1,5 +1,4 @@
-﻿using Microsoft.Management.Infrastructure;
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
+using WmiLight;
 
 namespace Ryujinx.Common.SystemInfo
 {
@@ -14,6 +14,7 @@ namespace Ryujinx.Common.SystemInfo
     {
         public string OsDescription { get; protected set; }
         public string CpuName { get; protected set; }
+        public static int PhysicalCores { get; protected set; }
         public ulong RamTotal { get; protected set; }
         public ulong RamAvailable { get; protected set; }
         protected static int LogicalCoreCount => Environment.ProcessorCount;
@@ -93,14 +94,7 @@ namespace Ryujinx.Common.SystemInfo
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    using (var session = CimSession.Create(null))
-                    {
-                        var instances = session.QueryInstances(@"root\cimv2", "WQL", "SELECT NumberOfCores FROM Win32_Processor");
-                        foreach (CimInstance instance in instances)
-                        {
-                            coreCount = int.Parse(instance.CimInstanceProperties["NumberOfCores"].Value.ToString());
-                        }
-                    }
+                    coreCount = PhysicalCores;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {

@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" />
     <PackageReference Include="MsgPack.Cli" />
+    <PackageReference Include="WmiLight" />
   </ItemGroup>
 
 </Project>

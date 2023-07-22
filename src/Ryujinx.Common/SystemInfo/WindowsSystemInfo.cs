@@ -1,86 +1,82 @@
-using Microsoft.Management.Infrastructure;
-using Ryujinx.Common.Logging;
 using System;
+using System.Runtime.Versioning;
+using WmiLight;
+using Ryujinx.Common.Logging;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("windows")]
     partial class WindowsSystemInfo : SystemInfo
     {
-        private CimSession _cimSession;
-
         internal WindowsSystemInfo()
         {
             try
             {
-                //Inefficient to create a session for each query do it all at once
-                _cimSession = CimSession.Create(null);
-                CpuName = $"{GetCpuNameMMI() ?? GetCpuidCpuName()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical"; 
-                (RamTotal, RamAvailable) = GetMemoryStatsMMI();
-            }
-            finally
-            {
-                _cimSession?.Dispose();
-            }
-        }
-
-        private string GetCpuNameMMI()
-        {
-            var cpuObjs = GetMMIObjects(@"root\cimv2", "SELECT Name FROM Win32_Processor");
-
-            if (cpuObjs != null)
-            {
-                foreach (var cpuObj in cpuObjs)
+                using (WmiConnection connection = new WmiConnection())
                 {
-                    return cpuObj.CimInstanceProperties["Name"].Value.ToString().Trim();
+                    (string cpuName, int physicalCores) = GetCpuStatsLight(connection);
+                    CpuName = $"{cpuName} ; {physicalCores} physical ; {LogicalCoreCount} logical";
+                    (RamTotal, RamAvailable) = GetMemoryStatsWmiLight(connection);
                 }
             }
-            
-            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim();
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"WmiLight isn't available : {ex.Message}");
+            }
         }
-        
-        private (ulong TotalPhys, ulong AvailPhys) GetMemoryStatsMMI()
-        {
-            var memObjs = GetMMIObjects(@"root\cimv2", "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
-            var memObjs2 = GetMMIObjects(@"root\cimv2", "SELECT FreePhysicalMemory FROM Win32_OperatingSystem");
 
+
+        private (string cpuName, int physicalCores) GetCpuStatsLight(WmiConnection connection)
+        {
+            string cpuName = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim();
+            int physicalCores = LogicalCoreCount;
+            foreach (WmiObject cpuObj in GetWmiObjects(connection, "SELECT Name FROM Win32_Processor"))
+            {
+                cpuName = cpuObj["Name"].ToString().Trim();
+            }
+
+            foreach (WmiObject cpuObj in GetWmiObjects(connection, "SELECT NumberOfCores FROM Win32_Processor"))
+            {
+                physicalCores = Convert.ToInt32(cpuObj["NumberOfCores"]);
+            }
+
+            return (cpuName, physicalCores);
+        }
+
+        private (ulong TotalPhys, ulong AvailPhys) GetMemoryStatsWmiLight(WmiConnection connection)
+        {
             ulong TotalPhys = 0;
             ulong AvailPhys = 0;
 
-            if (memObjs != null)
+            foreach (WmiObject memObj in GetWmiObjects(connection, "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
             {
-                foreach (var memObj in memObjs)
-                {
-                    TotalPhys = (ulong)memObj.CimInstanceProperties["TotalPhysicalMemory"].Value;
-                }
+                TotalPhys = Convert.ToUInt64(memObj["TotalPhysicalMemory"]);
             }
 
-            if (memObjs2 != null)
+            foreach (WmiObject memObj2 in GetWmiObjects(connection, "SELECT FreePhysicalMemory FROM Win32_OperatingSystem"))
             {
-                foreach (var memObj2 in memObjs2)
-                {
-                    AvailPhys = (ulong)memObj2.CimInstanceProperties["FreePhysicalMemory"].Value*1000;
-                }
+                AvailPhys = Convert.ToUInt64(memObj2["FreePhysicalMemory"]) * 1000;
             }
 
             return (TotalPhys, AvailPhys);
         }
 
-        private IEnumerable<CimInstance> GetMMIObjects(string namespaceName, string query)
+
+        private IEnumerable<WmiObject> GetWmiObjects(WmiConnection connection, string query)
         {
             try
             {
-                return _cimSession.QueryInstances(namespaceName, "WQL", query).ToList();
+                return connection.CreateQuery(query).ToList();
             }
-            catch (CimException ex)
+            catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"MMI isn't available : {ex.Message}");
+                Logger.Error?.Print(LogClass.Application, $"WmiLight isn't available : {ex.Message}");
             }
 
-            return Enumerable.Empty<CimInstance>();
+            return Enumerable.Empty<WmiObject>();
         }
+
     }
 }

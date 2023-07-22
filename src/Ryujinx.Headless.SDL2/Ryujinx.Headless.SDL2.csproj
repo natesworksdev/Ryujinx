@@ -67,6 +67,7 @@
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
+	<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <TrimMode>partial</TrimMode>
   </PropertyGroup>
 </Project>
