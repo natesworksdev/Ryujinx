@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Microsoft.Management.Infrastructure;
+using Ryujinx.Common.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -92,9 +93,11 @@ namespace Ryujinx.Common.SystemInfo
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    foreach (var item in new System.Management.ManagementObjectSearcher("Select NumberOfCores from Win32_Processor").Get())
+                    var session = CimSession.Create(null);
+                    var instances = session.QueryInstances(@"root\cimv2", "WQL", "SELECT NumberOfCores FROM Win32_Processor");
+                    foreach (CimInstance instance in instances)
                     {
-                        coreCount = int.Parse(item["NumberOfCores"].ToString());
+                        coreCount = int.Parse(instance.CimInstanceProperties["NumberOfCores"].Value.ToString());
                     }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
