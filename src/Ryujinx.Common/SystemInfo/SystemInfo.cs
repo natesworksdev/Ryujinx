@@ -93,11 +93,13 @@ namespace Ryujinx.Common.SystemInfo
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var session = CimSession.Create(null);
-                    var instances = session.QueryInstances(@"root\cimv2", "WQL", "SELECT NumberOfCores FROM Win32_Processor");
-                    foreach (CimInstance instance in instances)
+                    using (var session = CimSession.Create(null))
                     {
-                        coreCount = int.Parse(instance.CimInstanceProperties["NumberOfCores"].Value.ToString());
+                        var instances = session.QueryInstances(@"root\cimv2", "WQL", "SELECT NumberOfCores FROM Win32_Processor");
+                        foreach (CimInstance instance in instances)
+                        {
+                            coreCount = int.Parse(instance.CimInstanceProperties["NumberOfCores"].Value.ToString());
+                        }
                     }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
