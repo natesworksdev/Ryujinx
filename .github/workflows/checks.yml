@@ -31,10 +31,6 @@ jobs:
         with:
           global-json-file: global.json
 
-      # FIXME: Enable naming style rule checks again as soon as they stop causing crashes.
-      - name: "TEMP: Disable naming style rules"
-        run: echo -e "\n[*.cs]\ndotnet_diagnostic.IDE1006.severity = none" >> .editorconfig
-
       - run: dotnet restore
 
       - name: Print dotnet format version
