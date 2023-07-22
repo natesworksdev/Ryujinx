@@ -10,15 +10,26 @@ namespace Ryujinx.Common.SystemInfo
     [SupportedOSPlatform("windows")]
     partial class WindowsSystemInfo : SystemInfo
     {
+        private CimSession _cimSession;
+
         internal WindowsSystemInfo()
         {
-            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameMMI()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical"; // WMI is very slow
-            (RamTotal, RamAvailable) = GetMemoryStatsMMI();
+            try
+            {
+                //Inefficient to create a session for each query do it all at once
+                _cimSession = CimSession.Create(null);
+                CpuName = $"{GetCpuNameMMI() ?? GetCpuidCpuName()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical"; 
+                (RamTotal, RamAvailable) = GetMemoryStatsMMI();
+            }
+            finally
+            {
+                _cimSession?.Dispose();
+            }
         }
 
-        private static string  GetCpuNameMMI()
+        private string GetCpuNameMMI()
         {
-            var cpuObjs = GetMMIObjects(@"root\cimv2", "SELECT * FROM Win32_Processor");
+            var cpuObjs = GetMMIObjects(@"root\cimv2", "SELECT Name FROM Win32_Processor");
 
             if (cpuObjs != null)
             {
@@ -31,10 +42,10 @@ namespace Ryujinx.Common.SystemInfo
             return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim();
         }
         
-        private static (ulong TotalPhys, ulong AvailPhys) GetMemoryStatsMMI()
+        private (ulong TotalPhys, ulong AvailPhys) GetMemoryStatsMMI()
         {
-            var memObjs = GetMMIObjects(@"root\cimv2", "SELECT * FROM Win32_ComputerSystem");
-            var memObjs2 = GetMMIObjects(@"root\cimv2", "SELECT * FROM Win32_OperatingSystem");
+            var memObjs = GetMMIObjects(@"root\cimv2", "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
+            var memObjs2 = GetMMIObjects(@"root\cimv2", "SELECT FreePhysicalMemory FROM Win32_OperatingSystem");
 
             ulong TotalPhys = 0;
             ulong AvailPhys = 0;
@@ -58,14 +69,11 @@ namespace Ryujinx.Common.SystemInfo
             return (TotalPhys, AvailPhys);
         }
 
-        private static IEnumerable<CimInstance> GetMMIObjects(string namespaceName, string query)
+        private IEnumerable<CimInstance> GetMMIObjects(string namespaceName, string query)
         {
             try
             {
-                using (CimSession session = CimSession.Create(null))
-                {
-                    return session.QueryInstances(namespaceName, "WQL", query).ToList();
-                }
+                return _cimSession.QueryInstances(namespaceName, "WQL", query).ToList();
             }
             catch (CimException ex)
             {
