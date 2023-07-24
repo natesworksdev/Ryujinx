@@ -108,6 +108,7 @@ namespace Ryujinx.Ava.UI.Windows
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
             ViewModel.ReloadGameList += ReloadGameList;
+            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
 
             NotificationHelper.SetNotificationManager(this);
         }
@@ -518,8 +519,6 @@ namespace Ryujinx.Ava.UI.Windows
                 StatusBarView.LoadProgressBar.IsVisible = true;
                 ViewModel.StatusBarProgressMaximum = 0;
                 ViewModel.StatusBarProgressValue = 0;
-
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
             });
 
             ReloadGameList();
