@@ -217,7 +217,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             });
 
-            foreach (var file in result) {
+            foreach (var file in result)
+            {
                 await AddDownloadableContent(file.Path.LocalPath);
             }
         }

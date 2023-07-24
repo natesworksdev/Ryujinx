@@ -5,10 +5,10 @@ using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
-    public class TimeZoneConverter : IValueConverter
+    internal class TimeZoneConverter : IValueConverter
     {
         public static TimeZoneConverter Instance = new();
-        
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
