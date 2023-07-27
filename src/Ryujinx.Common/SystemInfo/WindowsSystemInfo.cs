@@ -8,16 +8,16 @@ using System.Linq;
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("windows")]
-    partial class WindowsSystemInfo : SystemInfo
+    class WindowsSystemInfo : SystemInfo
     {
         internal WindowsSystemInfo()
         {
             try
             {
-                using (WmiConnection connection = new WmiConnection())
+                using (WmiConnection connection = new())
                 {
-                    (string cpuName, int physicalCores) = GetCpuStatsLight(connection);
-                    CpuName = $"{cpuName} ; {physicalCores} physical ; {LogicalCoreCount} logical";
+                    (string cpuName, PhysicalCores) = GetCpuStatsLight(connection);
+                    CpuName = $"{cpuName} ; {PhysicalCores} physical ; {LogicalCoreCount} logical";
                     (RamTotal, RamAvailable) = GetMemoryStatsWmiLight(connection);
                 }
             }
