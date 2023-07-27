@@ -27,9 +27,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                 if (texOp.Inst == Instruction.TextureSample)
                 {
-                    node = InsertCoordNormalization(hfm, node, resourceManager, gpuAccessor, stage, ref usedFeatures);
-                    node = InsertCoordGatherBias(node, resourceManager, gpuAccessor, ref usedFeatures);
-                    node = InsertConstOffsets(node, resourceManager, gpuAccessor, ref usedFeatures);
+                    node = InsertCoordNormalization(hfm, node, resourceManager, gpuAccessor, stage);
+                    node = InsertCoordGatherBias(node, resourceManager, gpuAccessor);
+                    node = InsertConstOffsets(node, resourceManager, gpuAccessor);
 
                     if (texOp.Type == SamplerType.TextureBuffer && !gpuAccessor.QueryHostSupportsSnormBufferTextureFormat())
                     {
@@ -148,8 +148,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             LinkedListNode<INode> node,
             ResourceManager resourceManager,
             IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+            ShaderStage stage)
         {
             // Emulate non-normalized coordinates by normalizing the coordinates on the shader.
             // Without normalization, the coordinates are expected to the in the [0, W or H] range,
@@ -180,8 +179,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             int coordsCount = texOp.Type.GetDimensions();
             int coordsIndex = isBindless || isIndexed ? 1 : 0;
-
-            usedFeatures |= FeatureFlags.IntegerSampling;
 
             int normCoordsCount = (texOp.Type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : coordsCount;
 
@@ -226,11 +223,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return node;
         }
 
-        private static LinkedListNode<INode> InsertCoordGatherBias(
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ref FeatureFlags usedFeatures)
+        private static LinkedListNode<INode> InsertCoordGatherBias(LinkedListNode<INode> node, ResourceManager resourceManager, IGpuAccessor gpuAccessor)
         {
             // The gather behavior when the coordinate sits right in the middle of two texels is not well defined.
             // To ensure the correct texel is sampled, we add a small bias value to the coordinate.
@@ -253,8 +246,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             int coordsCount = texOp.Type.GetDimensions();
             int coordsIndex = isBindless || isIndexed ? 1 : 0;
-
-            usedFeatures |= FeatureFlags.IntegerSampling;
 
             int normCoordsCount = (texOp.Type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : coordsCount;
 
@@ -304,11 +295,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return node;
         }
 
-        private static LinkedListNode<INode> InsertConstOffsets(
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ref FeatureFlags usedFeatures)
+        private static LinkedListNode<INode> InsertConstOffsets(LinkedListNode<INode> node, ResourceManager resourceManager, IGpuAccessor gpuAccessor)
         {
             // Non-constant texture offsets are not allowed (according to the spec),
             // however some GPUs does support that.
@@ -457,8 +444,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             if (isGather && !isShadow)
             {
-                usedFeatures |= FeatureFlags.IntegerSampling;
-
                 Operand[] newSources = new Operand[sources.Length];
 
                 sources.CopyTo(newSources, 0);
@@ -525,8 +510,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
                 else
                 {
-                    usedFeatures |= FeatureFlags.IntegerSampling;
-
                     Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount);
 
                     for (int index = 0; index < coordsCount; index++)

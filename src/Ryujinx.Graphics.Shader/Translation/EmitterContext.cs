@@ -121,49 +121,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             _operations.Add(operation);
         }
 
-        public void FlagAttributeRead(int attribute)
-        {
-            if (TranslatorContext.Definitions.Stage == ShaderStage.Vertex && attribute == AttributeConsts.InstanceId)
-            {
-                TranslatorContext.SetUsedFeature(FeatureFlags.InstanceId);
-            }
-            else if (TranslatorContext.Definitions.Stage == ShaderStage.Fragment)
-            {
-                switch (attribute)
-                {
-                    case AttributeConsts.PositionX:
-                    case AttributeConsts.PositionY:
-                        TranslatorContext.SetUsedFeature(FeatureFlags.FragCoordXY);
-                        break;
-                }
-            }
-        }
-
-        public void FlagAttributeWritten(int attribute)
-        {
-            if (TranslatorContext.Definitions.Stage == ShaderStage.Vertex)
-            {
-                switch (attribute)
-                {
-                    case AttributeConsts.ClipDistance0:
-                    case AttributeConsts.ClipDistance1:
-                    case AttributeConsts.ClipDistance2:
-                    case AttributeConsts.ClipDistance3:
-                    case AttributeConsts.ClipDistance4:
-                    case AttributeConsts.ClipDistance5:
-                    case AttributeConsts.ClipDistance6:
-                    case AttributeConsts.ClipDistance7:
-                        TranslatorContext.SetClipDistanceWritten((attribute - AttributeConsts.ClipDistance0) / 4);
-                        break;
-                }
-            }
-
-            if (TranslatorContext.Definitions.Stage != ShaderStage.Fragment && attribute == AttributeConsts.Layer)
-            {
-                TranslatorContext.SetUsedFeature(FeatureFlags.RtLayer);
-            }
-        }
-
         public void MarkLabel(Operand label)
         {
             Add(Instruction.MarkLabel, label);
@@ -271,8 +228,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (TranslatorContext.Definitions.Stage != ShaderStage.Geometry && TranslatorContext.HasLayerInputAttribute)
             {
-                TranslatorContext.SetUsedFeature(FeatureFlags.RtLayer);
-
                 int attrVecIndex = TranslatorContext.GpLayerInputAttribute >> 2;
                 int attrComponentIndex = TranslatorContext.GpLayerInputAttribute & 3;
 

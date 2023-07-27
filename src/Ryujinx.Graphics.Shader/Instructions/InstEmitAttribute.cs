@@ -53,9 +53,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 else if (op.SrcB == RegisterConsts.RegisterZeroIndex || op.P)
                 {
                     int offset = FixedFuncToUserAttribute(context.TranslatorContext, op.Imm11 + index * 4, op.O);
-
-                    context.FlagAttributeRead(offset);
-
                     bool isOutput = op.O && CanLoadOutput(offset);
 
                     if (!op.P && !isOutput && TryConvertIdToIndexForVulkan(context, offset, out Operand value))
@@ -70,9 +67,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 else
                 {
                     int offset = FixedFuncToUserAttribute(context.TranslatorContext, op.Imm11 + index * 4, op.O);
-
-                    context.FlagAttributeRead(offset);
-
                     bool isOutput = op.O && CanLoadOutput(offset);
 
                     context.Copy(Register(rd), AttributeMap.GenerateAttributeLoad(context, primVertex, offset, isOutput, false));
@@ -116,9 +110,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     }
 
                     offset = FixedFuncToUserAttribute(context.TranslatorContext, offset, isOutput: true);
-
-                    context.FlagAttributeWritten(offset);
-
                     AttributeMap.GenerateAttributeStore(context, offset, op.P, Register(rd));
                 }
             }
@@ -127,8 +118,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void Ipa(EmitterContext context)
         {
             InstIpa op = context.GetOp<InstIpa>();
-
-            context.FlagAttributeRead(op.Imm10);
 
             Operand res;
 

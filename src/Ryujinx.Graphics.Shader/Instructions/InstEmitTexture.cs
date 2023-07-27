@@ -57,8 +57,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstTld op = context.GetOp<InstTld>();
 
-            context.TranslatorContext.SetUsedFeature(FeatureFlags.IntegerSampling);
-
             var lod = op.Lod ? Lod.Ll : Lod.Lz;
 
             EmitTex(context, TextureFlags.IntCoords, op.Dim, lod, op.TidB, op.WMask, op.SrcA, op.SrcB, op.Dest, op.Ms, false, op.Toff);
@@ -67,8 +65,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void TldB(EmitterContext context)
         {
             InstTldB op = context.GetOp<InstTldB>();
-
-            context.TranslatorContext.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             var flags = TextureFlags.IntCoords | TextureFlags.Bindless;
             var lod = op.Lod ? Lod.Ll : Lod.Lz;
@@ -481,8 +477,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     context.TranslatorContext.GpuAccessor.Log("Invalid texel fetch sampler type.");
                     return;
                 }
-
-                context.TranslatorContext.SetUsedFeature(FeatureFlags.IntegerSampling);
 
                 flags = ConvertTextureFlags(tldsOp.Target) | TextureFlags.IntCoords;
 
@@ -1064,8 +1058,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 return;
             }
-
-            context.TranslatorContext.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             Operand Ra()
             {

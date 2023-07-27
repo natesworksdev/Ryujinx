@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             public AttributeUsage AttributeUsage { get; }
             public FeatureFlags UsedFeatures { get; private set; }
+            public byte ClipDistancesWritten { get; private set; }
             public int Cb1DataSize { get; private set; }
 
             private readonly IGpuAccessor _gpuAccessor;
@@ -36,6 +37,11 @@ namespace Ryujinx.Graphics.Shader.Decoders
             public void SetUsedFeature(FeatureFlags flags)
             {
                 UsedFeatures |= flags;
+            }
+
+            public void SetClipDistanceWritten(int index)
+            {
+                ClipDistancesWritten |= (byte)(1 << index);
             }
         }
 
@@ -196,6 +202,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 functionsVisited,
                 context.AttributeUsage,
                 context.UsedFeatures,
+                context.ClipDistancesWritten,
                 context.Cb1DataSize);
         }
 
@@ -397,6 +404,53 @@ namespace Ryujinx.Graphics.Shader.Decoders
                         (attr >= AttributeConsts.TexCoordBase && attr < AttributeConsts.TexCoordEnd)))
                     {
                         context.SetUsedFeature(FeatureFlags.FixedFuncAttr);
+                    }
+                    else
+                    {
+                        if (isStore)
+                        {
+                            switch (attr)
+                            {
+                                case AttributeConsts.Layer:
+                                    if (definitions.Stage != ShaderStage.Fragment)
+                                    {
+                                        context.SetUsedFeature(FeatureFlags.RtLayer);
+                                    }
+                                    break;
+                                case AttributeConsts.ClipDistance0:
+                                case AttributeConsts.ClipDistance1:
+                                case AttributeConsts.ClipDistance2:
+                                case AttributeConsts.ClipDistance3:
+                                case AttributeConsts.ClipDistance4:
+                                case AttributeConsts.ClipDistance5:
+                                case AttributeConsts.ClipDistance6:
+                                case AttributeConsts.ClipDistance7:
+                                    if (definitions.Stage == ShaderStage.Vertex)
+                                    {
+                                        context.SetClipDistanceWritten((attr - AttributeConsts.ClipDistance0) / 4);
+                                    }
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (attr)
+                            {
+                                case AttributeConsts.PositionX:
+                                case AttributeConsts.PositionY:
+                                    if (definitions.Stage == ShaderStage.Fragment)
+                                    {
+                                        context.SetUsedFeature(FeatureFlags.FragCoordXY);
+                                    }
+                                    break;
+                                case AttributeConsts.InstanceId:
+                                    if (definitions.Stage == ShaderStage.Vertex)
+                                    {
+                                        context.SetUsedFeature(FeatureFlags.InstanceId);
+                                    }
+                                    break;
+                            }
+                        }
                     }
                 }
             }

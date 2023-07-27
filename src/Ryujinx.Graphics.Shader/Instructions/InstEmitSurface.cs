@@ -310,8 +310,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            context.TranslatorContext.SetUsedFeature(FeatureFlags.IntegerSampling);
-
             SamplerType type = ConvertSamplerType(dimensions);
 
             if (type == SamplerType.None)

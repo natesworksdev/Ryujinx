@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         public AttributeUsage AttributeUsage { get; }
         public FeatureFlags UsedFeatures { get; }
+        public byte ClipDistancesWritten { get; }
         public int Cb1DataSize { get; }
 
         public DecodedProgram(
@@ -21,6 +22,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             IReadOnlyDictionary<ulong, DecodedFunction> functions,
             AttributeUsage attributeUsage,
             FeatureFlags usedFeatures,
+            byte clipDistancesWritten,
             int cb1DataSize)
         {
             MainFunction = mainFunction;
@@ -28,6 +30,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             _functionsWithId = new List<DecodedFunction>();
             AttributeUsage = attributeUsage;
             UsedFeatures = usedFeatures;
+            ClipDistancesWritten = clipDistancesWritten;
             Cb1DataSize = cb1DataSize;
         }
 
