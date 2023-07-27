@@ -397,7 +397,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.Convert());
+            return BufferManager.CreateWithHandle(this, size, access.Convert(), default, access == BufferAccess.Stream);
         }
 
         public BufferHandle CreateBuffer(int size, BufferHandle storageHint)

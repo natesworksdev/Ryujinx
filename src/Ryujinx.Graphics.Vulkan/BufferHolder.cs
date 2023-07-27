@@ -67,6 +67,7 @@ namespace Ryujinx.Graphics.Vulkan
         private byte[] _pendingData;
         private BufferRangeList _pendingDataRanges;
         private Dictionary<ulong, StagingBufferReserved> _mirrors;
+        private bool _useMirrors;
 
         public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, MemoryAllocation allocation, int size, BufferAllocationType type, BufferAllocationType currentType)
         {
@@ -85,6 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
             DesiredType = currentType;
 
             _flushLock = new ReaderWriterLock();
+            _useMirrors = gd.IsTBDR;
         }
 
         public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, Auto<MemoryAllocation> allocation, int size, BufferAllocationType type, BufferAllocationType currentType, int offset)
@@ -478,6 +480,11 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
+        public void UseMirrors()
+        {
+            _useMirrors = true;
+        }
+
         private void UploadPendingData(CommandBufferScoped cbs, int offset, int size)
         {
             var ranges = _pendingDataRanges.All();
@@ -676,7 +683,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             _setCount++;
-            bool allowMirror = allowCbsWait && cbs != null && _currentType <= BufferAllocationType.HostMapped;
+            bool allowMirror = _useMirrors && allowCbsWait && cbs != null && _currentType <= BufferAllocationType.HostMapped;
 
             if (_map != IntPtr.Zero)
             {
