@@ -177,14 +177,6 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            // Explicitly check the support buffer.
-
-            if (_uniformBufferRefs[0].Buffer == buffer)
-            {
-                _uniformSet.Clear(0);
-                SignalDirty(DirtyFlags.Uniform);
-            }
-
             // Check stage bindings
 
             _uniformMirrored.Union(_uniformSet).SignalSet((int binding, int count) =>

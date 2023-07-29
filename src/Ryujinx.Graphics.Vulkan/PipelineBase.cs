@@ -713,12 +713,10 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _descriptorSetUpdater.Rebind(buffer, offset, size);
 
-            /*
             if (_indexBuffer.Overlaps(buffer, offset, size))
             {
                 _indexBuffer.BindIndexBuffer(Gd, Cbs);
             }
-            */
 
             for (int i = 0; i < _vertexBuffers.Length; i++)
             {

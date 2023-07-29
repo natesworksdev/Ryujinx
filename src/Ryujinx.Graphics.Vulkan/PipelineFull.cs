@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Vulkan
             _activeQueries = new List<(QueryPool, bool)>();
             _pendingQueryCopies = new();
             _backingSwaps = new();
-            _activeBufferMirrors = new List<BufferHolder>();
+            _activeBufferMirrors = new();
 
             CommandBuffer = (Cbs = gd.CommandBufferPool.Rent()).CommandBuffer;
         }
