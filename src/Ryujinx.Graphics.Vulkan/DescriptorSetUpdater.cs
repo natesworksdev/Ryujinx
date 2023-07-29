@@ -539,16 +539,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                         ref BufferRef buffer = ref _storageBufferRefs[index];
 
-                        /*
-                        if (isMoltenVk)
-                        {
-                            if (buffer.Buffer?.MVKStageChanged(mvkStages, renderPassId) ?? false)
-                            {
-                                _pipeline.EndRenderPass();
-                            }
-                        }
-                        */
-
                         if (_storageSet.Set(index))
                         {
                             ref var info = ref _storageBuffers[index];
