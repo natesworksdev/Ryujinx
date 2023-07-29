@@ -776,7 +776,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // so there's no need to update it in other cases.
             if (yNegate && _fsReadsFragCoord)
             {
-                _context.SupportBufferUpdater.SetViewportSize(viewports[0].Region.Width, MathF.Abs(viewports[0].Region.Height));
+                UpdateSupportBufferViewportSize();
             }
 
             _currentSpecState.SetViewportTransformDisable(disableTransform);
@@ -1430,22 +1430,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (!_fsReadsFragCoord && _state.State.YControl.HasFlag(YControl.NegateY))
                 {
-                    ref var transform = ref _state.State.ViewportTransform[0];
-
-                    float scaleX = MathF.Abs(transform.ScaleX);
-                    float scaleY = transform.ScaleY;
-
-                    float width = scaleX * 2;
-                    float height = scaleY * 2;
-
-                    float scale = _channel.TextureManager.RenderTargetScale;
-                    if (scale != 1f)
-                    {
-                        width *= scale;
-                        height *= scale;
-                    }
-
-                    _context.SupportBufferUpdater.SetViewportSize(width, MathF.Abs(height));
+                    UpdateSupportBufferViewportSize();
                 }
 
                 _fsReadsFragCoord = true;
@@ -1456,6 +1441,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        /// <summary>
+        /// Updates the viewport size on the support buffer for fragment shader access.
+        /// </summary>
+        private void UpdateSupportBufferViewportSize()
+        {
+            ref var transform = ref _state.State.ViewportTransform[0];
+
+            float scaleX = MathF.Abs(transform.ScaleX);
+            float scaleY = transform.ScaleY;
+
+            float width = scaleX * 2;
+            float height = scaleY * 2;
+
+            _context.SupportBufferUpdater.SetViewportSize(width, MathF.Abs(height));
         }
 
         /// <summary>
