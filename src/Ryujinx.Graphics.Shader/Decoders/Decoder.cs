@@ -285,24 +285,28 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     context.SetUsedFeature(FeatureFlags.Bindless);
                 }
 
-                if (op.Name == InstName.Ald || op.Name == InstName.Ast || op.Name == InstName.Ipa)
+                switch (op.Name)
                 {
-                    SetUserAttributeUses(definitions, context, op.Name, opCode);
-                }
-                else if (op.Name == InstName.Pbk || op.Name == InstName.Pcnt || op.Name == InstName.Ssy)
-                {
-                    block.AddPushOp(op);
-                }
-                else if (op.Name == InstName.Ldl || op.Name == InstName.Stl)
-                {
-                    context.SetUsedFeature(FeatureFlags.LocalMemory);
-                }
-                else if (op.Name == InstName.Atoms ||
-                         op.Name == InstName.AtomsCas ||
-                         op.Name == InstName.Lds ||
-                         op.Name == InstName.Sts)
-                {
-                    context.SetUsedFeature(FeatureFlags.SharedMemory);
+                    case InstName.Ald:
+                    case InstName.Ast:
+                    case InstName.Ipa:
+                        SetUserAttributeUses(definitions, context, op.Name, opCode);
+                        break;
+                    case InstName.Pbk:
+                    case InstName.Pcnt:
+                    case InstName.Ssy:
+                        block.AddPushOp(op);
+                        break;
+                    case InstName.Ldl:
+                    case InstName.Stl:
+                        context.SetUsedFeature(FeatureFlags.LocalMemory);
+                        break;
+                    case InstName.Atoms:
+                    case InstName.AtomsCas:
+                    case InstName.Lds:
+                    case InstName.Sts:
+                        context.SetUsedFeature(FeatureFlags.SharedMemory);
+                        break;
                 }
 
                 block.OpCodes.Add(op);
