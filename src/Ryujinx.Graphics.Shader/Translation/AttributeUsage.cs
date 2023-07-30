@@ -25,8 +25,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             _gpuAccessor = gpuAccessor;
 
-            UsedInputAttributesPerPatch = new HashSet<int>();
-            UsedOutputAttributesPerPatch = new HashSet<int>();
+            UsedInputAttributesPerPatch = new();
+            UsedOutputAttributesPerPatch = new();
         }
 
         public void InheritFrom(AttributeUsage other)
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 // Regular and per-patch input/output locations can't overlap,
                 // so we must assign on our location using unused regular input/output locations.
 
-                Dictionary<int, int> locationsMap = new Dictionary<int, int>();
+                Dictionary<int, int> locationsMap = new();
 
                 int freeMask = ~UsedOutputAttributes;
 

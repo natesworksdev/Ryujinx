@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
@@ -133,33 +134,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     context.AppendLine();
                 }
 
-                if (context.AttributeUsage.UsedInputAttributes != 0 || context.Definitions.GpPassthrough)
+                static bool IsUserDefined(IoDefinition ioDefinition, StorageKind storageKind)
                 {
-                    DeclareInputAttributes(context, info);
-
-                    context.AppendLine();
+                    return ioDefinition.StorageKind == storageKind && ioDefinition.IoVariable == IoVariable.UserDefined;
                 }
 
-                if (context.AttributeUsage.UsedOutputAttributes != 0 || context.Definitions.Stage != ShaderStage.Fragment)
+                static bool IsUserDefinedOutput(ShaderStage stage, IoDefinition ioDefinition)
                 {
-                    DeclareOutputAttributes(context, info);
-
-                    context.AppendLine();
+                    IoVariable ioVariable = stage == ShaderStage.Fragment ? IoVariable.FragmentOutputColor : IoVariable.UserDefined;
+                    return ioDefinition.StorageKind == StorageKind.Output && ioDefinition.IoVariable == ioVariable;
                 }
 
-                if (context.AttributeUsage.UsedInputAttributesPerPatch.Count != 0)
-                {
-                    DeclareInputAttributesPerPatch(context, context.AttributeUsage.UsedInputAttributesPerPatch);
-
-                    context.AppendLine();
-                }
-
-                if (context.AttributeUsage.UsedOutputAttributesPerPatch.Count != 0)
-                {
-                    DeclareUsedOutputAttributesPerPatch(context, context.AttributeUsage.UsedOutputAttributesPerPatch);
-
-                    context.AppendLine();
-                }
+                DeclareInputAttributes(context, info.IoDefinitions.Where(x => IsUserDefined(x, StorageKind.Input)));
+                DeclareOutputAttributes(context, info.IoDefinitions.Where(x => IsUserDefinedOutput(context.Definitions.Stage, x)));
+                DeclareInputAttributesPerPatch(context, info.IoDefinitions.Where(x => IsUserDefined(x, StorageKind.InputPerPatch)));
+                DeclareOutputAttributesPerPatch(context, info.IoDefinitions.Where(x => IsUserDefined(x, StorageKind.OutputPerPatch)));
 
                 if (context.Definitions.TransformFeedbackEnabled && context.Definitions.LastInVertexPipeline)
                 {
@@ -443,42 +432,50 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
+        private static void DeclareInputAttributes(CodeGenContext context, IEnumerable<IoDefinition> inputs)
         {
             if (context.Definitions.IaIndexing)
             {
                 string suffix = context.Definitions.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
 
                 context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}{suffix}[{Constants.MaxAttributes}];");
+                context.AppendLine();
             }
             else
             {
-                int usedAttributes = context.AttributeUsage.UsedInputAttributes | context.AttributeUsage.PassthroughAttributes;
-                while (usedAttributes != 0)
+                foreach (var ioDefinition in inputs.OrderBy(x => x.Location))
                 {
-                    int index = BitOperations.TrailingZeroCount(usedAttributes);
-                    DeclareInputAttribute(context, info, index);
-                    usedAttributes &= ~(1 << index);
+                    DeclareInputAttribute(context, ioDefinition.Location, ioDefinition.Component);
+                }
+
+                if (inputs.Any())
+                {
+                    context.AppendLine();
                 }
             }
         }
 
-        private static void DeclareInputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
+        private static void DeclareInputAttributesPerPatch(CodeGenContext context, IEnumerable<IoDefinition> inputs)
         {
-            foreach (int attr in attrs.Order())
+            foreach (var ioDefinition in inputs.OrderBy(x => x.Location))
             {
-                DeclareInputAttributePerPatch(context, attr);
+                DeclareInputAttributePerPatch(context, ioDefinition.Location);
+            }
+
+            if (inputs.Any())
+            {
+                context.AppendLine();
             }
         }
 
-        private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
+        private static void DeclareInputAttribute(CodeGenContext context, int location, int component)
         {
             string suffix = IsArrayAttributeGlsl(context.Definitions.Stage, isOutAttr: false) ? "[]" : string.Empty;
             string iq = string.Empty;
 
             if (context.Definitions.Stage == ShaderStage.Fragment)
             {
-                iq = context.Definitions.ImapTypes[attr].GetFirstUsedType() switch
+                iq = context.Definitions.ImapTypes[location].GetFirstUsedType() switch
                 {
                     PixelImap.Constant => "flat ",
                     PixelImap.ScreenLinear => "noperspective ",
@@ -486,14 +483,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 };
             }
 
-            string name = $"{DefaultNames.IAttributePrefix}{attr}";
+            string name = $"{DefaultNames.IAttributePrefix}{location}";
 
             if (context.Definitions.TransformFeedbackEnabled && context.Definitions.Stage == ShaderStage.Fragment)
             {
-                int components = context.Definitions.GetTransformFeedbackOutputComponents(attr, 0);
+                bool hasComponent = context.Definitions.HasPerLocationInputOrOutputComponent(IoVariable.UserDefined, location, component, isOutput: false);
 
-                if (components > 1)
+                if (hasComponent)
                 {
+                    char swzMask = "xyzw"[component];
+
+                    context.AppendLine($"layout (location = {location}, component = {component}) {iq}in float {name}_{swzMask}{suffix};");
+                }
+                else
+                {
+                    int components = context.Definitions.GetTransformFeedbackOutputComponents(location, 0);
+
                     string type = components switch
                     {
                         2 => "vec2",
@@ -502,76 +507,89 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         _ => "float",
                     };
 
-                    context.AppendLine($"layout (location = {attr}) in {type} {name};");
-                }
-
-                for (int c = components > 1 ? components : 0; c < 4; c++)
-                {
-                    char swzMask = "xyzw"[c];
-
-                    context.AppendLine($"layout (location = {attr}, component = {c}) {iq}in float {name}_{swzMask}{suffix};");
+                    context.AppendLine($"layout (location = {location}) in {type} {name};");
                 }
             }
             else
             {
-                bool passthrough = (context.AttributeUsage.PassthroughAttributes & (1 << attr)) != 0;
+                bool passthrough = (context.AttributeUsage.PassthroughAttributes & (1 << location)) != 0;
                 string pass = passthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough ? "passthrough, " : string.Empty;
-                string type = GetVarTypeName(context, context.Definitions.GetUserDefinedType(attr, isOutput: false), false);
+                string type = GetVarTypeName(context, context.Definitions.GetUserDefinedType(location, isOutput: false), false);
 
-                context.AppendLine($"layout ({pass}location = {attr}) {iq}in {type} {name}{suffix};");
+                context.AppendLine($"layout ({pass}location = {location}) {iq}in {type} {name}{suffix};");
             }
         }
 
-        private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
+        private static void DeclareInputAttributePerPatch(CodeGenContext context, int patchLocation)
         {
-            int location = context.AttributeUsage.GetPerPatchAttributeLocation(attr);
-            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
+            int location = context.AttributeUsage.GetPerPatchAttributeLocation(patchLocation);
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{patchLocation}";
 
             context.AppendLine($"layout (location = {location}) patch in vec4 {name};");
         }
 
-        private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
+        private static void DeclareOutputAttributes(CodeGenContext context, IEnumerable<IoDefinition> outputs)
         {
             if (context.Definitions.OaIndexing)
             {
                 context.AppendLine($"layout (location = 0) out vec4 {DefaultNames.OAttributePrefix}[{Constants.MaxAttributes}];");
+                context.AppendLine();
             }
             else
             {
-                int usedAttributes = context.AttributeUsage.UsedOutputAttributes;
+                outputs = outputs.OrderBy(x => x.Location);
 
                 if (context.Definitions.Stage == ShaderStage.Fragment && context.Definitions.DualSourceBlend)
                 {
-                    int firstOutput = BitOperations.TrailingZeroCount(usedAttributes);
-                    int mask = 3 << firstOutput;
+                    IoDefinition firstOutput = outputs.ElementAtOrDefault(0);
+                    IoDefinition secondOutput = outputs.ElementAtOrDefault(1);
 
-                    if ((usedAttributes & mask) == mask)
+                    if (firstOutput.Location + 1 == secondOutput.Location)
                     {
-                        usedAttributes &= ~mask;
-                        DeclareOutputDualSourceBlendAttribute(context, firstOutput);
+                        DeclareOutputDualSourceBlendAttribute(context, firstOutput.Location);
+                        outputs = outputs.Skip(2);
                     }
                 }
 
-                while (usedAttributes != 0)
+                foreach (var ioDefinition in outputs)
                 {
-                    int index = BitOperations.TrailingZeroCount(usedAttributes);
-                    DeclareOutputAttribute(context, index);
-                    usedAttributes &= ~(1 << index);
+                    DeclareOutputAttribute(context, ioDefinition.Location, ioDefinition.Component);
+                }
+
+                if (outputs.Any())
+                {
+                    context.AppendLine();
                 }
             }
         }
 
-        private static void DeclareOutputAttribute(CodeGenContext context, int attr)
+        private static void DeclareOutputAttribute(CodeGenContext context, int location, int component)
         {
             string suffix = IsArrayAttributeGlsl(context.Definitions.Stage, isOutAttr: true) ? "[]" : string.Empty;
-            string name = $"{DefaultNames.OAttributePrefix}{attr}{suffix}";
+            string name = $"{DefaultNames.OAttributePrefix}{location}{suffix}";
 
             if (context.Definitions.TransformFeedbackEnabled && context.Definitions.LastInVertexPipeline)
             {
-                int components = context.Definitions.GetTransformFeedbackOutputComponents(attr, 0);
+                bool hasComponent = context.Definitions.HasPerLocationInputOrOutputComponent(IoVariable.UserDefined, location, component, isOutput: true);
 
-                if (components > 1)
+                if (hasComponent)
                 {
+                    char swzMask = "xyzw"[component];
+
+                    string xfb = string.Empty;
+
+                    var tfOutput = context.Definitions.GetTransformFeedbackOutput(location, component);
+                    if (tfOutput.Valid)
+                    {
+                        xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
+                    }
+
+                    context.AppendLine($"layout (location = {location}, component = {component}{xfb}) out float {name}_{swzMask};");
+                }
+                else
+                {
+                    int components = context.Definitions.GetTransformFeedbackOutputComponents(location, 0);
+
                     string type = components switch
                     {
                         2 => "vec2",
@@ -582,53 +600,59 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string xfb = string.Empty;
 
-                    var tfOutput = context.Definitions.GetTransformFeedbackOutput(attr, 0);
+                    var tfOutput = context.Definitions.GetTransformFeedbackOutput(location, 0);
                     if (tfOutput.Valid)
                     {
                         xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
                     }
 
-                    context.AppendLine($"layout (location = {attr}{xfb}) out {type} {name};");
-                }
-
-                for (int c = components > 1 ? components : 0; c < 4; c++)
-                {
-                    char swzMask = "xyzw"[c];
-
-                    string xfb = string.Empty;
-
-                    var tfOutput = context.Definitions.GetTransformFeedbackOutput(attr, c);
-                    if (tfOutput.Valid)
-                    {
-                        xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
-                    }
-
-                    context.AppendLine($"layout (location = {attr}, component = {c}{xfb}) out float {name}_{swzMask};");
+                    context.AppendLine($"layout (location = {location}{xfb}) out {type} {name};");
                 }
             }
             else
             {
                 string type = context.Definitions.Stage != ShaderStage.Fragment ? "vec4" :
-                    GetVarTypeName(context, context.Definitions.GetFragmentOutputColorType(attr), false);
+                    GetVarTypeName(context, context.Definitions.GetFragmentOutputColorType(location), false);
 
-                if (context.HostCapabilities.ReducedPrecision && context.Definitions.Stage == ShaderStage.Vertex && attr == 0)
+                if (context.HostCapabilities.ReducedPrecision && context.Definitions.Stage == ShaderStage.Vertex && location == 0)
                 {
-                    context.AppendLine($"layout (location = {attr}) invariant out {type} {name};");
+                    context.AppendLine($"layout (location = {location}) invariant out {type} {name};");
                 }
                 else
                 {
-                    context.AppendLine($"layout (location = {attr}) out {type} {name};");
+                    context.AppendLine($"layout (location = {location}) out {type} {name};");
                 }
             }
         }
 
-        private static void DeclareOutputDualSourceBlendAttribute(CodeGenContext context, int attr)
+        private static void DeclareOutputDualSourceBlendAttribute(CodeGenContext context, int location)
         {
-            string name = $"{DefaultNames.OAttributePrefix}{attr}";
-            string name2 = $"{DefaultNames.OAttributePrefix}{(attr + 1)}";
+            string name = $"{DefaultNames.OAttributePrefix}{location}";
+            string name2 = $"{DefaultNames.OAttributePrefix}{(location + 1)}";
 
-            context.AppendLine($"layout (location = {attr}, index = 0) out vec4 {name};");
-            context.AppendLine($"layout (location = {attr}, index = 1) out vec4 {name2};");
+            context.AppendLine($"layout (location = {location}, index = 0) out vec4 {name};");
+            context.AppendLine($"layout (location = {location}, index = 1) out vec4 {name2};");
+        }
+
+        private static void DeclareOutputAttributesPerPatch(CodeGenContext context, IEnumerable<IoDefinition> outputs)
+        {
+            foreach (var ioDefinition in outputs)
+            {
+                DeclareOutputAttributePerPatch(context, ioDefinition.Location);
+            }
+
+            if (outputs.Any())
+            {
+                context.AppendLine();
+            }
+        }
+
+        private static void DeclareOutputAttributePerPatch(CodeGenContext context, int patchLocation)
+        {
+            int location = context.AttributeUsage.GetPerPatchAttributeLocation(patchLocation);
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{patchLocation}";
+
+            context.AppendLine($"layout (location = {location}) patch out vec4 {name};");
         }
 
         private static bool IsArrayAttributeGlsl(ShaderStage stage, bool isOutAttr)
@@ -643,22 +667,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                        stage == ShaderStage.TessellationEvaluation ||
                        stage == ShaderStage.Geometry;
             }
-        }
-
-        private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, HashSet<int> attrs)
-        {
-            foreach (int attr in attrs.Order())
-            {
-                DeclareOutputAttributePerPatch(context, attr);
-            }
-        }
-
-        private static void DeclareOutputAttributePerPatch(CodeGenContext context, int attr)
-        {
-            int location = context.AttributeUsage.GetPerPatchAttributeLocation(attr);
-            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
-
-            context.AppendLine($"layout (location = {location}) patch out vec4 {name};");
         }
 
         private static void AppendHelperFunction(CodeGenContext context, string filename)

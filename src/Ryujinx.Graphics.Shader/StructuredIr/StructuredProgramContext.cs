@@ -60,11 +60,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 Info.IoDefinitions.Add(new IoDefinition(StorageKind.Input, IoVariable.PointSize));
                 Info.IoDefinitions.Add(new IoDefinition(StorageKind.Input, IoVariable.ClipDistance));
             }
-            else if (definitions.Stage == ShaderStage.Fragment)
-            {
-                // Potentially used for texture coordinate scaling.
-                Info.IoDefinitions.Add(new IoDefinition(StorageKind.Input, IoVariable.FragmentCoord));
-            }
         }
 
         public void EnterFunction(
