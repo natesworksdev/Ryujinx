@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -214,7 +215,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (GetContiguousFreeSize(alignment) < size)
                 {
-                    Console.WriteLine("no space :(");
+                    Logger.Warning?.PrintMsg(LogClass.Gpu, $"Staging buffer out of space to reserve data of size {size}.");
                     return null;
                 }
             }
