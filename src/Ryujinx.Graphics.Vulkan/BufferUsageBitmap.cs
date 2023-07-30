@@ -61,7 +61,7 @@
             return _bitmap.IsSet(start, end);
         }
 
-        public bool OverlapsWith(int offset, int size, bool write = false)
+        public bool OverlapsWith(int offset, int size, bool write)
         {
             for (int i = 0; i < CommandBufferPool.MaxCommandBuffers; i++)
             {
