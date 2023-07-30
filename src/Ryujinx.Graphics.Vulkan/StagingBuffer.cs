@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    struct StagingBufferReserved
+    readonly struct StagingBufferReserved
     {
         public readonly BufferHolder Buffer;
         public readonly int Offset;
@@ -188,7 +188,7 @@ namespace Ryujinx.Graphics.Vulkan
             int endOffset = (_freeOffset + _freeSize) & (BufferSize - 1);
 
             return Math.Max(
-                Math.Min(_freeSize - padding, BufferSize - alignedFreeOffset), 
+                Math.Min(_freeSize - padding, BufferSize - alignedFreeOffset),
                 endOffset < _freeOffset ? Math.Min(_freeSize, endOffset) : 0
                 );
         }

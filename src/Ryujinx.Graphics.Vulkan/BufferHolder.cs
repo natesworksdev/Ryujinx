@@ -313,12 +313,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private ulong ToMirrorKey(int offset, int size)
+        private static ulong ToMirrorKey(int offset, int size)
         {
             return ((ulong)offset << 32) | (uint)size;
         }
 
-        private (int offset, int size) FromMirrorKey(ulong key)
+        private static (int offset, int size) FromMirrorKey(ulong key)
         {
             return ((int)(key >> 32), (int)key);
         }
@@ -652,10 +652,7 @@ namespace Ryujinx.Graphics.Vulkan
                 (int keyOffset, int keySize) = FromMirrorKey(key);
                 if (!(offset + size <= keyOffset || offset >= keyOffset + keySize))
                 {
-                    if (toRemove == null)
-                    {
-                        toRemove = new List<ulong>();
-                    }
+                    toRemove ??= new List<ulong>();
 
                     toRemove.Add(key);
                 }
@@ -724,7 +721,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _mirrors = new Dictionary<ulong, StagingBufferReserved>();
                 }
 
-                data.Slice(0, dataSize).CopyTo(_pendingData.AsSpan(offset, dataSize));
+                data[..dataSize].CopyTo(_pendingData.AsSpan(offset, dataSize));
                 _pendingDataRanges.Add(offset, dataSize);
 
                 // Remove any overlapping mirrors.
