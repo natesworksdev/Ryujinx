@@ -28,24 +28,24 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             _sharedMemories = new Dictionary<int, MemoryDefinition>();
         }
 
-        public void AddOrUpdateConstantBuffer(int binding, BufferDefinition definition)
+        public void AddOrUpdateConstantBuffer(BufferDefinition definition)
         {
-            _constantBuffers[binding] = definition;
+            _constantBuffers[definition.Binding] = definition;
         }
 
-        public void AddOrUpdateStorageBuffer(int binding, BufferDefinition definition)
+        public void AddOrUpdateStorageBuffer(BufferDefinition definition)
         {
-            _storageBuffers[binding] = definition;
+            _storageBuffers[definition.Binding] = definition;
         }
 
-        public void AddOrUpdateTexture(int binding, TextureDefinition descriptor)
+        public void AddOrUpdateTexture(TextureDefinition definition)
         {
-            _textures[binding] = descriptor;
+            _textures[definition.Binding] = definition;
         }
 
-        public void AddOrUpdateImage(int binding, TextureDefinition descriptor)
+        public void AddOrUpdateImage(TextureDefinition definition)
         {
-            _images[binding] = descriptor;
+            _images[definition.Binding] = definition;
         }
 
         public int AddLocalMemory(MemoryDefinition definition)

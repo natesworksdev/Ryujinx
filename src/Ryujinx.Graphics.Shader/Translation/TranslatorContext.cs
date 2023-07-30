@@ -388,21 +388,20 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private ResourceManager CreateResourceManager()
         {
-            ResourceManager resourceManager = new ResourceManager(Definitions.Stage, GpuAccessor);
+            ResourceManager resourceManager = new(Definitions.Stage, GpuAccessor);
 
             if (!GpuAccessor.QueryHostSupportsTransformFeedback() && GpuAccessor.QueryTransformFeedbackEnabled())
             {
-                StructureType tfeInfoStruct = new StructureType(new StructureField[]
+                StructureType tfeInfoStruct = new(new StructureField[]
                 {
                     new StructureField(AggregateType.Array | AggregateType.U32, "base_offset", 4),
                     new StructureField(AggregateType.U32, "vertex_count")
                 });
 
-                BufferDefinition tfeInfoBuffer = new BufferDefinition(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
+                BufferDefinition tfeInfoBuffer = new(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
+                resourceManager.Properties.AddOrUpdateStorageBuffer(tfeInfoBuffer);
 
-                resourceManager.Properties.AddOrUpdateStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
-
-                StructureType tfeDataStruct = new StructureType(new StructureField[]
+                StructureType tfeDataStruct = new(new StructureField[]
                 {
                     new StructureField(AggregateType.Array | AggregateType.U32, "data", 0)
                 });
@@ -410,8 +409,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 for (int i = 0; i < Constants.TfeBuffersCount; i++)
                 {
                     int binding = Constants.TfeBufferBaseBinding + i;
-                    BufferDefinition tfeDataBuffer = new BufferDefinition(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
-                    resourceManager.Properties.AddOrUpdateStorageBuffer(binding, tfeDataBuffer);
+                    BufferDefinition tfeDataBuffer = new(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
+                    resourceManager.Properties.AddOrUpdateStorageBuffer(tfeDataBuffer);
                 }
             }
 
