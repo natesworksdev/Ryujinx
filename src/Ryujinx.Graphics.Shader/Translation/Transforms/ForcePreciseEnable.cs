@@ -10,13 +10,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return stage == ShaderStage.Fragment && gpuAccessor.QueryHostReducedPrecision();
         }
 
-        public static LinkedListNode<INode> RunPass(
-            HelperFunctionManager hfm,
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+        public static LinkedListNode<INode> RunPass(TransformContext context, LinkedListNode<INode> node)
         {
             // There are some cases where a small bias is added to values to prevent division by zero.
             // When operating with reduced precision, it is possible for this bias to get rounded to 0

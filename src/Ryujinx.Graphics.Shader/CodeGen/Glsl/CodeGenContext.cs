@@ -26,20 +26,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private string _indentation;
 
-        public CodeGenContext(
-            StructuredProgramInfo info,
-            AttributeUsage attributeUsage,
-            ShaderDefinitions definitions,
-            ShaderProperties properties,
-            HostCapabilities hostCapabilities,
-            TargetApi targetApi)
+        public CodeGenContext(StructuredProgramInfo info, CodeGenParameters parameters)
         {
             Info = info;
-            AttributeUsage = attributeUsage;
-            Definitions = definitions;
-            Properties = properties;
-            HostCapabilities = hostCapabilities;
-            TargetApi = targetApi;
+            AttributeUsage = parameters.AttributeUsage;
+            Definitions = parameters.Definitions;
+            Properties = parameters.Properties;
+            HostCapabilities = parameters.HostCapabilities;
+            TargetApi = parameters.TargetApi;
 
             OperandManager = new OperandManager();
 

@@ -12,28 +12,22 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return true;
         }
 
-        public static LinkedListNode<INode> RunPass(
-            HelperFunctionManager hfm,
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+        public static LinkedListNode<INode> RunPass(TransformContext context, LinkedListNode<INode> node)
         {
             if (node.Value is TextureOperation texOp)
             {
-                node = InsertTexelFetchScale(hfm, node, resourceManager, stage);
-                node = InsertTextureSizeUnscale(hfm, node, resourceManager, stage);
+                node = InsertTexelFetchScale(context.Hfm, node, context.ResourceManager, context.Stage);
+                node = InsertTextureSizeUnscale(context.Hfm, node, context.ResourceManager, context.Stage);
 
                 if (texOp.Inst == Instruction.TextureSample)
                 {
-                    node = InsertCoordNormalization(hfm, node, resourceManager, gpuAccessor, stage);
-                    node = InsertCoordGatherBias(node, resourceManager, gpuAccessor);
-                    node = InsertConstOffsets(node, resourceManager, gpuAccessor);
+                    node = InsertCoordNormalization(context.Hfm, node, context.ResourceManager, context.GpuAccessor, context.Stage);
+                    node = InsertCoordGatherBias(node, context.ResourceManager, context.GpuAccessor);
+                    node = InsertConstOffsets(node, context.ResourceManager, context.GpuAccessor);
 
-                    if (texOp.Type == SamplerType.TextureBuffer && !gpuAccessor.QueryHostSupportsSnormBufferTextureFormat())
+                    if (texOp.Type == SamplerType.TextureBuffer && !context.GpuAccessor.QueryHostSupportsSnormBufferTextureFormat())
                     {
-                        node = InsertSnormNormalization(node, resourceManager, gpuAccessor);
+                        node = InsertSnormNormalization(node, context.ResourceManager, context.GpuAccessor);
                     }
                 }
             }

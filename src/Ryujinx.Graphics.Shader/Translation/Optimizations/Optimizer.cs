@@ -7,43 +7,37 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class Optimizer
     {
-        public static void RunPass(
-            HelperFunctionManager hfm,
-            BasicBlock[] blocks,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            TargetLanguage targetLanguage,
-            ShaderStage stage)
+        public static void RunPass(TransformContext context)
         {
-            RunOptimizationPasses(blocks, resourceManager);
+            RunOptimizationPasses(context.Blocks, context.ResourceManager);
 
             // TODO: Some of those are not optimizations and shouldn't be here.
 
-            GlobalToStorage.RunPass(hfm, blocks, resourceManager, gpuAccessor, targetLanguage);
+            GlobalToStorage.RunPass(context.Hfm, context.Blocks, context.ResourceManager, context.GpuAccessor, context.TargetLanguage);
 
-            bool hostSupportsShaderFloat64 = gpuAccessor.QueryHostSupportsShaderFloat64();
+            bool hostSupportsShaderFloat64 = context.GpuAccessor.QueryHostSupportsShaderFloat64();
 
             // Those passes are looking for specific patterns and only needs to run once.
-            for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
+            for (int blkIndex = 0; blkIndex < context.Blocks.Length; blkIndex++)
             {
-                BindlessToIndexed.RunPass(blocks[blkIndex], resourceManager);
-                BindlessElimination.RunPass(blocks[blkIndex], resourceManager, gpuAccessor);
+                BindlessToIndexed.RunPass(context.Blocks[blkIndex], context.ResourceManager);
+                BindlessElimination.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
 
                 // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.
-                if (stage == ShaderStage.Fragment)
+                if (context.Stage == ShaderStage.Fragment)
                 {
-                    EliminateMultiplyByFragmentCoordW(blocks[blkIndex]);
+                    EliminateMultiplyByFragmentCoordW(context.Blocks[blkIndex]);
                 }
 
                 // If the host does not support double operations, we need to turn them into float operations.
                 if (!hostSupportsShaderFloat64)
                 {
-                    DoubleToFloat.RunPass(hfm, blocks[blkIndex]);
+                    DoubleToFloat.RunPass(context.Hfm, context.Blocks[blkIndex]);
                 }
             }
 
             // Run optimizations one last time to remove any code that is now optimizable after above passes.
-            RunOptimizationPasses(blocks, resourceManager);
+            RunOptimizationPasses(context.Blocks, context.ResourceManager);
         }
 
         private static void RunOptimizationPasses(BasicBlock[] blocks, ResourceManager resourceManager)

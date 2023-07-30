@@ -35,13 +35,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             HelperFunctionsMask.ShuffleXor |
             HelperFunctionsMask.SwizzleAdd;
 
-        public static byte[] Generate(
-            StructuredProgramInfo info,
-            AttributeUsage attributeUsage,
-            ShaderDefinitions definitions,
-            ShaderProperties properties,
-            HostCapabilities hostCapabilities,
-            TargetApi targetApi)
+        public static byte[] Generate(StructuredProgramInfo info, CodeGenParameters parameters)
         {
             SpvInstructionPool instPool;
             SpvLiteralIntegerPool integerPool;
@@ -52,15 +46,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 integerPool = _integerPool.Allocate();
             }
 
-            CodeGenContext context = new(
-                info,
-                attributeUsage,
-                definitions,
-                properties,
-                hostCapabilities,
-                targetApi,
-                instPool,
-                integerPool);
+            CodeGenContext context = new(info, parameters, instPool, integerPool);
 
             context.AddCapability(Capability.GroupNonUniformBallot);
             context.AddCapability(Capability.GroupNonUniformShuffle);
@@ -70,12 +56,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddCapability(Capability.ImageQuery);
             context.AddCapability(Capability.SampledBuffer);
 
-            if (definitions.TransformFeedbackEnabled && definitions.LastInVertexPipeline)
+            if (parameters.Definitions.TransformFeedbackEnabled && parameters.Definitions.LastInVertexPipeline)
             {
                 context.AddCapability(Capability.TransformFeedback);
             }
 
-            if (definitions.Stage == ShaderStage.Fragment)
+            if (parameters.Definitions.Stage == ShaderStage.Fragment)
             {
                 if (context.Info.IoDefinitions.Contains(new IoDefinition(StorageKind.Input, IoVariable.Layer)))
                 {
@@ -88,21 +74,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     context.AddExtension("SPV_EXT_fragment_shader_interlock");
                 }
             }
-            else if (definitions.Stage == ShaderStage.Geometry)
+            else if (parameters.Definitions.Stage == ShaderStage.Geometry)
             {
                 context.AddCapability(Capability.Geometry);
 
-                if (definitions.GpPassthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough)
+                if (parameters.Definitions.GpPassthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough)
                 {
                     context.AddExtension("SPV_NV_geometry_shader_passthrough");
                     context.AddCapability(Capability.GeometryShaderPassthroughNV);
                 }
             }
-            else if (definitions.Stage == ShaderStage.TessellationControl || definitions.Stage == ShaderStage.TessellationEvaluation)
+            else if (parameters.Definitions.Stage == ShaderStage.TessellationControl ||
+                     parameters.Definitions.Stage == ShaderStage.TessellationEvaluation)
             {
                 context.AddCapability(Capability.Tessellation);
             }
-            else if (definitions.Stage == ShaderStage.Vertex)
+            else if (parameters.Definitions.Stage == ShaderStage.Vertex)
             {
                 context.AddCapability(Capability.DrawParameters);
             }

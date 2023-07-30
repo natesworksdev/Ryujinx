@@ -13,13 +13,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return gpuAccessor.QueryHostHasVectorIndexingBug();
         }
 
-        public static LinkedListNode<INode> RunPass(
-            HelperFunctionManager hfm,
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+        public static LinkedListNode<INode> RunPass(TransformContext context, LinkedListNode<INode> node)
         {
             Operation operation = (Operation)node.Value;
 
@@ -41,7 +35,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 return node;
             }
 
-            BufferDefinition buffer = resourceManager.Properties.ConstantBuffers[bindingIndex.Value];
+            BufferDefinition buffer = context.ResourceManager.Properties.ConstantBuffers[bindingIndex.Value];
             StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
             int elemCount = (field.Type & AggregateType.ElementCountMask) switch

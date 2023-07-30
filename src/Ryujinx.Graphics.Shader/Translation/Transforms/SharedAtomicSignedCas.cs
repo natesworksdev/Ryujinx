@@ -14,13 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return targetLanguage != TargetLanguage.Spirv && stage == ShaderStage.Compute && usedFeatures.HasFlag(FeatureFlags.SharedMemory);
         }
 
-        public static LinkedListNode<INode> RunPass(
-            HelperFunctionManager hfm,
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+        public static LinkedListNode<INode> RunPass(TransformContext context, LinkedListNode<INode> node)
         {
             Operation operation = (Operation)node.Value;
             HelperFunctionName name;
@@ -50,7 +44,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             Debug.Assert(memoryId.Type == OperandType.Constant);
 
-            int functionId = hfm.GetOrCreateFunctionId(name, memoryId.Value);
+            int functionId = context.Hfm.GetOrCreateFunctionId(name, memoryId.Value);
 
             Operand[] callArgs = new Operand[] { Const(functionId), byteOffset, value };
 

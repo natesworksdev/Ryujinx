@@ -12,26 +12,20 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return stage == ShaderStage.Vertex;
         }
 
-        public static LinkedListNode<INode> RunPass(
-            HelperFunctionManager hfm,
-            LinkedListNode<INode> node,
-            ResourceManager resourceManager,
-            IGpuAccessor gpuAccessor,
-            ShaderStage stage,
-            ref FeatureFlags usedFeatures)
+        public static LinkedListNode<INode> RunPass(TransformContext context, LinkedListNode<INode> node)
         {
             Operation operation = (Operation)node.Value;
 
-            if (gpuAccessor.QueryHasConstantBufferDrawParameters())
+            if (context.GpuAccessor.QueryHasConstantBufferDrawParameters())
             {
                 if (ReplaceConstantBufferWithDrawParameters(node, operation))
                 {
-                    usedFeatures |= FeatureFlags.DrawParameters;
+                    context.UsedFeatures |= FeatureFlags.DrawParameters;
                 }
             }
             else if (HasConstantBufferDrawParameters(operation))
             {
-                usedFeatures |= FeatureFlags.DrawParameters;
+                context.UsedFeatures |= FeatureFlags.DrawParameters;
             }
 
             return node;

@@ -88,31 +88,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public CodeGenContext(
             StructuredProgramInfo info,
-            AttributeUsage attributeUsage,
-            ShaderDefinitions definitions,
-            ShaderProperties properties,
-            HostCapabilities hostCapabilities,
-            TargetApi targetApi,
+            CodeGenParameters parameters,
             GeneratorPool<Instruction> instPool,
             GeneratorPool<LiteralInteger> integerPool) : base(SpirvVersionPacked, instPool, integerPool)
         {
             Info = info;
-            AttributeUsage = attributeUsage;
-            Definitions = definitions;
-            Properties = properties;
-            HostCapabilities = hostCapabilities;
-            TargetApi = targetApi;
+            AttributeUsage = parameters.AttributeUsage;
+            Definitions = parameters.Definitions;
+            Properties = parameters.Properties;
+            HostCapabilities = parameters.HostCapabilities;
+            TargetApi = parameters.TargetApi;
 
-            if (definitions.Stage == ShaderStage.Geometry)
+            if (parameters.Definitions.Stage == ShaderStage.Geometry)
             {
-                InputVertices = definitions.InputTopology switch
+                InputVertices = parameters.Definitions.InputTopology switch
                 {
                     InputTopology.Points => 1,
                     InputTopology.Lines => 2,
                     InputTopology.LinesAdjacency => 2,
                     InputTopology.Triangles => 3,
                     InputTopology.TrianglesAdjacency => 3,
-                    _ => throw new InvalidOperationException($"Invalid input topology \"{definitions.InputTopology}\"."),
+                    _ => throw new InvalidOperationException($"Invalid input topology \"{parameters.Definitions.InputTopology}\"."),
                 };
             }
 
