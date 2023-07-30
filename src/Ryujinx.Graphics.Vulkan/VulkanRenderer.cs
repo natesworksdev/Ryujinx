@@ -293,6 +293,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             ref var properties = ref properties2.Properties;
 
+            ulong minResourceAlignment = Math.Max(
+                Math.Max(
+                    properties.Limits.MinStorageBufferOffsetAlignment,
+                    properties.Limits.MinUniformBufferOffsetAlignment),
+                properties.Limits.MinTexelBufferOffsetAlignment
+            );
+
             SampleCountFlags supportedSampleCounts =
                 properties.Limits.FramebufferColorSampleCounts &
                 properties.Limits.FramebufferDepthSampleCounts &
@@ -334,7 +341,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedSampleCounts,
                 portabilityFlags,
                 vertexBufferAlignment,
-                properties.Limits.SubTexelPrecisionBits);
+                properties.Limits.SubTexelPrecisionBits,
+                minResourceAlignment);
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 

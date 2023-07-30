@@ -200,7 +200,7 @@ namespace Ryujinx.Graphics.Vulkan
         /// <param name="data">The data to upload</param>
         /// <param name="alignment">The required alignment for the buffer offset</param>
         /// <returns>The reserved range of the staging buffer</returns>
-        public unsafe StagingBufferReserved? TryReserveData(CommandBufferScoped cbs, int size, int alignment = 256)
+        public unsafe StagingBufferReserved? TryReserveData(CommandBufferScoped cbs, int size, int alignment)
         {
             if (size > BufferSize)
             {
