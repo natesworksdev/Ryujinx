@@ -218,8 +218,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcB++, RegisterType.Gpr));
             }
 
-            Operand d = dest != RegisterConsts.RegisterZeroIndex ? Register(dest, RegisterType.Gpr) : null;
-
             List<Operand> sourcesList = new();
 
             if (isBindless)
@@ -285,9 +283,13 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 TextureOperation.DefaultCbufSlot,
                 imm);
 
-            Operand res = context.ImageAtomic(type, format, flags, binding, sources);
+            if (dest != RegisterConsts.RegisterZeroIndex)
+            {
+                Operand d = Register(dest, RegisterType.Gpr);
+                Operand res = context.ImageAtomic(type, format, flags, binding, sources);
 
-            context.Copy(d, res);
+                context.Copy(d, res);
+            }
         }
 
         private static void EmitSuld(
