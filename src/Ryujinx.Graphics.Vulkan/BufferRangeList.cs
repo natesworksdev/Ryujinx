@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct BufferRangeList
     {
-        internal struct Range
+        internal readonly struct Range
         {
             public int Offset { get; }
             public int Size { get; }
@@ -26,12 +26,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         private List<Range> _ranges;
 
-        public List<Range> All()
+        public readonly List<Range> All()
         {
             return _ranges;
         }
 
-        public bool Remove(int offset, int size)
+        public readonly bool Remove(int offset, int size)
         {
             var list = _ranges;
             bool removedAny = false;
@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public bool OverlapsWith(int offset, int size)
+        public readonly bool OverlapsWith(int offset, int size)
         {
             var list = _ranges;
             if (list == null)
@@ -194,7 +194,7 @@ namespace Ryujinx.Graphics.Vulkan
             return ~left;
         }
 
-        public void FillData(Span<byte> baseData, Span<byte> modData, int offset, Span<byte> result)
+        public readonly void FillData(Span<byte> baseData, Span<byte> modData, int offset, Span<byte> result)
         {
             int size = baseData.Length;
             int endOffset = offset + size;
@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public int Count()
+        public readonly int Count()
         {
             return _ranges?.Count ?? 0;
         }

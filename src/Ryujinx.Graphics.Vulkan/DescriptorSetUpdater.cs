@@ -1,11 +1,9 @@
 ﻿using Ryujinx.Common.Memory;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
 using System.Runtime.CompilerServices;
-using Buffer = Silk.NET.Vulkan.Buffer;
 using CompareOp = Ryujinx.Graphics.GAL.CompareOp;
 using Format = Ryujinx.Graphics.GAL.Format;
 using SamplerCreateInfo = Ryujinx.Graphics.GAL.SamplerCreateInfo;
@@ -14,8 +12,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class DescriptorSetUpdater
     {
-        private static int StorageBufferMaxMirrorable = 8192;
-        private struct BufferRef : IEquatable<BufferRef>
+        private const int StorageBufferMaxMirrorable = 8192;
+        private record struct BufferRef
         {
             public Auto<DisposableBuffer> Buffer;
             public int Offset;
@@ -33,11 +31,6 @@ namespace Ryujinx.Graphics.Vulkan
                 Buffer = buffer;
                 Offset = range.Offset;
                 Write = range.Write;
-            }
-
-            public bool Equals(BufferRef other)
-            {
-                return Buffer == other.Buffer && Offset == other.Offset && Write == other.Write;
             }
         }
 
@@ -165,7 +158,7 @@ namespace Ryujinx.Graphics.Vulkan
             _dummyTexture.SetData(dummyTextureData);
         }
 
-        private bool BindingOverlaps(ref DescriptorBufferInfo info, int bindingOffset, int offset, int size)
+        private static bool BindingOverlaps(ref DescriptorBufferInfo info, int bindingOffset, int offset, int size)
         {
             return offset < bindingOffset + (int)info.Range && (offset + size) > bindingOffset;
         }
@@ -307,7 +300,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Range = Vk.WholeSize,
                 };
 
-                BufferRef newRef = new BufferRef(vkBuffer);
+                BufferRef newRef = new(vkBuffer);
 
                 ref DescriptorBufferInfo currentInfo = ref _storageBuffers[index];
 
@@ -393,7 +386,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Range = (ulong)buffer.Size,
                 };
 
-                BufferRef newRef = new BufferRef(vkBuffer, ref buffer);
+                BufferRef newRef = new(vkBuffer, ref buffer);
 
                 ref DescriptorBufferInfo currentInfo = ref _uniformBuffers[index];
 
