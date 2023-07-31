@@ -111,7 +111,7 @@ namespace Ryujinx.Tests.Graphics
             {
                 var tc = byteDifferences.Count(x => Math.Abs(x.delta) >= threshold);
                 var tcp = ((float)tc / byteDifferences.Count);
-                if (tc >0)
+                if (tc > 0)
                     TestContext.Out.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
             }
 
@@ -134,7 +134,7 @@ namespace Ryujinx.Tests.Graphics
             int texWidth = 256;
             int texHeight = 256;
             byte[] outputBuffer = Array.Empty<byte>();
-            
+
             int depth = 1;
             int levels = 1;
             int layers = 1;
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Graphics
             var wordsRef = RgbaWord.FromBytes(decodedRef.ToArray());
             var wordsOut = RgbaWord.FromBytes(outputBuffer);
             var wordDifferences = wordsRef.Select((x, i) => new { index = i, diff = x.Diff(wordsOut[i]) }).ToArray();
-            
+
             // BUT compression is funny.
             // Calculate the byte differences. 
             var byteDifferences = decodedRef.ToArray().Select((x, i) => new { index = i, delta = x - outputBuffer[i] }).ToList();
@@ -159,15 +159,15 @@ namespace Ryujinx.Tests.Graphics
 
             var wordUnchangedCount = wordDifferences.Count(x => x.diff.IsZero());
             var wordUnchangedPercent = (float)wordUnchangedCount / wordDifferences.Count();
-            
+
             Debug.WriteLine($"Pixel-wise comparison: {wordUnchangedPercent * 100:F4} ({wordUnchangedCount}/{wordDifferences.Length})");
             Debug.WriteLine($"Byte-wise comparison: {matchPercent * 100:F4} ({matchCount}/{byteDifferences.Count}) were same.");
-            
-            for (var threshold = 1; threshold< 16; threshold++)
+
+            for (var threshold = 1; threshold < 16; threshold++)
             {
                 var tc = byteDifferences.Count(x => Math.Abs(x.delta) >= threshold);
                 var tcp = ((float)tc / byteDifferences.Count);
-                Debug.WriteLine($"{tcp*100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
+                Debug.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
             }
 
             Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) < 2));
@@ -183,7 +183,7 @@ namespace Ryujinx.Tests.Graphics
             var encodedRef = _getFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc");
             // var decodedRef = _getFileDataFromPath($"{shortName}.s4x4.astc.png");
             var rgba8raw = _getFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc.rgba");
-            
+
             return (encodedRef, rgba8raw);
         }
 
@@ -226,7 +226,7 @@ namespace Ryujinx.Tests.Graphics
                     a = (byte)Math.Abs(this.a - other.a)
                 };
             }
-            
+
             /// <summary>
             /// Return an array of RGBA words given an array of bytes.        
             /// </summary>
