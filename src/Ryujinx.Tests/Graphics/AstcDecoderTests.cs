@@ -54,8 +54,21 @@ namespace Ryujinx.Tests.Graphics
         // public void 
         [TestCase(4, 4)]
         [TestCase(5, 5)]
+        [TestCase(5, 4)]
+        [TestCase(6, 5)]
+        [TestCase(6, 6)]
+        [TestCase(8, 5)]
+        [TestCase(8, 6)]
+        [TestCase(8, 8)]
+        [TestCase(10, 5)]
+        [TestCase(10, 6)]
+        [TestCase(10, 8)]
+        [TestCase(10, 10)]
+        [TestCase(12, 10)]
+        [TestCase(12, 12)]
         public void Paramterized_BlockSizes_Test(int blockWidth, int blockHeight)
-        {                     
+        {
+            TestContext.Out.WriteLine($"Testing Block Size {blockWidth}x{blockHeight}");
             var (encodedRef, decodedRef) = _getTestDataTupleFromShortname("MoreRocks", blockWidth, blockHeight);
             int astcHeaderLength = 16;
 
@@ -71,7 +84,6 @@ namespace Ryujinx.Tests.Graphics
             int layers = 1;
 
             bool succeeded = AstcDecoder.TryDecodeToRgba8P(rawastc, blockWidth, blockHeight, texWidth, texHeight, depth, levels, layers, out outputBuffer);
-
 
             // The decode function said it was valid data and that it could parse it.
             Assert.AreEqual(true, succeeded);
@@ -92,14 +104,15 @@ namespace Ryujinx.Tests.Graphics
             var wordUnchangedCount = wordDifferences.Count(x => x.diff.IsZero());
             var wordUnchangedPercent = (float)wordUnchangedCount / wordDifferences.Count();
 
-            Debug.WriteLine($"Pixel-wise comparison: {wordUnchangedPercent * 100:F4} ({wordUnchangedCount}/{wordDifferences.Length})");
-            Debug.WriteLine($"Byte-wise comparison: {matchPercent * 100:F4} ({matchCount}/{byteDifferences.Count}) were same.");
+            TestContext.Out.WriteLine($"Pixel-wise comparison: {wordUnchangedPercent * 100:F4} ({wordUnchangedCount}/{wordDifferences.Length})");
+            TestContext.Out.WriteLine($"Byte-wise comparison: {matchPercent * 100:F4} ({matchCount}/{byteDifferences.Count}) were same.");
 
-            for (var threshold = 1; threshold < 16; threshold++)
+            for (var threshold = 1; threshold < 32; threshold++)
             {
                 var tc = byteDifferences.Count(x => Math.Abs(x.delta) >= threshold);
                 var tcp = ((float)tc / byteDifferences.Count);
-                Debug.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
+                if (tc >0)
+                    TestContext.Out.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
             }
 
             Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) < 2));
