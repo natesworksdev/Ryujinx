@@ -1,4 +1,3 @@
-using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -12,8 +11,6 @@ namespace Ryujinx.SDL2.Common
     public class SDL2Driver : IDisposable
     {
         private static SDL2Driver _instance;
-
-        public static bool IsInitialized => _instance != null;
 
         public static SDL2Driver Instance
         {

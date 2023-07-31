@@ -357,7 +357,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool OpenBcatSaveDirectoryEnabled => !SelectedApplication.ControlHolder.ByteSpan.IsZeros() && SelectedApplication.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
 
-        public bool CreateShortcutEnabled => !ReleaseInformation.IsFlatHubBuild();
+        public bool CreateShortcutEnabled => !ReleaseInformation.IsFlatHubBuild;
 
         public string LoadHeading
         {
