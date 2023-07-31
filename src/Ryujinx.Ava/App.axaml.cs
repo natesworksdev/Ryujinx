@@ -23,6 +23,11 @@ namespace Ryujinx.Ava
             Name = $"Ryujinx {Program.Version}";
 
             AvaloniaXamlLoader.Load(this);
+
+            if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("/bin/bash", "-c \"defaults write org.ryujinx.Ryujinx ApplePressAndHoldEnabled -bool false\"");
+            }
         }
 
         public override void OnFrameworkInitializationCompleted()
