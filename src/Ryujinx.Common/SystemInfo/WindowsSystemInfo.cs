@@ -4,11 +4,12 @@ using WmiLight;
 using Ryujinx.Common.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.SystemInfo
 {
     [SupportedOSPlatform("windows")]
-    class WindowsSystemInfo : SystemInfo
+    partial class WindowsSystemInfo : SystemInfo
     {
         internal WindowsSystemInfo()
         {
@@ -17,8 +18,8 @@ namespace Ryujinx.Common.SystemInfo
                 using (WmiConnection connection = new())
                 {
                     (string cpuName, PhysicalCores) = GetCpuStatsLight(connection);
-                    CpuName = $"{cpuName} ; {PhysicalCores} physical ; {LogicalCoreCount} logical";
-                    (RamTotal, RamAvailable) = GetMemoryStatsWmiLight(connection);
+                    CpuName = $"{cpuName ?? GetCpuidCpuName()} ; {PhysicalCores} physical ; {LogicalCoreCount} logical";
+                    (RamTotal, RamAvailable) = GetMemoryStats();
                 }
             }
             catch (Exception ex)
@@ -26,7 +27,19 @@ namespace Ryujinx.Common.SystemInfo
                 Logger.Error?.Print(LogClass.Application, $"WmiLight isn't available : {ex.Message}");
             }
         }
+        
+        private static (ulong Total, ulong Available) GetMemoryStats()
+        {
+            MemoryStatusEx memStatus = new();
+            if (GlobalMemoryStatusEx(ref memStatus))
+            {
+                return (memStatus.TotalPhys, memStatus.AvailPhys); // Bytes
+            }
 
+            Logger.Error?.Print(LogClass.Application, $"GlobalMemoryStatusEx failed. Error {Marshal.GetLastWin32Error():X}");
+
+            return (0, 0);
+        }
 
         private (string cpuName, int physicalCores) GetCpuStatsLight(WmiConnection connection)
         {
@@ -44,26 +57,30 @@ namespace Ryujinx.Common.SystemInfo
 
             return (cpuName, physicalCores);
         }
-
-        private (ulong TotalPhys, ulong AvailPhys) GetMemoryStatsWmiLight(WmiConnection connection)
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MemoryStatusEx
         {
-            ulong TotalPhys = 0;
-            ulong AvailPhys = 0;
+            public uint Length;
+            public uint MemoryLoad;
+            public ulong TotalPhys;
+            public ulong AvailPhys;
+            public ulong TotalPageFile;
+            public ulong AvailPageFile;
+            public ulong TotalVirtual;
+            public ulong AvailVirtual;
+            public ulong AvailExtendedVirtual;
 
-            foreach (WmiObject memObj in GetWmiObjects(connection, "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
+            public MemoryStatusEx()
             {
-                TotalPhys = Convert.ToUInt64(memObj["TotalPhysicalMemory"]);
+                Length = (uint)Marshal.SizeOf<MemoryStatusEx>();
             }
-
-            foreach (WmiObject memObj2 in GetWmiObjects(connection, "SELECT FreePhysicalMemory FROM Win32_OperatingSystem"))
-            {
-                AvailPhys = Convert.ToUInt64(memObj2["FreePhysicalMemory"]) * 1000;
-            }
-
-            return (TotalPhys, AvailPhys);
         }
 
-
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
+        
         private IEnumerable<WmiObject> GetWmiObjects(WmiConnection connection, string query)
         {
             try
