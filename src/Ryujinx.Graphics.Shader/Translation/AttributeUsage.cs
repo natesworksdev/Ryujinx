@@ -29,22 +29,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             UsedOutputAttributesPerPatch = new();
         }
 
-        public void InheritFrom(AttributeUsage other)
-        {
-            UsedInputAttributes |= other.UsedInputAttributes;
-            UsedOutputAttributes |= other.UsedOutputAttributes;
-        }
-
-        public void SetInputUserAttributeFixedFunc(int index)
-        {
-            UsedInputAttributes |= 1 << index;
-        }
-
-        public void SetOutputUserAttributeFixedFunc(int index)
-        {
-            UsedOutputAttributes |= 1 << index;
-        }
-
         public void SetInputUserAttribute(int index, int component)
         {
             int mask = 1 << index;
@@ -104,7 +88,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        public void MergeOutputUserAttributes(bool gpPassthrough, int mask, IEnumerable<int> perPatch)
+        private void MergeOutputUserAttributes(bool gpPassthrough, int mask, IEnumerable<int> perPatch)
         {
             _nextUsedInputAttributes = mask;
 

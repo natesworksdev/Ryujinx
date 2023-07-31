@@ -165,13 +165,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return BitOperations.PopCount((uint)Definitions.OmapTargets) + 1;
         }
 
-        private void InheritFrom(TranslatorContext other)
-        {
-            UsedFeatures |= other.UsedFeatures;
-
-            AttributeUsage.InheritFrom(other.AttributeUsage);
-        }
-
         public void SetLayerOutputAttribute(int attr)
         {
             LayerOutputWritten = true;
@@ -207,11 +200,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        public void MergeOutputUserAttributes(int mask, IEnumerable<int> perPatch)
-        {
-            AttributeUsage.MergeOutputUserAttributes(Definitions.GpPassthrough, mask, perPatch);
-        }
-
         public ShaderProgram Translate()
         {
             ResourceManager resourceManager = CreateResourceManager();
@@ -229,7 +217,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             FunctionCode[] code = EmitShader(this, resourceManager, _program, initializeOutputs: true, out _);
 
-            return Translate(code, resourceManager, _program.ClipDistancesWritten);
+            return Translate(code, resourceManager, UsedFeatures, _program.ClipDistancesWritten);
         }
 
         public ShaderProgram Translate(TranslatorContext other)
@@ -241,8 +229,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             FunctionCode[] code = EmitShader(this, resourceManager, _program, initializeOutputs: false, out _);
 
-            other.MergeOutputUserAttributes(AttributeUsage.UsedOutputAttributes, Enumerable.Empty<int>());
-
             bool otherUsesLocalMemory = other._program.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
             resourceManager.SetCurrentLocalMemory(other._localMemorySize, otherUsesLocalMemory);
 
@@ -250,12 +236,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             code = Combine(otherCode, code, aStart);
 
-            InheritFrom(other);
-
-            return Translate(code, resourceManager, (byte)(_program.ClipDistancesWritten | other._program.ClipDistancesWritten));
+            return Translate(
+                code,
+                resourceManager,
+                UsedFeatures | other.UsedFeatures,
+                (byte)(_program.ClipDistancesWritten | other._program.ClipDistancesWritten));
         }
 
-        private ShaderProgram Translate(FunctionCode[] functions, ResourceManager resourceManager, byte clipDistancesWritten)
+        private ShaderProgram Translate(FunctionCode[] functions, ResourceManager resourceManager, FeatureFlags usedFeatures, byte clipDistancesWritten)
         {
             var cfgs = new ControlFlowGraph[functions.Length];
             var frus = new RegisterUsage.FunctionRegisterUsage[functions.Length];
@@ -278,8 +266,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             HelperFunctionManager hfm = new(funcs, Definitions.Stage);
-
-            FeatureFlags usedFeatures = UsedFeatures;
 
             for (int i = 0; i < functions.Length; i++)
             {

@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         {
             MainFunction = mainFunction;
             _functions = functions;
-            _functionsWithId = new List<DecodedFunction>();
+            _functionsWithId = new();
             AttributeUsage = attributeUsage;
             UsedFeatures = usedFeatures;
             ClipDistancesWritten = clipDistancesWritten;

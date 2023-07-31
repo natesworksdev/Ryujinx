@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     EmitOps(context, block);
                 }
 
-                functions[index] = new FunctionCode(context.GetOperations());
+                functions[index] = new(context.GetOperations());
             }
 
             return functions;
@@ -279,8 +279,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                     }
 
                     InitializeOutput(context, index, perPatch: false);
-
-                    attributeUsage.SetOutputUserAttributeFixedFunc(index);
                 }
             }
         }

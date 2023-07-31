@@ -341,15 +341,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             if ((uint)userAttrIndex < Constants.MaxAttributes)
             {
                 attr = AttributeConsts.UserAttributeBase + userAttrIndex * 16 + (attr & 0xf);
-
-                if (isOutput)
-                {
-                    translatorContext.AttributeUsage.SetOutputUserAttributeFixedFunc(userAttrIndex);
-                }
-                else
-                {
-                    translatorContext.AttributeUsage.SetInputUserAttributeFixedFunc(userAttrIndex);
-                }
             }
             else
             {
