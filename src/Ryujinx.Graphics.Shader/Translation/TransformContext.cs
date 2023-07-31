@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    ref struct TransformContext
+    readonly ref struct TransformContext
     {
         public readonly HelperFunctionManager Hfm;
         public readonly BasicBlock[] Blocks;

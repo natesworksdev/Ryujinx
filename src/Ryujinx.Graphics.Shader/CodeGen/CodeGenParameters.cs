@@ -3,7 +3,7 @@ using Ryujinx.Graphics.Shader.Translation;
 
 namespace Ryujinx.Graphics.Shader.CodeGen
 {
-    struct CodeGenParameters
+    readonly struct CodeGenParameters
     {
         public readonly AttributeUsage AttributeUsage;
         public readonly ShaderDefinitions Definitions;

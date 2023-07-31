@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Creates a new graphics state from this state that can be used for shader generation.
         /// </summary>
         /// <param name="hostSupportsAlphaTest">Indicates if the host API supports alpha test operations</param>
-        public GpuGraphicsState CreateShaderGraphicsState(bool hostSupportsAlphaTest, bool originUpperLeft)
+        public readonly GpuGraphicsState CreateShaderGraphicsState(bool hostSupportsAlphaTest, bool originUpperLeft)
         {
             AlphaTestOp alphaTestOp;
 

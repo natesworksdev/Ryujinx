@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public bool TransformFeedbackEnabled { get; }
 
-        private TransformFeedbackOutput[] _transformFeedbackOutputs;
+        private readonly TransformFeedbackOutput[] _transformFeedbackOutputs;
 
         readonly struct TransformFeedbackVariable : IEquatable<TransformFeedbackVariable>
         {

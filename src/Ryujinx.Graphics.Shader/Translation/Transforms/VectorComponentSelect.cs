@@ -63,9 +63,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                     inputs[srcIndex] = operation.GetSource(srcIndex);
                 }
 
-                inputs[inputs.Length - 1] = Const(i);
+                inputs[^1] = Const(i);
 
-                Operation loadOp = new Operation(Instruction.Load, StorageKind.ConstantBuffer, value, inputs);
+                Operation loadOp = new(Instruction.Load, StorageKind.ConstantBuffer, value, inputs);
 
                 node.List.AddBefore(node, loadOp);
 
@@ -78,8 +78,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                     Operand isCurrentIndex = Local();
                     Operand selection = Local();
 
-                    Operation compareOp = new Operation(Instruction.CompareEqual, isCurrentIndex, new Operand[] { elemIndex, Const(i) });
-                    Operation selectOp = new Operation(Instruction.ConditionalSelect, selection, new Operand[] { isCurrentIndex, value, result });
+                    Operation compareOp = new(Instruction.CompareEqual, isCurrentIndex, new Operand[] { elemIndex, Const(i) });
+                    Operation selectOp = new(Instruction.ConditionalSelect, selection, new Operand[] { isCurrentIndex, value, result });
 
                     node.List.AddBefore(node, compareOp);
                     node.List.AddBefore(node, selectOp);
