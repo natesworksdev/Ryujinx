@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             // so skip emitting the barrier for those cases.
                             if (visitor.Block.Type != AstBlockType.Main || mayHaveReturned || !isMainFunction)
                             {
-                                context.Logger.Log($"Shader has barrier on potentially divergent block, the barrier will be removed.");
+                                context.Logger.Log("Shader has barrier on potentially divergent block, the barrier will be removed.");
 
                                 continue;
                             }

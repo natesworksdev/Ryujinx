@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (!context.HostCapabilities.SupportsShaderBarrierDivergence &&
                 (context.CurrentBlock.Type != AstBlockType.Main || context.MayHaveReturned || !context.IsMainFunction))
             {
-                context.Logger.Log($"Shader has barrier on potentially divergent block, the barrier will be removed.");
+                context.Logger.Log("Shader has barrier on potentially divergent block, the barrier will be removed.");
 
                 return OperationResult.Invalid;
             }
