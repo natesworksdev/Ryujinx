@@ -1,9 +1,9 @@
 ﻿using LibHac.Common;
-using LibHac.Ns;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.Loader;
+using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
@@ -18,19 +18,19 @@ namespace Ryujinx.Ui.App.Common
 {
     public class ApplicationData
     {
-        public bool      Favorite      { get; set; }
-        public byte[]    Icon          { get; set; }
-        public string    TitleName     { get; set; }
-        public string    TitleId       { get; set; }
-        public string    Developer     { get; set; }
-        public string    Version       { get; set; }
-        public string    TimePlayed    { get; set; }
-        public double    TimePlayedNum { get; set; }
-        public DateTime? LastPlayed    { get; set; }
-        public string    FileExtension { get; set; }
-        public string    FileSize      { get; set; }
-        public double    FileSizeBytes { get; set; }
-        public string    Path          { get; set; }
+        public bool Favorite { get; set; }
+        public byte[] Icon { get; set; }
+        public string TitleName { get; set; }
+        public string TitleId { get; set; }
+        public string Developer { get; set; }
+        public string Version { get; set; }
+        public string TimePlayed { get; set; }
+        public double TimePlayedNum { get; set; }
+        public DateTime? LastPlayed { get; set; }
+        public string FileExtension { get; set; }
+        public string FileSize { get; set; }
+        public double FileSizeBytes { get; set; }
+        public string Path { get; set; }
         public BlitStruct<ApplicationControlProperty> ControlHolder { get; set; }
 
         [JsonIgnore]
@@ -146,9 +146,9 @@ namespace Ryujinx.Ui.App.Common
                 return string.Empty;
             }
 
-            const string mainExeFs = "main";
+            const string MainExeFs = "main";
 
-            if (!codeFs.FileExists($"/{mainExeFs}"))
+            if (!codeFs.FileExists($"/{MainExeFs}"))
             {
                 Logger.Error?.Print(LogClass.Loader, "No main binary ExeFS found in ExeFS");
 
@@ -157,11 +157,11 @@ namespace Ryujinx.Ui.App.Common
 
             using var nsoFile = new UniqueRef<IFile>();
 
-            codeFs.OpenFile(ref nsoFile.Ref, $"/{mainExeFs}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+            codeFs.OpenFile(ref nsoFile.Ref, $"/{MainExeFs}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-            NsoReader reader = new NsoReader();
+            NsoReader reader = new();
             reader.Initialize(nsoFile.Release().AsStorage().AsFile(OpenMode.Read)).ThrowIfFailure();
-            
+
             return BitConverter.ToString(reader.Header.ModuleId.ItemsRo.ToArray()).Replace("-", "").ToUpper()[..16];
         }
     }

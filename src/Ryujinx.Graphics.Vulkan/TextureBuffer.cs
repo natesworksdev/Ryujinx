@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using Format = Ryujinx.Graphics.GAL.Format;
 using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -15,7 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _offset;
         private int _size;
         private Auto<DisposableBufferView> _bufferView;
-        private Dictionary<GAL.Format, Auto<DisposableBufferView>> _selfManagedViews;
+        private Dictionary<Format, Auto<DisposableBufferView>> _selfManagedViews;
 
         private int _bufferCount;
 
@@ -24,15 +25,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public VkFormat VkFormat { get; }
 
-        public float ScaleFactor { get; }
-
-        public TextureBuffer(VulkanRenderer gd, TextureCreateInfo info, float scale)
+        public TextureBuffer(VulkanRenderer gd, TextureCreateInfo info)
         {
             _gd = gd;
             Width = info.Width;
             Height = info.Height;
             VkFormat = FormatTable.GetFormat(info.Format);
-            ScaleFactor = scale;
 
             gd.Textures.Add(this);
         }
@@ -131,15 +129,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferView GetBufferView(CommandBufferScoped cbs)
         {
-            if (_bufferView == null)
-            {
-                _bufferView = _gd.BufferManager.CreateView(_bufferHandle, VkFormat, _offset, _size, ReleaseImpl);
-            }
+            _bufferView ??= _gd.BufferManager.CreateView(_bufferHandle, VkFormat, _offset, _size, ReleaseImpl);
 
             return _bufferView?.Get(cbs, _offset, _size).Value ?? default;
         }
 
-        public BufferView GetBufferView(CommandBufferScoped cbs, GAL.Format format)
+        public BufferView GetBufferView(CommandBufferScoped cbs, Format format)
         {
             var vkFormat = FormatTable.GetFormat(format);
             if (vkFormat == VkFormat)
@@ -156,7 +151,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (bufferView != null)
             {
-                (_selfManagedViews ??= new Dictionary<GAL.Format, Auto<DisposableBufferView>>()).Add(format, bufferView);
+                (_selfManagedViews ??= new Dictionary<Format, Auto<DisposableBufferView>>()).Add(format, bufferView);
             }
 
             return bufferView?.Get(cbs, _offset, _size).Value ?? default;

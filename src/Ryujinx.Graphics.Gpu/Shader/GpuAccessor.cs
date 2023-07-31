@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             GpuContext context,
             GpuChannel channel,
             GpuAccessorState state,
-            int stageIndex) : base(context, state.ResourceCounts, stageIndex)
+            int stageIndex) : base(context, state.ResourceCounts, stageIndex, state.TransformFeedbackDescriptors != null)
         {
             _isVulkan = context.Capabilities.Api == TargetApi.Vulkan;
             _channel = channel;
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
-        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state) : base(context, state.ResourceCounts, 0)
+        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state) : base(context, state.ResourceCounts, 0, false)
         {
             _channel = channel;
             _state = state;
@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 CompareOp.Greater or CompareOp.GreaterGl => AlphaTestOp.Greater,
                 CompareOp.NotEqual or CompareOp.NotEqualGl => AlphaTestOp.NotEqual,
                 CompareOp.GreaterOrEqual or CompareOp.GreaterOrEqualGl => AlphaTestOp.GreaterOrEqual,
-                _ => AlphaTestOp.Always
+                _ => AlphaTestOp.Always,
             };
         }
 
@@ -111,6 +111,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public AttributeType QueryAttributeType(int location)
         {
             return _state.GraphicsState.AttributeTypes[location];
+        }
+
+        /// <inheritdoc/>
+        public bool QueryEarlyZForce()
+        {
+            _state.SpecializationState?.RecordEarlyZForce();
+            return _state.GraphicsState.EarlyZForce;
         }
 
         /// <inheritdoc/>
@@ -276,16 +283,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public bool QueryEarlyZForce()
-        {
-            _state.SpecializationState?.RecordEarlyZForce();
-            return _state.GraphicsState.EarlyZForce;
-        }
-
-        /// <inheritdoc/>
         public bool QueryViewportTransformDisable()
         {
             return _state.GraphicsState.ViewportTransformDisable;
+        }
+
+        /// <inheritdoc/>
+        public bool QueryYNegateEnabled()
+        {
+            return _state.GraphicsState.YNegateEnabled;
         }
 
         /// <inheritdoc/>

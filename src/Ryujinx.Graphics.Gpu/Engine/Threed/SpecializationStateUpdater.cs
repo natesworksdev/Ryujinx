@@ -227,7 +227,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     VertexAttribType.Sint => AttributeType.Sint,
                     VertexAttribType.Uint => AttributeType.Uint,
-                    _ => AttributeType.Float
+                    _ => AttributeType.Float,
                 };
 
                 if (attributeTypes[location] != value)
@@ -338,6 +338,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (enabled != _graphics.DualSourceBlendEnable)
             {
                 _graphics.DualSourceBlendEnable = enabled;
+
+                Signal();
+            }
+        }
+
+        /// <summary>
+        /// Sets the Y negate enabled state.
+        /// </summary>
+        /// <param name="enabled">True if Y negate of the fragment coordinates is enabled</param>
+        public void SetYNegateEnabled(bool enabled)
+        {
+            if (enabled != _graphics.YNegateEnabled)
+            {
+                _graphics.YNegateEnabled = enabled;
 
                 Signal();
             }

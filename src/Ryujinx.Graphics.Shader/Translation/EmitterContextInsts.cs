@@ -67,6 +67,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicAnd, storageKind, Local(), Const(binding), e0, e1, value);
         }
 
+        public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand compare, Operand value)
+        {
+            return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, compare, value);
+        }
+
         public static Operand AtomicCompareAndSwap(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand compare, Operand value)
         {
             return context.Add(Instruction.AtomicCompareAndSwap, storageKind, Local(), Const(binding), e0, e1, compare, value);
@@ -424,6 +429,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.FP32 | Instruction.SquareRoot, Local(), a);
         }
 
+        public static Operand FPSubtract(this EmitterContext context, Operand a, Operand b, Instruction fpType = Instruction.FP32)
+        {
+            return context.Add(fpType | Instruction.Subtract, Local(), a, b);
+        }
+
         public static Operand FPTruncate(this EmitterContext context, Operand a, Instruction fpType = Instruction.FP32)
         {
             return context.Add(fpType | Instruction.Truncate, Local(), a);
@@ -599,6 +609,45 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.Subtract, Local(), a, b);
         }
 
+        public static Operand ImageAtomic(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int binding,
+            Operand[] sources)
+        {
+            Operand dest = Local();
+
+            context.Add(new TextureOperation(Instruction.ImageAtomic, type, format, flags, binding, 0, new[] { dest }, sources));
+
+            return dest;
+        }
+
+        public static void ImageLoad(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int binding,
+            int compMask,
+            Operand[] dests,
+            Operand[] sources)
+        {
+            context.Add(new TextureOperation(Instruction.ImageLoad, type, format, flags, binding, compMask, dests, sources));
+        }
+
+        public static void ImageStore(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int binding,
+            Operand[] sources)
+        {
+            context.Add(new TextureOperation(Instruction.ImageStore, type, format, flags, binding, 0, null, sources));
+        }
+
         public static Operand IsNan(this EmitterContext context, Operand a, Instruction fpType = Instruction.FP32)
         {
             return context.Add(fpType | Instruction.IsNan, Local(), a);
@@ -661,14 +710,19 @@ namespace Ryujinx.Graphics.Shader.Translation
                 : context.Load(storageKind, (int)ioVariable, arrayIndex, elemIndex);
         }
 
-        public static Operand LoadLocal(this EmitterContext context, Operand a)
+        public static Operand Lod(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int binding,
+            int compIndex,
+            Operand[] sources)
         {
-            return context.Add(Instruction.LoadLocal, Local(), a);
-        }
+            Operand dest = Local();
 
-        public static Operand LoadShared(this EmitterContext context, Operand a)
-        {
-            return context.Add(Instruction.LoadShared, Local(), a);
+            context.Add(new TextureOperation(Instruction.Lod, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
+
+            return dest;
         }
 
         public static Operand MemoryBarrier(this EmitterContext context)
@@ -753,6 +807,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
         }
 
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, value);
+        }
+
         public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand e1, Operand value)
         {
             return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, e1, value);
@@ -797,24 +856,31 @@ namespace Ryujinx.Graphics.Shader.Translation
                 : context.Add(Instruction.Store, storageKind, null, Const((int)ioVariable), arrayIndex, elemIndex, value);
         }
 
-        public static Operand StoreLocal(this EmitterContext context, Operand a, Operand b)
+        public static void TextureSample(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int binding,
+            int compMask,
+            Operand[] dests,
+            Operand[] sources)
         {
-            return context.Add(Instruction.StoreLocal, null, a, b);
+            context.Add(new TextureOperation(Instruction.TextureSample, type, TextureFormat.Unknown, flags, binding, compMask, dests, sources));
         }
 
-        public static Operand StoreShared(this EmitterContext context, Operand a, Operand b)
+        public static Operand TextureSize(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int binding,
+            int compIndex,
+            Operand[] sources)
         {
-            return context.Add(Instruction.StoreShared, null, a, b);
-        }
+            Operand dest = Local();
 
-        public static Operand StoreShared16(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreShared16, null, a, b);
-        }
+            context.Add(new TextureOperation(Instruction.TextureSize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
 
-        public static Operand StoreShared8(this EmitterContext context, Operand a, Operand b)
-        {
-            return context.Add(Instruction.StoreShared8, null, a, b);
+            return dest;
         }
 
         public static Operand UnpackDouble2x32High(this EmitterContext context, Operand a)

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 using static Ryujinx.Graphics.Shader.Translation.Translator;
 
@@ -16,7 +15,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     public class TranslatorContext
     {
         private readonly DecodedProgram _program;
-        private ShaderConfig _config;
+        private readonly ShaderConfig _config;
 
         public ulong Address { get; }
 
@@ -59,7 +58,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             // temporary variable, as long that attribute is written by shader A.
             FunctionCode[] output = new FunctionCode[a.Length + b.Length - 1];
 
-            List<Operation> ops = new List<Operation>(a.Length + b.Length);
+            List<Operation> ops = new(a.Length + b.Length);
 
             Operand[] temps = new Operand[AttributeConsts.UserAttributesCount * 4];
 
@@ -149,6 +148,17 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderProgram Translate(TranslatorContext other = null)
         {
+            bool usesLocalMemory = _config.UsedFeatures.HasFlag(FeatureFlags.LocalMemory);
+
+            _config.ResourceManager.SetCurrentLocalMemory(_config.LocalMemorySize, usesLocalMemory);
+
+            if (_config.Stage == ShaderStage.Compute)
+            {
+                bool usesSharedMemory = _config.UsedFeatures.HasFlag(FeatureFlags.SharedMemory);
+
+                _config.ResourceManager.SetCurrentSharedMemory(GpuAccessor.QueryComputeSharedMemorySize(), usesSharedMemory);
+            }
+
             FunctionCode[] code = EmitShader(_program, _config, initializeOutputs: other == null, out _);
 
             if (other != null)
@@ -157,6 +167,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 // We need to share the resource manager since both shaders accesses the same constant buffers.
                 other._config.ResourceManager = _config.ResourceManager;
+                other._config.ResourceManager.SetCurrentLocalMemory(other._config.LocalMemorySize, other._config.UsedFeatures.HasFlag(FeatureFlags.LocalMemory));
 
                 FunctionCode[] otherCode = EmitShader(other._program, other._config, initializeOutputs: true, out int aStart);
 
@@ -193,9 +204,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                     break;
             }
 
-            ShaderConfig config = new ShaderConfig(ShaderStage.Geometry, outputTopology, maxOutputVertices, GpuAccessor, _config.Options);
+            ShaderConfig config = new(ShaderStage.Geometry, outputTopology, maxOutputVertices, GpuAccessor, _config.Options);
 
-            EmitterContext context = new EmitterContext(default, config, false);
+            EmitterContext context = new(default, config, false);
 
             for (int v = 0; v < maxOutputVertices; v++)
             {
@@ -251,7 +262,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(sInfo, config)),
                 TargetLanguage.Spirv => new ShaderProgram(info, TargetLanguage.Spirv, SpirvGenerator.Generate(sInfo, config)),
-                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString())
+                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString()),
             };
         }
     }

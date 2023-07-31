@@ -14,6 +14,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("profile", Required = false, HelpText = "Set the user profile to launch the game with.")]
         public string UserProfile { get; set; }
 
+        [Option("fullscreen", Required = false, HelpText = "Launch the game in fullscreen mode.")]
+        public bool IsFullscreen { get; set; }
+
         // Input
 
         [Option("input-profile-1", Required = false, HelpText = "Set the input profile in use for Player 1.")]
@@ -88,7 +91,7 @@ namespace Ryujinx.Headless.SDL2
         // System
 
         [Option("disable-ptc", Required = false, HelpText = "Disables profiled persistent translation cache.")]
-        public bool DisablePtc { get; set; }
+        public bool DisablePTC { get; set; }
 
         [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
         public bool EnableInternetAccess { get; set; }
@@ -100,7 +103,7 @@ namespace Ryujinx.Headless.SDL2
         public int FsGlobalAccessLogMode { get; set; }
 
         [Option("disable-vsync", Required = false, HelpText = "Disables Vertical Sync.")]
-        public bool DisableVsync { get; set; }
+        public bool DisableVSync { get; set; }
 
         [Option("disable-shader-cache", Required = false, HelpText = "Disables Shader cache.")]
         public bool DisableShaderCache { get; set; }
@@ -126,7 +129,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("memory-manager-mode", Required = false, Default = MemoryManagerMode.HostMappedUnsafe, HelpText = "The selected memory manager mode.")]
         public MemoryManagerMode MemoryManagerMode { get; set; }
 
-        [Option("audio-volume", Required = false, Default = 1.0f, HelpText ="The audio level (0 to 1).")]
+        [Option("audio-volume", Required = false, Default = 1.0f, HelpText = "The audio level (0 to 1).")]
         public float AudioVolume { get; set; }
 
         [Option("use-hypervisor", Required = false, Default = true, HelpText = "Uses Hypervisor over JIT if available.")]
@@ -181,7 +184,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("backend-threading", Required = false, Default = BackendThreading.Auto, HelpText = "Whether or not backend threading is enabled. The \"Auto\" setting will determine whether threading should be enabled at runtime.")]
         public BackendThreading BackendThreading { get; set; }
 
-        [Option("disable-macro-hle", Required= false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
+        [Option("disable-macro-hle", Required = false, HelpText = "Disables high-level emulation of Macro code. Leaving this enabled improves performance but may cause graphical glitches in some games.")]
         public bool DisableMacroHLE { get; set; }
 
         [Option("graphics-shaders-dump-path", Required = false, HelpText = "Dumps shaders in this local directory. (Developer only)")]
@@ -191,12 +194,12 @@ namespace Ryujinx.Headless.SDL2
         public GraphicsBackend GraphicsBackend { get; set; }
 
         [Option("preferred-gpu-vendor", Required = false, Default = "", HelpText = "When using the Vulkan backend, prefer using the GPU from the specified vendor.")]
-        public string PreferredGpuVendor { get; set; }
+        public string PreferredGPUVendor { get; set; }
 
         // Hacks
 
         [Option("expand-ram", Required = false, Default = false, HelpText = "Expands the RAM amount on the emulated system from 4GiB to 6GiB.")]
-        public bool ExpandRam { get; set; }
+        public bool ExpandRAM { get; set; }
 
         [Option("ignore-missing-services", Required = false, Default = false, HelpText = "Enable ignoring missing services.")]
         public bool IgnoreMissingServices { get; set; }

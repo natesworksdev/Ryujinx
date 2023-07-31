@@ -186,7 +186,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 int firstVertex = (int)_state.State.FirstVertex;
 
-                BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+                BufferRange br = new(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
 
                 _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
 
@@ -200,7 +200,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
+#pragma warning disable IDE0059 // Remove unnecessary value assignment
                 var drawState = _state.State.VertexBufferDrawState;
+#pragma warning restore IDE0059
 
                 _context.Renderer.Pipeline.Draw(drawVertexCount, 1, drawFirstVertex, firstInstance);
             }
@@ -539,6 +541,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             engine.UpdateState();
 
+            if (instanceCount > 1)
+            {
+                // Must be called after UpdateState as it assumes the shader state
+                // has already been set, and that bindings have been updated already.
+
+                _channel.BufferManager.SetInstancedDrawVertexCount(count);
+            }
+
             if (indexed)
             {
                 _context.Renderer.Pipeline.DrawIndexed(count, instanceCount, firstIndex, firstVertex, firstInstance);
@@ -671,10 +681,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     if (indexedInline)
                     {
                         int inlineIndexCount = _drawState.IbStreamer.GetAndResetInlineIndexCount(_context.Renderer);
-                        BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+                        BufferRange br = new(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
 
                         _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
                     }
+
+                    _channel.BufferManager.SetInstancedDrawVertexCount(_instancedIndexCount);
 
                     _context.Renderer.Pipeline.DrawIndexed(
                         _instancedIndexCount,
@@ -685,6 +697,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 }
                 else
                 {
+                    _channel.BufferManager.SetInstancedDrawVertexCount(_instancedDrawStateCount);
+
                     _context.Renderer.Pipeline.Draw(
                         _instancedDrawStateCount,
                         _instanceIndex + 1,
@@ -797,7 +811,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[]
                 {
-                    new Rectangle<int>(scissorX, scissorY, scissorW, scissorH)
+                    new Rectangle<int>(scissorX, scissorY, scissorW, scissorH),
                 };
 
                 _context.Renderer.Pipeline.SetScissors(scissors);
@@ -809,7 +823,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 var clearColor = _state.State.ClearColors;
 
-                ColorF color = new ColorF(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
+                ColorF color = new(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
 
                 _context.Renderer.Pipeline.ClearRenderTargetColor(index, layer, layerCount, componentMask, color);
             }

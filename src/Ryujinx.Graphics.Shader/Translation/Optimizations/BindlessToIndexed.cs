@@ -7,6 +7,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
     static class BindlessToIndexed
     {
+        private const int NvnTextureBufferIndex = 2;
+
         public static void RunPass(BasicBlock block, ShaderConfig config)
         {
             // We can turn a bindless texture access into a indexed access,
@@ -17,7 +19,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // The base offset of the array of handles on the constant buffer is the constant offset.
             for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
             {
-                if (!(node.Value is TextureOperation texOp))
+                if (node.Value is not TextureOperation texOp)
                 {
                     continue;
                 }
@@ -27,7 +29,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     continue;
                 }
 
-                if (!(texOp.GetSource(0).AsgOp is Operation handleAsgOp))
+                if (texOp.GetSource(0).AsgOp is not Operation handleAsgOp)
                 {
                     continue;
                 }
@@ -43,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 if (ldcSrc0.Type != OperandType.Constant ||
                     !config.ResourceManager.TryGetConstantBufferSlot(ldcSrc0.Value, out int src0CbufSlot) ||
-                    src0CbufSlot != 2)
+                    src0CbufSlot != NvnTextureBufferIndex)
                 {
                     continue;
                 }
@@ -64,17 +66,17 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 // Plus this whole transform is fundamentally flawed as-is since we have no way to know the array size.
                 // Eventually, this should be entirely removed in favor of a implementation that supports true bindless
                 // texture access.
-                if (!(ldcSrc2.AsgOp is Operation shrOp) || shrOp.Inst != Instruction.ShiftRightU32)
+                if (ldcSrc2.AsgOp is not Operation shrOp || shrOp.Inst != Instruction.ShiftRightU32)
                 {
                     continue;
                 }
 
-                if (!(shrOp.GetSource(0).AsgOp is Operation shrOp2) || shrOp2.Inst != Instruction.ShiftRightU32)
+                if (shrOp.GetSource(0).AsgOp is not Operation shrOp2 || shrOp2.Inst != Instruction.ShiftRightU32)
                 {
                     continue;
                 }
 
-                if (!(shrOp2.GetSource(0).AsgOp is Operation addOp) || addOp.Inst != Instruction.Add)
+                if (shrOp2.GetSource(0).AsgOp is not Operation addOp || addOp.Inst != Instruction.Add)
                 {
                     continue;
                 }
@@ -92,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 Operand source = addOp.GetSource(0);
 
-                Operation shrBy3 = new Operation(Instruction.ShiftRightU32, index, source, Const(3));
+                Operation shrBy3 = new(Instruction.ShiftRightU32, index, source, Const(3));
 
                 block.Operations.AddBefore(node, shrBy3);
 
@@ -102,8 +104,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static void TurnIntoIndexed(ShaderConfig config, TextureOperation texOp, int handle)
         {
-            texOp.TurnIntoIndexed(handle);
-            config.SetUsedTexture(texOp.Inst, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, handle);
+            int binding = config.ResourceManager.GetTextureOrImageBinding(
+                texOp.Inst,
+                texOp.Type | SamplerType.Indexed,
+                texOp.Format,
+                texOp.Flags & ~TextureFlags.Bindless,
+                NvnTextureBufferIndex,
+                handle);
+
+            texOp.TurnIntoIndexed(binding);
         }
     }
 }

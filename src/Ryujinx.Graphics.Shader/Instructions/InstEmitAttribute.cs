@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < (int)op.AlSize + 1; index++)
             {
-                Register rd = new Register(op.Dest + index, RegisterType.Gpr);
+                Register rd = new(op.Dest + index, RegisterType.Gpr);
 
                 if (rd.IsRZ)
                 {
@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Register rd = new Register(op.SrcB + index, RegisterType.Gpr);
+                Register rd = new(op.SrcB + index, RegisterType.Gpr);
 
                 if (op.Phys)
                 {
@@ -161,12 +161,24 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     // FragCoord X/Y must be divided by the render target scale, if resolution scaling is active,
                     // because the shader code is not expecting scaled values.
                     res = context.FPDivide(res, context.Load(StorageKind.ConstantBuffer, SupportBuffer.Binding, Const((int)SupportBufferField.RenderScale), Const(0)));
+
+                    if (op.Imm10 == AttributeConsts.PositionY && context.Config.Options.TargetApi != TargetApi.OpenGL)
+                    {
+                        // If YNegate is enabled, we need to flip the fragment coordinates vertically, unless
+                        // the API supports changing the origin (only OpenGL does).
+                        if (context.Config.GpuAccessor.QueryYNegateEnabled())
+                        {
+                            Operand viewportHeight = context.Load(StorageKind.ConstantBuffer, 0, Const((int)SupportBufferField.ViewportSize), Const(1));
+
+                            res = context.FPSubtract(viewportHeight, res);
+                        }
+                    }
                 }
                 else if (op.Imm10 == AttributeConsts.FrontFacing && context.Config.GpuAccessor.QueryHostHasFrontFacingBug())
                 {
                     // gl_FrontFacing sometimes has incorrect (flipped) values depending how it is accessed on Intel GPUs.
                     // This weird trick makes it behave.
-                    res = context.ICompareLess(context.INegate(context.IConvertS32ToFP32(res)), Const(0));
+                    res = context.ICompareLess(context.INegate(context.FP32ConvertToS32(context.ConditionalSelect(res, ConstF(1f), ConstF(0f)))), Const(0));
                 }
             }
 

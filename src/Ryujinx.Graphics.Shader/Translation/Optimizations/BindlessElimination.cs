@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // - Both sources of the OR operation comes from a constant buffer.
             for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
             {
-                if (!(node.Value is TextureOperation texOp))
+                if (node.Value is not TextureOperation texOp)
                 {
                     continue;
                 }
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                         continue;
                     }
 
-                    if (!(bindlessHandle.AsgOp is Operation handleCombineOp))
+                    if (bindlessHandle.AsgOp is not Operation handleCombineOp)
                     {
                         continue;
                     }
@@ -66,9 +66,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     // and having a "canonical" representation simplifies some checks below.
                     if (src0.Type == OperandType.Constant && src1.Type != OperandType.Constant)
                     {
-                        Operand temp = src1;
-                        src1 = src0;
-                        src0 = temp;
+                        (src0, src1) = (src1, src0);
                     }
 
                     TextureHandleType handleType = TextureHandleType.SeparateSamplerHandle;
@@ -224,8 +222,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static void SetHandle(ShaderConfig config, TextureOperation texOp, int cbufOffset, int cbufSlot, bool rewriteSamplerType, bool isImage)
         {
-            texOp.SetHandle(cbufOffset, cbufSlot);
-
             if (rewriteSamplerType)
             {
                 SamplerType newType = config.GpuAccessor.QuerySamplerType(cbufOffset, cbufSlot);
@@ -236,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
                 else if (texOp.Type == SamplerType.TextureBuffer && newType == SamplerType.Texture1D)
                 {
-                    int coordsCount = 1;
+                    int coordsCount = 2;
 
                     if (InstEmit.Sample1DAs2D)
                     {
@@ -257,7 +253,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
 
-            config.SetUsedTexture(texOp.Inst, texOp.Type, texOp.Format, texOp.Flags, cbufSlot, cbufOffset);
+            int binding = config.ResourceManager.GetTextureOrImageBinding(
+                texOp.Inst,
+                texOp.Type,
+                texOp.Format,
+                texOp.Flags & ~TextureFlags.Bindless,
+                cbufSlot,
+                cbufOffset);
+
+            texOp.SetBinding(binding);
         }
     }
 }

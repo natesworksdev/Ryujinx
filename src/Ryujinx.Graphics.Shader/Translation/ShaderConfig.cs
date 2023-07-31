@@ -2,16 +2,12 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
-        // TODO: Non-hardcoded array size.
-        public const int SamplerArraySize = 4;
-
         private const int ThreadsPerWarp = 32;
 
         public ShaderStage Stage { get; }
@@ -110,35 +106,62 @@ namespace Ryujinx.Graphics.Shader.Translation
         public UInt128 NextInputAttributesComponents { get; private set; }
         public UInt128 ThisInputAttributesComponents { get; private set; }
 
-        private readonly record struct TextureInfo(int CbufSlot, int Handle, bool Indexed, TextureFormat Format);
-
-        private struct TextureMeta
+        public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options, int localMemorySize)
         {
-            public bool AccurateType;
-            public SamplerType Type;
-            public TextureUsageFlags UsageFlags;
-        }
-
-        private readonly Dictionary<TextureInfo, TextureMeta> _usedTextures;
-        private readonly Dictionary<TextureInfo, TextureMeta> _usedImages;
-        private TextureDescriptor[] _cachedTextureDescriptors;
-        private TextureDescriptor[] _cachedImageDescriptors;
-
-        public ShaderConfig(ShaderStage stage, IGpuAccessor gpuAccessor, TranslationOptions options)
-        {
-            Stage       = stage;
+            Stage = stage;
             GpuAccessor = gpuAccessor;
-            Options     = options;
+            Options = options;
+            LocalMemorySize = localMemorySize;
 
             _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
 
-            UsedInputAttributesPerPatch  = new HashSet<int>();
+            TransformFeedbackEnabled =
+                stage != ShaderStage.Compute &&
+                gpuAccessor.QueryTransformFeedbackEnabled() &&
+                gpuAccessor.QueryHostSupportsTransformFeedback();
+
+            UsedInputAttributesPerPatch = new HashSet<int>();
             UsedOutputAttributesPerPatch = new HashSet<int>();
 
-            _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
-            _usedImages   = new Dictionary<TextureInfo, TextureMeta>();
+            ShaderProperties properties;
 
-            ResourceManager = new ResourceManager(stage, gpuAccessor, new ShaderProperties());
+            switch (stage)
+            {
+                case ShaderStage.Fragment:
+                    bool originUpperLeft = options.TargetApi == TargetApi.Vulkan || gpuAccessor.QueryYNegateEnabled();
+                    properties = new ShaderProperties(originUpperLeft);
+                    break;
+                default:
+                    properties = new ShaderProperties();
+                    break;
+            }
+
+            ResourceManager = new ResourceManager(stage, gpuAccessor, properties);
+
+            if (!gpuAccessor.QueryHostSupportsTransformFeedback() && gpuAccessor.QueryTransformFeedbackEnabled())
+            {
+                StructureType tfeInfoStruct = new(new StructureField[]
+                {
+                    new(AggregateType.Array | AggregateType.U32, "base_offset", 4),
+                    new(AggregateType.U32, "vertex_count"),
+                });
+
+                BufferDefinition tfeInfoBuffer = new(BufferLayout.Std430, 1, Constants.TfeInfoBinding, "tfe_info", tfeInfoStruct);
+
+                properties.AddOrUpdateStorageBuffer(Constants.TfeInfoBinding, tfeInfoBuffer);
+
+                StructureType tfeDataStruct = new(new StructureField[]
+                {
+                    new(AggregateType.Array | AggregateType.U32, "data", 0),
+                });
+
+                for (int i = 0; i < Constants.TfeBuffersCount; i++)
+                {
+                    int binding = Constants.TfeBufferBaseBinding + i;
+                    BufferDefinition tfeDataBuffer = new(BufferLayout.Std430, 1, binding, $"tfe_data{i}", tfeDataStruct);
+                    properties.AddOrUpdateStorageBuffer(binding, tfeDataBuffer);
+                }
+            }
         }
 
         public ShaderConfig(
@@ -146,27 +169,32 @@ namespace Ryujinx.Graphics.Shader.Translation
             OutputTopology outputTopology,
             int maxOutputVertices,
             IGpuAccessor gpuAccessor,
-            TranslationOptions options) : this(stage, gpuAccessor, options)
+            TranslationOptions options) : this(stage, gpuAccessor, options, 0)
         {
             ThreadsPerInputPrimitive = 1;
-            OutputTopology           = outputTopology;
-            MaxOutputVertices        = maxOutputVertices;
-            TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
+            OutputTopology = outputTopology;
+            MaxOutputVertices = maxOutputVertices;
         }
 
-        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options) : this(header.Stage, gpuAccessor, options)
+        public ShaderConfig(
+            ShaderHeader header,
+            IGpuAccessor gpuAccessor,
+            TranslationOptions options) : this(header.Stage, gpuAccessor, options, GetLocalMemorySize(header))
         {
-            GpPassthrough            = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
+            GpPassthrough = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
             ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
-            OutputTopology           = header.OutputTopology;
-            MaxOutputVertices        = header.MaxOutputVertexCount;
-            LocalMemorySize          = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
-            ImapTypes                = header.ImapTypes;
-            OmapTargets              = header.OmapTargets;
-            OmapSampleMask           = header.OmapSampleMask;
-            OmapDepth                = header.OmapDepth;
-            TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
-            LastInVertexPipeline     = header.Stage < ShaderStage.Fragment;
+            OutputTopology = header.OutputTopology;
+            MaxOutputVertices = header.MaxOutputVertexCount;
+            ImapTypes = header.ImapTypes;
+            OmapTargets = header.OmapTargets;
+            OmapSampleMask = header.OmapSampleMask;
+            OmapDepth = header.OmapDepth;
+            LastInVertexPipeline = header.Stage < ShaderStage.Fragment;
+        }
+
+        private static int GetLocalMemorySize(ShaderHeader header)
+        {
+            return header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize + (header.ShaderLocalMemoryCrsSize / ThreadsPerWarp);
         }
 
         private void EnsureTransformFeedbackInitialized()
@@ -407,22 +435,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             UsedInputAttributes |= other.UsedInputAttributes;
             UsedOutputAttributes |= other.UsedOutputAttributes;
-
-            foreach (var kv in other._usedTextures)
-            {
-                if (!_usedTextures.TryAdd(kv.Key, kv.Value))
-                {
-                    _usedTextures[kv.Key] = MergeTextureMeta(kv.Value, _usedTextures[kv.Key]);
-                }
-            }
-
-            foreach (var kv in other._usedImages)
-            {
-                if (!_usedImages.TryAdd(kv.Key, kv.Value))
-                {
-                    _usedImages[kv.Key] = MergeTextureMeta(kv.Value, _usedImages[kv.Key]);
-                }
-            }
         }
 
         public void SetLayerOutputAttribute(int attr)
@@ -488,7 +500,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 // Regular and per-patch input/output locations can't overlap,
                 // so we must assign on our location using unused regular input/output locations.
 
-                Dictionary<int, int> locationsMap = new Dictionary<int, int>();
+                Dictionary<int, int> locationsMap = new();
 
                 int freeMask = ~UsedOutputAttributes;
 
@@ -606,217 +618,17 @@ namespace Ryujinx.Graphics.Shader.Translation
             UsedFeatures |= flags;
         }
 
-        public void SetUsedTexture(
-            Instruction inst,
-            SamplerType type,
-            TextureFormat format,
-            TextureFlags flags,
-            int cbufSlot,
-            int handle)
-        {
-            inst &= Instruction.Mask;
-            bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
-            bool isWrite = inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
-            bool accurateType = inst != Instruction.Lod && inst != Instruction.TextureSize;
-            bool coherent = flags.HasFlag(TextureFlags.Coherent);
-
-            if (isImage)
-            {
-                SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, isWrite, false, coherent);
-            }
-            else
-            {
-                bool intCoords = flags.HasFlag(TextureFlags.IntCoords) || inst == Instruction.TextureSize;
-                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType, coherent);
-            }
-
-            GpuAccessor.RegisterTexture(handle, cbufSlot);
-        }
-
-        private void SetUsedTextureOrImage(
-            Dictionary<TextureInfo, TextureMeta> dict,
-            int cbufSlot,
-            int handle,
-            SamplerType type,
-            TextureFormat format,
-            bool intCoords,
-            bool write,
-            bool accurateType,
-            bool coherent)
-        {
-            var dimensions = type.GetDimensions();
-            var isIndexed = type.HasFlag(SamplerType.Indexed);
-
-            var usageFlags = TextureUsageFlags.None;
-
-            if (intCoords)
-            {
-                usageFlags |= TextureUsageFlags.NeedsScaleValue;
-
-                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
-
-                if (!canScale)
-                {
-                    // Resolution scaling cannot be applied to this texture right now.
-                    // Flag so that we know to blacklist scaling on related textures when binding them.
-                    usageFlags |= TextureUsageFlags.ResScaleUnsupported;
-                }
-            }
-
-            if (write)
-            {
-                usageFlags |= TextureUsageFlags.ImageStore;
-            }
-
-            if (coherent)
-            {
-                usageFlags |= TextureUsageFlags.ImageCoherent;
-            }
-
-            int arraySize = isIndexed ? SamplerArraySize : 1;
-
-            for (int layer = 0; layer < arraySize; layer++)
-            {
-                var info = new TextureInfo(cbufSlot, handle + layer * 2, isIndexed, format);
-                var meta = new TextureMeta()
-                {
-                    AccurateType = accurateType,
-                    Type = type,
-                    UsageFlags = usageFlags
-                };
-
-                if (dict.TryGetValue(info, out var existingMeta))
-                {
-                    dict[info] = MergeTextureMeta(meta, existingMeta);
-                }
-                else
-                {
-                    dict.Add(info, meta);
-                }
-            }
-        }
-
-        private static TextureMeta MergeTextureMeta(TextureMeta meta, TextureMeta existingMeta)
-        {
-            meta.UsageFlags |= existingMeta.UsageFlags;
-
-            // If the texture we have has inaccurate type information, then
-            // we prefer the most accurate one.
-            if (existingMeta.AccurateType)
-            {
-                meta.AccurateType = true;
-                meta.Type = existingMeta.Type;
-            }
-
-            return meta;
-        }
-
-        public TextureDescriptor[] GetTextureDescriptors()
-        {
-            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, GpuAccessor.QueryBindingTexture);
-        }
-
-        public TextureDescriptor[] GetImageDescriptors()
-        {
-            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, GpuAccessor.QueryBindingImage);
-        }
-
-        private static TextureDescriptor[] GetTextureOrImageDescriptors(Dictionary<TextureInfo, TextureMeta> dict, Func<int, bool, int> getBindingCallback)
-        {
-            var descriptors = new TextureDescriptor[dict.Count];
-
-            int i = 0;
-            foreach (var kv in dict.OrderBy(x => x.Key.Indexed).OrderBy(x => x.Key.Handle))
-            {
-                var info = kv.Key;
-                var meta = kv.Value;
-
-                bool isBuffer = (meta.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                int binding = getBindingCallback(i, isBuffer);
-
-                descriptors[i] = new TextureDescriptor(binding, meta.Type, info.Format, info.CbufSlot, info.Handle);
-                descriptors[i].SetFlag(meta.UsageFlags);
-                i++;
-            }
-
-            return descriptors;
-        }
-
-        public TextureDescriptor FindTextureDescriptor(AstTextureOperation texOp)
-        {
-            TextureDescriptor[] descriptors = GetTextureDescriptors();
-
-            for (int i = 0; i < descriptors.Length; i++)
-            {
-                var descriptor = descriptors[i];
-
-                if (descriptor.CbufSlot == texOp.CbufSlot &&
-                    descriptor.HandleIndex == texOp.Handle &&
-                    descriptor.Format == texOp.Format)
-                {
-                    return descriptor;
-                }
-            }
-
-            return default;
-        }
-
-        private static int FindDescriptorIndex(TextureDescriptor[] array, AstTextureOperation texOp)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                var descriptor = array[i];
-
-                if (descriptor.Type == texOp.Type &&
-                    descriptor.CbufSlot == texOp.CbufSlot &&
-                    descriptor.HandleIndex == texOp.Handle &&
-                    descriptor.Format == texOp.Format)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        private static int FindDescriptorIndex(TextureDescriptor[] array, TextureOperation texOp, bool ignoreType = false)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                var descriptor = array[i];
-
-                if ((descriptor.Type == texOp.Type || ignoreType) &&
-                    descriptor.CbufSlot == texOp.CbufSlot &&
-                    descriptor.HandleIndex == texOp.Handle &&
-                    descriptor.Format == texOp.Format)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        public int FindTextureDescriptorIndex(TextureOperation texOp, bool ignoreType = false)
-        {
-            return FindDescriptorIndex(GetTextureDescriptors(), texOp, ignoreType);
-        }
-
-        public int FindImageDescriptorIndex(TextureOperation texOp)
-        {
-            return FindDescriptorIndex(GetImageDescriptors(), texOp);
-        }
-
         public ShaderProgramInfo CreateProgramInfo(ShaderIdentification identification = ShaderIdentification.None)
         {
             return new ShaderProgramInfo(
                 ResourceManager.GetConstantBufferDescriptors(),
                 ResourceManager.GetStorageBufferDescriptors(),
-                GetTextureDescriptors(),
-                GetImageDescriptors(),
+                ResourceManager.GetTextureDescriptors(),
+                ResourceManager.GetImageDescriptors(),
                 identification,
                 GpLayerInputAttribute,
                 Stage,
+                UsedFeatures.HasFlag(FeatureFlags.FragCoordXY),
                 UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 UsedFeatures.HasFlag(FeatureFlags.DrawParameters),
                 UsedFeatures.HasFlag(FeatureFlags.RtLayer),

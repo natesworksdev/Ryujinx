@@ -7,7 +7,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
-
 using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 using static SDL2.SDL;
 
@@ -19,12 +18,14 @@ namespace Ryujinx.Audio.Backends.SDL2
         private readonly ManualResetEvent _pauseEvent;
         private readonly ConcurrentDictionary<SDL2HardwareDeviceSession, byte> _sessions;
 
-        private bool _supportSurroundConfiguration;
+        private readonly bool _supportSurroundConfiguration;
 
         // TODO: Add this to SDL2-CS
         // NOTE: We use a DllImport here because of marshaling issue for spec.
+#pragma warning disable SYSLIB1054
         [DllImport("SDL2")]
         private static extern int SDL_GetDefaultAudioInfo(IntPtr name, out SDL_AudioSpec spec, int isCapture);
+#pragma warning restore SYSLIB1054
 
         public SDL2HardwareDeviceDriver()
         {
@@ -90,7 +91,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 throw new NotImplementedException("Input direction is currently not implemented on SDL2 backend!");
             }
 
-            SDL2HardwareDeviceSession session = new SDL2HardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
+            SDL2HardwareDeviceSession session = new(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
 
             _sessions.TryAdd(session, 0);
 
@@ -109,7 +110,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 channels = (byte)requestedChannelCount,
                 format = GetSDL2Format(requestedSampleFormat),
                 freq = (int)requestedSampleRate,
-                samples = (ushort)sampleCount
+                samples = (ushort)sampleCount,
             };
         }
 
@@ -135,8 +136,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (device == 0)
             {
-                Logger.Error?.Print(LogClass.Application, 
-                    $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"");
+                Logger.Error?.Print(LogClass.Application, $"SDL2 open audio device initialization failed with error \"{SDL_GetError()}\"");
 
                 return 0;
             }
@@ -156,6 +156,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             Dispose(true);
         }
 

@@ -86,6 +86,11 @@ namespace Ryujinx.Graphics.Gpu
         internal ConcurrentDictionary<ulong, PhysicalMemory> PhysicalMemoryRegistry { get; }
 
         /// <summary>
+        /// Support buffer updater.
+        /// </summary>
+        internal SupportBufferUpdater SupportBufferUpdater { get; }
+
+        /// <summary>
         /// Host hardware capabilities.
         /// </summary>
         internal Capabilities Capabilities;
@@ -99,7 +104,7 @@ namespace Ryujinx.Graphics.Gpu
         private bool _pendingSync;
 
         private long _modifiedSequence;
-        private ulong _firstTimestamp;
+        private readonly ulong _firstTimestamp;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
@@ -124,6 +129,8 @@ namespace Ryujinx.Graphics.Gpu
             DeferredActions = new Queue<Action>();
 
             PhysicalMemoryRegistry = new ConcurrentDictionary<ulong, PhysicalMemory>();
+
+            SupportBufferUpdater = new SupportBufferUpdater(renderer);
 
             _firstTimestamp = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
         }
@@ -220,7 +227,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <returns>The current GPU timestamp</returns>
         public ulong GetTimestamp()
         {
-            // Guest timestamp will start at 0, instead of host value. 
+            // Guest timestamp will start at 0, instead of host value.
             ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds) - _firstTimestamp;
 
             if (GraphicsConfig.FastGpuTime)
@@ -398,6 +405,8 @@ namespace Ryujinx.Graphics.Gpu
             {
                 physicalMemory.Dispose();
             }
+
+            SupportBufferUpdater.Dispose();
 
             PhysicalMemoryRegistry.Clear();
 

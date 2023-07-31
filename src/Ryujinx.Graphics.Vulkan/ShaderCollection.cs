@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public uint Stages { get; }
 
+        public ResourceBindingSegment[][] ClearSegments { get; }
         public ResourceBindingSegment[][] BindingSegments { get; }
 
         public ProgramLinkStatus LinkStatus { get; private set; }
@@ -46,13 +47,13 @@ namespace Ryujinx.Graphics.Vulkan
         private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
         private HashTableSlim<SpecData, Auto<DisposablePipeline>> _computePipelineCache;
 
-        private VulkanRenderer _gd;
+        private readonly VulkanRenderer _gd;
         private Device _device;
         private bool _initialized;
 
         private ProgramPipelineState _state;
         private DisposableRenderPass _dummyRenderPass;
-        private Task _compileTask;
+        private readonly Task _compileTask;
         private bool _firstBackgroundUse;
 
         public ShaderCollection(
@@ -93,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
                     ShaderStageFlags.GeometryBit => 2,
                     ShaderStageFlags.TessellationControlBit => 3,
                     ShaderStageFlags.TessellationEvaluationBit => 4,
-                    _ => 0
+                    _ => 0,
                 };
 
                 if (shader.StageFlags == ShaderStageFlags.ComputeBit)
@@ -115,6 +116,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Stages = stages;
 
+            ClearSegments = BuildClearSegments(resourceLayout.Sets);
             BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
 
             _compileTask = Task.CompletedTask;
@@ -135,13 +137,67 @@ namespace Ryujinx.Graphics.Vulkan
             _firstBackgroundUse = !fromCache;
         }
 
+        private static ResourceBindingSegment[][] BuildClearSegments(ReadOnlyCollection<ResourceDescriptorCollection> sets)
+        {
+            ResourceBindingSegment[][] segments = new ResourceBindingSegment[sets.Count][];
+
+            for (int setIndex = 0; setIndex < sets.Count; setIndex++)
+            {
+                List<ResourceBindingSegment> currentSegments = new();
+
+                ResourceDescriptor currentDescriptor = default;
+                int currentCount = 0;
+
+                for (int index = 0; index < sets[setIndex].Descriptors.Count; index++)
+                {
+                    ResourceDescriptor descriptor = sets[setIndex].Descriptors[index];
+
+                    if (currentDescriptor.Binding + currentCount != descriptor.Binding ||
+                        currentDescriptor.Type != descriptor.Type ||
+                        currentDescriptor.Stages != descriptor.Stages)
+                    {
+                        if (currentCount != 0)
+                        {
+                            currentSegments.Add(new ResourceBindingSegment(
+                                currentDescriptor.Binding,
+                                currentCount,
+                                currentDescriptor.Type,
+                                currentDescriptor.Stages,
+                                ResourceAccess.ReadWrite));
+                        }
+
+                        currentDescriptor = descriptor;
+                        currentCount = descriptor.Count;
+                    }
+                    else
+                    {
+                        currentCount += descriptor.Count;
+                    }
+                }
+
+                if (currentCount != 0)
+                {
+                    currentSegments.Add(new ResourceBindingSegment(
+                        currentDescriptor.Binding,
+                        currentCount,
+                        currentDescriptor.Type,
+                        currentDescriptor.Stages,
+                        ResourceAccess.ReadWrite));
+                }
+
+                segments[setIndex] = currentSegments.ToArray();
+            }
+
+            return segments;
+        }
+
         private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages)
         {
             ResourceBindingSegment[][] segments = new ResourceBindingSegment[setUsages.Count][];
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new List<ResourceBindingSegment>();
+                List<ResourceBindingSegment> currentSegments = new();
 
                 ResourceUsage currentUsage = default;
                 int currentCount = 0;
@@ -200,7 +256,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             await Task.WhenAll(_shaders.Select(shader => shader.CompileTask));
 
-            if (_shaders.Any(shader => shader.CompileStatus == ProgramLinkStatus.Failure))
+            if (Array.Exists(_shaders, shader => shader.CompileStatus == ProgramLinkStatus.Failure))
             {
                 LinkStatus = ProgramLinkStatus.Failure;
 
@@ -263,7 +319,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _infos;
         }
 
-        protected unsafe DisposableRenderPass CreateDummyRenderPass()
+        protected DisposableRenderPass CreateDummyRenderPass()
         {
             if (_dummyRenderPass.Value.Handle != 0)
             {
@@ -275,7 +331,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CreateBackgroundComputePipeline()
         {
-            PipelineState pipeline = new PipelineState();
+            PipelineState pipeline = new();
             pipeline.Initialize();
 
             pipeline.Stages[0] = _shaders[0].GetInfo();
@@ -428,7 +484,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _plce.GetNewDescriptorSetCollection(gd, commandBufferIndex, setIndex, out isNew);
         }
 
-        protected virtual unsafe void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {

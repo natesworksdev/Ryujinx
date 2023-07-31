@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Instructions
@@ -14,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         private static readonly int[,] _maskLut = new int[,]
         {
             { 0b0001, 0b0010, 0b0100, 0b1000, 0b0011, 0b1001, 0b1010, 0b1100 },
-            { 0b0111, 0b1011, 0b1101, 0b1110, 0b1111, 0b0000, 0b0000, 0b0000 }
+            { 0b0111, 0b1011, 0b1101, 0b1110, 0b1111, 0b0000, 0b0000, 0b0000 },
         };
 
         public const bool Sample1DAs2D = true;
@@ -23,7 +22,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             Texs,
             Tlds,
-            Tld4s
+            Tld4s,
         }
 
         public static void Tex(EmitterContext context)
@@ -207,7 +206,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand arrayIndex = isArray ? Ra() : null;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -325,16 +324,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int handle = !isBindless ? imm : 0;
 
-            TextureOperation operation = context.CreateTextureOperation(
-                Instruction.TextureSample,
-                type,
-                flags,
-                handle,
-                componentMask,
-                dests,
-                sources);
-
-            context.Add(operation);
+            EmitTextureSample(context, type, flags, handle, componentMask, dests, sources);
         }
 
         private static void EmitTexs(
@@ -353,7 +343,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             Operand Ra()
             {
@@ -658,16 +648,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Array.Resize(ref dests, outputIndex);
             }
 
-            TextureOperation operation = context.CreateTextureOperation(
-                Instruction.TextureSample,
-                type,
-                flags,
-                handle,
-                componentMask,
-                dests,
-                sources);
-
-            context.Add(operation);
+            EmitTextureSample(context, type, flags, handle, componentMask, dests, sources);
 
             if (isF16)
             {
@@ -722,7 +703,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand arrayIndex = isArray ? Ra() : null;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             SamplerType type = ConvertSamplerType(dimensions);
             TextureFlags flags = TextureFlags.Gather;
@@ -813,18 +794,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Array.Resize(ref dests, outputIndex);
             }
 
-            int handle = imm;
-
-            TextureOperation operation = context.CreateTextureOperation(
-                Instruction.TextureSample,
-                type,
-                flags,
-                handle,
-                componentMask,
-                dests,
-                sources);
-
-            context.Add(operation);
+            EmitTextureSample(context, type, flags, imm, componentMask, dests, sources);
         }
 
         private static void EmitTmml(
@@ -864,7 +834,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.None;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -914,15 +884,21 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(dest++, RegisterType.Gpr);
             }
 
-            int handle = imm;
+            int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+                Instruction.Lod,
+                type,
+                TextureFormat.Unknown,
+                flags,
+                TextureOperation.DefaultCbufSlot,
+                imm);
 
             for (int compMask = componentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
                 if ((compMask & 1) != 0)
                 {
-                    Operand destOperand = GetDest();
+                    Operand d = GetDest();
 
-                    if (destOperand == null)
+                    if (d == null)
                     {
                         break;
                     }
@@ -931,28 +907,18 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     if (compIndex >= 2)
                     {
                         context.Add(new CommentNode("Unsupported component z or w found"));
-                        context.Copy(destOperand, Const(0));
+                        context.Copy(d, Const(0));
                     }
                     else
                     {
-                        Operand tempDest = Local();
+                        // The instruction component order is the inverse of GLSL's.
+                        Operand res = context.Lod(type, flags, binding, compIndex ^ 1, sources);
 
-                        TextureOperation operation = context.CreateTextureOperation(
-                            Instruction.Lod,
-                            type,
-                            flags,
-                            handle,
-                            compIndex ^ 1, // The instruction component order is the inverse of GLSL's.
-                            new[] { tempDest },
-                            sources);
+                        res = context.FPMultiply(res, ConstF(256.0f));
 
-                        context.Add(operation);
+                        Operand fixedPointValue = context.FP32ConvertToS32(res);
 
-                        tempDest = context.FPMultiply(tempDest, ConstF(256.0f));
-
-                        Operand fixedPointValue = context.FP32ConvertToS32(tempDest);
-
-                        context.Copy(destOperand, fixedPointValue);
+                        context.Copy(d, fixedPointValue);
                     }
                 }
             }
@@ -996,7 +962,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.Derivatives;
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -1082,18 +1048,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Array.Resize(ref dests, outputIndex);
             }
 
-            int handle = imm;
-
-            TextureOperation operation = context.CreateTextureOperation(
-                Instruction.TextureSample,
-                type,
-                flags,
-                handle,
-                componentMask,
-                dests,
-                sources);
-
-            context.Add(operation);
+            EmitTextureSample(context, type, flags, imm, componentMask, dests, sources);
         }
 
         private static void EmitTxq(
@@ -1112,10 +1067,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
-            // TODO: Validate and use query.
-            Instruction inst = Instruction.TextureSize;
-            TextureFlags flags = isBindless ? TextureFlags.Bindless : TextureFlags.None;
-
             Operand Ra()
             {
                 if (srcA > RegisterConsts.RegisterZeroIndex)
@@ -1126,7 +1077,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcA++, RegisterType.Gpr));
             }
 
-            List<Operand> sourcesList = new List<Operand>();
+            List<Operand> sourcesList = new();
 
             if (isBindless)
             {
@@ -1158,29 +1109,53 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 type = context.Config.GpuAccessor.QuerySamplerType(imm);
             }
 
+            TextureFlags flags = isBindless ? TextureFlags.Bindless : TextureFlags.None;
+
+            int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+                Instruction.TextureSize,
+                type,
+                TextureFormat.Unknown,
+                flags,
+                TextureOperation.DefaultCbufSlot,
+                imm);
+
             for (int compMask = componentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
                 if ((compMask & 1) != 0)
                 {
-                    Operand destOperand = GetDest();
+                    Operand d = GetDest();
 
-                    if (destOperand == null)
+                    if (d == null)
                     {
                         break;
                     }
 
-                    TextureOperation operation = context.CreateTextureOperation(
-                        inst,
-                        type,
-                        flags,
-                        imm,
-                        compIndex,
-                        new[] { destOperand },
-                        sources);
+                    // TODO: Validate and use query parameter.
+                    Operand res = context.TextureSize(type, flags, binding, compIndex, sources);
 
-                    context.Add(operation);
+                    context.Copy(d, res);
                 }
             }
+        }
+
+        private static void EmitTextureSample(
+            EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int handle,
+            int componentMask,
+            Operand[] dests,
+            Operand[] sources)
+        {
+            int binding = flags.HasFlag(TextureFlags.Bindless) ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+                Instruction.TextureSample,
+                type,
+                TextureFormat.Unknown,
+                flags,
+                TextureOperation.DefaultCbufSlot,
+                handle);
+
+            context.TextureSample(type, flags, binding, componentMask, dests, sources);
         }
 
         private static SamplerType ConvertSamplerType(TexDim dimensions)
@@ -1195,7 +1170,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 TexDim.Array3d => SamplerType.Texture3D | SamplerType.Array,
                 TexDim.Cube => SamplerType.TextureCube,
                 TexDim.ArrayCube => SamplerType.TextureCube | SamplerType.Array,
-                _ => throw new ArgumentException($"Invalid texture dimensions \"{dimensions}\".")
+                _ => throw new ArgumentException($"Invalid texture dimensions \"{dimensions}\"."),
             };
         }
 

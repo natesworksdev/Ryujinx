@@ -10,15 +10,14 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.App.Common;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Path = System.IO.Path;
-using UserId = LibHac.Fs.UserId;
 
 namespace Ryujinx.Ava.UI.Controls
 {
@@ -42,7 +41,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.SelectedApplication.Favorite = !viewModel.SelectedApplication.Favorite;
 
-                viewModel.ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
+                ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleId, appMetadata =>
                 {
                     appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
@@ -53,7 +52,7 @@ namespace Ryujinx.Ava.UI.Controls
 
         public void OpenUserSaveDirectory_Click(object sender, RoutedEventArgs args)
         {
-            if ((sender as MenuItem)?.DataContext is MainWindowViewModel viewModel)
+            if (sender is MenuItem { DataContext: MainWindowViewModel viewModel })
             {
                 OpenSaveDirectory(viewModel, SaveDataType.Account, userId: new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
             }
