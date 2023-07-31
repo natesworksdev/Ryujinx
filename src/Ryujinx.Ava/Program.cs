@@ -59,12 +59,12 @@ namespace Ryujinx.Ava
                 {
                     EnableMultiTouch = true,
                     EnableIme = true,
-                    RenderingMode = new [] { X11RenderingMode.Glx, X11RenderingMode.Software },
+                    RenderingMode = new[] { X11RenderingMode.Glx, X11RenderingMode.Software },
                 })
                 .With(new Win32PlatformOptions
                 {
                     WinUICompositionBackdropCornerRadius = 8.0f,
-                    RenderingMode = new [] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software },
+                    RenderingMode = new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software },
                 })
                 .UseSkia();
         }
