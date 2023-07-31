@@ -309,9 +309,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
             });
 
-            OnPropertyChanged(nameof(IsOpenAlEnabled));
-            OnPropertyChanged(nameof(IsSoundIoEnabled));
-            OnPropertyChanged(nameof(IsSDL2Enabled));    
+            Dispatcher.UIThread.Post(() =>
+            {
+                OnPropertyChanged(nameof(IsOpenAlEnabled));
+                OnPropertyChanged(nameof(IsSoundIoEnabled));
+                OnPropertyChanged(nameof(IsSDL2Enabled));    
+            });
         }
 
         private async void LoadAvailableGpus()
@@ -345,7 +348,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ? 
                                 _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
 
-            OnPropertyChanged(nameof(PreferredGpuIndex));
+            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
         }
 
         public async void LoadTimeZones()
@@ -372,7 +375,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             });
 
-            OnPropertyChanged(nameof(TimeZone));
+            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(TimeZone)));
         }
 
         private async void PopulateNetworkInterfaces()
@@ -393,7 +396,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             });
 
-            OnPropertyChanged(nameof(NetworkInterfaceList));
+            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceList)));
         }
 
         public void ValidateAndSetTimeZone(string location)
