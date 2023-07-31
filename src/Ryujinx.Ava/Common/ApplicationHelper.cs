@@ -143,7 +143,7 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, IStorageProvider storageProvider)
+        public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath, string titleName, IStorageProvider storageProvider, int programIndex = 0)
         {
             var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
@@ -224,7 +224,7 @@ namespace Ryujinx.Ava.Common
                         return;
                     }
 
-                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), 0, out _);
+                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
                     if (updatePatchNca != null)
                     {
                         patchNca = updatePatchNca;

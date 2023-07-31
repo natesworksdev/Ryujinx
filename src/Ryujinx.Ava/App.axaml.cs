@@ -113,7 +113,6 @@ namespace Ryujinx.Ava
                         RequestedThemeVariant = ThemeVariant.Default;
                         break;
                 }
-                var currentStyles = this.Styles;
 
                 if (enableCustomTheme)
                 {
@@ -124,7 +123,7 @@ namespace Ryujinx.Ava
                             var themeContent = File.ReadAllText(themePath);
                             var customStyle = AvaloniaRuntimeXamlLoader.Parse<IStyle>(themeContent);
 
-                            currentStyles.Add(customStyle);
+                            Styles.Add(customStyle);
                         }
                         catch (Exception ex)
                         {
