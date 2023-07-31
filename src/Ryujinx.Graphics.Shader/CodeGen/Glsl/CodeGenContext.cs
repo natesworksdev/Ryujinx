@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public ShaderDefinitions Definitions { get; }
         public ShaderProperties Properties { get; }
         public HostCapabilities HostCapabilities { get; }
+        public ILogger Logger { get; }
         public TargetApi TargetApi { get; }
 
         public OperandManager OperandManager { get; }
@@ -33,6 +34,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             Definitions = parameters.Definitions;
             Properties = parameters.Properties;
             HostCapabilities = parameters.HostCapabilities;
+            Logger = parameters.Logger;
             TargetApi = parameters.TargetApi;
 
             OperandManager = new OperandManager();

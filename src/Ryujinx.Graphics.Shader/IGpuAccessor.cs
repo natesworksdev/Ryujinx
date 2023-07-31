@@ -1,21 +1,13 @@
-﻿using System;
+﻿using Ryujinx.Graphics.Shader.CodeGen;
+using System;
 
 namespace Ryujinx.Graphics.Shader
 {
     /// <summary>
     /// GPU state access interface.
     /// </summary>
-    public interface IGpuAccessor
+    public interface IGpuAccessor : ILogger
     {
-        /// <summary>
-        /// Prints a log message.
-        /// </summary>
-        /// <param name="message">Message to print</param>
-        void Log(string message)
-        {
-            // No default log output.
-        }
-
         /// <summary>
         /// Reads data from the constant buffer 1.
         /// </summary>

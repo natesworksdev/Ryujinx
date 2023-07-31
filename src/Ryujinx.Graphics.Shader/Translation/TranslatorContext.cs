@@ -362,7 +362,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 GpuAccessor.QueryHostSupportsTextureShadowLod(),
                 GpuAccessor.QueryHostSupportsViewportMask());
 
-            var parameters = new CodeGenParameters(attributeUsage, definitions, resourceManager.Properties, hostCapabilities, Options.TargetApi);
+            var parameters = new CodeGenParameters(attributeUsage, definitions, resourceManager.Properties, hostCapabilities, GpuAccessor, Options.TargetApi);
 
             return Options.TargetLanguage switch
             {
