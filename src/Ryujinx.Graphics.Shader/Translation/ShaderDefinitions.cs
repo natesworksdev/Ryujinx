@@ -7,28 +7,43 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderDefinitions
     {
+        private readonly GpuGraphicsState _graphicsState;
+
         public ShaderStage Stage { get; }
 
         public int ComputeLocalSizeX { get; }
         public int ComputeLocalSizeY { get; }
         public int ComputeLocalSizeZ { get; }
 
-        public bool TessCw { get; }
-        public TessPatchType TessPatchType { get; }
-        public TessSpacing TessSpacing { get; }
+        public bool TessCw => _graphicsState.TessCw;
+        public TessPatchType TessPatchType => _graphicsState.TessPatchType;
+        public TessSpacing TessSpacing => _graphicsState.TessSpacing;
+
+        public bool AlphaToCoverageDitherEnable => _graphicsState.AlphaToCoverageEnable && _graphicsState.AlphaToCoverageDitherEnable;
+        public bool ViewportTransformDisable => _graphicsState.ViewportTransformDisable;
+
+        public bool DepthMode => _graphicsState.DepthMode;
+
+        public float PointSize => _graphicsState.PointSize;
+
+        public AlphaTestOp AlphaTestCompare => _graphicsState.AlphaTestCompare;
+        public float AlphaTestReference => _graphicsState.AlphaTestReference;
 
         public bool GpPassthrough { get; }
         public bool LastInVertexPipeline { get; set; }
 
         public int ThreadsPerInputPrimitive { get; }
 
-        public InputTopology InputTopology { get; }
+        public InputTopology InputTopology => _graphicsState.Topology;
         public OutputTopology OutputTopology { get; }
 
         public int MaxOutputVertices { get; }
 
-        public bool DualSourceBlend { get; }
-        public bool EarlyZForce { get; }
+        public bool DualSourceBlend => _graphicsState.DualSourceBlendEnable;
+        public bool EarlyZForce => _graphicsState.EarlyZForce;
+
+        public bool YNegateEnabled => _graphicsState.YNegateEnabled;
+        public bool OriginUpperLeft => _graphicsState.OriginUpperLeft;
 
         public ImapPixelType[] ImapTypes { get; }
         public bool IaIndexing { get; private set; }
@@ -37,8 +52,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int OmapTargets { get; }
         public bool OmapSampleMask { get; }
         public bool OmapDepth { get; }
-
-        public bool OriginUpperLeft { get; }
 
         public bool TransformFeedbackEnabled { get; }
 
@@ -82,9 +95,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private readonly Dictionary<TransformFeedbackVariable, TransformFeedbackOutput> _transformFeedbackDefinitions;
 
-        private readonly AttributeType[] _attributeTypes;
-        private readonly AttributeType[] _fragmentOutputTypes;
-
         public ShaderDefinitions(ShaderStage stage)
         {
             Stage = stage;
@@ -104,65 +114,49 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderDefinitions(
             ShaderStage stage,
+            GpuGraphicsState graphicsState,
             bool gpPassthrough,
             int threadsPerInputPrimitive,
-            InputTopology inputTopology,
             OutputTopology outputTopology,
             int maxOutputVertices)
         {
             Stage = stage;
+            _graphicsState = graphicsState;
             GpPassthrough = gpPassthrough;
             ThreadsPerInputPrimitive = threadsPerInputPrimitive;
-            InputTopology = inputTopology;
             OutputTopology = outputTopology;
             MaxOutputVertices = maxOutputVertices;
         }
 
         public ShaderDefinitions(
             ShaderStage stage,
-            bool tessCw,
-            TessPatchType tessPatchType,
-            TessSpacing tessSpacing,
+            GpuGraphicsState graphicsState,
             bool gpPassthrough,
             int threadsPerInputPrimitive,
-            InputTopology inputTopology,
             OutputTopology outputTopology,
             int maxOutputVertices,
-            bool dualSourceBlend,
-            bool earlyZForce,
             ImapPixelType[] imapTypes,
             int omapTargets,
             bool omapSampleMask,
             bool omapDepth,
-            bool originUpperLeft,
             bool transformFeedbackEnabled,
             ulong transformFeedkbackVecMap,
-            TransformFeedbackOutput[] transformFeedbackOutputs,
-            AttributeType[] attributeTypes,
-            AttributeType[] fragmentOutputTypes)
+            TransformFeedbackOutput[] transformFeedbackOutputs)
         {
             Stage = stage;
-            TessCw = tessCw;
-            TessPatchType = tessPatchType;
-            TessSpacing = tessSpacing;
+            _graphicsState = graphicsState;
             GpPassthrough = gpPassthrough;
             ThreadsPerInputPrimitive = threadsPerInputPrimitive;
-            InputTopology = inputTopology;
             OutputTopology = outputTopology;
             MaxOutputVertices = maxOutputVertices;
-            DualSourceBlend = dualSourceBlend;
-            EarlyZForce = earlyZForce;
             ImapTypes = imapTypes;
             OmapTargets = omapTargets;
             OmapSampleMask = omapSampleMask;
             OmapDepth = omapDepth;
-            OriginUpperLeft = originUpperLeft;
             LastInVertexPipeline = stage < ShaderStage.Fragment;
             TransformFeedbackEnabled = transformFeedbackEnabled;
             _transformFeedbackOutputs = transformFeedbackOutputs;
-            _transformFeedbackDefinitions = new Dictionary<TransformFeedbackVariable, TransformFeedbackOutput>();
-            _attributeTypes = attributeTypes;
-            _fragmentOutputTypes = fragmentOutputTypes;
+            _transformFeedbackDefinitions = new();
 
             while (transformFeedkbackVecMap != 0)
             {
@@ -294,7 +288,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public AggregateType GetFragmentOutputColorType(int location)
         {
-            return AggregateType.Vector4 | _fragmentOutputTypes[location].ToAggregateType();
+            return AggregateType.Vector4 | _graphicsState.FragmentOutputTypes[location].ToAggregateType();
         }
 
         public AggregateType GetUserDefinedType(int location, bool isOutput)
@@ -308,7 +302,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (Stage == ShaderStage.Vertex && !isOutput)
             {
-                type |= _attributeTypes[location].ToAggregateType();
+                type |= _graphicsState.AttributeTypes[location].ToAggregateType();
             }
             else
             {

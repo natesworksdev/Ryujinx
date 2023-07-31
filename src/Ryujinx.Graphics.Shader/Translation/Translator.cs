@@ -41,9 +41,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
             else
             {
-                ShaderHeader header = new ShaderHeader(gpuAccessor, address);
+                ShaderHeader header = new(gpuAccessor, address);
 
-                definitions = CreateGraphicsDefinitions(gpuAccessor, header, options);
+                definitions = CreateGraphicsDefinitions(gpuAccessor, header);
                 localMemorySize = GetLocalMemorySize(header);
 
                 program = Decoder.Decode(definitions, gpuAccessor, address + HeaderSize);
@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 gpuAccessor.QueryComputeLocalSizeZ());
         }
 
-        private static ShaderDefinitions CreateGraphicsDefinitions(IGpuAccessor gpuAccessor, ShaderHeader header, TranslationOptions options)
+        private static ShaderDefinitions CreateGraphicsDefinitions(IGpuAccessor gpuAccessor, ShaderHeader header)
         {
             bool transformFeedbackEnabled =
                 gpuAccessor.QueryTransformFeedbackEnabled() &&
@@ -105,75 +105,20 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
-            bool tessCw = false;
-            TessPatchType tessPatchType = default;
-            TessSpacing tessSpacing = default;
-
-            AttributeType[] attributeTypes = null;
-            AttributeType[] fragmentOutputTypes = null;
-
-            InputTopology inputTopology = default;
-            OutputTopology outputTopology = default;
-            int maxOutputVertexCount = 0;
-
-            bool dualSourceBlend = false;
-            bool earlyZForce = false;
-
-            switch (header.Stage)
-            {
-                case ShaderStage.Vertex:
-                    attributeTypes = new AttributeType[32];
-
-                    for (int location = 0; location < attributeTypes.Length; location++)
-                    {
-                        attributeTypes[location] = gpuAccessor.QueryAttributeType(location);
-                    }
-                    break;
-                case ShaderStage.TessellationEvaluation:
-                    tessCw = gpuAccessor.QueryTessCw();
-                    tessPatchType = gpuAccessor.QueryTessPatchType();
-                    tessSpacing = gpuAccessor.QueryTessSpacing();
-                    break;
-                case ShaderStage.Geometry:
-                    inputTopology = gpuAccessor.QueryPrimitiveTopology();
-                    outputTopology = header.OutputTopology;
-                    maxOutputVertexCount = header.MaxOutputVertexCount;
-                    break;
-                case ShaderStage.Fragment:
-                    dualSourceBlend = gpuAccessor.QueryDualSourceBlendEnable();
-                    earlyZForce = gpuAccessor.QueryEarlyZForce();
-
-                    fragmentOutputTypes = new AttributeType[8];
-
-                    for (int location = 0; location < fragmentOutputTypes.Length; location++)
-                    {
-                        fragmentOutputTypes[location] = gpuAccessor.QueryFragmentOutputType(location);
-                    }
-                    break;
-            }
-
             return new ShaderDefinitions(
                 header.Stage,
-                tessCw,
-                tessPatchType,
-                tessSpacing,
+                gpuAccessor.QueryGraphicsState(),
                 header.Stage == ShaderStage.Geometry && header.GpPassthrough,
                 header.ThreadsPerInputPrimitive,
-                inputTopology,
-                outputTopology,
-                maxOutputVertexCount,
-                dualSourceBlend,
-                earlyZForce,
+                header.OutputTopology,
+                header.MaxOutputVertexCount,
                 header.ImapTypes,
                 header.OmapTargets,
                 header.OmapSampleMask,
                 header.OmapDepth,
-                options.TargetApi == TargetApi.Vulkan || gpuAccessor.QueryYNegateEnabled(),
                 transformFeedbackEnabled,
                 transformFeedbackVecMap,
-                transformFeedbackOutputs,
-                attributeTypes,
-                fragmentOutputTypes);
+                transformFeedbackOutputs);
         }
 
         private static int GetLocalMemorySize(ShaderHeader header)

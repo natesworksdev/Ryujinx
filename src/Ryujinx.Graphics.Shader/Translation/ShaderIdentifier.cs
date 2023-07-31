@@ -9,10 +9,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             IReadOnlyList<Function> functions,
             IGpuAccessor gpuAccessor,
             ShaderStage stage,
+            InputTopology inputTopology,
             out int layerInputAttr)
         {
             if (stage == ShaderStage.Geometry &&
-                gpuAccessor.QueryPrimitiveTopology() == InputTopology.Triangles &&
+                inputTopology == InputTopology.Triangles &&
                 !gpuAccessor.QueryHostSupportsGeometryShader() &&
                 IsLayerPassthroughGeometryShader(functions, out layerInputAttr))
             {

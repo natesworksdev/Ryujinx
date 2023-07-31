@@ -307,7 +307,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
             }
 
-            var identification = ShaderIdentifier.Identify(funcs, GpuAccessor, Definitions.Stage, out int layerInputAttr);
+            var identification = ShaderIdentifier.Identify(funcs, GpuAccessor, Definitions.Stage, Definitions.InputTopology, out int layerInputAttr);
 
             return Generate(
                 funcs,
@@ -411,7 +411,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             OutputTopology outputTopology;
             int maxOutputVertices;
 
-            switch (GpuAccessor.QueryPrimitiveTopology())
+            switch (Definitions.InputTopology)
             {
                 case InputTopology.Points:
                     outputTopology = OutputTopology.PointList;
@@ -481,9 +481,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var definitions = new ShaderDefinitions(
                 ShaderStage.Geometry,
+                GpuAccessor.QueryGraphicsState(),
                 false,
                 1,
-                GpuAccessor.QueryPrimitiveTopology(),
                 outputTopology,
                 maxOutputVertices);
 

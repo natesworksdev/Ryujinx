@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         }
                         else
                         {
-                            src = Const(context.TranslatorContext.GpuAccessor.QueryPrimitiveTopology().ToInputVertices() << 16);
+                            src = Const(context.TranslatorContext.Definitions.InputTopology.ToInputVertices() << 16);
                         }
                     }
                     else

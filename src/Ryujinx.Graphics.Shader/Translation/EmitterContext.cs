@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 (TranslatorContext.Options.Flags & TranslationFlags.VertexA) == 0)
             {
                 // Vulkan requires the point size to be always written on the shader if the primitive topology is points.
-                this.Store(StorageKind.Output, IoVariable.PointSize, null, ConstF(TranslatorContext.GpuAccessor.QueryPointSize()));
+                this.Store(StorageKind.Output, IoVariable.PointSize, null, ConstF(TranslatorContext.Definitions.PointSize));
             }
         }
 
@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
             }
 
-            if (TranslatorContext.GpuAccessor.QueryViewportTransformDisable())
+            if (TranslatorContext.Definitions.ViewportTransformDisable)
             {
                 Operand x = this.Load(StorageKind.Output, IoVariable.Position, null, Const(0));
                 Operand y = this.Load(StorageKind.Output, IoVariable.Position, null, Const(1));
@@ -217,7 +217,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 this.Store(StorageKind.Output, IoVariable.Position, null, Const(1), this.FPFusedMultiplyAdd(y, yScale, negativeOne));
             }
 
-            if (TranslatorContext.GpuAccessor.QueryTransformDepthMinusOneToOne() && !TranslatorContext.GpuAccessor.QueryHostSupportsDepthClipControl())
+            if (TranslatorContext.Definitions.DepthMode && !TranslatorContext.GpuAccessor.QueryHostSupportsDepthClipControl())
             {
                 Operand z = this.Load(StorageKind.Output, IoVariable.Position, null, Const(2));
                 Operand w = this.Load(StorageKind.Output, IoVariable.Position, null, Const(3));
@@ -239,7 +239,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void PrepareForVertexReturn(out Operand oldXLocal, out Operand oldYLocal, out Operand oldZLocal)
         {
-            if (TranslatorContext.GpuAccessor.QueryViewportTransformDisable())
+            if (TranslatorContext.Definitions.ViewportTransformDisable)
             {
                 oldXLocal = Local();
                 this.Copy(oldXLocal, this.Load(StorageKind.Output, IoVariable.Position, null, Const(0)));
@@ -252,7 +252,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 oldYLocal = null;
             }
 
-            if (TranslatorContext.GpuAccessor.QueryTransformDepthMinusOneToOne() && !TranslatorContext.GpuAccessor.QueryHostSupportsDepthClipControl())
+            if (TranslatorContext.Definitions.DepthMode && !TranslatorContext.GpuAccessor.QueryHostSupportsDepthClipControl())
             {
                 oldZLocal = Local();
                 this.Copy(oldZLocal, this.Load(StorageKind.Output, IoVariable.Position, null, Const(2)));
@@ -308,7 +308,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 if (TranslatorContext.Definitions.GpPassthrough && !TranslatorContext.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
-                    int inputVertices = TranslatorContext.GpuAccessor.QueryPrimitiveTopology().ToInputVertices();
+                    int inputVertices = TranslatorContext.Definitions.InputTopology.ToInputVertices();
 
                     for (int primIndex = 0; primIndex < inputVertices; primIndex++)
                     {
@@ -342,7 +342,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     this.Store(StorageKind.Output, IoVariable.FragmentOutputDepth, null, src);
                 }
 
-                AlphaTestOp alphaTestOp = TranslatorContext.GpuAccessor.QueryAlphaTestCompare();
+                AlphaTestOp alphaTestOp = TranslatorContext.Definitions.AlphaTestCompare;
 
                 if (alphaTestOp != AlphaTestOp.Always)
                 {
@@ -366,7 +366,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Debug.Assert(comparator != 0, $"Invalid alpha test operation \"{alphaTestOp}\".");
 
                         Operand alpha = Register(3, RegisterType.Gpr);
-                        Operand alphaRef = ConstF(TranslatorContext.GpuAccessor.QueryAlphaTestReference());
+                        Operand alphaRef = ConstF(TranslatorContext.Definitions.AlphaTestReference);
                         Operand alphaPass = Add(Instruction.FP32 | comparator, Local(), alpha, alphaRef);
                         Operand alphaPassLabel = Label();
 
@@ -436,7 +436,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private void GenerateAlphaToCoverageDitherDiscard()
         {
             // If the feature is disabled, or alpha is not written, then we're done.
-            if (!TranslatorContext.GpuAccessor.QueryAlphaToCoverageDitherEnable() || (TranslatorContext.Definitions.OmapTargets & 8) == 0)
+            if (!TranslatorContext.Definitions.AlphaToCoverageDitherEnable || (TranslatorContext.Definitions.OmapTargets & 8) == 0)
             {
                 return;
             }

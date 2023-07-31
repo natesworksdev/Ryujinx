@@ -155,7 +155,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     {
                         // If YNegate is enabled, we need to flip the fragment coordinates vertically, unless
                         // the API supports changing the origin (only OpenGL does).
-                        if (context.TranslatorContext.GpuAccessor.QueryYNegateEnabled())
+                        if (context.TranslatorContext.Definitions.YNegateEnabled)
                         {
                             Operand viewportHeight = context.Load(StorageKind.ConstantBuffer, 0, Const((int)SupportBufferField.ViewportSize), Const(1));
 
