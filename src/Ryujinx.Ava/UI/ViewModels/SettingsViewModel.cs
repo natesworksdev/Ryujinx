@@ -1,7 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using DynamicData;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -19,12 +18,12 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -302,7 +301,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void CheckSoundBackends()
         {
-            await Task.Run(() => 
+            await Task.Run(() =>
             {
                 IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
                 IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
@@ -313,7 +312,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 OnPropertyChanged(nameof(IsOpenAlEnabled));
                 OnPropertyChanged(nameof(IsSoundIoEnabled));
-                OnPropertyChanged(nameof(IsSDL2Enabled));    
+                OnPropertyChanged(nameof(IsSDL2Enabled));
             });
         }
 
@@ -322,7 +321,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             await Task.Run(() =>
             {
                 AvailableGpus.Clear();
-                
+
                 var devices = VulkanRenderer.GetPhysicalDevices();
 
                 if (devices.Length == 0)
@@ -345,7 +344,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
 
             // GPU configuration needs to be loaded after the async method or it will always return 0.
-            PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ? 
+            PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ?
                                 _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
@@ -358,7 +357,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _timeZoneContentManager = new TimeZoneContentManager();
 
                 _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
-                
+
                 foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
                 {
                     int hours = Math.DivRem(offset, 3600, out int seconds);
