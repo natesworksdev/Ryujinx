@@ -90,7 +90,8 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             }
 
             // We allow it for nx-hbloader because it can be used to launch homebrew.
-            bool allowCodeMemoryForJit = programId == 0x010000000000100DUL || isHomebrew;
+            // We also allow it for exefs mods, since they might want to make use of that as well.
+            bool allowCodeMemoryForJit = programId == 0x010000000000100DUL || isHomebrew || modLoadResult.Modified;
 
             string programName = "";
 
