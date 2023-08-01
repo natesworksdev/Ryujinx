@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 {
                     Content = $".{fileName}",
                     IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.Ui.ShownFileTypes),
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType(fileName)),
+                    Command = MiniCommand.Create(() => Window.ToggleFileType(fileName)),
                 });
             }
 

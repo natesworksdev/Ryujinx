@@ -107,7 +107,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-            ViewModel.ReloadGameList += ReloadGameList;
 
             NotificationHelper.SetNotificationManager(this);
         }
@@ -523,6 +522,25 @@ namespace Ryujinx.Ava.UI.Windows
             });
 
             ReloadGameList();
+        }
+
+        public void ToggleFileType(string fileType)
+        {
+            _ = fileType switch
+            {
+#pragma warning disable IDE0055 // Disable formatting
+                "NSP"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSP,
+                "PFS0" => ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value = !ConfigurationState.Instance.Ui.ShownFileTypes.PFS0,
+                "XCI"  => ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.XCI,
+                "NCA"  => ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NCA,
+                "NRO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NRO,
+                "NSO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSO,
+                _  => throw new ArgumentOutOfRangeException(fileType),
+#pragma warning restore IDE0055
+            };
+
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            LoadApplications();
         }
 
         private void ReloadGameList()

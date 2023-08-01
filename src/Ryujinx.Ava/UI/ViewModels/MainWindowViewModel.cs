@@ -106,8 +106,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public ApplicationData ListSelectedApplication;
         public ApplicationData GridSelectedApplication;
 
-        public event Action ReloadGameList;
-
         private string TitleName { get; set; }
         internal AppHost AppHost { get; set; }
 
@@ -1367,25 +1365,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public void ToggleFileType(string fileType)
-        {
-            _ = fileType switch
-            {
-#pragma warning disable IDE0055 // Disable formatting
-                "NSP"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSP,
-                "PFS0" => ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value = !ConfigurationState.Instance.Ui.ShownFileTypes.PFS0,
-                "XCI"  => ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.XCI,
-                "NCA"  => ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NCA,
-                "NRO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NRO,
-                "NSO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSO,
-                    _  => throw new ArgumentOutOfRangeException(fileType),
-#pragma warning restore IDE0055
-            };
-
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-            LoadApplications();
-        }
-
         public async void ManageProfiles()
         {
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
@@ -1394,22 +1373,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void SimulateWakeUpMessage()
         {
             AppHost.Device.System.SimulateWakeUpMessage();
-        }
-
-        public async void LoadApplications()
-        {
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Applications.Clear();
-
-                StatusBarVisible = true;
-                StatusBarProgressMaximum = 0;
-                StatusBarProgressValue = 0;
-
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
-            });
-
-            ReloadGameList?.Invoke();
         }
 
         public async void OpenFile()
