@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
@@ -102,32 +103,32 @@ namespace Ryujinx.Ava.UI.Views.Main
             DataContext = ViewModel;
         }
 
-        private async void StopEmulation_Click(object sender, RoutedEventArgs e)
+        private void StopEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Window.ViewModel.AppHost?.ShowExitPrompt();
+            Dispatcher.UIThread.InvokeAsync(() => Window.ViewModel.AppHost?.ShowExitPrompt());
         }
 
-        private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
+        private void PauseEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
+            Task.Run(() =>
             {
                 Window.ViewModel.AppHost?.Pause();
             });
         }
 
-        private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
+        private void ResumeEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
+            Task.Run(() =>
             {
                 Window.ViewModel.AppHost?.Resume();
             });
         }
 
-        public async void OpenSettings(object sender, RoutedEventArgs e)
+        public void OpenSettings(object sender, RoutedEventArgs e)
         {
             Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
 
-            await Window.SettingsWindow.ShowDialog(Window);
+            Dispatcher.UIThread.InvokeAsync(() => Window.SettingsWindow.ShowDialog(Window));
 
             ViewModel.LoadConfigurableHotKeys();
         }
@@ -138,11 +139,13 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             if (!string.IsNullOrEmpty(contentPath))
             {
-                ViewModel.LoadApplication(contentPath, false, "Mii Applet");
+                Dispatcher.UIThread.InvokeAsync(() =>
+                    ViewModel.LoadApplication(contentPath, false, "Mii Applet")
+                );
             }
         }
 
-        public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
+        public void OpenAmiiboWindow(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.IsAmiiboRequested)
             {
@@ -154,7 +157,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 string titleId = ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText.ToUpper();
                 AmiiboWindow window = new(ViewModel.ShowAll, ViewModel.LastScannedAmiiboId, titleId);
 
-                await window.ShowDialog(Window);
+                Dispatcher.UIThread.InvokeAsync(() => window.ShowDialog(Window));
 
                 if (window.IsScanned)
                 {
@@ -166,7 +169,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
-        public async void OpenCheatManagerForCurrentApp(object sender, RoutedEventArgs e)
+        public void OpenCheatManagerForCurrentApp(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.IsGameRunning)
             {
@@ -175,11 +178,14 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             string name = ViewModel.AppHost.Device.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-            await new CheatWindow(
-                Window.VirtualFileSystem,
-                ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
-                name,
-                Window.ViewModel.SelectedApplication.Path).ShowDialog(Window);
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                new CheatWindow(
+                    Window.VirtualFileSystem,
+                    ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
+                    name,
+                    Window.ViewModel.SelectedApplication.Path).ShowDialog(Window);
+            });
 
             ViewModel.AppHost.Device.EnableCheats();
         }
@@ -192,43 +198,47 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
-        private async void InstallFileTypes_Click(object sender, RoutedEventArgs e)
+        private void InstallFileTypes_Click(object sender, RoutedEventArgs e)
         {
-            if (FileAssociationHelper.Install())
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesSuccessMessage],
-                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
-            }
-            else
-            {
-                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesErrorMessage]);
-            }
+                if (FileAssociationHelper.Install())
+                {
+                    await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesSuccessMessage], string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+                }
+                else
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesErrorMessage]);
+                }
+            });
         }
 
-        private async void UninstallFileTypes_Click(object sender, RoutedEventArgs e)
+        private void UninstallFileTypes_Click(object sender, RoutedEventArgs e)
         {
-            if (FileAssociationHelper.Uninstall())
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesSuccessMessage],
-                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
-            }
-            else
-            {
-                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesErrorMessage]);
-            }
+                if (FileAssociationHelper.Uninstall())
+                {
+                    await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesSuccessMessage], string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+                }
+                else
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesErrorMessage]);
+                }
+            });
         }
 
-        public async void CheckForUpdates(object sender, RoutedEventArgs e)
+        public void CheckForUpdates(object sender, RoutedEventArgs e)
         {
             if (Updater.CanUpdate(true))
             {
-                await Updater.BeginParse(Window, true);
+                Dispatcher.UIThread.InvokeAsync(() => Updater.BeginParse(Window, true));
             }
         }
 
-        public async void OpenAboutWindow(object sender, RoutedEventArgs e)
+        public void OpenAboutWindow(object sender, RoutedEventArgs e)
         {
-            await AboutWindow.Show();
+            Dispatcher.UIThread.InvokeAsync(() => AboutWindow.Show());
         }
 
         public void CloseWindow(object sender, RoutedEventArgs e)

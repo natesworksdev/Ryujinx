@@ -183,7 +183,9 @@ namespace Ryujinx.Ava.UI.Windows
 
                 string path = new FileInfo(args.Application.Path).FullName;
 
-                ViewModel.LoadApplication(path);
+                Dispatcher.UIThread.InvokeAsync(() =>
+                    ViewModel.LoadApplication(path)
+                );
             }
 
             args.Handled = true;
@@ -255,7 +257,7 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         [SupportedOSPlatform("linux")]
-        private static async void ShowVmMaxMapCountWarning()
+        private static async Task ShowVmMaxMapCountWarning()
         {
             LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LinuxVmMaxMapCountWarningTextSecondary,
                 LinuxHelper.VmMaxMapCount, LinuxHelper.RecommendedVmMaxMapCount);
@@ -267,7 +269,7 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         [SupportedOSPlatform("linux")]
-        private static async void ShowVmMaxMapCountDialog()
+        private static async Task ShowVmMaxMapCountDialog()
         {
             LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LinuxVmMaxMapCountDialogTextPrimary,
                 LinuxHelper.RecommendedVmMaxMapCount);
@@ -317,8 +319,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ShowKeyErrorOnLoad = false;
 
-                Dispatcher.UIThread.Post(async () => await
-                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
+                Dispatcher.UIThread.InvokeAsync(() => UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
             }
 
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
@@ -327,11 +328,11 @@ namespace Ryujinx.Ava.UI.Windows
 
                 if (LinuxHelper.PkExecPath is not null)
                 {
-                    Dispatcher.UIThread.Post(ShowVmMaxMapCountDialog);
+                    Dispatcher.UIThread.InvokeAsync(ShowVmMaxMapCountDialog);
                 }
                 else
                 {
-                    Dispatcher.UIThread.Post(ShowVmMaxMapCountWarning);
+                    Dispatcher.UIThread.InvokeAsync(ShowVmMaxMapCountWarning);
                 }
             }
 
@@ -339,7 +340,9 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 _deferLoad = false;
 
-                ViewModel.LoadApplication(_launchPath, _startFullscreen);
+                Dispatcher.UIThread.InvokeAsync(() =>
+                    ViewModel.LoadApplication(_launchPath, _startFullscreen)
+                );
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
@@ -514,9 +517,9 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        public async void LoadApplications()
+        public void LoadApplications()
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
                 ViewModel.Applications.Clear();
 

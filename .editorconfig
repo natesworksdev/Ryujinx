@@ -121,6 +121,10 @@ csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
 csharp_style_implicit_object_creation_when_type_is_apparent = true
 
+# Async preferences
+resharper_async_void_lambda_highlighting = error
+resharper_async_void_method_highlighting = error
+
 # 'using' directive preferences
 csharp_using_directive_placement = outside_namespace:silent
 

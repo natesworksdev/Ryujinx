@@ -1068,9 +1068,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
 
-                    static async void Action() => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys);
+                    static async Task Action() => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys);
 
-                    Dispatcher.UIThread.Post(Action);
+                    await Dispatcher.UIThread.InvokeAsync(Action);
                 }
             }
             catch (Exception ex)
@@ -1169,10 +1169,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 UserChannelPersistence.ShouldRestart = false;
 
-                Dispatcher.UIThread.Post(() =>
-                {
-                    LoadApplication(_currentEmulatedGamePath);
-                });
+                Dispatcher.UIThread.InvokeAsync(() =>
+                    LoadApplication(_currentEmulatedGamePath)
+                );
             }
             else
             {
@@ -1191,7 +1190,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     Application.Current.Styles.TryGetResource(args.VSyncEnabled
                         ? "VsyncEnabled"
                         : "VsyncDisabled",
-                        Avalonia.Application.Current.ActualThemeVariant,
+                        Application.Current.ActualThemeVariant,
                         out object color);
 
                     if (color is not null)
@@ -1283,7 +1282,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             Glyph = Glyph.Grid;
         }
 
-        public async void InstallFirmwareFromFile()
+        public async Task InstallFirmwareFromFile()
         {
             var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -1317,7 +1316,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void InstallFirmwareFromFolder()
+        public async Task InstallFirmwareFromFolder()
         {
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
@@ -1352,7 +1351,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void ExitCurrentState()
+        public async Task ExitCurrentState()
         {
             if (WindowState == WindowState.FullScreen)
             {
@@ -1377,7 +1376,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void ManageProfiles()
+        public async Task ManageProfiles()
         {
             await NavigationDialogHost.Show(AccountManager, ContentManager, VirtualFileSystem, LibHacHorizonManager.RyujinxClient);
         }
@@ -1387,7 +1386,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             AppHost.Device.System.SimulateWakeUpMessage();
         }
 
-        public async void OpenFile()
+        public async Task OpenFile()
         {
             var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -1450,11 +1449,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (result.Count > 0)
             {
-                LoadApplication(result[0].Path.LocalPath);
+                await LoadApplication(result[0].Path.LocalPath);
             }
         }
 
-        public async void OpenFolder()
+        public async Task OpenFolder()
         {
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
@@ -1464,11 +1463,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (result.Count > 0)
             {
-                LoadApplication(result[0].Path.LocalPath);
+                await LoadApplication(result[0].Path.LocalPath);
             }
         }
 
-        public async void LoadApplication(string path, bool startFullscreen = false, string titleName = "")
+        public async Task LoadApplication(string path, bool startFullscreen = false, string titleName = "")
         {
             if (AppHost != null)
             {
@@ -1505,7 +1504,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 this,
                 TopLevel);
 
-            async void Action()
+            async Task Action()
             {
                 if (!await AppHost.LoadGuestApplication())
                 {
@@ -1533,7 +1532,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 gameThread.Start();
             }
 
-            Dispatcher.UIThread.Post(Action);
+            await Dispatcher.UIThread.InvokeAsync(Action);
         }
 
         public void SwitchToRenderer(bool startFullscreen)
