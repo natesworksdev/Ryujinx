@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Ryujinx.Common.Extensions;
 
 namespace Ryujinx.Common
 {
@@ -16,9 +15,17 @@ namespace Ryujinx.Common
         {
             get
             {
-                using (_readerWriterLock.Read())
+                try
                 {
+                    _readerWriterLock.TryEnterReadLock(Timeout.Infinite);
                     return _value;
+                }
+                finally
+                {
+                    if (_readerWriterLock.IsReadLockHeld)
+                    {
+                        _readerWriterLock.ExitReadLock();
+                    }
                 }
             }
             set
@@ -26,21 +33,30 @@ namespace Ryujinx.Common
                 T oldValue;
                 bool oldIsInitialized;
 
-                using (_readerWriterLock.Write())
+                try
                 {
+                    _readerWriterLock.TryEnterWriteLock(Timeout.Infinite);
+
                     oldValue = _value;
                     oldIsInitialized = _isInitialized;
 
                     _isInitialized = true;
                     _value = value;
                 }
-
+                finally
+                {
+                    if (_readerWriterLock.IsWriteLockHeld)
+                    {
+                        _readerWriterLock.ExitWriteLock();
+                    }
+                }
                 if (!oldIsInitialized || oldValue == null || !oldValue.Equals(_value))
                 {
                     Event?.Invoke(this, new ReactiveEventArgs<T>(oldValue, value));
                 }
             }
         }
+
 
         public static implicit operator T(ReactiveObject<T> obj)
         {

@@ -82,16 +82,15 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
-            bool lockTaken = false;
             try
             {
-                lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.TryEnterWriteLock(Timeout.Infinite);
 
                 _ports.Add(serverPortHandle, objectFactory);
             }
             finally
             {
-                if (lockTaken)
+                if (_handleLock.IsWriteLockHeld)
                 {
                     _handleLock.ExitWriteLock();
                 }
@@ -110,16 +109,15 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
-            bool lockTaken = false;
             try
             {
-                lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.TryEnterWriteLock(Timeout.Infinite);
 
                 _sessions.Add(serverSessionHandle, obj);
             }
             finally
             {
-                if (lockTaken)
+                if (_handleLock.IsWriteLockHeld)
                 {
                     _handleLock.ExitWriteLock();
                 }
@@ -128,16 +126,15 @@ namespace Ryujinx.HLE.HOS.Services
 
         private IpcService GetSessionObj(int serverSessionHandle)
         {
-            bool lockTaken = false;
             try
             {
-                lockTaken = _handleLock.TryEnterReadLock(Timeout.Infinite);
+                _handleLock.TryEnterReadLock(Timeout.Infinite);
 
                 return _sessions[serverSessionHandle];
             }
             finally
             {
-                if (lockTaken)
+                if (_handleLock.IsReadLockHeld)
                 {
                     _handleLock.ExitReadLock();
                 }
@@ -146,16 +143,15 @@ namespace Ryujinx.HLE.HOS.Services
 
         private bool RemoveSessionObj(int serverSessionHandle, out IpcService obj)
         {
-            bool lockTaken = false;
             try
             {
-                lockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.TryEnterWriteLock(Timeout.Infinite);
 
                 return _sessions.Remove(serverSessionHandle, out obj);
             }
             finally
             {
-                if (lockTaken)
+                if (_handleLock.IsWriteLockHeld)
                 {
                     _handleLock.ExitWriteLock();
                 }
@@ -195,11 +191,10 @@ namespace Ryujinx.HLE.HOS.Services
                 int portHandleCount;
                 int handleCount;
                 int[] handles;
-
-                bool handleLockTaken = false;
+                
                 try
                 {
-                    handleLockTaken = _handleLock.TryEnterReadLock(Timeout.Infinite);
+                    _handleLock.TryEnterReadLock(Timeout.Infinite);
 
                     portHandleCount = _ports.Count;
 
@@ -213,7 +208,7 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 finally
                 {
-                    if (handleLockTaken)
+                    if (_handleLock.IsReadLockHeld)
                     {
                         _handleLock.ExitReadLock();
                     }
@@ -248,16 +243,15 @@ namespace Ryujinx.HLE.HOS.Services
                         // We got a new connection, accept the session to allow servicing future requests.
                         if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
                         {
-                            bool handleWriteLockTaken = false;
                             try
                             {
-                                handleWriteLockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                                _handleLock.TryEnterWriteLock(Timeout.Infinite);
                                 IpcService obj = _ports[handles[signaledIndex]].Invoke();
                                 _sessions.Add(serverSessionHandle, obj);
                             }
                             finally
                             {
-                                if (handleWriteLockTaken)
+                                if (_handleLock.IsWriteLockHeld)
                                 {
                                     _handleLock.ExitWriteLock();
                                 }
@@ -361,16 +355,15 @@ namespace Ryujinx.HLE.HOS.Services
                             _ = _requestDataReader.ReadInt32();
 
                             _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
-
-                            bool writeLockTaken = false;
+                            
                             try
                             {
-                                writeLockTaken = _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                                _handleLock.TryEnterWriteLock(Timeout.Infinite);
                                 _sessions[dupServerSessionHandle] = _sessions[serverSessionHandle];
                             }
                             finally
                             {
-                                if (writeLockTaken)
+                                if (_handleLock.IsWriteLockHeld)
                                 {
                                     _handleLock.ExitWriteLock();
                                 }

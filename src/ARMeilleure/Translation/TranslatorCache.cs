@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Ryujinx.Common.Extensions;
 
 namespace ARMeilleure.Translation
 {
@@ -25,65 +24,129 @@ namespace ARMeilleure.Translation
 
         public bool AddOrUpdate(ulong address, ulong size, T value, Func<ulong, T, T> updateFactoryCallback)
         {
-            using (_treeLock.Write())
+            try
             {
+                _treeLock.TryEnterWriteLock(Timeout.Infinite);
                 return _tree.AddOrUpdate(address, address + size, value, updateFactoryCallback);
+            }
+            finally
+            {
+                if (_treeLock.IsWriteLockHeld)
+                {
+                    _treeLock.ExitWriteLock();
+                }
             }
         }
 
         public T GetOrAdd(ulong address, ulong size, T value)
         {
-            using (_treeLock.Write())
+            try
             {
+                _treeLock.TryEnterWriteLock(Timeout.Infinite);
                 return _tree.GetOrAdd(address, address + size, value);
+            }
+            finally
+            {
+                if (_treeLock.IsWriteLockHeld)
+                {
+                    _treeLock.ExitWriteLock();
+                }
             }
         }
 
         public bool Remove(ulong address)
         {
-            using (_treeLock.Write())
+            try
             {
+                _treeLock.TryEnterWriteLock(Timeout.Infinite);
                 return _tree.Remove(address) != 0;
+            }
+            finally
+            {
+                if (_treeLock.IsWriteLockHeld)
+                {
+                    _treeLock.ExitWriteLock();
+                }
             }
         }
 
         public void Clear()
         {
-            using (_treeLock.Write())
+            try
             {
+                _treeLock.TryEnterWriteLock(Timeout.Infinite);
                 _tree.Clear();
+            }
+            finally
+            {
+                if (_treeLock.IsWriteLockHeld)
+                {
+                    _treeLock.ExitWriteLock();
+                }
             }
         }
 
         public bool ContainsKey(ulong address)
         {
-            using (_treeLock.Read())
+            try
             {
+                _treeLock.TryEnterReadLock(Timeout.Infinite);
                 return _tree.ContainsKey(address);
+            }
+            finally
+            {
+                if (_treeLock.IsReadLockHeld)
+                {
+                    _treeLock.ExitReadLock();
+                }
             }
         }
 
         public bool TryGetValue(ulong address, out T value)
         {
-            using (_treeLock.Read())
+            try
             {
+                _treeLock.TryEnterReadLock(Timeout.Infinite);
                 return _tree.TryGet(address, out value);
+            }
+            finally
+            {
+                if(_treeLock.IsReadLockHeld)
+                {
+                    _treeLock.ExitReadLock();
+                }
             }
         }
 
         public int GetOverlaps(ulong address, ulong size, ref ulong[] overlaps)
         {
-            using (_treeLock.Read())
+            try
             {
+                _treeLock.TryEnterReadLock(Timeout.Infinite);
                 return _tree.Get(address, address + size, ref overlaps);
+            }
+            finally
+            {
+                if (_treeLock.IsReadLockHeld)
+                {
+                    _treeLock.ExitReadLock();
+                }
             }
         }
 
         public List<T> AsList()
         {
-            using (_treeLock.Read())
+            try
             {
+                _treeLock.TryEnterReadLock(Timeout.Infinite);
                 return _tree.AsList();
+            }
+            finally
+            {
+                if (_treeLock.IsReadLockHeld)
+                {
+                    _treeLock.ExitReadLock();
+                }
             }
         }
     }
