@@ -131,7 +131,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            LoadApplications();
+            Task.Run(LoadApplications);
 
             _isLoading = false;
         }
@@ -517,9 +517,9 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        public void LoadApplications()
+        public async Task LoadApplications()
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 ViewModel.Applications.Clear();
 
@@ -549,7 +549,7 @@ namespace Ryujinx.Ava.UI.Windows
             };
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-            LoadApplications();
+            Task.Run(LoadApplications);
         }
 
         private void ReloadGameList()

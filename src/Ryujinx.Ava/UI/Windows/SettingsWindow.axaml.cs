@@ -5,6 +5,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -41,7 +42,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Owner is MainWindow window && ViewModel.DirectoryChanged)
             {
-                window.LoadApplications();
+                Task.Run(window.LoadApplications);
             }
         }
 

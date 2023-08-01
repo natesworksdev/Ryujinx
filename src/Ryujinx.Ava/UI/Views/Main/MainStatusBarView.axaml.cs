@@ -7,6 +7,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
 using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Views.Main
 {
@@ -52,7 +53,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private void Refresh_OnClick(object sender, RoutedEventArgs e)
         {
-            Window.LoadApplications();
+            Task.Run(Window.LoadApplications);
         }
     }
 }
