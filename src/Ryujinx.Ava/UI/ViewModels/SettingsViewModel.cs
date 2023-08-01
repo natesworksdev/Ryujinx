@@ -44,7 +44,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float _volume;
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged;
-        private List<string> _gpuIds = new();
+        private readonly List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
         private string _customThemePath;
