@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
     <PackageReference Include="MsgPack.Cli" />
-    <PackageReference Include="WmiLight" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
 </Project>

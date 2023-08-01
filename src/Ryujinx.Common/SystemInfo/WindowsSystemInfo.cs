@@ -1,10 +1,8 @@
-using System;
-using System.Runtime.Versioning;
-using WmiLight;
 using Ryujinx.Common.Logging;
-using System.Collections.Generic;
-using System.Linq;
+using System;
+using System.Management;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.SystemInfo
 {
@@ -13,21 +11,57 @@ namespace Ryujinx.Common.SystemInfo
     {
         internal WindowsSystemInfo()
         {
-            try
+            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWMI()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
+            (RamTotal, RamAvailable) = GetMemoryStats();
+        }
+
+        private static string GetCpuNameWMI()
+        {
+            ManagementObjectCollection cpuObjs = GetWMIObjects("root\\CIMV2", "SELECT Name FROM Win32_Processor");
+
+            if (cpuObjs != null)
             {
-                using (WmiConnection connection = new())
+                foreach (var cpuObj in cpuObjs)
                 {
-                    (string cpuName, PhysicalCores) = GetCpuStatsLight(connection);
-                    CpuName = $"{cpuName ?? GetCpuidCpuName()} ; {PhysicalCores} physical ; {LogicalCoreCount} logical";
-                    (RamTotal, RamAvailable) = GetMemoryStats();
+                    return cpuObj["Name"].ToString().Trim();
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.Application, $"WmiLight isn't available : {ex.Message}");
-            }
+
+            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER").Trim();
         }
-        
+
+        private static new int GetPhysicalCoreCount()
+        {
+            uint buffSize = 0;
+            GetLogicalProcessorInformation(IntPtr.Zero, ref buffSize);
+            IntPtr buffer = Marshal.AllocHGlobal((int)buffSize);
+            bool success = GetLogicalProcessorInformation(buffer, ref buffSize);
+            if (!success)
+            {
+                Marshal.FreeHGlobal(buffer);
+                return LogicalCoreCount;
+            }
+
+            int physicalCores = 0;
+            long pos = buffer.ToInt64();
+            int size = Marshal.SizeOf(typeof(SystemLogicalProcessorInformation));
+            for (long offset = 0; offset + size <= buffSize; offset += size)
+            {
+                IntPtr current = new IntPtr(pos + offset);
+                SystemLogicalProcessorInformation info = Marshal.PtrToStructure<SystemLogicalProcessorInformation>(current);
+
+                if (info.Relationship == LogicalProcessorRelationship.RelationProcessorCore)
+                {
+                    physicalCores++;
+                }
+            }
+
+            Marshal.FreeHGlobal(buffer);
+
+            return physicalCores;
+        }
+
+
         private static (ulong Total, ulong Available) GetMemoryStats()
         {
             MemoryStatusEx memStatus = new();
@@ -41,23 +75,6 @@ namespace Ryujinx.Common.SystemInfo
             return (0, 0);
         }
 
-        private (string cpuName, int physicalCores) GetCpuStatsLight(WmiConnection connection)
-        {
-            string cpuName = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim();
-            int physicalCores = LogicalCoreCount;
-            foreach (WmiObject cpuObj in GetWmiObjects(connection, "SELECT Name FROM Win32_Processor"))
-            {
-                cpuName = cpuObj["Name"].ToString().Trim();
-            }
-
-            foreach (WmiObject cpuObj in GetWmiObjects(connection, "SELECT NumberOfCores FROM Win32_Processor"))
-            {
-                physicalCores = Convert.ToInt32(cpuObj["NumberOfCores"]);
-            }
-
-            return (cpuName, physicalCores);
-        }
-        
         [StructLayout(LayoutKind.Sequential)]
         private struct MemoryStatusEx
         {
@@ -80,20 +97,46 @@ namespace Ryujinx.Common.SystemInfo
         [LibraryImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
-        
-        private IEnumerable<WmiObject> GetWmiObjects(WmiConnection connection, string query)
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GetLogicalProcessorInformation(IntPtr buffer, ref uint returnLength);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SystemLogicalProcessorInformation
+        {
+            public UIntPtr ProcessorMask;
+            public LogicalProcessorRelationship Relationship;
+            public ProcessorInformationUnion ProcessorInformation;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct ProcessorInformationUnion
+        {
+            [FieldOffset(8)]
+            private UInt64 Reserved2;
+        }
+
+        public enum LogicalProcessorRelationship
+        {
+            RelationProcessorCore,
+        }
+
+        private static ManagementObjectCollection GetWMIObjects(string scope, string query)
         {
             try
             {
-                return connection.CreateQuery(query).ToList();
+                return new ManagementObjectSearcher(scope, query).Get();
             }
-            catch (Exception ex)
+            catch (PlatformNotSupportedException ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"WmiLight isn't available : {ex.Message}");
+                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {ex.Message}");
+            }
+            catch (COMException ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {ex.Message}");
             }
 
-            return Enumerable.Empty<WmiObject>();
+            return null;
         }
-
     }
 }

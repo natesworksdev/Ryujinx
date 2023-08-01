@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
-using WmiLight;
 
 namespace Ryujinx.Common.SystemInfo
 {
@@ -89,7 +88,7 @@ namespace Ryujinx.Common.SystemInfo
             }
 
             int coreCount = Environment.ProcessorCount;
-                
+
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -109,16 +108,16 @@ namespace Ryujinx.Common.SystemInfo
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     using (var process = new Process
-                           {
-                               StartInfo = new ProcessStartInfo
-                               {
-                                   FileName = "sysctl",
-                                   Arguments = "-n hw.physicalcpu",
-                                   UseShellExecute = false,
-                                   RedirectStandardOutput = true,
-                                   CreateNoWindow = true,
-                               }
-                           })
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "sysctl",
+                            Arguments = "-n hw.physicalcpu",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true,
+                        }
+                    })
                     {
                         process.Start();
                         coreCount = int.Parse(process.StandardOutput.ReadToEnd());
@@ -128,7 +127,7 @@ namespace Ryujinx.Common.SystemInfo
             }
             catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Application,$"An error occurred while trying to get the physical core count:  {ex.Message}");
+                Logger.Error?.Print(LogClass.Application, $"An error occurred while trying to get the physical core count:  {ex.Message}");
             }
 
             _cachedPhysicalCoreCount = coreCount;
