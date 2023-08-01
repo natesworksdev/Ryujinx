@@ -111,7 +111,7 @@ namespace ARMeilleure.Translation
             }
             finally
             {
-                if(_treeLock.IsReadLockHeld)
+                if (_treeLock.IsReadLockHeld)
                 {
                     _treeLock.ExitReadLock();
                 }

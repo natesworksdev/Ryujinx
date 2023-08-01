@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services
                 int portHandleCount;
                 int handleCount;
                 int[] handles;
-                
+
                 try
                 {
                     _handleLock.TryEnterReadLock(Timeout.Infinite);
@@ -355,7 +355,7 @@ namespace Ryujinx.HLE.HOS.Services
                             _ = _requestDataReader.ReadInt32();
 
                             _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
-                            
+
                             try
                             {
                                 _handleLock.TryEnterWriteLock(Timeout.Infinite);
