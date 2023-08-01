@@ -11,13 +11,13 @@ namespace Ryujinx.Common.SystemInfo
     {
         internal WindowsSystemInfo()
         {
-            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWMI()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
+            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWmi()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
             (RamTotal, RamAvailable) = GetMemoryStats();
         }
 
-        private static string GetCpuNameWMI()
+        private static string GetCpuNameWmi()
         {
-            ManagementObjectCollection cpuObjs = GetWMIObjects("root\\CIMV2", "SELECT Name FROM Win32_Processor");
+            ManagementObjectCollection cpuObjs = GetWmiObjects("root\\CIMV2", "SELECT Name FROM Win32_Processor");
 
             if (cpuObjs != null)
             {
@@ -121,7 +121,7 @@ namespace Ryujinx.Common.SystemInfo
             RelationProcessorCore,
         }
 
-        private static ManagementObjectCollection GetWMIObjects(string scope, string query)
+        private static ManagementObjectCollection GetWmiObjects(string scope, string query)
         {
             try
             {
