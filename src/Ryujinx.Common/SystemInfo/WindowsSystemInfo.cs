@@ -47,7 +47,7 @@ namespace Ryujinx.Common.SystemInfo
             int size = Marshal.SizeOf(typeof(SystemLogicalProcessorInformation));
             for (long offset = 0; offset + size <= buffSize; offset += size)
             {
-                IntPtr current = new IntPtr(pos + offset);
+                IntPtr current = new(pos + offset);
                 SystemLogicalProcessorInformation info = Marshal.PtrToStructure<SystemLogicalProcessorInformation>(current);
 
                 if (info.Relationship == LogicalProcessorRelationship.RelationProcessorCore)
@@ -98,8 +98,9 @@ namespace Ryujinx.Common.SystemInfo
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetLogicalProcessorInformation(IntPtr buffer, ref uint returnLength);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetLogicalProcessorInformation(IntPtr buffer, ref uint returnLength);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SystemLogicalProcessorInformation
@@ -113,7 +114,7 @@ namespace Ryujinx.Common.SystemInfo
         public struct ProcessorInformationUnion
         {
             [FieldOffset(8)]
-            private UInt64 Reserved2;
+            private readonly UInt64 Reserved2;
         }
 
         public enum LogicalProcessorRelationship

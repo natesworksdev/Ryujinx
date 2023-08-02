@@ -107,7 +107,7 @@ namespace Ryujinx.Common.SystemInfo
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    using (var process = new Process
+                    using var process = new Process
                     {
                         StartInfo = new ProcessStartInfo
                         {
@@ -117,12 +117,10 @@ namespace Ryujinx.Common.SystemInfo
                             RedirectStandardOutput = true,
                             CreateNoWindow = true,
                         }
-                    })
-                    {
-                        process.Start();
-                        coreCount = int.Parse(process.StandardOutput.ReadToEnd());
-                        process.WaitForExit();
-                    }
+                    };
+                    process.Start();
+                    coreCount = int.Parse(process.StandardOutput.ReadToEnd());
+                    process.WaitForExit();
                 }
             }
             catch (Exception ex)
