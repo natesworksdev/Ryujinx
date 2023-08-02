@@ -18,6 +18,7 @@ namespace Ryujinx.Common
                 try
                 {
                     _readerWriterLock.TryEnterReadLock(Timeout.Infinite);
+
                     return _value;
                 }
                 finally

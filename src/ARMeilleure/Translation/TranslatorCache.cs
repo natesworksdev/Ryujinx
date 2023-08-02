@@ -43,6 +43,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterWriteLock(Timeout.Infinite);
+
                 return _tree.GetOrAdd(address, address + size, value);
             }
             finally
@@ -59,6 +60,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterWriteLock(Timeout.Infinite);
+
                 return _tree.Remove(address) != 0;
             }
             finally
@@ -91,6 +93,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterReadLock(Timeout.Infinite);
+
                 return _tree.ContainsKey(address);
             }
             finally
@@ -107,6 +110,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterReadLock(Timeout.Infinite);
+
                 return _tree.TryGet(address, out value);
             }
             finally
@@ -123,6 +127,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterReadLock(Timeout.Infinite);
+
                 return _tree.Get(address, address + size, ref overlaps);
             }
             finally
@@ -139,6 +144,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterReadLock(Timeout.Infinite);
+
                 return _tree.AsList();
             }
             finally
