@@ -111,7 +111,7 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct ProcessorInformationUnion
+        public readonly struct ProcessorInformationUnion
         {
             [FieldOffset(8)]
             private readonly UInt64 Reserved2;
