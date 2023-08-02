@@ -27,6 +27,7 @@ namespace ARMeilleure.Translation
             try
             {
                 _treeLock.TryEnterWriteLock(Timeout.Infinite);
+
                 return _tree.AddOrUpdate(address, address + size, value, updateFactoryCallback);
             }
             finally
