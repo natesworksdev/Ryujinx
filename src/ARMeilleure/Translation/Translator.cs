@@ -71,7 +71,7 @@ namespace ARMeilleure.Translation
             _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
 
             _ptc = new Ptc();
-            
+
             _physicalCoreCount = SystemInfo.GetPhysicalCoreCount();
 
             Queue = new TranslatorQueue();
@@ -122,7 +122,7 @@ namespace ARMeilleure.Translation
                 _ptc.Profiler.Start();
 
                 _ptc.Disable();
-                
+
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core + ht
                 // etc). All threads are normal priority except from the last, which just fills as much of the last core
