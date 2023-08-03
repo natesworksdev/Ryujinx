@@ -538,6 +538,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     bufferCache.SynchronizeBufferRange(_indexBuffer.Address, _indexBuffer.Size);
                 }
             }
+            else if (_rebind)
+            {
+                _indexBufferDirty = true;
+            }
 
             uint vbEnableMask = _vertexBuffersEnableMask;
 
