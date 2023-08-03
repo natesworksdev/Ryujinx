@@ -822,6 +822,10 @@ namespace Ryujinx.Ava
                     VulkanHelper.GetRequiredInstanceExtensions,
                     ConfigurationState.Instance.Graphics.PreferredGpu.Value);
             }
+            else if (ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Metal && OperatingSystem.IsMacOS())
+            {
+                renderer = new MetalRenderer();
+            }
             else
             {
                 renderer = new OpenGLRenderer();
