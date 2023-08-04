@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    struct BufferRangeList
+    struct BufferMirrorRangeList
     {
         internal readonly struct Range
         {
