@@ -54,6 +54,13 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
+        public ulong ThreadUid
+        {
+            get => _impl.ThreadUid;
+            set => _impl.ThreadUid = value;
+        }
+
+        /// <inheritdoc/>
         public bool Running => _impl.Running;
 
         private readonly ExceptionCallbacks _exceptionCallbacks;

@@ -45,7 +45,6 @@ namespace Ryujinx.HLE.Debugger
         private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
         private Ryujinx.Cpu.IExecutionContext GetThread(ulong threadUid) => Device.System.DebugGetApplicationProcess().DebugGetThreadContext(threadUid);
         private Ryujinx.Cpu.IExecutionContext[] GetThreads() => GetThreadIds().Select(x => GetThread(x)).ToArray();
-        private ulong? GetThreadUid(Ryujinx.Cpu.IExecutionContext thread) => GetThreadIds().Where(x => GetThread(x) == thread).First();
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
         private void InvalidateCacheRegion(ulong address, ulong size) =>
             Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
@@ -394,7 +393,7 @@ namespace Ryujinx.HLE.Debugger
         {
             if (threadId == 0)
             {
-                threadId = GetThreadUid(GetThreads().First());
+                threadId = GetThreads().First().ThreadUid;
             }
 
             switch (op)
@@ -502,12 +501,12 @@ namespace Ryujinx.HLE.Debugger
             }
 
             ctx.DebugStep();
-            Reply($"T00thread:{GetThreadUid(ctx):x};");
+            Reply($"T00thread:{ctx.ThreadUid:x};");
         }
 
         private void CommandIsAlive(ulong? threadId)
         {
-            if (GetThreads().Any(x => GetThreadUid(x) == threadId))
+            if (GetThreads().Any(x => x.ThreadUid == threadId))
             {
                 ReplyOK();
             }

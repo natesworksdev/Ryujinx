@@ -204,6 +204,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             Context.TpidrroEl0 = (long)_tlsAddress;
 
             ThreadUid = KernelContext.NewThreadUid();
+            Context.ThreadUid = ThreadUid;
 
             HostThread.Name = customThreadStart != null ? $"HLE.OsThread.{ThreadUid}" : $"HLE.GuestThread.{ThreadUid}";
 

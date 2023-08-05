@@ -71,6 +71,8 @@ namespace ARMeilleure.State
 
         public bool IsAarch32 { get; set; }
 
+        public ulong ThreadUid { get; set; }
+
         internal ExecutionMode ExecutionMode
         {
             get

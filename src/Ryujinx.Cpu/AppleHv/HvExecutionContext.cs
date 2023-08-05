@@ -49,6 +49,13 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         /// <inheritdoc/>
+        public ulong ThreadUid
+        {
+            get => _impl.ThreadUid;
+            set => _impl.ThreadUid = value;
+        }
+
+        /// <inheritdoc/>
         public bool IsAarch32
         {
             get => false;

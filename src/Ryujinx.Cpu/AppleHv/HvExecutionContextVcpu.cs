@@ -21,6 +21,8 @@ namespace Ryujinx.Cpu.AppleHv
         // This is only valid while debugging is enabled.
         public ulong DebugPc { get; set; }
 
+        public ulong ThreadUid { get; set; }
+
         static HvExecutionContextVcpu()
         {
             // .NET does not support passing vectors by value, so we need to pass a pointer and use a native

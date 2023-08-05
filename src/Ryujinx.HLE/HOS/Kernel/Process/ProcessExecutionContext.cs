@@ -17,6 +17,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public bool IsAarch32 { get => false; set { } }
 
+        public ulong ThreadUid { get; set; }
+
         public bool Running { get; private set; } = true;
 
         private readonly ulong[] _x = new ulong[32];

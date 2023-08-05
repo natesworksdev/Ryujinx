@@ -47,6 +47,11 @@ namespace Ryujinx.Cpu
         bool IsAarch32 { get; set; }
 
         /// <summary>
+        /// Thread UID.
+        /// </summary>
+        public ulong ThreadUid { get; set; }
+
+        /// <summary>
         /// Indicates whenever the CPU is still running code.
         /// </summary>
         /// <remarks>

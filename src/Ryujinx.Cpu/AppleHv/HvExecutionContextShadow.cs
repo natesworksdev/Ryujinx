@@ -18,6 +18,8 @@ namespace Ryujinx.Cpu.AppleHv
 
         public bool IsAarch32 { get; set; }
 
+        public ulong ThreadUid { get; set; }
+
         private readonly ulong[] _x;
         private readonly V128[] _v;
 
