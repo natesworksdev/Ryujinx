@@ -586,8 +586,9 @@ namespace Ryujinx.HLE.Debugger
                 Logger.Notice.Print(LogClass.GdbStub, "GDB client lost connection");
                 goto restartListen;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.Error?.Print(LogClass.GdbStub, ex.ToString());
                 Logger.Notice.Print(LogClass.GdbStub, "GDB stub socket closed");
                 return;
             }
