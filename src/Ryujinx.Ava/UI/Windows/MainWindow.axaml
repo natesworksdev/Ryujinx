@@ -38,14 +38,14 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <helpers:OffscreenTextBox Name="HiddenTextBox" Grid.Row="0" />
-        <StackPanel Grid.Row="0" IsVisible="False">
-            <helpers:HotKeyControl Name="FullscreenHotKey" Command="{ReflectionBinding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="FullscreenHotKey2" Command="{ReflectionBinding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="FullscreenHotKeyMacOS" Command="{ReflectionBinding ToggleFullscreen}" />
-            <helpers:HotKeyControl Name="DockToggleHotKey" Command="{ReflectionBinding ToggleDockMode}" />
-            <helpers:HotKeyControl Name="ExitHotKey" Command="{ReflectionBinding ExitCurrentState}" />
-        </StackPanel>
+        <!-- <helpers:OffscreenTextBox Name="HiddenTextBox" Grid.Row="0" /> -->
+        <!-- <StackPanel Grid.Row="0" IsVisible="False"> -->
+        <!--     <helpers:HotKeyControl Name="FullscreenHotKey" Command="{ReflectionBinding ToggleFullscreen}" /> -->
+        <!--     <helpers:HotKeyControl Name="FullscreenHotKey2" Command="{ReflectionBinding ToggleFullscreen}" /> -->
+        <!--     <helpers:HotKeyControl Name="FullscreenHotKeyMacOS" Command="{ReflectionBinding ToggleFullscreen}" /> -->
+        <!--     ~1~ <helpers:HotKeyControl Name="DockToggleHotKey" Command="{ReflectionBinding ToggleDockMode}" /> @1@ -->
+        <!--     <helpers:HotKeyControl Name="ExitHotKey" Command="{ReflectionBinding ExitCurrentState}" /> -->
+        <!-- </StackPanel> -->
         <Grid
             Grid.Row="1"
             HorizontalAlignment="Stretch"

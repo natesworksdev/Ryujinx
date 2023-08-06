@@ -95,15 +95,14 @@
                 BorderBrush="Gray"
                 BorderThickness="1"
                 IsVisible="{Binding !ShowLoadProgress}" />
-            <TextBlock
+            <MenuItem
                 Name="DockedStatus"
                 Margin="5,0,5,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 IsVisible="{Binding !ShowLoadProgress}"
-                PointerReleased="DockedStatus_PointerReleased"
-                Text="{Binding DockedStatusText}"
-                TextAlignment="Left" />
+                Command="{ReflectionBinding ToggleDockMode}"
+                Header="{Binding DockedStatusText}" />
             <Border
                 Width="2"
                 Height="12"

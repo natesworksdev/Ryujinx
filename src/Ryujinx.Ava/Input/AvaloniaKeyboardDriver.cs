@@ -31,9 +31,9 @@ namespace Ryujinx.Ava.Input
             _control.KeyDown += OnKeyPress;
             _control.KeyUp += OnKeyRelease;
             _control.TextInput += Control_TextInput;
-            _control.AddHandler(InputElement.TextInputEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
-            _control.AddHandler(InputElement.KeyDownEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
-            _control.AddHandler(InputElement.KeyUpEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
+            // _control.AddHandler(InputElement.TextInputEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
+            // _control.AddHandler(InputElement.KeyDownEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
+            // _control.AddHandler(InputElement.KeyUpEvent, Control_LastChanceTextInput, RoutingStrategies.Bubble);
         }
 
         private void Control_TextInput(object sender, TextInputEventArgs e)

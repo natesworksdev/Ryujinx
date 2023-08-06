@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.Applet
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).KeyRelease += AvaloniaDynamicTextInputHandler_KeyRelease;
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).TextInput += AvaloniaDynamicTextInputHandler_TextInput;
 
-            _hiddenTextBox = _parent.HiddenTextBox;
+            // _hiddenTextBox = _parent.HiddenTextBox;
 
             Dispatcher.UIThread.Post(() =>
             {

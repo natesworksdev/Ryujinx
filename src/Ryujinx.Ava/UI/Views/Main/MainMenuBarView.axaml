@@ -59,6 +59,7 @@
                 <MenuItem
                     Command="{ReflectionBinding ToggleFullscreen}"
                     Header="{locale:Locale MenuBarOptionsToggleFullscreen}"
+                    HotKey="F11"
                     InputGesture="F11" />
                 <MenuItem>
                     <MenuItem.Icon>
@@ -98,18 +99,21 @@
                 <MenuItem
                     Click="PauseEmulation_Click"
                     Header="{locale:Locale MenuBarOptionsPauseEmulation}"
+                    HotKey="{Binding PauseKey}"
                     InputGesture="{Binding PauseKey}"
                     IsEnabled="{Binding !IsPaused}"
                     IsVisible="{Binding !IsPaused}" />
                 <MenuItem
                     Click="ResumeEmulation_Click"
                     Header="{locale:Locale MenuBarOptionsResumeEmulation}"
+                    HotKey="{Binding PauseKey}"
                     InputGesture="{Binding PauseKey}"
                     IsEnabled="{Binding IsPaused}"
                     IsVisible="{Binding IsPaused}" />
                 <MenuItem
-                    Click="StopEmulation_Click"
+                    Command="{ReflectionBinding ExitCurrentState}"
                     Header="{locale:Locale MenuBarOptionsStopEmulation}"
+                    HotKey="Escape"
                     InputGesture="Escape"
                     IsEnabled="{Binding IsGameRunning}"
                     ToolTip.Tip="{locale:Locale StopEmulationTooltip}" />
@@ -125,11 +129,13 @@
                     Command="{ReflectionBinding TakeScreenshot}"
                     Header="{locale:Locale MenuBarFileToolsTakeScreenshot}"
                     InputGesture="{Binding ScreenshotKey}"
+                    HotKey="{Binding ScreenshotKey}"
                     IsEnabled="{Binding IsGameRunning}" />
                 <MenuItem
                     Command="{ReflectionBinding HideUi}"
                     Header="{locale:Locale MenuBarFileToolsHideUi}"
                     InputGesture="{Binding ShowUiKey}"
+                    HotKey="{Binding ShowUiKey}"
                     IsEnabled="{Binding IsGameRunning}" />
                 <MenuItem
                     Click="OpenCheatManagerForCurrentApp"

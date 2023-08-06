@@ -65,10 +65,7 @@ namespace Ryujinx.Ava
     internal class AppHost
     {
         private const int CursorHideIdleTime = 5; // Hide Cursor seconds.
-        private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
         private const int TargetFps = 60;
-        private const float VolumeDelta = 0.05f;
-
         private static readonly Cursor _invisibleCursor = new(StandardCursorType.None);
         private readonly IntPtr _invisibleCursorWin;
         private readonly IntPtr _defaultCursorWin;
@@ -87,8 +84,8 @@ namespace Ryujinx.Ava
         public RendererHost RendererHost;
 
         private readonly GraphicsDebugLevel _glLogLevel;
-        private float _newVolume;
-        private KeyboardHotkeyState _prevHotkeyState;
+        // private float _newVolume;
+        // private KeyboardHotkeyState _prevHotkeyState;
 
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer = true;
@@ -1042,70 +1039,70 @@ namespace Ryujinx.Ava
                     }
                 });
 
-                KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
-
-                if (currentHotkeyState != _prevHotkeyState)
-                {
-                    switch (currentHotkeyState)
-                    {
-                        case KeyboardHotkeyState.ToggleVSync:
-                            Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
-                            break;
-                        case KeyboardHotkeyState.Screenshot:
-                            ScreenshotRequested = true;
-                            break;
-                        case KeyboardHotkeyState.ShowUi:
-                            _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
-                            break;
-                        case KeyboardHotkeyState.Pause:
-                            if (_viewModel.IsPaused)
-                            {
-                                Resume();
-                            }
-                            else
-                            {
-                                Pause();
-                            }
-                            break;
-                        case KeyboardHotkeyState.ToggleMute:
-                            if (Device.IsAudioMuted())
-                            {
-                                Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
-                            }
-                            else
-                            {
-                                Device.SetVolume(0);
-                            }
-
-                            _viewModel.Volume = Device.GetVolume();
-                            break;
-                        case KeyboardHotkeyState.ResScaleUp:
-                            GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
-                            break;
-                        case KeyboardHotkeyState.ResScaleDown:
-                            GraphicsConfig.ResScale =
-                            (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
-                            break;
-                        case KeyboardHotkeyState.VolumeUp:
-                            _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
-                            Device.SetVolume(_newVolume);
-
-                            _viewModel.Volume = Device.GetVolume();
-                            break;
-                        case KeyboardHotkeyState.VolumeDown:
-                            _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
-                            Device.SetVolume(_newVolume);
-
-                            _viewModel.Volume = Device.GetVolume();
-                            break;
-                        case KeyboardHotkeyState.None:
-                            (_keyboardInterface as AvaloniaKeyboard).Clear();
-                            break;
-                    }
-                }
-
-                _prevHotkeyState = currentHotkeyState;
+                // KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
+                //
+                // if (currentHotkeyState != _prevHotkeyState)
+                // {
+                //     switch (currentHotkeyState)
+                //     {
+                //         case KeyboardHotkeyState.ToggleVSync:
+                //             Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
+                //
+                //             break;
+                //         case KeyboardHotkeyState.Screenshot:
+                //             ScreenshotRequested = true;
+                //             break;
+                //         case KeyboardHotkeyState.ShowUi:
+                //             _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
+                //             break;
+                //         case KeyboardHotkeyState.Pause:
+                //             if (_viewModel.IsPaused)
+                //             {
+                //                 Resume();
+                //             }
+                //             else
+                //             {
+                //                 Pause();
+                //             }
+                //             break;
+                //         case KeyboardHotkeyState.ToggleMute:
+                //             if (Device.IsAudioMuted())
+                //             {
+                //                 Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                //             }
+                //             else
+                //             {
+                //                 Device.SetVolume(0);
+                //             }
+                //
+                //             _viewModel.Volume = Device.GetVolume();
+                //             break;
+                //         case KeyboardHotkeyState.ResScaleUp:
+                //             GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
+                //             break;
+                //         case KeyboardHotkeyState.ResScaleDown:
+                //             GraphicsConfig.ResScale =
+                //             (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
+                //             break;
+                //         case KeyboardHotkeyState.VolumeUp:
+                //             _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
+                //             Device.SetVolume(_newVolume);
+                //
+                //             _viewModel.Volume = Device.GetVolume();
+                //             break;
+                //         case KeyboardHotkeyState.VolumeDown:
+                //             _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
+                //             Device.SetVolume(_newVolume);
+                //
+                //             _viewModel.Volume = Device.GetVolume();
+                //             break;
+                //         case KeyboardHotkeyState.None:
+                //             (_keyboardInterface as AvaloniaKeyboard).Clear();
+                //             break;
+                //     }
+                // }
+                //
+                // _prevHotkeyState = currentHotkeyState;
 
                 if (ScreenshotRequested)
                 {
@@ -1130,50 +1127,6 @@ namespace Ryujinx.Ava
             Device.Hid.DebugPad.Update();
 
             return true;
-        }
-
-        private KeyboardHotkeyState GetHotkeyState()
-        {
-            KeyboardHotkeyState state = KeyboardHotkeyState.None;
-
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
-            {
-                state = KeyboardHotkeyState.ToggleVSync;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
-            {
-                state = KeyboardHotkeyState.Screenshot;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
-            {
-                state = KeyboardHotkeyState.ShowUi;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
-            {
-                state = KeyboardHotkeyState.Pause;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
-            {
-                state = KeyboardHotkeyState.ToggleMute;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
-            {
-                state = KeyboardHotkeyState.ResScaleUp;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
-            {
-                state = KeyboardHotkeyState.ResScaleDown;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
-            {
-                state = KeyboardHotkeyState.VolumeUp;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
-            {
-                state = KeyboardHotkeyState.VolumeDown;
-            }
-
-            return state;
         }
     }
 }

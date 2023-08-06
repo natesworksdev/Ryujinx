@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -14,6 +13,7 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
@@ -25,7 +25,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using InputManager = Ryujinx.Input.HLE.InputManager;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -368,7 +367,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationList.DataContext = ViewModel;
 
-            LoadHotKeys();
+            // LoadHotKeys();
         }
 
         private void SetWindowSizePosition()
@@ -447,16 +446,16 @@ namespace Ryujinx.Ava.UI.Windows
 #pragma warning restore IDE0055
         }
 
-        public void LoadHotKeys()
-        {
-#pragma warning disable IDE0055 // Disable formatting
-            HotKeyManager.SetHotKey(FullscreenHotKey,      new KeyGesture(Key.Enter, KeyModifiers.Alt));
-            HotKeyManager.SetHotKey(FullscreenHotKey2,     new KeyGesture(Key.F11));
-            HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta));
-            HotKeyManager.SetHotKey(DockToggleHotKey,      new KeyGesture(Key.F9));
-            HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
-#pragma warning restore IDE0055
-        }
+        //         public void LoadHotKeys()
+        //         {
+        // #pragma warning disable IDE0055 // Disable formatting
+        //             // HotKeyManager.SetHotKey(FullscreenHotKey,      new KeyGesture(Key.Enter, KeyModifiers.Alt));
+        //             // HotKeyManager.SetHotKey(FullscreenHotKey2,     new KeyGesture(Key.F11));
+        //             // HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta));
+        //             // HotKeyManager.SetHotKey(DockToggleHotKey,      new KeyGesture(Key.F9));
+        //             // HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
+        // #pragma warning restore IDE0055
+        //         }
 
         private void VolumeStatus_CheckedChanged(object sender, SplitButtonClickEventArgs e)
         {
