@@ -112,9 +112,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicXor, storageKind, Local(), Const(binding), e0, e1, value);
         }
 
-        public static Operand Ballot(this EmitterContext context, Operand a)
+        public static Operand Ballot(this EmitterContext context, Operand a, int index)
         {
-            return context.Add(Instruction.Ballot, Local(), a);
+            Operand dest = Local();
+
+            context.Add(new Operation(Instruction.Ballot, index, dest, a));
+
+            return dest;
         }
 
         public static Operand Barrier(this EmitterContext context)

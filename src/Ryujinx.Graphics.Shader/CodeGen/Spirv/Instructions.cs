@@ -231,7 +231,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var execution = context.Constant(context.TypeU32(), Scope.Subgroup);
 
             var maskVector = context.GroupNonUniformBallot(uvec4Type, execution, context.Get(AggregateType.Bool, source));
-            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)0);
+            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)operation.Index);
 
             return new OperationResult(AggregateType.U32, mask);
         }

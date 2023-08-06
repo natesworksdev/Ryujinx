@@ -151,6 +151,14 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceProperties2,
             };
 
+            PhysicalDeviceSubgroupProperties propertiesSubgroup = new()
+            {
+                SType = StructureType.PhysicalDeviceSubgroupProperties,
+                PNext = properties2.PNext,
+            };
+
+            properties2.PNext = &propertiesSubgroup;
+
             PhysicalDeviceBlendOperationAdvancedPropertiesEXT propertiesBlendOperationAdvanced = new()
             {
                 SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt,
@@ -335,6 +343,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
+                propertiesSubgroup.SubgroupSize,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
@@ -623,6 +632,7 @@ namespace Ryujinx.Graphics.Vulkan
                 maximumImagesPerStage: Constants.MaxImagesPerStage,
                 maximumComputeSharedMemorySize: (int)limits.MaxComputeSharedMemorySize,
                 maximumSupportedAnisotropy: (int)limits.MaxSamplerAnisotropy,
+                shaderSubgroupSize: (int)Capabilities.SubgroupSize,
                 storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment,
                 gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0);
         }

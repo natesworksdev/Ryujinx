@@ -56,16 +56,26 @@ namespace Ryujinx.Graphics.Shader.Translation
             return functionId;
         }
 
+        public int GetOrCreateShuffleFunctionId(HelperFunctionName functionName, int subgroupSize)
+        {
+            if (_functionIds.TryGetValue((int)functionName, out int functionId))
+            {
+                return functionId;
+            }
+
+            Function function = GenerateShuffleFunction(functionName, subgroupSize);
+            functionId = AddFunction(function);
+            _functionIds.Add((int)functionName, functionId);
+
+            return functionId;
+        }
+
         private Function GenerateFunction(HelperFunctionName functionName)
         {
             return functionName switch
             {
                 HelperFunctionName.ConvertDoubleToFloat => GenerateConvertDoubleToFloatFunction(),
                 HelperFunctionName.ConvertFloatToDouble => GenerateConvertFloatToDoubleFunction(),
-                HelperFunctionName.Shuffle => GenerateShuffle(),
-                HelperFunctionName.ShuffleDown => GenerateShuffleDown(),
-                HelperFunctionName.ShuffleUp => GenerateShuffleUp(),
-                HelperFunctionName.ShuffleXor => GenerateShuffleXor(),
                 HelperFunctionName.TexelFetchScale => GenerateTexelFetchScaleFunction(),
                 HelperFunctionName.TextureSizeUnscale => GenerateTextureSizeUnscaleFunction(),
                 _ => throw new ArgumentException($"Invalid function name {functionName}"),
@@ -220,7 +230,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, $"SharedStore{bitSize}_{id}", false, 2, 0);
         }
 
-        private static Function GenerateShuffle()
+        private Function GenerateShuffleFunction(HelperFunctionName functionName, int subgroupSize)
+        {
+            return functionName switch
+            {
+                HelperFunctionName.Shuffle => GenerateShuffle(subgroupSize),
+                HelperFunctionName.ShuffleDown => GenerateShuffleDown(subgroupSize),
+                HelperFunctionName.ShuffleUp => GenerateShuffleUp(subgroupSize),
+                HelperFunctionName.ShuffleXor => GenerateShuffleXor(subgroupSize),
+                _ => throw new ArgumentException($"Invalid function name {functionName}"),
+            };
+        }
+
+        private static Function GenerateShuffle(int subgroupSize)
         {
             EmitterContext context = new();
 
@@ -230,21 +252,21 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Operand clamp = context.BitwiseAnd(mask, Const(0x1f));
             Operand segMask = context.BitwiseAnd(context.ShiftRightU32(mask, Const(8)), Const(0x1f));
-            Operand minThreadId = context.BitwiseAnd(context.Load(StorageKind.Input, IoVariable.SubgroupLaneId), segMask);
+            Operand minThreadId = context.BitwiseAnd(GenerateLoadSubgroupLaneId(context, subgroupSize), segMask);
             Operand maxThreadId = context.BitwiseOr(context.BitwiseAnd(clamp, context.BitwiseNot(segMask)), minThreadId);
             Operand srcThreadId = context.BitwiseOr(context.BitwiseAnd(index, context.BitwiseNot(segMask)), minThreadId);
             Operand valid = context.ICompareLessOrEqualUnsigned(srcThreadId, maxThreadId);
 
             context.Copy(Argument(3), valid);
 
-            Operand result = context.Shuffle(value, srcThreadId);
+            Operand result = context.Shuffle(value, GenerateSubgroupShuffleIndex(context, srcThreadId, subgroupSize));
 
             context.Return(context.ConditionalSelect(valid, result, value));
 
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "Shuffle", true, 3, 1);
         }
 
-        private static Function GenerateShuffleDown()
+        private static Function GenerateShuffleDown(int subgroupSize)
         {
             EmitterContext context = new();
 
@@ -254,7 +276,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Operand clamp = context.BitwiseAnd(mask, Const(0x1f));
             Operand segMask = context.BitwiseAnd(context.ShiftRightU32(mask, Const(8)), Const(0x1f));
-            Operand laneId = context.Load(StorageKind.Input, IoVariable.SubgroupLaneId);
+            Operand laneId = GenerateLoadSubgroupLaneId(context, subgroupSize);
             Operand minThreadId = context.BitwiseAnd(laneId, segMask);
             Operand maxThreadId = context.BitwiseOr(context.BitwiseAnd(clamp, context.BitwiseNot(segMask)), minThreadId);
             Operand srcThreadId = context.IAdd(laneId, index);
@@ -262,14 +284,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             context.Copy(Argument(3), valid);
 
-            Operand result = context.Shuffle(value, srcThreadId);
+            Operand result = context.Shuffle(value, GenerateSubgroupShuffleIndex(context, srcThreadId, subgroupSize));
 
             context.Return(context.ConditionalSelect(valid, result, value));
 
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "ShuffleDown", true, 3, 1);
         }
 
-        private static Function GenerateShuffleUp()
+        private static Function GenerateShuffleUp(int subgroupSize)
         {
             EmitterContext context = new();
 
@@ -278,21 +300,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand mask = Argument(2);
 
             Operand segMask = context.BitwiseAnd(context.ShiftRightU32(mask, Const(8)), Const(0x1f));
-            Operand laneId = context.Load(StorageKind.Input, IoVariable.SubgroupLaneId);
+            Operand laneId = GenerateLoadSubgroupLaneId(context, subgroupSize);
             Operand minThreadId = context.BitwiseAnd(laneId, segMask);
             Operand srcThreadId = context.ISubtract(laneId, index);
             Operand valid = context.ICompareGreaterOrEqual(srcThreadId, minThreadId);
 
             context.Copy(Argument(3), valid);
 
-            Operand result = context.Shuffle(value, srcThreadId);
+            Operand result = context.Shuffle(value, GenerateSubgroupShuffleIndex(context, srcThreadId, subgroupSize));
 
             context.Return(context.ConditionalSelect(valid, result, value));
 
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "ShuffleUp", true, 3, 1);
         }
 
-        private static Function GenerateShuffleXor()
+        private static Function GenerateShuffleXor(int subgroupSize)
         {
             EmitterContext context = new();
 
@@ -302,7 +324,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Operand clamp = context.BitwiseAnd(mask, Const(0x1f));
             Operand segMask = context.BitwiseAnd(context.ShiftRightU32(mask, Const(8)), Const(0x1f));
-            Operand laneId = context.Load(StorageKind.Input, IoVariable.SubgroupLaneId);
+            Operand laneId = GenerateLoadSubgroupLaneId(context, subgroupSize);
             Operand minThreadId = context.BitwiseAnd(laneId, segMask);
             Operand maxThreadId = context.BitwiseOr(context.BitwiseAnd(clamp, context.BitwiseNot(segMask)), minThreadId);
             Operand srcThreadId = context.BitwiseExclusiveOr(laneId, index);
@@ -310,11 +332,33 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             context.Copy(Argument(3), valid);
 
-            Operand result = context.Shuffle(value, srcThreadId);
+            Operand result = context.Shuffle(value, GenerateSubgroupShuffleIndex(context, srcThreadId, subgroupSize));
 
             context.Return(context.ConditionalSelect(valid, result, value));
 
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "ShuffleXor", true, 3, 1);
+        }
+
+        private static Operand GenerateLoadSubgroupLaneId(EmitterContext context, int subgroupSize)
+        {
+            if (subgroupSize <= 32)
+            {
+                return context.Load(StorageKind.Input, IoVariable.SubgroupLaneId);
+            }
+
+            return context.BitwiseAnd(context.Load(StorageKind.Input, IoVariable.SubgroupLaneId), Const(0x1f));
+        }
+
+        private static Operand GenerateSubgroupShuffleIndex(EmitterContext context, Operand srcThreadId, int subgroupSize)
+        {
+            if (subgroupSize <= 32)
+            {
+                return srcThreadId;
+            }
+
+            return context.BitwiseOr(
+                context.BitwiseAnd(context.Load(StorageKind.Input, IoVariable.SubgroupLaneId), Const(0x60)),
+                srcThreadId);
         }
 
         private Function GenerateTexelFetchScaleFunction()
