@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             return Math.Max(
                 Math.Min(_freeSize - padding, BufferSize - alignedFreeOffset),
-                endOffset < _freeOffset ? Math.Min(_freeSize, endOffset) : 0
+                endOffset <= _freeOffset ? Math.Min(_freeSize, endOffset) : 0
                 );
         }
 
