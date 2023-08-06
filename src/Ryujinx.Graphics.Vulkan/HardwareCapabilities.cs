@@ -25,7 +25,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsIndirectParameters;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsGeometryShaderPassthrough;
-        public readonly bool SupportsSubgroupSizeControl;
         public readonly bool SupportsShaderFloat64;
         public readonly bool SupportsShaderInt8;
         public readonly bool SupportsShaderStencilExport;
@@ -46,9 +45,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsHostImportedMemory;
         public readonly bool SupportsDepthClipControl;
         public readonly uint SubgroupSize;
-        public readonly uint MinSubgroupSize;
-        public readonly uint MaxSubgroupSize;
-        public readonly ShaderStageFlags RequiredSubgroupSizeStages;
         public readonly SampleCountFlags SupportedSampleCounts;
         public readonly PortabilitySubsetFlags PortabilitySubset;
         public readonly uint VertexBufferAlignment;
@@ -65,7 +61,6 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsIndirectParameters,
             bool supportsFragmentShaderInterlock,
             bool supportsGeometryShaderPassthrough,
-            bool supportsSubgroupSizeControl,
             bool supportsShaderFloat64,
             bool supportsShaderInt8,
             bool supportsShaderStencilExport,
@@ -86,9 +81,6 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsHostImportedMemory,
             bool supportsDepthClipControl,
             uint subgroupSize,
-            uint minSubgroupSize,
-            uint maxSubgroupSize,
-            ShaderStageFlags requiredSubgroupSizeStages,
             SampleCountFlags supportedSampleCounts,
             PortabilitySubsetFlags portabilitySubset,
             uint vertexBufferAlignment,
@@ -104,7 +96,6 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsIndirectParameters = supportsIndirectParameters;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
-            SupportsSubgroupSizeControl = supportsSubgroupSizeControl;
             SupportsShaderFloat64 = supportsShaderFloat64;
             SupportsShaderInt8 = supportsShaderInt8;
             SupportsShaderStencilExport = supportsShaderStencilExport;
@@ -125,9 +116,6 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsHostImportedMemory = supportsHostImportedMemory;
             SupportsDepthClipControl = supportsDepthClipControl;
             SubgroupSize = subgroupSize;
-            MinSubgroupSize = minSubgroupSize;
-            MaxSubgroupSize = maxSubgroupSize;
-            RequiredSubgroupSizeStages = requiredSubgroupSizeStages;
             SupportedSampleCounts = supportedSampleCounts;
             PortabilitySubset = portabilitySubset;
             VertexBufferAlignment = vertexBufferAlignment;
