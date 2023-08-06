@@ -4,6 +4,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     internal struct VertexBufferState
     {
+        private const int VertexBufferMaxMirrorable = 0x20000;
+
         public static VertexBufferState Null => new(null, 0, 0, 0);
 
         private readonly int _offset;
@@ -89,7 +91,8 @@ namespace Ryujinx.Graphics.Vulkan
             if (autoBuffer != null)
             {
                 int offset = _offset;
-                var buffer = autoBuffer.GetMirrorable(cbs, ref offset, _size, out _).Value;
+                bool mirrorable = _size <= VertexBufferMaxMirrorable;
+                var buffer = mirrorable ? autoBuffer.GetMirrorable(cbs, ref offset, _size, out _).Value : autoBuffer.Get(cbs, offset, _size).Value;
 
                 updater.BindVertexBuffer(cbs, binding, buffer, (ulong)offset, (ulong)_size, (ulong)_stride);
             }

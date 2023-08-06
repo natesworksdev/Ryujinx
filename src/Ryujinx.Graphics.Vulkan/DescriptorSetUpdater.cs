@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class DescriptorSetUpdater
     {
-        private const int StorageBufferMaxMirrorable = 8192;
+        private const ulong StorageBufferMaxMirrorable = 0x2000;
         private record struct BufferRef
         {
             public Auto<DisposableBuffer> Buffer;
@@ -540,7 +540,7 @@ namespace Ryujinx.Graphics.Vulkan
                                 ref info,
                                 ref _storageBufferRefs[index],
                                 dummyBuffer,
-                                !buffer.Write && info.Range <= (ulong)StorageBufferMaxMirrorable);
+                                !buffer.Write && info.Range <= StorageBufferMaxMirrorable);
 
                             _storageMirrored.Set(index, mirrored);
                         }
