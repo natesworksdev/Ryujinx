@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, $"SharedStore{bitSize}_{id}", false, 2, 0);
         }
 
-        private Function GenerateShuffleFunction(HelperFunctionName functionName, int subgroupSize)
+        private static Function GenerateShuffleFunction(HelperFunctionName functionName, int subgroupSize)
         {
             return functionName switch
             {
