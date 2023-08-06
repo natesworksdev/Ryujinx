@@ -614,7 +614,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (_tfInfoBuffer == BufferHandle.Null)
                     {
-                        _tfInfoBuffer = _context.Renderer.CreateBuffer(TfInfoBufferSize);
+                        _tfInfoBuffer = _context.Renderer.CreateBuffer(TfInfoBufferSize, BufferAccess.Stream);
                     }
 
                     buffers[0] = new BufferAssignment(0, new BufferRange(_tfInfoBuffer, 0, TfInfoBufferSize));
