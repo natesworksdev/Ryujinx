@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
+    /// <summary>
+    /// A structure tracking pending upload ranges for buffers.
+    /// Where a range is present, pending data exists that can either be used to build mirrors
+    /// or upload directly to the buffer.
+    /// </summary>
     struct BufferMirrorRangeList
     {
         internal readonly struct Range
@@ -161,6 +166,35 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return BinarySearch(list, offset, size) >= 0;
+        }
+
+        public readonly List<Range> FindOverlaps(int offset, int size)
+        {
+            var list = _ranges;
+            if (list == null)
+            {
+                return null;
+            }
+
+            List<Range> result = null;
+
+            int index = BinarySearch(list, offset, size);
+
+            if (index >= 0)
+            {
+                while (index > 0 && list[index - 1].OverlapsWith(offset, size))
+                {
+                    index--;
+                }
+
+                do
+                {
+                    (result ??= new List<Range>()).Add(list[index++]);
+                }
+                while (index < list.Count && list[index].OverlapsWith(offset, size));
+            }
+
+            return result;
         }
 
         private static int BinarySearch(List<Range> list, int offset, int size)

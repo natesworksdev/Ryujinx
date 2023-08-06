@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Vulkan
         private List<Action> _swapActions;
 
         private byte[] _pendingData;
-        private BufferRangeList _pendingDataRanges;
+        private BufferMirrorRangeList _pendingDataRanges;
         private Dictionary<ulong, StagingBufferReserved> _mirrors;
         private bool _useMirrors;
 
@@ -460,13 +460,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // Clear mirrors in the given range, and submit overlapping pending data.
 
-            // TODO: within range. for now it just clears everything.
-
             if (_pendingData != null)
             {
-                bool hadMirrors = _mirrors.Count > 0;
-
-                _mirrors.Clear();
+                bool hadMirrors = _mirrors.Count > 0 && RemoveOverlappingMirrors(offset, size);
 
                 if (_pendingDataRanges.Count() != 0)
                 {
@@ -475,7 +471,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (hadMirrors)
                 {
-                    _gd.PipelineInternal.Rebind(_buffer, 0, Size);
+                    _gd.PipelineInternal.Rebind(_buffer, offset, size);
                 }
             };
         }
@@ -487,25 +483,24 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void UploadPendingData(CommandBufferScoped cbs, int offset, int size)
         {
-            var ranges = _pendingDataRanges.All();
-
-            // TODO: within range. for now it just clears everything.
+            var ranges = _pendingDataRanges.FindOverlaps(offset, size);
 
             if (ranges != null)
             {
-                var rangeCopy = ranges.ToArray();
+                _pendingDataRanges.Remove(offset, size);
 
-                _pendingDataRanges.Clear();
-
-                foreach (var range in rangeCopy)
+                foreach (var range in ranges)
                 {
+                    int rangeOffset = Math.Max(offset, range.Offset);
+                    int rangeSize = Math.Min(offset + size, range.End) - rangeOffset;
+
                     if (_gd.PipelineInternal.CurrentCommandBuffer.CommandBuffer.Handle == cbs.CommandBuffer.Handle)
                     {
-                        SetData(range.Offset, _pendingData.AsSpan(range.Offset, range.Size), cbs, _gd.PipelineInternal.EndRenderPass, false);
+                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, _gd.PipelineInternal.EndRenderPass, false);
                     }
                     else
                     {
-                        SetData(range.Offset, _pendingData.AsSpan(range.Offset, range.Size), cbs, null, false);
+                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, null, false);
                     }
                 }
             }
