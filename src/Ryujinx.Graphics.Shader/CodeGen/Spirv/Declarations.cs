@@ -5,7 +5,6 @@ using Spv.Generator;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
 using static Spv.Specification;
 using SpvInstruction = Spv.Generator.Instruction;
 
@@ -314,6 +313,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareInputsAndOutputs(CodeGenContext context, StructuredProgramInfo info)
         {
+            int firstLocation = int.MaxValue;
+
+            if (context.Definitions.Stage == ShaderStage.Fragment && context.Definitions.DualSourceBlend)
+            {
+                foreach (var ioDefinition in info.IoDefinitions)
+                {
+                    if (ioDefinition.IoVariable == IoVariable.FragmentOutputColor && ioDefinition.Location < firstLocation)
+                    {
+                        firstLocation = ioDefinition.Location;
+                    }
+                }
+            }
+
             foreach (var ioDefinition in info.IoDefinitions)
             {
                 PixelImap iq = PixelImap.Unused;
@@ -340,11 +352,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 bool isOutput = ioDefinition.StorageKind.IsOutput();
                 bool isPerPatch = ioDefinition.StorageKind.IsPerPatch();
 
-                DeclareInputOrOutput(context, ioDefinition, isOutput, isPerPatch, iq);
+                DeclareInputOrOutput(context, ioDefinition, isOutput, isPerPatch, iq, firstLocation);
             }
         }
 
-        private static void DeclareInputOrOutput(CodeGenContext context, IoDefinition ioDefinition, bool isOutput, bool isPerPatch, PixelImap iq = PixelImap.Unused)
+        private static void DeclareInputOrOutput(
+            CodeGenContext context,
+            IoDefinition ioDefinition,
+            bool isOutput,
+            bool isPerPatch,
+            PixelImap iq = PixelImap.Unused,
+            int firstLocation = 0)
         {
             IoVariable ioVariable = ioDefinition.IoVariable;
             var storageClass = isOutput ? StorageClass.Output : StorageClass.Input;
@@ -467,11 +485,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (context.Definitions.Stage == ShaderStage.Fragment && context.Definitions.DualSourceBlend)
                 {
-                    int firstLocation = BitOperations.TrailingZeroCount(context.AttributeUsage.UsedOutputAttributes);
                     int index = location - firstLocation;
-                    int mask = 3 << firstLocation;
 
-                    if ((uint)index < 2 && (context.AttributeUsage.UsedOutputAttributes & mask) == mask)
+                    if ((uint)index < 2)
                     {
                         context.Decorate(spvVar, Decoration.Location, (LiteralInteger)firstLocation);
                         context.Decorate(spvVar, Decoration.Index, (LiteralInteger)index);

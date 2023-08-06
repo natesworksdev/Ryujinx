@@ -456,10 +456,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         else
                         {
                             context.Store(StorageKind.Output, IoVariable.UserDefined, null, Const(attrIndex), Const(c), value);
-                            attributeUsage.SetOutputUserAttribute(attrIndex);
                         }
-
-                        attributeUsage.SetInputUserAttribute(attrIndex, c);
                     }
                 }
 

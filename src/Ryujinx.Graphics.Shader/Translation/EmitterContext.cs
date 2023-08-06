@@ -319,7 +319,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                         {
                             int index = BitOperations.TrailingZeroCount(passthroughAttributes);
                             WriteUserDefinedOutput(index, primIndex);
-                            TranslatorContext.AttributeUsage.SetOutputUserAttribute(index);
                             passthroughAttributes &= ~(1 << index);
                         }
 
@@ -424,7 +423,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                     bool targetEnabled = (TranslatorContext.Definitions.OmapTargets & (0xf << (rtIndex * 4))) != 0;
                     if (targetEnabled)
                     {
-                        TranslatorContext.AttributeUsage.SetOutputUserAttribute(rtIndex);
                         regIndexBase += 4;
                     }
                 }
