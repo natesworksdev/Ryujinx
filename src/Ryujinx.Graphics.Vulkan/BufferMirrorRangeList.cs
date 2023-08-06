@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private List<Range> _ranges;
 
-        public readonly List<Range> All()
+        public readonly IEnumerable<Range> All()
         {
             return _ranges;
         }

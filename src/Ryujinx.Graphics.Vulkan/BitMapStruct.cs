@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 for (int i = startIndex + 1; i < endIndex; i++)
                 {
-                    _masks[i] |= -1;
+                    _masks[i] |= -1L;
                 }
 
                 _masks[endIndex] |= endMask;
