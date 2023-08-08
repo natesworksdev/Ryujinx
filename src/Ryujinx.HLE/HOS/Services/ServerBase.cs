@@ -84,16 +84,13 @@ namespace Ryujinx.HLE.HOS.Services
         {
             try
             {
-                _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.EnterWriteLock();
 
                 _ports.Add(serverPortHandle, objectFactory);
             }
             finally
             {
-                if (_handleLock.IsWriteLockHeld)
-                {
-                    _handleLock.ExitWriteLock();
-                }
+                _handleLock.ExitWriteLock();
             }
         }
 
@@ -111,16 +108,13 @@ namespace Ryujinx.HLE.HOS.Services
         {
             try
             {
-                _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.EnterWriteLock();
 
                 _sessions.Add(serverSessionHandle, obj);
             }
             finally
             {
-                if (_handleLock.IsWriteLockHeld)
-                {
-                    _handleLock.ExitWriteLock();
-                }
+                _handleLock.ExitWriteLock();
             }
         }
 
@@ -128,16 +122,13 @@ namespace Ryujinx.HLE.HOS.Services
         {
             try
             {
-                _handleLock.TryEnterReadLock(Timeout.Infinite);
+                _handleLock.EnterReadLock();
 
                 return _sessions[serverSessionHandle];
             }
             finally
             {
-                if (_handleLock.IsReadLockHeld)
-                {
-                    _handleLock.ExitReadLock();
-                }
+                _handleLock.ExitReadLock();
             }
         }
 
@@ -145,16 +136,13 @@ namespace Ryujinx.HLE.HOS.Services
         {
             try
             {
-                _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                _handleLock.EnterWriteLock();
 
                 return _sessions.Remove(serverSessionHandle, out obj);
             }
             finally
             {
-                if (_handleLock.IsWriteLockHeld)
-                {
-                    _handleLock.ExitWriteLock();
-                }
+                _handleLock.ExitWriteLock();
             }
         }
 
@@ -194,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 try
                 {
-                    _handleLock.TryEnterReadLock(Timeout.Infinite);
+                    _handleLock.EnterReadLock();
 
                     portHandleCount = _ports.Count;
 
@@ -208,10 +196,7 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 finally
                 {
-                    if (_handleLock.IsReadLockHeld)
-                    {
-                        _handleLock.ExitReadLock();
-                    }
+                    _handleLock.ExitReadLock();
                 }
 
                 // We still need a timeout here to allow the service to pick up and listen new sessions...
@@ -245,16 +230,13 @@ namespace Ryujinx.HLE.HOS.Services
                         {
                             try
                             {
-                                _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                                _handleLock.EnterWriteLock();
                                 IpcService obj = _ports[handles[signaledIndex]].Invoke();
                                 _sessions.Add(serverSessionHandle, obj);
                             }
                             finally
                             {
-                                if (_handleLock.IsWriteLockHeld)
-                                {
-                                    _handleLock.ExitWriteLock();
-                                }
+                                _handleLock.ExitWriteLock();
                             }
                         }
                     }
@@ -358,15 +340,12 @@ namespace Ryujinx.HLE.HOS.Services
 
                             try
                             {
-                                _handleLock.TryEnterWriteLock(Timeout.Infinite);
+                                _handleLock.EnterWriteLock();
                                 _sessions[dupServerSessionHandle] = _sessions[serverSessionHandle];
                             }
                             finally
                             {
-                                if (_handleLock.IsWriteLockHeld)
-                                {
-                                    _handleLock.ExitWriteLock();
-                                }
+                                _handleLock.ExitWriteLock();
                             }
 
                             response.HandleDesc = IpcHandleDesc.MakeMove(dupClientSessionHandle);

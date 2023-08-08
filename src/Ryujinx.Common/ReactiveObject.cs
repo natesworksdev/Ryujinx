@@ -17,16 +17,13 @@ namespace Ryujinx.Common
             {
                 try
                 {
-                    _readerWriterLock.TryEnterReadLock(Timeout.Infinite);
+                    _readerWriterLock.EnterReadLock();
 
                     return _value;
                 }
                 finally
                 {
-                    if (_readerWriterLock.IsReadLockHeld)
-                    {
-                        _readerWriterLock.ExitReadLock();
-                    }
+                    _readerWriterLock.ExitReadLock();
                 }
             }
             set
@@ -36,7 +33,7 @@ namespace Ryujinx.Common
 
                 try
                 {
-                    _readerWriterLock.TryEnterWriteLock(Timeout.Infinite);
+                    _readerWriterLock.EnterWriteLock();
 
                     oldValue = _value;
                     oldIsInitialized = _isInitialized;
@@ -46,10 +43,7 @@ namespace Ryujinx.Common
                 }
                 finally
                 {
-                    if (_readerWriterLock.IsWriteLockHeld)
-                    {
-                        _readerWriterLock.ExitWriteLock();
-                    }
+                    _readerWriterLock.ExitWriteLock();
                 }
                 if (!oldIsInitialized || oldValue == null || !oldValue.Equals(_value))
                 {
