@@ -50,11 +50,11 @@ namespace Ryujinx.HLE
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
+            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, configuration.GdbStubPort) : null;
             System            = new HOS.Horizon(this);
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
             Processes         = new ProcessLoader(this);
-            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, configuration.GdbStubPort) : null;
             TamperMachine     = new TamperMachine();
 
             System.InitializeServices();
