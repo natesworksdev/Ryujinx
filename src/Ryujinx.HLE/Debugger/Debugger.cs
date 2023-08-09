@@ -593,14 +593,12 @@ namespace Ryujinx.HLE.Debugger
 
         private void SocketReaderThreadMain()
         {
-            restartListen:
-            try
-            {
-                var endpoint = new IPEndPoint(IPAddress.Any, GdbStubPort);
-                ListenerSocket = new TcpListener(endpoint);
-                ListenerSocket.Start();
-                Logger.Notice.Print(LogClass.GdbStub, $"Currently waiting on {endpoint} for GDB client");
+            var endpoint = new IPEndPoint(IPAddress.Any, GdbStubPort);
+            ListenerSocket = new TcpListener(endpoint);
+            ListenerSocket.Start();
+            Logger.Notice.Print(LogClass.GdbStub, $"Currently waiting on {endpoint} for GDB client");
 
+            while (true) {
                 ClientSocket = ListenerSocket.AcceptSocket();
                 ClientSocket.NoDelay = true;
                 ReadStream = new NetworkStream(ClientSocket, System.IO.FileAccess.Read);
@@ -649,16 +647,6 @@ namespace Ryujinx.HLE.Debugger
 
                 eof:
                 Logger.Notice.Print(LogClass.GdbStub, "GDB client lost connection");
-                goto restartListen;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.GdbStub, ex.ToString());
-                Logger.Notice.Print(LogClass.GdbStub, "GDB stub socket closed");
-                if (!_shuttingDown)
-                {
-                    goto restartListen;
-                }
             }
         }
 
