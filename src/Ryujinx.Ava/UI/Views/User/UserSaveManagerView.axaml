@@ -213,7 +213,7 @@
                 <ui:SymbolIcon Symbol="Back" />
             </Button>
         </StackPanel>
-        <StackPanel
+        		<StackPanel
             Grid.Row="2"
             Margin="0 24 0 0"
             HorizontalAlignment="Right"

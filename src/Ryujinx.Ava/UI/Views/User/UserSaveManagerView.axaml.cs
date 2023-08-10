@@ -38,6 +38,7 @@ namespace Ryujinx.Ava.UI.Views.User
         private HorizonClient _horizonClient;
         private VirtualFileSystem _virtualFileSystem;
         private NavigationDialogHost _parent;
+        private ISaveManager _saveManager;
 
         public UserSaveManagerView()
         {
