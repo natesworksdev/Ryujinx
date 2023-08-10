@@ -267,7 +267,11 @@ namespace Ryujinx.Ava.UI.Helpers
                 (int)Symbol.Dismiss);
         }
 
-        internal static async Task<bool> CreateChoiceDialog(string title, string primary, string secondaryText)
+            internal static async Task<bool> CreateChoiceDialog(string title, 
+            string primary, 
+            string secondaryText,
+            LocaleKeys primaryButtonKey = LocaleKeys.InputDialogYes,
+            LocaleKeys closeButtonKey = LocaleKeys.InputDialogNo)
         {
             if (_isChoiceDialogOpen)
             {
@@ -280,9 +284,9 @@ namespace Ryujinx.Ava.UI.Helpers
                 title,
                 primary,
                 secondaryText,
-                LocaleManager.Instance[LocaleKeys.InputDialogYes],
-                "",
-                LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                primaryButton: LocaleManager.Instance[primaryButtonKey],
+                secondaryButton: "",
+                closeButton: LocaleManager.Instance[closeButtonKey],
                 (int)Symbol.Help,
                 UserResult.Yes);
 

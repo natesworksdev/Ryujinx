@@ -13,6 +13,7 @@ namespace Ryujinx.Common.Configuration
         private const string GamesDir = "games";
         private const string ProfilesDir = "profiles";
         private const string KeysDir = "system";
+        private const string BackupDir = "backup";
 
         public enum LaunchMode
         {
@@ -28,6 +29,7 @@ namespace Ryujinx.Common.Configuration
         public static string ProfilesDirPath { get; private set; }
         public static string KeysDirPath { get; private set; }
         public static string KeysDirPathUser { get; }
+        public static string BackupDirPath { get; private set; }
 
         public const string DefaultNandDir = "bis";
         public const string DefaultSdcardDir = "sdcard";
@@ -113,6 +115,7 @@ namespace Ryujinx.Common.Configuration
             Directory.CreateDirectory(GamesDirPath = Path.Combine(BaseDirPath, GamesDir));
             Directory.CreateDirectory(ProfilesDirPath = Path.Combine(BaseDirPath, ProfilesDir));
             Directory.CreateDirectory(KeysDirPath = Path.Combine(BaseDirPath, KeysDir));
+            Directory.CreateDirectory(BackupDirPath = Path.Combine(BaseDirPath, BackupDir));
         }
 
         // Check if existing old baseDirPath is a symlink, to prevent possible errors.

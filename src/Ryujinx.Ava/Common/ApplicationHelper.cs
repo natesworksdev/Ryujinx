@@ -17,6 +17,7 @@ using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
@@ -25,6 +26,8 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
@@ -113,6 +116,11 @@ namespace Ryujinx.Ava.Common
         }
 
         public static void OpenSaveDir(ulong saveDataId)
+        {
+            OpenHelper.OpenFolder(FindValidSaveDir(saveDataId));
+        }
+
+        public static string FindValidSaveDir(ulong saveDataId)
         {
             string saveRootPath = Path.Combine(VirtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}");
 

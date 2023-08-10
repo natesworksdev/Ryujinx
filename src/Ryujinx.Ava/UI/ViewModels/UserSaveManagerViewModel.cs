@@ -1,8 +1,11 @@
 ﻿using DynamicData;
 using DynamicData.Binding;
+using LibHac.Fs;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Helper;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -13,6 +16,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _sortIndex;
         private int _orderIndex;
         private string _search;
+        private bool _isGoBackEnabled = true;
+        private LoadingBarData _loadingBarData = new();
         private ObservableCollection<SaveModel> _saves = new();
         private ObservableCollection<SaveModel> _views = new();
         private readonly AccountManager _accountManager;
@@ -52,6 +57,30 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+                public bool IsGoBackEnabled
+        { 
+            get => _isGoBackEnabled;
+            set
+            {
+                _isGoBackEnabled = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public LoadingBarData LoadingBarData
+        {
+            get => _loadingBarData;
+            set
+            {
+                _loadingBarData = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+
+
         public ObservableCollection<SaveModel> Saves
         {
             get => _saves;
@@ -78,6 +107,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             _accountManager = accountManager;
         }
 
+                public void AddNewSaveEntry(SaveModel model)
+        {
+            _saves.Add(model);
+
+            if (Filter(model))
+            {
+                _views.Add(model);
+            }
+
+            OnPropertyChanged(nameof(Views));
+        }
+
         public void Sort()
         {
             Saves.AsObservableChangeSet()
@@ -92,12 +133,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private bool Filter(object arg)
         {
-            if (arg is SaveModel save)
-            {
-                return string.IsNullOrWhiteSpace(_search) || save.Title.ToLower().Contains(_search.ToLower());
-            }
-
-            return false;
+            return arg is SaveModel save
+                && (string.IsNullOrWhiteSpace(_search) || save.Title.Contains(_search, StringComparison.OrdinalIgnoreCase));
         }
 
         private IComparer<SaveModel> GetComparer()

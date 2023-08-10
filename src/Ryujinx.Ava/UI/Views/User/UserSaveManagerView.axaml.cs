@@ -1,6 +1,9 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using DynamicData;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using LibHac;
@@ -9,14 +12,18 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Common.SaveManager;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Helper;
+using Ryujinx.Ui.Common.SaveManager;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
 using UserId = LibHac.Fs.UserId;
@@ -43,25 +50,27 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void NavigatedTo(NavigationEventArgs arg)
         {
-            if (Program.PreviewerDetached)
+            if (!Program.PreviewerDetached)
             {
-                switch (arg.NavigationMode)
-                {
-                    case NavigationMode.New:
-                        var (parent, accountManager, client, virtualFileSystem) = ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
-                        _accountManager = accountManager;
-                        _horizonClient = client;
-                        _virtualFileSystem = virtualFileSystem;
-
-                        _parent = parent;
-                        break;
-                }
-
-                DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
-                ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
-
-                Task.Run(LoadSaves);
+                return;
             }
+
+            switch (arg.NavigationMode)
+            {
+                case NavigationMode.New:
+                    (_parent, _accountManager, _horizonClient, _virtualFileSystem) = 
+                        ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
+
+                    _saveManager = new SaveManager(_horizonClient, _accountManager);
+                    _saveManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
+                    _saveManager.BackupImportSave += BackupManager_ImportSave;
+
+                break;
+            }
+            DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
+            ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
+
+            _ = Task.Run(LoadSaves);
         }
 
         public void LoadSaves()
@@ -110,7 +119,10 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private void GoBack(object sender, RoutedEventArgs e)
         {
-            _parent?.GoBack();
+            if (ViewModel.IsGoBackEnabled)
+            {
+                _parent?.GoBack();
+            }
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)
@@ -142,6 +154,154 @@ namespace Ryujinx.Ava.UI.Views.User
                         ViewModel.Sort();
                     }
                 }
+            }
+        }
+        
+        private async void GenerateProfileSaveBackup(object sender, RoutedEventArgs e)
+        {
+            OpenFolderDialog dialog = new()
+            {
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle]
+            };
+
+            var backupDir = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
+            if (string.IsNullOrWhiteSpace(backupDir))
+            {
+                return;
+            }
+
+            // Disable the user from doing anything until we complete
+            ViewModel.IsGoBackEnabled = false;
+
+            try
+            {
+                // Could potentially seed with existing saves already enumerated but we still need bcat and device data
+                var result = await _saveManager.BackupUserSaveDataToZip(
+                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
+                    location: backupDir,
+                    saveOptions: SaveOptions.Default);
+
+                var notificationType = result.DidFail
+                    ? NotificationType.Error
+                    : NotificationType.Success;
+
+                var message = result.DidFail
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete];
+
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                    message,
+                    notificationType);
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                await ContentDialogHelper.CreateErrorDialog($"Failed to generate backup - {ex.Message}");
+            }
+            finally
+            {
+                ViewModel.LoadingBarData = new();
+                ViewModel.IsGoBackEnabled = true;
+            }
+        }
+
+        private async void ImportSaveBackup(object sender, RoutedEventArgs e)
+        {
+            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerConfirmRestoreTitle],
+                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage],
+                LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage],
+                primaryButtonKey: LocaleKeys.SaveMangerRestoreUserConfirm,
+                closeButtonKey: LocaleKeys.SaveMangerRestoreUserCancel);
+
+            if (!userConfirmation)
+            {
+                return;
+            }
+
+            OpenFileDialog dialog = new()
+            {
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipTitle],
+                AllowMultiple = false,
+                Filters = {
+                    new FileDialogFilter() {
+                        Extensions = { "zip" },
+                    }
+                }
+            };
+
+            var saveBackupZip = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
+            if (saveBackupZip is null
+                || saveBackupZip.Length == 0
+                || string.IsNullOrWhiteSpace(saveBackupZip[0]))
+            {
+                return;
+            }
+
+            // Disable the user from doing anything until we complete
+            ViewModel.IsGoBackEnabled = false;
+
+            try
+            {
+                // Could potentially seed with existing saves already enumerated but we still need bcat and device data
+                var result = await _saveManager.RestoreUserSaveDataFromZip(
+                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
+                    sourceDataPath: saveBackupZip[0]);
+
+                var notificationType = result.DidFail
+                    ? NotificationType.Error
+                    : NotificationType.Success;
+
+                var message = result.DidFail
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete];
+
+                if (!string.IsNullOrWhiteSpace(ViewModel.Search))
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        ViewModel.Sort();
+                    });
+                }
+
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                    message,
+                    notificationType);
+            }
+            catch (Exception ex)
+            {
+                await ContentDialogHelper.CreateErrorDialog($"Failed to import backup saves - {ex.Message}");
+            }
+            finally
+            {
+                ViewModel.LoadingBarData = new();
+                ViewModel.IsGoBackEnabled = true;
+            }
+        }
+
+        private void BackupManager_ProgressUpdate(object sender, LoadingBarEventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                ViewModel.LoadingBarData = new()
+                {
+                    Curr = e.Curr,
+                    Max = e.Max
+                };
+            });
+        }
+
+        private void BackupManager_ImportSave(object sender, ImportSaveEventArgs e) 
+        {
+            var existingSave = ViewModel.Saves.FirstOrDefault(s => s.TitleId == e.SaveInfo.ProgramId);
+
+            if (existingSave == default)
+            {
+                ViewModel.AddNewSaveEntry(new SaveModel(e.SaveInfo, _virtualFileSystem));
+            }
+            else
+            {
+                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo, _virtualFileSystem));
             }
         }
     }
