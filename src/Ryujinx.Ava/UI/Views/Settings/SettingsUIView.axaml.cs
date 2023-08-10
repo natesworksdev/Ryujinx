@@ -30,16 +30,18 @@ namespace Ryujinx.Ava.UI.Views.Settings
             }
             else
             {
-                var window = this.GetVisualRoot() as Window;
-                var result = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                if (this.GetVisualRoot() is Window window)
                 {
-                    AllowMultiple = false
-                });
+                    var result = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                    {
+                        AllowMultiple = false
+                    });
 
-                if (result.Count > 0)
-                {
-                    ViewModel.GameDirectories.Add(result[0].Path.LocalPath);
-                    ViewModel.DirectoryChanged = true;
+                    if (result.Count > 0)
+                    {
+                        ViewModel.GameDirectories.Add(result[0].Path.LocalPath);
+                        ViewModel.DirectoryChanged = true;
+                    }
                 }
             }
         }
@@ -72,7 +74,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
                     new("xml")
                     {
                         Patterns = new[] { "*.xaml" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-xaml" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xaml" },
                         MimeTypes = new[] { "application/xaml+xml" }
                     }
                 }

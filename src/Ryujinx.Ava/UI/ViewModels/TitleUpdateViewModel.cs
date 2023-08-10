@@ -217,7 +217,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
                         Patterns = new[] { "*.nsp" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.Ryujinx-nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
                         MimeTypes = new[] { "application/x-nx-nsp" }
                     }
                 }

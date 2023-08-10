@@ -261,7 +261,7 @@ namespace Ryujinx.Modules
                 SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterDownloading],
                 IconSource = new SymbolIconSource { Symbol = Symbol.Download },
                 ShowProgressBar = true,
-                XamlRoot = parent
+                XamlRoot = parent,
             };
 
             taskDialog.Opened += (s, e) =>

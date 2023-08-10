@@ -26,7 +26,7 @@ namespace Ryujinx.Ava
 
             if (OperatingSystem.IsMacOS())
             {
-                Process.Start("/bin/bash", "-c \"defaults write org.ryujinx.Ryujinx ApplePressAndHoldEnabled -bool false\"");
+                Process.Start("/usr/bin/defaults", "write org.ryujinx.Ryujinx ApplePressAndHoldEnabled -bool false");
             }
         }
 
@@ -100,19 +100,12 @@ namespace Ryujinx.Ava
                     baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
                 }
 
-                // TODO: Revamp how we handle styles to properly take advantage of Ava 11 theme variants
-                switch (baseStyle)
+                RequestedThemeVariant = baseStyle switch
                 {
-                    case "Light":
-                        RequestedThemeVariant = ThemeVariant.Light;
-                        break;
-                    case "Dark":
-                        RequestedThemeVariant = ThemeVariant.Dark;
-                        break;
-                    default:
-                        RequestedThemeVariant = ThemeVariant.Default;
-                        break;
-                }
+                    "Light" => ThemeVariant.Light,
+                    "Dark" => ThemeVariant.Dark,
+                    _ => ThemeVariant.Default
+                };
 
                 if (enableCustomTheme)
                 {

@@ -15,7 +15,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
-#pragma warning disable CS0618
 
 namespace Ryujinx.Ava.UI.Renderer
 {
@@ -153,6 +152,7 @@ namespace Ryujinx.Ava.UI.Renderer
                         Point rootVisualPosition = this.TranslatePoint(new Point((long)lParam & 0xFFFF, (long)lParam >> 16 & 0xFFFF), this).Value;
                         Pointer pointer = new(0, PointerType.Mouse, true);
 
+#pragma warning disable CS0618 // Type or member is obsolete (As of Avalonia 11, the constructors for PointerPressedEventArgs & PointerEventArgs are marked as obsolete)
                         switch (msg)
                         {
                             case WindowsMessages.Lbuttondown:
@@ -213,6 +213,7 @@ namespace Ryujinx.Ava.UI.Renderer
                                     break;
                                 }
                         }
+#pragma warning restore CS0618
                     }
                 }
 
