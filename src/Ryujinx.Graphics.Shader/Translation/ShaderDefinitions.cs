@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool omapSampleMask,
             bool omapDepth,
             bool transformFeedbackEnabled,
-            ulong transformFeedkbackVecMap,
+            ulong transformFeedbackVecMap,
             TransformFeedbackOutput[] transformFeedbackOutputs)
         {
             Stage = stage;
@@ -158,9 +158,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             _transformFeedbackOutputs = transformFeedbackOutputs;
             _transformFeedbackDefinitions = new();
 
-            while (transformFeedkbackVecMap != 0)
+            while (transformFeedbackVecMap != 0)
             {
-                int vecIndex = BitOperations.TrailingZeroCount(transformFeedkbackVecMap);
+                int vecIndex = BitOperations.TrailingZeroCount(transformFeedbackVecMap);
 
                 for (int subIndex = 0; subIndex < 4; subIndex++)
                 {
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     }
                 }
 
-                transformFeedkbackVecMap &= ~(1UL << vecIndex);
+                transformFeedbackVecMap &= ~(1UL << vecIndex);
             }
         }
 
