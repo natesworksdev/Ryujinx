@@ -201,13 +201,36 @@
         <StackPanel
             Grid.Row="2"
             Margin="0 24 0 0"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+			Spacing="10">
             <Button
                 Width="50"
                 MinWidth="50"
+                IsEnabled="{Binding IsGoBackEnabled}"
                 Click="GoBack">
                 <ui:SymbolIcon Symbol="Back" />
             </Button>
         </StackPanel>
+        		<StackPanel
+            Grid.Row="2"
+            Margin="0 24 0 0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+			Spacing="10">
+            <ProgressBar
+                Name="LoadProgressBar"
+                Height="6"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource HighlightColor}"
+                IsVisible="{Binding LoadingBarData.IsVisible}"
+                Maximum="{Binding LoadingBarData.Max}"
+                Value="{Binding LoadingBarData.Curr}" />
+			<Button
+                Click="GenerateProfileSaveBackup"
+                Content="{locale:Locale ExportUserSaveBackup}" />
+			<Button
+                Click="ImportSaveBackup"
+                Content="{locale:Locale ImportUserSaveBackup}" />
+		</StackPanel>
     </Grid>
 </UserControl>
