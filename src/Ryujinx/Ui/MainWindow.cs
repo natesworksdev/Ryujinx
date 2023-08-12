@@ -1780,6 +1780,14 @@ namespace Ryujinx.Ui
             aboutWindow.SetSizeRequest((int)(aboutWindow.DefaultWidth * Program.WindowScaleFactor), (int)(aboutWindow.DefaultHeight * Program.WindowScaleFactor));
             aboutWindow.Show();
         }
+        
+        private void SwitchToAva_Pressed(object sender, EventArgs args)
+        {
+            SwitchToAvaWindow switchToAvaWindow = new();
+
+            switchToAvaWindow.SetSizeRequest((int)(switchToAvaWindow.DefaultWidth * Program.WindowScaleFactor),(int)(switchToAvaWindow.DefaultHeight * Program.WindowScaleFactor));
+            switchToAvaWindow.Show();
+        }
 
         private void Fav_Toggled(object sender, EventArgs args)
         {

@@ -573,6 +573,15 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="GtkMenuItem" id="SwitchToAva">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Switch to Avalonia</property>
+                <property name="use-underline">True</property>
+                <signal name="activate" handler="SwitchToAva_Pressed" swapped="no"/>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
