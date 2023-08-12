@@ -1785,7 +1785,7 @@ namespace Ryujinx.Ui
         {
             SwitchToAvaWindow switchToAvaWindow = new();
 
-            switchToAvaWindow.SetSizeRequest((int)(switchToAvaWindow.DefaultWidth * Program.WindowScaleFactor),(int)(switchToAvaWindow.DefaultHeight * Program.WindowScaleFactor));
+            switchToAvaWindow.SetSizeRequest((int)(switchToAvaWindow.DefaultWidth * Program.WindowScaleFactor), (int)(switchToAvaWindow.DefaultHeight * Program.WindowScaleFactor));
             switchToAvaWindow.Show();
         }
 
