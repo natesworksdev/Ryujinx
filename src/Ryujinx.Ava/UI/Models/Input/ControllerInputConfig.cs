@@ -565,7 +565,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
             else
             {
-               config.Motion = new MotionConfigController
+                config.Motion = new MotionConfigController
                 {
                     EnableMotion = EnableMotion,
                     MotionBackend = MotionInputBackendType.GamepadDriver,
