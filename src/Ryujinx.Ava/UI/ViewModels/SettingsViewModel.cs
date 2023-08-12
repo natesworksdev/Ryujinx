@@ -278,7 +278,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _contentManager = contentManager;
             if (Program.PreviewerDetached)
             {
-                LoadTimeZones();
+                Task.Run(LoadTimeZones);
             }
         }
 
@@ -290,26 +290,23 @@ namespace Ryujinx.Ava.UI.ViewModels
             _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
 
-            CheckSoundBackends();
-            PopulateNetworkInterfaces();
+            Task.Run(CheckSoundBackends);
+            Task.Run(PopulateNetworkInterfaces);
 
             if (Program.PreviewerDetached)
             {
-                LoadAvailableGpus();
+                Task.Run(LoadAvailableGpus);
                 LoadCurrentConfiguration();
             }
         }
 
-        public async void CheckSoundBackends()
+        public async Task CheckSoundBackends()
         {
-            await Task.Run(() =>
-            {
-                IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
-                IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
-                IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
-            });
+            IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
+            IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
+            IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
 
-            Dispatcher.UIThread.Post(() =>
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 OnPropertyChanged(nameof(IsOpenAlEnabled));
                 OnPropertyChanged(nameof(IsSoundIoEnabled));
@@ -317,32 +314,29 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
         }
 
-        private async void LoadAvailableGpus()
+        private async Task LoadAvailableGpus()
         {
-            await Task.Run(() =>
+            AvailableGpus.Clear();
+
+            var devices = VulkanRenderer.GetPhysicalDevices();
+
+            if (devices.Length == 0)
             {
-                AvailableGpus.Clear();
-
-                var devices = VulkanRenderer.GetPhysicalDevices();
-
-                if (devices.Length == 0)
+                IsVulkanAvailable = false;
+                GraphicsBackendIndex = 1;
+            }
+            else
+            {
+                foreach (var device in devices)
                 {
-                    IsVulkanAvailable = false;
-                    GraphicsBackendIndex = 1;
-                }
-                else
-                {
-                    foreach (var device in devices)
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Dispatcher.UIThread.Post(() =>
-                        {
-                            _gpuIds.Add(device.Id);
+                        _gpuIds.Add(device.Id);
 
-                            AvailableGpus.Add(new ComboBoxItem { Content = $"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}" });
-                        });
-                    }
+                        AvailableGpus.Add(new ComboBoxItem { Content = $"{device.Name} {(device.IsDiscrete ? "(dGPU)" : "")}" });
+                    });
                 }
-            });
+            }
 
             // GPU configuration needs to be loaded after the async method or it will always return 0.
             PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ?
@@ -351,50 +345,42 @@ namespace Ryujinx.Ava.UI.ViewModels
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
         }
 
-        public async void LoadTimeZones()
+        public async Task LoadTimeZones()
         {
-            await Task.Run(() =>
+            _timeZoneContentManager = new TimeZoneContentManager();
+
+            _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
+
+            foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
             {
-                _timeZoneContentManager = new TimeZoneContentManager();
+                int hours = Math.DivRem(offset, 3600, out int seconds);
+                int minutes = Math.Abs(seconds) / 60;
 
-                _timeZoneContentManager.InitializeInstance(_virtualFileSystem, _contentManager, IntegrityCheckLevel.None);
+                string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
 
-                foreach ((int offset, string location, string abbr) in _timeZoneContentManager.ParseTzOffsets())
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    int hours = Math.DivRem(offset, 3600, out int seconds);
-                    int minutes = Math.Abs(seconds) / 60;
+                    TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
 
-                    string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
-
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
-
-                        _validTzRegions.Add(location);
-                    });
-                }
-            });
+                    _validTzRegions.Add(location);
+                });
+            }
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(TimeZone)));
         }
 
-        private async void PopulateNetworkInterfaces()
+        private async Task PopulateNetworkInterfaces()
         {
             _networkInterfaces.Clear();
             _networkInterfaces.Add(LocaleManager.Instance[LocaleKeys.NetworkInterfaceDefault], "0");
 
-            await Task.Run(() =>
+            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-                var allInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-                foreach (NetworkInterface networkInterface in allInterfaces)
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
-                    });
-                }
-            });
+                    _networkInterfaces.Add(networkInterface.Name, networkInterface.Id);
+                });
+            }
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceList)));
         }
