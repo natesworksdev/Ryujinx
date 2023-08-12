@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.UI.Controls
                 OpenSaveDirectory(
                     viewModel,
                     SaveDataType.Account,
-                    userId: new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
+                    new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
             }
         }
 
