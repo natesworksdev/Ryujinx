@@ -419,7 +419,7 @@ namespace Ryujinx.Modules
 
                         try
                         {
-                            Task.Run(() => InstallUpdate(taskDialog, updateFile));
+                            InstallUpdate(taskDialog, updateFile);
                         }
                         catch (Exception e)
                         {
@@ -483,7 +483,7 @@ namespace Ryujinx.Modules
                 updateFileStream.Write(buffer, 0, readSize);
             }
 
-            Task.Run(() => InstallUpdate(taskDialog, updateFile));
+            InstallUpdate(taskDialog, updateFile);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -573,27 +573,24 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static async Task InstallUpdate(TaskDialog taskDialog, string updateFile)
+        private static void InstallUpdate(TaskDialog taskDialog, string updateFile)
         {
             // Extract Update
             taskDialog.SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterExtracting];
             taskDialog.SetProgressBarState(0, TaskDialogProgressState.Normal);
 
-            await Task.Run(() =>
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-                {
-                    ExtractTarGzipFile(taskDialog, updateFile, _updateDir);
-                }
-                else if (OperatingSystem.IsWindows())
-                {
-                    ExtractZipFile(taskDialog, updateFile, _updateDir);
-                }
-                else
-                {
-                    throw new NotSupportedException();
-                }
-            });
+                ExtractTarGzipFile(taskDialog, updateFile, _updateDir);
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                ExtractZipFile(taskDialog, updateFile, _updateDir);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
 
             // Delete downloaded zip
             File.Delete(updateFile);
@@ -607,35 +604,32 @@ namespace Ryujinx.Modules
             if (!OperatingSystem.IsMacOS())
             {
                 // Replace old files
-                await Task.Run(() =>
+                double count = 0;
+                foreach (string file in allFiles)
                 {
-                    double count = 0;
-                    foreach (string file in allFiles)
+                    count++;
+                    try
                     {
-                        count++;
-                        try
-                        {
-                            File.Move(file, file + ".ryuold");
+                        File.Move(file, file + ".ryuold");
 
-                            Dispatcher.UIThread.Post(() =>
-                            {
-                                taskDialog.SetProgressBarState(GetPercentage(count, allFiles.Count), TaskDialogProgressState.Normal);
-                            });
-                        }
-                        catch
+                        Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            Logger.Warning?.Print(LogClass.Application, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.UpdaterRenameFailed, file));
-                        }
+                            taskDialog.SetProgressBarState(GetPercentage(count, allFiles.Count), TaskDialogProgressState.Normal);
+                        });
                     }
-
-                    Dispatcher.UIThread.Post(() =>
+                    catch
                     {
-                        taskDialog.SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterAddingFiles];
-                        taskDialog.SetProgressBarState(0, TaskDialogProgressState.Normal);
-                    });
+                        Logger.Warning?.Print(LogClass.Application, LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.UpdaterRenameFailed, file));
+                    }
+                }
 
-                    MoveAllFilesOver(_updatePublishDir, _homeDir, taskDialog);
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    taskDialog.SubHeader = LocaleManager.Instance[LocaleKeys.UpdaterAddingFiles];
+                    taskDialog.SetProgressBarState(0, TaskDialogProgressState.Normal);
                 });
+
+                MoveAllFilesOver(_updatePublishDir, _homeDir, taskDialog);
 
                 Directory.Delete(_updateDir, true);
             }
@@ -696,18 +690,18 @@ namespace Ryujinx.Modules
             {
                 if (ReleaseInformation.IsFlatHubBuild())
                 {
-                    Dispatcher.UIThread.Post(async () =>
+                    Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        await ContentDialogHelper.CreateWarningDialog(
+                        ContentDialogHelper.CreateWarningDialog(
                             LocaleManager.Instance[LocaleKeys.UpdaterDisabledWarningTitle],
                             LocaleManager.Instance[LocaleKeys.DialogUpdaterFlatpakNotSupportedMessage]);
                     });
                 }
                 else
                 {
-                    Dispatcher.UIThread.Post(async () =>
+                    Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        await ContentDialogHelper.CreateWarningDialog(
+                        ContentDialogHelper.CreateWarningDialog(
                             LocaleManager.Instance[LocaleKeys.UpdaterDisabledWarningTitle],
                             LocaleManager.Instance[LocaleKeys.DialogUpdaterDirtyBuildSubMessage]);
                     });
