@@ -22,7 +22,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
             foreach (ILogical visual in SettingButtons.GetLogicalDescendants())
             {
-                if (visual is ToggleButton button && !(visual is CheckBox))
+                if (visual is ToggleButton button and not CheckBox)
                 {
                     button.IsCheckedChanged += Button_IsCheckedChanged;
                 }
