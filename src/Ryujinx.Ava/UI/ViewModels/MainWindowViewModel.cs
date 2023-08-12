@@ -1067,10 +1067,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
-
-                    static async Task Action() => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys);
-
-                    await Dispatcher.UIThread.InvokeAsync(Action);
+                    
+                    await Dispatcher.UIThread.InvokeAsync(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
                 }
             }
             catch (Exception ex)

@@ -110,18 +110,12 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private void PauseEmulation_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                Window.ViewModel.AppHost?.Pause();
-            });
+            Window.ViewModel.AppHost?.Pause();
         }
 
         private void ResumeEmulation_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                Window.ViewModel.AppHost?.Resume();
-            });
+            Window.ViewModel.AppHost?.Resume();
         }
 
         public void OpenSettings(object sender, RoutedEventArgs e)
