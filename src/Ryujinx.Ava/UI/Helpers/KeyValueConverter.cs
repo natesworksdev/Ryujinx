@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         public static KeyValueConverter Instance = new();
 
-        private static readonly Dictionary<Key, LocaleKeys> KeysMap = new()
+        private static readonly Dictionary<Key, LocaleKeys> _keysMap = new()
         {
             { Key.Unknown, LocaleKeys.KeyUnknown },
             { Key.ShiftLeft, LocaleKeys.KeyShiftLeft },
@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.Helpers
             { Key.Unbound, LocaleKeys.KeyUnbound },
         };
 
-        private static readonly Dictionary<GamepadInputId, LocaleKeys> GamepadInputIdMap = new()
+        private static readonly Dictionary<GamepadInputId, LocaleKeys> _gamepadInputIdMap = new()
         {
             { GamepadInputId.LeftStick, LocaleKeys.GamepadLeftStick },
             { GamepadInputId.RightStick, LocaleKeys.GamepadRightStick },
@@ -113,7 +113,7 @@ namespace Ryujinx.Ava.UI.Helpers
             { GamepadInputId.Unbound, LocaleKeys.KeyUnbound},
         };
 
-        private static readonly Dictionary<StickInputId, LocaleKeys> StickInputIdMap = new()
+        private static readonly Dictionary<StickInputId, LocaleKeys> _stickInputIdMap = new()
         {
             { StickInputId.Left, LocaleKeys.StickLeft},
             { StickInputId.Right, LocaleKeys.StickRight},
@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
             if (value is Key key)
             {
-                if (KeysMap.TryGetValue(key, out LocaleKeys localeKey))
+                if (_keysMap.TryGetValue(key, out LocaleKeys localeKey))
                 {
                     keyString = LocaleManager.Instance[localeKey];
                 }
@@ -137,7 +137,7 @@ namespace Ryujinx.Ava.UI.Helpers
             }
             else if (value is GamepadInputId gamepadInputId)
             {
-                if (GamepadInputIdMap.TryGetValue(gamepadInputId, out LocaleKeys localeKey))
+                if (_gamepadInputIdMap.TryGetValue(gamepadInputId, out LocaleKeys localeKey))
                 {
                     keyString = LocaleManager.Instance[localeKey];
                 }
@@ -148,7 +148,7 @@ namespace Ryujinx.Ava.UI.Helpers
             }
             else if (value is StickInputId stickInputId)
             {
-                if (StickInputIdMap.TryGetValue(stickInputId, out LocaleKeys localeKey))
+                if (_stickInputIdMap.TryGetValue(stickInputId, out LocaleKeys localeKey))
                 {
                     keyString = LocaleManager.Instance[localeKey];
                 }
