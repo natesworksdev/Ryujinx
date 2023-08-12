@@ -42,7 +42,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Owner is MainWindow window && ViewModel.DirectoryChanged)
             {
-                Task.Run(window.LoadApplications);
+                window.LoadApplications();
             }
         }
 

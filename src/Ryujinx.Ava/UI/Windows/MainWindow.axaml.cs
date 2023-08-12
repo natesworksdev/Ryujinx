@@ -100,7 +100,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                 ViewModel.RefreshFirmwareStatus();
 
-                LoadGameList();
+                LoadApplications();
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
                 this.ScalingChanged += OnScalingChanged;
@@ -122,36 +122,17 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.IsActive = obj;
         }
 
-        public void LoadGameList()
-        {
-            if (_isLoading)
-            {
-                return;
-            }
-
-            _isLoading = true;
-
-            Task.Run(LoadApplications);
-
-            _isLoading = false;
-        }
-
         private void OnScalingChanged(object sender, EventArgs e)
         {
             Program.DesktopScaleFactor = this.RenderScaling;
         }
-
-        public void AddApplication(ApplicationData applicationData)
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                ViewModel.Applications.Add(applicationData);
-            });
-        }
-
+        
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
-            AddApplication(e.AppData);
+            Dispatcher.UIThread.Post(() =>
+            {
+                ViewModel.Applications.Add(e.AppData);
+            });
         }
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
@@ -517,18 +498,15 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        public async Task LoadApplications()
+        public void LoadApplications()
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                ViewModel.Applications.Clear();
+            ViewModel.Applications.Clear();
 
-                StatusBarView.LoadProgressBar.IsVisible = true;
-                ViewModel.StatusBarProgressMaximum = 0;
-                ViewModel.StatusBarProgressValue = 0;
+            StatusBarView.LoadProgressBar.IsVisible = true;
+            ViewModel.StatusBarProgressMaximum = 0;
+            ViewModel.StatusBarProgressValue = 0;
 
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
-            });
+            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
 
             ReloadGameList();
         }
@@ -549,7 +527,7 @@ namespace Ryujinx.Ava.UI.Windows
             };
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-            Task.Run(LoadApplications);
+            LoadApplications();
         }
 
         private void ReloadGameList()
@@ -561,7 +539,10 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            Task.Run(() =>
+            {
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            });
 
             _isLoading = false;
         }

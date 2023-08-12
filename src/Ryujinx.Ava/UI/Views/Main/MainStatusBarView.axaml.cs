@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private void Refresh_OnClick(object sender, RoutedEventArgs e)
         {
-            Task.Run(Window.LoadApplications);
+            Window.LoadApplications();
         }
     }
 }
