@@ -54,7 +54,10 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel viewModel })
             {
-                OpenSaveDirectory(viewModel, SaveDataType.Account, userId: new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
+                OpenSaveDirectory(
+                    viewModel,
+                    SaveDataType.Account,
+                    userId: new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
             }
         }
 
@@ -80,7 +83,9 @@ namespace Ryujinx.Ava.UI.Controls
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                        await ContentDialogHelper.CreateErrorDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage],
+                            LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
                     });
 
                     return;
@@ -99,7 +104,10 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    TitleUpdateWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName)
+                    TitleUpdateWindow.Show(
+                        viewModel.VirtualFileSystem,
+                        ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
+                        viewModel.SelectedApplication.TitleName)
                 );
             }
         }
@@ -111,7 +119,10 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    DownloadableContentManagerWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName)
+                    DownloadableContentManagerWindow.Show(
+                        viewModel.VirtualFileSystem,
+                        ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
+                        viewModel.SelectedApplication.TitleName)
                 );
             }
         }
@@ -123,7 +134,11 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    new CheatWindow(viewModel.VirtualFileSystem, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.TitleName, viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window)
+                    new CheatWindow(
+                        viewModel.VirtualFileSystem,
+                        viewModel.SelectedApplication.TitleId,
+                        viewModel.SelectedApplication.TitleName,
+                        viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window)
                 );
             }
         }
@@ -161,9 +176,10 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 UserResult result = Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                    ContentDialogHelper.CreateConfirmationDialog(
+                        LocaleManager.Instance[LocaleKeys.DialogWarning],
                         LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage,
-                            viewModel.SelectedApplication.TitleName),
+                        viewModel.SelectedApplication.TitleName),
                         LocaleManager.Instance[LocaleKeys.InputDialogYes],
                         LocaleManager.Instance[LocaleKeys.InputDialogNo],
                         LocaleManager.Instance[LocaleKeys.RyujinxConfirm])
@@ -314,7 +330,11 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(NcaSectionType.Code, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider)
+                    ApplicationHelper.ExtractSection(
+                        viewModel.StorageProvider,
+                        NcaSectionType.Code,
+                        viewModel.SelectedApplication.Path,
+                        viewModel.SelectedApplication.TitleName)
                 );
             }
         }
@@ -326,7 +346,11 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(NcaSectionType.Data, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider)
+                    ApplicationHelper.ExtractSection(
+                        viewModel.StorageProvider,
+                        NcaSectionType.Data,
+                        viewModel.SelectedApplication.Path,
+                        viewModel.SelectedApplication.TitleName)
                 );
             }
         }
@@ -338,7 +362,11 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(NcaSectionType.Logo, viewModel.SelectedApplication.Path, viewModel.SelectedApplication.TitleName, viewModel.StorageProvider)
+                    ApplicationHelper.ExtractSection(
+                        viewModel.StorageProvider,
+                        NcaSectionType.Logo,
+                        viewModel.SelectedApplication.Path,
+                        viewModel.SelectedApplication.TitleName)
                 );
             }
         }
