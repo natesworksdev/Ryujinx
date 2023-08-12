@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler
 {
     class Demangler
     {
-        private static readonly string _base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+        private const string _base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
         private readonly List<BaseNode> _substitutionList = new();
         private List<BaseNode> _templateParamList = new();
 

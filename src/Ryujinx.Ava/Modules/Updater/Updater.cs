@@ -37,7 +37,7 @@ namespace Ryujinx.Modules
         private static readonly string _homeDir = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string _updateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string _updatePublishDir = Path.Combine(_updateDir, "publish");
-        private static readonly int _connectionCount = 4;
+        private const int _connectionCount = 4;
 
         private static string _buildVer;
         private static string _platformExt;
