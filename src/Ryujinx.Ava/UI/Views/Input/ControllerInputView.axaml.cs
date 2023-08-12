@@ -25,8 +25,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             {
                 if (visual is ToggleButton button && !(visual is CheckBox))
                 {
-                    button.Checked += Button_Checked;
-                    button.Unchecked += Button_Unchecked;
+                    button.IsCheckedChanged += Button_IsCheckedChanged;
                 }
             }
         }
@@ -41,127 +40,129 @@ namespace Ryujinx.Ava.UI.Views.Input
             }
         }
 
-        private void Button_Checked(object sender, RoutedEventArgs e)
+        private void Button_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
             if (sender is ToggleButton button)
             {
-                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
+                if ((bool)button.IsChecked)
                 {
-                    return;
-                }
-
-                bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
-
-                if (_currentAssigner == null && (bool)button.IsChecked)
-                {
-                    _currentAssigner = new ButtonKeyAssigner(button);
-
-                    FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
-
-                    PointerPressed += MouseClick;
-
-                    IKeyboard keyboard = (IKeyboard)(DataContext as ControllerInputViewModel).parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
-                    IButtonAssigner assigner = CreateButtonAssigner(isStick);
-
-                    _currentAssigner.ButtonAssigned += (sender, e) =>
+                    if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
                     {
-                        if (e.IsAssigned)
+                        return;
+                    }
+
+                    bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
+
+                    if (_currentAssigner == null && (bool)button.IsChecked)
+                    {
+                        _currentAssigner = new ButtonKeyAssigner(button);
+
+                        this.Focus(NavigationMethod.Pointer);
+
+                        PointerPressed += MouseClick;
+
+                        IKeyboard keyboard = (IKeyboard)(DataContext as ControllerInputViewModel).parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                        IButtonAssigner assigner = CreateButtonAssigner(isStick);
+
+                        _currentAssigner.ButtonAssigned += (sender, e) =>
                         {
-                            var viewModel = (DataContext as ControllerInputViewModel);
-                            viewModel.parentModel.IsModified = true;
-
-                            switch (button.Name)
+                            if (e.IsAssigned)
                             {
-                                case "ButtonZl":
-                                    viewModel.Config.ButtonZl = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonL":
-                                    viewModel.Config.ButtonL = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonMinus":
-                                    viewModel.Config.ButtonMinus = (GamepadInputId)e.Key;
-                                    break;
-                                case "LeftStickButton":
-                                    viewModel.Config.LeftStickButton = (GamepadInputId)e.Key;
-                                    break;
-                                case "LeftJoystick":
-                                    viewModel.Config.LeftJoystick = (StickInputId)e.Key;
-                                    break;
-                                case "DpadUp":
-                                    viewModel.Config.DpadUp = (GamepadInputId)e.Key;
-                                    break;
-                                case "DpadDown":
-                                    viewModel.Config.DpadDown = (GamepadInputId)e.Key;
-                                    break;
-                                case "DpadLeft":
-                                    viewModel.Config.DpadLeft = (GamepadInputId)e.Key;
-                                    break;
-                                case "DpadRight":
-                                    viewModel.Config.DpadRight = (GamepadInputId)e.Key;
-                                    break;
-                                case "LeftButtonSr":
-                                    viewModel.Config.LeftButtonSr = (GamepadInputId)e.Key;
-                                    break;
-                                case "LeftButtonSl":
-                                    viewModel.Config.LeftButtonSl = (GamepadInputId)e.Key;
-                                    break;
-                                case "RightButtonSr":
-                                    viewModel.Config.RightButtonSr = (GamepadInputId)e.Key;
-                                    break;
-                                case "RightButtonSl":
-                                    viewModel.Config.RightButtonSl = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonZr":
-                                    viewModel.Config.ButtonZr = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonR":
-                                    viewModel.Config.ButtonR = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonPlus":
-                                    viewModel.Config.ButtonPlus = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonA":
-                                    viewModel.Config.ButtonA = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonB":
-                                    viewModel.Config.ButtonB = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonX":
-                                    viewModel.Config.ButtonX = (GamepadInputId)e.Key;
-                                    break;
-                                case "ButtonY":
-                                    viewModel.Config.ButtonY = (GamepadInputId)e.Key;
-                                    break;
-                                case "RightStickButton":
-                                    viewModel.Config.RightStickButton = (GamepadInputId)e.Key;
-                                    break;
-                                case "RightJoystick":
-                                    viewModel.Config.RightJoystick = (StickInputId)e.Key;
-                                    break;
-                            }
-                        }
-                    };
+                                var viewModel = (DataContext as ControllerInputViewModel);
+                                viewModel.parentModel.IsModified = true;
 
-                    _currentAssigner.GetInputAndAssign(assigner, keyboard);
+                                switch (button.Name)
+                                {
+                                    case "ButtonZl":
+                                        viewModel.Config.ButtonZl = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonL":
+                                        viewModel.Config.ButtonL = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonMinus":
+                                        viewModel.Config.ButtonMinus = (GamepadInputId)e.Key;
+                                        break;
+                                    case "LeftStickButton":
+                                        viewModel.Config.LeftStickButton = (GamepadInputId)e.Key;
+                                        break;
+                                    case "LeftJoystick":
+                                        viewModel.Config.LeftJoystick = (StickInputId)e.Key;
+                                        break;
+                                    case "DpadUp":
+                                        viewModel.Config.DpadUp = (GamepadInputId)e.Key;
+                                        break;
+                                    case "DpadDown":
+                                        viewModel.Config.DpadDown = (GamepadInputId)e.Key;
+                                        break;
+                                    case "DpadLeft":
+                                        viewModel.Config.DpadLeft = (GamepadInputId)e.Key;
+                                        break;
+                                    case "DpadRight":
+                                        viewModel.Config.DpadRight = (GamepadInputId)e.Key;
+                                        break;
+                                    case "LeftButtonSr":
+                                        viewModel.Config.LeftButtonSr = (GamepadInputId)e.Key;
+                                        break;
+                                    case "LeftButtonSl":
+                                        viewModel.Config.LeftButtonSl = (GamepadInputId)e.Key;
+                                        break;
+                                    case "RightButtonSr":
+                                        viewModel.Config.RightButtonSr = (GamepadInputId)e.Key;
+                                        break;
+                                    case "RightButtonSl":
+                                        viewModel.Config.RightButtonSl = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonZr":
+                                        viewModel.Config.ButtonZr = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonR":
+                                        viewModel.Config.ButtonR = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonPlus":
+                                        viewModel.Config.ButtonPlus = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonA":
+                                        viewModel.Config.ButtonA = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonB":
+                                        viewModel.Config.ButtonB = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonX":
+                                        viewModel.Config.ButtonX = (GamepadInputId)e.Key;
+                                        break;
+                                    case "ButtonY":
+                                        viewModel.Config.ButtonY = (GamepadInputId)e.Key;
+                                        break;
+                                    case "RightStickButton":
+                                        viewModel.Config.RightStickButton = (GamepadInputId)e.Key;
+                                        break;
+                                    case "RightJoystick":
+                                        viewModel.Config.RightJoystick = (StickInputId)e.Key;
+                                        break;
+                                }
+                            }
+                        };
+
+                        _currentAssigner.GetInputAndAssign(assigner, keyboard);
+                    }
+                    else
+                    {
+                        if (_currentAssigner != null)
+                        {
+                            ToggleButton oldButton = _currentAssigner.ToggledButton;
+
+                            _currentAssigner.Cancel();
+                            _currentAssigner = null;
+                            button.IsChecked = false;
+                        }
+                    }
                 }
                 else
                 {
-                    if (_currentAssigner != null)
-                    {
-                        ToggleButton oldButton = _currentAssigner.ToggledButton;
-
-                        _currentAssigner.Cancel();
-                        _currentAssigner = null;
-                        button.IsChecked = false;
-                    }
+                    _currentAssigner?.Cancel();
+                    _currentAssigner = null;
                 }
             }
-        }
-
-        private void Button_Unchecked(object sender, RoutedEventArgs e)
-        {
-            _currentAssigner?.Cancel();
-            _currentAssigner = null;
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)

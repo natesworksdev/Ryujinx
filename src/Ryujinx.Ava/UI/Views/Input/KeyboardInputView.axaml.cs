@@ -24,8 +24,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             {
                 if (visual is ToggleButton button && !(visual is CheckBox))
                 {
-                    button.Checked += Button_Checked;
-                    button.Unchecked += Button_Unchecked;
+                    button.IsCheckedChanged += Button_IsCheckedChanged;
                 }
             }
         }
@@ -40,145 +39,147 @@ namespace Ryujinx.Ava.UI.Views.Input
             }
         }
 
-        private void Button_Checked(object sender, RoutedEventArgs e)
+        private void Button_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
             if (sender is ToggleButton button)
             {
-                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
+                if ((bool)button.IsChecked)
                 {
-                    return;
-                }
-
-                bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
-
-                if (_currentAssigner == null && (bool)button.IsChecked)
-                {
-                    _currentAssigner = new ButtonKeyAssigner(button);
-
-                    FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
-
-                    PointerPressed += MouseClick;
-
-                    IKeyboard keyboard = (IKeyboard)(DataContext as KeyboardInputViewModel).parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
-                    IButtonAssigner assigner = CreateButtonAssigner(isStick);
-
-                    _currentAssigner.ButtonAssigned += (sender, e) =>
+                    if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
                     {
-                        if (e.IsAssigned)
+                        return;
+                    }
+
+                    bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
+
+                    if (_currentAssigner == null && (bool)button.IsChecked)
+                    {
+                        _currentAssigner = new ButtonKeyAssigner(button);
+
+                        this.Focus(NavigationMethod.Pointer);
+
+                        PointerPressed += MouseClick;
+
+                        IKeyboard keyboard = (IKeyboard)(DataContext as KeyboardInputViewModel).parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                        IButtonAssigner assigner = CreateButtonAssigner(isStick);
+
+                        _currentAssigner.ButtonAssigned += (sender, e) =>
                         {
-                            var viewModel = (DataContext as KeyboardInputViewModel);
-                            viewModel.parentModel.IsModified = true;
-
-                            switch (button.Name)
+                            if (e.IsAssigned)
                             {
-                                case "ButtonZl":
-                                    viewModel.Config.ButtonZl = (Key)e.Key;
-                                    break;
-                                case "ButtonL":
-                                    viewModel.Config.ButtonL = (Key)e.Key;
-                                    break;
-                                case "ButtonMinus":
-                                    viewModel.Config.ButtonMinus = (Key)e.Key;
-                                    break;
-                                case "LeftStickButton":
-                                    viewModel.Config.LeftStickButton = (Key)e.Key;
-                                    break;
-                                case "LeftStickUp":
-                                    viewModel.Config.LeftStickUp = (Key)e.Key;
-                                    break;
-                                case "LeftStickDown":
-                                    viewModel.Config.LeftStickDown = (Key)e.Key;
-                                    break;
-                                case "LeftStickRight":
-                                    viewModel.Config.LeftStickRight = (Key)e.Key;
-                                    break;
-                                case "LeftStickLeft":
-                                    viewModel.Config.LeftStickLeft = (Key)e.Key;
-                                    break;
-                                case "DpadUp":
-                                    viewModel.Config.DpadUp = (Key)e.Key;
-                                    break;
-                                case "DpadDown":
-                                    viewModel.Config.DpadDown = (Key)e.Key;
-                                    break;
-                                case "DpadLeft":
-                                    viewModel.Config.DpadLeft = (Key)e.Key;
-                                    break;
-                                case "DpadRight":
-                                    viewModel.Config.DpadRight = (Key)e.Key;
-                                    break;
-                                case "LeftButtonSr":
-                                    viewModel.Config.LeftButtonSr = (Key)e.Key;
-                                    break;
-                                case "LeftButtonSl":
-                                    viewModel.Config.LeftButtonSl = (Key)e.Key;
-                                    break;
-                                case "RightButtonSr":
-                                    viewModel.Config.RightButtonSr = (Key)e.Key;
-                                    break;
-                                case "RightButtonSl":
-                                    viewModel.Config.RightButtonSl = (Key)e.Key;
-                                    break;
-                                case "ButtonZr":
-                                    viewModel.Config.ButtonZr = (Key)e.Key;
-                                    break;
-                                case "ButtonR":
-                                    viewModel.Config.ButtonR = (Key)e.Key;
-                                    break;
-                                case "ButtonPlus":
-                                    viewModel.Config.ButtonPlus = (Key)e.Key;
-                                    break;
-                                case "ButtonA":
-                                    viewModel.Config.ButtonA = (Key)e.Key;
-                                    break;
-                                case "ButtonB":
-                                    viewModel.Config.ButtonB = (Key)e.Key;
-                                    break;
-                                case "ButtonX":
-                                    viewModel.Config.ButtonX = (Key)e.Key;
-                                    break;
-                                case "ButtonY":
-                                    viewModel.Config.ButtonY = (Key)e.Key;
-                                    break;
-                                case "RightStickButton":
-                                    viewModel.Config.RightStickButton = (Key)e.Key;
-                                    break;
-                                case "RightStickUp":
-                                    viewModel.Config.RightStickUp = (Key)e.Key;
-                                    break;
-                                case "RightStickDown":
-                                    viewModel.Config.RightStickDown = (Key)e.Key;
-                                    break;
-                                case "RightStickRight":
-                                    viewModel.Config.RightStickRight = (Key)e.Key;
-                                    break;
-                                case "RightStickLeft":
-                                    viewModel.Config.RightStickLeft = (Key)e.Key;
-                                    break;
-                            }
-                        }
-                    };
+                                var viewModel = (DataContext as KeyboardInputViewModel);
+                                viewModel.parentModel.IsModified = true;
 
-                    _currentAssigner.GetInputAndAssign(assigner, keyboard);
+                                switch (button.Name)
+                                {
+                                    case "ButtonZl":
+                                        viewModel.Config.ButtonZl = (Key)e.Key;
+                                        break;
+                                    case "ButtonL":
+                                        viewModel.Config.ButtonL = (Key)e.Key;
+                                        break;
+                                    case "ButtonMinus":
+                                        viewModel.Config.ButtonMinus = (Key)e.Key;
+                                        break;
+                                    case "LeftStickButton":
+                                        viewModel.Config.LeftStickButton = (Key)e.Key;
+                                        break;
+                                    case "LeftStickUp":
+                                        viewModel.Config.LeftStickUp = (Key)e.Key;
+                                        break;
+                                    case "LeftStickDown":
+                                        viewModel.Config.LeftStickDown = (Key)e.Key;
+                                        break;
+                                    case "LeftStickRight":
+                                        viewModel.Config.LeftStickRight = (Key)e.Key;
+                                        break;
+                                    case "LeftStickLeft":
+                                        viewModel.Config.LeftStickLeft = (Key)e.Key;
+                                        break;
+                                    case "DpadUp":
+                                        viewModel.Config.DpadUp = (Key)e.Key;
+                                        break;
+                                    case "DpadDown":
+                                        viewModel.Config.DpadDown = (Key)e.Key;
+                                        break;
+                                    case "DpadLeft":
+                                        viewModel.Config.DpadLeft = (Key)e.Key;
+                                        break;
+                                    case "DpadRight":
+                                        viewModel.Config.DpadRight = (Key)e.Key;
+                                        break;
+                                    case "LeftButtonSr":
+                                        viewModel.Config.LeftButtonSr = (Key)e.Key;
+                                        break;
+                                    case "LeftButtonSl":
+                                        viewModel.Config.LeftButtonSl = (Key)e.Key;
+                                        break;
+                                    case "RightButtonSr":
+                                        viewModel.Config.RightButtonSr = (Key)e.Key;
+                                        break;
+                                    case "RightButtonSl":
+                                        viewModel.Config.RightButtonSl = (Key)e.Key;
+                                        break;
+                                    case "ButtonZr":
+                                        viewModel.Config.ButtonZr = (Key)e.Key;
+                                        break;
+                                    case "ButtonR":
+                                        viewModel.Config.ButtonR = (Key)e.Key;
+                                        break;
+                                    case "ButtonPlus":
+                                        viewModel.Config.ButtonPlus = (Key)e.Key;
+                                        break;
+                                    case "ButtonA":
+                                        viewModel.Config.ButtonA = (Key)e.Key;
+                                        break;
+                                    case "ButtonB":
+                                        viewModel.Config.ButtonB = (Key)e.Key;
+                                        break;
+                                    case "ButtonX":
+                                        viewModel.Config.ButtonX = (Key)e.Key;
+                                        break;
+                                    case "ButtonY":
+                                        viewModel.Config.ButtonY = (Key)e.Key;
+                                        break;
+                                    case "RightStickButton":
+                                        viewModel.Config.RightStickButton = (Key)e.Key;
+                                        break;
+                                    case "RightStickUp":
+                                        viewModel.Config.RightStickUp = (Key)e.Key;
+                                        break;
+                                    case "RightStickDown":
+                                        viewModel.Config.RightStickDown = (Key)e.Key;
+                                        break;
+                                    case "RightStickRight":
+                                        viewModel.Config.RightStickRight = (Key)e.Key;
+                                        break;
+                                    case "RightStickLeft":
+                                        viewModel.Config.RightStickLeft = (Key)e.Key;
+                                        break;
+                                }
+                            }
+                        };
+
+                        _currentAssigner.GetInputAndAssign(assigner, keyboard);
+                    }
+                    else
+                    {
+                        if (_currentAssigner != null)
+                        {
+                            ToggleButton oldButton = _currentAssigner.ToggledButton;
+
+                            _currentAssigner.Cancel();
+                            _currentAssigner = null;
+                            button.IsChecked = false;
+                        }
+                    }
                 }
                 else
                 {
-                    if (_currentAssigner != null)
-                    {
-                        ToggleButton oldButton = _currentAssigner.ToggledButton;
-
-                        _currentAssigner.Cancel();
-                        _currentAssigner = null;
-                        button.IsChecked = false;
-                    }
+                    _currentAssigner?.Cancel();
+                    _currentAssigner = null;
                 }
             }
-        }
-
-        private void Button_Unchecked(object sender, RoutedEventArgs e)
-        {
-            _currentAssigner?.Cancel();
-            _currentAssigner = null;
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)

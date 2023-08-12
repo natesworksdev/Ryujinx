@@ -63,7 +63,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         SelectionChanged="PlayerIndexBox_OnSelectionChanged"
-                        Items="{Binding PlayerIndexes}"
+                        ItemsSource="{Binding PlayerIndexes}"
                         SelectedIndex="{Binding PlayerId}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -91,14 +91,14 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{locale:Locale ControllerSettingsProfile}" />
-                    <ui:ComboBox
+                    <ui:FAComboBox
                         Grid.Column="1"
                         IsEditable="True"
                         Name="ProfileBox"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         SelectedIndex="0"
-                        Items="{Binding ProfilesList}"
+                        ItemsSource="{Binding ProfilesList}"
                         Text="{Binding ProfileName}" />
                     <Button
                         Grid.Column="2"
@@ -167,7 +167,7 @@
                         Name="DeviceBox"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Items="{Binding DeviceList}"
+                        ItemsSource="{Binding DeviceList}"
                         SelectedIndex="{Binding Device}" />
                     <Button
                         Grid.Column="2"
@@ -200,7 +200,7 @@
                     <ComboBox
                         Grid.Column="1"
                         HorizontalAlignment="Stretch"
-                        Items="{ReflectionBinding Controllers}"
+                        ItemsSource="{ReflectionBinding Controllers}"
                         SelectedIndex="{ReflectionBinding Controller}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate DataType="models:ControllerModel">

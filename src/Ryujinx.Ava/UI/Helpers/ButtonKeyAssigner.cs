@@ -1,7 +1,7 @@
 using Avalonia;
-using Avalonia.Data;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
@@ -19,7 +19,7 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             public ToggleButton Button { get; }
             public bool IsAssigned { get; }
-            public object Key { get;  }
+            public object Key { get; }
 
             public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned, object key)
             {
