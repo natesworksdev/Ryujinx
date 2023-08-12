@@ -17,7 +17,7 @@ concurrency: release
 env:
   POWERSHELL_TELEMETRY_OPTOUT: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  RYUJINX_BASE_VERSION: "1.1"
+  RYUJINX_BASE_VERSION: "1.2"
   RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "master"
   RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "Ryujinx"
   RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "release-channel-master"
@@ -92,23 +92,23 @@ jobs:
 
       - name: Publish
         run: |
-          dotnet publish -c Release -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_gtk/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained true
+          dotnet publish -c Release -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx.Ava --self-contained true            
           dotnet publish -c Release -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx.Headless.SDL2 --self-contained true
-          dotnet publish -c Release -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx.Ava --self-contained true
-
+          dotnet publish -c Release -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_gtk/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained true      
+      
       - name: Packing Windows builds
         if: matrix.os == 'windows-latest'
         run: |
-          pushd publish_gtk
+          pushd publish_ava
           7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
-
+          
           pushd publish_sdl2_headless
           7z a ../release_output/sdl2-ryujinx-headless-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
-
-          pushd publish_ava
-          7z a ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
+            
+          pushd publish_gtk
+          7z a ../release_output/gtk-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
         shell: bash
 
@@ -214,5 +214,5 @@ jobs:
     uses: ./.github/workflows/flatpak.yml
     needs: release
     with:
-      ryujinx_version: "1.1.${{ github.run_number }}"
+      ryujinx_version: "1.2.${{ github.run_number }}"
     secrets: inherit
