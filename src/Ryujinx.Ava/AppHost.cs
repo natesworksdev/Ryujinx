@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
@@ -54,6 +55,7 @@ using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
+using IRenderer = Ryujinx.Graphics.GAL.IRenderer;
 using Key = Ryujinx.Input.Key;
 using MouseButton = Ryujinx.Input.MouseButton;
 using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
@@ -167,9 +169,9 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursor.Event += HideCursorState_Changed;
 
-            _topLevel.PointerMoved += TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerEnter += TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerLeave += TopLevel_PointerLeave;
+            _topLevel.PointerMoved += TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerEntered += TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerExited += TopLevel_PointerExited;
 
             if (OperatingSystem.IsWindows())
             {
@@ -186,6 +188,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AntiAliasing.Event += UpdateAntiAliasing;
             ConfigurationState.Instance.Graphics.ScalingFilter.Event += UpdateScalingFilter;
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event += UpdateScalingFilterLevel;
+            ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Event += UpdateColorSpacePassthrough;
 
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event += UpdateLanInterfaceIdState;
 
@@ -193,26 +196,23 @@ namespace Ryujinx.Ava
             _gpuDoneEvent = new ManualResetEvent(false);
         }
 
-        private void TopLevel_PointerEnterOrMoved(object sender, PointerEventArgs e)
+        private void TopLevel_PointerEnteredOrMoved(object sender, PointerEventArgs e)
         {
             if (sender is MainWindow window)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
-                if (RendererHost.EmbeddedWindow.TransformedBounds != null)
-                {
-                    var point = e.GetCurrentPoint(window).Position;
-                    var bounds = RendererHost.EmbeddedWindow.TransformedBounds.Value.Clip;
+                var point = e.GetCurrentPoint(window).Position;
+                var bounds = RendererHost.EmbeddedWindow.Bounds;
 
-                    _isCursorInRenderer = point.X >= bounds.X &&
-                                          point.X <= bounds.Width + bounds.X &&
-                                          point.Y >= bounds.Y &&
-                                          point.Y <= bounds.Height + bounds.Y;
-                }
+                _isCursorInRenderer = point.X >= bounds.X &&
+                                      point.X <= bounds.Width + bounds.X &&
+                                      point.Y >= bounds.Y &&
+                                      point.Y <= bounds.Height + bounds.Y;
             }
         }
 
-        private void TopLevel_PointerLeave(object sender, PointerEventArgs e)
+        private void TopLevel_PointerExited(object sender, PointerEventArgs e)
         {
             _isCursorInRenderer = false;
         }
@@ -227,6 +227,11 @@ namespace Ryujinx.Ava
         {
             _renderer.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
             _renderer.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+        }
+
+        private void UpdateColorSpacePassthrough(object sender, ReactiveEventArgs<bool> e)
+        {
+            _renderer.Window?.SetColorSpacePassthrough((bool)ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Value);
         }
 
         private void ShowCursor()
@@ -259,7 +264,7 @@ namespace Ryujinx.Ava
         {
             if (_renderer != null)
             {
-                double scale = _topLevel.PlatformImpl.RenderScaling;
+                double scale = _topLevel.RenderScaling;
 
                 _renderer.Window?.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
             }
@@ -353,7 +358,7 @@ namespace Ryujinx.Ava
 
             _viewModel.SetUiProgressHandlers(Device);
 
-            RendererHost.SizeChanged += Window_SizeChanged;
+            RendererHost.BoundsChanged += Window_BoundsChanged;
 
             _isActive = true;
 
@@ -461,10 +466,11 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.ScalingFilter.Event -= UpdateScalingFilter;
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Event -= UpdateScalingFilterLevel;
             ConfigurationState.Instance.Graphics.AntiAliasing.Event -= UpdateAntiAliasing;
+            ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Event -= UpdateColorSpacePassthrough;
 
-            _topLevel.PointerMoved -= TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerEnter -= TopLevel_PointerEnterOrMoved;
-            _topLevel.PointerLeave -= TopLevel_PointerLeave;
+            _topLevel.PointerMoved -= TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerEntered -= TopLevel_PointerEnteredOrMoved;
+            _topLevel.PointerExited -= TopLevel_PointerExited;
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
@@ -842,7 +848,7 @@ namespace Ryujinx.Ava
             return deviceDriver;
         }
 
-        private void Window_SizeChanged(object sender, Size e)
+        private void Window_BoundsChanged(object sender, Size e)
         {
             Width = (int)e.Width;
             Height = (int)e.Height;
@@ -887,11 +893,12 @@ namespace Ryujinx.Ava
             _renderer?.Window?.SetAntiAliasing((Graphics.GAL.AntiAliasing)ConfigurationState.Instance.Graphics.AntiAliasing.Value);
             _renderer?.Window?.SetScalingFilter((Graphics.GAL.ScalingFilter)ConfigurationState.Instance.Graphics.ScalingFilter.Value);
             _renderer?.Window?.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
+            _renderer?.Window?.SetColorSpacePassthrough(ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Value);
 
             Width = (int)RendererHost.Bounds.Width;
             Height = (int)RendererHost.Bounds.Height;
 
-            _renderer.Window.SetSize((int)(Width * _topLevel.PlatformImpl.RenderScaling), (int)(Height * _topLevel.PlatformImpl.RenderScaling));
+            _renderer.Window.SetSize((int)(Width * _topLevel.RenderScaling), (int)(Height * _topLevel.RenderScaling));
 
             _chrono.Start();
 
