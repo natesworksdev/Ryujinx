@@ -358,7 +358,7 @@ namespace Ryujinx.Ava
 
             _viewModel.SetUiProgressHandlers(Device);
 
-            RendererHost.BoundsChanged += WindowBoundsChanged;
+            RendererHost.BoundsChanged += Window_BoundsChanged;
 
             _isActive = true;
 
@@ -848,7 +848,7 @@ namespace Ryujinx.Ava
             return deviceDriver;
         }
 
-        private void WindowBoundsChanged(object sender, Size e)
+        private void Window_BoundsChanged(object sender, Size e)
         {
             Width = (int)e.Width;
             Height = (int)e.Height;
