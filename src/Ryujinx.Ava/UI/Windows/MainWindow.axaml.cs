@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             Program.DesktopScaleFactor = this.RenderScaling;
         }
-        
+
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
             Dispatcher.UIThread.Post(() =>

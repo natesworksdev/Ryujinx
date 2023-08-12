@@ -1067,7 +1067,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
-                    
+
                     await Dispatcher.UIThread.InvokeAsync(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
                 }
             }
