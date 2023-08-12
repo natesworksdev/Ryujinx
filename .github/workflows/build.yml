@@ -73,9 +73,9 @@ jobs:
 
       - name: Set executable bit
         run: |
-          chmod +x ./publish_ava/Ryujinx ./publish_ava/Ryujinx.sh
+          chmod +x ./publish_ava/Ryujinx.Ava ./publish_ava/Ryujinx.sh
           chmod +x ./publish_sdl2_headless/Ryujinx.Headless.SDL2 ./publish_sdl2_headless/Ryujinx.sh
-          chmod +x ./publish_gtk/Ryujinx.Ava ./publish_gtk/Ryujinx.sh
+          chmod +x ./publish_gtk/Ryujinx ./publish_gtk/Ryujinx.sh
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
 
       - name: Upload Ryujinx.Ava artifact
