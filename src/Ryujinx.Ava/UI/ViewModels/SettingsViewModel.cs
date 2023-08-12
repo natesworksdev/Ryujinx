@@ -338,7 +338,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
 
-            // GPU configuration needs to be loaded after the async method or it will always return 0.
+            // GPU configuration needs to be loaded during the async method or it will always return 0.
             PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ?
                                 _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
 
@@ -382,7 +382,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                 });
             }
 
-            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceList)));
+            // Network interface index  needs to be loaded during the async method or it will always return 0.
+            NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+
+            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceIndex)));
         }
 
         public void ValidateAndSetTimeZone(string location)
@@ -461,6 +464,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Network
             EnableInternetAccess = config.System.EnableInternetAccess;
+            // LAN interface index is loaded asynchronously in PopulateNetworkInterfaces()
 
             // Logging
             EnableFileLog = config.Logger.EnableFileLog;
@@ -474,8 +478,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
             FsGlobalAccessLogMode = config.System.FsGlobalAccessLogMode;
             OpenglDebugLevel = (int)config.Logger.GraphicsDebugLevel.Value;
-
-            NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(config.Multiplayer.LanInterfaceId.Value);
         }
 
         public void SaveSettings()
