@@ -1,10 +1,13 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ui.App.Common;
 using System;
+using System.Linq;
 
 namespace Ryujinx.Ava.UI.Controls
 {
@@ -28,9 +31,10 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (sender is ListBox listBox)
             {
-                if (listBox.SelectedItem is ApplicationData selected)
+                var children = listBox.GetLogicalChildren().Reverse().ToArray();
+                if ((children[listBox.SelectedIndex] as ListBoxItem).IsPointerOver)
                 {
-                    RaiseEvent(new ApplicationOpenedEventArgs(selected, ApplicationOpenedEvent));
+                    RaiseEvent(new ApplicationOpenedEventArgs(listBox.SelectedItem as ApplicationData, ApplicationOpenedEvent));
                 }
             }
         }
@@ -41,11 +45,6 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 (DataContext as MainWindowViewModel).ListSelectedApplication = listBox.SelectedItem as ApplicationData;
             }
-        }
-
-        private void SearchBox_OnKeyUp(object sender, KeyEventArgs args)
-        {
-            (DataContext as MainWindowViewModel).SearchText = (sender as TextBox).Text;
         }
     }
 }
