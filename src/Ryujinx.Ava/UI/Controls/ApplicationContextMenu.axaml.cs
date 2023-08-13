@@ -97,49 +97,43 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        public void OpenTitleUpdateManager_Click(object sender, RoutedEventArgs args)
+        public async void OpenTitleUpdateManager_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    TitleUpdateWindow.Show(
-                        viewModel.VirtualFileSystem,
-                        ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
-                        viewModel.SelectedApplication.TitleName)
-                );
+                await TitleUpdateWindow.Show(
+                    viewModel.VirtualFileSystem,
+                    ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
+                    viewModel.SelectedApplication.TitleName);
             }
         }
 
-        public void OpenDownloadableContentManager_Click(object sender, RoutedEventArgs args)
+        public async void OpenDownloadableContentManager_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    DownloadableContentManagerWindow.Show(
-                        viewModel.VirtualFileSystem,
-                        ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
-                        viewModel.SelectedApplication.TitleName)
-                );
+                await DownloadableContentManagerWindow.Show(
+                    viewModel.VirtualFileSystem,
+                    ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
+                    viewModel.SelectedApplication.TitleName);
             }
         }
 
-        public void OpenCheatManager_Click(object sender, RoutedEventArgs args)
+        public async void OpenCheatManager_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    new CheatWindow(
-                        viewModel.VirtualFileSystem,
-                        viewModel.SelectedApplication.TitleId,
-                        viewModel.SelectedApplication.TitleName,
-                        viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window)
-                );
+                await new CheatWindow(
+                    viewModel.VirtualFileSystem,
+                    viewModel.SelectedApplication.TitleId,
+                    viewModel.SelectedApplication.TitleName,
+                    viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window);
             }
         }
 
@@ -169,22 +163,19 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        public void PurgePtcCache_Click(object sender, RoutedEventArgs args)
+        public async void PurgePtcCache_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                UserResult result = Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateConfirmationDialog(
-                        LocaleManager.Instance[LocaleKeys.DialogWarning],
-                        LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage,
-                        viewModel.SelectedApplication.TitleName),
-                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
-                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
-                        LocaleManager.Instance[LocaleKeys.RyujinxConfirm])
-                ).Result;
-
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                    LocaleManager.Instance[LocaleKeys.DialogWarning],
+                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, viewModel.SelectedApplication.TitleName),
+                    LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                    LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                    LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+                
                 if (result == UserResult.Yes)
                 {
                     DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleId, "cache", "cpu", "0"));
@@ -212,9 +203,7 @@ namespace Ryujinx.Ava.UI.Controls
                             }
                             catch (Exception ex)
                             {
-                                Dispatcher.UIThread.InvokeAsync(() =>
-                                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, file.Name, ex))
-                                );
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, file.Name, ex));
                             }
                         }
                     }
@@ -222,20 +211,17 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        public void PurgeShaderCache_Click(object sender, RoutedEventArgs args)
+        public async void PurgeShaderCache_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                UserResult result = Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
-                        LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage,
-                            viewModel.SelectedApplication.TitleName),
-                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
-                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
-                        LocaleManager.Instance[LocaleKeys.RyujinxConfirm])
-                ).Result;
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, viewModel.SelectedApplication.TitleName),
+                    LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                    LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                    LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
 
                 if (result == UserResult.Yes)
                 {
@@ -261,9 +247,7 @@ namespace Ryujinx.Ava.UI.Controls
                             }
                             catch (Exception ex)
                             {
-                                Dispatcher.UIThread.InvokeAsync(() =>
-                                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, directory.Name, ex))
-                                );
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, directory.Name, ex));
                             }
                         }
 
@@ -275,9 +259,7 @@ namespace Ryujinx.Ava.UI.Controls
                             }
                             catch (Exception ex)
                             {
-                                Dispatcher.UIThread.InvokeAsync(() =>
-                                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.ShaderCachePurgeError, file.Name, ex))
-                                );
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.ShaderCachePurgeError, file.Name, ex));
                             }
                         }
                     }
@@ -323,63 +305,55 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        public void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
+        public async void ExtractApplicationExeFs_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(
-                        viewModel.StorageProvider,
-                        NcaSectionType.Code,
-                        viewModel.SelectedApplication.Path,
-                        viewModel.SelectedApplication.TitleName)
-                );
+                await ApplicationHelper.ExtractSection(
+                    viewModel.StorageProvider,
+                    NcaSectionType.Code,
+                    viewModel.SelectedApplication.Path,
+                    viewModel.SelectedApplication.TitleName);
             }
         }
 
-        public void ExtractApplicationRomFs_Click(object sender, RoutedEventArgs args)
+        public async void ExtractApplicationRomFs_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(
-                        viewModel.StorageProvider,
-                        NcaSectionType.Data,
-                        viewModel.SelectedApplication.Path,
-                        viewModel.SelectedApplication.TitleName)
-                );
+                await ApplicationHelper.ExtractSection(
+                    viewModel.StorageProvider,
+                    NcaSectionType.Data,
+                    viewModel.SelectedApplication.Path,
+                    viewModel.SelectedApplication.TitleName);
             }
         }
 
-        public void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
+        public async void ExtractApplicationLogo_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    ApplicationHelper.ExtractSection(
-                        viewModel.StorageProvider,
-                        NcaSectionType.Logo,
-                        viewModel.SelectedApplication.Path,
-                        viewModel.SelectedApplication.TitleName)
-                );
+                await ApplicationHelper.ExtractSection(
+                    viewModel.StorageProvider,
+                    NcaSectionType.Logo,
+                    viewModel.SelectedApplication.Path,
+                    viewModel.SelectedApplication.TitleName);
             }
         }
 
-        public void RunApplication_Click(object sender, RoutedEventArgs args)
+        public async void RunApplication_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
             if (viewModel?.SelectedApplication != null)
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    viewModel.LoadApplication(viewModel.SelectedApplication.Path)
-                );
+                await viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
         }
     }
