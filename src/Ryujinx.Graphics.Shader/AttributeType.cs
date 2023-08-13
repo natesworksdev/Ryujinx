@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Shader
         {
             return type switch
             {
-                AttributeType.Float=> AggregateType.FP32,
+                AttributeType.Float => AggregateType.FP32,
                 AttributeType.Sint => AggregateType.S32,
                 AttributeType.Uint => AggregateType.U32,
                 AttributeType.Sscaled => supportsScaledFormats ? AggregateType.FP32 : AggregateType.S32,
