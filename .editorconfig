@@ -233,10 +233,6 @@ dotnet_naming_style.IPascalCase.required_suffix =
 dotnet_naming_style.IPascalCase.word_separator =
 dotnet_naming_style.IPascalCase.capitalization = pascal_case
 
-# Diagnostics
-
-dotnet_diagnostic.CA1814.severity = error
-
 [src/Ryujinx.HLE/HOS/Services/**.cs]
 # Disable "mark members as static" rule for services
 dotnet_diagnostic.CA1822.severity = none
