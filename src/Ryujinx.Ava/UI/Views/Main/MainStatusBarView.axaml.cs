@@ -7,7 +7,6 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
 using System;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Views.Main
 {

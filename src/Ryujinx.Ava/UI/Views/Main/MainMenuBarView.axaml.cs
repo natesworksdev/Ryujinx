@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
@@ -122,7 +121,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
 
             await Window.SettingsWindow.ShowDialog(Window);
-            
+
             ViewModel.LoadConfigurableHotKeys();
         }
 
@@ -149,7 +148,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 AmiiboWindow window = new(ViewModel.ShowAll, ViewModel.LastScannedAmiiboId, titleId);
 
                 await window.ShowDialog(Window);
-                
+
                 if (window.IsScanned)
                 {
                     ViewModel.ShowAll = window.ViewModel.ShowAllAmiibo;
