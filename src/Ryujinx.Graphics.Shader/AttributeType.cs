@@ -26,19 +26,6 @@ namespace Ryujinx.Graphics.Shader
             };
         }
 
-        public static string ToVec4Type(this AttributeType type, bool supportsScaledFormats)
-        {
-            return type switch
-            {
-                AttributeType.Float => "vec4",
-                AttributeType.Sint => "ivec4",
-                AttributeType.Uint => "uvec4",
-                AttributeType.Sscaled => supportsScaledFormats ? "vec4" : "ivec4",
-                AttributeType.Uscaled => supportsScaledFormats ? "vec4" : "uvec4",
-                _ => throw new ArgumentException($"Invalid attribute type \"{type}\"."),
-            };
-        }
-
         public static AggregateType ToAggregateType(this AttributeType type, bool supportsScaledFormats)
         {
             return type switch
