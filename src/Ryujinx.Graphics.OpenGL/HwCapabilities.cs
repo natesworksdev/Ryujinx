@@ -26,6 +26,7 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsTextureCompressionS3tc = new(() => HasExtension("GL_EXT_texture_compression_s3tc"));
         private static readonly Lazy<bool> _supportsTextureShadowLod = new(() => HasExtension("GL_EXT_texture_shadow_lod"));
         private static readonly Lazy<bool> _supportsViewportSwizzle = new(() => HasExtension("GL_NV_viewport_swizzle"));
+        private static readonly Lazy<bool> _supportsSpirV = new(() => HasExtension("GL_ARB_gl_spirv"));
 
         private static readonly Lazy<int> _maximumComputeSharedMemorySize = new(() => GetLimit(All.MaxComputeSharedMemorySize));
         private static readonly Lazy<int> _storageBufferOffsetAlignment = new(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
@@ -71,6 +72,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static bool SupportsTextureCompressionS3tc => _supportsTextureCompressionS3tc.Value;
         public static bool SupportsTextureShadowLod => _supportsTextureShadowLod.Value;
         public static bool SupportsViewportSwizzle => _supportsViewportSwizzle.Value;
+        public static bool SupportsSpirV => _supportsSpirV.Value;
 
         public static bool SupportsMismatchingViewFormat => _gpuVendor.Value != GpuVendor.AmdWindows && _gpuVendor.Value != GpuVendor.IntelWindows;
         public static bool SupportsNonConstantTextureOffset => _gpuVendor.Value == GpuVendor.Nvidia;
