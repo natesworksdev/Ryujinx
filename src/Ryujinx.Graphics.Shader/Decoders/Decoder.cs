@@ -416,7 +416,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                             switch (attr)
                             {
                                 case AttributeConsts.Layer:
-                                    if (definitions.Stage != ShaderStage.Fragment)
+                                    if (definitions.Stage != ShaderStage.Compute && definitions.Stage != ShaderStage.Fragment)
                                     {
                                         context.SetUsedFeature(FeatureFlags.RtLayer);
                                     }
