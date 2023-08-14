@@ -78,6 +78,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly ShaderCacheHashTable _graphicsShaderCache;
         private readonly DiskCacheHostStorage _diskCacheHostStorage;
         private readonly BackgroundDiskCacheWriter _cacheWriter;
+        private static bool _isSpirVCapable;
 
         /// <summary>
         /// Event for signalling shader cache loading progress.
@@ -100,6 +101,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
             string diskCacheTitleId = GetDiskCachePath();
+
+            _isSpirVCapable = OpenGlSpirVCapable();
 
             _computeShaderCache = new ComputeShaderCacheHashTable();
             _graphicsShaderCache = new ShaderCacheHashTable();
@@ -718,6 +721,27 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
+        
+        /// <summary>
+        /// Checks if SpirV is available on OpenGL
+        /// </summary>
+        /// <remarks>
+        /// True or false
+        /// </remarks>
+        private bool OpenGlSpirVCapable()
+        {
+            bool spirV = _context.Capabilities.SupportsSpirV;
+            if (!spirV)
+            {
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V Not Available on OpenGL for your GPU");
+            }
+            else
+            {
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V !Available! on OpenGL for your GPU");
+            }
+            return spirV;
+        }
+        
         /// <summary>
         /// Creates shader translation options with the requested graphics API and flags.
         /// The shader language is choosen based on the current configuration and graphics API.
@@ -727,7 +751,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Translation options</returns>
         private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
         {
-            TargetLanguage lang = (GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan) || (GraphicsConfig.EnableOGLSpirV && api == TargetApi.OpenGL)
+            TargetLanguage lang = (GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan) || (GraphicsConfig.EnableOGLSpirV && _isSpirVCapable)
                 ? TargetLanguage.Spirv
                 : TargetLanguage.Glsl;
 

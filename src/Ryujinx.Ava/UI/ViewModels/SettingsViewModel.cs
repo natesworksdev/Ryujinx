@@ -215,17 +215,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
-                OnPropertyChanged(nameof(IsSpirVAvailable));
+                OnPropertyChanged(nameof(IsOpenGLSelected));
             }
         }
         
-        public bool SpirVCapability()
-        {
-            bool isSpirVSupported = HwCapabilitiesFacade.SupportsSpirV;
-            return isSpirVSupported;
-        }
-
-        public bool IsSpirVAvailable => !IsVulkanSelected && SpirVCapability();
+        public bool IsOpenGLSelected => !IsVulkanSelected;
         
         public int ScalingFilter
         {
