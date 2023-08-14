@@ -64,7 +64,7 @@
                             ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
                             <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
                         </CheckBox>
-                        <CheckBox IsChecked="{Binding EnableOGLSpirV}" IsVisible="{Binding IsOGLSelected}"
+                        <CheckBox IsChecked="{Binding EnableOGLSpirV}" IsVisible="{Binding IsSpirVAvailable}"
                                   ToolTip.Tip="{locale:Locale OGLSpirVTooltip}">
                             <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableOGLSpirV}" />
                         </CheckBox>
