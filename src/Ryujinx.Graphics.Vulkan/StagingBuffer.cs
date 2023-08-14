@@ -215,7 +215,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (GetContiguousFreeSize(alignment) < size)
                 {
-                    Logger.Warning?.PrintMsg(LogClass.Gpu, $"Staging buffer out of space to reserve data of size {size}.");
+                    Logger.Debug?.PrintMsg(LogClass.Gpu, $"Staging buffer out of space to reserve data of size {size}.");
                     return null;
                 }
             }
