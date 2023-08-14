@@ -167,6 +167,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsViewportIndexVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsViewportMask: HwCapabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
+                supportsSpirV: HwCapabilities.SupportsSpirV,
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
                 supportsDepthClipControl: true,
                 maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?

@@ -615,6 +615,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsViewportIndexVertexTessellation: featuresVk12.ShaderOutputViewportIndex,
                 supportsViewportMask: Capabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: false,
+                supportsSpirV: true,
                 supportsIndirectParameters: true,
                 supportsDepthClipControl: Capabilities.SupportsDepthClipControl,
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
