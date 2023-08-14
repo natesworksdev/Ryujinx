@@ -101,9 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
             string diskCacheTitleId = GetDiskCachePath();
-
-            _isSpirVCapable = OpenGlSpirVCapable();
-
+            
             _computeShaderCache = new ComputeShaderCacheHashTable();
             _graphicsShaderCache = new ShaderCacheHashTable();
             _diskCacheHostStorage = new DiskCacheHostStorage(diskCacheTitleId);
@@ -157,6 +155,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="cancellationToken">Cancellation token to cancel the shader cache initialization process</param>
         internal void Initialize(CancellationToken cancellationToken)
         {
+            _isSpirVCapable = _context.Capabilities.SupportsSpirV;
+            if (!_isSpirVCapable)
+            {
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V Not Available on OpenGL for your GPU");
+            }
+            
             if (_diskCacheHostStorage.CacheEnabled)
             {
                 ParallelDiskCacheLoader loader = new(
@@ -719,27 +723,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ShaderStage.Fragment => 4,
                 _ => 0,
             };
-        }
-
-        
-        /// <summary>
-        /// Checks if SpirV is available on OpenGL
-        /// </summary>
-        /// <remarks>
-        /// True or false
-        /// </remarks>
-        private bool OpenGlSpirVCapable()
-        {
-            bool spirV = _context.Capabilities.SupportsSpirV;
-            if (!spirV)
-            {
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V Not Available on OpenGL for your GPU");
-            }
-            else
-            {
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V !Available! on OpenGL for your GPU");
-            }
-            return spirV;
         }
         
         /// <summary>

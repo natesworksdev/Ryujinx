@@ -112,8 +112,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        
         
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
 

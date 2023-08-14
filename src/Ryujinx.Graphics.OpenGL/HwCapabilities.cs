@@ -140,10 +140,4 @@ namespace Ryujinx.Graphics.OpenGL
             return GL.GetError() == ErrorCode.NoError;
         }
     }
-    
-    public static class HwCapabilitiesFacade
-    {
-        public static bool SupportsSpirV => HwCapabilities.SupportsSpirV;
-    }
-
 }
