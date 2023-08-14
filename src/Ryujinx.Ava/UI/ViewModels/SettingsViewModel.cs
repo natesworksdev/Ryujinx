@@ -143,6 +143,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IgnoreMissingServices { get; set; }
         public bool ExpandDramSize { get; set; }
         public bool EnableShaderCache { get; set; }
+        public bool EnableOGLSpirV { get; set; }
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
         public bool EnableColorSpacePassthrough { get; set; }
@@ -211,8 +212,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
+                OnPropertyChanged(nameof(IsOGLSelected));
             }
         }
+        
+        public bool IsOGLSelected => !IsVulkanSelected;
+        
         public int ScalingFilter
         {
             get => _scalingFilter;
@@ -445,6 +450,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
             // Physical devices are queried asynchronously hence the prefered index config value is loaded in LoadAvailableGpus().
             EnableShaderCache = config.Graphics.EnableShaderCache;
+            EnableOGLSpirV = config.Graphics.EnableOGLSpirV;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
             EnableColorSpacePassthrough = config.Graphics.EnableColorSpacePassthrough;
@@ -532,6 +538,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.GraphicsBackend.Value = (GraphicsBackend)GraphicsBackendIndex;
             config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
+            config.Graphics.EnableOGLSpirV.Value = EnableOGLSpirV;
             config.Graphics.EnableTextureRecompression.Value = EnableTextureRecompression;
             config.Graphics.EnableMacroHLE.Value = EnableMacroHLE;
             config.Graphics.EnableColorSpacePassthrough.Value = EnableColorSpacePassthrough;

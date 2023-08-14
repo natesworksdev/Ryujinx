@@ -57,6 +57,11 @@ namespace Ryujinx.Graphics.Gpu
         /// Enables or disables the shader cache.
         /// </summary>
         public static bool EnableShaderCache;
+        
+        /// <summary>
+        /// Enables or disables color space passthrough, if available.
+        /// </summary>
+        public static bool EnableOGLSpirV = false;
 
         /// <summary>
         /// Enables or disables shader SPIR-V compilation.

@@ -64,6 +64,10 @@
                             ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
                             <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
                         </CheckBox>
+                        <CheckBox IsChecked="{Binding EnableOGLSpirV}" IsVisible="{Binding IsOGLSelected}"
+                                  ToolTip.Tip="{locale:Locale OGLSpirVTooltip}">
+                            <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableOGLSpirV}" />
+                        </CheckBox>
                         <CheckBox IsChecked="{Binding EnableTextureRecompression}"
                             ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
                             <TextBlock Text="{locale:Locale SettingsEnableTextureRecompression}" />
