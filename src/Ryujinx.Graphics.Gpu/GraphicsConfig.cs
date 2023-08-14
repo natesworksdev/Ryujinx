@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Enables or disables the shader cache.
         /// </summary>
         public static bool EnableShaderCache;
-        
+
         /// <summary>
         /// Enables or disables Spir-V on OpenGL.
         /// </summary>

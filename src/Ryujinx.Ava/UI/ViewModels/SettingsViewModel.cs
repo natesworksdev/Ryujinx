@@ -25,7 +25,6 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
-using Ryujinx.Graphics.OpenGL;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -112,7 +111,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
 
         public bool IsHypervisorAvailable => OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
@@ -216,9 +215,9 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsOpenGLSelected));
             }
         }
-        
+
         public bool IsOpenGLSelected => !IsVulkanSelected;
-        
+
         public int ScalingFilter
         {
             get => _scalingFilter;

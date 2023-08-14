@@ -474,7 +474,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Enables or disables Shader cache
             /// </summary>
             public ReactiveObject<bool> EnableShaderCache { get; private set; }
-            
+
             /// <summary>
             /// Enables or disables Spir-V Shaders on OpenGL
             /// </summary>
@@ -1417,7 +1417,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 49)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");

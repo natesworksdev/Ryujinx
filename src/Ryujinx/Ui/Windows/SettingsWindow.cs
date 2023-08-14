@@ -250,7 +250,7 @@ namespace Ryujinx.Ui.Windows
             {
                 _shaderCacheToggle.Click();
             }
-            
+
             if (ConfigurationState.Instance.Graphics.EnableOGLSpirV)
             {
                 _enableOGLSpirV.Click();

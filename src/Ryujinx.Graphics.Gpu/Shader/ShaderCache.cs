@@ -101,7 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
             string diskCacheTitleId = GetDiskCachePath();
-            
+
             _computeShaderCache = new ComputeShaderCacheHashTable();
             _graphicsShaderCache = new ShaderCacheHashTable();
             _diskCacheHostStorage = new DiskCacheHostStorage(diskCacheTitleId);
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V Not Available on OpenGL for your GPU");
             }
-            
+
             if (_diskCacheHostStorage.CacheEnabled)
             {
                 ParallelDiskCacheLoader loader = new(
@@ -724,7 +724,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 _ => 0,
             };
         }
-        
+
         /// <summary>
         /// Creates shader translation options with the requested graphics API and flags.
         /// The shader language is choosen based on the current configuration and graphics API.
