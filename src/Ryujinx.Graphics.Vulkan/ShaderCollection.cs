@@ -1,0 +1,529 @@
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
+using Silk.NET.Vulkan;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Ryujinx.Graphics.Vulkan
+{
+    class ShaderCollection : IProgram
+    {
+        private readonly PipelineShaderStageCreateInfo[] _infos;
+        private readonly Shader[] _shaders;
+
+        private readonly PipelineLayoutCacheEntry _plce;
+
+        public PipelineLayout PipelineLayout => _plce.PipelineLayout;
+
+        public bool HasMinimalLayout { get; }
+        public bool UsePushDescriptors { get; }
+        public bool IsCompute { get; }
+
+        public uint Stages { get; }
+
+        public ResourceBindingSegment[][] ClearSegments { get; }
+        public ResourceBindingSegment[][] BindingSegments { get; }
+
+        public ProgramLinkStatus LinkStatus { get; private set; }
+
+        public readonly SpecDescription[] SpecDescriptions;
+
+        public bool IsLinked
+        {
+            get
+            {
+                if (LinkStatus == ProgramLinkStatus.Incomplete)
+                {
+                    CheckProgramLink(true);
+                }
+
+                return LinkStatus == ProgramLinkStatus.Success;
+            }
+        }
+
+        private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
+        private HashTableSlim<SpecData, Auto<DisposablePipeline>> _computePipelineCache;
+
+        private readonly VulkanRenderer _gd;
+        private Device _device;
+        private bool _initialized;
+
+        private ProgramPipelineState _state;
+        private DisposableRenderPass _dummyRenderPass;
+        private readonly Task _compileTask;
+        private bool _firstBackgroundUse;
+
+        public ShaderCollection(
+            VulkanRenderer gd,
+            Device device,
+            ShaderSource[] shaders,
+            ResourceLayout resourceLayout,
+            SpecDescription[] specDescription = null,
+            bool isMinimal = false)
+        {
+            _gd = gd;
+            _device = device;
+
+            if (specDescription != null && specDescription.Length != shaders.Length)
+            {
+                throw new ArgumentException($"{nameof(specDescription)} array length must match {nameof(shaders)} array if provided");
+            }
+
+            gd.Shaders.Add(this);
+
+            var internalShaders = new Shader[shaders.Length];
+
+            _infos = new PipelineShaderStageCreateInfo[shaders.Length];
+
+            SpecDescriptions = specDescription;
+
+            LinkStatus = ProgramLinkStatus.Incomplete;
+
+            uint stages = 0;
+
+            for (int i = 0; i < shaders.Length; i++)
+            {
+                var shader = new Shader(gd.Api, device, shaders[i]);
+
+                stages |= 1u << shader.StageFlags switch
+                {
+                    ShaderStageFlags.FragmentBit => 1,
+                    ShaderStageFlags.GeometryBit => 2,
+                    ShaderStageFlags.TessellationControlBit => 3,
+                    ShaderStageFlags.TessellationEvaluationBit => 4,
+                    _ => 0,
+                };
+
+                if (shader.StageFlags == ShaderStageFlags.ComputeBit)
+                {
+                    IsCompute = true;
+                }
+
+                internalShaders[i] = shader;
+            }
+
+            _shaders = internalShaders;
+
+            bool usePushDescriptors = !isMinimal && VulkanConfiguration.UsePushDescriptors && _gd.Capabilities.SupportsPushDescriptors;
+
+            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, resourceLayout.Sets, usePushDescriptors);
+
+            HasMinimalLayout = isMinimal;
+            UsePushDescriptors = usePushDescriptors;
+
+            Stages = stages;
+
+            ClearSegments = BuildClearSegments(resourceLayout.Sets);
+            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
+
+            _compileTask = Task.CompletedTask;
+            _firstBackgroundUse = false;
+        }
+
+        public ShaderCollection(
+            VulkanRenderer gd,
+            Device device,
+            ShaderSource[] sources,
+            ResourceLayout resourceLayout,
+            ProgramPipelineState state,
+            bool fromCache) : this(gd, device, sources, resourceLayout)
+        {
+            _state = state;
+
+            _compileTask = BackgroundCompilation();
+            _firstBackgroundUse = !fromCache;
+        }
+
+        private static ResourceBindingSegment[][] BuildClearSegments(ReadOnlyCollection<ResourceDescriptorCollection> sets)
+        {
+            ResourceBindingSegment[][] segments = new ResourceBindingSegment[sets.Count][];
+
+            for (int setIndex = 0; setIndex < sets.Count; setIndex++)
+            {
+                List<ResourceBindingSegment> currentSegments = new();
+
+                ResourceDescriptor currentDescriptor = default;
+                int currentCount = 0;
+
+                for (int index = 0; index < sets[setIndex].Descriptors.Count; index++)
+                {
+                    ResourceDescriptor descriptor = sets[setIndex].Descriptors[index];
+
+                    if (currentDescriptor.Binding + currentCount != descriptor.Binding ||
+                        currentDescriptor.Type != descriptor.Type ||
+                        currentDescriptor.Stages != descriptor.Stages)
+                    {
+                        if (currentCount != 0)
+                        {
+                            currentSegments.Add(new ResourceBindingSegment(
+                                currentDescriptor.Binding,
+                                currentCount,
+                                currentDescriptor.Type,
+                                currentDescriptor.Stages,
+                                ResourceAccess.ReadWrite));
+                        }
+
+                        currentDescriptor = descriptor;
+                        currentCount = descriptor.Count;
+                    }
+                    else
+                    {
+                        currentCount += descriptor.Count;
+                    }
+                }
+
+                if (currentCount != 0)
+                {
+                    currentSegments.Add(new ResourceBindingSegment(
+                        currentDescriptor.Binding,
+                        currentCount,
+                        currentDescriptor.Type,
+                        currentDescriptor.Stages,
+                        ResourceAccess.ReadWrite));
+                }
+
+                segments[setIndex] = currentSegments.ToArray();
+            }
+
+            return segments;
+        }
+
+        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        {
+            ResourceBindingSegment[][] segments = new ResourceBindingSegment[setUsages.Count][];
+
+            for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
+            {
+                List<ResourceBindingSegment> currentSegments = new();
+
+                ResourceUsage currentUsage = default;
+                int currentCount = 0;
+
+                for (int index = 0; index < setUsages[setIndex].Usages.Count; index++)
+                {
+                    ResourceUsage usage = setUsages[setIndex].Usages[index];
+
+                    // If the resource is not accessed, we don't need to update it.
+                    if (usage.Access == ResourceAccess.None)
+                    {
+                        continue;
+                    }
+
+                    if (currentUsage.Binding + currentCount != usage.Binding ||
+                        currentUsage.Type != usage.Type ||
+                        currentUsage.Stages != usage.Stages ||
+                        currentUsage.Access != usage.Access)
+                    {
+                        if (currentCount != 0)
+                        {
+                            currentSegments.Add(new ResourceBindingSegment(
+                                currentUsage.Binding,
+                                currentCount,
+                                currentUsage.Type,
+                                currentUsage.Stages,
+                                currentUsage.Access));
+                        }
+
+                        currentUsage = usage;
+                        currentCount = 1;
+                    }
+                    else
+                    {
+                        currentCount++;
+                    }
+                }
+
+                if (currentCount != 0)
+                {
+                    currentSegments.Add(new ResourceBindingSegment(
+                        currentUsage.Binding,
+                        currentCount,
+                        currentUsage.Type,
+                        currentUsage.Stages,
+                        currentUsage.Access));
+                }
+
+                segments[setIndex] = currentSegments.ToArray();
+            }
+
+            return segments;
+        }
+
+        private async Task BackgroundCompilation()
+        {
+            await Task.WhenAll(_shaders.Select(shader => shader.CompileTask));
+
+            if (Array.Exists(_shaders, shader => shader.CompileStatus == ProgramLinkStatus.Failure))
+            {
+                LinkStatus = ProgramLinkStatus.Failure;
+
+                return;
+            }
+
+            try
+            {
+                if (IsCompute)
+                {
+                    CreateBackgroundComputePipeline();
+                }
+                else
+                {
+                    CreateBackgroundGraphicsPipeline();
+                }
+            }
+            catch (VulkanException e)
+            {
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Background Compilation failed: {e.Message}");
+
+                LinkStatus = ProgramLinkStatus.Failure;
+            }
+        }
+
+        private void EnsureShadersReady()
+        {
+            if (!_initialized)
+            {
+                CheckProgramLink(true);
+
+                ProgramLinkStatus resultStatus = ProgramLinkStatus.Success;
+
+                for (int i = 0; i < _shaders.Length; i++)
+                {
+                    var shader = _shaders[i];
+
+                    if (shader.CompileStatus != ProgramLinkStatus.Success)
+                    {
+                        resultStatus = ProgramLinkStatus.Failure;
+                    }
+
+                    _infos[i] = shader.GetInfo();
+                }
+
+                // If the link status was already set as failure by background compilation, prefer that decision.
+                if (LinkStatus != ProgramLinkStatus.Failure)
+                {
+                    LinkStatus = resultStatus;
+                }
+
+                _initialized = true;
+            }
+        }
+
+        public PipelineShaderStageCreateInfo[] GetInfos()
+        {
+            EnsureShadersReady();
+
+            return _infos;
+        }
+
+        protected DisposableRenderPass CreateDummyRenderPass()
+        {
+            if (_dummyRenderPass.Value.Handle != 0)
+            {
+                return _dummyRenderPass;
+            }
+
+            return _dummyRenderPass = _state.ToRenderPass(_gd, _device);
+        }
+
+        public void CreateBackgroundComputePipeline()
+        {
+            PipelineState pipeline = new();
+            pipeline.Initialize();
+
+            pipeline.Stages[0] = _shaders[0].GetInfo();
+            pipeline.StagesCount = 1;
+            pipeline.PipelineLayout = PipelineLayout;
+
+            pipeline.CreateComputePipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
+            pipeline.Dispose();
+        }
+
+        public void CreateBackgroundGraphicsPipeline()
+        {
+            // To compile shaders in the background in Vulkan, we need to create valid pipelines using the shader modules.
+            // The GPU provides pipeline state via the GAL that can be converted into our internal Vulkan pipeline state.
+            // This should match the pipeline state at the time of the first draw. If it doesn't, then it'll likely be
+            // close enough that the GPU driver will reuse the compiled shader for the different state.
+
+            // First, we need to create a render pass object compatible with the one that will be used at runtime.
+            // The active attachment formats have been provided by the abstraction layer.
+            var renderPass = CreateDummyRenderPass();
+
+            PipelineState pipeline = _state.ToVulkanPipelineState(_gd);
+
+            // Copy the shader stage info to the pipeline.
+            var stages = pipeline.Stages.AsSpan();
+
+            for (int i = 0; i < _shaders.Length; i++)
+            {
+                stages[i] = _shaders[i].GetInfo();
+            }
+
+            pipeline.StagesCount = (uint)_shaders.Length;
+            pipeline.PipelineLayout = PipelineLayout;
+
+            pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache, renderPass.Value);
+            pipeline.Dispose();
+        }
+
+        public ProgramLinkStatus CheckProgramLink(bool blocking)
+        {
+            if (LinkStatus == ProgramLinkStatus.Incomplete)
+            {
+                ProgramLinkStatus resultStatus = ProgramLinkStatus.Success;
+
+                foreach (Shader shader in _shaders)
+                {
+                    if (shader.CompileStatus == ProgramLinkStatus.Incomplete)
+                    {
+                        if (blocking)
+                        {
+                            // Wait for this shader to finish compiling.
+                            shader.WaitForCompile();
+
+                            if (shader.CompileStatus != ProgramLinkStatus.Success)
+                            {
+                                resultStatus = ProgramLinkStatus.Failure;
+                            }
+                        }
+                        else
+                        {
+                            return ProgramLinkStatus.Incomplete;
+                        }
+                    }
+                }
+
+                if (!_compileTask.IsCompleted)
+                {
+                    if (blocking)
+                    {
+                        _compileTask.Wait();
+
+                        if (LinkStatus == ProgramLinkStatus.Failure)
+                        {
+                            return ProgramLinkStatus.Failure;
+                        }
+                    }
+                    else
+                    {
+                        return ProgramLinkStatus.Incomplete;
+                    }
+                }
+
+                return resultStatus;
+            }
+
+            return LinkStatus;
+        }
+
+        public byte[] GetBinary()
+        {
+            return null;
+        }
+
+        public void AddComputePipeline(ref SpecData key, Auto<DisposablePipeline> pipeline)
+        {
+            (_computePipelineCache ??= new()).Add(ref key, pipeline);
+        }
+
+        public void AddGraphicsPipeline(ref PipelineUid key, Auto<DisposablePipeline> pipeline)
+        {
+            (_graphicsPipelineCache ??= new()).Add(ref key, pipeline);
+        }
+
+        public bool TryGetComputePipeline(ref SpecData key, out Auto<DisposablePipeline> pipeline)
+        {
+            if (_computePipelineCache == null)
+            {
+                pipeline = default;
+                return false;
+            }
+
+            if (_computePipelineCache.TryGetValue(ref key, out pipeline))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryGetGraphicsPipeline(ref PipelineUid key, out Auto<DisposablePipeline> pipeline)
+        {
+            if (_graphicsPipelineCache == null)
+            {
+                pipeline = default;
+                return false;
+            }
+
+            if (!_graphicsPipelineCache.TryGetValue(ref key, out pipeline))
+            {
+                if (_firstBackgroundUse)
+                {
+                    Logger.Warning?.Print(LogClass.Gpu, "Background pipeline compile missed on draw - incorrect pipeline state?");
+                    _firstBackgroundUse = false;
+                }
+
+                return false;
+            }
+
+            _firstBackgroundUse = false;
+
+            return true;
+        }
+
+        public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
+            VulkanRenderer gd,
+            int commandBufferIndex,
+            int setIndex,
+            out bool isNew)
+        {
+            return _plce.GetNewDescriptorSetCollection(gd, commandBufferIndex, setIndex, out isNew);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!_gd.Shaders.Remove(this))
+                {
+                    return;
+                }
+
+                for (int i = 0; i < _shaders.Length; i++)
+                {
+                    _shaders[i].Dispose();
+                }
+
+                if (_graphicsPipelineCache != null)
+                {
+                    foreach (Auto<DisposablePipeline> pipeline in _graphicsPipelineCache.Values)
+                    {
+                        pipeline.Dispose();
+                    }
+                }
+
+                if (_computePipelineCache != null)
+                {
+                    foreach (Auto<DisposablePipeline> pipeline in _computePipelineCache.Values)
+                    {
+                        pipeline.Dispose();
+                    }
+                }
+
+                if (_dummyRenderPass.Value.Handle != 0)
+                {
+                    _dummyRenderPass.Dispose();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+    }
+}
