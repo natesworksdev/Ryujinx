@@ -504,7 +504,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 CachedShaderProgram program = new(hostProgram, compilation.SpecializationState, compilation.Shaders);
 
                 // Vulkan's binary code is the SPIR-V used for compilation, so it is ready immediately. Other APIs get this after compilation.
-                byte[] binaryCode = _context.Capabilities.Api == TargetApi.Vulkan ? ShaderBinarySerializer.Pack(shaderSources) : null;
+                byte[] binaryCode = (_context.Capabilities.Api == TargetApi.Vulkan || GraphicsConfig.EnableOGLSpirV) ? ShaderBinarySerializer.Pack(shaderSources) : null;
 
                 EnqueueForValidation(new ProgramEntry(program, binaryCode, compilation.ProgramIndex, compilation.IsCompute, isBinary: false));
             }
