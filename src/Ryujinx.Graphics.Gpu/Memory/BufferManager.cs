@@ -515,24 +515,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Ensures that the graphics engine bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
-        public void CommitGraphicsBindings()
+        /// <param name="indexed">True if the index buffer is in use</param>
+        public void CommitGraphicsBindings(bool indexed)
         {
             var bufferCache = _channel.MemoryManager.Physical.BufferCache;
 
-            if (_indexBufferDirty || _rebind)
+            if (indexed)
             {
-                _indexBufferDirty = false;
-
-                if (_indexBuffer.Address != 0)
+                if (_indexBufferDirty || _rebind)
                 {
-                    BufferRange buffer = bufferCache.GetBufferRange(_indexBuffer.Address, _indexBuffer.Size);
+                    _indexBufferDirty = false;
 
-                    _context.Renderer.Pipeline.SetIndexBuffer(buffer, _indexBuffer.Type);
+                    if (_indexBuffer.Address != 0)
+                    {
+                        BufferRange buffer = bufferCache.GetBufferRange(_indexBuffer.Address, _indexBuffer.Size);
+
+                        _context.Renderer.Pipeline.SetIndexBuffer(buffer, _indexBuffer.Type);
+                    }
+                }
+                else if (_indexBuffer.Address != 0)
+                {
+                    bufferCache.SynchronizeBufferRange(_indexBuffer.Address, _indexBuffer.Size);
                 }
             }
-            else if (_indexBuffer.Address != 0)
+            else if (_rebind)
             {
-                bufferCache.SynchronizeBufferRange(_indexBuffer.Address, _indexBuffer.Size);
+                _indexBufferDirty = true;
             }
 
             uint vbEnableMask = _vertexBuffersEnableMask;
@@ -606,7 +614,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (_tfInfoBuffer == BufferHandle.Null)
                     {
-                        _tfInfoBuffer = _context.Renderer.CreateBuffer(TfInfoBufferSize);
+                        _tfInfoBuffer = _context.Renderer.CreateBuffer(TfInfoBufferSize, BufferAccess.Stream);
                     }
 
                     buffers[0] = new BufferAssignment(0, new BufferRange(_tfInfoBuffer, 0, TfInfoBufferSize));
@@ -719,7 +727,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     {
                         var isWrite = bounds.Flags.HasFlag(BufferUsageFlags.Write);
                         var range = isStorage
-                            ? bufferCache.GetBufferRangeTillEnd(bounds.Address, bounds.Size, isWrite)
+                            ? bufferCache.GetBufferRangeAligned(bounds.Address, bounds.Size, isWrite)
                             : bufferCache.GetBufferRange(bounds.Address, bounds.Size);
 
                         ranges[rangesCount++] = new BufferAssignment(bindingInfo.Binding, range);
@@ -756,7 +764,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     var isWrite = bounds.Flags.HasFlag(BufferUsageFlags.Write);
                     var range = isStorage
-                        ? bufferCache.GetBufferRangeTillEnd(bounds.Address, bounds.Size, isWrite)
+                        ? bufferCache.GetBufferRangeAligned(bounds.Address, bounds.Size, isWrite)
                         : bufferCache.GetBufferRange(bounds.Address, bounds.Size);
 
                     ranges[rangesCount++] = new BufferAssignment(bindingInfo.Binding, range);
