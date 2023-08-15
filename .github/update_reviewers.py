@@ -25,6 +25,10 @@ def update_reviewers(config, repo: Repository, pr_id: int) -> int:
         sys.stderr.writable(f"Unknown PR #{pr_id}\n")
         return 1
 
+    if pull_request.draft:
+        print("Not assigning reviewers for draft PRs")
+        return 0
+
     pull_request_author = pull_request.user.login
     reviewers = set()
     team_reviewers = set()
