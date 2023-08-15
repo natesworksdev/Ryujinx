@@ -257,13 +257,22 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (block.IsTotallyFree())
             {
-                for (int i = 0; i < _blocks.Count; i++)
+                _lock.EnterWriteLock();
+
+                try
                 {
-                    if (_blocks[i] == block)
+                    for (int i = 0; i < _blocks.Count; i++)
                     {
-                        _blocks.RemoveAt(i);
-                        break;
+                        if (_blocks[i] == block)
+                        {
+                            _blocks.RemoveAt(i);
+                            break;
+                        }
                     }
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
 
                 block.Destroy(_api, _device);
