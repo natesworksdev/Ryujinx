@@ -1701,6 +1701,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
         }
-#endregion
+        #endregion
     }
 }

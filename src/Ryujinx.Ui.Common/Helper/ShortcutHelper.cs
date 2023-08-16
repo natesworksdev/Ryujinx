@@ -20,7 +20,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutWindows(string applicationFilePath, byte[] iconData, string iconPath, string cleanedAppName, string desktopPath)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-            
+
             MemoryStream iconDataStream = new(iconData);
             using Image image = Image.FromStream(iconDataStream);
             using Bitmap bitmap = new(128, 128);
