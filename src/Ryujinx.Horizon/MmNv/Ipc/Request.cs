@@ -148,7 +148,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             lock (_sessionList)
             {
-                // Nintendo ignore the fgm priority as the other services were deprecated.
+                // Nintendo ignores the fgm priority as the other services were deprecated.
                 Session session = new(_uniqueId++, module, isAutoClearEvent);
 
                 _sessionList.Add(session);
