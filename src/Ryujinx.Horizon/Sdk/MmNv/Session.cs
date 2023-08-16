@@ -3,9 +3,8 @@
     class Session
     {
         public Module Module { get; }
-
-        public bool IsAutoClearEvent { get; }
         public uint Id { get; }
+        public bool IsAutoClearEvent { get; }
         public uint ClockRateMin { get; private set; }
         public int ClockRateMax { get; private set; }
 
