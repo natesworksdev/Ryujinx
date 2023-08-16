@@ -47,6 +47,70 @@ namespace Ryujinx.Ui.Common.Helper
             outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", GetArgsString(basePath, applicationFilePath));
         }
 
+        [SupportedOSPlatform("macos")]
+        private static void CreateShortcutMacos(string appFilePath, byte[] iconData, string desktopPath, string cleanedAppName)
+        {
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            // Macos .App folder
+            string contentFolderPath = Path.Combine(desktopPath, cleanedAppName + ".app", "Contents");
+            string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");
+            if (!Directory.Exists(scriptFolderPath))
+            {
+                Directory.CreateDirectory(scriptFolderPath);
+            }
+
+            // Runner script
+            string script = """
+                #!/bin/sh
+                {0} --fullscreen {1}
+                """;
+
+            string scriptPath = Path.Combine(scriptFolderPath, "runner");
+
+            using StreamWriter scriptFile = new(scriptPath);
+            scriptFile.Write(script, basePath, $"\"{appFilePath}\"");
+
+
+            // Set execute permission
+            FileInfo fileInfo = new(scriptPath);
+            fileInfo.UnixFileMode |= UnixFileMode.UserExecute;
+
+            // img
+            string resourceFolderPath = Path.Combine(contentFolderPath, "Resources");
+            if (!Directory.Exists(resourceFolderPath))
+            {
+                Directory.CreateDirectory(resourceFolderPath);
+            }
+
+            var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
+            image.SaveAsPng(Path.Combine(resourceFolderPath, "icon.png"));
+
+            // plist file
+            string plist = """
+                <?xml version="1.0" encoding="UTF-8" standalone="no"?><plist version="1.0">
+                  <dict>
+                    <key>CFBundleExecutable</key>
+                    <string>runner</string>
+                    <key>CFBundleGetInfoString</key>
+                    <string>runner</string>
+                    <key>CFBundleVersion</key>
+                    <string>1.0</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>1.0</string>
+                    <key>CFBundleIconName</key>
+                    <string>AppIcon</string>
+                    <key>CFBundleIconFile</key>
+                    <string>icon.png</string>
+                    <key>UIPrerenderedIcon</key>
+                    <true/>
+                </dict>
+                </plist>
+                """;
+
+            using StreamWriter plistFile = new(Path.Combine(contentFolderPath, "Info.plist"));
+            plistFile.Write(plist, cleanedAppName);
+        }
+
         public static void CreateAppShortcut(string applicationFilePath, string applicationName, string applicationId, byte[] iconData)
         {
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -64,6 +128,12 @@ namespace Ryujinx.Ui.Common.Helper
                 string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
                 Directory.CreateDirectory(iconPath);
                 CreateShortcutLinux(applicationFilePath, iconData, Path.Combine(iconPath, applicationId), desktopPath, cleanedAppName);
+                return;
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                CreateShortcutMacos(applicationFilePath, iconData, desktopPath, cleanedAppName);
                 return;
             }
 
