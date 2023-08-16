@@ -1,8 +1,6 @@
 ﻿using ARMeilleure.Translation;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
-using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
@@ -23,6 +21,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using static SDL2.SDL;
+using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
+using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Headless.SDL2
