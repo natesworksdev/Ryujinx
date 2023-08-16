@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     [Flags]
+    [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
     enum Instruction
     {
         Absolute = 1,
@@ -79,11 +81,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         ImageAtomic,
         IsNan,
         Load,
-        LoadConstant,
-        LoadGlobal,
-        LoadLocal,
-        LoadShared,
-        LoadStorage,
         Lod,
         LogarithmB2,
         LogicalAnd,
@@ -98,6 +95,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         MemoryBarrier,
         Minimum,
         MinimumU32,
+        Modulo,
         Multiply,
         MultiplyHighS32,
         MultiplyHighU32,
@@ -117,16 +115,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         Sine,
         SquareRoot,
         Store,
-        StoreGlobal,
-        StoreGlobal16,
-        StoreGlobal8,
-        StoreLocal,
-        StoreShared,
-        StoreShared16,
-        StoreShared8,
-        StoreStorage,
-        StoreStorage16,
-        StoreStorage8,
         Subtract,
         SwizzleAdd,
         TextureSample,
@@ -144,7 +132,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         FP32 = 1 << 16,
         FP64 = 1 << 17,
 
-        Mask = 0xffff
+        Mask = 0xffff,
     }
 
     static class InstructionExtensions

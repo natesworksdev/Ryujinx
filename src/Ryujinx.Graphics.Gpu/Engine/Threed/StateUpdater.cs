@@ -33,17 +33,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private readonly ShaderProgramInfo[] _currentProgramInfo;
         private ShaderSpecializationState _shaderSpecState;
-        private SpecializationStateUpdater _currentSpecState;
+        private readonly SpecializationStateUpdater _currentSpecState;
 
         private ProgramPipelineState _pipeline;
 
+        private bool _fsReadsFragCoord;
         private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
         private uint _vbEnableMask;
 
         private bool _prevDrawIndexed;
-        private bool _prevDrawIndirect;
+        private readonly bool _prevDrawIndirect;
         private IndexType _prevIndexType;
         private uint _prevFirstVertex;
         private bool _prevTfEnable;
@@ -269,7 +270,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _prevFirstVertex = _state.State.FirstVertex;
             }
 
-            bool tfEnable = _state.State.TfEnable;
+            bool tfEnable = _state.State.TfEnable && _context.Capabilities.SupportsTransformFeedback;
 
             if (!tfEnable && _prevTfEnable)
             {
@@ -330,7 +331,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 UpdateShaderState();
             }
 
-            _channel.BufferManager.CommitGraphicsBindings();
+            _channel.BufferManager.CommitGraphicsBindings(_drawState.DrawIndexed);
         }
 
         /// <summary>
@@ -351,15 +352,24 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     BufferDescriptor sb = info.SBuffers[index];
 
-                    ulong sbDescAddress = _channel.BufferManager.GetGraphicsUniformBufferAddress(stage, 0);
-
-                    int sbDescOffset = 0x110 + stage * 0x100 + sb.Slot * 0x10;
-
-                    sbDescAddress += (ulong)sbDescOffset;
+                    ulong sbDescAddress = _channel.BufferManager.GetGraphicsUniformBufferAddress(stage, sb.SbCbSlot);
+                    sbDescAddress += (ulong)sb.SbCbOffset * 4;
 
                     SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
-                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
+                    uint size;
+                    if (sb.SbCbSlot == Constants.DriverReservedUniformBuffer)
+                    {
+                        // Only trust the SbDescriptor size if it comes from slot 0.
+                        size = (uint)sbDescriptor.Size;
+                    }
+                    else
+                    {
+                        // TODO: Use full mapped size and somehow speed up buffer sync.
+                        size = (uint)_channel.MemoryManager.GetMappedSize(sbDescriptor.PackAddress(), Constants.MaxUnknownStorageSize);
+                    }
+
+                    _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), size, sb.Flags);
                 }
             }
         }
@@ -439,7 +449,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int samplesInY = msaaMode.SamplesInY();
 
             var scissor = _state.State.ScreenScissorState;
-            Size sizeHint = new Size((scissor.X + scissor.Width) * samplesInX, (scissor.Y + scissor.Height) * samplesInY, 1);
+            Size sizeHint = new((scissor.X + scissor.Width) * samplesInX, (scissor.Y + scissor.Height) * samplesInY, 1);
 
             int clipRegionWidth = int.MaxValue;
             int clipRegionHeight = int.MaxValue;
@@ -486,6 +496,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     {
                         clipRegionHeight = color.Height / samplesInY;
                     }
+
+                    if (!_context.Capabilities.SupportsBgraFormat)
+                    {
+                        _context.SupportBufferUpdater.SetRenderTargetIsBgra(index, color.Format.IsBgr());
+                    }
                 }
             }
 
@@ -530,7 +545,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (oldScale != _channel.TextureManager.RenderTargetScale)
                 {
-                    _context.Renderer.Pipeline.SetRenderTargetScale(_channel.TextureManager.RenderTargetScale);
+                    _context.SupportBufferUpdater.SetRenderTargetScale(_channel.TextureManager.RenderTargetScale);
 
                     UpdateViewportTransform();
                     UpdateScissorState();
@@ -660,7 +675,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateDepthTestState()
         {
-            DepthTestDescriptor descriptor = new DepthTestDescriptor(
+            DepthTestDescriptor descriptor = new(
                 _state.State.DepthTestEnable,
                 _state.State.DepthWriteEnable,
                 _state.State.DepthTestFunc);
@@ -678,11 +693,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             var face = _state.State.FaceState;
 
             bool disableTransform = _state.State.ViewportTransformEnable == 0;
+            bool yNegate = yControl.HasFlag(YControl.NegateY);
 
             UpdateFrontFace(yControl, face.FrontFace);
             UpdateDepthMode();
-
-            bool flipY = yControl.HasFlag(YControl.NegateY);
 
             Span<Viewport> viewports = stackalloc Viewport[Constants.TotalViewports];
 
@@ -705,7 +719,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 float scaleX = MathF.Abs(transform.ScaleX);
                 float scaleY = transform.ScaleY;
 
-                if (flipY)
+                if (yNegate)
                 {
                     scaleY = -scaleY;
                 }
@@ -730,7 +744,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     height *= scale;
                 }
 
-                Rectangle<float> region = new Rectangle<float>(x, y, width, height);
+                Rectangle<float> region = new(x, y, width, height);
 
                 ViewportSwizzle swizzleX = transform.UnpackSwizzleX();
                 ViewportSwizzle swizzleY = transform.UnpackSwizzleY();
@@ -742,19 +756,32 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (transform.ScaleZ < 0)
                 {
-                    float temp = depthNear;
-                    depthNear = depthFar;
-                    depthFar = temp;
+                    (depthFar, depthNear) = (depthNear, depthFar);
                 }
 
                 viewports[index] = new Viewport(region, swizzleX, swizzleY, swizzleZ, swizzleW, depthNear, depthFar);
             }
 
             _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
-            _context.Renderer.Pipeline.SetViewports(viewports, disableTransform);
+            _context.Renderer.Pipeline.SetViewports(viewports);
 
-            _currentSpecState.SetViewportTransformDisable(_state.State.ViewportTransformEnable == 0);
+            _context.SupportBufferUpdater.SetViewportTransformDisable(
+                viewports[0].Region.Width,
+                viewports[0].Region.Height,
+                _channel.TextureManager.RenderTargetScale,
+                disableTransform);
+
+            // Viewport size is only used on the shader when YNegate is enabled,
+            // and if the fragment shader accesses gl_FragCoord,
+            // so there's no need to update it in other cases.
+            if (yNegate && _fsReadsFragCoord)
+            {
+                UpdateSupportBufferViewportSize();
+            }
+
+            _currentSpecState.SetViewportTransformDisable(disableTransform);
             _currentSpecState.SetDepthMode(GetDepthMode() == DepthMode.MinusOneToOne);
+            _currentSpecState.SetYNegateEnabled(yNegate);
         }
 
         /// <summary>
@@ -762,7 +789,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateDepthMode()
         {
-            _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
+            DepthMode mode = GetDepthMode();
+
+            _pipeline.DepthMode = mode;
+
+            _context.Renderer.Pipeline.SetDepthMode(mode);
         }
 
         /// <summary>
@@ -832,7 +863,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 backMask = test.FrontMask;
             }
 
-            StencilTestDescriptor descriptor = new StencilTestDescriptor(
+            StencilTestDescriptor descriptor = new(
                 test.Enable,
                 test.FrontFunc,
                 test.FrontSFail,
@@ -901,6 +932,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateVertexAttribState()
         {
+            bool supportsScaledFormats = _context.Capabilities.SupportsScaledVertexFormats;
             uint vbEnableMask = _vbEnableMask;
 
             Span<VertexAttribDescriptor> vertexAttribs = stackalloc VertexAttribDescriptor[Constants.TotalVertexAttribs];
@@ -918,7 +950,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     continue;
                 }
 
-                if (!FormatTable.TryGetAttribFormat(vertexAttrib.UnpackFormat(), out Format format))
+                uint packedFormat = vertexAttrib.UnpackFormat();
+
+                if (!supportsScaledFormats)
+                {
+                    packedFormat = vertexAttrib.UnpackType() switch
+                    {
+                        VertexAttribType.Uscaled => ((uint)VertexAttribType.Uint << 27) | (packedFormat & (0x3f << 21)),
+                        VertexAttribType.Sscaled => ((uint)VertexAttribType.Sint << 27) | (packedFormat & (0x3f << 21)),
+                        _ => packedFormat,
+                    };
+                }
+
+                if (!FormatTable.TryGetAttribFormat(packedFormat, out Format format))
                 {
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid attribute format 0x{vertexAttrib.UnpackFormat():X}.");
 
@@ -926,7 +970,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     {
                         VertexAttribType.Sint => Format.R32G32B32A32Sint,
                         VertexAttribType.Uint => Format.R32G32B32A32Uint,
-                        _ => Format.R32G32B32A32Float
+                        _ => Format.R32G32B32A32Float,
                     };
                 }
 
@@ -1004,8 +1048,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             switch (indexBuffer.Type)
             {
-                case IndexType.UShort: size *= 2; break;
-                case IndexType.UInt: size *= 4; break;
+                case IndexType.UShort:
+                    size *= 2;
+                    break;
+                case IndexType.UInt:
+                    size *= 4;
+                    break;
             }
 
             _channel.BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
@@ -1325,7 +1373,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _vtgWritesRtLayer = false;
 
-            ShaderAddresses addresses = new ShaderAddresses();
+            ShaderAddresses addresses = new();
             Span<ulong> addressesSpan = addresses.AsSpan();
 
             ulong baseAddress = _state.State.ShaderBaseAddress.Pack();
@@ -1354,6 +1402,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _vsUsesDrawParameters = gs.Shaders[1]?.Info.UsesDrawParameters ?? false;
             _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
 
+            bool hasTransformFeedback = gs.SpecializationState.TransformFeedbackDescriptors != null;
+            if (hasTransformFeedback != _channel.BufferManager.HasTransformFeedbackOutputs)
+            {
+                if (!_context.Capabilities.SupportsTransformFeedback)
+                {
+                    // If host does not support transform feedback, and the shader changed,
+                    // we might need to update bindings as transform feedback emulation
+                    // uses storage buffer bindings that might have been used for something
+                    // else in a previous draw.
+
+                    _channel.BufferManager.ForceTransformFeedbackAndStorageBuffersDirty();
+                }
+
+                _channel.BufferManager.HasTransformFeedbackOutputs = hasTransformFeedback;
+            }
+
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
             {
                 UpdateUserClipState();
@@ -1373,7 +1437,39 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _currentProgramInfo[stageIndex] = info;
             }
 
+            if (gs.Shaders[5]?.Info.UsesFragCoord == true)
+            {
+                // Make sure we update the viewport size on the support buffer if it will be consumed on the new shader.
+
+                if (!_fsReadsFragCoord && _state.State.YControl.HasFlag(YControl.NegateY))
+                {
+                    UpdateSupportBufferViewportSize();
+                }
+
+                _fsReadsFragCoord = true;
+            }
+            else
+            {
+                _fsReadsFragCoord = false;
+            }
+
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        /// <summary>
+        /// Updates the viewport size on the support buffer for fragment shader access.
+        /// </summary>
+        private void UpdateSupportBufferViewportSize()
+        {
+            ref var transform = ref _state.State.ViewportTransform[0];
+
+            float scaleX = MathF.Abs(transform.ScaleX);
+            float scaleY = transform.ScaleY;
+
+            float width = scaleX * 2;
+            float height = scaleY * 2;
+
+            _context.SupportBufferUpdater.SetViewportSize(width, MathF.Abs(height));
         }
 
         /// <summary>
@@ -1424,7 +1520,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 //  ScaleZ = (Far - Near) / 2
                 // DepthNear/Far are sorted such as that Near is always less than Far.
                 depthMode = extents.DepthNear != transform.TranslateZ &&
-                            extents.DepthFar  != transform.TranslateZ
+                            extents.DepthFar != transform.TranslateZ
                     ? DepthMode.MinusOneToOne
                     : DepthMode.ZeroToOne;
             }

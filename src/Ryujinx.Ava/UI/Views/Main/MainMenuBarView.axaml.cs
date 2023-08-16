@@ -9,7 +9,6 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
-using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
@@ -31,34 +30,34 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             InitializeComponent();
 
-            ToggleFileTypesMenuItem.Items = GenerateToggleFileTypeItems();
-            ChangeLanguageMenuItem.Items = GenerateLanguageMenuItems();
+            ToggleFileTypesMenuItem.ItemsSource = GenerateToggleFileTypeItems();
+            ChangeLanguageMenuItem.ItemsSource = GenerateLanguageMenuItems();
         }
 
         private CheckBox[] GenerateToggleFileTypeItems()
         {
             List<CheckBox> checkBoxes = new();
 
-            foreach (var item in Enum.GetValues(typeof (FileTypes)))
+            foreach (var item in Enum.GetValues(typeof(FileTypes)))
             {
-                string fileName = Enum.GetName(typeof (FileTypes), item);
-                checkBoxes.Add(new CheckBox()
+                string fileName = Enum.GetName(typeof(FileTypes), item);
+                checkBoxes.Add(new CheckBox
                 {
                     Content = $".{fileName}",
                     IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.Ui.ShownFileTypes),
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType(fileName))
+                    Command = MiniCommand.Create(() => Window.ToggleFileType(fileName)),
                 });
             }
 
             return checkBoxes.ToArray();
         }
 
-        private MenuItem[] GenerateLanguageMenuItems()
+        private static MenuItem[] GenerateLanguageMenuItems()
         {
             List<MenuItem> menuItems = new();
 
             string localePath = "Ryujinx.Ava/Assets/Locales";
-            string localeExt  = ".json";
+            string localeExt = ".json";
 
             string[] localesPath = EmbeddedResources.GetAllAvailableResources(localePath, localeExt);
 
@@ -68,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.Main
             {
                 string languageCode = Path.GetFileNameWithoutExtension(locale).Split('.').Last();
                 string languageJson = EmbeddedResources.ReadAllText($"{localePath}/{languageCode}{localeExt}");
-                var    strings      = JsonHelper.Deserialize(languageJson, CommonJsonContext.Default.StringDictionary);
+                var strings = JsonHelper.Deserialize(languageJson, CommonJsonContext.Default.StringDictionary);
 
                 if (!strings.TryGetValue("Language", out string languageName))
                 {
@@ -77,11 +76,11 @@ namespace Ryujinx.Ava.UI.Views.Main
 
                 MenuItem menuItem = new()
                 {
-                    Header  = languageName,
+                    Header = languageName,
                     Command = MiniCommand.Create(() =>
                     {
-                        ViewModel.ChangeLanguage(languageCode);
-                    })
+                        MainWindowViewModel.ChangeLanguage(languageCode);
+                    }),
                 };
 
                 menuItems.Add(menuItem);
@@ -176,7 +175,11 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             string name = ViewModel.AppHost.Device.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-            await new CheatWindow(Window.VirtualFileSystem, ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText, name).ShowDialog(Window);
+            await new CheatWindow(
+                Window.VirtualFileSystem,
+                ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
+                name,
+                Window.ViewModel.SelectedApplication.Path).ShowDialog(Window);
 
             ViewModel.AppHost.Device.EnableCheats();
         }

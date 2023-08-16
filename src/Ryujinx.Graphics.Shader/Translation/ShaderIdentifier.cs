@@ -1,31 +1,35 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
-using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
     static class ShaderIdentifier
     {
-        public static ShaderIdentification Identify(Function[] functions, ShaderConfig config)
+        public static ShaderIdentification Identify(
+            IReadOnlyList<Function> functions,
+            IGpuAccessor gpuAccessor,
+            ShaderStage stage,
+            InputTopology inputTopology,
+            out int layerInputAttr)
         {
-            if (config.Stage == ShaderStage.Geometry &&
-                config.GpuAccessor.QueryPrimitiveTopology() == InputTopology.Triangles &&
-                !config.GpuAccessor.QueryHostSupportsGeometryShader() &&
-                IsLayerPassthroughGeometryShader(functions, out int layerInputAttr))
+            if (stage == ShaderStage.Geometry &&
+                inputTopology == InputTopology.Triangles &&
+                !gpuAccessor.QueryHostSupportsGeometryShader() &&
+                IsLayerPassthroughGeometryShader(functions, out layerInputAttr))
             {
-                config.SetGeometryShaderLayerInputAttribute(layerInputAttr);
-
                 return ShaderIdentification.GeometryLayerPassthrough;
             }
 
+            layerInputAttr = 0;
             return ShaderIdentification.None;
         }
 
-        private static bool IsLayerPassthroughGeometryShader(Function[] functions, out int layerInputAttr)
+        private static bool IsLayerPassthroughGeometryShader(IReadOnlyList<Function> functions, out int layerInputAttr)
         {
             bool writesLayer = false;
             layerInputAttr = 0;
 
-            if (functions.Length != 1)
+            if (functions.Count != 1)
             {
                 return false;
             }
@@ -43,12 +47,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 foreach (INode node in block.Operations)
                 {
-                    if (!(node is Operation operation))
+                    if (node is not Operation operation)
                     {
                         continue;
                     }
 
-                    if (IsResourceWrite(operation.Inst))
+                    if (IsResourceWrite(operation.Inst, operation.StorageKind))
                     {
                         return false;
                     }
@@ -84,7 +88,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 }
 
                                 writesLayer = true;
-                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;;
+                                layerInputAttr = srcAttributeAsgOp.GetSource(1).Value * 4 + srcAttributeAsgOp.GetSource(3).Value;
                             }
                             else
                             {
@@ -154,7 +158,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return totalVerticesCount + verticesCount == 3 && writesLayer;
         }
 
-        private static bool IsResourceWrite(Instruction inst)
+        private static bool IsResourceWrite(Instruction inst, StorageKind storageKind)
         {
             switch (inst)
             {
@@ -170,13 +174,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                 case Instruction.AtomicXor:
                 case Instruction.ImageAtomic:
                 case Instruction.ImageStore:
-                case Instruction.StoreGlobal:
-                case Instruction.StoreGlobal16:
-                case Instruction.StoreGlobal8:
-                case Instruction.StoreStorage:
-                case Instruction.StoreStorage16:
-                case Instruction.StoreStorage8:
                     return true;
+                case Instruction.Store:
+                    return storageKind == StorageKind.StorageBuffer ||
+                           storageKind == StorageKind.SharedMemory ||
+                           storageKind == StorageKind.LocalMemory;
             }
 
             return false;

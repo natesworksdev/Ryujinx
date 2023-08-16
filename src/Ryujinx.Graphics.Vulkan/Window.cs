@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _width;
         private int _height;
         private bool _vsyncEnabled;
-        private bool _vsyncModeChanged;
+        private bool _swapchainIsDirty;
         private VkFormat _format;
         private AntiAliasing _currentAntiAliasing;
         private bool _updateEffect;
@@ -38,6 +38,7 @@ namespace Ryujinx.Graphics.Vulkan
         private float _scalingFilterLevel;
         private bool _updateScalingFilter;
         private ScalingFilter _currentScalingFilter;
+        private bool _colorSpacePassthroughEnabled;
 
         public unsafe Window(VulkanRenderer gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
@@ -48,9 +49,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             CreateSwapchain();
 
-            var semaphoreCreateInfo = new SemaphoreCreateInfo()
+            var semaphoreCreateInfo = new SemaphoreCreateInfo
             {
-                SType = StructureType.SemaphoreCreateInfo
+                SType = StructureType.SemaphoreCreateInfo,
             };
 
             gd.Api.CreateSemaphore(device, semaphoreCreateInfo, null, out _imageAvailableSemaphore).ThrowOnError();
@@ -60,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
         private void RecreateSwapchain()
         {
             var oldSwapchain = _swapchain;
-            _vsyncModeChanged = false;
+            _swapchainIsDirty = false;
 
             for (int i = 0; i < _swapchainImageViews.Length; i++)
             {
@@ -106,7 +107,7 @@ namespace Ryujinx.Graphics.Vulkan
                 imageCount = capabilities.MaxImageCount;
             }
 
-            var surfaceFormat = ChooseSwapSurfaceFormat(surfaceFormats);
+            var surfaceFormat = ChooseSwapSurfaceFormat(surfaceFormats, _colorSpacePassthroughEnabled);
 
             var extent = ChooseSwapExtent(capabilities);
 
@@ -116,7 +117,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var oldSwapchain = _swapchain;
 
-            var swapchainCreateInfo = new SwapchainCreateInfoKHR()
+            var swapchainCreateInfo = new SwapchainCreateInfoKHR
             {
                 SType = StructureType.SwapchainCreateInfoKhr,
                 Surface = _surface,
@@ -130,7 +131,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PreTransform = capabilities.CurrentTransform,
                 CompositeAlpha = ChooseCompositeAlpha(capabilities.SupportedCompositeAlpha),
                 PresentMode = ChooseSwapPresentMode(presentModes, _vsyncEnabled),
-                Clipped = true
+                Clipped = true,
             };
 
             _gd.SwapchainApi.CreateSwapchain(_device, swapchainCreateInfo, null, out _swapchain).ThrowOnError();
@@ -164,36 +165,54 @@ namespace Ryujinx.Graphics.Vulkan
 
             var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, 1, 0, 1);
 
-            var imageCreateInfo = new ImageViewCreateInfo()
+            var imageCreateInfo = new ImageViewCreateInfo
             {
                 SType = StructureType.ImageViewCreateInfo,
                 Image = swapchainImage,
                 ViewType = ImageViewType.Type2D,
                 Format = format,
                 Components = componentMapping,
-                SubresourceRange = subresourceRange
+                SubresourceRange = subresourceRange,
             };
 
             _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
             return new Auto<DisposableImageView>(new DisposableImageView(_gd.Api, _device, imageView));
         }
 
-        private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats)
+        private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats, bool colorSpacePassthroughEnabled)
         {
             if (availableFormats.Length == 1 && availableFormats[0].Format == VkFormat.Undefined)
             {
                 return new SurfaceFormatKHR(VkFormat.B8G8R8A8Unorm, ColorSpaceKHR.PaceSrgbNonlinearKhr);
             }
-
-            foreach (var format in availableFormats)
+            var formatToReturn = availableFormats[0];
+            if (colorSpacePassthroughEnabled)
             {
-                if (format.Format == VkFormat.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.PaceSrgbNonlinearKhr)
+                foreach (var format in availableFormats)
                 {
-                    return format;
+                    if (format.Format == VkFormat.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.SpacePassThroughExt)
+                    {
+                        formatToReturn = format;
+                        break;
+                    }
+                    else if (format.Format == VkFormat.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.PaceSrgbNonlinearKhr)
+                    {
+                        formatToReturn = format;
+                    }
                 }
             }
-
-            return availableFormats[0];
+            else
+            {
+                foreach (var format in availableFormats)
+                {
+                    if (format.Format == VkFormat.B8G8R8A8Unorm && format.ColorSpace == ColorSpaceKHR.PaceSrgbNonlinearKhr)
+                    {
+                        formatToReturn = format;
+                        break;
+                    }
+                }
+            }
+            return formatToReturn;
         }
 
         private static CompositeAlphaFlagsKHR ChooseCompositeAlpha(CompositeAlphaFlagsKHR supportedFlags)
@@ -234,13 +253,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return capabilities.CurrentExtent;
             }
-            else
-            {
-                uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, SurfaceWidth));
-                uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, SurfaceHeight));
 
-                return new Extent2D(width, height);
-            }
+            uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, SurfaceWidth));
+            uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, SurfaceHeight));
+
+            return new Extent2D(width, height);
         }
 
         public unsafe override void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
@@ -261,7 +278,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (acquireResult == Result.ErrorOutOfDateKhr ||
                     acquireResult == Result.SuboptimalKhr ||
-                    _vsyncModeChanged)
+                    _swapchainIsDirty)
                 {
                     RecreateSwapchain();
                 }
@@ -296,12 +313,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             int srcX0, srcX1, srcY0, srcY1;
-            float scale = view.ScaleFactor;
 
             if (crop.Left == 0 && crop.Right == 0)
             {
                 srcX0 = 0;
-                srcX1 = (int)(view.Width / scale);
+                srcX1 = view.Width;
             }
             else
             {
@@ -312,20 +328,12 @@ namespace Ryujinx.Graphics.Vulkan
             if (crop.Top == 0 && crop.Bottom == 0)
             {
                 srcY0 = 0;
-                srcY1 = (int)(view.Height / scale);
+                srcY1 = view.Height;
             }
             else
             {
                 srcY0 = crop.Top;
                 srcY1 = crop.Bottom;
-            }
-
-            if (scale != 1f)
-            {
-                srcX0 = (int)(srcX0 * scale);
-                srcY0 = (int)(srcY0 * scale);
-                srcX1 = (int)Math.Ceiling(srcX1 * scale);
-                srcY1 = (int)Math.Ceiling(srcY1 * scale);
             }
 
             if (ScreenCaptureRequested)
@@ -350,10 +358,10 @@ namespace Ryujinx.Graphics.Vulkan
             float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width * crop.AspectRatioY));
             float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width * crop.AspectRatioY / (_height * crop.AspectRatioX));
 
-            int dstWidth  = (int)(_width  * ratioX);
+            int dstWidth = (int)(_width * ratioX);
             int dstHeight = (int)(_height * ratioY);
 
-            int dstPaddingX = (_width  - dstWidth)  / 2;
+            int dstPaddingX = (_width - dstWidth) / 2;
             int dstPaddingY = (_height - dstHeight) / 2;
 
             int dstX0 = crop.FlipX ? _width - dstPaddingX : dstPaddingX;
@@ -413,7 +421,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Result result;
 
-            var presentInfo = new PresentInfoKHR()
+            var presentInfo = new PresentInfoKHR
             {
                 SType = StructureType.PresentInfoKhr,
                 WaitSemaphoreCount = 1,
@@ -421,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SwapchainCount = 1,
                 PSwapchains = &swapchain,
                 PImageIndices = &nextImage,
-                PResults = &result
+                PResults = &result,
             };
 
             lock (_gd.QueueLock)
@@ -452,6 +460,12 @@ namespace Ryujinx.Graphics.Vulkan
             _currentScalingFilter = type;
 
             _updateScalingFilter = true;
+        }
+
+        public override void SetColorSpacePassthrough(bool colorSpacePassthroughEnabled)
+        {
+            _colorSpacePassthroughEnabled = colorSpacePassthroughEnabled;
+            _swapchainIsDirty = true;
         }
 
         private void UpdateEffect()
@@ -529,7 +543,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ColorBit, 0, 1, 0, 1);
 
-            var barrier = new ImageMemoryBarrier()
+            var barrier = new ImageMemoryBarrier
             {
                 SType = StructureType.ImageMemoryBarrier,
                 SrcAccessMask = srcAccess,
@@ -539,7 +553,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 Image = image,
-                SubresourceRange = subresourceRange
+                SubresourceRange = subresourceRange,
             };
 
             _gd.Api.CmdPipelineBarrier(
@@ -570,7 +584,7 @@ namespace Ryujinx.Graphics.Vulkan
         public override void ChangeVSyncMode(bool vsyncEnabled)
         {
             _vsyncEnabled = vsyncEnabled;
-            _vsyncModeChanged = true;
+            _swapchainIsDirty = true;
         }
 
         protected virtual void Dispose(bool disposing)

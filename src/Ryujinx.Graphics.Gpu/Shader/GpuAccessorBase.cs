@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
@@ -16,40 +15,56 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly ResourceCounts _resourceCounts;
         private readonly int _stageIndex;
 
+        private readonly int _reservedConstantBuffers;
+        private readonly int _reservedStorageBuffers;
+
         /// <summary>
         /// Creates a new GPU accessor.
         /// </summary>
         /// <param name="context">GPU context</param>
-        public GpuAccessorBase(GpuContext context, ResourceCounts resourceCounts, int stageIndex)
+        /// <param name="resourceCounts">Counter of GPU resources used by the shader</param>
+        /// <param name="stageIndex">Index of the shader stage, 0 for compute</param>
+        /// <param name="tfEnabled">Indicates if the current graphics shader is used with transform feedback enabled</param>
+        public GpuAccessorBase(GpuContext context, ResourceCounts resourceCounts, int stageIndex, bool tfEnabled)
         {
             _context = context;
             _resourceCounts = resourceCounts;
             _stageIndex = stageIndex;
+
+            _reservedConstantBuffers = 1; // For the support buffer.
+            _reservedStorageBuffers = !context.Capabilities.SupportsTransformFeedback && tfEnabled ? 5 : 0;
         }
 
         public int QueryBindingConstantBuffer(int index)
         {
+            int binding;
+
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                // We need to start counting from 1 since binding 0 is reserved for the support uniform buffer.
-                return GetBindingFromIndex(index, _context.Capabilities.MaximumUniformBuffersPerStage, "Uniform buffer") + 1;
+                binding = GetBindingFromIndex(index, _context.Capabilities.MaximumUniformBuffersPerStage, "Uniform buffer");
             }
             else
             {
-                return _resourceCounts.UniformBuffersCount++;
+                binding = _resourceCounts.UniformBuffersCount++;
             }
+
+            return binding + _reservedConstantBuffers;
         }
 
         public int QueryBindingStorageBuffer(int index)
         {
+            int binding;
+
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetBindingFromIndex(index, _context.Capabilities.MaximumStorageBuffersPerStage, "Storage buffer");
+                binding = GetBindingFromIndex(index, _context.Capabilities.MaximumStorageBuffersPerStage, "Storage buffer");
             }
             else
             {
-                return _resourceCounts.StorageBuffersCount++;
+                binding = _resourceCounts.StorageBuffersCount++;
             }
+
+            return binding + _reservedStorageBuffers;
         }
 
         public int QueryBindingTexture(int index, bool isBuffer)
@@ -93,22 +108,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 Logger.Error?.Print(LogClass.Gpu, $"{resourceName} index {index} exceeds per stage limit of {maxPerStage}.");
             }
 
-            return GetStageIndex() * (int)maxPerStage + index;
+            return GetStageIndex(_stageIndex) * (int)maxPerStage + index;
         }
 
-        private int GetStageIndex()
+        public static int GetStageIndex(int stageIndex)
         {
             // This is just a simple remapping to ensure that most frequently used shader stages
             // have the lowest binding numbers.
             // This is useful because if we need to run on a system with a low limit on the bindings,
             // then we can still get most games working as the most common shaders will have low binding numbers.
-            return _stageIndex switch
+            return stageIndex switch
             {
                 4 => 1, // Fragment
                 3 => 2, // Geometry
                 1 => 3, // Tessellation control
                 2 => 4, // Tessellation evaluation
-                _ => 0 // Vertex/Compute
+                _ => 0, // Vertex/Compute
             };
         }
 
@@ -138,15 +153,25 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public bool QueryHostSupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
 
+        public bool QueryHostSupportsScaledVertexFormats() => _context.Capabilities.SupportsScaledVertexFormats;
+
         public bool QueryHostSupportsShaderBallot() => _context.Capabilities.SupportsShaderBallot;
+
+        public bool QueryHostSupportsShaderBarrierDivergence() => _context.Capabilities.SupportsShaderBarrierDivergence;
+
+        public bool QueryHostSupportsShaderFloat64() => _context.Capabilities.SupportsShaderFloat64;
 
         public bool QueryHostSupportsSnormBufferTextureFormat() => _context.Capabilities.SupportsSnormBufferTextureFormat;
 
         public bool QueryHostSupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
 
+        public bool QueryHostSupportsTransformFeedback() => _context.Capabilities.SupportsTransformFeedback;
+
         public bool QueryHostSupportsViewportIndexVertexTessellation() => _context.Capabilities.SupportsViewportIndexVertexTessellation;
 
         public bool QueryHostSupportsViewportMask() => _context.Capabilities.SupportsViewportMask;
+
+        public bool QueryHostSupportsDepthClipControl() => _context.Capabilities.SupportsDepthClipControl;
 
         /// <summary>
         /// Converts a packed Maxwell texture format to the shader translator texture format.
@@ -163,6 +188,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             return formatInfo.Format switch
             {
+#pragma warning disable IDE0055 // Disable formatting
                 Format.R8Unorm           => TextureFormat.R8Unorm,
                 Format.R8Snorm           => TextureFormat.R8Snorm,
                 Format.R8Uint            => TextureFormat.R8Uint,
@@ -203,35 +229,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 Format.R10G10B10A2Unorm  => TextureFormat.R10G10B10A2Unorm,
                 Format.R10G10B10A2Uint   => TextureFormat.R10G10B10A2Uint,
                 Format.R11G11B10Float    => TextureFormat.R11G11B10Float,
-                _                        => TextureFormat.Unknown
-            };
-        }
-
-        /// <summary>
-        /// Converts the Maxwell primitive topology to the shader translator topology.
-        /// </summary>
-        /// <param name="topology">Maxwell primitive topology</param>
-        /// <param name="tessellationMode">Maxwell tessellation mode</param>
-        /// <returns>Shader translator topology</returns>
-        protected static InputTopology ConvertToInputTopology(PrimitiveTopology topology, TessMode tessellationMode)
-        {
-            return topology switch
-            {
-                PrimitiveTopology.Points => InputTopology.Points,
-                PrimitiveTopology.Lines or
-                PrimitiveTopology.LineLoop or
-                PrimitiveTopology.LineStrip => InputTopology.Lines,
-                PrimitiveTopology.LinesAdjacency or
-                PrimitiveTopology.LineStripAdjacency => InputTopology.LinesAdjacency,
-                PrimitiveTopology.Triangles or
-                PrimitiveTopology.TriangleStrip or
-                PrimitiveTopology.TriangleFan => InputTopology.Triangles,
-                PrimitiveTopology.TrianglesAdjacency or
-                PrimitiveTopology.TriangleStripAdjacency => InputTopology.TrianglesAdjacency,
-                PrimitiveTopology.Patches => tessellationMode.UnpackPatchType() == TessPatchType.Isolines
-                    ? InputTopology.Lines
-                    : InputTopology.Triangles,
-                _ => InputTopology.Points
+                _                        => TextureFormat.Unknown,
+#pragma warning restore IDE0055
             };
         }
     }
