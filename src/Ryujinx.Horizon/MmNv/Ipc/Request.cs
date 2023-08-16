@@ -8,7 +8,6 @@ namespace Ryujinx.Horizon.MmNv.Ipc
 {
     partial class Request : IRequest
     {
-        private readonly object _sessionListLock = new();
         private readonly List<Session> _sessionList = new();
 
         private uint _uniqueId = 1;
@@ -30,7 +29,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { module });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 _sessionList.Remove(GetSessionByModule(module));
             }
@@ -43,7 +42,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { module, clockRateMin, clockRateMax });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 GetSessionByModule(module)?.SetAndWait(clockRateMin, clockRateMax);
             }
@@ -56,7 +55,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { module });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 Session session = GetSessionByModule(module);
 
@@ -83,7 +82,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { requestId });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 _sessionList.Remove(GetSessionById(requestId));
             }
@@ -96,7 +95,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { requestId, clockRateMin, clockRateMax });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 GetSessionById(requestId)?.SetAndWait(clockRateMin, clockRateMax);
             }
@@ -109,7 +108,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
         {
             Logger.Stub?.PrintStub(LogClass.ServiceMm, new { requestId });
 
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 Session session = GetSessionById(requestId);
 
@@ -147,7 +146,7 @@ namespace Ryujinx.Horizon.MmNv.Ipc
 
         private uint Register(Module module, uint fgmPriority, bool isAutoClearEvent)
         {
-            lock (_sessionListLock)
+            lock (_sessionList)
             {
                 // Nintendo ignore the fgm priority as the other services were deprecated.
                 Session session = new(_uniqueId++, module, isAutoClearEvent);
