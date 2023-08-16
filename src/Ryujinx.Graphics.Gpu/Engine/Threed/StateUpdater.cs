@@ -37,6 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private ProgramPipelineState _pipeline;
 
+        private bool _fsReadsFragCoord;
         private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
@@ -330,7 +331,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 UpdateShaderState();
             }
 
-            _channel.BufferManager.CommitGraphicsBindings();
+            _channel.BufferManager.CommitGraphicsBindings(_drawState.DrawIndexed);
         }
 
         /// <summary>
@@ -692,11 +693,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             var face = _state.State.FaceState;
 
             bool disableTransform = _state.State.ViewportTransformEnable == 0;
+            bool yNegate = yControl.HasFlag(YControl.NegateY);
 
             UpdateFrontFace(yControl, face.FrontFace);
             UpdateDepthMode();
-
-            bool flipY = yControl.HasFlag(YControl.NegateY);
 
             Span<Viewport> viewports = stackalloc Viewport[Constants.TotalViewports];
 
@@ -719,7 +719,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 float scaleX = MathF.Abs(transform.ScaleX);
                 float scaleY = transform.ScaleY;
 
-                if (flipY)
+                if (yNegate)
                 {
                     scaleY = -scaleY;
                 }
@@ -771,8 +771,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _channel.TextureManager.RenderTargetScale,
                 disableTransform);
 
+            // Viewport size is only used on the shader when YNegate is enabled,
+            // and if the fragment shader accesses gl_FragCoord,
+            // so there's no need to update it in other cases.
+            if (yNegate && _fsReadsFragCoord)
+            {
+                UpdateSupportBufferViewportSize();
+            }
+
             _currentSpecState.SetViewportTransformDisable(disableTransform);
             _currentSpecState.SetDepthMode(GetDepthMode() == DepthMode.MinusOneToOne);
+            _currentSpecState.SetYNegateEnabled(yNegate);
         }
 
         /// <summary>
@@ -923,6 +932,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateVertexAttribState()
         {
+            bool supportsScaledFormats = _context.Capabilities.SupportsScaledVertexFormats;
             uint vbEnableMask = _vbEnableMask;
 
             Span<VertexAttribDescriptor> vertexAttribs = stackalloc VertexAttribDescriptor[Constants.TotalVertexAttribs];
@@ -940,7 +950,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     continue;
                 }
 
-                if (!FormatTable.TryGetAttribFormat(vertexAttrib.UnpackFormat(), out Format format))
+                uint packedFormat = vertexAttrib.UnpackFormat();
+
+                if (!supportsScaledFormats)
+                {
+                    packedFormat = vertexAttrib.UnpackType() switch
+                    {
+                        VertexAttribType.Uscaled => ((uint)VertexAttribType.Uint << 27) | (packedFormat & (0x3f << 21)),
+                        VertexAttribType.Sscaled => ((uint)VertexAttribType.Sint << 27) | (packedFormat & (0x3f << 21)),
+                        _ => packedFormat,
+                    };
+                }
+
+                if (!FormatTable.TryGetAttribFormat(packedFormat, out Format format))
                 {
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid attribute format 0x{vertexAttrib.UnpackFormat():X}.");
 
@@ -1415,7 +1437,39 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _currentProgramInfo[stageIndex] = info;
             }
 
+            if (gs.Shaders[5]?.Info.UsesFragCoord == true)
+            {
+                // Make sure we update the viewport size on the support buffer if it will be consumed on the new shader.
+
+                if (!_fsReadsFragCoord && _state.State.YControl.HasFlag(YControl.NegateY))
+                {
+                    UpdateSupportBufferViewportSize();
+                }
+
+                _fsReadsFragCoord = true;
+            }
+            else
+            {
+                _fsReadsFragCoord = false;
+            }
+
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        /// <summary>
+        /// Updates the viewport size on the support buffer for fragment shader access.
+        /// </summary>
+        private void UpdateSupportBufferViewportSize()
+        {
+            ref var transform = ref _state.State.ViewportTransform[0];
+
+            float scaleX = MathF.Abs(transform.ScaleX);
+            float scaleY = transform.ScaleY;
+
+            float width = scaleX * 2;
+            float height = scaleY * 2;
+
+            _context.SupportBufferUpdater.SetViewportSize(width, MathF.Abs(height));
         }
 
         /// <summary>

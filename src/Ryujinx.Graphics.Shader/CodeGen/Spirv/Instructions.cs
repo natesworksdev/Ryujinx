@@ -240,10 +240,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             // Barrier on divergent control flow paths may cause the GPU to hang,
             // so skip emitting the barrier for those cases.
-            if (!context.Config.GpuAccessor.QueryHostSupportsShaderBarrierDivergence() &&
+            if (!context.HostCapabilities.SupportsShaderBarrierDivergence &&
                 (context.CurrentBlock.Type != AstBlockType.Main || context.MayHaveReturned || !context.IsMainFunction))
             {
-                context.Config.GpuAccessor.Log($"Shader has barrier on potentially divergent block, the barrier will be removed.");
+                context.Logger.Log("Shader has barrier on potentially divergent block, the barrier will be removed.");
 
                 return OperationResult.Invalid;
             }
@@ -546,7 +546,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateFSIBegin(CodeGenContext context, AstOperation operation)
         {
-            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            if (context.HostCapabilities.SupportsFragmentShaderInterlock)
             {
                 context.BeginInvocationInterlockEXT();
             }
@@ -556,7 +556,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateFSIEnd(CodeGenContext context, AstOperation operation)
         {
-            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            if (context.HostCapabilities.SupportsFragmentShaderInterlock)
             {
                 context.EndInvocationInterlockEXT();
             }
@@ -1446,7 +1446,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 lodBias = Src(AggregateType.FP32);
             }
 
-            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Definitions.Stage != ShaderStage.Fragment)
             {
                 // Implicit LOD is only valid on fragment.
                 // Use the LOD bias as explicit LOD if available.
@@ -1788,6 +1788,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             StorageClass storageClass;
             SpvInstruction baseObj;
             int srcIndex = 0;
+            IoVariable? perVertexBuiltIn = null;
 
             switch (storageKind)
             {
@@ -1804,8 +1805,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
 
                     BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
-                        ? context.Config.Properties.ConstantBuffers[bindingIndex.Value]
-                        : context.Config.Properties.StorageBuffers[bindingIndex.Value];
+                        ? context.Properties.ConstantBuffers[bindingIndex.Value]
+                        : context.Properties.StorageBuffers[bindingIndex.Value];
                     StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
                     storageClass = StorageClass.Uniform;
@@ -1825,13 +1826,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     if (storageKind == StorageKind.LocalMemory)
                     {
                         storageClass = StorageClass.Private;
-                        varType = context.Config.Properties.LocalMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
+                        varType = context.Properties.LocalMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
                         baseObj = context.LocalMemories[bindingId.Value];
                     }
                     else
                     {
                         storageClass = StorageClass.Workgroup;
-                        varType = context.Config.Properties.SharedMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
+                        varType = context.Properties.SharedMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
                         baseObj = context.SharedMemories[bindingId.Value];
                     }
                     break;
@@ -1851,7 +1852,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     int location = 0;
                     int component = 0;
 
-                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                    if (context.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
                         if (operation.GetSource(srcIndex++) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                         {
@@ -1863,7 +1864,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         if (operation.SourcesCount > srcIndex &&
                             operation.GetSource(srcIndex) is AstOperand elemIndex &&
                             elemIndex.Type == OperandType.Constant &&
-                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
+                            context.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
                         {
                             component = elemIndex.Value;
                             srcIndex++;
@@ -1872,15 +1873,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                     if (ioVariable == IoVariable.UserDefined)
                     {
-                        varType = context.Config.GetUserDefinedType(location, isOutput);
+                        varType = context.Definitions.GetUserDefinedType(location, isOutput);
                     }
                     else if (ioVariable == IoVariable.FragmentOutputColor)
                     {
-                        varType = context.Config.GetFragmentOutputColorType(location);
+                        varType = context.Definitions.GetFragmentOutputColorType(location);
                     }
                     else
                     {
                         (_, varType) = IoMap.GetSpirvBuiltIn(ioVariable);
+
+                        if (IoMap.IsPerVertexBuiltIn(ioVariable))
+                        {
+                            perVertexBuiltIn = ioVariable;
+                            ioVariable = IoVariable.Position;
+                        }
                     }
 
                     varType &= AggregateType.ElementTypeMask;
@@ -1901,6 +1908,31 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             bool isStoreOrAtomic = operation.Inst == Instruction.Store || operation.Inst.IsAtomic();
             int inputsCount = (isStoreOrAtomic ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
+
+            if (perVertexBuiltIn.HasValue)
+            {
+                int fieldIndex = IoMap.GetPerVertexStructFieldIndex(perVertexBuiltIn.Value);
+
+                var indexes = new SpvInstruction[inputsCount + 1];
+                int index = 0;
+
+                if (IoMap.IsPerVertexArrayBuiltIn(storageKind, context.Definitions.Stage))
+                {
+                    indexes[index++] = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    indexes[index++] = context.Constant(context.TypeS32(), fieldIndex);
+                }
+                else
+                {
+                    indexes[index++] = context.Constant(context.TypeS32(), fieldIndex);
+                }
+
+                for (; index < inputsCount + 1; srcIndex++, index++)
+                {
+                    indexes[index] = context.Get(AggregateType.S32, operation.GetSource(srcIndex));
+                }
+
+                return context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, indexes);
+            }
 
             if (operation.Inst == Instruction.AtomicCompareAndSwap)
             {
@@ -2076,7 +2108,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2087,7 +2119,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2147,7 +2179,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2), context.GetFP64(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2158,7 +2190,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2), context.GetFP32(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }

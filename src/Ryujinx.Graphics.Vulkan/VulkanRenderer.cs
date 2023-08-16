@@ -293,6 +293,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             ref var properties = ref properties2.Properties;
 
+            ulong minResourceAlignment = Math.Max(
+                Math.Max(
+                    properties.Limits.MinStorageBufferOffsetAlignment,
+                    properties.Limits.MinUniformBufferOffsetAlignment),
+                properties.Limits.MinTexelBufferOffsetAlignment
+            );
+
             SampleCountFlags supportedSampleCounts =
                 properties.Limits.FramebufferColorSampleCounts &
                 properties.Limits.FramebufferDepthSampleCounts &
@@ -334,7 +341,8 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedSampleCounts,
                 portabilityFlags,
                 vertexBufferAlignment,
-                properties.Limits.SubTexelPrecisionBits);
+                properties.Limits.SubTexelPrecisionBits,
+                minResourceAlignment);
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 
@@ -397,7 +405,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.Convert());
+            return BufferManager.CreateWithHandle(this, size, access.Convert(), default, access == BufferAccess.Stream);
         }
 
         public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
@@ -467,6 +475,9 @@ namespace Ryujinx.Graphics.Vulkan
         internal void RegisterFlush()
         {
             SyncManager.RegisterFlush();
+
+            // Periodically free unused regions of the staging buffer to avoid doing it all at once.
+            BufferManager.StagingBuffer.FreeCompleted();
         }
 
         public PinnedSpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
@@ -596,6 +607,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsMismatchingViewFormat: true,
                 supportsCubemapView: !IsAmdGcn,
                 supportsNonConstantTextureOffset: false,
+                supportsScaledVertexFormats: FormatCapabilities.SupportsScaledVertexFormats(),
                 supportsShaderBallot: false,
                 supportsShaderBarrierDivergence: Vendor != Vendor.Intel,
                 supportsShaderFloat64: Capabilities.SupportsShaderFloat64,

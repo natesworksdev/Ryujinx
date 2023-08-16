@@ -113,6 +113,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Updates the viewport size vector.
+        /// </summary>
+        /// <param name="data">Viewport size vector</param>
+        private void UpdateViewportSize(Vector4<float> data)
+        {
+            _data.ViewportSize = data;
+
+            MarkDirty(SupportBuffer.ViewportSizeOffset, SupportBuffer.FieldSize);
+        }
+
+        /// <summary>
         /// Sets the scale of all output render targets (they should all have the same scale).
         /// </summary>
         /// <param name="scale">Scale value</param>
@@ -125,32 +136,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Updates the render scales for shader input textures or images.
         /// </summary>
-        /// <param name="scales">Scale values</param>
+        /// <param name="index">Index of the scale</param>
+        /// <param name="scale">Scale value</param>
+        public void UpdateRenderScale(int index, float scale)
+        {
+            if (_data.RenderScale[1 + index].X != scale)
+            {
+                _data.RenderScale[1 + index].X = scale;
+                DirtyRenderScale(1 + index, 1);
+            }
+        }
+
+        /// <summary>
+        /// Updates the render scales for shader input textures or images.
+        /// </summary>
         /// <param name="totalCount">Total number of scales across all stages</param>
         /// <param name="fragmentCount">Total number of scales on the fragment shader stage</param>
-        public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
+        public void UpdateRenderScaleFragmentCount(int totalCount, int fragmentCount)
         {
-            bool changed = false;
-
-            for (int index = 0; index < totalCount; index++)
-            {
-                if (_data.RenderScale[1 + index].X != scales[index])
-                {
-                    _data.RenderScale[1 + index].X = scales[index];
-                    changed = true;
-                }
-            }
-
             // Only update fragment count if there are scales after it for the vertex stage.
             if (fragmentCount != totalCount && fragmentCount != _data.FragmentRenderScaleCount.X)
             {
                 _data.FragmentRenderScaleCount.X = fragmentCount;
                 DirtyFragmentRenderScaleCount();
-            }
-
-            if (changed)
-            {
-                DirtyRenderScale(0, 1 + totalCount);
             }
         }
 
@@ -161,7 +169,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="isBgra">True if the format is BGRA< false otherwise</param>
         public void SetRenderTargetIsBgra(int index, bool isBgra)
         {
-            bool isBgraChanged = (_data.FragmentIsBgra[index].X != 0) != isBgra;
+            bool isBgraChanged = _data.FragmentIsBgra[index].X != 0 != isBgra;
 
             if (isBgraChanged)
             {
@@ -193,6 +201,25 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Sets the viewport size, used to invert the fragment coordinates Y value.
+        /// </summary>
+        /// <param name="viewportWidth">Value used as viewport width</param>
+        /// <param name="viewportHeight">Value used as viewport height</param>
+        public void SetViewportSize(float viewportWidth, float viewportHeight)
+        {
+            if (_data.ViewportSize.X != viewportWidth || _data.ViewportSize.Y != viewportHeight)
+            {
+                UpdateViewportSize(new Vector4<float>
+                {
+                    X = viewportWidth,
+                    Y = viewportHeight,
+                    Z = 1,
+                    W = 0
+                });
+            }
+        }
+
+        /// <summary>
         /// Submits all pending buffer updates to the GPU.
         /// </summary>
         public void Commit()
@@ -201,7 +228,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 if (_handle == BufferHandle.Null)
                 {
-                    _handle = _renderer.CreateBuffer(SupportBuffer.RequiredSize);
+                    _handle = _renderer.CreateBuffer(SupportBuffer.RequiredSize, BufferAccess.Stream);
                     _renderer.Pipeline.ClearBuffer(_handle, 0, SupportBuffer.RequiredSize, 0);
 
                     var range = new BufferRange(_handle, 0, SupportBuffer.RequiredSize);

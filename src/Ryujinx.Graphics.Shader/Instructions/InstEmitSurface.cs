@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
@@ -194,7 +195,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (type == SamplerType.None)
             {
-                context.Config.GpuAccessor.Log("Invalid image atomic sampler type.");
+                context.TranslatorContext.GpuAccessor.Log("Invalid image atomic sampler type.");
                 return;
             }
 
@@ -218,7 +219,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(srcB++, RegisterType.Gpr));
             }
 
-            Operand d = dest != RegisterConsts.RegisterZeroIndex ? Register(dest, RegisterType.Gpr) : null;
+            Operand d = Register(dest, RegisterType.Gpr);
 
             List<Operand> sourcesList = new();
 
@@ -258,7 +259,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             // TODO: FP and 64-bit formats.
             TextureFormat format = size == SuatomSize.Sd32 || size == SuatomSize.Sd64
-                ? (isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormatAtomic(imm))
+                ? (isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormatAtomic(context.TranslatorContext.GpuAccessor, imm))
                 : GetTextureFormat(size);
 
             if (compareAndSwap)
@@ -277,7 +278,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Bindless;
             }
 
-            int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageAtomic,
                 type,
                 format,
@@ -304,13 +305,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
             bool byteAddress,
             bool isBindless)
         {
-            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
+            if (srcB == RegisterConsts.RegisterZeroIndex)
+            {
+                return;
+            }
 
             SamplerType type = ConvertSamplerType(dimensions);
 
             if (type == SamplerType.None)
             {
-                context.Config.GpuAccessor.Log("Invalid image store sampler type.");
+                context.TranslatorContext.GpuAccessor.Log("Invalid image store sampler type.");
                 return;
             }
 
@@ -383,9 +387,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     Array.Resize(ref dests, outputIndex);
                 }
 
-                TextureFormat format = isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormat(handle);
+                TextureFormat format = isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormat(context.TranslatorContext.GpuAccessor, handle);
 
-                int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+                int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                     Instruction.ImageLoad,
                     type,
                     format,
@@ -428,7 +432,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 TextureFormat format = GetTextureFormat(size);
 
-                int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+                int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                     Instruction.ImageLoad,
                     type,
                     format,
@@ -472,7 +476,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (type == SamplerType.None)
             {
-                context.Config.GpuAccessor.Log("Invalid image reduction sampler type.");
+                context.TranslatorContext.GpuAccessor.Log("Invalid image reduction sampler type.");
                 return;
             }
 
@@ -534,7 +538,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             // TODO: FP and 64-bit formats.
             TextureFormat format = size == SuatomSize.Sd32 || size == SuatomSize.Sd64
-                ? (isBindless ? TextureFormat.Unknown : context.Config.GetTextureFormatAtomic(imm))
+                ? (isBindless ? TextureFormat.Unknown : ShaderProperties.GetTextureFormatAtomic(context.TranslatorContext.GpuAccessor, imm))
                 : GetTextureFormat(size);
 
             sourcesList.Add(Rb());
@@ -548,7 +552,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Bindless;
             }
 
-            int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageAtomic,
                 type,
                 format,
@@ -577,7 +581,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (type == SamplerType.None)
             {
-                context.Config.GpuAccessor.Log("Invalid image store sampler type.");
+                context.TranslatorContext.GpuAccessor.Log("Invalid image store sampler type.");
                 return;
             }
 
@@ -642,7 +646,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (!isBindless)
                 {
-                    format = context.Config.GetTextureFormat(imm);
+                    format = ShaderProperties.GetTextureFormat(context.TranslatorContext.GpuAccessor, imm);
                 }
             }
             else
@@ -675,7 +679,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Coherent;
             }
 
-            int binding = isBindless ? 0 : context.Config.ResourceManager.GetTextureOrImageBinding(
+            int binding = isBindless ? 0 : context.ResourceManager.GetTextureOrImageBinding(
                 Instruction.ImageStore,
                 type,
                 format,
