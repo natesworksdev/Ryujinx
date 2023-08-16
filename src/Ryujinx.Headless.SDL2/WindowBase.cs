@@ -1,6 +1,8 @@
 ﻿using ARMeilleure.Translation;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
+using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
@@ -61,8 +63,8 @@ namespace Ryujinx.Headless.SDL2
         public bool IsExclusiveFullscreen { get; set; }
         public int ExclusiveFullscreenWidth { get; set; }
         public int ExclusiveFullscreenHeight { get; set; }
-        public Ryujinx.Common.Configuration.AntiAliasing AntiAliasing { get; set; }
-        public Ryujinx.Common.Configuration.ScalingFilter ScalingFilter { get; set; }
+        public AntiAliasing AntiAliasing { get; set; }
+        public ScalingFilter ScalingFilter { get; set; }
         public int ScalingFilterLevel { get; set; }
 
         protected SDL2MouseDriver MouseDriver;
