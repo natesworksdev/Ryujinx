@@ -215,6 +215,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ShaderSpecializationState specState = new(ref computeState);
             GpuAccessorState gpuAccessorState = new(poolState, computeState, default, specState);
             GpuAccessor gpuAccessor = new(_context, channel, gpuAccessorState);
+            gpuAccessor.InitializeReservedCounts(tfEnabled: false, vertexAsCompute: false);
 
             TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, _context.Capabilities.Api, gpuVa);
             TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, cachedGuestCode, asCompute: false);

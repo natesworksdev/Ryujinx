@@ -712,6 +712,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             ResourceCounts counts = new();
             ShaderSpecializationState newSpecState = new(ref specState.ComputeState);
             DiskCacheGpuAccessor gpuAccessor = new(_context, shader.Code, shader.Cb1Data, specState, newSpecState, counts, 0);
+            gpuAccessor.InitializeReservedCounts(tfEnabled: false, vertexAsCompute: false);
 
             TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, _context.Capabilities.Api, 0);
 
