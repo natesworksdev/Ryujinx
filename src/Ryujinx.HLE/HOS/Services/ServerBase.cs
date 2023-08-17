@@ -82,10 +82,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void AddPort(int serverPortHandle, Func<IpcService> objectFactory)
         {
+            _handleLock.EnterWriteLock();
             try
             {
-                _handleLock.EnterWriteLock();
-
                 _ports.Add(serverPortHandle, objectFactory);
             }
             finally
@@ -106,10 +105,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
+            _handleLock.EnterWriteLock();
             try
             {
-                _handleLock.EnterWriteLock();
-
                 _sessions.Add(serverSessionHandle, obj);
             }
             finally
@@ -120,10 +118,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private IpcService GetSessionObj(int serverSessionHandle)
         {
+            _handleLock.EnterReadLock();
             try
             {
-                _handleLock.EnterReadLock();
-
                 return _sessions[serverSessionHandle];
             }
             finally
@@ -134,10 +131,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         private bool RemoveSessionObj(int serverSessionHandle, out IpcService obj)
         {
+            _handleLock.EnterWriteLock();
             try
             {
-                _handleLock.EnterWriteLock();
-
                 return _sessions.Remove(serverSessionHandle, out obj);
             }
             finally
@@ -180,10 +176,9 @@ namespace Ryujinx.HLE.HOS.Services
                 int handleCount;
                 int[] handles;
 
+                _handleLock.EnterReadLock();
                 try
                 {
-                    _handleLock.EnterReadLock();
-
                     portHandleCount = _ports.Count;
 
                     handleCount = portHandleCount + _sessions.Count;
@@ -228,9 +223,9 @@ namespace Ryujinx.HLE.HOS.Services
                         // We got a new connection, accept the session to allow servicing future requests.
                         if (_context.Syscall.AcceptSession(out int serverSessionHandle, handles[signaledIndex]) == Result.Success)
                         {
+                            _handleLock.EnterWriteLock();
                             try
                             {
-                                _handleLock.EnterWriteLock();
                                 IpcService obj = _ports[handles[signaledIndex]].Invoke();
                                 _sessions.Add(serverSessionHandle, obj);
                             }
@@ -338,9 +333,9 @@ namespace Ryujinx.HLE.HOS.Services
 
                             _context.Syscall.CreateSession(out int dupServerSessionHandle, out int dupClientSessionHandle, false, 0);
 
+                            _handleLock.EnterWriteLock();
                             try
                             {
-                                _handleLock.EnterWriteLock();
                                 _sessions[dupServerSessionHandle] = _sessions[serverSessionHandle];
                             }
                             finally

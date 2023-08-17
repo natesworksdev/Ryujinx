@@ -15,10 +15,9 @@ namespace Ryujinx.Common
         {
             get
             {
+                _readerWriterLock.EnterReadLock();
                 try
                 {
-                    _readerWriterLock.EnterReadLock();
-
                     return _value;
                 }
                 finally
@@ -31,10 +30,9 @@ namespace Ryujinx.Common
                 T oldValue;
                 bool oldIsInitialized;
 
+                _readerWriterLock.EnterWriteLock();
                 try
                 {
-                    _readerWriterLock.EnterWriteLock();
-
                     oldValue = _value;
                     oldIsInitialized = _isInitialized;
 

@@ -24,10 +24,9 @@ namespace ARMeilleure.Translation
 
         public bool AddOrUpdate(ulong address, ulong size, T value, Func<ulong, T, T> updateFactoryCallback)
         {
+            _treeLock.EnterWriteLock();
             try
             {
-                _treeLock.EnterWriteLock();
-
                 return _tree.AddOrUpdate(address, address + size, value, updateFactoryCallback);
             }
             finally
@@ -38,10 +37,9 @@ namespace ARMeilleure.Translation
 
         public T GetOrAdd(ulong address, ulong size, T value)
         {
+            _treeLock.EnterWriteLock();
             try
             {
-                _treeLock.EnterWriteLock();
-
                 return _tree.GetOrAdd(address, address + size, value);
             }
             finally
@@ -52,10 +50,9 @@ namespace ARMeilleure.Translation
 
         public bool Remove(ulong address)
         {
+            _treeLock.EnterWriteLock();
             try
             {
-                _treeLock.EnterWriteLock();
-
                 return _tree.Remove(address) != 0;
             }
             finally
@@ -66,9 +63,9 @@ namespace ARMeilleure.Translation
 
         public void Clear()
         {
+            _treeLock.EnterWriteLock();
             try
             {
-                _treeLock.EnterWriteLock();
                 _tree.Clear();
             }
             finally
@@ -79,10 +76,9 @@ namespace ARMeilleure.Translation
 
         public bool ContainsKey(ulong address)
         {
+            _treeLock.EnterReadLock();
             try
             {
-                _treeLock.EnterReadLock();
-
                 return _tree.ContainsKey(address);
             }
             finally
@@ -93,10 +89,9 @@ namespace ARMeilleure.Translation
 
         public bool TryGetValue(ulong address, out T value)
         {
+            _treeLock.EnterReadLock();
             try
             {
-                _treeLock.EnterReadLock();
-
                 return _tree.TryGet(address, out value);
             }
             finally
@@ -107,10 +102,9 @@ namespace ARMeilleure.Translation
 
         public int GetOverlaps(ulong address, ulong size, ref ulong[] overlaps)
         {
+            _treeLock.EnterReadLock();
             try
             {
-                _treeLock.EnterReadLock();
-
                 return _tree.Get(address, address + size, ref overlaps);
             }
             finally
@@ -121,10 +115,9 @@ namespace ARMeilleure.Translation
 
         public List<T> AsList()
         {
+            _treeLock.EnterReadLock();
             try
             {
-                _treeLock.EnterReadLock();
-
                 return _tree.AsList();
             }
             finally
