@@ -11,13 +11,16 @@ namespace Ryujinx.Graphics.Shader
         Uint,
         Sscaled,
         Uscaled,
+
+        Packed = 1 << 6,
+        PackedRgb10A2Signed = 1 << 7,
     }
 
     static class AttributeTypeExtensions
     {
         public static AggregateType ToAggregateType(this AttributeType type)
         {
-            return type switch
+            return (type & ~(AttributeType.Packed | AttributeType.PackedRgb10A2Signed)) switch
             {
                 AttributeType.Float => AggregateType.FP32,
                 AttributeType.Sint => AggregateType.S32,
@@ -28,7 +31,7 @@ namespace Ryujinx.Graphics.Shader
 
         public static AggregateType ToAggregateType(this AttributeType type, bool supportsScaledFormats)
         {
-            return type switch
+            return (type & ~(AttributeType.Packed | AttributeType.PackedRgb10A2Signed)) switch
             {
                 AttributeType.Float => AggregateType.FP32,
                 AttributeType.Sint => AggregateType.S32,
