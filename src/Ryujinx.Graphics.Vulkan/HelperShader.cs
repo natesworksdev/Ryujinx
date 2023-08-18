@@ -103,13 +103,13 @@ namespace Ryujinx.Graphics.Vulkan
             _programColorClearUI = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ReadSpirv("ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("DepthStencilClearFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("ColorClearUIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorClearResourceLayout);
 
             _programDepthStencilClear = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ReadSpirv("ColorClearVertex.spv"), ShaderStage.Vertex, TargetLanguage.Spirv),
-                new ShaderSource(ReadSpirv("ColorClearUIFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
+                new ShaderSource(ReadSpirv("DepthStencilClearFragment.spv"), ShaderStage.Fragment, TargetLanguage.Spirv),
             }, colorClearResourceLayout);
 
             var strideChangeResourceLayout = new ResourceLayoutBuilder()
