@@ -438,6 +438,34 @@ namespace Ryujinx.Graphics.Vulkan
         public static unsafe void InsertImageBarrier(
             Vk api,
             CommandBuffer commandBuffer,
+            AccessFlags srcAccessMask,
+            AccessFlags dstAccessMask,
+            PipelineStageFlags srcStageMask,
+            PipelineStageFlags dstStageMask)
+        {
+            MemoryBarrier memoryBarrier = new()
+            {
+                SType = StructureType.MemoryBarrier,
+                SrcAccessMask = srcAccessMask,
+                DstAccessMask = dstAccessMask,
+            };
+
+            api.CmdPipelineBarrier(
+                commandBuffer,
+                srcStageMask,
+                dstStageMask,
+                DependencyFlags.None,
+                1,
+                memoryBarrier,
+                0,
+                null,
+                0,
+                null);
+        }
+
+        public static unsafe void InsertImageBarrier(
+            Vk api,
+            CommandBuffer commandBuffer,
             Image image,
             AccessFlags srcAccessMask,
             AccessFlags dstAccessMask,

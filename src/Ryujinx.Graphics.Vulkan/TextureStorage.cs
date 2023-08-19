@@ -444,21 +444,13 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_lastReadAccess != AccessFlags.None)
             {
-                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
-
                 TextureView.InsertImageBarrier(
                     _gd.Api,
                     cbs.CommandBuffer,
-                    _imageAuto.Get(cbs).Value,
                     _lastReadAccess,
                     dstAccessFlags,
                     _lastReadStage,
-                    dstStageFlags,
-                    aspectFlags,
-                    0,
-                    0,
-                    _info.GetLayers(),
-                    _info.Levels);
+                    dstStageFlags);
 
                 _lastReadAccess = AccessFlags.None;
                 _lastReadStage = PipelineStageFlags.None;
@@ -472,21 +464,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
-
                 TextureView.InsertImageBarrier(
                     _gd.Api,
                     cbs.CommandBuffer,
-                    _imageAuto.Get(cbs).Value,
                     _lastModificationAccess,
                     dstAccessFlags,
                     _lastModificationStage,
-                    dstStageFlags,
-                    aspectFlags,
-                    0,
-                    0,
-                    _info.GetLayers(),
-                    _info.Levels);
+                    dstStageFlags);
 
                 _lastModificationAccess = AccessFlags.None;
             }
