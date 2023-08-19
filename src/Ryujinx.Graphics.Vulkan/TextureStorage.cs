@@ -444,7 +444,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_lastReadAccess != AccessFlags.None)
             {
-                TextureView.InsertImageBarrier(
+                TextureView.InsertMemoryBarrier(
                     _gd.Api,
                     cbs.CommandBuffer,
                     _lastReadAccess,
@@ -464,7 +464,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                TextureView.InsertImageBarrier(
+                TextureView.InsertMemoryBarrier(
                     _gd.Api,
                     cbs.CommandBuffer,
                     _lastModificationAccess,

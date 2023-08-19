@@ -435,7 +435,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ImageAspectFlags.ColorBit);
         }
 
-        public static unsafe void InsertImageBarrier(
+        public static unsafe void InsertMemoryBarrier(
             Vk api,
             CommandBuffer commandBuffer,
             AccessFlags srcAccessMask,
