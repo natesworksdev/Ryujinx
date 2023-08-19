@@ -1,7 +1,7 @@
-C# Coding Style
-===============
+# C# Coding Style
 
-The general rule we follow is "use Visual Studio defaults".
+The general rule we follow is "use Visual Studio defaults". 
+Using an IDE that supports the `.editorconfig` standard will make this much simpler.
 
 1. We use [Allman style](http://en.wikipedia.org/wiki/Indent_style#Allman_style) braces, where each brace begins on a new line. A single line statement block can go without braces but the block must be properly indented on its own line and must not be nested in other statement blocks that use braces (See rule 18 for more details). One exception is that a `using` statement is permitted to be nested within another `using` statement by starting on the following line at the same indentation level, even if the nested `using` contains a controlled block.
 2. We use four spaces of indentation (no tabs).

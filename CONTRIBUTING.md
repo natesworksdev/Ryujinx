@@ -1,7 +1,7 @@
 # Contribution to Ryujinx
 
-You can contribute to Ryujinx with issues and PRs. Contributing code and other implementations is greatly appreciated alongside simply filing issues for problems you encounter.
-Please read the entire document before continuing as it can potentially save everyone involved a signficiant amount of time.
+You can contribute to Ryujinx with PRs, testing of PRs and issues. Contributing code and other implementations is greatly appreciated alongside simply filing issues for problems you encounter.
+Please read the entire document before continuing as it can potentially save everyone involved a significant amount of time.
 
 # Quick Links
 
@@ -19,6 +19,7 @@ The Ryujinx codebase is distributed across multiple repositories in the [Ryujinx
 * [Ryujinx/Ryujinx](https://github.com/Ryujinx/Ryujinx) Ryujinx core project files.
 * [Ryujinx/Ryujinx-Games-List](https://github.com/Ryujinx/Ryujinx-Games-List) Ryujinx game compatibility list.
 * [Ryujinx/Ryujinx-Website](https://github.com/Ryujinx/Ryujinx-Website) Ryujinx website source code.
+* [Ryujinx/Ryujinx-Ldn-Website](https://github.com/Ryujinx/Ryujinx-Ldn-Website) Ryujinx LDN website source code.
 
 ### Finding Existing Issues
 
@@ -28,17 +29,18 @@ If you do find an existing issue, please include your own feedback in the discus
 
 ### Writing a Good Feature Request
 
-Please review any feature requests already opened to both check it has not already been suggested, and to familiarise yourself with the format. When ready to submit a proposal, please use the [Feature Request issue template](https://github.com/Ryujinx/Ryujinx/issues/new?assignees=&labels=&projects=&template=feature_request.yml&title=%5BFeature+Request%5D).
+Please review any feature requests already opened to both check it has not already been suggested, and to familiarize yourself with the format. When ready to submit a proposal, please use the [Feature Request issue template](https://github.com/Ryujinx/Ryujinx/issues/new?assignees=&labels=&projects=&template=feature_request.yml&title=%5BFeature+Request%5D).
 
 ### Writing a Good Bug Report
 
-Good bug reports make it easier for maintainers to verify and root cause the underlying problem. The better a bug report, the faster the problem will be resolved. Ideally, a bug report should contain the following information:
+Good bug reports make it easier for maintainers to verify and root cause the underlying problem. The better a bug report, the faster the problem will be resolved. 
+Ideally, a bug report should contain the following information:
 
 * A high-level description of the problem.
 * A _minimal reproduction_, i.e. the smallest time commitment/configuration required to reproduce the wrong behavior. This can be in the form of a small homebrew application, or by providing a save file and reproduction steps for a specific game.
 * A description of the _expected behavior_, contrasted with the _actual behavior_ observed.
 * Information on the environment: OS/distro, CPU, GPU (including driver), RAM etc.
-* A Ryujinx log file of the run instance where the issue occured. Log files can be found in `[Executable Folder]/Logs` and are named chronologically.
+* A Ryujinx log file of the run instance where the issue occurred. Log files can be found in `[Executable Folder]/Logs` and are named chronologically.
 * Additional information, e.g. is it a regression from previous versions? Are there any known workarounds?
 
 When ready to submit a bug report, please use the [Bug Report issue template](https://github.com/Ryujinx/Ryujinx/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBug%5D).
@@ -91,7 +93,7 @@ We use and recommend the following workflow:
     - Check if all the Continuous Integration checks are passing. Refer to [Actions](https://github.com/Ryujinx/Ryujinx/actions) to check for outstanding errors.
 8. Wait for feedback or approval of your changes from the [core development team](https://github.com/orgs/Ryujinx/teams/developers)
     - Details about the pull request [review procedure](docs/workflow/ci/pr-guide.md).
-9. When area owners have signed off, and all checks are green, your PR will be merged.
+9. When the team members have signed off, and all checks are green, your PR will be merged.
     - The next official build will automatically include your change.
     - You can delete the branch you used for making the change.
 
@@ -125,7 +127,7 @@ The [Ryujinx continuous integration](https://github.com/Ryujinx/Ryujinx/actions)
 If the CI build fails for any reason, the PR actions tab should be consulted for further information on the failure. There are a few usual suspects for such a failure:
 * `dotnet format` has not been run on the PR and has outstanding stylistic issues.
 * There is an error within the PR that fails a test or errors the compiler.
-* Random failure of the workflow can ocassionally result in a CI failure. In this scenario a maintainer will manually restart the job.
+* Random failure of the workflow can occasionally result in a CI failure. In this scenario a maintainer will manually restart the job.
 
 ### PR Feedback
 

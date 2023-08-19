@@ -1,5 +1,4 @@
-Documents Index
-===============
+# Documents Index
 
 This repo includes several documents that explain both high-level and low-level concepts about Ryujinx and its functions. These are very useful for contributors, to get context that can be very difficult to acquire from just reading code.
 
@@ -28,7 +27,7 @@ Coding Guidelines
 =================
 
 - [C# coding style](coding-guidelines/coding-style.md)
-    ANY MORE? SVC GIST PERHAPS?
+- [Service Implementation Guidelines - WIP](https://gist.github.com/gdkchan/84ba88cd50efbe58d1babfaa7cd7c455)
 
 Project Docs
 =================

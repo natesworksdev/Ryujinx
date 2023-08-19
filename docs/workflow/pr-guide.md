@@ -1,7 +1,8 @@
 # Pull Request Guide
 
 ## Contributing Rules
-All contributions to Ryujinx/Ryujinx repo are made via pull requests (PRs) rather than through direct commits. The pull requests are reviewed and merged by the repository maintainers after a review and approval from at least two area maintainer.
+
+All contributions to Ryujinx/Ryujinx repository are made via pull requests (PRs) rather than through direct commits. The pull requests are reviewed and merged by the maintainers after a review and at least two approvals from the core development team.
 
 To merge pull requests, you must have write permissions in the repository.
 
@@ -11,8 +12,8 @@ To merge pull requests, you must have write permissions in the repository.
 * All changes should follow the existing code style. You can read more about our code style at [docs/coding-guidelines](../coding-guidelines/coding-style.md).
 * Adding external dependencies is to be avoided unless not doing so would introduce _significant_ complexity. Any dependency addition should be justified and discussed before merge.
 * Use Draft pull requests for changes you are still working on but want early CI loop feedback. When you think your changes are ready for review, [change the status](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request) of your pull request.
-* Avoid rebasing your changes unless required or directly requested. If you are asked to make changes during the review process do them as a new commit.
-* To resolve merge conflicts, use "merge" instead of "rebase". CHECK THIS?!
+* Rebase your changes when required or directly requested. Changes should always be commited on top of the upstream branch, not the other way around.
+* If you are asked to make changes during the review process do them as a new commit.
 
 ## Pull Request Ownership
 
@@ -22,7 +23,7 @@ If during the code review process a merge conflict occurs, the PR author is resp
 
 ## Pull Request Builds
 
-When submitting a PR to the `Ryujinx/Ryujinx` repository, various builds will run validating many areas to ensure we keep developer productivity and product quality high. These various workflows can be tracked in the [Actions](https://github.com/Ryujinx/Ryujinx/actions) tab of the repository. If the job continues to completition the build artifacts will be uploaded and posted as a comment in the PR discussion.
+When submitting a PR to the `Ryujinx/Ryujinx` repository, various builds will run validating many areas to ensure we keep developer productivity and product quality high. These various workflows can be tracked in the [Actions](https://github.com/Ryujinx/Ryujinx/actions) tab of the repository. If the job continues to completion, the build artifacts will be uploaded and posted as a comment in the PR discussion.
 
 ## Review Turnaround Times
 
@@ -30,7 +31,7 @@ Ryujinx is a project that is maintained by volunteers on a completely free-time 
 
 * Make the reviewers life easier wherever possible. Make use of descriptive commit names, code comments and XML docs where applicable.
 * If there is disagreement on feedback then always lean on the side of the development team and community over any personal opinion.
-* We're human. We miss things. We forget things. If there has been radio silence on your changes for a substatial period of time then do not hesitate to reach out directly either with something simple like "bump" on GitHub or a directly on Discord.
+* We're human. We miss things. We forget things. If there has been radio silence on your changes for a substantial period of time then do not hesitate to reach out directly either with something simple like "bump" on GitHub or a directly on Discord.
 
 To re-iterate, make the review as easy for us as possible, respond promptly and be comfortable to interact directly with us for anything else.
 
@@ -42,7 +43,7 @@ Anyone with write access can merge a pull request manually when the following co
     * You can request follow up reviews from the original reviewers if they requested changes.
 * The PR successfully builds and passes all tests in the Continuous Integration (CI) system. In case of failures, refer to the [Actions](https://github.com/Ryujinx/Ryujinx/actions) tab of your PR.
 
-Typically, PRs are merged as one commit (squash merges). It creates a simpler history than a Merge Commit. "Special circumstances" are rare, and typically mean that there are a series of cleanly separated changes that will be too hard to understand if squashed together, or for some reason we want to preserve the ability to disect them.
+Typically, PRs are merged as one commit (squash merges). It creates a simpler history than a Merge Commit. "Special circumstances" are rare, and typically mean that there are a series of cleanly separated changes that will be too hard to understand if squashed together, or for some reason we want to preserve the ability to dissect them.
 
 ## Blocking Pull Request Merging
 
@@ -50,5 +51,5 @@ If for whatever reason you would like to move your pull request back to an in-pr
 
 ## Old Pull Request Policy
 
-From time to time we will review older PR's and check them for relevance. If we find the PR is inactive or no longer applies, we will close it. As the PR owner, you can simply reopen it if you feel your closed PR needs our attention.
+From time to time we will review older PRs and check them for relevance. If we find the PR is inactive or no longer applies, we will close it. As the PR owner, you can simply reopen it if you feel your closed PR needs our attention.
 
