@@ -18,6 +18,13 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineBase : IDisposable
     {
+        private const PipelineStageFlags BarrierStageFlags =
+            PipelineStageFlags.VertexShaderBit |
+            PipelineStageFlags.TessellationControlShaderBit |
+            PipelineStageFlags.TessellationEvaluationShaderBit |
+            PipelineStageFlags.GeometryShaderBit |
+            PipelineStageFlags.FragmentShaderBit;
+
         public const int DescriptorSetLayouts = 4;
 
         public const int UniformSetIndex = 0;
@@ -151,8 +158,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             Gd.Api.CmdPipelineBarrier(
                 CommandBuffer,
-                PipelineStageFlags.FragmentShaderBit,
-                PipelineStageFlags.FragmentShaderBit,
+                BarrierStageFlags,
+                BarrierStageFlags,
                 0,
                 1,
                 memoryBarrier,
