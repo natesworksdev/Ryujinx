@@ -1068,7 +1068,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
 
-                    await Dispatcher.UIThread.InvokeAsync(async () => 
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
                         await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys)
                     );
                 }
