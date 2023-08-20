@@ -440,16 +440,26 @@ namespace Ryujinx.Graphics.Vulkan
             _lastModificationStage = stage;
         }
 
-        public void InsertReadToWriteBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
+        public void InsertReadToWriteBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags, bool insideRenderPass)
         {
-            if (_lastReadAccess != AccessFlags.None)
+            var lastReadStage = _lastReadStage;
+
+            if (insideRenderPass)
+            {
+                // We can't have barrier from compute inside a render pass,
+                // as it is invalid to specify compute in the subpass dependency stage mask.
+
+                lastReadStage &= ~PipelineStageFlags.ComputeShaderBit;
+            }
+
+            if (lastReadStage != PipelineStageFlags.None)
             {
                 TextureView.InsertMemoryBarrier(
                     _gd.Api,
                     cbs.CommandBuffer,
                     _lastReadAccess,
                     dstAccessFlags,
-                    _lastReadStage,
+                    lastReadStage,
                     dstStageFlags);
 
                 _lastReadAccess = AccessFlags.None;
