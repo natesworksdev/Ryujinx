@@ -54,10 +54,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel viewModel })
             {
-                OpenSaveDirectory(
-                    viewModel,
-                    SaveDataType.Account,
-                    new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
+                OpenSaveDirectory(viewModel, SaveDataType.Account, new UserId((ulong)viewModel.AccountManager.LastOpenedUser.UserId.High, (ulong)viewModel.AccountManager.LastOpenedUser.UserId.Low));
             }
         }
 
@@ -65,14 +62,14 @@ namespace Ryujinx.Ava.UI.Controls
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
-            OpenSaveDirectory(viewModel, SaveDataType.Device, userId: default);
+            OpenSaveDirectory(viewModel, SaveDataType.Device, default);
         }
 
         public void OpenBcatSaveDirectory_Click(object sender, RoutedEventArgs args)
         {
             var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
 
-            OpenSaveDirectory(viewModel, SaveDataType.Bcat, userId: default);
+            OpenSaveDirectory(viewModel, SaveDataType.Bcat, default);
         }
 
         private static void OpenSaveDirectory(MainWindowViewModel viewModel, SaveDataType saveDataType, UserId userId)
@@ -83,9 +80,7 @@ namespace Ryujinx.Ava.UI.Controls
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(
-                            LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage],
-                            LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
                     });
 
                     return;
@@ -103,10 +98,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await TitleUpdateWindow.Show(
-                    viewModel.VirtualFileSystem,
-                    ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
-                    viewModel.SelectedApplication.TitleName);
+                await TitleUpdateWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName);
             }
         }
 
@@ -116,10 +108,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                await DownloadableContentManagerWindow.Show(
-                    viewModel.VirtualFileSystem,
-                    ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
-                    viewModel.SelectedApplication.TitleName);
+                await DownloadableContentManagerWindow.Show(viewModel.VirtualFileSystem, ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName);
             }
         }
 
@@ -217,7 +206,8 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                    LocaleManager.Instance[LocaleKeys.DialogWarning],
                     LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, viewModel.SelectedApplication.TitleName),
                     LocaleManager.Instance[LocaleKeys.InputDialogYes],
                     LocaleManager.Instance[LocaleKeys.InputDialogNo],

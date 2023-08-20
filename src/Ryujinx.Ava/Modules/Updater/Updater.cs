@@ -691,20 +691,18 @@ namespace Ryujinx.Modules
                 if (ReleaseInformation.IsFlatHubBuild())
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
-                    {
                         ContentDialogHelper.CreateWarningDialog(
                             LocaleManager.Instance[LocaleKeys.UpdaterDisabledWarningTitle],
-                            LocaleManager.Instance[LocaleKeys.DialogUpdaterFlatpakNotSupportedMessage]);
-                    });
+                            LocaleManager.Instance[LocaleKeys.DialogUpdaterFlatpakNotSupportedMessage])
+                    );
                 }
                 else
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
-                    {
                         ContentDialogHelper.CreateWarningDialog(
                             LocaleManager.Instance[LocaleKeys.UpdaterDisabledWarningTitle],
-                            LocaleManager.Instance[LocaleKeys.DialogUpdaterDirtyBuildSubMessage]);
-                    });
+                            LocaleManager.Instance[LocaleKeys.DialogUpdaterDirtyBuildSubMessage])
+                    );
                 }
             }
 
