@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     ? (int)VertexInfoBufferField.VertexCounts
                     : (int)VertexInfoBufferField.GeometryCounts;
 
-                Operand outputVertexOffset = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(0));
+                Operand outputVertexOffset = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(0));
                 Operand vertexCount = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const(countFieldIndex), Const(0));
                 Operand isVertexOob = this.ICompareGreaterOrEqualUnsigned(outputVertexOffset, vertexCount);
 
@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 this.Return();
                 this.MarkLabel(lblVertexInBounds);
 
-                Operand outputInstanceOffset = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(1));
+                Operand outputInstanceOffset = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(1));
                 Operand instanceCount = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const((int)VertexInfoBufferField.VertexCounts), Const(1));
                 Operand firstVertex = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const((int)VertexInfoBufferField.VertexCounts), Const(2));
                 Operand firstInstance = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const((int)VertexInfoBufferField.VertexCounts), Const(3));
@@ -530,8 +530,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Operand vertexCount = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const((int)VertexInfoBufferField.VertexCounts), Const(0));
 
-                    Operand outputVertexOffset = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(0));
-                    Operand outputInstanceOffset = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(1));
+                    Operand outputVertexOffset = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(0));
+                    Operand outputInstanceOffset = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(1));
 
                     Operand outputBaseVertex = this.IMultiply(outputInstanceOffset, vertexCount);
 
@@ -561,9 +561,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     int vertexInfoCbBinding = ResourceManager.Reservations.VertexInfoConstantBufferBinding;
 
-                    Operand primitiveIndex = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(0));
-                    Operand instanceIndex = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(1));
-                    Operand invocationId = this.Load(StorageKind.Input, IoVariable.GlobalInvocationId, Const(2));
+                    Operand primitiveIndex = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(0));
+                    Operand instanceIndex = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(1));
+                    Operand invocationId = this.Load(StorageKind.Input, IoVariable.GlobalId, Const(2));
                     Operand vertexCount = this.Load(StorageKind.ConstantBuffer, vertexInfoCbBinding, Const((int)VertexInfoBufferField.VertexCounts), Const(0));
                     Operand primitiveId = this.IAdd(this.IMultiply(instanceIndex, vertexCount), primitiveIndex);
                     Operand ibOffset = this.IMultiply(primitiveId, Const(maxIndicesPerPrimitive));

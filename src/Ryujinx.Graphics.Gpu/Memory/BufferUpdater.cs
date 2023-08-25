@@ -21,16 +21,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _endOffset = -1;
 
         /// <summary>
-        /// Creates a new instance of the support buffer updater.
+        /// Creates a new instance of the buffer updater.
         /// </summary>
-        /// <param name="renderer">Renderer that the support buffer will be used with</param>
+        /// <param name="renderer">Renderer that the buffer will be used with</param>
         public BufferUpdater(IRenderer renderer)
         {
             _renderer = renderer;
         }
 
         /// <summary>
-        /// Mark a region of the support buffer as modified and needing to be sent to the GPU.
+        /// Mark a region of the buffer as modified and needing to be sent to the GPU.
         /// </summary>
         /// <param name="startOffset">Start offset of the region in bytes</param>
         /// <param name="byteSize">Size of the region in bytes</param>
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Destroys the support buffer.
+        /// Destroys the buffer.
         /// </summary>
         public void Dispose()
         {

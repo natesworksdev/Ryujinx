@@ -610,19 +610,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     // avoids having to pass the draw manager instance.
                     ForceStateDirty();
                 }
-
-                if (indexed)
-                {
-                    // TODO: Should we really be setting that to 0 in all cases?
-                    _state.State.FirstVertex = 0;
-                }
             }
             else
             {
                 if (indexed)
                 {
                     _context.Renderer.Pipeline.DrawIndexed(count, instanceCount, firstIndex, firstVertex, firstInstance);
-                    _state.State.FirstVertex = 0; // TODO: Should we really be setting that to 0 in all cases?
                 }
                 else
                 {

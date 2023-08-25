@@ -352,7 +352,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         /// <param name="format">Buffer texture format</param>
         private readonly void SetDummyBufferTexture(ResourceReservations reservations, int index, Format format)
         {
-            ITexture bufferTexture = _vacContext.EnsureBufferTexutre(index + 2, format);
+            ITexture bufferTexture = _vacContext.EnsureBufferTexture(index + 2, format);
             bufferTexture.SetStorage(_vacContext.GetDummyBufferRange());
 
             _context.Renderer.Pipeline.SetTextureAndSampler(ShaderStage.Compute, reservations.GetVertexBufferTextureBinding(index), bufferTexture, null);
@@ -373,7 +373,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
             address = memoryManager.Translate(address);
             BufferRange range = memoryManager.Physical.BufferCache.GetBufferRange(address, size);
 
-            ITexture bufferTexture = _vacContext.EnsureBufferTexutre(index + 2, format);
+            ITexture bufferTexture = _vacContext.EnsureBufferTexture(index + 2, format);
             bufferTexture.SetStorage(range);
 
             _context.Renderer.Pipeline.SetTextureAndSampler(ShaderStage.Compute, reservations.GetVertexBufferTextureBinding(index), bufferTexture, null);
@@ -428,7 +428,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         /// <param name="format">Index buffer format</param>
         private readonly void SetIndexBufferTexture(ResourceReservations reservations, BufferRange range, Format format)
         {
-            ITexture bufferTexture = _vacContext.EnsureBufferTexutre(0, format);
+            ITexture bufferTexture = _vacContext.EnsureBufferTexture(0, format);
             bufferTexture.SetStorage(range);
 
             _context.Renderer.Pipeline.SetTextureAndSampler(ShaderStage.Compute, reservations.IndexBufferTextureBinding, bufferTexture, null);
@@ -442,7 +442,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         /// <param name="count">Input vertex count</param>
         private readonly void SetTopologyRemapBufferTexture(ResourceReservations reservations, PrimitiveTopology topology, int count)
         {
-            ITexture bufferTexture = _vacContext.EnsureBufferTexutre(1, Format.R32Uint);
+            ITexture bufferTexture = _vacContext.EnsureBufferTexture(1, Format.R32Uint);
             bufferTexture.SetStorage(_vacContext.GetOrCreateTopologyRemapBuffer(topology, count));
 
             _context.Renderer.Pipeline.SetTextureAndSampler(ShaderStage.Compute, reservations.TopologyRemapBufferTextureBinding, bufferTexture, null);
@@ -457,7 +457,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         {
             BufferHandle sequentialIndexBuffer = _vacContext.GetSequentialIndexBuffer(count);
 
-            ITexture bufferTexture = _vacContext.EnsureBufferTexutre(0, Format.R32Uint);
+            ITexture bufferTexture = _vacContext.EnsureBufferTexture(0, Format.R32Uint);
             bufferTexture.SetStorage(new BufferRange(sequentialIndexBuffer, 0, count * sizeof(uint)));
 
             _context.Renderer.Pipeline.SetTextureAndSampler(ShaderStage.Compute, reservations.IndexBufferTextureBinding, bufferTexture, null);

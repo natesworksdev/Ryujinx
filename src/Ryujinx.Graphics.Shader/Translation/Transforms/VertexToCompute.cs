@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                             }
                         }
                         break;
-                    case IoVariable.GlobalInvocationId:
+                    case IoVariable.GlobalId:
                     case IoVariable.SubgroupEqMask:
                     case IoVariable.SubgroupGeMask:
                     case IoVariable.SubgroupGtMask:
@@ -301,7 +301,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 Instruction.Load,
                 StorageKind.Input,
                 instanceId,
-                new[] { Const((int)IoVariable.GlobalInvocationId), Const(1) }));
+                new[] { Const((int)IoVariable.GlobalId), Const(1) }));
 
             return node.List.AddBefore(node, new Operation(Instruction.Add, dest, new[] { baseInstance, instanceId }));
         }
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GenerateInstanceIdLoad(LinkedListNode<INode> node, Operand dest)
         {
-            Operand[] sources = new Operand[] { Const((int)IoVariable.GlobalInvocationId), Const(1) };
+            Operand[] sources = new Operand[] { Const((int)IoVariable.GlobalId), Const(1) };
 
             return node.List.AddBefore(node, new Operation(Instruction.Load, StorageKind.Input, dest, sources));
         }

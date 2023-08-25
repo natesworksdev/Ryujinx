@@ -450,7 +450,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw
         /// <param name="index">Index of the buffer texture</param>
         /// <param name="format">Format of the buffer texture</param>
         /// <returns>Buffer texture</returns>
-        public ITexture EnsureBufferTexutre(int index, Format format)
+        public ITexture EnsureBufferTexture(int index, Format format)
         {
             return (_bufferTextures[index] ??= new()).Get(_context.Renderer, format);
         }

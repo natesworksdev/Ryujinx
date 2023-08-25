@@ -97,14 +97,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private readonly Dictionary<TransformFeedbackVariable, TransformFeedbackOutput> _transformFeedbackDefinitions;
 
-        public ShaderDefinitions(ShaderStage stage, ulong transformFeedkbackVecMap, TransformFeedbackOutput[] transformFeedbackOutputs)
+        public ShaderDefinitions(ShaderStage stage, ulong transformFeedbackVecMap, TransformFeedbackOutput[] transformFeedbackOutputs)
         {
             Stage = stage;
             TransformFeedbackEnabled = transformFeedbackOutputs != null;
             _transformFeedbackOutputs = transformFeedbackOutputs;
             _transformFeedbackDefinitions = new();
 
-            PopulateTransformFeedbackDefinitions(transformFeedkbackVecMap, transformFeedbackOutputs);
+            PopulateTransformFeedbackDefinitions(transformFeedbackVecMap, transformFeedbackOutputs);
         }
 
         public ShaderDefinitions(
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public bool IsAttributeSint(int location)
         {
-            return (_graphicsState.AttributeTypes[location] & ~(AttributeType.Packed | AttributeType.PackedRgb10A2Signed)) == AttributeType.Sint;
+            return (_graphicsState.AttributeTypes[location] & ~AttributeType.AnyPacked) == AttributeType.Sint;
         }
 
         public bool IsAttributePacked(int location)

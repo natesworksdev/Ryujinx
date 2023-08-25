@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                                 case IoVariable.PrimitiveId:
                                     newNode = GeneratePrimitiveId(context.ResourceManager, node, operation.Dest);
                                     break;
-                                case IoVariable.GlobalInvocationId:
+                                case IoVariable.GlobalId:
                                 case IoVariable.SubgroupEqMask:
                                 case IoVariable.SubgroupGeMask:
                                 case IoVariable.SubgroupGtMask:
@@ -271,7 +271,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 Instruction.Load,
                 StorageKind.Input,
                 instanceIndex,
-                new[] { Const((int)IoVariable.GlobalInvocationId), Const(1) }));
+                new[] { Const((int)IoVariable.GlobalId), Const(1) }));
 
             Operand baseVertex = Local();
             node.List.AddBefore(node, new Operation(Instruction.Multiply, baseVertex, new[] { instanceIndex, vertexCount }));
@@ -317,14 +317,14 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 Instruction.Load,
                 StorageKind.Input,
                 vertexIndex,
-                new[] { Const((int)IoVariable.GlobalInvocationId), Const(0) }));
+                new[] { Const((int)IoVariable.GlobalId), Const(0) }));
 
             Operand instanceIndex = Local();
             node.List.AddBefore(node, new Operation(
                 Instruction.Load,
                 StorageKind.Input,
                 instanceIndex,
-                new[] { Const((int)IoVariable.GlobalInvocationId), Const(1) }));
+                new[] { Const((int)IoVariable.GlobalId), Const(1) }));
 
             Operand baseVertex = Local();
             node.List.AddBefore(node, new Operation(Instruction.Multiply, baseVertex, new[] { instanceIndex, vertexCount }));
@@ -338,7 +338,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 Instruction.Load,
                 StorageKind.Input,
                 dest,
-                new[] { Const((int)IoVariable.GlobalInvocationId), Const(2) }));
+                new[] { Const((int)IoVariable.GlobalId), Const(2) }));
         }
 
         private static bool TryGetOffset(ResourceManager resourceManager, Operation operation, StorageKind storageKind, out int outputOffset)
