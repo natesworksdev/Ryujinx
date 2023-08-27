@@ -16,6 +16,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
@@ -266,7 +267,7 @@ namespace Ryujinx.Ui.Widgets
                         return;
                     }
 
-                    (Nca updatePatchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
+                    (Nca updatePatchNca, _) = mainNca.GetUpdateData(_virtualFileSystem, programIndex, out _);
 
                     if (updatePatchNca != null)
                     {
@@ -637,7 +638,7 @@ namespace Ryujinx.Ui.Widgets
 
         private void CreateShortcut_Clicked(object sender, EventArgs args)
         {
-            byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language);
+            byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language, _titleId);
             ShortcutHelper.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
         }
     }
