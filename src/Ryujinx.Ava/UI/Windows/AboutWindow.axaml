@@ -15,8 +15,7 @@
     d:DesignWidth="550"
     x:DataType="viewModel:AboutWindowViewModel"
     Focusable="True"
-    mc:Ignorable="d"
-    FlowDirection="RightToLeft">
+    mc:Ignorable="d">
     <Design.DataContext>
         <viewModel:AboutWindowViewModel />
     </Design.DataContext>

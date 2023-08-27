@@ -12,8 +12,7 @@
     Height="380"
     mc:Ignorable="d"
     x:DataType="viewModels:DownloadableContentManagerViewModel"
-    Focusable="True"
-    FlowDirection="RightToLeft">
+    Focusable="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

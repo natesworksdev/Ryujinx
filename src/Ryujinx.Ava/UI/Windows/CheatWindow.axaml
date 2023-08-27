@@ -14,8 +14,7 @@
     x:DataType="window:CheatWindow"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d"
-    Focusable="True"
-    FlowDirection="RightToLeft">
+    Focusable="True">
     <Window.Styles>
         <Style Selector="TreeViewItem">
             <Setter Property="IsExpanded" Value="True" />

@@ -21,8 +21,7 @@
     x:DataType="viewModels:MainWindowViewModel"
     mc:Ignorable="d"
     WindowStartupLocation="Manual"
-    Focusable="True"
-    FlowDirection="RightToLeft">
+    Focusable="True">
     <Window.Styles>
         <Style Selector="TitleBar:fullscreen">
             <Setter Property="Background" Value="#000000" />
