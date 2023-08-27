@@ -10,7 +10,8 @@
     d:DesignHeight="450"
     x:Class="Ryujinx.Ava.UI.Windows.ContentDialogOverlayWindow"
     Title="ContentDialogOverlayWindow"
-    Focusable="False">
+    Focusable="False"
+    FlowDirection="RightToLeft">
     <window:StyleableWindow.Styles>
         <Style Selector="ui|ContentDialog /template/ Panel#LayoutRoot">
             <Setter Property="Background"

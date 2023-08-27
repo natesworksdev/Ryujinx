@@ -18,7 +18,8 @@
     Height="650"
     SizeToContent="Manual"
     MinWidth="600"
-    Focusable="True">
+    Focusable="True"
+    FlowDirection="RightToLeft">
     <Design.DataContext>
         <viewModels:AmiiboWindowViewModel />
     </Design.DataContext>

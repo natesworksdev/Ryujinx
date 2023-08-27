@@ -12,7 +12,8 @@
     Height="300"
     mc:Ignorable="d"
     x:DataType="viewModels:TitleUpdateViewModel"
-    Focusable="True">
+    Focusable="True"
+    FlowDirection="RightToLeft">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

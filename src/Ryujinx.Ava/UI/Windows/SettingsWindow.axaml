@@ -17,7 +17,8 @@
     WindowStartupLocation="CenterOwner"
     x:DataType="viewModels:SettingsViewModel"
     mc:Ignorable="d"
-    Focusable="True">
+    Focusable="True"
+    FlowDirection="RightToLeft">
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
