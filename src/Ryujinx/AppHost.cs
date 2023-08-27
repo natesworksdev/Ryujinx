@@ -132,12 +132,14 @@ namespace Ryujinx.Ava
         public int Width { get; private set; }
         public int Height { get; private set; }
         public string ApplicationPath { get; private set; }
+        public ulong TitleId { get; private set; }
         public bool ScreenshotRequested { get; set; }
 
         public AppHost(
             RendererHost renderer,
             InputManager inputManager,
             string applicationPath,
+            ulong titleId,
             VirtualFileSystem virtualFileSystem,
             ContentManager contentManager,
             AccountManager accountManager,
@@ -161,6 +163,7 @@ namespace Ryujinx.Ava
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             ApplicationPath = applicationPath;
+            TitleId = titleId;
             VirtualFileSystem = virtualFileSystem;
             ContentManager = contentManager;
 
@@ -719,7 +722,7 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
 
-                            if (!Device.LoadXci(ApplicationPath))
+                            if (!Device.LoadXci(ApplicationPath, TitleId))
                             {
                                 Device.Dispose();
 
@@ -746,7 +749,7 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
 
-                            if (!Device.LoadNsp(ApplicationPath))
+                            if (!Device.LoadNsp(ApplicationPath, TitleId))
                             {
                                 Device.Dispose();
 

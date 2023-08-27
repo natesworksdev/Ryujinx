@@ -24,7 +24,6 @@ using Ryujinx.UI.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using System;
-using System.IO;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -168,9 +167,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ViewModel.SelectedIcon = args.Application.Icon;
 
-                string path = new FileInfo(args.Application.Path).FullName;
-
-                ViewModel.LoadApplication(path).Wait();
+                ViewModel.LoadApplication(args.Application).Wait();
             }
 
             args.Handled = true;
@@ -314,7 +311,12 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     _deferLoad = false;
 
-                    await ViewModel.LoadApplication(_launchPath, _startFullscreen);
+                    ApplicationData applicationData = new()
+                    {
+                        Path = _launchPath,
+                    };
+
+                    ViewModel.LoadApplication(applicationData, _startFullscreen).Wait();
                 }
             }
             else
