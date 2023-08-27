@@ -455,7 +455,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                                 case AttributeConsts.ClipDistance5:
                                 case AttributeConsts.ClipDistance6:
                                 case AttributeConsts.ClipDistance7:
-                                    if (definitions.Stage == ShaderStage.Vertex)
+                                    if (definitions.Stage.IsVtg())
                                     {
                                         context.SetClipDistanceWritten((attr - AttributeConsts.ClipDistance0) / 4);
                                     }
