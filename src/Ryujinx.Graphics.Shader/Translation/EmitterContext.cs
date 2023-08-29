@@ -244,8 +244,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void PrepareForVertexReturn()
         {
+            // TODO: Support transform feedback emulation on stages other than vertex.
+            // Those stages might produce more primitives, so it needs a way to "compact" the output after it is written.
+
             if (!TranslatorContext.GpuAccessor.QueryHostSupportsTransformFeedback() &&
-                TranslatorContext.GpuAccessor.QueryTransformFeedbackEnabled())
+                TranslatorContext.GpuAccessor.QueryTransformFeedbackEnabled() &&
+                TranslatorContext.Stage == ShaderStage.Vertex)
             {
                 Operand vertexCount = this.Load(StorageKind.ConstantBuffer, SupportBuffer.Binding, Const((int)SupportBufferField.TfeVertexCount));
 
