@@ -160,7 +160,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         {
             // NOTE: GetWorkBufferSizeEx use hardcoded values to compute the returned size.
             //       GetWorkBufferSizeExEx fixes that by using dynamic values.
-            //       Since we already doing that, it's fine the call it directly.
+            //       Since we're already doing that, it's fine to call it directly.
 
             return GetWorkBufferSizeEx(context);
         }
@@ -171,7 +171,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         {
             // NOTE: GetWorkBufferSizeForMultiStreamEx use hardcoded values to compute the returned size.
             //       GetWorkBufferSizeForMultiStreamExEx fixes that by using dynamic values.
-            //       Since we already doing that, it's fine the call it directly.
+            //       Since we're already doing that, it's fine to call it directly.
 
             return GetWorkBufferSizeForMultiStreamEx(context);
         }
