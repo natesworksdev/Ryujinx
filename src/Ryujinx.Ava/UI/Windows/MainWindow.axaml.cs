@@ -542,9 +542,8 @@ namespace Ryujinx.Ava.UI.Windows
             Task.Run(() =>
             {
                 ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+                _isLoading = false;
             });
-
-            _isLoading = false;
         }
     }
 }
