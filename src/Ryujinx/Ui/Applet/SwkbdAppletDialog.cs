@@ -91,8 +91,8 @@ namespace Ryujinx.Ui.Applet
             switch (mode)
             {
                 case KeyboardMode.Numeric:
-                    _validationInfoText += "<i>Must be numbers only.</i>";
-                    _checkInput = text => text.All(char.IsDigit);
+                    _validationInfoText += "<i>Must be 0-9 or '.' only.</i>";
+                    _checkInput = text => text.All(NumericCharacterValidation.IsNumeric);
                     break;
                 case KeyboardMode.Alphabet:
                     _validationInfoText += "<i>Must be non CJK-characters only.</i>";
