@@ -90,7 +90,7 @@ namespace Ryujinx.Ui.Applet
 
             switch (mode)
             {
-                case KeyboardMode.NumbersOnly:
+                case KeyboardMode.Numeric:
                     _validationInfoText += "<i>Must be numbers only.</i>";
                     _checkInput = text => text.All(char.IsDigit);
                     break;
