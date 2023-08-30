@@ -182,8 +182,12 @@ namespace Ryujinx.Ui
             _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient, CommandLineState.Profile);
             _userChannelPersistence = new UserChannelPersistence();
 
+            IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
+                ? IntegrityCheckLevel.ErrorOnInvalid
+                : IntegrityCheckLevel.None;
+
             // Instantiate GUI objects.
-            _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
+            _applicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel);
             _uiHandler = new GtkHostUiHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
 
@@ -1275,7 +1279,7 @@ namespace Ryujinx.Ui
                 FileExtension = (string)_tableStore.GetValue(treeIter, 7),
                 FileSize = (string)_tableStore.GetValue(treeIter, 8),
                 Path = (string)_tableStore.GetValue(treeIter, 9),
-                ControlHolder = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10)
+                ControlHolder = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10),
             };
 
             RunApplication(application);
@@ -1336,13 +1340,22 @@ namespace Ryujinx.Ui
                 return;
             }
 
-            string titleFilePath = _tableStore.GetValue(treeIter, 9).ToString();
-            string titleName = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[0];
-            string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            ApplicationData application = new()
+            {
+                Favorite = (bool)_tableStore.GetValue(treeIter, 0),
+                TitleName = ((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[0],
+                TitleId = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
+                Developer = (string)_tableStore.GetValue(treeIter, 3),
+                Version = (string)_tableStore.GetValue(treeIter, 4),
+                TimePlayed = (string)_tableStore.GetValue(treeIter, 5),
+                LastPlayed = DateTime.Parse((string)_tableStore.GetValue(treeIter, 6), DateTimeFormatInfo.CurrentInfo).ToUniversalTime(),
+                FileExtension = (string)_tableStore.GetValue(treeIter, 7),
+                FileSize = (string)_tableStore.GetValue(treeIter, 8),
+                Path = (string)_tableStore.GetValue(treeIter, 9),
+                ControlHolder = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10),
+            };
 
-            BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
-
-            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, _libHacHorizonManager.RyujinxClient, titleFilePath, titleName, titleId, controlData);
+            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, _libHacHorizonManager.RyujinxClient, application);
         }
 
         private void Load_Application_File(object sender, EventArgs args)

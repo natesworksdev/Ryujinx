@@ -43,14 +43,16 @@ namespace Ryujinx.Ui.App.Common
         private readonly byte[] _nsoIcon;
 
         private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly IntegrityCheckLevel _checkLevel;
         private Language _desiredTitleLanguage;
         private CancellationTokenSource _cancellationToken;
 
         private static readonly ApplicationJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
+        public ApplicationLibrary(VirtualFileSystem virtualFileSystem, IntegrityCheckLevel checkLevel)
         {
             _virtualFileSystem = virtualFileSystem;
+            _checkLevel = checkLevel;
 
             _nspIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NSP.png");
             _xciIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_XCI.png");
@@ -163,7 +165,7 @@ namespace Ryujinx.Ui.App.Common
             var applications = new List<ApplicationData>();
             string extension = Path.GetExtension(filePath).ToLower();
 
-            foreach ((ulong titleId, ContentCollection content) in pfs.GetApplicationData(_virtualFileSystem, 0))
+            foreach ((ulong titleId, ContentCollection content) in pfs.GetApplicationData(_virtualFileSystem, _checkLevel, 0))
             {
                 ApplicationData applicationData = new()
                 {
@@ -697,7 +699,7 @@ namespace Ryujinx.Ui.App.Common
                             else
                             {
                                 // Store the ControlFS in variable called controlFs
-                                Dictionary<ulong, ContentCollection> programs = pfs.GetApplicationData(_virtualFileSystem, 0);
+                                Dictionary<ulong, ContentCollection> programs = pfs.GetApplicationData(_virtualFileSystem, _checkLevel, 0);
                                 IFileSystem controlFs = null;
 
                                 if (programs.ContainsKey(titleId))
@@ -912,7 +914,7 @@ namespace Ryujinx.Ui.App.Common
 
             try
             {
-                (Nca patchNca, Nca controlNca) = mainNca.GetUpdateData(_virtualFileSystem, 0, out updatePath);
+                (Nca patchNca, Nca controlNca) = mainNca.GetUpdateData(_virtualFileSystem, _checkLevel, 0, out updatePath);
 
                 if (patchNca != null && controlNca != null)
                 {

@@ -51,7 +51,7 @@ namespace Ryujinx.Ui.App.Common
 
         [JsonIgnore] public string TitleIdString => TitleId.ToString("x16");
 
-        public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, string titleFilePath)
+        public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, IntegrityCheckLevel checkLevel, string titleFilePath)
         {
             using FileStream file = new(titleFilePath, FileMode.Open, FileAccess.Read);
 
@@ -120,7 +120,7 @@ namespace Ryujinx.Ui.App.Common
                 return string.Empty;
             }
 
-            (Nca updatePatchNca, _) = mainNca.GetUpdateData(virtualFileSystem, 0, out string _);
+            (Nca updatePatchNca, _) = mainNca.GetUpdateData(virtualFileSystem, checkLevel, 0, out string _);
 
             if (updatePatchNca != null)
             {
