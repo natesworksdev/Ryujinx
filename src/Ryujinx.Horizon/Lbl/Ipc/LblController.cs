@@ -21,7 +21,7 @@ namespace Ryujinx.Horizon.Lbl.Ipc
         public Result GetBrightnessReflectionDelayLevel(out float unknown1, float unknown0)
         {
             // NOTE: Stubbed in system module.
-            
+
             unknown1 = 0.0f;
 
             return Result.Success;
