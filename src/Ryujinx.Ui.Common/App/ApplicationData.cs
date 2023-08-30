@@ -22,7 +22,7 @@ namespace Ryujinx.Ui.App.Common
         public bool Favorite { get; set; }
         public byte[] Icon { get; set; }
         public string TitleName { get; set; } = "Unknown";
-        public string TitleId { get; set; } = "0000000000000000";
+        public ulong TitleId { get; set; }
         public string Developer { get; set; } = "Unknown";
         public string Version { get; set; } = "0";
         public string TimePlayed { get; set; }
@@ -48,6 +48,8 @@ namespace Ryujinx.Ui.App.Common
                 return LastPlayed.Value.ToLocalTime().ToString(CultureInfo.CurrentCulture);
             }
         }
+
+        [JsonIgnore] public string TitleIdString => TitleId.ToString("x16");
 
         public static string GetApplicationBuildId(VirtualFileSystem virtualFileSystem, string titleFilePath)
         {
