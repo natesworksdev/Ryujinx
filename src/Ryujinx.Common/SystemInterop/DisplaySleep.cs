@@ -17,12 +17,14 @@ namespace Ryujinx.Common.SystemInterop
         private static partial EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         [LibraryImport("/System/Library/Frameworks/IOKit.framework/IOKit", StringMarshalling = StringMarshalling.Utf8)]
-        private static partial int IOPMAssertionCreateWithName(string assertionType, UInt32 assertionLevel, string assertionName, UInt32 assertionId);
+        private static partial int IOPMAssertionCreateWithName(string assertionType, UInt32 assertionLevel, string assertionName, IntPtr assertionId);
 
         [LibraryImport("/System/Library/Frameworks/IOKit.framework/IOKit", StringMarshalling = StringMarshalling.Utf8)]
-        private static partial int IOPMAssertionRelease(int assertionId);
+        private static partial int IOPMAssertionRelease(IntPtr assertionId);
 
-        static public void Prevent()
+        private GCHandle assertionIdHandle;
+
+        public void Prevent()
         {
             if (OperatingSystem.IsWindows())
             {
@@ -30,12 +32,12 @@ namespace Ryujinx.Common.SystemInterop
             }
             else if (OperatingSystem.IsMacOS())
             {
-                // TODO: Assertion ID needs to be a PTR to an int
-                IOPMAssertionCreateWithName("NoDisplaySleepAssertion", 255, "Ryujinx", 0);
+                assertionIdHandle = GCHandle.Alloc(0, GCHandleType.Pinned);
+                IOPMAssertionCreateWithName("NoDisplaySleepAssertion", 255, "Ryujinx", assertionIdHandle.AddrOfPinnedObject());
             }
         }
 
-        static public void Restore()
+        public void Restore()
         {
             if (OperatingSystem.IsWindows())
             {
@@ -43,7 +45,8 @@ namespace Ryujinx.Common.SystemInterop
             }
             else if (OperatingSystem.IsMacOS())
             {
-                IOPMAssertionRelease(0);
+                IOPMAssertionRelease(assertionIdHandle.AddrOfPinnedObject());
+                assertionIdHandle.Free();
             }
         }
     }

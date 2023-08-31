@@ -54,6 +54,7 @@ namespace Ryujinx.Headless.SDL2
         private static Switch _emulationContext;
         private static WindowBase _window;
         private static WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
+        private static DisplaySleep _displaySleep;
         private static List<InputConfig> _inputConfiguration;
         private static bool _enableKeyboard;
         private static bool _enableMouse;
@@ -568,7 +569,7 @@ namespace Ryujinx.Headless.SDL2
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
-            DisplaySleep.Prevent();
+            _displaySleep.Prevent();
 
             _window.Initialize(_emulationContext, _inputConfiguration, _enableKeyboard, _enableMouse);
 

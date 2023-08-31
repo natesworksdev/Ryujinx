@@ -58,6 +58,8 @@ namespace Ryujinx.Ui
 
         private HLE.Switch _emulationContext;
 
+        private DisplaySleep _displaySleep;
+
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
         private readonly ApplicationLibrary _applicationLibrary;
@@ -329,6 +331,8 @@ namespace Ryujinx.Ui
             Task.Run(RefreshFirmwareLabel);
 
             InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
+
+            _displaySleep = new DisplaySleep();
         }
 
         private void UpdateIgnoreMissingServicesState(object sender, ReactiveEventArgs<bool> args)
@@ -991,7 +995,7 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = null;
             }
 
-            DisplaySleep.Restore();
+            _displaySleep.Restore();
 
             _viewBox.Remove(RendererWidget);
             _viewBox.Add(_gameTableWindow);
@@ -1022,7 +1026,7 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
-            DisplaySleep.Prevent();
+            _displaySleep.Prevent();
 
             RendererWidget.Initialize(_emulationContext);
 

@@ -99,6 +99,8 @@ namespace Ryujinx.Ava
         private bool _isActive;
         private bool _renderingStarted;
 
+        private DisplaySleep _displaySleep;
+
         private readonly ManualResetEvent _gpuDoneEvent;
 
         private IRenderer _renderer;
@@ -194,6 +196,8 @@ namespace Ryujinx.Ava
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
             _gpuDoneEvent = new ManualResetEvent(false);
+
+            _displaySleep = new DisplaySleep();
         }
 
         private void TopLevel_PointerEnteredOrMoved(object sender, PointerEventArgs e)
@@ -337,7 +341,7 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
-            DisplaySleep.Prevent();
+            _displaySleep.Prevent();
 
             NpadManager.Initialize(Device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
             TouchScreenManager.Initialize(Device);
@@ -441,7 +445,7 @@ namespace Ryujinx.Ava
             _gpuDoneEvent.WaitOne();
             _gpuDoneEvent.Dispose();
 
-            DisplaySleep.Restore();
+            _displaySleep.Restore();
 
             NpadManager.Dispose();
             TouchScreenManager.Dispose();
