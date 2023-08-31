@@ -1,0 +1,32 @@
+using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Pctl;
+using Ryujinx.Horizon.Sdk.Sf;
+
+namespace Ryujinx.Horizon.Pctl.Ipc
+{
+    partial class PctlServiceFactory : IPctlServiceFactory
+    {
+        private readonly int _permissionFlag;
+
+        public PctlServiceFactory(int permissionFlag)
+        {
+            _permissionFlag = permissionFlag;
+        }
+
+        [CmifCommand(0)]
+        public Result CreateService(out IPctlService arg0, ulong arg1, ulong pid)
+        {
+            arg0 = new PctlService(pid, true, _permissionFlag);
+
+            return Result.Success;
+        }
+
+        [CmifCommand(1)] // 4.0.0+
+        public Result CreateServiceWithoutInitialize(out IPctlService arg0, ulong arg1, ulong pid)
+        {
+            arg0 = new PctlService(pid, false, _permissionFlag);
+
+            return Result.Success;
+        }
+    }
+}
