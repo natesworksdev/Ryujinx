@@ -5,7 +5,7 @@ namespace Ryujinx.Horizon.Sdk.Pctl
 {
     internal interface IPctlServiceFactory : IServiceObject
     {
-        Result CreateService(out IPctlService arg0, ulong arg1, ulong pid);
-        Result CreateServiceWithoutInitialize(out IPctlService arg0, ulong arg1, ulong pid);
+        Result CreateService(out IPctlService pctlService, ulong arg1, ulong pid);
+        Result CreateServiceWithoutInitialize(out IPctlService pctlService, ulong arg1, ulong pid);
     }
 }

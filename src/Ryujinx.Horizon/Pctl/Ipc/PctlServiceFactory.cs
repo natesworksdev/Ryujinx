@@ -14,17 +14,17 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(0)]
-        public Result CreateService(out IPctlService arg0, ulong arg1, ulong pid)
+        public Result CreateService(out IPctlService pctlService, ulong arg1, ulong pid)
         {
-            arg0 = new PctlService(pid, true, _permissionFlag);
+            pctlService = new PctlService(pid, true, _permissionFlag);
 
             return Result.Success;
         }
 
         [CmifCommand(1)] // 4.0.0+
-        public Result CreateServiceWithoutInitialize(out IPctlService arg0, ulong arg1, ulong pid)
+        public Result CreateServiceWithoutInitialize(out IPctlService pctlService, ulong arg1, ulong pid)
         {
-            arg0 = new PctlService(pid, false, _permissionFlag);
+            pctlService = new PctlService(pid, false, _permissionFlag);
 
             return Result.Success;
         }

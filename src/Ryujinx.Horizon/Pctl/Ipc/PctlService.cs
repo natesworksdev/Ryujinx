@@ -5,6 +5,7 @@ using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
 using Result = Ryujinx.Horizon.Common.Result;
+using TimeSpan = Ryujinx.Horizon.Pctl.Types.TimeSpan;
 
 namespace Ryujinx.Horizon.Pctl.Ipc
 {
@@ -79,7 +80,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1002)]
-        public Result ConfirmLaunchApplicationPermission(ApplicationId arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1, bool arg2)
+        public Result ConfirmLaunchApplicationPermission(ApplicationId applicationId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1, bool arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -90,7 +91,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1003)]
-        public Result ConfirmResumeApplicationPermission(ApplicationId arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1, bool arg2)
+        public Result ConfirmResumeApplicationPermission(ApplicationId applicationId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg1, bool arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -297,11 +298,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1034)]
-        public Result GetSafetyLevelSettings(out RestrictionSettings arg0, int arg1)
+        public Result GetSafetyLevelSettings(out RestrictionSettings restrictionSettings, int arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                restrictionSettings = default;
                 return Result.Success;
             }
 
@@ -309,11 +310,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1035)]
-        public Result GetCurrentSettings(out RestrictionSettings arg0)
+        public Result GetCurrentSettings(out RestrictionSettings restrictionSettings)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                restrictionSettings = default;
                 return Result.Success;
             }
 
@@ -321,7 +322,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1036)]
-        public Result SetCustomSafetyLevelSettings(RestrictionSettings arg0)
+        public Result SetCustomSafetyLevelSettings(RestrictionSettings restrictionSettings)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -423,7 +424,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1047)] // 3.0.0+
-        public Result NotifyApplicationDownloadStarted(ApplicationId arg0)
+        public Result NotifyApplicationDownloadStarted(ApplicationId applicationId)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -580,11 +581,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1204)]
-        public Result GenerateInquiryCode(out InquiryCode arg0)
+        public Result GenerateInquiryCode(out InquiryCode inquiryCode)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                inquiryCode = default;
                 return Result.Success;
             }
 
@@ -592,7 +593,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1205)]
-        public Result CheckMasterKey(out bool arg0, InquiryCode arg1, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg2)
+        public Result CheckMasterKey(out bool arg0, InquiryCode inquiryCode, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -652,11 +653,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1406)]
-        public Result GetSettingsLastUpdated(out PosixTime arg0)
+        public Result GetSettingsLastUpdated(out PosixTime posixTime)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                posixTime = default;
                 return Result.Success;
             }
 
@@ -664,11 +665,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1411)]
-        public Result GetPairingAccountInfo(out PairingAccountInfoBase arg0, PairingInfoBase arg1)
+        public Result GetPairingAccountInfo(out PairingAccountInfoBase pairingAccountInfo, PairingInfoBase pairingInfo)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                pairingAccountInfo = default;
                 return Result.Success;
             }
 
@@ -688,7 +689,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1424)]
-        public Result GetAccountState(out int arg0, PairingAccountInfoBase arg1)
+        public Result GetAccountState(out int arg0, PairingAccountInfoBase pairingAccountInfo)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -781,11 +782,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1454)]
-        public Result GetPlayTimerRemainingTime(out TimeSpanType arg0)
+        public Result GetPlayTimerRemainingTime(out TimeSpan timeSpan)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                timeSpan = default;
                 return Result.Success;
             }
 
@@ -805,11 +806,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1456)]
-        public Result GetPlayTimerSettings(out PlayTimerSettings arg0)
+        public Result GetPlayTimerSettings(out PlayTimerSettings playTimerSettings)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                playTimerSettings = default;
                 return Result.Success;
             }
 
@@ -923,7 +924,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1901)]
-        public Result DeleteFromFreeCommunicationApplicationListForDebug(ApplicationId arg0)
+        public Result DeleteFromFreeCommunicationApplicationListForDebug(ApplicationId applicationId)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -980,7 +981,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1906)] // 5.0.0+
-        public Result AddToExemptApplicationListForDebug(ApplicationId arg0)
+        public Result AddToExemptApplicationListForDebug(ApplicationId applicationId)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -991,7 +992,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1907)] // 5.0.0+
-        public Result DeleteFromExemptApplicationListForDebug(ApplicationId arg0)
+        public Result DeleteFromExemptApplicationListForDebug(ApplicationId applicationId)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1024,7 +1025,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1951)]
-        public Result SetPlayTimerSettingsForDebug(PlayTimerSettings arg0)
+        public Result SetPlayTimerSettingsForDebug(PlayTimerSettings playTimerSettings)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1035,11 +1036,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1952)]
-        public Result GetPlayTimerSpentTimeForTest(out TimeSpanType arg0)
+        public Result GetPlayTimerSpentTimeForTest(out TimeSpan timeSpan)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                timeSpan = default;
                 return Result.Success;
             }
 
@@ -1058,11 +1059,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2001)]
-        public Result RequestPairingAsync(out AsyncData arg0, [CopyHandle] out int arg1, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg2)
+        public Result RequestPairingAsync(out AsyncData asyncData, [CopyHandle] out int arg1, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<sbyte> arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
@@ -1071,11 +1072,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2002)]
-        public Result FinishRequestPairing(out PairingInfoBase arg0, AsyncData arg1)
+        public Result FinishRequestPairing(out PairingInfoBase pairingInfo, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                pairingInfo = default;
                 return Result.Success;
             }
 
@@ -1083,11 +1084,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2003)]
-        public Result AuthorizePairingAsync(out AsyncData arg0, [CopyHandle] out int arg1, PairingInfoBase arg2)
+        public Result AuthorizePairingAsync(out AsyncData asyncData, [CopyHandle] out int arg1, PairingInfoBase pairingInfo)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
@@ -1096,11 +1097,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2004)]
-        public Result FinishAuthorizePairing(out PairingInfoBase arg0, AsyncData arg1)
+        public Result FinishAuthorizePairing(out PairingInfoBase pairingInfo, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                pairingInfo = default;
                 return Result.Success;
             }
 
@@ -1108,11 +1109,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2005)]
-        public Result RetrievePairingInfoAsync(out AsyncData arg0, [CopyHandle] out int arg1)
+        public Result RetrievePairingInfoAsync(out AsyncData asyncData, [CopyHandle] out int arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
@@ -1121,11 +1122,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2006)]
-        public Result FinishRetrievePairingInfo(out PairingInfoBase arg0, AsyncData arg1)
+        public Result FinishRetrievePairingInfo(out PairingInfoBase pairingInfo, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                pairingInfo = default;
                 return Result.Success;
             }
 
@@ -1133,11 +1134,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2007)]
-        public Result UnlinkPairingAsync(out AsyncData arg0, [CopyHandle] out int arg1, bool arg2)
+        public Result UnlinkPairingAsync(out AsyncData asyncData, [CopyHandle] out int arg1, bool arg2)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
@@ -1146,7 +1147,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2008)]
-        public Result FinishUnlinkPairing(AsyncData arg0, bool arg1)
+        public Result FinishUnlinkPairing(AsyncData asyncData, bool arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1157,11 +1158,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2009)]
-        public Result GetAccountMiiImageAsync(out AsyncData arg0, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg3, PairingAccountInfoBase arg4)
+        public Result GetAccountMiiImageAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg3, PairingAccountInfoBase arg4)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 arg2 = default;
                 return Result.Success;
@@ -1183,11 +1184,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2011)]
-        public Result GetAccountMiiImageContentTypeAsync(out AsyncData arg0, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg3, PairingAccountInfoBase arg4)
+        public Result GetAccountMiiImageContentTypeAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg3, PairingAccountInfoBase arg4)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 arg2 = default;
                 return Result.Success;
@@ -1209,11 +1210,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2013)]
-        public Result SynchronizeParentalControlSettingsAsync(out AsyncData arg0, [CopyHandle] out int arg1)
+        public Result SynchronizeParentalControlSettingsAsync(out AsyncData asyncData, [CopyHandle] out int arg1)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
@@ -1222,7 +1223,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2014)]
-        public Result FinishSynchronizeParentalControlSettings(AsyncData arg0)
+        public Result FinishSynchronizeParentalControlSettings(AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1233,11 +1234,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2015)]
-        public Result FinishSynchronizeParentalControlSettingsWithLastUpdated(out PosixTime arg0, AsyncData arg1)
+        public Result FinishSynchronizeParentalControlSettingsWithLastUpdated(out PosixTime posixTime, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                posixTime = default;
                 return Result.Success;
             }
 
@@ -1245,11 +1246,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2016)] // 5.0.0+
-        public Result RequestUpdateExemptionListAsync(out AsyncData arg0, [CopyHandle] out int arg1, ApplicationId arg2, bool arg3)
+        public Result RequestUpdateExemptionListAsync(out AsyncData asyncData, [CopyHandle] out int arg1, ApplicationId applicationId, bool arg3)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                asyncData = default;
                 arg1 = default;
                 return Result.Success;
             }
