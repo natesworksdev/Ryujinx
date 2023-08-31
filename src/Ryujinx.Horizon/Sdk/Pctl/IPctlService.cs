@@ -70,10 +70,10 @@ namespace Ryujinx.Horizon.Sdk.Pctl
         Result StopPlayTimer();
         Result IsPlayTimerEnabled(out bool arg0);
         Result GetPlayTimerRemainingTime(out TimeSpan timeSpan);
-        Result IsRestrictedByPlayTimer(out bool arg0);
+        Result IsRestrictedByPlayTimer(out bool isPlayTimeRestricted);
         Result GetPlayTimerSettings(out PlayTimerSettings playTimerSettings);
         Result GetPlayTimerEventToRequestSuspension(out int arg0);
-        Result IsPlayTimerAlarmDisabled(out bool arg0);
+        Result IsPlayTimerAlarmDisabled(out bool isPlayTimerAlarmDisabled);
         Result NotifyWrongPinCodeInputManyTimes();
         Result CancelNetworkRequest();
         Result GetUnlinkedEvent(out int arg0);
@@ -101,10 +101,10 @@ namespace Ryujinx.Horizon.Sdk.Pctl
         Result FinishRetrievePairingInfo(out PairingInfoBase pairingInfo, AsyncData asyncData);
         Result UnlinkPairingAsync(out AsyncData asyncData, out int arg1, bool arg2);
         Result FinishUnlinkPairing(AsyncData asyncData, bool arg1);
-        Result GetAccountMiiImageAsync(out AsyncData asyncData, out int arg1, out uint arg2, Span<byte> arg3, PairingAccountInfoBase arg4);
-        Result FinishGetAccountMiiImage(out uint arg0, Span<byte> arg1, AsyncData arg2);
-        Result GetAccountMiiImageContentTypeAsync(out AsyncData asyncData, out int arg1, out uint arg2, Span<sbyte> arg3, PairingAccountInfoBase arg4);
-        Result FinishGetAccountMiiImageContentType(out uint arg0, Span<sbyte> arg1, AsyncData arg2);
+        Result GetAccountMiiImageAsync(out AsyncData asyncData, out int arg1, out uint arg2, Span<byte> arg3, PairingAccountInfoBase pairingAccountInfo);
+        Result FinishGetAccountMiiImage(out uint arg0, Span<byte> arg1, AsyncData asyncData);
+        Result GetAccountMiiImageContentTypeAsync(out AsyncData asyncData, out int arg1, out uint arg2, Span<sbyte> arg3, PairingAccountInfoBase pairingAccountInfo);
+        Result FinishGetAccountMiiImageContentType(out uint arg0, Span<sbyte> arg1, AsyncData asyncData);
         Result SynchronizeParentalControlSettingsAsync(out AsyncData asyncData, out int arg1);
         Result FinishSynchronizeParentalControlSettings(AsyncData asyncData);
         Result FinishSynchronizeParentalControlSettingsWithLastUpdated(out PosixTime posixTime, AsyncData asyncData);

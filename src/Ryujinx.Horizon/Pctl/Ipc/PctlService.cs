@@ -794,11 +794,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1455)]
-        public Result IsRestrictedByPlayTimer(out bool arg0)
+        public Result IsRestrictedByPlayTimer(out bool isPlayTimeRestricted)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                isPlayTimeRestricted = default;
                 return Result.Success;
             }
 
@@ -830,11 +830,11 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(1458)] // 4.0.0+
-        public Result IsPlayTimerAlarmDisabled(out bool arg0)
+        public Result IsPlayTimerAlarmDisabled(out bool isPlayTimerAlarmDisabled)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
-                arg0 = default;
+                isPlayTimerAlarmDisabled = default;
                 return Result.Success;
             }
 
@@ -1158,7 +1158,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2009)]
-        public Result GetAccountMiiImageAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg3, PairingAccountInfoBase arg4)
+        public Result GetAccountMiiImageAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg3, PairingAccountInfoBase pairingAccountInfo)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1172,7 +1172,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2010)]
-        public Result FinishGetAccountMiiImage(out uint arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg1, AsyncData arg2)
+        public Result FinishGetAccountMiiImage(out uint arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg1, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1184,7 +1184,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2011)]
-        public Result GetAccountMiiImageContentTypeAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg3, PairingAccountInfoBase arg4)
+        public Result GetAccountMiiImageContentTypeAsync(out AsyncData asyncData, [CopyHandle] out int arg1, out uint arg2, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg3, PairingAccountInfoBase pairingAccountInfo)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
@@ -1198,7 +1198,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         }
 
         [CmifCommand(2012)]
-        public Result FinishGetAccountMiiImageContentType(out uint arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg1, AsyncData arg2)
+        public Result FinishGetAccountMiiImageContentType(out uint arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<sbyte> arg1, AsyncData asyncData)
         {
             if (HorizonStatic.Options.IgnoreMissingServices)
             {
