@@ -506,7 +506,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
                 {
                     _stereoVisionRestriction = stereoVisionRestriction;
 
-                    // TODO: It signals an internal event of service. We have to determine where this event is used.
+                    // TODO: It signals an internal event of the service. We have to determine where this event is used.
                 }
             }
 
