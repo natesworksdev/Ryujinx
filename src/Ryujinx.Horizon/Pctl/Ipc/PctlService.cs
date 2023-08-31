@@ -523,8 +523,6 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         [CmifCommand(1065)] // 5.0.0+
         public Result IsStereoVisionPermitted(out bool isStereoVisionPermitted)
         {
-            isStereoVisionPermitted = false;
-
             Result result = IsStereoVisionPermittedImpl();
 
             isStereoVisionPermitted = result == Result.Success;
