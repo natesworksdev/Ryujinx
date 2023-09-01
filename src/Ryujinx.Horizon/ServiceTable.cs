@@ -1,6 +1,7 @@
 using Ryujinx.Horizon.Bcat;
 using Ryujinx.Horizon.LogManager;
 using Ryujinx.Horizon.MmNv;
+using Ryujinx.Horizon.Pctl;
 using Ryujinx.Horizon.Prepo;
 using System.Collections.Generic;
 using System.Threading;
@@ -27,6 +28,7 @@ namespace Ryujinx.Horizon
             RegisterService<PrepoMain>();
             RegisterService<BcatMain>();
             RegisterService<MmNvMain>();
+            RegisterService<PctlMain>();
 
             _totalServices = entries.Count;
 
