@@ -96,7 +96,7 @@ namespace Ryujinx.Ui.App.Common
             }
             catch (Exception exception)
             {
-                Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
+                Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception.Message}");
 
                 return null;
             }
