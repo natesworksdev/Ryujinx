@@ -20,7 +20,7 @@ jobs:
             path: '.ryujinx-mako'
 
       - name: Setup Ryujinx-Mako
-        uses: .ryujinx-mako/.github/actions/setup-mako
+        uses: ./.ryujinx-mako/.github/actions/setup-mako
 
       # Grab sources to get latest labeler.yml
       - name: Fetch sources
