@@ -1068,9 +1068,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
 
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                        await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys)
-                    );
+                    await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys);
                 }
             }
             catch (Exception ex)
@@ -1163,15 +1161,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             AppHost?.DisposeContext();
         }
 
-        private void HandleRelaunch()
+        private async Task HandleRelaunch()
         {
             if (UserChannelPersistence.PreviousIndex != -1 && UserChannelPersistence.ShouldRestart)
             {
                 UserChannelPersistence.ShouldRestart = false;
 
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    LoadApplication(_currentEmulatedGamePath)
-                );
+                await LoadApplication(_currentEmulatedGamePath);
             }
             else
             {
@@ -1504,35 +1500,30 @@ namespace Ryujinx.Ava.UI.ViewModels
                 this,
                 TopLevel);
 
-            async Task Action()
+            if (!await AppHost.LoadGuestApplication())
             {
-                if (!await AppHost.LoadGuestApplication())
-                {
-                    AppHost.DisposeContext();
-                    AppHost = null;
+                AppHost.DisposeContext();
+                AppHost = null;
 
-                    return;
-                }
-
-                CanUpdate = false;
-
-                LoadHeading = TitleName = titleName;
-
-                if (string.IsNullOrWhiteSpace(titleName))
-                {
-                    LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
-                    TitleName = AppHost.Device.Processes.ActiveApplication.Name;
-                }
-
-                SwitchToRenderer(startFullscreen);
-
-                _currentEmulatedGamePath = path;
-
-                Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
-                gameThread.Start();
+                return;
             }
 
-            await Dispatcher.UIThread.InvokeAsync(Action);
+            CanUpdate = false;
+
+            LoadHeading = TitleName = titleName;
+
+            if (string.IsNullOrWhiteSpace(titleName))
+            {
+                LoadHeading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LoadingHeading, AppHost.Device.Processes.ActiveApplication.Name);
+                TitleName = AppHost.Device.Processes.ActiveApplication.Name;
+            }
+
+            SwitchToRenderer(startFullscreen);
+
+            _currentEmulatedGamePath = path;
+
+            Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
+            gameThread.Start();
         }
 
         public void SwitchToRenderer(bool startFullscreen)
@@ -1595,7 +1586,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             IsGameRunning = false;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 ShowMenuAndStatusBar = true;
                 ShowContent = true;
@@ -1608,7 +1599,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 AppHost = null;
 
-                HandleRelaunch();
+                await HandleRelaunch();
             });
 
             RendererHostControl.WindowCreated -= RendererHost_Created;

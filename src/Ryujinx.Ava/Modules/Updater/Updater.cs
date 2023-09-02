@@ -82,11 +82,9 @@ namespace Ryujinx.Modules
             {
                 Logger.Error?.Print(LogClass.Application, "Failed to convert the current Ryujinx version!");
 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateWarningDialog(
-                        LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedMessage],
-                        LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage])
-                );
+                await ContentDialogHelper.CreateWarningDialog(
+                    LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedMessage],
+                    LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage]);
 
                 _running = false;
 
@@ -113,9 +111,9 @@ namespace Ryujinx.Modules
                         {
                             if (showVersionUpToDate)
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                    ContentDialogHelper.CreateUpdaterInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage], "")
-                                );
+                                await ContentDialogHelper.CreateUpdaterInfoDialog(
+                                    LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
+                                    "");
                             }
 
                             _running = false;
@@ -132,9 +130,9 @@ namespace Ryujinx.Modules
                 {
                     if (showVersionUpToDate)
                     {
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                            ContentDialogHelper.CreateUpdaterInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage], "")
-                        );
+                        await ContentDialogHelper.CreateUpdaterInfoDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
+                            "");
                     }
 
                     _running = false;
@@ -146,9 +144,8 @@ namespace Ryujinx.Modules
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUpdaterFailedToGetVersionMessage])
-                );
+                await ContentDialogHelper.CreateErrorDialog(
+                    LocaleManager.Instance[LocaleKeys.DialogUpdaterFailedToGetVersionMessage]);
 
                 _running = false;
 
@@ -163,11 +160,9 @@ namespace Ryujinx.Modules
             {
                 Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from Github!");
 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                    ContentDialogHelper.CreateWarningDialog(
-                        LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedGithubMessage],
-                        LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage])
-                );
+                await ContentDialogHelper.CreateWarningDialog(
+                    LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedGithubMessage],
+                    LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage]);
 
                 _running = false;
 
@@ -178,9 +173,9 @@ namespace Ryujinx.Modules
             {
                 if (showVersionUpToDate)
                 {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                        ContentDialogHelper.CreateUpdaterInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage], "")
-                    );
+                    await ContentDialogHelper.CreateUpdaterInfoDialog(
+                        LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
+                        "");
                 }
 
                 _running = false;

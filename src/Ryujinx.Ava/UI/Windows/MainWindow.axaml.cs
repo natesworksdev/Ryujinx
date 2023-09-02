@@ -15,6 +15,7 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
@@ -24,8 +25,8 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
-using InputManager = Ryujinx.Input.HLE.InputManager;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -79,35 +80,11 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Program.PreviewerDetached)
             {
-                Initialize();
-
                 InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
-
-                ViewModel.Initialize(
-                    ContentManager,
-                    StorageProvider,
-                    ApplicationLibrary,
-                    VirtualFileSystem,
-                    AccountManager,
-                    InputManager,
-                    _userChannelPersistence,
-                    LibHacHorizonManager,
-                    UiHandler,
-                    ShowLoading,
-                    SwitchToGameControl,
-                    SetMainContent,
-                    this);
-
-                ViewModel.RefreshFirmwareStatus();
-
-                LoadApplications();
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
                 this.ScalingChanged += OnScalingChanged;
             }
-
-            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -164,9 +141,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                 string path = new FileInfo(args.Application.Path).FullName;
 
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    ViewModel.LoadApplication(path)
-                );
+                ViewModel.LoadApplication(path).Wait();
             }
 
             args.Handled = true;
@@ -185,13 +160,10 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.ShowContent = true;
             ViewModel.IsLoadingIndeterminate = false;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
             {
-                if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
-                {
-                    ViewModel.ToggleFullscreen();
-                }
-            });
+                ViewModel.ToggleFullscreen();
+            }
         }
 
         public void ShowLoading(bool startFullscreen = false)
@@ -200,13 +172,10 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.ShowLoadProgress = true;
             ViewModel.IsLoadingIndeterminate = true;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
             {
-                if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
-                {
-                    ViewModel.ToggleFullscreen();
-                }
-            });
+                ViewModel.ToggleFullscreen();
+            }
         }
 
         private void Initialize()
@@ -300,7 +269,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ShowKeyErrorOnLoad = false;
 
-                Dispatcher.UIThread.InvokeAsync(() => UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
+                UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys).Wait();
             }
 
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
@@ -309,11 +278,11 @@ namespace Ryujinx.Ava.UI.Windows
 
                 if (LinuxHelper.PkExecPath is not null)
                 {
-                    Dispatcher.UIThread.InvokeAsync(ShowVmMaxMapCountDialog);
+                    ShowVmMaxMapCountDialog().Wait();
                 }
                 else
                 {
-                    Dispatcher.UIThread.InvokeAsync(ShowVmMaxMapCountWarning);
+                    ShowVmMaxMapCountWarning().Wait();
                 }
             }
 
@@ -321,9 +290,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 _deferLoad = false;
 
-                Dispatcher.UIThread.InvokeAsync(() =>
-                    ViewModel.LoadApplication(_launchPath, _startFullscreen)
-                );
+                ViewModel.LoadApplication(_launchPath, _startFullscreen).Wait();
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
@@ -356,7 +323,7 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight * Program.WindowScaleFactor;
             ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth * Program.WindowScaleFactor;
 
-            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
+            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value ? WindowState.Maximized : WindowState.Normal;
 
             if (CheckScreenBounds(savedPoint))
             {
@@ -398,6 +365,30 @@ namespace Ryujinx.Ava.UI.Windows
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+
+            Initialize();
+
+            ViewModel.Initialize(
+                ContentManager,
+                StorageProvider,
+                ApplicationLibrary,
+                VirtualFileSystem,
+                AccountManager,
+                InputManager,
+                _userChannelPersistence,
+                LibHacHorizonManager,
+                UiHandler,
+                ShowLoading,
+                SwitchToGameControl,
+                SetMainContent,
+                this);
+
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
+            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+
+            ViewModel.RefreshFirmwareStatus();
+
+            LoadApplications();
 
             CheckLaunchState();
         }
@@ -539,11 +530,17 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            Task.Run(() =>
+            Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+
                 _isLoading = false;
-            });
+            })
+            {
+                Name = "GUI.ApplicationLibraryThread",
+                IsBackground = true,
+            };
+            applicationLibraryThread.Start();
         }
     }
 }
