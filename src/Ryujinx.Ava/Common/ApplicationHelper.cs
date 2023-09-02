@@ -148,7 +148,7 @@ namespace Ryujinx.Ava.Common
             var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle],
-                AllowMultiple = false
+                AllowMultiple = false,
             });
 
             if (result.Count == 0)

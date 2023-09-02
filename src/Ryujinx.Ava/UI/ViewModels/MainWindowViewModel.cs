@@ -26,6 +26,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.Ui;
+using Ryujinx.Input.HLE;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
@@ -39,7 +40,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
-using InputManager = Ryujinx.Input.HLE.InputManager;
 using Key = Ryujinx.Input.Key;
 using MissingKeyException = LibHac.Common.Keys.MissingKeyException;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
@@ -1293,21 +1293,21 @@ namespace Ryujinx.Ava.UI.ViewModels
                     {
                         Patterns = new[] { "*.xci", "*.zip" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci", "public.zip-archive" },
-                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" }
+                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" },
                     },
                     new("XCI")
                     {
                         Patterns = new[] { "*.xci" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci" },
-                        MimeTypes = new[] { "application/x-nx-xci" }
+                        MimeTypes = new[] { "application/x-nx-xci" },
                     },
                     new("ZIP")
                     {
                         Patterns = new[] { "*.zip" },
                         AppleUniformTypeIdentifiers = new[] { "public.zip-archive" },
-                        MimeTypes = new[] { "application/zip" }
+                        MimeTypes = new[] { "application/zip" },
                     },
-                }
+                },
             });
 
             if (result.Count > 0)
@@ -1320,7 +1320,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                AllowMultiple = false
+                AllowMultiple = false,
             });
 
             if (result.Count > 0)
@@ -1403,7 +1403,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                             "com.ryujinx.xci",
                             "com.ryujinx.nca",
                             "com.ryujinx.nro",
-                            "com.ryujinx.nso"
+                            "com.ryujinx.nso",
                         },
                         MimeTypes = new[]
                         {
@@ -1411,40 +1411,40 @@ namespace Ryujinx.Ava.UI.ViewModels
                             "application/x-nx-xci",
                             "application/x-nx-nca",
                             "application/x-nx-nro",
-                            "application/x-nx-nso"
-                        }
+                            "application/x-nx-nso",
+                        },
                     },
                     new("NSP")
                     {
                         Patterns = new[] { "*.nsp" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
-                        MimeTypes = new[] { "application/x-nx-nsp" }
+                        MimeTypes = new[] { "application/x-nx-nsp" },
                     },
                     new("XCI")
                     {
                         Patterns = new[] { "*.xci" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci" },
-                        MimeTypes = new[] { "application/x-nx-xci" }
+                        MimeTypes = new[] { "application/x-nx-xci" },
                     },
                     new("NCA")
                     {
                         Patterns = new[] { "*.nca" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nca" },
-                        MimeTypes = new[] { "application/x-nx-nca" }
+                        MimeTypes = new[] { "application/x-nx-nca" },
                     },
                     new("NRO")
                     {
                         Patterns = new[] { "*.nro" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nro" },
-                        MimeTypes = new[] { "application/x-nx-nro" }
+                        MimeTypes = new[] { "application/x-nx-nro" },
                     },
                     new("NSO")
                     {
                         Patterns = new[] { "*.nso" },
                         AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nso" },
-                        MimeTypes = new[] { "application/x-nx-nso" }
+                        MimeTypes = new[] { "application/x-nx-nso" },
                     },
-                }
+                },
             });
 
             if (result.Count > 0)
@@ -1458,7 +1458,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
-                AllowMultiple = false
+                AllowMultiple = false,
             });
 
             if (result.Count > 0)
