@@ -182,7 +182,6 @@ namespace Ryujinx.Ui.App.Common
                     IFileSystem controlFs = controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
 
                     // Check if there is an update available.
-                    // TODO: Take gamecart updates into account as well
                     if (IsUpdateApplied(mainNca, out IFileSystem updatedControlFs))
                     {
                         // Replace the original ControlFs by the updated one.
@@ -261,7 +260,9 @@ namespace Ryujinx.Ui.App.Common
         {
             applications = new List<ApplicationData>();
 
-            double fileSize = new FileInfo(applicationPath).Length * 0.000000000931;
+            long fileSizeBytes = new FileInfo(applicationPath).Length;
+
+            double fileSize = fileSizeBytes * 0.000000000931;
 
             BlitStruct<ApplicationControlProperty> controlHolder = new(1);
 
@@ -449,7 +450,7 @@ namespace Ryujinx.Ui.App.Common
                 data.LastPlayed = appMetadata.LastPlayed;
                 data.FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1);
                 data.FileSize = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + " MiB" : fileSize.ToString("0.##") + " GiB";
-                data.FileSizeBytes = fileSize;
+                data.FileSizeBytes = fileSizeBytes;
                 data.Path = applicationPath;
             }
 
