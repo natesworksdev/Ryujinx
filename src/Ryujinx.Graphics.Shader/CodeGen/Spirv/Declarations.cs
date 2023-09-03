@@ -369,7 +369,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (context.Definitions.Stage != ShaderStage.Vertex)
                 {
                     var perVertexInputStructType = CreatePerVertexStructType(context);
-                    int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                    int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
                     var perVertexInputArrayType = context.TypeArray(perVertexInputStructType, context.Constant(context.TypeU32(), arraySize));
                     var perVertexInputPointerType = context.TypePointer(StorageClass.Input, perVertexInputArrayType);
                     var perVertexInputVariable = context.Variable(perVertexInputPointerType, StorageClass.Input);
@@ -433,6 +433,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.MemberName(perVertexStructType, 3, "gl_CullDistance");
 
             context.Decorate(perVertexStructType, Decoration.Block);
+
+            if (context.HostCapabilities.ReducedPrecision)
+            {
+                context.MemberDecorate(perVertexStructType, 0, Decoration.Invariant);
+            }
 
             context.MemberDecorate(perVertexStructType, 0, Decoration.BuiltIn, (LiteralInteger)BuiltIn.Position);
             context.MemberDecorate(perVertexStructType, 1, Decoration.BuiltIn, (LiteralInteger)BuiltIn.PointSize);
@@ -501,7 +506,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Definitions.Stage, isOutput))
             {
-                int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
                 spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), arraySize));
 
                 if (context.Definitions.GpPassthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough)
