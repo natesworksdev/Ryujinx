@@ -928,13 +928,15 @@ namespace Ryujinx.Ui.App.Common
                 {
                     updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, _titleSerializerContext.TitleUpdateMetadata).Selected;
 
-                    if (File.Exists(updatePath))
+                    if (!File.Exists(updatePath))
                     {
-                        FileStream file = new(updatePath, FileMode.Open, FileAccess.Read);
-                        PartitionFileSystem nsp = new(file.AsStorage());
-
-                        return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
+                        Logger.Warning?.Print(LogClass.Loader, $"Update file {titleUpdateMetadataPath} was not found! Game saves will not work!");
                     }
+
+                    FileStream file = new(updatePath, FileMode.Open, FileAccess.Read);
+                    PartitionFileSystem nsp = new(file.AsStorage());
+
+                    return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                 }
             }
 
