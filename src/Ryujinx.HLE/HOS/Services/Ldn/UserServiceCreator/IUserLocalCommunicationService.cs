@@ -6,10 +6,8 @@ using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
@@ -24,17 +22,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     {
         public INetworkClient NetworkClient { get; private set; }
 
-        private const int    NIFM_REQUEST_ID     = 90;
-        private const string DEFAULT_IP_ADDRESS  = "127.0.0.1";
+        private const int NIFM_REQUEST_ID = 90;
+        private const string DEFAULT_IP_ADDRESS = "127.0.0.1";
         private const string DEFAULT_SUBNET_MASK = "255.255.255.0";
-        private const bool   IS_DEVELOPMENT      = false;
+        private const bool IS_DEVELOPMENT = false;
 
-        private KEvent _stateChangeEvent;
+        private readonly KEvent _stateChangeEvent;
 
         private NetworkState _state;
         private DisconnectReason _disconnectReason;
         private ResultCode _nifmResultCode;
-        private ulong _currentPid;
 
         private AccessPoint _accessPoint;
         private Station _station;
@@ -157,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                return new NodeLatestUpdate[0];
+                return Array.Empty<NodeLatestUpdate>();
             }
         }
 
@@ -233,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return resultCode;
             }
 
-            SecurityParameter securityParameter = new SecurityParameter()
+            SecurityParameter securityParameter = new()
             {
                 Data = new Array16<byte>(),
                 SessionId = networkInfo.NetworkId.SessionId
@@ -259,7 +256,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return resultCode;
             }
 
-            NetworkConfig networkConfig = new NetworkConfig
+            NetworkConfig networkConfig = new()
             {
                 IntentId = networkInfo.NetworkId.IntentId,
                 Channel = networkInfo.Common.Channel,
@@ -543,7 +540,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
             UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
-            uint unknown = context.RequestData.ReadUInt32(); // Alignment?
+
+            _ = context.RequestData.ReadUInt32(); // Alignment?
             NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
 
             if (networkConfig.IntentId.LocalCommunicationId == -1)
@@ -828,8 +826,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             uint localCommunicationVersion = context.RequestData.ReadUInt32();
             uint optionUnknown = context.RequestData.ReadUInt32();
 
-            NetworkConfig networkConfig = new NetworkConfig();
-            NetworkInfo networkInfo = new NetworkInfo();
+            NetworkConfig networkConfig = new();
+            NetworkInfo networkInfo = new();
 
             if (isPrivate)
             {
@@ -1030,8 +1028,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // Initialize(u64 ip_addresses, pid)
         public ResultCode Initialize(ServiceCtx context)
         {
-            IPAddress ipAddress = new(context.RequestData.ReadUInt32());
-            IPAddress subnetMask = new(context.RequestData.ReadUInt32());
+            _ = new IPAddress(context.RequestData.ReadUInt32());
+
+            _ = new IPAddress(context.RequestData.ReadUInt32());
 
             // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
             //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
@@ -1066,7 +1065,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         resultCode = ResultCode.Success;
 
                         _nifmResultCode = resultCode;
-                        _currentPid = pid;
 
                         SetState(NetworkState.Initialized);
                     }

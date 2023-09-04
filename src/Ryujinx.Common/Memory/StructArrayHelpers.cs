@@ -798,7 +798,7 @@ namespace Ryujinx.Common.Memory
         Array64<T> _other;
         Array64<T> _other2;
         Array11<T> _other3;
-        public int Length => 140;
+        public readonly int Length => 140;
         public ref T this[int index] => ref AsSpan()[index];
 
         [Pure]
@@ -815,7 +815,7 @@ namespace Ryujinx.Common.Memory
         Array64<T> _other4;
         Array64<T> _other5;
         Array63<T> _other6;
-        public int Length => 384;
+        public readonly int Length => 384;
         public ref T this[int index] => ref AsSpan()[index];
 
         [Pure]

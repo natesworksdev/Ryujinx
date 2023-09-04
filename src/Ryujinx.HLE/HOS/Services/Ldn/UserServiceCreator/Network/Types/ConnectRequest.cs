@@ -7,9 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types
     struct ConnectRequest
     {
         public SecurityConfig SecurityConfig;
-        public UserConfig     UserConfig;
-        public uint           LocalCommunicationVersion;
-        public uint           OptionUnknown;
-        public NetworkInfo    NetworkInfo;
+        public UserConfig UserConfig;
+        public uint LocalCommunicationVersion;
+        public uint OptionUnknown;
+        public NetworkInfo NetworkInfo;
     }
 }

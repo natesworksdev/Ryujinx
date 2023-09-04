@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public static T FromBytes<T>(byte[] arr)
         {
-            T str = default(T);
+            T str = default;
 
             int size = Marshal.SizeOf(str);
             IntPtr ptr = Marshal.AllocHGlobal(size);

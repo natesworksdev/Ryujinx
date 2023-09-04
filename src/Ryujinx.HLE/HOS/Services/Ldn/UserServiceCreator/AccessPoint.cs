@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     {
         private byte[] _advertiseData;
 
-        private IUserLocalCommunicationService _parent;
+        private readonly IUserLocalCommunicationService _parent;
 
         public NetworkInfo NetworkInfo;
         public Array8<NodeLatestUpdate> LatestUpdates = new();
@@ -73,21 +73,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode CreateNetwork(SecurityConfig securityConfig, UserConfig userConfig, NetworkConfig networkConfig)
         {
-            CreateAccessPointRequest request = new CreateAccessPointRequest
+            CreateAccessPointRequest request = new()
             {
                 SecurityConfig = securityConfig,
                 UserConfig = userConfig,
                 NetworkConfig = networkConfig
             };
 
-            bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData ?? new byte[0]);
+            bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData ?? Array.Empty<byte>());
 
             return success ? ResultCode.Success : ResultCode.InvalidState;
         }
 
         public ResultCode CreateNetworkPrivate(SecurityConfig securityConfig, SecurityParameter securityParameter, UserConfig userConfig, NetworkConfig networkConfig, AddressList addressList)
         {
-            CreateAccessPointPrivateRequest request = new CreateAccessPointPrivateRequest
+            CreateAccessPointPrivateRequest request = new()
             {
                 SecurityConfig = securityConfig,
                 SecurityParameter = securityParameter,

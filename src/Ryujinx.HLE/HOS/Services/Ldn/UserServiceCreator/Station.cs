@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         public NetworkInfo NetworkInfo;
         public Array8<NodeLatestUpdate> LatestUpdates = new();
 
-        private IUserLocalCommunicationService _parent;
+        private readonly IUserLocalCommunicationService _parent;
 
         public bool Connected { get; private set; }
 
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode Connect(SecurityConfig securityConfig, UserConfig userConfig, uint localCommunicationVersion, uint optionUnknown, NetworkInfo networkInfo)
         {
-            ConnectRequest request = new ConnectRequest
+            ConnectRequest request = new()
             {
                 SecurityConfig = securityConfig,
                 UserConfig = userConfig,
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode ConnectPrivate(SecurityConfig securityConfig, SecurityParameter securityParameter, UserConfig userConfig, uint localCommunicationVersion, uint optionUnknown, NetworkConfig networkConfig)
         {
-            ConnectPrivateRequest request = new ConnectPrivateRequest
+            ConnectPrivateRequest request = new()
             {
                 SecurityConfig = securityConfig,
                 SecurityParameter = securityParameter,
