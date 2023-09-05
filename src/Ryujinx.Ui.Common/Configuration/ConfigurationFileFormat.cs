@@ -361,6 +361,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// </summary>
         public string PreferredGpu { get; set; }
 
+        /// <summary>
         /// Multiplayer Mode
         /// </summary>
         public MultiplayerMode MultiplayerMode { get; set; }
