@@ -5,6 +5,6 @@
         Scan,
         ScanResponse,
         Connect,
-        SyncNetwork
+        SyncNetwork,
     }
 }

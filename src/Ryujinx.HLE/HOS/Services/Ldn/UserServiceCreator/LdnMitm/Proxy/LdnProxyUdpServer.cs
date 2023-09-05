@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal class LdnProxyUdpServer : NetCoreServer.UdpServer, ILdnSocket
     {
-        private readonly long ScanFrequency = 1000;
+        private readonly long _scanFrequency = 1000;
 
         private readonly LanProtocol _protocol;
         private byte[] _buffer;
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
         {
             return new Socket(Endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
             {
-                EnableBroadcast = true
+                EnableBroadcast = true,
             };
         }
 
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
             // Rate limit scans.
 
             long timeMs = Stopwatch.GetTimestamp() / (Stopwatch.Frequency / 1000);
-            long delay = ScanFrequency - (timeMs - _lastScanTime);
+            long delay = _scanFrequency - (timeMs - _lastScanTime);
 
             if (delay > 0)
             {

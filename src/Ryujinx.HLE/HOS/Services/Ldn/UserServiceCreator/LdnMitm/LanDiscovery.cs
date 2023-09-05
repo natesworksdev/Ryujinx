@@ -15,10 +15,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 {
     internal class LanDiscovery : IDisposable
     {
-        private const int DEFAULT_PORT = 11452;
-        private const ushort COMMON_CHANNEL = 6;
-        private const byte COMMON_LINK_LEVEL = 3;
-        private const byte COMMON_NETWORK_TYPE = 2;
+        private const int DefaultPort = 11452;
+        private const ushort CommonChannel = 6;
+        private const byte CommonLinkLevel = 3;
+        private const byte CommonNetworkType = 2;
 
         private const int FailureTimeout = 4000;
 
@@ -55,50 +55,50 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
         {
             NetworkInfo networkInfo = new()
             {
-                NetworkId = new()
+                NetworkId = new NetworkId
                 {
-                    SessionId = new Array16<byte>()
+                    SessionId = new Array16<byte>(),
                 },
-                Common = new()
+                Common = new CommonNetworkInfo
                 {
                     MacAddress = new Array6<byte>(),
-                    Ssid = new()
+                    Ssid = new Ssid
                     {
-                        Name = new Array33<byte>()
-                    }
+                        Name = new Array33<byte>(),
+                    },
                 },
-                Ldn = new()
+                Ldn = new LdnNetworkInfo
                 {
                     NodeCountMax = LdnConst.NodeCountMax,
                     SecurityParameter = new Array16<byte>(),
                     Nodes = new Array8<NodeInfo>(),
                     AdvertiseData = new Array384<byte>(),
-                    Reserved4 = new Array140<byte>()
-                }
+                    Reserved4 = new Array140<byte>(),
+                },
             };
 
             for (int i = 0; i < LdnConst.NodeCountMax; i++)
             {
-                networkInfo.Ldn.Nodes[i] = new()
+                networkInfo.Ldn.Nodes[i] = new NodeInfo
                 {
                     MacAddress = new Array6<byte>(),
                     UserName = new Array33<byte>(),
-                    Reserved2 = new Array16<byte>()
+                    Reserved2 = new Array16<byte>(),
                 };
             }
 
             return networkInfo;
         }
 
-        public LanDiscovery(LdnMitmClient parent, IPAddress ipAddress, IPAddress ipv4mask)
+        public LanDiscovery(LdnMitmClient parent, IPAddress ipAddress, IPAddress ipv4Mask)
         {
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"Initialize LanDiscovery using IP: {ipAddress}");
 
             _parent = parent;
             LocalAddr = ipAddress;
-            LocalBroadcastAddr = GetBroadcastAddress(ipAddress, ipv4mask);
+            LocalBroadcastAddr = GetBroadcastAddress(ipAddress, ipv4Mask);
 
-            _fakeSsid = new()
+            _fakeSsid = new Ssid
             {
                 Length = LdnConst.SsidLengthMax,
             };
@@ -187,7 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                     {
                         MacAddress = new Array6<byte>(),
                         UserName = new Array33<byte>(),
-                        Reserved2 = new Array16<byte>()
+                        Reserved2 = new Array16<byte>(),
                     };
 
                     UpdateNodes();
@@ -224,9 +224,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             lock (_lock)
             {
                 NetworkInfo.Common.MacAddress = GetFakeMac();
-                NetworkInfo.Common.Channel = COMMON_CHANNEL;
-                NetworkInfo.Common.LinkLevel = COMMON_LINK_LEVEL;
-                NetworkInfo.Common.NetworkType = COMMON_NETWORK_TYPE;
+                NetworkInfo.Common.Channel = CommonChannel;
+                NetworkInfo.Common.LinkLevel = CommonLinkLevel;
+                NetworkInfo.Common.NetworkType = CommonNetworkType;
                 NetworkInfo.Common.Ssid = _fakeSsid;
 
                 NetworkInfo.Ldn.Nodes = new Array8<NodeInfo>();
@@ -251,7 +251,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             return macAddress;
         }
 
-        public bool InitTcp(bool listening, IPAddress address = null, int port = DEFAULT_PORT)
+        public bool InitTcp(bool listening, IPAddress address = null, int port = DefaultPort)
         {
             Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"LanDiscovery InitTcp: IP: {address}, listening: {listening}");
 
@@ -320,10 +320,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                 //       See this discussion: https://stackoverflow.com/questions/13666789/receiving-udp-broadcast-packets-on-linux
                 if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
-                    _udp2 = new LdnProxyUdpServer(_protocol, LocalBroadcastAddr, DEFAULT_PORT);
+                    _udp2 = new LdnProxyUdpServer(_protocol, LocalBroadcastAddr, DefaultPort);
                 }
 
-                _udp = new LdnProxyUdpServer(_protocol, LocalAddr, DEFAULT_PORT);
+                _udp = new LdnProxyUdpServer(_protocol, LocalAddr, DefaultPort);
             }
             catch (Exception ex)
             {
@@ -339,7 +339,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
         {
             _udp.ClearScanResults();
 
-            if (_protocol.SendBroadcast(_udp, LanPacketType.Scan, DEFAULT_PORT) < 0)
+            if (_protocol.SendBroadcast(_udp, LanPacketType.Scan, DefaultPort) < 0)
             {
                 return Array.Empty<NetworkInfo>();
             }
