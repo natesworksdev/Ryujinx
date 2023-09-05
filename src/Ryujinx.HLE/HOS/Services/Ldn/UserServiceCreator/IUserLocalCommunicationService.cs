@@ -22,10 +22,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     {
         public INetworkClient NetworkClient { get; private set; }
 
-        private const int NIFM_REQUEST_ID = 90;
-        private const string DEFAULT_IP_ADDRESS = "127.0.0.1";
-        private const string DEFAULT_SUBNET_MASK = "255.255.255.0";
-        private const bool IS_DEVELOPMENT = false;
+        private const int NifmRequestID = 90;
+        private const string DefaultIPAddress = "127.0.0.1";
+        private const string DefaultSubnetMask = "255.255.255.0";
+        private const bool IsDevelopment = false;
 
         private readonly KEvent _stateChangeEvent;
 
@@ -45,12 +45,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ushort CheckDevelopmentChannel(ushort channel)
         {
-            return (ushort)(!IS_DEVELOPMENT ? 0 : channel);
+            return (ushort)(!IsDevelopment ? 0 : channel);
         }
 
         private SecurityMode CheckDevelopmentSecurityMode(SecurityMode securityMode)
         {
-            return !IS_DEVELOPMENT ? SecurityMode.Retail : securityMode;
+            return !IsDevelopment ? SecurityMode.Retail : securityMode;
         }
 
         private bool CheckLocalCommunicationIdPermission(ServiceCtx context, ulong localCommunicationIdChecked)
@@ -175,8 +175,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 if (unicastAddress == null)
                 {
-                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_IP_ADDRESS));
-                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DefaultIPAddress));
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DefaultSubnetMask));
                 }
                 else
                 {
@@ -946,7 +946,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // InitializeOld(pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
-            return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
+            return InitializeImpl(context, context.Process.Pid, NifmRequestID);
         }
 
         [CommandCmif(401)]
@@ -1039,7 +1039,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
             //       Since we proxy connections, we don't needs to get the ip_address, subnet_mask and nifm_request_id.
 
-            return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
+            return InitializeImpl(context, context.Process.Pid, NifmRequestID);
         }
 
         public ResultCode InitializeImpl(ServiceCtx context, ulong pid, int nifmRequestId)
