@@ -22,16 +22,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         private const int FailureTimeout = 4000;
 
-        private LdnMitmClient _parent;
-        private LanProtocol _protocol;
+        private readonly LdnMitmClient _parent;
+        private readonly LanProtocol _protocol;
         private bool _initialized;
         private readonly Ssid _fakeSsid;
         private ILdnTcpSocket _tcp;
         private LdnProxyUdpServer _udp, _udp2;
-        private List<LdnProxyTcpSession> _stations = new();
-        private object _lock = new();
+        private readonly List<LdnProxyTcpSession> _stations = new();
+        private readonly object _lock = new();
 
-        private AutoResetEvent _apConnected = new(false);
+        private readonly AutoResetEvent _apConnected = new(false);
 
         internal readonly IPAddress LocalAddr;
         internal readonly IPAddress LocalBroadcastAddr;
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         public bool IsHost => _tcp is LdnProxyTcpServer;
 
-        private Random _random = new();
+        private readonly Random _random = new();
 
         // NOTE: Credit to https://stackoverflow.com/a/39338188
         private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
@@ -241,10 +241,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         protected Array6<byte> GetFakeMac(IPAddress address = null)
         {
-            if (address == null)
-            {
-                address = LocalAddr;
-            }
+            address ??= LocalAddr;
 
             byte[] ip = address.GetAddressBytes();
 
@@ -271,10 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             {
                 try
                 {
-                    if (address == null)
-                    {
-                        address = LocalAddr;
-                    }
+                    address ??= LocalAddr;
 
                     tcpSocket = new LdnProxyTcpServer(_protocol, address, port);
                 }

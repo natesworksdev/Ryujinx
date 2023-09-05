@@ -12,17 +12,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal class LdnProxyUdpServer : NetCoreServer.UdpServer, ILdnSocket
     {
-        private long ScanFrequency = 1000;
+        private readonly long ScanFrequency = 1000;
 
-        private LanProtocol _protocol;
+        private readonly LanProtocol _protocol;
         private byte[] _buffer;
         private int _bufferEnd;
 
-        private object _scanLock = new object();
+        private readonly object _scanLock = new();
 
-        private Dictionary<ulong, NetworkInfo> _scanResultsLast = new Dictionary<ulong, NetworkInfo>();
-        private Dictionary<ulong, NetworkInfo> _scanResults = new Dictionary<ulong, NetworkInfo>();
-        private AutoResetEvent _scanResponse = new AutoResetEvent(false);
+        private Dictionary<ulong, NetworkInfo> _scanResultsLast = new();
+        private Dictionary<ulong, NetworkInfo> _scanResults = new();
+        private readonly AutoResetEvent _scanResponse = new(false);
         private long _lastScanTime;
 
         public LdnProxyUdpServer(LanProtocol protocol, IPAddress address, int port) : base(address, port)
