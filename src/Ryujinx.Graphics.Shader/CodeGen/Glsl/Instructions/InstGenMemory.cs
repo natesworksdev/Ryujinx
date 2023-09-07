@@ -569,7 +569,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         public static string GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
-            StringBuilder builder = new();
             StorageKind storageKind = operation.StorageKind;
 
             string varName;
@@ -698,8 +697,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     src is AstOperand elementIndex &&
                     elementIndex.Type == OperandType.Constant)
                 {
-                    builder.Append('.');
-                    builder.Append("xyzw"[elementIndex.Value & 3]);
+                    varName += "." + "xyzw"[elementIndex.Value & 3];
                 }
                 else if (srcIndex == firstSrcIndex && context.Definitions.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
                 {
@@ -707,24 +705,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     // that the index expression must be *exactly* "gl_InvocationID",
                     // otherwise the compilation fails.
                     // TODO: Get rid of this and use expression propagation to make sure we generate the correct code from IR.
-                    builder.Append("[gl_InvocationID]");
+                    varName += "[gl_InvocationID]";
                 }
                 else
                 {
-                    builder.Append('[');
-                    builder.Append(GetSoureExpr(context, src, AggregateType.S32));
-                    builder.Append(']');
+                    varName += $"[{GetSoureExpr(context, src, AggregateType.S32)}]";
                 }
             }
 
             if (isStore)
             {
                 varType &= AggregateType.ElementTypeMask;
-                builder.Append(" = ");
-                builder.Append(GetSoureExpr(context, operation.GetSource(srcIndex), varType));
+                varName = $"{varName} = {GetSoureExpr(context, operation.GetSource(srcIndex), varType)}";
             }
 
-            return builder.ToString();
+            return varName;
         }
 
         private static string GetSamplerName(ShaderProperties resourceDefinitions, AstTextureOperation texOp, string indexExpr)
