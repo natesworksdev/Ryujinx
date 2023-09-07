@@ -171,7 +171,7 @@ namespace Ryujinx.Cpu.AppleHv
                         vcpu.EnableAndUpdateVTimer();
 
                         // Unmask VTimer interrupts.
-                        HvApi.hv_vcpu_set_vtimer_mask(vcpu.Handle, false);
+                        HvApi.hv_vcpu_set_vtimer_mask(vcpu.Handle, false).ThrowOnError();
                     }
                 }
                 else
