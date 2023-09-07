@@ -327,7 +327,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             string imageUrl = _amiiboList.Find(amiibo => amiibo.Equals(selected)).Image;
 
-            string usageString = "";
+            StringBuilder usageStringBuilder = new StringBuilder();
 
             for (int i = 0; i < _amiiboList.Count; i++)
             {
@@ -341,20 +341,21 @@ namespace Ryujinx.Ava.UI.ViewModels
                         {
                             foreach (AmiiboApiUsage usageItem in item.AmiiboUsage)
                             {
-                                usageString += Environment.NewLine +
-                                               $"- {usageItem.Usage.Replace("/", Environment.NewLine + "-")}";
+                                usageStringBuilder.Append(Environment.NewLine);
+                                usageStringBuilder.Append($"- {usageItem.Usage.Replace("/", Environment.NewLine + "-")}");
 
                                 writable = usageItem.Write;
                             }
                         }
                     }
 
-                    if (usageString.Length == 0)
+                    if (usageStringBuilder.Length == 0)
                     {
-                        usageString = LocaleManager.Instance[LocaleKeys.Unknown] + ".";
+                        usageStringBuilder.Append(LocaleManager.Instance[LocaleKeys.Unknown]);
+                        usageStringBuilder.Append(".");
                     }
 
-                    Usage = $"{LocaleManager.Instance[LocaleKeys.Usage]} {(writable ? $" ({LocaleManager.Instance[LocaleKeys.Writable]})" : "")} : {usageString}";
+                    Usage = $"{LocaleManager.Instance[LocaleKeys.Usage]} {(writable ? $" ({LocaleManager.Instance[LocaleKeys.Writable]})" : "")} : {usageStringBuilder}";
                 }
             }
 

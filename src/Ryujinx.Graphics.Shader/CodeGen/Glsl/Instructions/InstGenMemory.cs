@@ -569,6 +569,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         public static string GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
+            StringBuilder builder = new StringBuilder();
             StorageKind storageKind = operation.StorageKind;
 
             string varName;
@@ -697,7 +698,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     src is AstOperand elementIndex &&
                     elementIndex.Type == OperandType.Constant)
                 {
-                    varName += "." + "xyzw"[elementIndex.Value & 3];
+                    builder.Append('.');
+                    builder.Append("xyzw"[elementIndex.Value & 3]);
                 }
                 else if (srcIndex == firstSrcIndex && context.Definitions.Stage == ShaderStage.TessellationControl && storageKind == StorageKind.Output)
                 {
@@ -705,21 +707,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     // that the index expression must be *exactly* "gl_InvocationID",
                     // otherwise the compilation fails.
                     // TODO: Get rid of this and use expression propagation to make sure we generate the correct code from IR.
-                    varName += "[gl_InvocationID]";
+                    builder.Append("[gl_InvocationID]");
                 }
                 else
                 {
-                    varName += $"[{GetSoureExpr(context, src, AggregateType.S32)}]";
+                    builder.Append('[');
+                    builder.Append(GetSoureExpr(context, src, AggregateType.S32));
+                    builder.Append(']');
                 }
             }
 
             if (isStore)
             {
                 varType &= AggregateType.ElementTypeMask;
-                varName = $"{varName} = {GetSoureExpr(context, operation.GetSource(srcIndex), varType)}";
+                builder.Append(" = ");
+                builder.Append(GetSoureExpr(context, operation.GetSource(srcIndex), varType));
             }
 
-            return varName;
+            return builder.ToString();
         }
 
         private static string GetSamplerName(ShaderProperties resourceDefinitions, AstTextureOperation texOp, string indexExpr)
@@ -753,17 +758,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetMaskMultiDest(int mask)
         {
-            string swizzle = ".";
+            StringBuilder swizzleBuilder = new StringBuilder();
+            swizzleBuilder.Append('.');
 
             for (int i = 0; i < 4; i++)
             {
                 if ((mask & (1 << i)) != 0)
                 {
-                    swizzle += "xyzw"[i];
+                    swizzleBuilder.Append("xyzw"[i]);
                 }
             }
 
-            return swizzle;
+            return swizzleBuilder.ToString();
         }
     }
 }
