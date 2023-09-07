@@ -436,7 +436,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             uint nameIndex = sym.NameOffset;
 
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
 
             for (int chr; (chr = memory.Read<byte>(strTblAddr + nameIndex++)) != 0;)
             {
@@ -452,7 +452,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             uint nameIndex = sym.NameOffset;
 
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
 
             for (int chr; (chr = memory.Read<byte>(strTblAddr + nameIndex++)) != 0;)
             {

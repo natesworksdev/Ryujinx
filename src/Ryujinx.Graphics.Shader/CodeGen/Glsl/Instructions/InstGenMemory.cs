@@ -569,7 +569,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         public static string GenerateLoadOrStore(CodeGenContext context, AstOperation operation, bool isStore)
         {
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
             StorageKind storageKind = operation.StorageKind;
 
             string varName;
@@ -758,7 +758,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetMaskMultiDest(int mask)
         {
-            StringBuilder swizzleBuilder = new StringBuilder();
+            StringBuilder swizzleBuilder = new();
             swizzleBuilder.Append('.');
 
             for (int i = 0; i < 4; i++)

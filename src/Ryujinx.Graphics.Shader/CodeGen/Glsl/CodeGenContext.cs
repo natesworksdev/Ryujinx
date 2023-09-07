@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static string GetIndentation(int level)
         {
-            StringBuilder indentationBuilder = new StringBuilder();
+            StringBuilder indentationBuilder = new();
 
             for (int index = 0; index < level; index++)
             {

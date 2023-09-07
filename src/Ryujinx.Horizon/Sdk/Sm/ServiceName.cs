@@ -79,7 +79,7 @@ namespace Ryujinx.Horizon.Sdk.Sm
 
         public override string ToString()
         {
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
 
             for (int index = 0; index < sizeof(ulong); index++)
             {

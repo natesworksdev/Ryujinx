@@ -327,7 +327,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             string imageUrl = _amiiboList.Find(amiibo => amiibo.Equals(selected)).Image;
 
-            StringBuilder usageStringBuilder = new StringBuilder();
+            StringBuilder usageStringBuilder = new();
 
             for (int i = 0; i < _amiiboList.Count; i++)
             {

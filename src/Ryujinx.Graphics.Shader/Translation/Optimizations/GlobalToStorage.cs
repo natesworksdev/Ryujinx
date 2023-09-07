@@ -786,7 +786,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static string GetFunctionName(Operation baseOp, bool isMultiTarget, IReadOnlyList<uint> targetCbs)
         {
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
             nameBuilder.Append(baseOp.Inst.ToString());
 
             nameBuilder.Append(baseOp.StorageKind switch

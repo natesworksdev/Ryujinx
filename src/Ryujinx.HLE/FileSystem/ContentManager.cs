@@ -818,7 +818,7 @@ namespace Ryujinx.HLE.FileSystem
 
                     if (updateNcas.Count > 0)
                     {
-                        StringBuilder extraNcas = new StringBuilder();
+                        StringBuilder extraNcas = new();
 
                         foreach (var entry in updateNcas)
                         {
@@ -955,7 +955,7 @@ namespace Ryujinx.HLE.FileSystem
 
                 if (updateNcas.Count > 0)
                 {
-                    StringBuilder extraNcas = new StringBuilder();
+                    StringBuilder extraNcas = new();
 
                     foreach (var entry in updateNcas)
                     {

@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // OpenDisplay(nn::vi::DisplayName) -> u64 display_id
         public ResultCode OpenDisplay(ServiceCtx context)
         {
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
 
             for (int index = 0; index < 8 && context.RequestData.BaseStream.Position < context.RequestData.BaseStream.Length; index++)
             {

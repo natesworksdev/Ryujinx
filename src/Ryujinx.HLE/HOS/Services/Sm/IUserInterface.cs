@@ -236,7 +236,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         private static string ReadName(ServiceCtx context)
         {
-            StringBuilder nameBuilder = new StringBuilder();
+            StringBuilder nameBuilder = new();
 
             for (int index = 0; index < 8 &&
                 context.RequestData.BaseStream.Position <

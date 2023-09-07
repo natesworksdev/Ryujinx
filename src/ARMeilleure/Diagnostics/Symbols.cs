@@ -49,7 +49,7 @@ namespace ARMeilleure.Diagnostics
                         ulong diff = address - symbol.Start;
                         ulong rem = diff % symbol.ElementSize;
 
-                        StringBuilder resultBuilder = new StringBuilder();
+                        StringBuilder resultBuilder = new();
                         resultBuilder.Append(symbol.Name);
                         resultBuilder.Append("_");
                         resultBuilder.Append(diff / symbol.ElementSize);
