@@ -12,10 +12,18 @@ namespace Ryujinx.Cpu.AppleHv
 #pragma warning restore CS0649
     }
 
+    enum HvExitReason : uint
+    {
+        Canceled,
+        Exception,
+        VTimerActivated,
+        Unknown,
+    }
+
     struct HvVcpuExit
     {
 #pragma warning disable CS0649 // Field is never assigned to
-        public uint Reason;
+        public HvExitReason Reason;
         public HvVcpuExitException Exception;
 #pragma warning restore CS0649
     }

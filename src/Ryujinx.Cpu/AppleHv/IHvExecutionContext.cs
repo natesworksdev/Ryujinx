@@ -39,8 +39,5 @@ namespace Ryujinx.Cpu.AppleHv
                 SetV(i, context.GetV(i));
             }
         }
-
-        void RequestInterrupt();
-        bool GetAndClearInterruptRequested();
     }
 }

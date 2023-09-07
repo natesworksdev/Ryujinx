@@ -81,6 +81,8 @@ namespace Ryujinx.Cpu.AppleHv
 
             HvVcpu vcpu = new(vcpuHandle, exitInfo, shadowContext, nativeContext, isEphemeral);
 
+            vcpu.EnableAndUpdateVTimer();
+
             return vcpu;
         }
 
