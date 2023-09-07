@@ -4,7 +4,7 @@ namespace Ryujinx.Cpu.AppleHv
 {
     unsafe class HvVcpu
     {
-        private const ulong InterruptIntervalNs = 16 * 1000; // 16 ms
+        private const ulong InterruptIntervalNs = 16 * 1000000; // 16 ms
 
         private static ulong _interruptTimeDeltaTicks = 0;
 
