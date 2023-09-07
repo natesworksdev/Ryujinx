@@ -79,8 +79,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     for (int argIndex = operation.SourcesCount - arity + 2; argIndex < operation.SourcesCount; argIndex++)
                     {
-                        builder.Append(", ");
-                        builder.Append(GetSoureExpr(context, operation.GetSource(argIndex), dstType));
+                        builder.Append($", {GetSoureExpr(context, operation.GetSource(argIndex), dstType)}");
                     }
                 }
                 else

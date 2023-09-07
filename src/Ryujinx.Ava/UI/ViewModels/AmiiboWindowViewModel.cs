@@ -341,8 +341,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         {
                             foreach (AmiiboApiUsage usageItem in item.AmiiboUsage)
                             {
-                                usageStringBuilder.Append(Environment.NewLine);
-                                usageStringBuilder.Append($"- {usageItem.Usage.Replace("/", Environment.NewLine + "-")}");
+                                usageStringBuilder.Append($"{Environment.NewLine}- {usageItem.Usage.Replace("/", Environment.NewLine + "-")}");
 
                                 writable = usageItem.Write;
                             }
@@ -351,8 +350,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     if (usageStringBuilder.Length == 0)
                     {
-                        usageStringBuilder.Append(LocaleManager.Instance[LocaleKeys.Unknown]);
-                        usageStringBuilder.Append(".");
+                        usageStringBuilder.Append($"{LocaleManager.Instance[LocaleKeys.Unknown]}.");
                     }
 
                     Usage = $"{LocaleManager.Instance[LocaleKeys.Usage]} {(writable ? $" ({LocaleManager.Instance[LocaleKeys.Writable]})" : "")} : {usageStringBuilder}";

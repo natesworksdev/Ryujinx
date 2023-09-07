@@ -50,14 +50,11 @@ namespace ARMeilleure.Diagnostics
                         ulong rem = diff % symbol.ElementSize;
 
                         StringBuilder resultBuilder = new();
-                        resultBuilder.Append(symbol.Name);
-                        resultBuilder.Append("_");
-                        resultBuilder.Append(diff / symbol.ElementSize);
+                        resultBuilder.Append($"{symbol.Name}_{diff / symbol.ElementSize}");
 
                         if (rem != 0)
                         {
-                            resultBuilder.Append("+");
-                            resultBuilder.Append(rem);
+                            resultBuilder.Append($"+{rem}");
                         }
 
                         _symbols.TryAdd(address, resultBuilder.ToString());
