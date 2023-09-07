@@ -43,7 +43,7 @@ namespace Ryujinx.Cpu.AppleHv
 
                 Debug.Assert(result == 0);
 
-                deltaTicks = ((InterruptIntervalNs * timeBaseInfo.numer) + (timeBaseInfo.denom - 1)) / timeBaseInfo.denom;
+                deltaTicks = ((InterruptIntervalNs * timeBaseInfo.Numer) + (timeBaseInfo.Denom - 1)) / timeBaseInfo.Denom;
                 _interruptTimeDeltaTicks = deltaTicks;
             }
 
