@@ -2,9 +2,11 @@ using ARMeilleure.State;
 using Ryujinx.Memory;
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Cpu.AppleHv
 {
+    [SupportedOSPlatform("macos")]
     class HvExecutionContextVcpu : IHvExecutionContext
     {
         private static readonly MemoryBlock _setSimdFpRegFuncMem;

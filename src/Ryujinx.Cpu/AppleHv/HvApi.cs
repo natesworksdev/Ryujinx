@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -263,6 +264,7 @@ namespace Ryujinx.Cpu.AppleHv
         }
     }
 
+    [SupportedOSPlatform("macos")]
     static partial class HvApi
     {
         public const string LibraryName = "/System/Library/Frameworks/Hypervisor.framework/Hypervisor";

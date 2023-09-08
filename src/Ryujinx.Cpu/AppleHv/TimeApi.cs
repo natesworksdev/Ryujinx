@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Cpu.AppleHv
 {
@@ -8,6 +9,7 @@ namespace Ryujinx.Cpu.AppleHv
         public uint Denom;
     }
 
+    [SupportedOSPlatform("macos")]
     static partial class TimeApi
     {
         [LibraryImport("libc", SetLastError = true)]

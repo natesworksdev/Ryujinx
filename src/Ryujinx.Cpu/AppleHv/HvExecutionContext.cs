@@ -2,10 +2,12 @@ using ARMeilleure.State;
 using Ryujinx.Cpu.AppleHv.Arm;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
+    [SupportedOSPlatform("macos")]
     class HvExecutionContext : IExecutionContext
     {
         /// <inheritdoc/>

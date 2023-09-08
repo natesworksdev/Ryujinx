@@ -2,7 +2,7 @@ using ARMeilleure.State;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    public interface IHvExecutionContext
+    interface IHvExecutionContext
     {
         ulong Pc { get; set; }
         ulong ElrEl1 { get; set; }
