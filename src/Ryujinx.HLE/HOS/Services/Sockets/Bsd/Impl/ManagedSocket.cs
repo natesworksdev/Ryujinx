@@ -311,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
                 if (!WinSockHelper.TryConvertSocketOption(option, level, out SocketOptionName optionName))
                 {
                     Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported GetSockOpt Option: {option} Level: {level}");
-                    optionValue.Fill(0);
+                    optionValue.Clear();
 
                     return LinuxError.SUCCESS;
                 }
