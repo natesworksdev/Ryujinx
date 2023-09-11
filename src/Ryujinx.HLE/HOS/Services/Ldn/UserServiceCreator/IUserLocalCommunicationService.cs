@@ -480,8 +480,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return ResultCode.InvalidState;
             }
 
-            _station?.Dispose();
-            _station = null;
+            CloseStation();
 
             SetState(NetworkState.AccessPoint);
 
@@ -687,7 +686,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 byte[] advertiseData = new byte[bufferSize];
 
-                context.Memory.Read((ulong)bufferPosition, advertiseData);
+                context.Memory.Read(bufferPosition, advertiseData);
 
                 return _accessPoint.SetAdvertiseData(advertiseData);
             }
@@ -765,8 +764,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return ResultCode.InvalidState;
             }
 
-            _accessPoint?.Dispose();
-            _accessPoint = null;
+            CloseAccessPoint();
 
             SetState(NetworkState.Station);
 
