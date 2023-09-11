@@ -786,7 +786,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int level = 0; level < levels; level++)
             {
-                debugScope.InsertLabel($"level: {level}", new ColorF(1, 1, 0, 1));
+                debugScope?.InsertLabel($"level: {level}", new ColorF(1, 1, 0, 1));
 
                 int mipSize = GetBufferDataLength(Info.GetMipSize2D(dstLevel + level) * dstLayers);
 

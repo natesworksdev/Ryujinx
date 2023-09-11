@@ -36,7 +36,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ILabelScope CreateLabelScope(CommandBuffer commandBuffer, string scopeName, ColorF scopeColor)
         {
-            return new CommandBufferLabelScope(_debugUtils, commandBuffer, scopeName, scopeColor);
+            if (_logLevel == GraphicsDebugLevel.All)
+            {
+                return new CommandBufferLabelScope(_debugUtils, commandBuffer, scopeName, scopeColor);
+            }
+            return null;
         }
 
         private Result TryInitialize(out DebugUtilsMessengerEXT? debugUtilsMessengerHandle)

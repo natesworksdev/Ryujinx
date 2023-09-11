@@ -1687,7 +1687,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 PauseTransformFeedbackInternal();
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
-                _renderPassLabelScope.Dispose();
+                _renderPassLabelScope?.Dispose();
                 _renderPassLabelScope = null;
                 SignalRenderPassEnd();
                 RenderPassActive = false;
