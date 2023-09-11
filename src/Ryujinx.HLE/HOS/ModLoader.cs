@@ -1,3 +1,4 @@
+using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -455,7 +456,7 @@ namespace Ryujinx.HLE.HOS
             {
                 using (IFileSystem fs = new LocalFileSystem(mod.Path.FullName))
                 {
-                    AddFiles(fs, mod.Name, fileSet, builder);
+                    AddLooseFiles(fs, mod.Name, mod.Path.FullName, fileSet, builder);
                 }
                 count++;
             }
@@ -516,6 +517,83 @@ namespace Ryujinx.HLE.HOS
                 {
                     Logger.Warning?.Print(LogClass.ModLoader, $"    Skipped duplicate file '{entry.FullPath}' from '{modName}'", "ApplyRomFsMods");
                 }
+            }
+        }
+        
+        private static void AddLooseFiles(IFileSystem fs, string modName, string rootPath, ISet<string> fileSet, RomFsBuilder builder)
+        {
+            foreach (var entry in fs.EnumerateEntries()
+                         .AsParallel()
+                         .Where(f => f.Type == DirectoryEntryType.File)
+                         .OrderBy(f => f.FullPath, StringComparer.Ordinal))
+            {
+                var file = new LazyFsFile(entry.FullPath, rootPath, fs);
+                if (fileSet.Add(entry.FullPath))
+                {
+                    builder.AddFile(entry.FullPath, file);
+                }
+                else
+                {
+                    Logger.Warning?.Print(LogClass.ModLoader, $"    Skipped duplicate file '{entry.FullPath}' from '{modName}'", "ApplyRomFsMods");
+                }
+            }
+        }
+        
+        
+        private class LazyFsFile : IFile
+        {
+            private string FilePath { get; }
+            private IFileSystem Fs { get; }
+            private readonly UniqueRef<IFile> _fileReference;
+            private readonly FileInfo _fileInfo;
+
+
+            public LazyFsFile(string filePath, string prefix, IFileSystem fs)
+            {
+                Fs = fs;
+                FilePath = filePath;
+                _fileInfo = new FileInfo(prefix + "/" + filePath);
+            }
+
+            private void PrepareFile()
+            {
+                if (_fileReference.Get == null)
+                {
+                    Fs.OpenFile(ref _fileReference.Ref, FilePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                }
+            }
+
+            protected override Result DoRead(out long bytesRead, long offset, Span<byte> destination,
+                in ReadOption option)
+            {
+                PrepareFile();
+                return _fileReference.Get!.Read(out bytesRead, offset, destination);
+            }
+
+            protected override Result DoWrite(long offset, ReadOnlySpan<byte> source, in WriteOption option)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Result DoFlush()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Result DoSetSize(long size)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Result DoGetSize(out long size)
+            {
+                size = _fileInfo.Length;
+                return new Result(0);
+            }
+
+            protected override Result DoOperateRange(Span<byte> outBuffer, OperationId operationId, long offset, long size, ReadOnlySpan<byte> inBuffer)
+            {
+                throw new NotImplementedException();
             }
         }
 
