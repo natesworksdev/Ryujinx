@@ -72,7 +72,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             };
         }
 
-        public ResultCode Connect(SecurityConfig securityConfig, UserConfig userConfig, uint localCommunicationVersion, uint optionUnknown, NetworkInfo networkInfo)
+        public ResultCode Connect(
+            SecurityConfig securityConfig,
+            UserConfig userConfig,
+            uint localCommunicationVersion,
+            uint optionUnknown,
+            NetworkInfo networkInfo)
         {
             ConnectRequest request = new()
             {
@@ -86,7 +91,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return NetworkErrorToResult(_parent.NetworkClient.Connect(request));
         }
 
-        public ResultCode ConnectPrivate(SecurityConfig securityConfig, SecurityParameter securityParameter, UserConfig userConfig, uint localCommunicationVersion, uint optionUnknown, NetworkConfig networkConfig)
+        public ResultCode ConnectPrivate(
+            SecurityConfig securityConfig,
+            SecurityParameter securityParameter,
+            UserConfig userConfig,
+            uint localCommunicationVersion,
+            uint optionUnknown,
+            NetworkConfig networkConfig)
         {
             ConnectPrivateRequest request = new()
             {

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Buffers.Binary;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -67,10 +67,7 @@ namespace Ryujinx.Common.Utilities
 
         public static uint ConvertIpv4Address(IPAddress ipAddress)
         {
-            byte[] addressBytes = ipAddress.GetAddressBytes();
-            Array.Reverse(addressBytes);
-
-            return BitConverter.ToUInt32(addressBytes);
+            return BinaryPrimitives.ReadUInt32BigEndian(ipAddress.GetAddressBytes());
         }
 
         public static uint ConvertIpv4Address(string ipAddress)

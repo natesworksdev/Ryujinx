@@ -805,7 +805,6 @@ namespace Ryujinx.Common.Memory
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, Length);
     }
 
-
     public struct Array384<T> : IArray<T> where T : unmanaged
     {
         T _e0;

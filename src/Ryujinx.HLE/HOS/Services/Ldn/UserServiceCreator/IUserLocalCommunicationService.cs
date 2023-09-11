@@ -12,6 +12,7 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -58,13 +59,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
             ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-            return (controlProperty.LocalCommunicationId[0] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[1] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[2] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[3] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[4] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[5] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationId[6] == localCommunicationIdChecked) | (controlProperty.LocalCommunicationId[7] == localCommunicationIdChecked);
+            foreach (var localCommunicationId in controlProperty.LocalCommunicationId.ItemsRo)
+            {
+                if (localCommunicationId == localCommunicationIdChecked)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         [CommandCmif(0)]
@@ -78,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return ResultCode.Success;
             }
 
-            // NOTE: Return ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
+            // NOTE: Returns ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
             context.ResponseData.Write((int)_state);
 
             return ResultCode.Success;
@@ -198,7 +201,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetDisconnectReason() -> u16 disconnect_reason
         public ResultCode GetDisconnectReason(ServiceCtx context)
         {
-            // NOTE: Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
+            // NOTE: Returns ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
             context.ResponseData.Write((short)_disconnectReason);
 
@@ -281,7 +284,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(stateChangeEventHandle);
 
-            // Return ResultCode.InvalidArgument if handle is null, doesn't occur in our case since we already throw an Exception.
+            // Returns ResultCode.InvalidArgument if handle is null, doesn't occur in our case since we already throw an Exception.
 
             return ResultCode.Success;
         }
@@ -516,7 +519,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private void CloseAccessPoint()
         {
             _accessPoint?.Dispose();
-
             _accessPoint = null;
         }
 
@@ -541,7 +543,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
 
-            _ = context.RequestData.ReadUInt32(); // Alignment?
+            context.RequestData.BaseStream.Seek(4, SeekOrigin.Current); // Alignment?
             NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
 
             if (networkConfig.IntentId.LocalCommunicationId == -1)
@@ -771,7 +773,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _station?.Dispose();
             _station = new Station(this);
 
-            // NOTE: Calls nifm service and return related result codes.
+            // NOTE: Calls nifm service and returns related result codes.
             //       Since we use our own implementation we can return ResultCode.Success.
 
             return ResultCode.Success;
@@ -803,7 +805,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private void CloseStation()
         {
             _station?.Dispose();
-
             _station = null;
         }
 
@@ -1036,8 +1037,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _ = new IPAddress(context.RequestData.ReadUInt32());
 
             // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
-            //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
-            //       Since we proxy connections, we don't needs to get the ip_address, subnet_mask and nifm_request_id.
+            //       This calls InitializeImpl() twice: The first time with NIFM_REQUEST_ID, and if it fails, a second time with nifm_request_id = 1.
 
             return InitializeImpl(context, context.Process.Pid, NifmRequestID);
         }
@@ -1050,8 +1050,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 if (_state != NetworkState.Initialized)
                 {
-                    // NOTE: Service calls nn::ldn::detail::NetworkInterfaceManager::NetworkInterfaceMonitor::Initialize() with nifmRequestId as argument.
-                    //       Then it stores the result code of it in a global field. Since we use our own implementation, we can just check the connection
+                    // NOTE: Service calls nn::ldn::detail::NetworkInterfaceManager::NetworkInterfaceMonitor::Initialize() with nifmRequestId as argument,
+                    //       then it stores the result code of it in a global variable. Since we use our own implementation, we can just check the connection
                     //       and return related error codes.
                     if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
                     {
@@ -1063,6 +1063,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                                 break;
                         }
 
+                        // TODO: Call nn::arp::GetApplicationLaunchProperty here when implemented.
                         NetworkClient.SetGameVersion(context.Device.Processes.ActiveApplication.ApplicationControlProperties.DisplayVersion.Items.ToArray());
 
                         resultCode = ResultCode.Success;
@@ -1090,9 +1091,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 _station?.Dispose();
                 _accessPoint?.Dispose();
+
+                NetworkClient.DisconnectAndStop();
             }
 
-            NetworkClient?.DisconnectAndStop();
             NetworkClient = null;
         }
     }
