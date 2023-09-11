@@ -519,7 +519,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
         }
-        
+
         private static void AddLooseFiles(IFileSystem fs, string modName, string rootPath, ISet<string> fileSet, RomFsBuilder builder)
         {
             foreach (var entry in fs.EnumerateEntries()
@@ -538,8 +538,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
         }
-        
-        
+
+
         private class LazyFsFile : IFile
         {
             private string FilePath { get; }
