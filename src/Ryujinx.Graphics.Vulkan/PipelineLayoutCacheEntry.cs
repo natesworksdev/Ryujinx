@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void UpdateCommandBufferIndex(int commandBufferIndex)
         {
-            int submissionCount = _gd.CommandBufferPool.GetSubmissionCount(commandBufferIndex) ;
+            int submissionCount = _gd.CommandBufferPool.GetSubmissionCount(commandBufferIndex);
 
             if (_dsLastCbIndex != commandBufferIndex || _dsLastSubmissionCount != submissionCount)
             {
