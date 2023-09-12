@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
                     break;
             }
 
-            return output.Slice(0, count);
+            return output[..count];
         }
 
         protected virtual unsafe void Dispose(bool disposing)
