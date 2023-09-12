@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -7,6 +8,9 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineLayoutCacheEntry
     {
+        private const uint DescriptorPoolMultiplier = 4;
+        private const int MaxPoolSizesPerSet = 3;
+
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
 
@@ -14,8 +18,10 @@ namespace Ryujinx.Graphics.Vulkan
         public PipelineLayout PipelineLayout { get; }
 
         private readonly List<Auto<DescriptorSetCollection>>[][] _dsCache;
+        private List<Auto<DescriptorSetCollection>>[] _currentDsCache;
         private readonly int[] _dsCacheCursor;
         private int _dsLastCbIndex;
+        private int _dsLastSubmissionCount;
 
         private PipelineLayoutCacheEntry(VulkanRenderer gd, Device device, int setsCount)
         {
@@ -46,27 +52,30 @@ namespace Ryujinx.Graphics.Vulkan
             (DescriptorSetLayouts, PipelineLayout) = PipelineLayoutFactory.Create(gd, device, setDescriptors, usePushDescriptors);
         }
 
-        public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
-            VulkanRenderer gd,
-            int commandBufferIndex,
-            int setIndex,
-            out bool isNew)
+        public void UpdateCommandBufferIndex(int commandBufferIndex)
         {
-            if (_dsLastCbIndex != commandBufferIndex)
+            int submissionCount = _gd.CommandBufferPool.GetSubmissionCount(commandBufferIndex) ;
+
+            if (_dsLastCbIndex != commandBufferIndex || _dsLastSubmissionCount != submissionCount)
             {
                 _dsLastCbIndex = commandBufferIndex;
-
-                for (int i = 0; i < _dsCacheCursor.Length; i++)
-                {
-                    _dsCacheCursor[i] = 0;
-                }
+                _dsLastSubmissionCount = submissionCount;
+                Array.Clear(_dsCacheCursor);
             }
 
-            var list = _dsCache[commandBufferIndex][setIndex];
+            _currentDsCache = _dsCache[commandBufferIndex];
+        }
+
+        public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(int setIndex, out bool isNew)
+        {
+            var list = _currentDsCache[setIndex];
             int index = _dsCacheCursor[setIndex]++;
             if (index == list.Count)
             {
-                var dsc = gd.DescriptorSetManager.AllocateDescriptorSet(gd.Api, DescriptorSetLayouts[setIndex]);
+                Span<DescriptorPoolSize> poolSizes = stackalloc DescriptorPoolSize[MaxPoolSizesPerSet];
+                poolSizes = GetDescriptorPoolSizes(poolSizes, setIndex);
+
+                var dsc = _gd.DescriptorSetManager.AllocateDescriptorSet(_gd.Api, DescriptorSetLayouts[setIndex], poolSizes, false);
                 list.Add(dsc);
                 isNew = true;
                 return dsc;
@@ -74,6 +83,34 @@ namespace Ryujinx.Graphics.Vulkan
 
             isNew = false;
             return list[index];
+        }
+
+        private Span<DescriptorPoolSize> GetDescriptorPoolSizes(Span<DescriptorPoolSize> output, int setIndex)
+        {
+            uint multiplier = DescriptorPoolMultiplier;
+            int count = 1;
+
+            switch (setIndex)
+            {
+                case PipelineBase.UniformSetIndex:
+                    output[0] = new(DescriptorType.UniformBuffer, (1 + Constants.MaxUniformBufferBindings) * multiplier);
+                    break;
+                case PipelineBase.StorageSetIndex:
+                    output[0] = new(DescriptorType.StorageBuffer, Constants.MaxStorageBufferBindings * multiplier);
+                    break;
+                case PipelineBase.TextureSetIndex:
+                    output[0] = new(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * multiplier);
+                    output[1] = new(DescriptorType.UniformTexelBuffer, Constants.MaxTextureBindings * multiplier);
+                    count = 2;
+                    break;
+                case PipelineBase.ImageSetIndex:
+                    output[0] = new(DescriptorType.StorageImage, Constants.MaxImageBindings * multiplier);
+                    output[1] = new(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * multiplier);
+                    count = 2;
+                    break;
+            }
+
+            return output.Slice(0, count);
         }
 
         protected virtual unsafe void Dispose(bool disposing)

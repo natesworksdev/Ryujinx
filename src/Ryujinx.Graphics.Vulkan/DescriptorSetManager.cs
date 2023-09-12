@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class DescriptorSetManager : IDisposable
     {
-        private const uint DescriptorPoolMultiplier = 16;
+        private const uint MaxSets = 16;
 
         public class DescriptorPoolHolder : IDisposable
         {
@@ -14,36 +14,22 @@ namespace Ryujinx.Graphics.Vulkan
             public Device Device { get; }
 
             private readonly DescriptorPool _pool;
-            private readonly uint _capacity;
             private int _totalSets;
             private int _setsInUse;
             private bool _done;
 
-            public unsafe DescriptorPoolHolder(Vk api, Device device)
+            public unsafe DescriptorPoolHolder(Vk api, Device device, ReadOnlySpan<DescriptorPoolSize> poolSizes, bool updateAfterBind)
             {
                 Api = api;
                 Device = device;
-
-                var poolSizes = new[]
-                {
-                    new DescriptorPoolSize(DescriptorType.UniformBuffer, (1 + Constants.MaxUniformBufferBindings) * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.StorageBuffer, Constants.MaxStorageBufferBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.StorageImage, Constants.MaxImageBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.UniformTexelBuffer, Constants.MaxTextureBindings * DescriptorPoolMultiplier),
-                    new DescriptorPoolSize(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * DescriptorPoolMultiplier),
-                };
-
-                uint maxSets = (uint)poolSizes.Length * DescriptorPoolMultiplier;
-
-                _capacity = maxSets;
 
                 fixed (DescriptorPoolSize* pPoolsSize = poolSizes)
                 {
                     var descriptorPoolCreateInfo = new DescriptorPoolCreateInfo
                     {
                         SType = StructureType.DescriptorPoolCreateInfo,
-                        MaxSets = maxSets,
+                        Flags = updateAfterBind ? DescriptorPoolCreateFlags.UpdateAfterBindBit : DescriptorPoolCreateFlags.None,
+                        MaxSets = MaxSets,
                         PoolSizeCount = (uint)poolSizes.Length,
                         PPoolSizes = pPoolsSize,
                     };
@@ -52,18 +38,27 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            public DescriptorSetCollection AllocateDescriptorSets(ReadOnlySpan<DescriptorSetLayout> layouts)
+            public unsafe DescriptorSetCollection AllocateDescriptorSets(
+                ReadOnlySpan<DescriptorSetLayout> layouts,
+                ReadOnlySpan<DescriptorPoolSize> poolSizes)
             {
-                TryAllocateDescriptorSets(layouts, isTry: false, out var dsc);
+                TryAllocateDescriptorSets(layouts, poolSizes, isTry: false, out var dsc);
                 return dsc;
             }
 
-            public bool TryAllocateDescriptorSets(ReadOnlySpan<DescriptorSetLayout> layouts, out DescriptorSetCollection dsc)
+            public bool TryAllocateDescriptorSets(
+                ReadOnlySpan<DescriptorSetLayout> layouts,
+                ReadOnlySpan<DescriptorPoolSize> poolSizes,
+                out DescriptorSetCollection dsc)
             {
-                return TryAllocateDescriptorSets(layouts, isTry: true, out dsc);
+                return TryAllocateDescriptorSets(layouts, poolSizes, isTry: true, out dsc);
             }
 
-            private unsafe bool TryAllocateDescriptorSets(ReadOnlySpan<DescriptorSetLayout> layouts, bool isTry, out DescriptorSetCollection dsc)
+            private unsafe bool TryAllocateDescriptorSets(
+                ReadOnlySpan<DescriptorSetLayout> layouts,
+                ReadOnlySpan<DescriptorPoolSize> poolSize,
+                bool isTry,
+                out DescriptorSetCollection dsc)
             {
                 Debug.Assert(!_done);
 
@@ -84,7 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
                         var result = Api.AllocateDescriptorSets(Device, &descriptorSetAllocateInfo, pDescriptorSets);
                         if (isTry && result == Result.ErrorOutOfPoolMemory)
                         {
-                            _totalSets = (int)_capacity;
+                            _totalSets = (int)MaxSets;
                             _done = true;
                             DestroyIfDone();
                             dsc = default;
@@ -111,7 +106,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             public bool CanFit(int count)
             {
-                if (_totalSets + count <= _capacity)
+                if (_totalSets + count <= MaxSets)
                 {
                     return true;
                 }
@@ -155,29 +150,37 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
         }
 
-        public Auto<DescriptorSetCollection> AllocateDescriptorSet(Vk api, DescriptorSetLayout layout)
+        public Auto<DescriptorSetCollection> AllocateDescriptorSet(
+            Vk api,
+            DescriptorSetLayout layout,
+            ReadOnlySpan<DescriptorPoolSize> poolSizes,
+            bool updateAfterBind)
         {
             Span<DescriptorSetLayout> layouts = stackalloc DescriptorSetLayout[1];
             layouts[0] = layout;
-            return AllocateDescriptorSets(api, layouts);
+            return AllocateDescriptorSets(api, layouts, poolSizes, updateAfterBind);
         }
 
-        public Auto<DescriptorSetCollection> AllocateDescriptorSets(Vk api, ReadOnlySpan<DescriptorSetLayout> layouts)
+        public Auto<DescriptorSetCollection> AllocateDescriptorSets(
+            Vk api,
+            ReadOnlySpan<DescriptorSetLayout> layouts,
+            ReadOnlySpan<DescriptorPoolSize> poolSizes,
+            bool updateAfterBind)
         {
             // If we fail the first time, just create a new pool and try again.
-            if (!GetPool(api, layouts.Length).TryAllocateDescriptorSets(layouts, out var dsc))
+            if (!GetPool(api, poolSizes, updateAfterBind, layouts.Length).TryAllocateDescriptorSets(layouts, poolSizes, out var dsc))
             {
-                dsc = GetPool(api, layouts.Length).AllocateDescriptorSets(layouts);
+                dsc = GetPool(api, poolSizes, updateAfterBind, layouts.Length).AllocateDescriptorSets(layouts, poolSizes);
             }
 
             return new Auto<DescriptorSetCollection>(dsc);
         }
 
-        private DescriptorPoolHolder GetPool(Vk api, int requiredCount)
+        private DescriptorPoolHolder GetPool(Vk api, ReadOnlySpan<DescriptorPoolSize> poolSizes, bool updateAfterBind, int requiredCount)
         {
             if (_currentPool == null || !_currentPool.CanFit(requiredCount))
             {
-                _currentPool = new DescriptorPoolHolder(api, _device);
+                _currentPool = new DescriptorPoolHolder(api, _device, poolSizes, updateAfterBind);
             }
 
             return _currentPool;
