@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
     class CommandBufferLabelScope : ILabelScopePrivate
     {
         private CommandBuffer _commandBuffer;
+        private bool _disposed;
 
         private readonly ExtDebugUtils _debugUtils;
 
@@ -73,7 +74,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             EndLabel();
+            _disposed = true;
         }
     }
 }
