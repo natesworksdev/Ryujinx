@@ -523,9 +523,9 @@ namespace Ryujinx.HLE.HOS
         private static void AddLooseFiles(IFileSystem fs, string modName, string rootPath, ISet<string> fileSet, RomFsBuilder builder)
         {
             foreach (var entry in fs.EnumerateEntries()
-                         .AsParallel()
-                         .Where(f => f.Type == DirectoryEntryType.File)
-                         .OrderBy(f => f.FullPath, StringComparer.Ordinal))
+                                    .AsParallel()
+                                    .Where(f => f.Type == DirectoryEntryType.File)
+                                    .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
                 var file = new LazyFsFile(entry.FullPath, rootPath, fs);
                 if (fileSet.Add(entry.FullPath))
@@ -542,16 +542,16 @@ namespace Ryujinx.HLE.HOS
 
         private class LazyFsFile : IFile
         {
-            private string FilePath { get; }
             private IFileSystem Fs { get; }
-            private readonly UniqueRef<IFile> _fileReference;
+            private readonly string _filePath;
+            private readonly UniqueRef<IFile> _fileReference = new();
             private readonly FileInfo _fileInfo;
 
 
             public LazyFsFile(string filePath, string prefix, IFileSystem fs)
             {
                 Fs = fs;
-                FilePath = filePath;
+                _filePath = filePath;
                 _fileInfo = new FileInfo(prefix + "/" + filePath);
             }
 
@@ -559,7 +559,7 @@ namespace Ryujinx.HLE.HOS
             {
                 if (_fileReference.Get == null)
                 {
-                    Fs.OpenFile(ref _fileReference.Ref, FilePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    Fs.OpenFile(ref _fileReference.Ref, _filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 }
             }
 
