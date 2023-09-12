@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types
 {
     /// <remarks>
     /// Advertise data is appended separately (remaining data in the buffer).
-    /// </remarks>>
+    /// </remarks>
     [StructLayout(LayoutKind.Sequential, Size = 0x13C, Pack = 1)]
     struct CreateAccessPointPrivateRequest
     {
