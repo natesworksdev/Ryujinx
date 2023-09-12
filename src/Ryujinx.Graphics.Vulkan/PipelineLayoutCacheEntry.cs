@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Vulkan
             return list[index];
         }
 
-        private Span<DescriptorPoolSize> GetDescriptorPoolSizes(Span<DescriptorPoolSize> output, int setIndex)
+        private static Span<DescriptorPoolSize> GetDescriptorPoolSizes(Span<DescriptorPoolSize> output, int setIndex)
         {
             uint multiplier = DescriptorPoolMultiplier;
             int count = 1;
