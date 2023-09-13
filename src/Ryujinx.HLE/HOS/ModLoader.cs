@@ -546,7 +546,7 @@ namespace Ryujinx.HLE.HOS
             private readonly string _filePath;
             private readonly UniqueRef<IFile> _fileReference = new();
             private readonly FileInfo _fileInfo;
-            
+
             public LazyFsFile(string filePath, string prefix, IFileSystem fs)
             {
                 _fs = fs;
