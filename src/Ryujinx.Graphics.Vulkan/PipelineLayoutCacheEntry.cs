@@ -8,14 +8,22 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineLayoutCacheEntry
     {
-        private const uint DescriptorPoolMultiplier = 4;
-        private const int MaxPoolSizesPerSet = 3;
+        // Those were adjusted based on current descriptor usage and the descriptor counts usually used on pipeline layouts.
+        // It might be a good idea to tweak them again if those change, or maybe find a way to calculate an optimal value dynamically.
+        private const uint DefaultUniformBufferPoolCapacity = 19 * DescriptorSetManager.MaxSets;
+        private const uint DefaultStorageBufferPoolCapacity = 16 * DescriptorSetManager.MaxSets;
+        private const uint DefaultTexturePoolCapacity = 128 * DescriptorSetManager.MaxSets;
+        private const uint DefaultImagePoolCapacity = 8 * DescriptorSetManager.MaxSets;
+
+        private const int MaxPoolSizesPerSet = 2;
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
 
         public DescriptorSetLayout[] DescriptorSetLayouts { get; }
         public PipelineLayout PipelineLayout { get; }
+
+        private readonly int[] _consumedDescriptorsPerSet;
 
         private readonly List<Auto<DescriptorSetCollection>>[][] _dsCache;
         private List<Auto<DescriptorSetCollection>>[] _currentDsCache;
@@ -50,6 +58,20 @@ namespace Ryujinx.Graphics.Vulkan
             bool usePushDescriptors) : this(gd, device, setDescriptors.Count)
         {
             (DescriptorSetLayouts, PipelineLayout) = PipelineLayoutFactory.Create(gd, device, setDescriptors, usePushDescriptors);
+
+            _consumedDescriptorsPerSet = new int[setDescriptors.Count];
+
+            for (int setIndex = 0; setIndex < setDescriptors.Count; setIndex++)
+            {
+                int count = 0;
+
+                foreach (var descriptor in setDescriptors[setIndex].Descriptors)
+                {
+                    count += descriptor.Count;
+                }
+
+                _consumedDescriptorsPerSet[setIndex] = count;
+            }
         }
 
         public void UpdateCommandBufferIndex(int commandBufferIndex)
@@ -75,7 +97,16 @@ namespace Ryujinx.Graphics.Vulkan
                 Span<DescriptorPoolSize> poolSizes = stackalloc DescriptorPoolSize[MaxPoolSizesPerSet];
                 poolSizes = GetDescriptorPoolSizes(poolSizes, setIndex);
 
-                var dsc = _gd.DescriptorSetManager.AllocateDescriptorSet(_gd.Api, DescriptorSetLayouts[setIndex], poolSizes, false);
+                int consumedDescriptors = _consumedDescriptorsPerSet[setIndex];
+
+                var dsc = _gd.DescriptorSetManager.AllocateDescriptorSet(
+                    _gd.Api,
+                    DescriptorSetLayouts[setIndex],
+                    poolSizes,
+                    setIndex,
+                    consumedDescriptors,
+                    false);
+
                 list.Add(dsc);
                 isNew = true;
                 return dsc;
@@ -87,25 +118,24 @@ namespace Ryujinx.Graphics.Vulkan
 
         private static Span<DescriptorPoolSize> GetDescriptorPoolSizes(Span<DescriptorPoolSize> output, int setIndex)
         {
-            uint multiplier = DescriptorPoolMultiplier;
             int count = 1;
 
             switch (setIndex)
             {
                 case PipelineBase.UniformSetIndex:
-                    output[0] = new(DescriptorType.UniformBuffer, (1 + Constants.MaxUniformBufferBindings) * multiplier);
+                    output[0] = new(DescriptorType.UniformBuffer, DefaultUniformBufferPoolCapacity);
                     break;
                 case PipelineBase.StorageSetIndex:
-                    output[0] = new(DescriptorType.StorageBuffer, Constants.MaxStorageBufferBindings * multiplier);
+                    output[0] = new(DescriptorType.StorageBuffer, DefaultStorageBufferPoolCapacity);
                     break;
                 case PipelineBase.TextureSetIndex:
-                    output[0] = new(DescriptorType.CombinedImageSampler, Constants.MaxTextureBindings * multiplier);
-                    output[1] = new(DescriptorType.UniformTexelBuffer, Constants.MaxTextureBindings * multiplier);
+                    output[0] = new(DescriptorType.CombinedImageSampler, DefaultTexturePoolCapacity);
+                    output[1] = new(DescriptorType.UniformTexelBuffer, DefaultTexturePoolCapacity);
                     count = 2;
                     break;
                 case PipelineBase.ImageSetIndex:
-                    output[0] = new(DescriptorType.StorageImage, Constants.MaxImageBindings * multiplier);
-                    output[1] = new(DescriptorType.StorageTexelBuffer, Constants.MaxImageBindings * multiplier);
+                    output[0] = new(DescriptorType.StorageImage, DefaultImagePoolCapacity);
+                    output[1] = new(DescriptorType.StorageTexelBuffer, DefaultImagePoolCapacity);
                     count = 2;
                     break;
             }
