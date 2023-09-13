@@ -115,6 +115,8 @@ namespace Ryujinx.Horizon.Sdk.Sm
             if (_portHandle != 0)
             {
                 HorizonStatic.Syscall.CloseHandle(_portHandle);
+
+                _portHandle = 0;
             }
 
             GC.SuppressFinalize(this);

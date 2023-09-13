@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Sdk.Lbl
     {
         private const string LblName = "lbl";
 
-        private readonly int _sessionHandle;
+        private int _sessionHandle;
 
         public LblApi()
         {
@@ -33,6 +33,8 @@ namespace Ryujinx.Horizon.Sdk.Lbl
             if (_sessionHandle != 0)
             {
                 HorizonStatic.Syscall.CloseHandle(_sessionHandle);
+
+                _sessionHandle = 0;
             }
 
             GC.SuppressFinalize(this);
