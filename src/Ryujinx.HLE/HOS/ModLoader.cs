@@ -542,15 +542,14 @@ namespace Ryujinx.HLE.HOS
 
         private class LazyFsFile : IFile
         {
-            private IFileSystem Fs { get; }
+            private readonly IFileSystem _fs;
             private readonly string _filePath;
             private readonly UniqueRef<IFile> _fileReference = new();
             private readonly FileInfo _fileInfo;
-
-
+            
             public LazyFsFile(string filePath, string prefix, IFileSystem fs)
             {
-                Fs = fs;
+                _fs = fs;
                 _filePath = filePath;
                 _fileInfo = new FileInfo(prefix + "/" + filePath);
             }
@@ -559,7 +558,7 @@ namespace Ryujinx.HLE.HOS
             {
                 if (_fileReference.Get == null)
                 {
-                    Fs.OpenFile(ref _fileReference.Ref, _filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    _fs.OpenFile(ref _fileReference.Ref, _filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 }
             }
 
