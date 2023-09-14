@@ -1074,7 +1074,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     {
                         // NOTE: Service returns differents ResultCode here related to the nifm ResultCode.
                         resultCode = ResultCode.DeviceDisabled;
-
                         _nifmResultCode = resultCode;
                     }
                 }
