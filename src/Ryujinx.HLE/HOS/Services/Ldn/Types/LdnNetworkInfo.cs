@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     {
         public Array16<byte> SecurityParameter;
         public ushort SecurityMode;
-        public byte StationAcceptPolicy;
+        public AcceptPolicy StationAcceptPolicy;
         public byte Unknown1;
         public ushort Reserved1;
         public byte NodeCountMax;
