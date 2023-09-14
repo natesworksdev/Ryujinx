@@ -9,15 +9,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
         public Array16<byte> SecurityParameter;
         public ushort SecurityMode;
         public AcceptPolicy StationAcceptPolicy;
-        public byte Unknown1;
-        public ushort Reserved1;
+        public byte Reserved1;
+        public ushort Reserved2;
         public byte NodeCountMax;
         public byte NodeCount;
         public Array8<NodeInfo> Nodes;
-        public ushort Reserved2;
+        public ushort Reserved3;
         public ushort AdvertiseDataSize;
         public Array384<byte> AdvertiseData;
-        public Array140<byte> Unknown2;
+        public Array140<byte> Reserved4;
         public ulong AuthenticationId;
     }
 }
