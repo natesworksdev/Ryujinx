@@ -256,6 +256,8 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureStorage.InitialTransition({srcLayout} -> {dstLayout})", new ColorF(1, 1, 0, 1));
+
             var aspectFlags = _info.Format.ConvertAspectFlags();
 
             var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, (uint)_info.Levels, 0, (uint)_info.GetLayers());
@@ -352,6 +354,8 @@ namespace Ryujinx.Graphics.Vulkan
             ImageAspectFlags aspectFlags,
             bool forFlush)
         {
+            using var debugScope = _gd.CreateLabelScope(commandBuffer, $"TextureStorage.CopyFromOrToBuffer({Info.Format} {(to ? "->" : "<-")} {size} bytes)", new ColorF(0, 0, 1, 1));
+
             bool is3D = Info.Target == Target.Texture3D;
             int width = Info.Width;
             int height = Info.Height;
@@ -444,6 +448,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_lastReadAccess != AccessFlags.None)
             {
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureStorage.InsertReadToWriteBarrier({dstAccessFlags}, {dstStageFlags})", new ColorF(0, 0, 1, 1));
+
                 ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
 
                 TextureView.InsertImageBarrier(
@@ -472,6 +478,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
+                using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"TextureStorage.InsertWriteToReadBarrier({dstAccessFlags}, {dstStageFlags})", new ColorF(0, 0, 1, 1));
+
                 ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
 
                 TextureView.InsertImageBarrier(

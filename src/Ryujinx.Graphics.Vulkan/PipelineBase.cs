@@ -54,6 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Auto<DisposableFramebuffer> _framebuffer;
         private Auto<DisposableRenderPass> _renderPass;
         private int _writtenAttachmentCount;
+        private ILabelScope _renderPassLabelScope;
 
         private bool _framebufferUsingColorWriteMask;
 
@@ -130,6 +131,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void Barrier()
         {
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.Barrier", new ColorF(1, 0.5f, 0, 1));
+
             if (_drawCountSinceBarrier != DrawCount)
             {
                 _drawCountSinceBarrier = DrawCount;
@@ -164,6 +167,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ComputeBarrier()
         {
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.ComputeBarrier", new ColorF(1, 0.5f, 0, 1));
+
             MemoryBarrier memoryBarrier = new()
             {
                 SType = StructureType.MemoryBarrier,
@@ -194,6 +199,8 @@ namespace Ryujinx.Graphics.Vulkan
             EndRenderPass();
 
             var dst = Gd.BufferManager.GetBuffer(CommandBuffer, destination, offset, size, true).Get(Cbs, offset, size, true).Value;
+
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.ClearBuffer: {value:X} -> 0x{offset:X} {size} bytes", new ColorF(1, 0.5f, 0, 1));
 
             BufferHolder.InsertBufferBarrier(
                 Gd,
@@ -234,6 +241,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             BeginRenderPass();
 
+            _renderPassLabelScope?.InsertLabel($"PipelineBase.ClearRenderTargetColor({index}, {layer}, {layerCount})", color);
+
             var clearValue = new ClearValue(new ClearColorValue(color.Red, color.Green, color.Blue, color.Alpha));
             var attachment = new ClearAttachment(ImageAspectFlags.ColorBit, (uint)index, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
@@ -269,8 +278,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 CreateRenderPass();
             }
-
             BeginRenderPass();
+
+            _renderPassLabelScope?.InsertLabel($"PipelineBase.ClearRenderTargetDepthStencil({layer}, {layerCount}, {depthValue}, {stencilValue})", new ColorF(1, 0.5f, 0, 1));
 
             var attachment = new ClearAttachment(flags, 0, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
@@ -368,6 +378,7 @@ namespace Ryujinx.Graphics.Vulkan
             BeginRenderPass();
             DrawCount++;
 
+            _renderPassLabelScope?.InsertLabel($"PipelineBase.Draw({vertexCount}, {instanceCount}, {firstVertex}, {firstInstance})", new ColorF(1, 0.5f, 0, 1));
             if (Gd.TopologyUnsupported(_topology))
             {
                 // Temporarily bind a conversion pattern as an index buffer.
@@ -1296,6 +1307,8 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.SetVertexBuffers({validCount})", new ColorF(1, 0.5f, 0, 1));
+
             _vertexBufferUpdater.Commit(Cbs);
 
             _newState.VertexBindingDescriptionsCount = (uint)validCount;
@@ -1572,6 +1585,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Gd.FlushAllCommands();
             }
 
+            using var debugScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.RecreatePipelineIfNeeded({pbp})", new ColorF(1, 0.75f, 0, 1));
+
             DynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
 
             if (_needsIndexBufferRebind && _indexBufferPattern == null)
@@ -1660,6 +1675,7 @@ namespace Ryujinx.Graphics.Vulkan
                     ClearValueCount = 1,
                 };
 
+                _renderPassLabelScope = Gd.CreateLabelScope(CommandBuffer, $"PipelineBase.RenderPass: {FramebufferParams.Width}x{FramebufferParams.Height}", new ColorF(1, 0.5f, 0, 1));
                 Gd.Api.CmdBeginRenderPass(CommandBuffer, renderPassBeginInfo, SubpassContents.Inline);
                 RenderPassActive = true;
             }
@@ -1671,6 +1687,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 PauseTransformFeedbackInternal();
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
+                _renderPassLabelScope?.Dispose();
+                _renderPassLabelScope = null;
                 SignalRenderPassEnd();
                 RenderPassActive = false;
             }

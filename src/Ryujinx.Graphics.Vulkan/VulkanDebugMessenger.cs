@@ -1,6 +1,7 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using System;
@@ -31,6 +32,15 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Logger.Error?.Print(LogClass.Gpu, $"Vulkan debug messenger initialization failed with error {result}");
             }
+        }
+
+        public ILabelScope CreateLabelScope(CommandBuffer commandBuffer, string scopeName, ColorF scopeColor)
+        {
+            if (_logLevel == GraphicsDebugLevel.All)
+            {
+                return new CommandBufferLabelScope(_debugUtils, commandBuffer, scopeName, scopeColor);
+            }
+            return null;
         }
 
         private Result TryInitialize(out DebugUtilsMessengerEXT? debugUtilsMessengerHandle)

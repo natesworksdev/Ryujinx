@@ -396,6 +396,11 @@ namespace Ryujinx.Graphics.Vulkan
             _initialized = true;
         }
 
+        public ILabelScope CreateLabelScope(CommandBuffer commandBuffer, string scopeName, ColorF scopeColor)
+        {
+            return _debugMessenger.CreateLabelScope(commandBuffer, scopeName, scopeColor);
+        }
+
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
             return BufferManager.CreateWithHandle(this, size, access.Convert(), default, access == BufferAccess.Stream);

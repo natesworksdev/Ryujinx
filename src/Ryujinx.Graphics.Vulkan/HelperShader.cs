@@ -255,6 +255,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.FlushAllCommands();
 
             using var cbs = gd.CommandBufferPool.Rent();
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.Blit: {src.Info.Format}:{srcRegion} -> {dst.Info.Format}:{dstRegion}", new ColorF(0, 1, 1, 1));
 
             var dstFormat = dst.VkFormat;
             var dstSamples = dst.Info.Samples;
@@ -341,6 +342,8 @@ namespace Ryujinx.Graphics.Vulkan
             int depth,
             int levels)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.CopyColor: {src.Info.Format}:{srcLayer}:{srcLevel} -> {dst.Info.Format}:{dstLayer}:{dstLevel}", new ColorF(0, 1, 1, 1));
+
             for (int l = 0; l < levels; l++)
             {
                 int mipSrcLevel = srcLevel + l;
@@ -405,6 +408,8 @@ namespace Ryujinx.Graphics.Vulkan
             bool linearFilter,
             bool clearAlpha = false)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.BlitColor: {src.Info.Format}:{srcRegion} -> {dstFormat}:{dstRegion}", new ColorF(0, 1, 1, 1));
+
             _pipeline.SetCommandBuffer(cbs);
 
             const int RegionBufferSize = 16;
@@ -506,6 +511,8 @@ namespace Ryujinx.Graphics.Vulkan
             Extents2D srcRegion,
             Extents2D dstRegion)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.BlitDepthStencil: {src.Info.Format}:{srcRegion} -> {dstFormat}:{dstRegion}", new ColorF(0, 1, 1, 1));
+
             _pipeline.SetCommandBuffer(cbs);
 
             const int RegionBufferSize = 16;
@@ -679,6 +686,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var cbs = gd.CommandBufferPool.Rent();
 
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.Clear: {dstWidth}x{dstHeight} {clearColor.ToString()}", new ColorF(0, 1, 1, 1));
+
             _pipeline.SetCommandBuffer(cbs);
 
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, ClearColorBufferSize);
@@ -785,6 +794,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             const int RegionBufferSize = 16;
 
+            using var debugScope = gd.CreateLabelScope(pipeline.CurrentCommandBuffer.CommandBuffer, $"HelperShader.DrawTexture: {srcRegion}->{dstRegion}", new ColorF(0, 1, 1, 1));
+
             pipeline.SetTextureAndSampler(ShaderStage.Fragment, 0, src, srcSampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
@@ -837,11 +848,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ConvertI8ToI16(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.ConvertI8ToI16: 0x{srcOffset:X} {size} bytes", new ColorF(0, 1, 1, 1));
+
             ChangeStride(gd, cbs, src, dst, srcOffset, size, 1, 2);
         }
 
         public unsafe void ChangeStride(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size, int stride, int newStride)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.ChangeStride: 0x{srcOffset:X}#{size} {stride}->{newStride}", new ColorF(0, 1, 1, 1));
+
             bool supportsUint8 = gd.Capabilities.SupportsShaderInt8;
 
             int elems = size / stride;
@@ -938,6 +953,8 @@ namespace Ryujinx.Graphics.Vulkan
             int srcOffset,
             int indexCount)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.ConvertIndexBuffer: 0x{srcOffset:X} uint{indexSize * 8}x{indexCount}", new ColorF(0, 1, 1, 1));
+
             // TODO: Support conversion with primitive restart enabled.
             // TODO: Convert with a compute shader?
 
@@ -1023,6 +1040,8 @@ namespace Ryujinx.Graphics.Vulkan
             int depth,
             int levels)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.CopyIncompatibleFormats: {src.VkFormat}:{srcLayer}:{srcLevel} -> {dst.VkFormat}:{dstLayer}:{dstLevel}", new ColorF(0, 1, 1, 1));
+
             const int ParamsBufferSize = 4;
 
             Span<int> shaderParams = stackalloc int[sizeof(int)];
@@ -1114,6 +1133,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyMSToNonMS(VulkanRenderer gd, CommandBufferScoped cbs, TextureView src, TextureView dst, int srcLayer, int dstLayer, int depth)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"HelperShader.BlitColor: {src.VkFormat}:{srcLayer} -> {dst.VkFormat}:{dstLayer}", new ColorF(0, 1, 1, 1));
+
             const int ParamsBufferSize = 16;
 
             Span<int> shaderParams = stackalloc int[ParamsBufferSize / sizeof(int)];

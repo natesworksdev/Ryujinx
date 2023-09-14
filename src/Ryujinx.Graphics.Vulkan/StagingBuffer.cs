@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -102,6 +103,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void PushDataImpl(CommandBufferScoped cbs, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
         {
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"StagingBuffer.PushDataImpl: {data.Length} bytes -> 0x{dstOffset:X}", new ColorF(1, 1, 0, 1));
+
             var srcBuffer = _buffer.GetBuffer();
             var dstBuffer = dst.GetBuffer(cbs.CommandBuffer, dstOffset, data.Length, true);
 

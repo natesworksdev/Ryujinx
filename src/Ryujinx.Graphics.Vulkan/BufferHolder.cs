@@ -819,6 +819,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             endRenderPass?.Invoke();
 
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"BufferHolder.TryPushData: {data.Length} bytes -> {dstOffset:X}", new ColorF(1, 1, 0, 1));
+
             var dstBuffer = GetBuffer(cbs.CommandBuffer, dstOffset, data.Length, true).Get(cbs, dstOffset, data.Length, true).Value;
 
             _writeCount--;
@@ -868,6 +870,8 @@ namespace Ryujinx.Graphics.Vulkan
             int size,
             bool registerSrcUsage = true)
         {
+            using var debugScope = gd.CreateLabelScope(cbs.CommandBuffer, $"BufferHolder.Copy: {srcOffset:X}->{dstOffset:X} {size} bytes", new ColorF(1, 1, 0, 1));
+
             var srcBuffer = registerSrcUsage ? src.Get(cbs, srcOffset, size).Value : src.GetUnsafe().Value;
             var dstBuffer = dst.Get(cbs, dstOffset, size, true).Value;
 

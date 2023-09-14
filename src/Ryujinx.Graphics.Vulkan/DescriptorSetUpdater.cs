@@ -414,6 +414,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"DescriptorSetUpdater.UpdateAndBindDescriptorSets({pbp})", new ColorF(1, 0, 1, 1));
+
             if (_dirty.HasFlag(DirtyFlags.Uniform))
             {
                 if (_program.UsePushDescriptors)
@@ -487,6 +489,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return;
             }
+
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"DescriptorSetUpdater.UpdateAndBind({pbp}): set:{setIndex}", new ColorF(1, 0, 1, 1));
 
             var dummyBuffer = _dummyBuffer?.GetBuffer();
 
@@ -649,6 +653,8 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateAndBindUniformBufferPd(CommandBufferScoped cbs, PipelineBindPoint pbp)
         {
+            using var debugScope = _gd.CreateLabelScope(cbs.CommandBuffer, $"DescriptorSetUpdater.UpdateAndBindUniformBufferPd({pbp})", new ColorF(1, 0, 1, 1));
+
             var bindingSegments = _program.BindingSegments[PipelineBase.UniformSetIndex];
             var dummyBuffer = _dummyBuffer?.GetBuffer();
 
