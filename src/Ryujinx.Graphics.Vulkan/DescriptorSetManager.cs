@@ -12,7 +12,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             public Vk Api { get; }
             public Device Device { get; }
-            private DescriptorType _type;
 
             private readonly DescriptorPool _pool;
             private int _freeDescriptors;
@@ -24,7 +23,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Api = api;
                 Device = device;
-                _type = poolSizes[0].Type;
 
                 foreach (var poolSize in poolSizes)
                 {
