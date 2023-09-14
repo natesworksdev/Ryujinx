@@ -10,10 +10,4 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
         public Array6<byte> MacAddress;
         public ushort Reserved;
     }
-
-    [StructLayout(LayoutKind.Sequential, Size = 0x60)]
-    struct AddressList
-    {
-        public Array8<AddressEntry> Addresses;
-    }
 }
