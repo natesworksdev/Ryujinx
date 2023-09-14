@@ -293,13 +293,11 @@ namespace Ryujinx.Graphics.Texture.Astc
             int layers,
             out byte[] decoded)
         {
-            byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
+            decoded = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
 
-            AstcDecoder decoder = new(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new(data, decoded, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
-
-            decoded = output;
 
             return decoder.Success;
         }

@@ -181,20 +181,17 @@ namespace Ryujinx.Memory.Range
             return insertPtr;
         }
 
-        private List<T> GetList()
+        private IEnumerable<T> GetList()
         {
             var items = _items.AsList();
-            var result = new List<T>();
 
             foreach (RangeNode<ulong, T> item in items)
             {
                 if (item.Start == item.Value.BaseAddress)
                 {
-                    result.Add(item.Value);
+                    yield return item.Value;
                 }
             }
-
-            return result;
         }
 
         public IEnumerator<T> GetEnumerator()
