@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 NetworkError.ConnectTimeout => ResultCode.ConnectTimeout,
                 NetworkError.ConnectRejected => ResultCode.ConnectRejected,
 
-                _ => ResultCode.DeviceNotAvailable
+                _ => ResultCode.DeviceNotAvailable,
             };
         }
 
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 UserConfig = userConfig,
                 LocalCommunicationVersion = localCommunicationVersion,
                 OptionUnknown = optionUnknown,
-                NetworkInfo = networkInfo
+                NetworkInfo = networkInfo,
             };
 
             return NetworkErrorToResult(_parent.NetworkClient.Connect(request));

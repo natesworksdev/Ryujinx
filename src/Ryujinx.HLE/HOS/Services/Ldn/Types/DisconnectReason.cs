@@ -8,6 +8,6 @@
         DestroyedByUser,
         DestroyedBySystem,
         Rejected,
-        SignalLost
+        SignalLost,
     }
 }

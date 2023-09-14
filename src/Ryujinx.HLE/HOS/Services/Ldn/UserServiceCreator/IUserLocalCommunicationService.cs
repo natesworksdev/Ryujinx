@@ -1,4 +1,4 @@
-using LibHac.Ns;
+﻿using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
@@ -236,7 +236,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             SecurityParameter securityParameter = new()
             {
                 Data = new Array16<byte>(),
-                SessionId = networkInfo.NetworkId.SessionId
+                SessionId = networkInfo.NetworkId.SessionId,
             };
 
             context.ResponseData.WriteStruct(securityParameter);
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 Channel = networkInfo.Common.Channel,
                 NodeCountMax = networkInfo.Ldn.NodeCountMax,
                 LocalCommunicationVersion = networkInfo.Ldn.Nodes[0].LocalCommunicationVersion,
-                Reserved2 = new Array10<byte>()
+                Reserved2 = new Array10<byte>(),
             };
 
             context.ResponseData.WriteStruct(networkConfig);

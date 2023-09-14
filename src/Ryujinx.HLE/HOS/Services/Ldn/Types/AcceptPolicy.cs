@@ -5,6 +5,6 @@
         AcceptAll,
         RejectAll,
         BlackList,
-        WhiteList
+        WhiteList,
     }
 }

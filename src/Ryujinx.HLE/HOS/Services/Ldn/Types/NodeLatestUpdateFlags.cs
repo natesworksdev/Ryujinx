@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     {
         None = 0,
         Connect = 1 << 0,
-        Disconnect = 1 << 1
+        Disconnect = 1 << 1,
     }
 }

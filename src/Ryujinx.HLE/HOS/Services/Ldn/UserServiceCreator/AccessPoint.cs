@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 SecurityConfig = securityConfig,
                 UserConfig = userConfig,
-                NetworkConfig = networkConfig
+                NetworkConfig = networkConfig,
             };
 
             bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData ?? Array.Empty<byte>());

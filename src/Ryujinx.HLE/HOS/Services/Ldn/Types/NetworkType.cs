@@ -5,6 +5,6 @@
         None,
         General,
         Ldn,
-        All
+        All,
     }
 }

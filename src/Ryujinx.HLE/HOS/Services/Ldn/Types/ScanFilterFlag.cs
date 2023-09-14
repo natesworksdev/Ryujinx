@@ -10,6 +10,6 @@
         SceneId = 1 << 5,
         IntentId = LocalCommunicationId | SceneId,
         NetworkId = IntentId | SessionId,
-        All = NetworkType | IntentId | SessionId | MacAddress | Ssid
+        All = NetworkType | IntentId | SessionId | MacAddress | Ssid,
     }
 }
