@@ -102,7 +102,7 @@ namespace Ryujinx.Horizon.Lbl.Ipc
         {
             _vrModeEnabled = true;
 
-            // NOTE: The service checks _vrModeEnabled field value in a thread and then change the screen brightness.
+            // NOTE: The service checks _vrModeEnabled field value in a thread and then changes the screen brightness.
             //       Since we don't support that, it's fine to do nothing.
 
             return Result.Success;
@@ -113,7 +113,7 @@ namespace Ryujinx.Horizon.Lbl.Ipc
         {
             _vrModeEnabled = false;
 
-            // NOTE: The service checks _vrModeEnabled field value in a thread and then change the screen brightness.
+            // NOTE: The service checks _vrModeEnabled field value in a thread and then changes the screen brightness.
             //       Since we don't support that, it's fine to do nothing.
 
             return Result.Success;
