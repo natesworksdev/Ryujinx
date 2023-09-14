@@ -71,7 +71,7 @@ namespace Ryujinx.Ui
         private bool _gameLoaded;
         private bool _ending;
 
-        private ApplicationData _currentEmulatedApplication = null;
+        private ApplicationData _currentApplicationData = null;
 
         private string _lastScannedAmiiboId = "";
         private bool _lastScannedAmiiboShowAll = false;
@@ -932,7 +932,7 @@ namespace Ryujinx.Ui
 
                 SetupProgressUiHandlers();
 
-                _currentEmulatedApplication = application;
+                _currentApplicationData = application;
 
                 _deviceExitStatus.Reset();
 
@@ -1696,13 +1696,13 @@ namespace Ryujinx.Ui
             {
                 _userChannelPersistence.ShouldRestart = false;
 
-                RunApplication(_currentEmulatedApplication);
+                RunApplication(_currentApplicationData);
             }
             else
             {
                 // otherwise, clear state.
                 _userChannelPersistence = new UserChannelPersistence();
-                _currentEmulatedApplication = null;
+                _currentApplicationData = null;
                 _actionMenu.Sensitive = false;
                 _firmwareInstallFile.Sensitive = true;
                 _firmwareInstallDirectory.Sensitive = true;
@@ -1764,7 +1764,7 @@ namespace Ryujinx.Ui
                 _emulationContext.Processes.ActiveApplication.ProgramId,
                 _emulationContext.Processes.ActiveApplication.ApplicationControlProperties
                     .Title[(int)_emulationContext.System.State.DesiredTitleLanguage].NameString.ToString(),
-                _currentEmulatedApplication.Path);
+                _currentApplicationData.Path);
 
             window.Destroyed += CheatWindow_Destroyed;
             window.Show();
