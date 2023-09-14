@@ -1,5 +1,8 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Ldn.Types
+﻿using System;
+
+namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
+    [Flags]
     enum ScanFilterFlag : byte
     {
         LocalCommunicationId = 1 << 0,
