@@ -922,7 +922,7 @@ namespace Ryujinx.Ui
                     isFirmwareTitle = true;
                 }
 
-                if (!LoadApplication(application.Path, application.TitleId, isFirmwareTitle))
+                if (!LoadApplication(application.Path, application.Id, isFirmwareTitle))
                 {
                     _emulationContext.Dispose();
                     SwitchToGameTable();
@@ -1179,7 +1179,7 @@ namespace Ryujinx.Ui
                 _tableStore.AppendValues(
                     args.AppData.Favorite,
                     new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
-                    $"{args.AppData.TitleName}\n{args.AppData.TitleIdString.ToUpper()}",
+                    $"{args.AppData.Name}\n{args.AppData.IdString.ToUpper()}",
                     args.AppData.Developer,
                     args.AppData.Version,
                     args.AppData.TimePlayed,
@@ -1270,8 +1270,8 @@ namespace Ryujinx.Ui
             ApplicationData application = new()
             {
                 Favorite = (bool)_tableStore.GetValue(treeIter, 0),
-                TitleName = ((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[0],
-                TitleId = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
+                Name = ((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[0],
+                Id = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
                 Developer = (string)_tableStore.GetValue(treeIter, 3),
                 Version = (string)_tableStore.GetValue(treeIter, 4),
                 TimePlayed = (string)_tableStore.GetValue(treeIter, 5),
@@ -1343,8 +1343,8 @@ namespace Ryujinx.Ui
             ApplicationData application = new()
             {
                 Favorite = (bool)_tableStore.GetValue(treeIter, 0),
-                TitleName = ((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[0],
-                TitleId = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
+                Name = ((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[0],
+                Id = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
                 Developer = (string)_tableStore.GetValue(treeIter, 3),
                 Version = (string)_tableStore.GetValue(treeIter, 4),
                 TimePlayed = (string)_tableStore.GetValue(treeIter, 5),
@@ -1394,7 +1394,7 @@ namespace Ryujinx.Ui
             {
                 ApplicationData applicationData = new()
                 {
-                    TitleName = System.IO.Path.GetFileNameWithoutExtension(fileChooser.Filename),
+                    Name = System.IO.Path.GetFileNameWithoutExtension(fileChooser.Filename),
                     Path = fileChooser.Filename,
                 };
 
@@ -1415,8 +1415,8 @@ namespace Ryujinx.Ui
 
             ApplicationData applicationData = new()
             {
-                TitleName = "miiEdit",
-                TitleId = 0x0100000000001009ul,
+                Name = "miiEdit",
+                Id = 0x0100000000001009ul,
                 Path = contentPath,
             };
 

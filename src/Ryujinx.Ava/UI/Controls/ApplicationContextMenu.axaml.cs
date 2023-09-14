@@ -39,7 +39,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.SelectedApplication.Favorite = !viewModel.SelectedApplication.Favorite;
 
-                ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.TitleIdString, appMetadata =>
+                ApplicationLibrary.LoadAndSaveMetaData(viewModel.SelectedApplication.IdString, appMetadata =>
                 {
                     appMetadata.Favorite = viewModel.SelectedApplication.Favorite;
                 });
@@ -74,9 +74,9 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (viewModel?.SelectedApplication != null)
             {
-                var saveDataFilter = SaveDataFilter.Make(viewModel.SelectedApplication.TitleId, saveDataType, userId, saveDataId: default, index: default);
+                var saveDataFilter = SaveDataFilter.Make(viewModel.SelectedApplication.Id, saveDataType, userId, saveDataId: default, index: default);
 
-                ApplicationHelper.OpenSaveDir(in saveDataFilter, viewModel.SelectedApplication.TitleId, viewModel.SelectedApplication.ControlHolder, viewModel.SelectedApplication.TitleName);
+                ApplicationHelper.OpenSaveDir(in saveDataFilter, viewModel.SelectedApplication.Id, viewModel.SelectedApplication.ControlHolder, viewModel.SelectedApplication.Name);
             }
         }
 
@@ -108,8 +108,8 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 await new CheatWindow(
                     viewModel.VirtualFileSystem,
-                    viewModel.SelectedApplication.TitleIdString,
-                    viewModel.SelectedApplication.TitleName,
+                    viewModel.SelectedApplication.IdString,
+                    viewModel.SelectedApplication.Name,
                     viewModel.SelectedApplication.Path).ShowDialog(viewModel.TopLevel as Window);
             }
         }
@@ -121,7 +121,7 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 string modsBasePath = ModLoader.GetModsBasePath();
-                string titleModsPath = ModLoader.GetTitleDir(modsBasePath, viewModel.SelectedApplication.TitleIdString);
+                string titleModsPath = ModLoader.GetTitleDir(modsBasePath, viewModel.SelectedApplication.IdString);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }
@@ -134,7 +134,7 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 string sdModsBasePath = ModLoader.GetSdModsBasePath();
-                string titleModsPath = ModLoader.GetTitleDir(sdModsBasePath, viewModel.SelectedApplication.TitleIdString);
+                string titleModsPath = ModLoader.GetTitleDir(sdModsBasePath, viewModel.SelectedApplication.IdString);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }
@@ -148,15 +148,15 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                     LocaleManager.Instance[LocaleKeys.DialogWarning],
-                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, viewModel.SelectedApplication.TitleName),
+                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionMessage, viewModel.SelectedApplication.Name),
                     LocaleManager.Instance[LocaleKeys.InputDialogYes],
                     LocaleManager.Instance[LocaleKeys.InputDialogNo],
                     LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
 
                 if (result == UserResult.Yes)
                 {
-                    DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleIdString, "cache", "cpu", "0"));
-                    DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleIdString, "cache", "cpu", "1"));
+                    DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "cpu", "0"));
+                    DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "cpu", "1"));
 
                     List<FileInfo> cacheFiles = new();
 
@@ -196,14 +196,14 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                     LocaleManager.Instance[LocaleKeys.DialogWarning],
-                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, viewModel.SelectedApplication.TitleName),
+                    LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, viewModel.SelectedApplication.Name),
                     LocaleManager.Instance[LocaleKeys.InputDialogYes],
                     LocaleManager.Instance[LocaleKeys.InputDialogNo],
                     LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
 
                 if (result == UserResult.Yes)
                 {
-                    DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleIdString, "cache", "shader"));
+                    DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "shader"));
 
                     List<DirectoryInfo> oldCacheDirectories = new();
                     List<FileInfo> newCacheFiles = new();
@@ -251,7 +251,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                string ptcDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleIdString, "cache", "cpu");
+                string ptcDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "cpu");
                 string mainDir = Path.Combine(ptcDir, "0");
                 string backupDir = Path.Combine(ptcDir, "1");
 
@@ -272,7 +272,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             if (viewModel?.SelectedApplication != null)
             {
-                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.TitleIdString, "cache", "shader");
+                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "shader");
 
                 if (!Directory.Exists(shaderCacheDir))
                 {
@@ -293,7 +293,7 @@ namespace Ryujinx.Ava.UI.Controls
                     viewModel.StorageProvider,
                     NcaSectionType.Code,
                     viewModel.SelectedApplication.Path,
-                    viewModel.SelectedApplication.TitleName);
+                    viewModel.SelectedApplication.Name);
             }
         }
 
@@ -307,7 +307,7 @@ namespace Ryujinx.Ava.UI.Controls
                     viewModel.StorageProvider,
                     NcaSectionType.Data,
                     viewModel.SelectedApplication.Path,
-                    viewModel.SelectedApplication.TitleName);
+                    viewModel.SelectedApplication.Name);
             }
         }
 
@@ -321,7 +321,7 @@ namespace Ryujinx.Ava.UI.Controls
                     viewModel.StorageProvider,
                     NcaSectionType.Logo,
                     viewModel.SelectedApplication.Path,
-                    viewModel.SelectedApplication.TitleName);
+                    viewModel.SelectedApplication.Name);
             }
         }
 
@@ -332,7 +332,7 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 ApplicationData selectedApplication = viewModel.SelectedApplication;
-                ShortcutHelper.CreateAppShortcut(selectedApplication.Path, selectedApplication.TitleName, selectedApplication.TitleIdString, selectedApplication.Icon);
+                ShortcutHelper.CreateAppShortcut(selectedApplication.Path, selectedApplication.Name, selectedApplication.IdString, selectedApplication.Icon);
             }
         }
 
