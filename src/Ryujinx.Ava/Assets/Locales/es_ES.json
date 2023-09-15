@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Extensión",
   "GameListHeaderFileSize": "Tamaño del archivo",
   "GameListHeaderPath": "Directorio",
+  "GameListContextMenuCreateDesktopShortcut": "Crear Acceso Directo",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Crea un acceso directo en el escritorio para el juego seleccionado",
   "GameListContextMenuOpenUserSaveDirectory": "Abrir carpeta de guardado de este usuario",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Abre la carpeta que contiene la partida guardada del usuario para esta aplicación",
   "GameListContextMenuOpenDeviceSaveDirectory": "Abrir carpeta de guardado del sistema para el usuario actual",

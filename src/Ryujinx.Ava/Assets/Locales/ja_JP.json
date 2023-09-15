@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "ファイル拡張子",
   "GameListHeaderFileSize": "ファイルサイズ",
   "GameListHeaderPath": "パス",
+  "GameListContextMenuCreateDesktopShortcut": "ショートカットを作成する",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "選択したゲームのデスクトップショートカットを作成します",
   "GameListContextMenuOpenUserSaveDirectory": "セーブディレクトリを開く",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "アプリケーションのユーザセーブデータを格納するディレクトリを開きます",
   "GameListContextMenuOpenDeviceSaveDirectory": "デバイスディレクトリを開く",

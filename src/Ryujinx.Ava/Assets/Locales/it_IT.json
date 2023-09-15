@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Estensione",
   "GameListHeaderFileSize": "Dimensione file",
   "GameListHeaderPath": "Percorso",
+  "GameListContextMenuCreateDesktopShortcut": "Crea Scorciatoia",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Crea una scorciatoia sul desktop per il gioco selezionato",
   "GameListContextMenuOpenUserSaveDirectory": "Apri la cartella salvataggi dell'utente",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Apre la cartella che contiene i salvataggi di gioco dell'utente",
   "GameListContextMenuOpenDeviceSaveDirectory": "Apri la cartella dispositivo dell'utente",

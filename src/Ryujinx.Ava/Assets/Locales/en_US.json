@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "File Ext",
   "GameListHeaderFileSize": "File Size",
   "GameListHeaderPath": "Path",
+  "GameListContextMenuCreateDesktopShortcut": "Create Shortcut",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Creates a desktop shortcut for the selected game",
   "GameListContextMenuOpenUserSaveDirectory": "Open User Save Directory",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Opens the directory which contains Application's User Save",
   "GameListContextMenuOpenDeviceSaveDirectory": "Open Device Save Directory",

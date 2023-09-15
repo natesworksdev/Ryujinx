@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "扩展名",
   "GameListHeaderFileSize": "大小",
   "GameListHeaderPath": "路径",
+  "GameListContextMenuCreateDesktopShortcut": "创建快捷方式",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "为所选游戏创建桌面快捷方式",
   "GameListContextMenuOpenUserSaveDirectory": "打开用户存档目录",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "打开储存游戏存档的目录",
   "GameListContextMenuOpenDeviceSaveDirectory": "打开系统目录",

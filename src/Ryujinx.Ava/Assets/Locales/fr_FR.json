@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Fichier externe",
   "GameListHeaderFileSize": "Taille du Fichier",
   "GameListHeaderPath": "Chemin",
+  "GameListContextMenuCreateDesktopShortcut": "Créer un Raccourci",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Crée un raccourci sur le bureau pour le jeu sélectionné",
   "GameListContextMenuOpenUserSaveDirectory": "Ouvrir le dossier de sauvegarde utilisateur",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Ouvre le dossier contenant la sauvegarde utilisateur du jeu",
   "GameListContextMenuOpenDeviceSaveDirectory": "Ouvrir le dossier de sauvegarde console",

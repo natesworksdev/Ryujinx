@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Κατάληξη",
   "GameListHeaderFileSize": "Μέγεθος Αρχείου",
   "GameListHeaderPath": "Τοποθεσία",
+  "GameListContextMenuCreateDesktopShortcut": "Δημιουργία συντόμευσης",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Δημιουργεί μια συντόμευση στην επιφάνεια εργασίας για το επιλεγμένο παιχνίδι",
   "GameListContextMenuOpenUserSaveDirectory": "Άνοιγμα Τοποθεσίας Αποθήκευσης Χρήστη",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Ανοίγει την τοποθεσία που περιέχει την Αποθήκευση Χρήστη της εφαρμογής",
   "GameListContextMenuOpenDeviceSaveDirectory": "Άνοιγμα Τοποθεσίας Συσκευής Χρήστη",

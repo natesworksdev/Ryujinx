@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Rozsz. Pliku",
   "GameListHeaderFileSize": "Rozm. Pliku",
   "GameListHeaderPath": "Ścieżka",
+  "GameListContextMenuCreateDesktopShortcut": "Utwórz Skrót",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Tworzy skrót na pulpicie do wybranej gry",
   "GameListContextMenuOpenUserSaveDirectory": "Otwórz Katalog Zapisów Użytkownika",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Otwiera katalog, który zawiera Zapis Użytkownika Aplikacji",
   "GameListContextMenuOpenDeviceSaveDirectory": "Otwórz Katalog Urządzeń Użytkownika",

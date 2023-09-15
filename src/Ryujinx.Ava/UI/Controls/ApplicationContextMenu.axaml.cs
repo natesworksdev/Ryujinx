@@ -10,11 +10,14 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using Path = System.IO.Path;
@@ -27,7 +30,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             InitializeComponent();
         }
-
+        private ApplicationLibrary _applicationLibrary;
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -343,6 +346,67 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
+        }
+
+        public void CreateDesktopShortcutMenuItem_Click(object sender, RoutedEventArgs args)
+        {
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            // Get the path to the user's desktop
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            // Get the path to the current executable
+            string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
+            string invalidChars = new string(System.IO.Path.GetInvalidFileNameChars()) + new string(System.IO.Path.GetInvalidPathChars());
+            string titleName = viewModel.SelectedApplication.TitleName;
+
+            foreach (char c in invalidChars)
+            {
+                titleName = titleName.Replace(c.ToString(), " ");
+            }
+
+            //shortcut final path
+            string shortcutLocation = System.IO.Path.Combine(desktopPath, titleName + ".lnk");
+
+            _applicationLibrary = new ApplicationLibrary(viewModel.VirtualFileSystem);
+            byte[] imagemembyte = _applicationLibrary.GetApplicationIcon(viewModel.SelectedApplication.Path);
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string ryujinxPath = System.IO.Path.Combine(appDataPath, "Ryujinx");
+            string icoDirectoryPath = System.IO.Path.Combine(ryujinxPath, "ico");
+
+            // Checks if the directory exists
+            if (!Directory.Exists(icoDirectoryPath))
+            {
+                // Create the directory if it does not exist
+                Directory.CreateDirectory(icoDirectoryPath);
+            }
+
+            string icoFilePath = System.IO.Path.Combine(icoDirectoryPath, titleName + ".ico");
+            //string icoFilePath = System.IO.Path.Combine(desktopPath, titleName + ".ico");
+
+            // Convert jpeg to ico
+            ImageCodecInfo[] imf = ImageCodecInfo.GetImageEncoders();
+            using (MemoryStream ms = new MemoryStream(imagemembyte))
+            {
+                Bitmap bitmap = new Bitmap(ms);
+                using (FileStream stream = File.OpenWrite(icoFilePath))
+                {
+                    System.Drawing.Icon.FromHandle(bitmap.GetHicon()).Save(stream);
+                }
+            }
+
+            IWshRuntimeLibrary.WshShell wsh = new IWshRuntimeLibrary.WshShell();
+            IWshRuntimeLibrary.IWshShortcut shortcut = wsh.CreateShortcut(shortcutLocation) as IWshRuntimeLibrary.IWshShortcut;
+
+            shortcut.Description = $"Start {titleName} with the Ryujix Emulator";   // The description of the shortcut
+            shortcut.IconLocation = icoFilePath;                // The icon of the shortcut
+            shortcut.TargetPath = exePath;                      // The path of the file that will launch when the shortcut is run
+            shortcut.Arguments = $"\"{viewModel.SelectedApplication.Path}\"";       // Defines the arguments for the shortcut, which is the game file path enclosed in double quotes
+            shortcut.Save();                                    // Save the shortcut
+
+            ContentDialogHelper.CreateWarningDialog("Create Desktop Shortcut", "Shortcut was created for " + titleName);            
         }
     }
 }

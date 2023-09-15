@@ -19,6 +19,7 @@ using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Windows;
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -26,11 +27,14 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Ryujinx.Ui.Widgets
 {
     public partial class GameTableContextMenu : Menu
     {
+        private ApplicationLibrary _applicationLibrary;
         private readonly MainWindow _parent;
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly AccountManager _accountManager;
@@ -452,6 +456,73 @@ namespace Ryujinx.Ui.Widgets
         //
         // Events
         //
+        private void _RunApplicationMenuItem_Clicked(object sender, EventArgs args)
+        {
+            _parent.RunApplication(_titleFilePath);
+        }
+
+        private void CreateDesktopShortcut_Clicked(object sender, EventArgs args)
+        {
+            // Get the path to the user's desktop
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            // Get the path to the current executable
+            string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
+            string invalidChars = new string(System.IO.Path.GetInvalidFileNameChars()) + new string(System.IO.Path.GetInvalidPathChars());
+            string titleName = _titleName;
+
+            foreach (char c in invalidChars)
+            {
+                titleName = titleName.Replace(c.ToString(), " ");
+            }
+
+            //shortcut final path
+            string shortcutLocation = System.IO.Path.Combine(desktopPath, titleName + ".lnk");
+
+            _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
+            //_desiredTitleLanguage = new ApplicationLibrary(_desiredTitleLanguage);
+            byte[] imagemembyte = _applicationLibrary.GetApplicationIcon(_titleFilePath);
+
+
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string ryujinxPath = System.IO.Path.Combine(appDataPath, "Ryujinx");
+            string icoDirectoryPath = System.IO.Path.Combine(ryujinxPath, "ico");
+
+            // Verifica se o diretório existe
+            if (!Directory.Exists(icoDirectoryPath))
+            {
+                // Cria o diretório se ele não existir
+                Directory.CreateDirectory(icoDirectoryPath);
+            }
+
+            string icoFilePath = System.IO.Path.Combine(icoDirectoryPath, titleName + ".ico");
+            //string icoFilePath = System.IO.Path.Combine(desktopPath, titleName + ".ico");
+
+            // Convert jpeg to ico
+            ImageCodecInfo[] imf = ImageCodecInfo.GetImageEncoders();
+            using (MemoryStream ms = new MemoryStream(imagemembyte))
+            {
+                Bitmap bitmap = new Bitmap(ms);
+                using (FileStream stream = File.OpenWrite(icoFilePath))
+                {
+                    System.Drawing.Icon.FromHandle(bitmap.GetHicon()).Save(stream);
+                }
+            }
+
+            IWshRuntimeLibrary.WshShell wsh = new IWshRuntimeLibrary.WshShell();
+            IWshRuntimeLibrary.IWshShortcut shortcut = wsh.CreateShortcut(shortcutLocation) as IWshRuntimeLibrary.IWshShortcut;
+
+            shortcut.Description = $"Start {titleName} with the Ryujix Emulator";   // The description of the shortcut
+            shortcut.IconLocation = icoFilePath;                // The icon of the shortcut
+            shortcut.TargetPath = exePath;                      // The path of the file that will launch when the shortcut is run
+            shortcut.Arguments = $"\"{_titleFilePath}\"";       // Defines the arguments for the shortcut, which is the game file path enclosed in double quotes
+            shortcut.Save();                                    // Save the shortcut
+
+
+            GtkDialog.CreateInfoDialog("CreateDesktopShortcut", "Shortcut was created for " + titleName);
+        }
+
         private void OpenSaveUserDir_Clicked(object sender, EventArgs args)
         {
             var userId = new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);

@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "סיומת קובץ",
   "GameListHeaderFileSize": "גודל הקובץ",
   "GameListHeaderPath": "נתיב",
+  "GameListContextMenuCreateDesktopShortcut": "צור קיצור דרך",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "יוצר קיצור דרך בשולחן העבודה למשחק שנבחר",
   "GameListContextMenuOpenUserSaveDirectory": "פתח את תקיית השמור של המשתמש",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "פותח את תקיית השמור של המשתמש ביישום הנוכחי",
   "GameListContextMenuOpenDeviceSaveDirectory": "פתח את תקיית השמור של המכשיר",

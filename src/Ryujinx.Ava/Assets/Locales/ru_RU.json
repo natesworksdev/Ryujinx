@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Расширение файла",
   "GameListHeaderFileSize": "Размер файла",
   "GameListHeaderPath": "Путь",
+  "GameListContextMenuCreateDesktopShortcut": "Создать ярлык",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Создает ярлык на рабочем столе для выбранной игры",
   "GameListContextMenuOpenUserSaveDirectory": "Открыть папку сохранений пользователя",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Открывает папку, содержащую пользовательские сохранения",
   "GameListContextMenuOpenDeviceSaveDirectory": "Открыть папку сохраненных устройств",

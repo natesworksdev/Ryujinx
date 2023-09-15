@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Extensão",
   "GameListHeaderFileSize": "Tamanho",
   "GameListHeaderPath": "Caminho",
+  "GameListContextMenuCreateDesktopShortcut": "Criar Atalho",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Cria um atalho na área de trabalho para o jogo selecionado",
   "GameListContextMenuOpenUserSaveDirectory": "Abrir diretório de saves do usuário",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Abre o diretório que contém jogos salvos para o usuário atual",
   "GameListContextMenuOpenDeviceSaveDirectory": "Abrir diretório de saves de dispositivo do usuário",

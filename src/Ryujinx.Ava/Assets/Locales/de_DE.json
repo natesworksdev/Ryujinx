@@ -44,6 +44,8 @@
   "GameListHeaderFileExtension": "Dateiformat",
   "GameListHeaderFileSize": "Dateigröße",
   "GameListHeaderPath": "Pfad",
+  "GameListContextMenuCreateDesktopShortcut": "Verknüpfung Erstellen",
+  "GameListContextMenuCreateDesktopShortcutToolTip": "Erstellt eine Verknüpfung auf dem Desktop für das ausgewählte Spiel",
   "GameListContextMenuOpenUserSaveDirectory": "Spielstand-Verzeichnis öffnen",
   "GameListContextMenuOpenUserSaveDirectoryToolTip": "Öffnet das Verzeichnis, welches den Benutzer-Spielstand beinhaltet",
   "GameListContextMenuOpenDeviceSaveDirectory": "Benutzer-Geräte-Verzeichnis öffnen",

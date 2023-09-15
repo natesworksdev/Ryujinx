@@ -4,6 +4,8 @@ namespace Ryujinx.Ui.Widgets
 {
     public partial class GameTableContextMenu : Menu
     {
+        private MenuItem _runApplicationMenuItem;
+        private MenuItem _createDesktopShortcutMenuItem;
         private MenuItem _openSaveUserDirMenuItem;
         private MenuItem _openSaveDeviceDirMenuItem;
         private MenuItem _openSaveBcatDirMenuItem;
@@ -26,6 +28,24 @@ namespace Ryujinx.Ui.Widgets
 
         private void InitializeComponent()
         {
+            //
+            // _runApplicationMenuItem
+            //
+            _runApplicationMenuItem = new MenuItem("Run Application")
+            {
+                TooltipText = "Start selected game",
+            };
+            _runApplicationMenuItem.Activated += _RunApplicationMenuItem_Clicked;
+
+            //
+            // _createDesktopShortcutMenuItem
+            //
+            _createDesktopShortcutMenuItem = new MenuItem("Create Shortcut")
+            {
+                TooltipText = "Creates a desktop shortcut for the selected game",
+            };
+            _createDesktopShortcutMenuItem.Activated += CreateDesktopShortcut_Clicked;
+
             //
             // _openSaveUserDirMenuItem
             //
@@ -201,6 +221,9 @@ namespace Ryujinx.Ui.Widgets
             _manageSubMenu.Append(_openPtcDirMenuItem);
             _manageSubMenu.Append(_openShaderCacheDirMenuItem);
 
+            Add(_runApplicationMenuItem);
+            Add(_createDesktopShortcutMenuItem);
+            Add(new SeparatorMenuItem());
             Add(_openSaveUserDirMenuItem);
             Add(_openSaveDeviceDirMenuItem);
             Add(_openSaveBcatDirMenuItem);
