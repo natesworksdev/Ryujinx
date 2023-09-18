@@ -106,7 +106,7 @@
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
                         ToolTip.Tip="{locale:Locale ControllerSettingsLoadProfileToolTip}"
-                        Command="{ReflectionBinding LoadProfile}">
+                        Command="{Binding LoadProfile}">
                         <ui:SymbolIcon
                             Symbol="Upload"
                             FontSize="15"
@@ -118,7 +118,7 @@
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsSaveProfileToolTip}"
-                            Command="{ReflectionBinding SaveProfile}">
+                            Command="{Binding SaveProfile}">
                         <ui:SymbolIcon
                             Symbol="Save"
                             FontSize="15"
@@ -130,7 +130,7 @@
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsRemoveProfileToolTip}"
-                            Command="{ReflectionBinding RemoveProfile}">
+                            Command="{Binding RemoveProfile}">
                         <ui:SymbolIcon
                             Symbol="Delete"
                             FontSize="15"
@@ -174,7 +174,7 @@
                         MinWidth="0"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Command="{ReflectionBinding LoadDevices}">
+                        Command="{Binding LoadDevices}">
                         <ui:SymbolIcon
                             Symbol="Refresh"
                             FontSize="15"
@@ -200,8 +200,8 @@
                     <ComboBox
                         Grid.Column="1"
                         HorizontalAlignment="Stretch"
-                        ItemsSource="{ReflectionBinding Controllers}"
-                        SelectedIndex="{ReflectionBinding Controller}">
+                        ItemsSource="{Binding Controllers}"
+                        SelectedIndex="{Binding Controller}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate DataType="models:ControllerModel">
                                 <TextBlock Text="{Binding Name}" />
