@@ -193,7 +193,7 @@ namespace Ryujinx.Ui.Widgets
             //
             _createShortcutMenuItem = new MenuItem("Create Application Shortcut")
             {
-                TooltipText = "Create a Desktop Shortcut that launches the selected Application in fullscreen mode."
+                TooltipText = "Create a Desktop Shortcut that launches the selected Application."
             };
             _createShortcutMenuItem.Activated += CreateShortcut_Clicked;
 

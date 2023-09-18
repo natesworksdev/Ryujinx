@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.Versioning;
 using Image = System.Drawing.Image;
 
@@ -20,6 +19,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutWindows(string applicationFilePath, byte[] iconData, string iconPath, string cleanedAppName, string desktopPath)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
+            iconPath += ".ico";
 
             MemoryStream iconDataStream = new(iconData);
             using Image image = Image.FromStream(iconDataStream);
@@ -27,9 +27,9 @@ namespace Ryujinx.Ui.Common.Helper
             using System.Drawing.Graphics graphic = System.Drawing.Graphics.FromImage(bitmap);
             graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
             graphic.DrawImage(image, 0, 0, 128, 128);
-            SaveBitmapAsIcon(bitmap, iconPath + ".ico");
+            SaveBitmapAsIcon(bitmap, iconPath);
 
-            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, applicationFilePath), iconPath + ".ico", 0);
+            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, applicationFilePath), iconPath, 0);
             shortcut.StringData.NameString = cleanedAppName;
             shortcut.WriteToFile(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
         }
@@ -39,12 +39,13 @@ namespace Ryujinx.Ui.Common.Helper
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
             var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
+            iconPath += ".png";
 
             var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
-            image.SaveAsPng(iconPath + ".png");
+            image.SaveAsPng(iconPath);
 
             using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-            outputFile.Write(desktopFile, cleanedAppName, iconPath + ".png", GetArgsString(basePath, applicationFilePath));
+            outputFile.Write(desktopFile, cleanedAppName, iconPath, GetArgsString(basePath, applicationFilePath));
         }
 
         [SupportedOSPlatform("macos")]
@@ -54,6 +55,7 @@ namespace Ryujinx.Ui.Common.Helper
             // Macos .App folder
             string contentFolderPath = Path.Combine(desktopPath, cleanedAppName + ".app", "Contents");
             string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");
+
             if (!Directory.Exists(scriptFolderPath))
             {
                 Directory.CreateDirectory(scriptFolderPath);
@@ -68,8 +70,9 @@ namespace Ryujinx.Ui.Common.Helper
             string scriptPath = Path.Combine(scriptFolderPath, "runner");
 
             using StreamWriter scriptFile = new(scriptPath);
-            scriptFile.Write(script, basePath, $"\"{appFilePath}\"");
 
+            scriptFile.WriteLine("#!/bin/sh");
+            scriptFile.WriteLine(GetArgsString(basePath, appFilePath));
 
             // Set execute permission
             FileInfo fileInfo = new(scriptPath);
@@ -119,21 +122,26 @@ namespace Ryujinx.Ui.Common.Helper
             if (OperatingSystem.IsWindows())
             {
                 string iconPath = Path.Combine(AppDataManager.BaseDirPath, "games", applicationId, "app");
+
                 CreateShortcutWindows(applicationFilePath, iconData, iconPath, cleanedAppName, desktopPath);
+
                 return;
             }
 
             if (OperatingSystem.IsLinux())
             {
                 string iconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "icons", "Ryujinx");
+
                 Directory.CreateDirectory(iconPath);
                 CreateShortcutLinux(applicationFilePath, iconData, Path.Combine(iconPath, applicationId), desktopPath, cleanedAppName);
+
                 return;
             }
 
             if (OperatingSystem.IsMacOS())
             {
                 CreateShortcutMacos(applicationFilePath, iconData, desktopPath, cleanedAppName);
+
                 return;
             }
 
@@ -146,9 +154,17 @@ namespace Ryujinx.Ui.Common.Helper
             var argsList = new List<string>
             {
                 basePath,
-                "--fullscreen",
-                $"\"{appFilePath}\"",
             };
+
+            if (!string.IsNullOrEmpty(CommandLineState.BaseDirPathArg))
+            {
+                argsList.Add("--root-data-dir");
+                argsList.Add($"\"{CommandLineState.BaseDirPathArg}\"");
+            }
+
+            argsList.Add($"\"{appFilePath}\"");
+
+
             return String.Join(" ", argsList);
         }
 
@@ -161,17 +177,18 @@ namespace Ryujinx.Ui.Common.Helper
         private static void SaveBitmapAsIcon(Bitmap source, string filePath)
         {
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
+            byte[] header = { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 32, 0, 0, 0, 0, 0, 22, 0, 0, 0 };
             using FileStream fs = new(filePath, FileMode.Create);
-            fs.Write(new ReadOnlySpan<byte>(new byte[] { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 32, 0, 0, 0, 0, 0, 22, 0, 0, 0 }));
 
+            fs.Write(header);
             // Writing actual data
             source.Save(fs, ImageFormat.Png);
             // Getting data length (file length minus header)
-            long Len = fs.Length - 22;
+            long dataLength = fs.Length - header.Length;
             // Write it in the correct place
             fs.Seek(14, SeekOrigin.Begin);
-            fs.WriteByte((byte)Len);
-            fs.WriteByte((byte)(Len >> 8));
+            fs.WriteByte((byte)dataLength);
+            fs.WriteByte((byte)(dataLength >> 8));
         }
     }
 }
