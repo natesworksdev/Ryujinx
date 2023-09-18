@@ -454,7 +454,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{ReflectionBinding ShowMotionConfig}">
+                                Command="{Binding ShowMotionConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
@@ -480,7 +480,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{ReflectionBinding ShowRumbleConfig}">
+                                Command="{Binding ShowRumbleConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
