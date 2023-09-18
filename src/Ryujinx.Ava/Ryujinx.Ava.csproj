@@ -87,9 +87,6 @@
     <Content Include="..\..\distribution\linux\Ryujinx.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\distribution\linux\shortcut-template.desktop">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\..\distribution\linux\mime\Ryujinx.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>mime\Ryujinx.xml</TargetPath>

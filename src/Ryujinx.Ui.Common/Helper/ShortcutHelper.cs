@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Configuration;
+﻿using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using ShellLink;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -38,7 +39,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutLinux(string applicationFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
-            var desktopFile = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shortcut-template.desktop"));
+            var desktopFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.desktop");
             iconPath += ".png";
 
             var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
@@ -52,6 +53,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutMacos(string appFilePath, byte[] iconData, string desktopPath, string cleanedAppName)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            var plistFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.plist");
             // Macos .App folder
             string contentFolderPath = Path.Combine(desktopPath, cleanedAppName + ".app", "Contents");
             string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");
@@ -62,13 +64,8 @@ namespace Ryujinx.Ui.Common.Helper
             }
 
             // Runner script
-            string script = """
-                #!/bin/sh
-                {0} --fullscreen {1}
-                """;
-
-            string scriptPath = Path.Combine(scriptFolderPath, "runner");
-
+            const string ScriptName = "runner.sh";
+            string scriptPath = Path.Combine(scriptFolderPath, ScriptName);
             using StreamWriter scriptFile = new(scriptPath);
 
             scriptFile.WriteLine("#!/bin/sh");
@@ -85,33 +82,13 @@ namespace Ryujinx.Ui.Common.Helper
                 Directory.CreateDirectory(resourceFolderPath);
             }
 
+            const string IconName = "icon.png";
             var image = SixLabors.ImageSharp.Image.Load<Rgba32>(iconData);
-            image.SaveAsPng(Path.Combine(resourceFolderPath, "icon.png"));
+            image.SaveAsPng(Path.Combine(resourceFolderPath, IconName));
 
             // plist file
-            string plist = """
-                <?xml version="1.0" encoding="UTF-8" standalone="no"?><plist version="1.0">
-                  <dict>
-                    <key>CFBundleExecutable</key>
-                    <string>runner</string>
-                    <key>CFBundleGetInfoString</key>
-                    <string>runner</string>
-                    <key>CFBundleVersion</key>
-                    <string>1.0</string>
-                    <key>CFBundleShortVersionString</key>
-                    <string>1.0</string>
-                    <key>CFBundleIconName</key>
-                    <string>AppIcon</string>
-                    <key>CFBundleIconFile</key>
-                    <string>icon.png</string>
-                    <key>UIPrerenderedIcon</key>
-                    <true/>
-                </dict>
-                </plist>
-                """;
-
-            using StreamWriter plistFile = new(Path.Combine(contentFolderPath, "Info.plist"));
-            plistFile.Write(plist, cleanedAppName);
+            using StreamWriter outputFile = new(Path.Combine(contentFolderPath, "Info.plist"));
+            outputFile.Write(plistFile, ScriptName, cleanedAppName, IconName);
         }
 
         public static void CreateAppShortcut(string applicationFilePath, string applicationName, string applicationId, byte[] iconData)
