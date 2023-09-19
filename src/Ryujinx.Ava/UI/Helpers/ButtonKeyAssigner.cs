@@ -1,14 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
-using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Helpers
@@ -19,13 +13,13 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             public ToggleButton Button { get; }
             public bool IsAssigned { get; }
-            public object Key { get; }
+            public ButtonValue? ButtonValue { get; }
 
-            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned, object key)
+            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned, ButtonValue? buttonValue)
             {
                 Button = button;
                 IsAssigned = isAssigned;
-                Key = key;
+                ButtonValue = buttonValue;
             }
         }
 
@@ -83,7 +77,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                object pressedButton = assigner.GetPressedButton();
+                ButtonValue? pressedButton = assigner.GetPressedButton();
 
                 if (_shouldUnbind)
                 {
@@ -95,7 +89,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 ToggledButton.IsChecked = false;
 
-                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton != null, pressedButton));
+                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton.HasValue, pressedButton));
 
             });
         }
