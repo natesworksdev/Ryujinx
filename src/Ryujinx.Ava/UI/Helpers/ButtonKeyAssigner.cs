@@ -12,13 +12,11 @@ namespace Ryujinx.Ava.UI.Helpers
         internal class ButtonAssignedEventArgs : EventArgs
         {
             public ToggleButton Button { get; }
-            public bool IsAssigned { get; }
             public ButtonValue? ButtonValue { get; }
 
-            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned, ButtonValue? buttonValue)
+            public ButtonAssignedEventArgs(ToggleButton button, ButtonValue? buttonValue)
             {
                 Button = button;
-                IsAssigned = isAssigned;
                 ButtonValue = buttonValue;
             }
         }
@@ -89,7 +87,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 ToggledButton.IsChecked = false;
 
-                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton.HasValue, pressedButton));
+                ButtonAssigned?.Invoke(this, new ButtonAssignedEventArgs(ToggledButton, pressedButton));
 
             });
         }
