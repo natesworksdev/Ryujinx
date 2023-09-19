@@ -6,8 +6,8 @@ namespace Ryujinx.Input
 
     public struct ButtonValue
     {
-        public ButtonValueType Type;
-        public uint RawValue;
+        private ButtonValueType Type;
+        private uint RawValue;
 
         public ButtonValue(Key key)
         {
