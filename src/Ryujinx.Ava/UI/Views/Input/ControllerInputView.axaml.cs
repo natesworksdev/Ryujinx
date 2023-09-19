@@ -65,7 +65,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
                         _currentAssigner.ButtonAssigned += (sender, e) =>
                         {
-                            if (e.IsAssigned)
+                            if (e.ButtonValue.HasValue)
                             {
                                 var viewModel = (DataContext as ControllerInputViewModel);
                                 var buttonValue = e.ButtonValue.Value;
