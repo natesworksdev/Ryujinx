@@ -454,13 +454,33 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (lastReadStage != PipelineStageFlags.None)
             {
-                TextureView.InsertMemoryBarrier(
-                    _gd.Api,
-                    cbs.CommandBuffer,
-                    _lastReadAccess,
-                    dstAccessFlags,
-                    lastReadStage,
-                    dstStageFlags);
+                if (OperatingSystem.IsMacOS())
+                {
+                    ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+                    TextureView.InsertImageBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _imageAuto.Get(cbs).Value,
+                        _lastReadAccess,
+                        dstAccessFlags,
+                        _lastReadStage,
+                        dstStageFlags,
+                        aspectFlags,
+                        0,
+                        0,
+                        _info.GetLayers(),
+                        _info.Levels);
+                }
+                else
+                {
+                    TextureView.InsertMemoryBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _lastReadAccess,
+                        dstAccessFlags,
+                        lastReadStage,
+                        dstStageFlags);
+                }
 
                 _lastReadAccess = AccessFlags.None;
                 _lastReadStage = PipelineStageFlags.None;
@@ -474,13 +494,33 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                TextureView.InsertMemoryBarrier(
-                    _gd.Api,
-                    cbs.CommandBuffer,
-                    _lastModificationAccess,
-                    dstAccessFlags,
-                    _lastModificationStage,
-                    dstStageFlags);
+                if (OperatingSystem.IsMacOS())
+                {
+                    ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+                    TextureView.InsertImageBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _imageAuto.Get(cbs).Value,
+                        _lastModificationAccess,
+                        dstAccessFlags,
+                        _lastModificationStage,
+                        dstStageFlags,
+                        aspectFlags,
+                        0,
+                        0,
+                        _info.GetLayers(),
+                        _info.Levels);
+                }
+                else
+                {
+                    TextureView.InsertMemoryBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _lastModificationAccess,
+                        dstAccessFlags,
+                        _lastModificationStage,
+                        dstStageFlags);
+                }
 
                 _lastModificationAccess = AccessFlags.None;
             }
