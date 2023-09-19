@@ -99,7 +99,7 @@
                         VerticalAlignment="Center"
                         SelectedIndex="0"
                         ItemsSource="{Binding ProfilesList}"
-                        Text="{Binding ProfileName}" />
+                        Text="{Binding ProfileName, Mode=TwoWay}" />
                     <Button
                         Grid.Column="2"
                         MinWidth="0"
