@@ -298,11 +298,11 @@ namespace Ryujinx.Ava.UI.Views.User
 
             if (existingSave == default)
             {
-                ViewModel.AddNewSaveEntry(new SaveModel(e.SaveInfo, _virtualFileSystem));
+                ViewModel.AddNewSaveEntry(new SaveModel(e.SaveInfo));
             }
             else
             {
-                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo, _virtualFileSystem));
+                ViewModel.Saves.Replace(existingSave, new SaveModel(e.SaveInfo));
             }
         }
     }
