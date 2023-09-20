@@ -151,6 +151,14 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceProperties2,
             };
 
+            PhysicalDeviceSubgroupProperties propertiesSubgroup = new()
+            {
+                SType = StructureType.PhysicalDeviceSubgroupProperties,
+                PNext = properties2.PNext,
+            };
+
+            properties2.PNext = &propertiesSubgroup;
+
             PhysicalDeviceBlendOperationAdvancedPropertiesEXT propertiesBlendOperationAdvanced = new()
             {
                 SType = StructureType.PhysicalDeviceBlendOperationAdvancedPropertiesExt,
@@ -162,18 +170,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 propertiesBlendOperationAdvanced.PNext = properties2.PNext;
                 properties2.PNext = &propertiesBlendOperationAdvanced;
-            }
-
-            PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new()
-            {
-                SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt,
-            };
-
-            bool supportsSubgroupSizeControl = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_subgroup_size_control");
-
-            if (supportsSubgroupSizeControl)
-            {
-                properties2.PNext = &propertiesSubgroupSizeControl;
             }
 
             bool supportsTransformFeedback = _physicalDevice.IsDeviceExtensionPresent(ExtTransformFeedback.ExtensionName);
@@ -293,6 +289,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             ref var properties = ref properties2.Properties;
 
+            ulong minResourceAlignment = Math.Max(
+                Math.Max(
+                    properties.Limits.MinStorageBufferOffsetAlignment,
+                    properties.Limits.MinUniformBufferOffsetAlignment),
+                properties.Limits.MinTexelBufferOffsetAlignment
+            );
+
             SampleCountFlags supportedSampleCounts =
                 properties.Limits.FramebufferColorSampleCounts &
                 properties.Limits.FramebufferDepthSampleCounts &
@@ -308,7 +311,6 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent(KhrDrawIndirectCount.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent("VK_EXT_fragment_shader_interlock"),
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_geometry_shader_passthrough"),
-                supportsSubgroupSizeControl,
                 features2.Features.ShaderFloat64,
                 featuresShaderInt8.ShaderInt8,
                 _physicalDevice.IsDeviceExtensionPresent("VK_EXT_shader_stencil_export"),
@@ -325,16 +327,16 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.OcclusionQueryPrecise,
                 _physicalDevice.PhysicalDeviceFeatures.PipelineStatisticsQuery,
                 _physicalDevice.PhysicalDeviceFeatures.GeometryShader,
+                _physicalDevice.PhysicalDeviceFeatures.TessellationShader,
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
-                propertiesSubgroupSizeControl.MinSubgroupSize,
-                propertiesSubgroupSizeControl.MaxSubgroupSize,
-                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages,
+                propertiesSubgroup.SubgroupSize,
                 supportedSampleCounts,
                 portabilityFlags,
                 vertexBufferAlignment,
-                properties.Limits.SubTexelPrecisionBits);
+                properties.Limits.SubTexelPrecisionBits,
+                minResourceAlignment);
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 
@@ -397,7 +399,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.Convert());
+            return BufferManager.CreateWithHandle(this, size, access.Convert(), default, access == BufferAccess.Stream);
         }
 
         public BufferHandle CreateBuffer(int size, BufferHandle storageHint)
@@ -467,6 +469,9 @@ namespace Ryujinx.Graphics.Vulkan
         internal void RegisterFlush()
         {
             SyncManager.RegisterFlush();
+
+            // Periodically free unused regions of the staging buffer to avoid doing it all at once.
+            BufferManager.StagingBuffer.FreeCompleted();
         }
 
         public PinnedSpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
@@ -596,10 +601,12 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsMismatchingViewFormat: true,
                 supportsCubemapView: !IsAmdGcn,
                 supportsNonConstantTextureOffset: false,
+                supportsScaledVertexFormats: FormatCapabilities.SupportsScaledVertexFormats(),
                 supportsShaderBallot: false,
                 supportsShaderBarrierDivergence: Vendor != Vendor.Intel,
                 supportsShaderFloat64: Capabilities.SupportsShaderFloat64,
                 supportsTextureShadowLod: false,
+                supportsVertexStoreAndAtomics: features2.Features.VertexPipelineStoresAndAtomics,
                 supportsViewportIndexVertexTessellation: featuresVk12.ShaderOutputViewportIndex,
                 supportsViewportMask: Capabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: false,
@@ -611,7 +618,9 @@ namespace Ryujinx.Graphics.Vulkan
                 maximumImagesPerStage: Constants.MaxImagesPerStage,
                 maximumComputeSharedMemorySize: (int)limits.MaxComputeSharedMemorySize,
                 maximumSupportedAnisotropy: (int)limits.MaxSamplerAnisotropy,
+                shaderSubgroupSize: (int)Capabilities.SubgroupSize,
                 storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment,
+                textureBufferOffsetAlignment: (int)limits.MinTexelBufferOffsetAlignment,
                 gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0);
         }
 

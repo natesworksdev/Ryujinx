@@ -23,13 +23,16 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - uses: actions/setup-dotnet@v3
         with:
           global-json-file: global.json
+
+      - name: Overwrite csc problem matcher
+        run: echo "::add-matcher::.github/csc.json"
 
       - run: dotnet restore
 

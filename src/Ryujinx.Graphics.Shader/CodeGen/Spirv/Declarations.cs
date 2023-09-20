@@ -5,7 +5,6 @@ using Spv.Generator;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
 using static Spv.Specification;
 using SpvInstruction = Spv.Generator.Instruction;
 
@@ -66,12 +65,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public static void DeclareAll(CodeGenContext context, StructuredProgramInfo info)
         {
-            DeclareConstantBuffers(context, context.Config.Properties.ConstantBuffers.Values);
-            DeclareStorageBuffers(context, context.Config.Properties.StorageBuffers.Values);
-            DeclareMemories(context, context.Config.Properties.LocalMemories, context.LocalMemories, StorageClass.Private);
-            DeclareMemories(context, context.Config.Properties.SharedMemories, context.SharedMemories, StorageClass.Workgroup);
-            DeclareSamplers(context, context.Config.Properties.Textures.Values);
-            DeclareImages(context, context.Config.Properties.Images.Values);
+            DeclareConstantBuffers(context, context.Properties.ConstantBuffers.Values);
+            DeclareStorageBuffers(context, context.Properties.StorageBuffers.Values);
+            DeclareMemories(context, context.Properties.LocalMemories, context.LocalMemories, StorageClass.Private);
+            DeclareMemories(context, context.Properties.SharedMemories, context.SharedMemories, StorageClass.Workgroup);
+            DeclareSamplers(context, context.Properties.Textures.Values);
+            DeclareImages(context, context.Properties.Images.Values);
             DeclareInputsAndOutputs(context, info);
         }
 
@@ -108,7 +107,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             foreach (BufferDefinition buffer in buffers)
             {
-                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? buffer.Set : 0;
+                int setIndex = context.TargetApi == TargetApi.Vulkan ? buffer.Set : 0;
                 int alignment = buffer.Layout == BufferLayout.Std140 ? 16 : 4;
                 int alignmentMask = alignment - 1;
                 int offset = 0;
@@ -181,7 +180,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             foreach (var sampler in samplers)
             {
-                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? sampler.Set : 0;
+                int setIndex = context.TargetApi == TargetApi.Vulkan ? sampler.Set : 0;
 
                 var dim = (sampler.Type & SamplerType.Mask) switch
                 {
@@ -220,7 +219,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             foreach (var image in images)
             {
-                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? image.Set : 0;
+                int setIndex = context.TargetApi == TargetApi.Vulkan ? image.Set : 0;
 
                 var dim = GetDim(image.Type);
 
@@ -314,16 +313,29 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareInputsAndOutputs(CodeGenContext context, StructuredProgramInfo info)
         {
+            int firstLocation = int.MaxValue;
+
+            if (context.Definitions.Stage == ShaderStage.Fragment && context.Definitions.DualSourceBlend)
+            {
+                foreach (var ioDefinition in info.IoDefinitions)
+                {
+                    if (ioDefinition.IoVariable == IoVariable.FragmentOutputColor && ioDefinition.Location < firstLocation)
+                    {
+                        firstLocation = ioDefinition.Location;
+                    }
+                }
+            }
+
             foreach (var ioDefinition in info.IoDefinitions)
             {
                 PixelImap iq = PixelImap.Unused;
 
-                if (context.Config.Stage == ShaderStage.Fragment)
+                if (context.Definitions.Stage == ShaderStage.Fragment)
                 {
                     var ioVariable = ioDefinition.IoVariable;
                     if (ioVariable == IoVariable.UserDefined)
                     {
-                        iq = context.Config.ImapTypes[ioDefinition.Location].GetFirstUsedType();
+                        iq = context.Definitions.ImapTypes[ioDefinition.Location].GetFirstUsedType();
                     }
                     else
                     {
@@ -336,15 +348,112 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         }
                     }
                 }
+                else if (IoMap.IsPerVertexBuiltIn(ioDefinition.IoVariable))
+                {
+                    continue;
+                }
 
                 bool isOutput = ioDefinition.StorageKind.IsOutput();
                 bool isPerPatch = ioDefinition.StorageKind.IsPerPatch();
 
-                DeclareInputOrOutput(context, ioDefinition, isOutput, isPerPatch, iq);
+                DeclareInputOrOutput(context, ioDefinition, isOutput, isPerPatch, iq, firstLocation);
+            }
+
+            DeclarePerVertexBlock(context);
+        }
+
+        private static void DeclarePerVertexBlock(CodeGenContext context)
+        {
+            if (context.Definitions.Stage.IsVtg())
+            {
+                if (context.Definitions.Stage != ShaderStage.Vertex)
+                {
+                    var perVertexInputStructType = CreatePerVertexStructType(context);
+                    int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
+                    var perVertexInputArrayType = context.TypeArray(perVertexInputStructType, context.Constant(context.TypeU32(), arraySize));
+                    var perVertexInputPointerType = context.TypePointer(StorageClass.Input, perVertexInputArrayType);
+                    var perVertexInputVariable = context.Variable(perVertexInputPointerType, StorageClass.Input);
+
+                    context.Name(perVertexInputVariable, "gl_in");
+
+                    context.AddGlobalVariable(perVertexInputVariable);
+                    context.Inputs.Add(new IoDefinition(StorageKind.Input, IoVariable.Position), perVertexInputVariable);
+                }
+
+                var perVertexOutputStructType = CreatePerVertexStructType(context);
+
+                void DecorateTfo(IoVariable ioVariable, int fieldIndex)
+                {
+                    if (context.Definitions.TryGetTransformFeedbackOutput(ioVariable, 0, 0, out var transformFeedbackOutput))
+                    {
+                        context.MemberDecorate(perVertexOutputStructType, fieldIndex, Decoration.XfbBuffer, (LiteralInteger)transformFeedbackOutput.Buffer);
+                        context.MemberDecorate(perVertexOutputStructType, fieldIndex, Decoration.XfbStride, (LiteralInteger)transformFeedbackOutput.Stride);
+                        context.MemberDecorate(perVertexOutputStructType, fieldIndex, Decoration.Offset, (LiteralInteger)transformFeedbackOutput.Offset);
+                    }
+                }
+
+                DecorateTfo(IoVariable.Position, 0);
+                DecorateTfo(IoVariable.PointSize, 1);
+                DecorateTfo(IoVariable.ClipDistance, 2);
+
+                SpvInstruction perVertexOutputArrayType;
+
+                if (context.Definitions.Stage == ShaderStage.TessellationControl)
+                {
+                    int arraySize = context.Definitions.ThreadsPerInputPrimitive;
+                    perVertexOutputArrayType = context.TypeArray(perVertexOutputStructType, context.Constant(context.TypeU32(), arraySize));
+                }
+                else
+                {
+                    perVertexOutputArrayType = perVertexOutputStructType;
+                }
+
+                var perVertexOutputPointerType = context.TypePointer(StorageClass.Output, perVertexOutputArrayType);
+                var perVertexOutputVariable = context.Variable(perVertexOutputPointerType, StorageClass.Output);
+
+                context.AddGlobalVariable(perVertexOutputVariable);
+                context.Outputs.Add(new IoDefinition(StorageKind.Output, IoVariable.Position), perVertexOutputVariable);
             }
         }
 
-        private static void DeclareInputOrOutput(CodeGenContext context, IoDefinition ioDefinition, bool isOutput, bool isPerPatch, PixelImap iq = PixelImap.Unused)
+        private static SpvInstruction CreatePerVertexStructType(CodeGenContext context)
+        {
+            var vec4FloatType = context.TypeVector(context.TypeFP32(), 4);
+            var floatType = context.TypeFP32();
+            var array8FloatType = context.TypeArray(context.TypeFP32(), context.Constant(context.TypeU32(), 8));
+            var array1FloatType = context.TypeArray(context.TypeFP32(), context.Constant(context.TypeU32(), 1));
+
+            var perVertexStructType = context.TypeStruct(true, vec4FloatType, floatType, array8FloatType, array1FloatType);
+
+            context.Name(perVertexStructType, "gl_PerVertex");
+
+            context.MemberName(perVertexStructType, 0, "gl_Position");
+            context.MemberName(perVertexStructType, 1, "gl_PointSize");
+            context.MemberName(perVertexStructType, 2, "gl_ClipDistance");
+            context.MemberName(perVertexStructType, 3, "gl_CullDistance");
+
+            context.Decorate(perVertexStructType, Decoration.Block);
+
+            if (context.HostCapabilities.ReducedPrecision)
+            {
+                context.MemberDecorate(perVertexStructType, 0, Decoration.Invariant);
+            }
+
+            context.MemberDecorate(perVertexStructType, 0, Decoration.BuiltIn, (LiteralInteger)BuiltIn.Position);
+            context.MemberDecorate(perVertexStructType, 1, Decoration.BuiltIn, (LiteralInteger)BuiltIn.PointSize);
+            context.MemberDecorate(perVertexStructType, 2, Decoration.BuiltIn, (LiteralInteger)BuiltIn.ClipDistance);
+            context.MemberDecorate(perVertexStructType, 3, Decoration.BuiltIn, (LiteralInteger)BuiltIn.CullDistance);
+
+            return perVertexStructType;
+        }
+
+        private static void DeclareInputOrOutput(
+            CodeGenContext context,
+            IoDefinition ioDefinition,
+            bool isOutput,
+            bool isPerPatch,
+            PixelImap iq = PixelImap.Unused,
+            int firstLocation = 0)
         {
             IoVariable ioVariable = ioDefinition.IoVariable;
             var storageClass = isOutput ? StorageClass.Output : StorageClass.Input;
@@ -355,12 +464,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (ioVariable == IoVariable.UserDefined)
             {
-                varType = context.Config.GetUserDefinedType(ioDefinition.Location, isOutput);
+                varType = context.Definitions.GetUserDefinedType(ioDefinition.Location, isOutput);
                 isBuiltIn = false;
             }
             else if (ioVariable == IoVariable.FragmentOutputColor)
             {
-                varType = context.Config.GetFragmentOutputColorType(ioDefinition.Location);
+                varType = context.Definitions.GetFragmentOutputColorType(ioDefinition.Location);
                 isBuiltIn = false;
             }
             else
@@ -374,16 +483,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
-            bool hasComponent = context.Config.HasPerLocationInputOrOutputComponent(ioVariable, ioDefinition.Location, ioDefinition.Component, isOutput);
+            bool hasComponent = context.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, ioDefinition.Location, ioDefinition.Component, isOutput);
 
             if (hasComponent)
             {
                 varType &= AggregateType.ElementTypeMask;
             }
-            else if (ioVariable == IoVariable.UserDefined && context.Config.HasTransformFeedbackOutputs(isOutput))
+            else if (ioVariable == IoVariable.UserDefined && context.Definitions.HasTransformFeedbackOutputs(isOutput))
             {
                 varType &= AggregateType.ElementTypeMask;
-                varType |= context.Config.GetTransformFeedbackOutputComponents(ioDefinition.Location, ioDefinition.Component) switch
+                varType |= context.Definitions.GetTransformFeedbackOutputComponents(ioDefinition.Location, ioDefinition.Component) switch
                 {
                     2 => AggregateType.Vector2,
                     3 => AggregateType.Vector3,
@@ -395,20 +504,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var spvType = context.GetType(varType, IoMap.GetSpirvBuiltInArrayLength(ioVariable));
             bool builtInPassthrough = false;
 
-            if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Config.Stage, isOutput))
+            if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Definitions.Stage, isOutput))
             {
-                int arraySize = context.Config.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
                 spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), arraySize));
 
-                if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
+                if (context.Definitions.GpPassthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough)
                 {
                     builtInPassthrough = true;
                 }
             }
 
-            if (context.Config.Stage == ShaderStage.TessellationControl && isOutput && !isPerPatch)
+            if (context.Definitions.Stage == ShaderStage.TessellationControl && isOutput && !isPerPatch)
             {
-                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), context.Config.ThreadsPerInputPrimitive));
+                spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), context.Definitions.ThreadsPerInputPrimitive));
             }
 
             var spvPointerType = context.TypePointer(storageClass, spvType);
@@ -426,7 +535,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     context.Decorate(spvVar, Decoration.Patch);
                 }
 
-                if (context.Config.GpuAccessor.QueryHostReducedPrecision() && ioVariable == IoVariable.Position)
+                if (context.HostCapabilities.ReducedPrecision && ioVariable == IoVariable.Position)
                 {
                     context.Decorate(spvVar, Decoration.Invariant);
                 }
@@ -439,7 +548,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (ioVariable == IoVariable.UserDefined)
                 {
-                    int location = context.Config.GetPerPatchAttributeLocation(ioDefinition.Location);
+                    int location = context.AttributeUsage.GetPerPatchAttributeLocation(ioDefinition.Location);
 
                     context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
                 }
@@ -455,8 +564,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (!isOutput &&
                     !isPerPatch &&
-                    (context.Config.PassthroughAttributes & (1 << ioDefinition.Location)) != 0 &&
-                    context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
+                    (context.AttributeUsage.PassthroughAttributes & (1 << ioDefinition.Location)) != 0 &&
+                    context.HostCapabilities.SupportsGeometryShaderPassthrough)
                 {
                     context.Decorate(spvVar, Decoration.PassthroughNV);
                 }
@@ -465,13 +574,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 int location = ioDefinition.Location;
 
-                if (context.Config.Stage == ShaderStage.Fragment && context.Config.GpuAccessor.QueryDualSourceBlendEnable())
+                if (context.Definitions.Stage == ShaderStage.Fragment && context.Definitions.DualSourceBlend)
                 {
-                    int firstLocation = BitOperations.TrailingZeroCount(context.Config.UsedOutputAttributes);
                     int index = location - firstLocation;
-                    int mask = 3 << firstLocation;
 
-                    if ((uint)index < 2 && (context.Config.UsedOutputAttributes & mask) == mask)
+                    if ((uint)index < 2)
                     {
                         context.Decorate(spvVar, Decoration.Location, (LiteralInteger)firstLocation);
                         context.Decorate(spvVar, Decoration.Index, (LiteralInteger)index);
@@ -499,7 +606,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         break;
                 }
             }
-            else if (context.Config.TryGetTransformFeedbackOutput(
+            else if (context.Definitions.TryGetTransformFeedbackOutput(
                 ioVariable,
                 ioDefinition.Location,
                 ioDefinition.Component,

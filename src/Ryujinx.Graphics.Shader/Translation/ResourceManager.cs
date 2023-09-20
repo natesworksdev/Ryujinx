@@ -48,12 +48,22 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int LocalMemoryId { get; private set; }
         public int SharedMemoryId { get; private set; }
 
+        public int LocalVertexDataMemoryId { get; private set; }
+        public int LocalTopologyRemapMemoryId { get; private set; }
+        public int LocalVertexIndexVertexRateMemoryId { get; private set; }
+        public int LocalVertexIndexInstanceRateMemoryId { get; private set; }
+        public int LocalGeometryOutputVertexCountMemoryId { get; private set; }
+        public int LocalGeometryOutputIndexCountMemoryId { get; private set; }
+
         public ShaderProperties Properties { get; }
 
-        public ResourceManager(ShaderStage stage, IGpuAccessor gpuAccessor, ShaderProperties properties)
+        public ResourceReservations Reservations { get; }
+
+        public ResourceManager(ShaderStage stage, IGpuAccessor gpuAccessor, ResourceReservations reservations = null)
         {
             _gpuAccessor = gpuAccessor;
-            Properties = properties;
+            Properties = new();
+            Reservations = reservations;
             _stage = stage;
             _stagePrefix = GetShaderStagePrefix(stage);
 
@@ -62,15 +72,15 @@ namespace Ryujinx.Graphics.Shader.Translation
             _cbSlotToBindingMap.AsSpan().Fill(-1);
             _sbSlotToBindingMap.AsSpan().Fill(-1);
 
-            _sbSlots = new Dictionary<int, int>();
-            _sbSlotsReverse = new Dictionary<int, int>();
+            _sbSlots = new();
+            _sbSlotsReverse = new();
 
-            _usedConstantBufferBindings = new HashSet<int>();
+            _usedConstantBufferBindings = new();
 
-            _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
-            _usedImages = new Dictionary<TextureInfo, TextureMeta>();
+            _usedTextures = new();
+            _usedImages = new();
 
-            properties.AddOrUpdateConstantBuffer(0, new BufferDefinition(BufferLayout.Std140, 0, 0, "support_buffer", SupportBuffer.GetStructureType()));
+            Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, 0, SupportBuffer.Binding, "support_buffer", SupportBuffer.GetStructureType()));
 
             LocalMemoryId = -1;
             SharedMemoryId = -1;
@@ -112,6 +122,29 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 SharedMemoryId = -1;
             }
+        }
+
+        public void SetVertexAsComputeLocalMemories(ShaderStage stage, InputTopology inputTopology)
+        {
+            LocalVertexDataMemoryId = AddMemoryDefinition("local_vertex_data", AggregateType.Array | AggregateType.FP32, Reservations.OutputSizePerInvocation);
+
+            if (stage == ShaderStage.Vertex)
+            {
+                LocalVertexIndexVertexRateMemoryId = AddMemoryDefinition("local_vertex_index_vr", AggregateType.U32);
+                LocalVertexIndexInstanceRateMemoryId = AddMemoryDefinition("local_vertex_index_ir", AggregateType.U32);
+            }
+            else if (stage == ShaderStage.Geometry)
+            {
+                LocalTopologyRemapMemoryId = AddMemoryDefinition("local_topology_remap", AggregateType.Array | AggregateType.U32, inputTopology.ToInputVertices());
+
+                LocalGeometryOutputVertexCountMemoryId = AddMemoryDefinition("local_geometry_output_vertex", AggregateType.U32);
+                LocalGeometryOutputIndexCountMemoryId = AddMemoryDefinition("local_geometry_output_index", AggregateType.U32);
+            }
+        }
+
+        private int AddMemoryDefinition(string name, AggregateType type, int arrayLength = 1)
+        {
+            return Properties.AddLocalMemory(new MemoryDefinition(name, type, arrayLength));
         }
 
         public int GetConstantBufferBinding(int slot)
@@ -312,11 +345,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 if (isImage)
                 {
-                    Properties.AddOrUpdateImage(binding, definition);
+                    Properties.AddOrUpdateImage(definition);
                 }
                 else
                 {
-                    Properties.AddOrUpdateTexture(binding, definition);
+                    Properties.AddOrUpdateTexture(definition);
                 }
 
                 if (layer == 0)
@@ -465,17 +498,22 @@ namespace Ryujinx.Graphics.Shader.Translation
             return descriptors;
         }
 
-        public (int, int) GetCbufSlotAndHandleForTexture(int binding)
+        public bool TryGetCbufSlotAndHandleForTexture(int binding, out int cbufSlot, out int handle)
         {
             foreach ((TextureInfo info, TextureMeta meta) in _usedTextures)
             {
                 if (meta.Binding == binding)
                 {
-                    return (info.CbufSlot, info.Handle);
+                    cbufSlot = info.CbufSlot;
+                    handle = info.Handle;
+
+                    return true;
                 }
             }
 
-            throw new ArgumentException($"Binding {binding} is invalid.");
+            cbufSlot = 0;
+            handle = 0;
+            return false;
         }
 
         private static int FindDescriptorIndex(TextureDescriptor[] array, int binding)
@@ -500,7 +538,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16),
             });
 
-            Properties.AddOrUpdateConstantBuffer(binding, new BufferDefinition(BufferLayout.Std140, 0, binding, name, type));
+            Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, 0, binding, name, type));
         }
 
         private void AddNewStorageBuffer(int binding, string name)
@@ -510,7 +548,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 new StructureField(AggregateType.Array | AggregateType.U32, "data", 0),
             });
 
-            Properties.AddOrUpdateStorageBuffer(binding, new BufferDefinition(BufferLayout.Std430, 1, binding, name, type));
+            Properties.AddOrUpdateStorageBuffer(new(BufferLayout.Std430, 1, binding, name, type));
         }
 
         public static string GetShaderStagePrefix(ShaderStage stage)
