@@ -1,6 +1,6 @@
-﻿using Ryujinx.Horizon.Wlan.Ipc;
-using Ryujinx.Horizon.Sdk.Sf.Hipc;
+﻿using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
+using Ryujinx.Horizon.Wlan.Ipc;
 
 namespace Ryujinx.Horizon.Wlan
 {
