@@ -454,7 +454,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (lastReadStage != PipelineStageFlags.None)
             {
-                if (OperatingSystem.IsMacOS())
+                // This would result in a validation error, but is
+                // required on MoltenVK as the generic buffer results in
+                // severe texture flickering in some scenarios.
+                if (_gd.IsMoltenVk)
                 {
                     ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
                     TextureView.InsertImageBarrier(
@@ -494,7 +497,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                if (OperatingSystem.IsMacOS())
+                // This would result in a validation error, but is
+                // required on MoltenVK as the generic buffer results in
+                // severe texture flickering in some scenarios.
+                if (_gd.IsMoltenVk)
                 {
                     ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
                     TextureView.InsertImageBarrier(
