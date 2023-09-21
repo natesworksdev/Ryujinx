@@ -498,7 +498,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (_lastModificationAccess != AccessFlags.None)
             {
                 // This would result in a validation error, but is
-                // required on MoltenVK as the generic buffer results in
+                // required on MoltenVK as the generic barrier results in
                 // severe texture flickering in some scenarios.
                 if (_gd.IsMoltenVk)
                 {
