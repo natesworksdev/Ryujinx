@@ -811,8 +811,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 updateFlags |= RenderTargetUpdateFlags.UpdateDepthStencil;
             }
 
-            engine.UpdateRenderTargetState(updateFlags, singleUse: componentMask != 0 ? index : -1);
-
             // If there is a mismatch on the host clip region and the one explicitly defined by the guest
             // on the screen scissor state, then we need to force only one texture to be bound to avoid
             // host clipping.
@@ -826,6 +824,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool clearAffectedByStencilMask = (_state.State.ClearFlags & 1) != 0;
             bool clearAffectedByScissor = (_state.State.ClearFlags & 0x100) != 0;
             bool needsCustomScissor = !clearAffectedByScissor || clipMismatch;
+
+            if (clearDepth || clearStencil || componentMask == 15)
+            {
+                // A full clear if scissor is disabled, or it matches the screen scissor state.
+
+                bool fullClear = screenScissorState.X == 0 && screenScissorState.Y == 0;
+
+                if (fullClear && clearAffectedByScissor && _state.State.ScissorState[0].Enable)
+                {
+                    ref var scissorState = ref _state.State.ScissorState[0];
+
+                    fullClear = scissorState.X1 == screenScissorState.X &&
+                        scissorState.Y1 == screenScissorState.Y &&
+                        scissorState.X2 == screenScissorState.X + screenScissorState.Width &&
+                        scissorState.Y2 == screenScissorState.Y + screenScissorState.Height;
+                }
+
+                updateFlags |= RenderTargetUpdateFlags.DiscardClip;
+            }
+
+            engine.UpdateRenderTargetState(updateFlags, singleUse: componentMask != 0 ? index : -1);
 
             // Scissor and rasterizer discard also affect clears.
             ulong updateMask = 1UL << StateUpdater.RasterizerStateIndex;
