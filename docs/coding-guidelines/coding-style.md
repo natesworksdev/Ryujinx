@@ -32,7 +32,7 @@ Using an IDE that supports the `.editorconfig` standard will make this much simp
     - Using braces is always accepted, and required if any block of an `if`/`else if`/.../`else` compound statement uses braces or if a single statement body spans multiple lines.
     - Braces may be omitted only if the body of *every* block associated with an `if`/`else if`/.../`else` compound statement is placed on a single line.
 19. Make all internal and private types static or sealed unless derivation from them is required.  As with any implementation detail, they can be changed if/when derivation is required in the future.
-20. XML docs should be used for [TODO].
+20. XML docs should be used when writing interfaces or when a class/method is deemed sufficient in scope or complexity.
 21. So-called [Magic Numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)) should be defined as named constants before use (for example `for (int i = 56; i < 68; i++)` could read `for (int i = _currentAge; i < _retireAge; i++)`). 
     This may be ignored for trivial or syntactically common statements.
 
