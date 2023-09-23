@@ -856,7 +856,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                         fullClear = false;
                     }
                 }
-                
+
                 if (fullClear)
                 {
                     updateFlags |= RenderTargetUpdateFlags.DiscardClip;
