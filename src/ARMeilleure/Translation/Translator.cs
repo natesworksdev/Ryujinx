@@ -498,7 +498,7 @@ namespace ARMeilleure.Translation
             context.MarkLabel(lblEnd);
         }
 
-        internal static void EmitSynchronization(EmitterContext context)
+        internal static void EmitSynchronization(ArmEmitterContext context)
         {
             long countOffs = NativeContext.GetCounterOffset();
 
@@ -512,7 +512,8 @@ namespace ARMeilleure.Translation
             Operand running = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
             context.BranchIfTrue(lblExit, running, BasicBlockFrequency.Cold);
 
-            context.Return(Const(0L));
+            OpCode op = context.CurrOp;
+            context.Return(op != null ? Const(op.Address) : Const(0L));
 
             context.MarkLabel(lblNonZero);
             count = context.Subtract(count, Const(1));
