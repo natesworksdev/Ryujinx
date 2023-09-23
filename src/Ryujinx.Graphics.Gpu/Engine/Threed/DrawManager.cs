@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed.ComputeDraw;
 using Ryujinx.Graphics.Gpu.Engine.Types;
+using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
 
@@ -806,7 +807,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 updateFlags |= RenderTargetUpdateFlags.Layered;
             }
 
-            if (clearDepth || clearStencil)
+            bool clearDS = clearDepth || clearStencil;
+
+            if (clearDS)
             {
                 updateFlags |= RenderTargetUpdateFlags.UpdateDepthStencil;
             }
@@ -816,16 +819,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // host clipping.
             var screenScissorState = _state.State.ScreenScissorState;
 
-            // Must happen after UpdateRenderTargetState to have up-to-date clip region values.
-            bool clipMismatch = (screenScissorState.X | screenScissorState.Y) != 0 ||
-                                screenScissorState.Width != _channel.TextureManager.ClipRegionWidth ||
-                                screenScissorState.Height != _channel.TextureManager.ClipRegionHeight;
-
             bool clearAffectedByStencilMask = (_state.State.ClearFlags & 1) != 0;
             bool clearAffectedByScissor = (_state.State.ClearFlags & 0x100) != 0;
-            bool needsCustomScissor = !clearAffectedByScissor || clipMismatch;
 
-            if (clearDepth || clearStencil || componentMask == 15)
+            if (clearDS || componentMask == 15)
             {
                 // A full clear if scissor is disabled, or it matches the screen scissor state.
 
@@ -837,14 +834,43 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     fullClear = scissorState.X1 == screenScissorState.X &&
                         scissorState.Y1 == screenScissorState.Y &&
-                        scissorState.X2 == screenScissorState.X + screenScissorState.Width &&
-                        scissorState.Y2 == screenScissorState.Y + screenScissorState.Height;
+                        scissorState.X2 >= screenScissorState.X + screenScissorState.Width &&
+                        scissorState.Y2 >= screenScissorState.Y + screenScissorState.Height;
                 }
 
-                updateFlags |= RenderTargetUpdateFlags.DiscardClip;
+                if (fullClear && clearDS)
+                {
+                    // Must clear all aspects of the depth-stencil format.
+
+                    FormatInfo dsFormat = _state.State.RtDepthStencilState.Format.Convert();
+
+                    bool hasDepth = dsFormat.Format.HasDepth();
+                    bool hasStencil = dsFormat.Format.HasStencil();
+
+                    if (hasStencil && (!clearStencil || (clearAffectedByStencilMask && _state.State.StencilTestState.FrontMask != 0xff)))
+                    {
+                        fullClear = false;
+                    }
+                    else if (hasDepth && !clearDepth)
+                    {
+                        fullClear = false;
+                    }
+                }
+                
+                if (fullClear)
+                {
+                    updateFlags |= RenderTargetUpdateFlags.DiscardClip;
+                }
             }
 
             engine.UpdateRenderTargetState(updateFlags, singleUse: componentMask != 0 ? index : -1);
+
+            // Must happen after UpdateRenderTargetState to have up-to-date clip region values.
+            bool clipMismatch = (screenScissorState.X | screenScissorState.Y) != 0 ||
+                                screenScissorState.Width != _channel.TextureManager.ClipRegionWidth ||
+                                screenScissorState.Height != _channel.TextureManager.ClipRegionHeight;
+
+            bool needsCustomScissor = !clearAffectedByScissor || clipMismatch;
 
             // Scissor and rasterizer discard also affect clears.
             ulong updateMask = 1UL << StateUpdater.RasterizerStateIndex;
