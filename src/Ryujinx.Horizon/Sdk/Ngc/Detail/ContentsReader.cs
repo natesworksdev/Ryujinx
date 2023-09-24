@@ -12,7 +12,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
         private const string VersionFilePath = $"{MountName}:/version.dat";
         private const ulong DataId = 0x100000000000823UL;
 
-        public enum AcType
+        private enum AcType
         {
             AcNotB,
             AcB1,
