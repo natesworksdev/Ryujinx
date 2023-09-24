@@ -652,5 +652,6 @@
   "NetworkInterfaceDefault": "Default",
   "PackagingShaders": "Packaging Shaders",
   "AboutChangelogButton": "View Changelog on GitHub",
-  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser."
+  "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
+  "DialogCorruptedGameError": "It appears this game is corrupted. Please dump the game again.\nInternal error code: {0}" 
 }

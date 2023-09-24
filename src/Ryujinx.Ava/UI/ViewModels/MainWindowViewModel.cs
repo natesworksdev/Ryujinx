@@ -1507,7 +1507,23 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             async void Action()
             {
-                if (!await AppHost.LoadGuestApplication())
+                bool isApplicationLoaded = false;
+                try
+                {
+                    isApplicationLoaded = await AppHost.LoadGuestApplication();
+                }
+                catch (HorizonResultException ex)
+                {
+                    // Apphost Cleanup
+                    SelectedIcon = null;
+                
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogCorruptedGameError], ex.Message));
+                    });
+                }
+                
+                if (!isApplicationLoaded)
                 {
                     AppHost.DisposeContext();
                     AppHost = null;
@@ -1532,7 +1548,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Thread gameThread = new(InitializeGame) { Name = "GUI.WindowThread" };
                 gameThread.Start();
             }
-
+            
             Dispatcher.UIThread.Post(Action);
         }
 
