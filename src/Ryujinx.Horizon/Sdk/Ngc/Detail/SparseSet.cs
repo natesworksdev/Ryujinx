@@ -12,6 +12,7 @@
         private uint[] _bitfields;
         private readonly Sbv _sbv = new();
 
+        public ulong RangeValuesCount => _rangeValuesCount;
         public ulong RangeEndValue => _rangeEndValue;
 
         public bool Import(ref BinaryReader reader)
