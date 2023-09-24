@@ -57,8 +57,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-                public bool IsGoBackEnabled
-        { 
+        public bool IsGoBackEnabled
+        {
             get => _isGoBackEnabled;
             set
             {
@@ -107,7 +107,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _accountManager = accountManager;
         }
 
-                public void AddNewSaveEntry(SaveModel model)
+        public void AddNewSaveEntry(SaveModel model)
         {
             _saves.Add(model);
 

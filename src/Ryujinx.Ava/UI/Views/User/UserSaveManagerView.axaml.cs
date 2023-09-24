@@ -59,14 +59,14 @@ namespace Ryujinx.Ava.UI.Views.User
             switch (arg.NavigationMode)
             {
                 case NavigationMode.New:
-                    (_parent, _accountManager, _horizonClient, _virtualFileSystem) = 
+                    (_parent, _accountManager, _horizonClient, _virtualFileSystem) =
                         ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
 
                     _saveManager = new SaveManager(_horizonClient, _accountManager);
                     _saveManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
                     _saveManager.BackupImportSave += BackupManager_ImportSave;
 
-                break;
+                    break;
             }
             DataContext = ViewModel = new UserSaveManagerViewModel(_accountManager);
             ((ContentDialog)_parent.Parent).Title = $"{LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle]} - {ViewModel.SaveManagerHeading}";
@@ -157,7 +157,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 }
             }
         }
-        
+
         private async void GenerateProfileSaveBackup(object sender, RoutedEventArgs e)
         {
             OpenFolderDialog dialog = new()
@@ -190,7 +190,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed]
                     : LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete];
 
-                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
                     message,
                     notificationType);
 
@@ -265,7 +265,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     });
                 }
 
-                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle], 
+                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
                     message,
                     notificationType);
             }
@@ -292,7 +292,7 @@ namespace Ryujinx.Ava.UI.Views.User
             });
         }
 
-        private void BackupManager_ImportSave(object sender, ImportSaveEventArgs e) 
+        private void BackupManager_ImportSave(object sender, ImportSaveEventArgs e)
         {
             var existingSave = ViewModel.Saves.FirstOrDefault(s => s.TitleId == e.SaveInfo.ProgramId);
 

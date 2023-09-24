@@ -1,5 +1,5 @@
 
-﻿using LibHac.Fs;
+using LibHac.Fs;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Common.SaveManager;

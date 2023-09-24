@@ -16,8 +16,8 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
-using Ryujinx.Common.Logging;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
@@ -25,9 +25,9 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
-using System.Threading;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
@@ -132,7 +132,8 @@ namespace Ryujinx.Ava.Common
 
             // commited expected to be at /0, otherwise working is /1
             string attemptPath = Path.Combine(saveRootPath, "0");
-            string workingPath = Path.Combine(saveRootPath, "1");
+
+            _ = Path.Combine(saveRootPath, "1");
 
             // If the committed directory exists, that path will be loaded the next time the savedata is mounted
             if (Directory.Exists(attemptPath))
@@ -149,7 +150,7 @@ namespace Ryujinx.Ava.Common
                     Directory.CreateDirectory(attemptPath);
                 }
 
-            return attemptPath;
+                return attemptPath;
             }
         }
 

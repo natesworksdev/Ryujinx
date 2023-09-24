@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
         public event EventHandler<ImportSaveEventArgs> BackupImportSave;
-        private LoadingBarEventArgs _loadingEventArgs;
+        private readonly LoadingBarEventArgs _loadingEventArgs;
 
         private readonly HorizonClient _horizonClient;
         private readonly AccountManager _accountManager;
