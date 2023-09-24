@@ -11,9 +11,56 @@ namespace Ryujinx.Common.SystemInfo
     {
         internal WindowsSystemInfo()
         {
-            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWMI()} ; {LogicalCoreCount} logical"; // WMI is very slow
+            CpuName = $"{GetCpuidCpuName() ?? GetCpuNameWmi()} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
             (RamTotal, RamAvailable) = GetMemoryStats();
         }
+
+        private static string GetCpuNameWmi()
+        {
+            ManagementObjectCollection cpuObjs = GetWmiObjects("root\\CIMV2", "SELECT Name FROM Win32_Processor");
+
+            if (cpuObjs != null)
+            {
+                foreach (var cpuObj in cpuObjs)
+                {
+                    return cpuObj["Name"].ToString().Trim();
+                }
+            }
+
+            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER").Trim();
+        }
+
+        private static new int GetPhysicalCoreCount()
+        {
+            uint buffSize = 0;
+            GetLogicalProcessorInformation(IntPtr.Zero, ref buffSize);
+            IntPtr buffer = Marshal.AllocHGlobal((int)buffSize);
+            bool success = GetLogicalProcessorInformation(buffer, ref buffSize);
+            if (!success)
+            {
+                Marshal.FreeHGlobal(buffer);
+                return LogicalCoreCount;
+            }
+
+            int physicalCores = 0;
+            long pos = buffer.ToInt64();
+            int size = Marshal.SizeOf(typeof(SystemLogicalProcessorInformation));
+            for (long offset = 0; offset + size <= buffSize; offset += size)
+            {
+                IntPtr current = new(pos + offset);
+                SystemLogicalProcessorInformation info = Marshal.PtrToStructure<SystemLogicalProcessorInformation>(current);
+
+                if (info.Relationship == LogicalProcessorRelationship.RelationProcessorCore)
+                {
+                    physicalCores++;
+                }
+            }
+
+            Marshal.FreeHGlobal(buffer);
+
+            return physicalCores;
+        }
+
 
         private static (ulong Total, ulong Available) GetMemoryStats()
         {
@@ -26,21 +73,6 @@ namespace Ryujinx.Common.SystemInfo
             Logger.Error?.Print(LogClass.Application, $"GlobalMemoryStatusEx failed. Error {Marshal.GetLastWin32Error():X}");
 
             return (0, 0);
-        }
-
-        private static string GetCpuNameWMI()
-        {
-            ManagementObjectCollection cpuObjs = GetWMIObjects("root\\CIMV2", "SELECT * FROM Win32_Processor");
-
-            if (cpuObjs != null)
-            {
-                foreach (var cpuObj in cpuObjs)
-                {
-                    return cpuObj["Name"].ToString().Trim();
-                }
-            }
-
-            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER").Trim();
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -66,7 +98,31 @@ namespace Ryujinx.Common.SystemInfo
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
 
-        private static ManagementObjectCollection GetWMIObjects(string scope, string query)
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetLogicalProcessorInformation(IntPtr buffer, ref uint returnLength);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SystemLogicalProcessorInformation
+        {
+            public UIntPtr ProcessorMask;
+            public LogicalProcessorRelationship Relationship;
+            public ProcessorInformationUnion ProcessorInformation;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public readonly struct ProcessorInformationUnion
+        {
+            [FieldOffset(8)]
+            private readonly UInt64 Reserved2;
+        }
+
+        public enum LogicalProcessorRelationship
+        {
+            RelationProcessorCore,
+        }
+
+        private static ManagementObjectCollection GetWmiObjects(string scope, string query)
         {
             try
             {

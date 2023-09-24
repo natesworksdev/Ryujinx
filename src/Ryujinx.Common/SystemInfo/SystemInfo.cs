@@ -1,5 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -10,9 +13,11 @@ namespace Ryujinx.Common.SystemInfo
     {
         public string OsDescription { get; protected set; }
         public string CpuName { get; protected set; }
+        public static int PhysicalCores { get; protected set; }
         public ulong RamTotal { get; protected set; }
         public ulong RamAvailable { get; protected set; }
         protected static int LogicalCoreCount => Environment.ProcessorCount;
+        private static int? _cachedPhysicalCoreCount = null;
 
         protected SystemInfo()
         {
@@ -73,6 +78,59 @@ namespace Ryujinx.Common.SystemInfo
             string name = Encoding.ASCII.GetString(MemoryMarshal.Cast<int, byte>(regs)).Replace('\0', ' ').Trim();
 
             return string.IsNullOrEmpty(name) ? null : name;
+        }
+
+        public static int GetPhysicalCoreCount()
+        {
+            if (_cachedPhysicalCoreCount.HasValue)
+            {
+                return _cachedPhysicalCoreCount.Value;
+            }
+
+            int coreCount = Environment.ProcessorCount;
+
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    coreCount = PhysicalCores;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    string cpuCoresLine = File.ReadLines("/proc/cpuinfo").FirstOrDefault(line => line.Contains("cpu cores"));
+
+                    if (cpuCoresLine != null)
+                    {
+                        string[] parts = cpuCoresLine.Split(':');
+                        coreCount = int.Parse(parts[1]);
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    using var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "sysctl",
+                            Arguments = "-n hw.physicalcpu",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true,
+                        }
+                    };
+                    process.Start();
+                    coreCount = int.Parse(process.StandardOutput.ReadToEnd());
+                    process.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"An error occurred while trying to get the physical core count:  {ex.Message}");
+            }
+
+            _cachedPhysicalCoreCount = coreCount;
+
+            return coreCount;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Ryujinx.Common.SystemInfo
                 totalRAM = 0;
             }
 
-            CpuName = $"{cpuName} ; {LogicalCoreCount} logical";
+            CpuName = $"{cpuName} ; {GetPhysicalCoreCount()} physical ; {LogicalCoreCount} logical";
             RamTotal = totalRAM;
             RamAvailable = GetVMInfoAvailableMemory();
         }
