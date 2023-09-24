@@ -605,8 +605,8 @@ namespace Ryujinx.Ava.Common.SaveManager
                 {
                     if (ex.Message.Contains("is being used by another process", StringComparison.OrdinalIgnoreCase))
                     {
-                        const int retryThreshold = 3;
-                        return ++retryCount < retryThreshold
+                        const int RetryThreshold = 3;
+                        return ++retryCount < RetryThreshold
                             && await CopyFileAsync(source, destination, retryCount);
                     }
 
