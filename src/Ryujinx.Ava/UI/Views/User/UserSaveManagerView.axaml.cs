@@ -226,6 +226,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 AllowMultiple = false,
                 Filters = {
                     new FileDialogFilter() {
+                        Name = "Zip files",
                         Extensions = { "zip" },
                     }
                 }
