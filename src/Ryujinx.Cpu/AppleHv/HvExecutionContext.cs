@@ -162,8 +162,8 @@ namespace Ryujinx.Cpu.AppleHv
         /// <inheritdoc/>
         public ulong DebugPc
         {
-            get => Pc;
-            set => Pc = value;
+            get => _impl.ElrEl1;
+            set => _impl.ElrEl1 = value;
         }
 
         /// <inheritdoc/>
