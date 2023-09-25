@@ -23,10 +23,10 @@ namespace Ryujinx.Headless.SDL2
         [Option("exclusive-fullscreen", Required = false, Default = false, HelpText = "Launch the game in exclusive fullscreen mode.")]
         public bool IsExclusiveFullscreen { get; set; }
 
-        [Option("exclusive-fullscreen-width", Required = false, Default = 1280, HelpText = "Set horizontal resolution for exclusive fullscreen mode.")]
+        [Option("exclusive-fullscreen-width", Required = false, Default = 1920, HelpText = "Set horizontal resolution for exclusive fullscreen mode.")]
         public int ExclusiveFullscreenWidth { get; set; }
 
-        [Option("exclusive-fullscreen-height", Required = false, Default = 720, HelpText = "Set vertical resolution for exclusive fullscreen mode.")]
+        [Option("exclusive-fullscreen-height", Required = false, Default = 1080, HelpText = "Set vertical resolution for exclusive fullscreen mode.")]
         public int ExclusiveFullscreenHeight { get; set; }
 
         // Input
