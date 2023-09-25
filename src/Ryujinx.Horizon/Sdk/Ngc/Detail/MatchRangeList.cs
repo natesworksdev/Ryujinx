@@ -95,8 +95,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             {
                 MatchRange currRange = _ranges[baseIndex + (range / 2)];
 
-                if (currRange.StartOffset < startOffset ||
-                    (currRange.StartOffset == startOffset && currRange.EndOffset < endOffset))
+                if (currRange.StartOffset < startOffset || (currRange.StartOffset == startOffset && currRange.EndOffset < endOffset))
                 {
                     int nextHalf = (range / 2) + 1;
                     baseIndex += nextHalf;
