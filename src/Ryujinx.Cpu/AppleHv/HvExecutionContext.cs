@@ -70,6 +70,8 @@ namespace Ryujinx.Cpu.AppleHv
         private readonly ICounter _counter;
         private readonly IHvExecutionContext _shadowContext;
         private IHvExecutionContext _impl;
+        private int _shouldStep;
+        private int _debugStopped;
 
         private readonly ExceptionCallbacks _exceptionCallbacks;
 
@@ -131,22 +133,37 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         /// <inheritdoc/>
-        public void DebugStop() => _impl.DebugStop();
+        public void DebugStop()
+        {
+            if (Interlocked.CompareExchange(ref _debugStopped, 1, 0) == 0)
+            {
+                RequestInterrupt();
+            }
+        }
 
         /// <inheritdoc/>
-        public bool DebugStep() => _impl.DebugStep();
+        public bool DebugStep()
+        {
+            if (_debugStopped != 1)
+            {
+                return false;
+            }
+            
+            _shouldStep = 1;
+            return true;
+        }
 
         /// <inheritdoc/>
-        public void DebugContinue() => _impl.DebugContinue();
-
-        /// <inheritdoc/>
-        public DebugState GetDebugState() => _impl.GetDebugState();
+        public void DebugContinue()
+        {
+            Interlocked.CompareExchange(ref _debugStopped, 0, 1);
+        }
 
         /// <inheritdoc/>
         public ulong DebugPc
         {
-            get => _impl.DebugPc;
-            set => _impl.DebugPc = value;
+            get => Pc;
+            set => Pc = value;
         }
 
         /// <inheritdoc/>
@@ -164,6 +181,18 @@ namespace Ryujinx.Cpu.AppleHv
 
             while (Running)
             {
+                if (Interlocked.CompareExchange(ref _shouldStep, 0, 1) == 1)
+                {
+                    uint currentEl = Pstate & ~(0xfffffff0);
+                    if (currentEl == 0b0101)
+                    {
+                        HvApi.hv_vcpu_get_sys_reg(vcpu.Handle, HvSysReg.SPSR_EL1, out ulong spsr).ThrowOnError();
+                        spsr |= (1 << 21);
+                        HvApi.hv_vcpu_set_sys_reg(vcpu.Handle, HvSysReg.SPSR_EL1, spsr);
+                    }
+                    HvApi.hv_vcpu_set_sys_reg(vcpu.Handle, HvSysReg.MDSCR_EL1, 1);
+                }
+
                 HvApi.hv_vcpu_run(vcpu.Handle).ThrowOnError();
 
                 HvExitReason reason = vcpu.ExitInfo->Reason;
@@ -231,6 +260,21 @@ namespace Ryujinx.Cpu.AppleHv
                     SupervisorCallHandler(elr - 4UL, id);
                     vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
                     break;
+                case ExceptionClass.SoftwareStepLowerEl:
+                    HvApi.hv_vcpu_get_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1, out ulong spsr).ThrowOnError();
+                    spsr &= ~((ulong)(1 << 21));
+                    HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1,  spsr).ThrowOnError();
+                    HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.MDSCR_EL1, 0);
+                    ReturnToPool(vcpu);
+                    InterruptHandler();
+                    vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
+                    break;
+                case ExceptionClass.BrkAarch64:
+                    ReturnToPool(vcpu);
+                    BreakHandler(elr, (ushort)esr);
+                    InterruptHandler();
+                    vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
+                    break;
                 default:
                     throw new Exception($"Unhandled guest exception {ec}.");
             }
@@ -241,10 +285,7 @@ namespace Ryujinx.Cpu.AppleHv
                 // TODO: Invalidate only the range that was modified?
                 return HvAddressSpace.KernelRegionTlbiEretAddress;
             }
-            else
-            {
-                return HvAddressSpace.KernelRegionEretAddress;
-            }
+            return HvAddressSpace.KernelRegionEretAddress;
         }
 
         private static void DataAbort(MemoryTracking tracking, ulong vcpu, uint esr)

@@ -175,6 +175,11 @@ namespace ARMeilleure.Instructions
 
             ExecutionContext context = GetContext();
 
+            if (context.DebugStopped == 1)
+            {
+                return false;
+            }
+
             context.CheckInterrupt();
 
             Statistics.ResumeTimer();

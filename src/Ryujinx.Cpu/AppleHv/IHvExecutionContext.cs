@@ -42,13 +42,5 @@ namespace Ryujinx.Cpu.AppleHv
 
         void RequestInterrupt();
         bool GetAndClearInterruptRequested();
-
-        // TODO: comments
-        void DebugStop();
-        bool DebugStep();
-        void DebugContinue();
-        DebugState GetDebugState();
-
-        ulong DebugPc { get; set; }
     }
 }

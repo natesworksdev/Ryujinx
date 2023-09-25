@@ -296,6 +296,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             currentThread.SchedulerWaitEvent.Reset();
             currentThread.ThreadContext.Unlock();
+            currentThread.DebugHalt.Set();
 
             // Wake all the threads that might be waiting until this thread context is unlocked.
             for (int core = 0; core < CpuCoresCount; core++)

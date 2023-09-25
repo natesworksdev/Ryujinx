@@ -101,10 +101,8 @@ namespace ARMeilleure.State
         private readonly ExceptionCallback _supervisorCallback;
         private readonly ExceptionCallback _undefinedCallback;
 
-        internal int _debugState = (int)DebugState.Running;
-        internal int _shouldStep = 0;
-        internal ManualResetEvent _debugHalt = new ManualResetEvent(true);
-        internal Barrier _stepBarrier = new Barrier(2);
+        internal int ShouldStep;
+        internal int DebugStopped;
 
         // This is only valid while debugging is enabled.
         public ulong DebugPc;
@@ -160,34 +158,26 @@ namespace ARMeilleure.State
 
         public void DebugStop()
         {
-            _debugHalt.Reset();
-            Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping, (int)DebugState.Running);
+            if (Interlocked.CompareExchange(ref DebugStopped, 1, 0) == 0)
+            {
+                RequestInterrupt();
+            }
         }
 
         public bool DebugStep()
         {
-            if (_debugState != (int)DebugState.Stopped)
+            if (DebugStopped != 1)
             {
                 return false;
             }
 
-            _shouldStep = 1;
-            _debugHalt.Set();
-            _stepBarrier.SignalAndWait();
-            _debugHalt.Reset();
-            _stepBarrier.SignalAndWait();
-
+            ShouldStep = 1;
             return true;
         }
 
         public void DebugContinue()
         {
-            _debugHalt.Set();
-        }
-
-        public DebugState GetDebugState()
-        {
-            return (DebugState)_debugState;
+            Interlocked.CompareExchange(ref DebugStopped, 0, 1);
         }
 
         internal void OnBreak(ulong address, int imm)

@@ -23,8 +23,6 @@ namespace Ryujinx.Cpu.AppleHv
         private readonly ulong[] _x;
         private readonly V128[] _v;
 
-        public ulong DebugPc { get; set; }
-
         public HvExecutionContextShadow()
         {
             _x = new ulong[32];
@@ -53,24 +51,6 @@ namespace Ryujinx.Cpu.AppleHv
 
         public void RequestInterrupt()
         {
-        }
-
-        public void DebugStop()
-        {
-        }
-
-        public bool DebugStep()
-        {
-            return false;
-        }
-
-        public void DebugContinue()
-        {
-        }
-
-        public DebugState GetDebugState()
-        {
-            return DebugState.Stopped;
         }
 
         public bool GetAndClearInterruptRequested()

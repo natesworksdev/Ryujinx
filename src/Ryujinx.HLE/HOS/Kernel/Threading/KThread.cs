@@ -1,5 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Debugger;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
@@ -113,6 +114,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public bool WaitingInArbitration { get; set; }
 
         private readonly object _activityOperationLock = new();
+
+        private int _debugState = (int)DebugState.Running;
+        internal readonly ManualResetEvent DebugHalt = new(false);
 
         public KThread(KernelContext context) : base(context)
         {
@@ -1431,6 +1435,50 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public void ClearUserInterruptFlag()
         {
             Owner.CpuMemory.Write<ushort>(_tlsAddress + TlsUserInterruptFlagOffset, 0);
+        }
+        
+        public bool DebugStep()
+        {
+            if (_debugState != (int)DebugState.Stopped || !Context.DebugStep())
+            {
+                return false;
+            }
+
+            DebugHalt.Reset();
+            SetActivity(false);
+            DebugHalt.WaitOne();
+            return true;
+        }
+
+        public void DebugStop()
+        {
+            if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
+                    (int)DebugState.Running) != (int)DebugState.Running)
+            {
+                return;
+            }
+
+            Context.DebugStop();
+            DebugHalt.WaitOne();
+            DebugHalt.Reset();
+            _debugState = (int)DebugState.Stopped;
+        }
+
+        public void DebugContinue()
+        {
+            if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
+                    (int)DebugState.Stopped) != (int)DebugState.Stopped)
+            {
+                return;
+            }
+
+            Context.DebugContinue();
+            SetActivity(false);
+        }
+
+        public DebugState GetDebugState()
+        {
+            return (DebugState)_debugState;
         }
     }
 }

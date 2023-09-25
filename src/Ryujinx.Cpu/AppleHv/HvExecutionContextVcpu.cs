@@ -13,14 +13,6 @@ namespace Ryujinx.Cpu.AppleHv
         private static readonly SetSimdFpReg _setSimdFpReg;
         private static readonly IntPtr _setSimdFpRegNativePtr;
 
-        internal int _debugState = (int)DebugState.Running;
-        internal int _shouldStep = 0;
-        internal ManualResetEvent _debugHalt = new ManualResetEvent(true);
-        internal Barrier _stepBarrier = new Barrier(2);
-
-        // This is only valid while debugging is enabled.
-        public ulong DebugPc { get; set; }
-
         public ulong ThreadUid { get; set; }
 
         static HvExecutionContextVcpu()
@@ -196,41 +188,6 @@ namespace Ryujinx.Cpu.AppleHv
                 ulong vcpu = _vcpu;
                 HvApi.hv_vcpus_exit(ref vcpu, 1);
             }
-        }
-
-        public void DebugStop()
-        {
-            _debugHalt.Reset();
-            Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping, (int)DebugState.Running);
-            ulong vcpu = _vcpu;
-            HvApi.hv_vcpus_exit(ref vcpu, 1);
-        }
-
-        public bool DebugStep()
-        {
-            if (_debugState != (int)DebugState.Stopped)
-            {
-                return false;
-            }
-
-            _shouldStep = 1;
-            _debugHalt.Set();
-            _stepBarrier.SignalAndWait();
-            _debugHalt.Reset();
-            _stepBarrier.SignalAndWait();
-
-            return true;
-        }
-
-        public void DebugContinue()
-        {
-            _debugHalt.Set();
-            HvApi.hv_vcpu_run(_vcpu);
-        }
-
-        public DebugState GetDebugState()
-        {
-            return (DebugState)_debugState;
         }
 
         public bool GetAndClearInterruptRequested()

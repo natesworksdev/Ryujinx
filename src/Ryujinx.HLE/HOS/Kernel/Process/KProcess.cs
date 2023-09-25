@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ExceptionCallback = Ryujinx.Cpu.ExceptionCallback;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -748,6 +749,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
+            if (currentThread.GetDebugState() != DebugState.Running)
+            {
+                KernelContext.CriticalSection.Enter();
+                currentThread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                currentThread.DebugHalt.Set();
+                KernelContext.CriticalSection.Leave();
+            }
+
             if (currentThread.Context.Running &&
                 currentThread.Owner != null &&
                 currentThread.GetUserDisableCount() != 0 &&
@@ -1200,7 +1209,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     foreach (KThread thread in _parent._threads)
                     {
-                        thread.Context.DebugStop();
+                        thread.DebugStop();
                     }
                 }
             }
@@ -1213,11 +1222,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            public Ryujinx.Cpu.IExecutionContext DebugGetThreadContext(ulong threadUid)
+            public KThread DebugGetThread(ulong threadUid)
             {
                 lock (_parent._threadingLock)
                 {
-                    return _parent._threads.FirstOrDefault(x => x.ThreadUid == threadUid)?.Context;
+                    return _parent._threads.FirstOrDefault(x => x.ThreadUid == threadUid);
                 }
             }
 

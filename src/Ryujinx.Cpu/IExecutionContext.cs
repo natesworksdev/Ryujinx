@@ -118,7 +118,6 @@ namespace Ryujinx.Cpu
         void DebugStop();
         bool DebugStep();
         void DebugContinue();
-        DebugState GetDebugState();
 
         ulong DebugPc { get; set; }
     }
