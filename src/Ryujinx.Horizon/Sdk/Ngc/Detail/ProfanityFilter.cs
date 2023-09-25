@@ -27,12 +27,12 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             return _contentsReader.Initialize(MountCacheSize);
         }
 
-        public Result Reload()
+        public override Result Reload()
         {
             return _contentsReader.Reload();
         }
 
-        public Result GetContentVersion(out uint version)
+        public override Result GetContentVersion(out uint version)
         {
             version = 0;
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             return Result.Success;
         }
 
-        public Result CheckProfanityWords(out uint checkMask, ReadOnlySpan<byte> word, uint regionMask, ProfanityFilterOption option)
+        public override Result CheckProfanityWords(out uint checkMask, ReadOnlySpan<byte> word, uint regionMask, ProfanityFilterOption option)
         {
             checkMask = 0;
 
@@ -150,7 +150,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             return Result.Success;
         }
 
-        public Result MaskProfanityWordsInText(out int maskedWordsCount, Span<byte> text, uint regionMask, ProfanityFilterOption option)
+        public override Result MaskProfanityWordsInText(out int maskedWordsCount, Span<byte> text, uint regionMask, ProfanityFilterOption option)
         {
             maskedWordsCount = 0;
 

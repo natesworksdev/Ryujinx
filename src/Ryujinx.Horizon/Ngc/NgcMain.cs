@@ -8,6 +8,8 @@ namespace Ryujinx.Horizon.Ngc
 
             ipcServer.Initialize(HorizonStatic.Options.FsClient);
 
+            // TODO: Notification thread, requires implementing OpenSystemDataUpdateEventNotifier on FS.
+
             serviceTable.SignalServiceReady();
 
             ipcServer.ServiceRequests();

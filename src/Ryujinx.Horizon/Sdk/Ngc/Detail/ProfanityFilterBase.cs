@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Horizon.Common;
+using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -99,6 +100,11 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             DetectEmailDomain,
             DetectEmailEnd,
         }
+
+        public abstract Result GetContentVersion(out uint version);
+        public abstract Result CheckProfanityWords(out uint checkMask, ReadOnlySpan<byte> word, uint regionMask, ProfanityFilterOption option);
+        public abstract Result MaskProfanityWordsInText(out int maskedWordsCount, Span<byte> text, uint regionMask, ProfanityFilterOption option);
+        public abstract Result Reload();
 
         protected static bool IsIncludesAtSign(string word)
         {
