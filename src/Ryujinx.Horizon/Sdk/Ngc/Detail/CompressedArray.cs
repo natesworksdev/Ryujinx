@@ -88,8 +88,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                 return false;
             }
 
-            if (!reader.Read(out int bitfieldsCount) ||
-                reader.AllocateAndReadArray(ref _bitfields, bitfieldsCount) != bitfieldsCount)
+            if (!reader.Read(out int bitfieldsCount) || reader.AllocateAndReadArray(ref _bitfields, bitfieldsCount) != bitfieldsCount)
             {
                 return false;
             }
