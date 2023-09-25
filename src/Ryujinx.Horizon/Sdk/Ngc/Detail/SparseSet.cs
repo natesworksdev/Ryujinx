@@ -34,6 +34,7 @@
         public bool Has(long index)
         {
             int plainIndex = Rank1(index);
+
             return plainIndex != 0 && Select1Ex(plainIndex - 1) == index;
         }
 

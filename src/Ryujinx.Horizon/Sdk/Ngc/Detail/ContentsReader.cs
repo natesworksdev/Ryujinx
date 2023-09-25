@@ -136,7 +136,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                     if (_cacheSize < (ulong)cacheSize)
                     {
                         result = NgcResult.InvalidSize;
-                        return result;
+                        return NgcResult.InvalidSize;
                     }
 
                     result = _fsClient.MountSystemData(MountName, DataId);
@@ -277,6 +277,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             }
 
             similarFormTable = table;
+
             return Result.Success;
         }
 
@@ -318,6 +319,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             }
 
             trie = ac;
+
             return Result.Success;
         }
 
@@ -370,7 +372,9 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             using MemoryStream input = new(data);
             using GZipStream gZipStream = new(input, CompressionMode.Decompress);
             using MemoryStream output = new();
+
             gZipStream.CopyTo(output);
+
             return output.ToArray();
         }
 

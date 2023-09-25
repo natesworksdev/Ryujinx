@@ -50,6 +50,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             catch (ArgumentException)
             {
                 utf8Text = default;
+
                 return Utf8ParseResult.InvalidCharacter;
             }
 

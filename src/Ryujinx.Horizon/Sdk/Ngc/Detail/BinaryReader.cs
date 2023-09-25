@@ -22,10 +22,12 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             {
                 value = MemoryMarshal.Cast<byte, T>(_data[_offset..])[0];
                 _offset += byteLength;
+
                 return true;
             }
 
             value = default;
+
             return false;
         }
 
@@ -37,6 +39,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
         public int AllocateAndReadArray<T>(ref T[] array, int length) where T : unmanaged
         {
             array = new T[length];
+
             return ReadArray(array);
         }
 
@@ -48,7 +51,9 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                 byteLength = Math.Min(byteLength, _data.Length - _offset);
 
                 MemoryMarshal.Cast<byte, T>(_data.Slice(_offset, byteLength)).CopyTo(array);
+
                 _offset += byteLength;
+
                 return byteLength / Unsafe.SizeOf<T>();
             }
 

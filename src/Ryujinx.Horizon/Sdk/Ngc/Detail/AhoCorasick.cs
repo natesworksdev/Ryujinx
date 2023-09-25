@@ -214,6 +214,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
 
                             // Some basic validation to ensure we imported the dictionary properly.
                             int wordLength = _wordLengths[_wordMap.Rank1((uint)nodePlainIndex) - 1];
+
                             Debug.Assert(storageOffset + 1 == wordLength);
                         }
 
@@ -236,6 +237,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                             if (lastMultiWordIndex != 0)
                             {
                                 multiWord += Encoding.UTF8.GetString(storage[lastMultiWordIndex..(storageOffset + 1)]);
+
                                 sb.AppendLine(multiWord);
                             }
                         }

@@ -43,6 +43,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                 }
 
                 Array.Resize(ref _ranges, newCapacity);
+
                 _capacity = newCapacity;
             }
 
@@ -73,6 +74,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                     else if (prevEndOffset <= currStartOffset)
                     {
                         output.Add(prevStartOffset, prevEndOffset);
+
                         prevStartOffset = currStartOffset;
                         prevEndOffset = currEndOffset;
                     }

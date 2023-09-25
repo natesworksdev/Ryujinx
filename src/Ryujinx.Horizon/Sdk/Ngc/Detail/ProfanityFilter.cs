@@ -50,6 +50,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             }
 
             version = BinaryPrimitives.ReadUInt32BigEndian(data);
+
             return Result.Success;
         }
 
@@ -536,6 +537,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             if (trieMatched)
             {
                 matched = true;
+
                 return Result.Success;
             }
 
@@ -553,6 +555,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             if (trieMatched)
             {
                 matched = true;
+
                 return Result.Success;
             }
 
@@ -622,12 +625,14 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
         private static bool MatchCheck(ReadOnlySpan<byte> text, int matchStartOffset, int matchEndOffset, int nodeId, ref MatchCheckState state)
         {
             state.CheckMask |= state.RegionMask != 0 ? state.RegionMask : state.Option.SystemRegionMask;
+
             return true;
         }
 
         private static bool MatchSingleWord(ReadOnlySpan<byte> text, int matchStartOffset, int matchEndOffset, int nodeId, ref MatchState state)
         {
             MatchCommon(ref state, matchStartOffset, matchEndOffset);
+
             return true;
         }
 
@@ -644,6 +649,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             int endOffsetBeforeSeparator = TrimEnd(state.ConvertedText, convertedEndOffset);
 
             MatchCommon(ref state, convertedStartOffset, endOffsetBeforeSeparator);
+
             return true;
         }
 
@@ -685,6 +691,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             int matchLength = matchEndOffset - matchStartOffset;
 
             text.Slice(matchStartOffset, matchLength).CopyTo(delimitedText.Slice(delimitedTextOffset, matchLength));
+
             delimitedTextOffset += matchLength;
 
             // If the word is suffixed by a word separator, insert "\b" delimiter, otherwise insert "a" delimiter.
@@ -783,6 +790,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             int matchLength = matchEndOffset - matchStartOffset;
 
             text.Slice(matchStartOffset, matchLength).CopyTo(delimitedText.Slice(delimitedTextOffset, matchLength));
+
             delimitedTextOffset += matchLength;
 
             // If the word is suffixed by a word separator, insert "\b" delimiter, otherwise insert "a" delimiter.

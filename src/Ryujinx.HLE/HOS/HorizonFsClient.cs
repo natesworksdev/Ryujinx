@@ -88,6 +88,7 @@ namespace Ryujinx.HLE.HOS
         {
             var result = _fsClient.OpenFile(out var libhacHandle, path.ToU8Span(), (LibHac.Fs.OpenMode)openMode);
             handle = new(libhacHandle);
+
             return result.ToHorizonResult();
         }
 
@@ -96,6 +97,7 @@ namespace Ryujinx.HLE.HOS
             // TODO.
 
             size = 0;
+
             return Result.Success;
         }
 

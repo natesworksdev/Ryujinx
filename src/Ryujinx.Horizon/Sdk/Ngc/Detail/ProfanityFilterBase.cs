@@ -213,10 +213,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
 
         private static bool IsValidEmailAddressCharacter(byte character)
         {
-            return char.IsAsciiLetterOrDigit((char)character) ||
-                character == '-' ||
-                character == '.' ||
-                character == '_';
+            return char.IsAsciiLetterOrDigit((char)character) || character == '-' || character == '.' || character == '_';
         }
 
         protected static void PreMaskCharacterRange(Span<byte> text, int startOffset, int endOffset, MaskMode maskMode, int characterCount)
@@ -542,10 +539,10 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                     {
                         ReadOnlySpan<byte> separator = _wordSeparators[separatorIndex];
 
-                        if (index + separator.Length < input.Length &&
-                            input.Slice(index, separator.Length).SequenceEqual(separator))
+                        if (index + separator.Length < input.Length && input.Slice(index, separator.Length).SequenceEqual(separator))
                         {
                             map.Set.TurnOn(index, separator.Length);
+
                             index += separator.Length - 1;
                             isWordSeparator = true;
                             break;
@@ -570,8 +567,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
             {
                 ReadOnlySpan<byte> separator = _wordSeparators[separatorIndex];
 
-                if (offset >= separator.Length &&
-                    text.Slice(offset - separator.Length, separator.Length).SequenceEqual(separator))
+                if (offset >= separator.Length && text.Slice(offset - separator.Length, separator.Length).SequenceEqual(separator))
                 {
                     offset -= separator.Length;
                     separatorIndex = -1;
@@ -679,7 +675,6 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
                 case '\uDBFF':
                 case '\uDC00':
                 case '\uDFFF':
-                case '\uFFFD': // Added by .NET for invalid characters.
                     return false;
                 case '\u02E4':
                 case '\u02EC':
@@ -787,6 +782,7 @@ namespace Ryujinx.Horizon.Sdk.Ngc.Detail
         protected static bool MatchSimple(ReadOnlySpan<byte> text, int matchStartOffset, int matchEndOffset, int nodeId, ref bool matched)
         {
             matched = true;
+
             return false;
         }
     }
