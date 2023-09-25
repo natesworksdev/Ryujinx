@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Text;
+
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenBallot;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenCall;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenFSI;
