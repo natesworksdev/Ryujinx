@@ -265,13 +265,6 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void CheckLaunchState()
         {
-            if (ShowKeyErrorOnLoad)
-            {
-                ShowKeyErrorOnLoad = false;
-
-                Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
-            }
-
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
             {
                 Logger.Warning?.Print(LogClass.Application, $"The value of vm.max_map_count is lower than {LinuxHelper.RecommendedVmMaxMapCount}. ({LinuxHelper.VmMaxMapCount})");
@@ -298,11 +291,20 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            if (_deferLoad)
+            if (!ShowKeyErrorOnLoad)
             {
-                _deferLoad = false;
+                if (_deferLoad)
+                {
+                    _deferLoad = false;
 
-                ViewModel.LoadApplication(_launchPath, _startFullscreen).Wait();
+                    ViewModel.LoadApplication(_launchPath, _startFullscreen).Wait();
+                }
+            }
+            else
+            {
+                ShowKeyErrorOnLoad = false;
+
+                Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
