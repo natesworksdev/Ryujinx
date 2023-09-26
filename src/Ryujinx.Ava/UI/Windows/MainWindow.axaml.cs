@@ -278,11 +278,23 @@ namespace Ryujinx.Ava.UI.Windows
 
                 if (LinuxHelper.PkExecPath is not null)
                 {
-                    ShowVmMaxMapCountDialog().Wait();
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        if (OperatingSystem.IsLinux())
+                        {
+                            await ShowVmMaxMapCountDialog();
+                        }
+                    });
                 }
                 else
                 {
-                    ShowVmMaxMapCountWarning().Wait();
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        if (OperatingSystem.IsLinux())
+                        {
+                            await ShowVmMaxMapCountWarning();
+                        }
+                    });
                 }
             }
 
