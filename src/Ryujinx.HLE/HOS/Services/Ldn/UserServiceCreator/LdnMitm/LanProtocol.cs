@@ -14,9 +14,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 {
     internal class LanProtocol
     {
-        public const int BufferSize = 2048;
         private const uint LanMagic = 0x11451400;
 
+        public const int BufferSize = 2048;
         public const int TcpTxBufferSize = 0x800;
         public const int TcpRxBufferSize = 0x1000;
         public const int TxBufferSizeMax = 0x2000;
@@ -103,6 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                     if (header.Magic != LanMagic)
                     {
                         bufferEnd = 0;
+
                         Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"Invalid magic number in received packet. [magic: {header.Magic}] [EP: {endPoint}]");
 
                         return;
@@ -112,6 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                     if (totalSize > BufferSize)
                     {
                         bufferEnd = 0;
+
                         Logger.Error?.PrintMsg(LogClass.ServiceLdn, $"Max packet size {BufferSize} exceeded.");
 
                         return;

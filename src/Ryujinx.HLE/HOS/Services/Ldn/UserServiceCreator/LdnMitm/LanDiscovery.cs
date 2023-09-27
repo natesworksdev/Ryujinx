@@ -134,7 +134,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                     NetworkInfo = info;
                     updated = true;
 
-                    //Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Received NetworkInfo:\n{JsonHelper.Serialize(info, true)}");
                     Logger.Debug?.PrintMsg(LogClass.ServiceLdn, $"Host IP: {NetworkHelpers.ConvertUint(info.Ldn.Nodes[0].Ipv4Address)}");
                 }
             }
@@ -429,7 +428,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             foreach (LdnProxyTcpSession station in _stations.Where(station => station.IsConnected))
             {
                 countConnected++;
+
                 station.OverrideInfo();
+
                 // NOTE: This is not part of the original implementation.
                 NetworkInfo.Ldn.Nodes[station.NodeId] = station.NodeInfo;
             }

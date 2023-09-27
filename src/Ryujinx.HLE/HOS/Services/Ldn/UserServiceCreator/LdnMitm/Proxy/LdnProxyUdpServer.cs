@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
 {
     internal class LdnProxyUdpServer : NetCoreServer.UdpServer, ILdnSocket
     {
-        private readonly long _scanFrequency = 1000;
+        private const long ScanFrequency = 1000;
 
         private readonly LanProtocol _protocol;
         private byte[] _buffer;
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
             // Rate limit scans.
 
             long timeMs = Stopwatch.GetTimestamp() / (Stopwatch.Frequency / 1000);
-            long delay = _scanFrequency - (timeMs - _lastScanTime);
+            long delay = ScanFrequency - (timeMs - _lastScanTime);
 
             if (delay > 0)
             {
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
         public Dictionary<ulong, NetworkInfo> GetScanResults()
         {
             // NOTE: Try to minimize waiting time for scan results.
-            // After we recieve a first response, wait a short time for follow-ups and return.
+            // After we receive the first response, wait a short time for follow-ups and return.
             // Responses that were too late to catch will appear in the next scan.
 
             // ldn_mitm does not do this, but this improves latency for games that expect it to be low (it is on console).

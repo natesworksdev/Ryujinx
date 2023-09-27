@@ -3,7 +3,6 @@
     internal interface ILdnTcpSocket : ILdnSocket
     {
         bool Connect();
-
         void DisconnectAndStop();
     }
 }
