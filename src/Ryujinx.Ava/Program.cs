@@ -60,6 +60,7 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     RenderingMode = new[] { X11RenderingMode.Glx, X11RenderingMode.Software },
+                    OverlayPopups = true,
                 })
                 .With(new Win32PlatformOptions
                 {
