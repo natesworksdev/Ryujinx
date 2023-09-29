@@ -53,7 +53,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             LowPassBaseGain = 1.0f - LowPassFeedbackGain;
         }
 
-        public void UpdateLowPassFilter(ref float tempRawRef, uint channelCount)
+        public readonly void UpdateLowPassFilter(ref float tempRawRef, uint channelCount)
         {
             for (int i = 0; i < channelCount; i++)
             {
