@@ -77,7 +77,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void ClearBuffer(int index)
         {
-            Unsafe.InitBlock((void*)GetBufferPointer(index), 0, SampleCount* sizeof(float));
+            Unsafe.InitBlock((void*)GetBufferPointer(index), 0, SampleCount * sizeof(float));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
