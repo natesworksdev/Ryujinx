@@ -62,7 +62,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             foreach (float input in inputs)
             {
-                res += (input * input);
+                float normInput = input * (1f / 32768f);
+                res += normInput * normInput;
             }
 
             res /= inputs.Length;
