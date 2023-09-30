@@ -1253,6 +1253,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private void ThreadStart()
         {
             _schedulerWaitEvent.WaitOne();
+            DebugHalt.Reset();
             KernelStatic.SetKernelContext(KernelContext, this);
 
             if (_customThreadStart != null)
@@ -1439,41 +1440,62 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         
         public bool DebugStep()
         {
-            if (_debugState != (int)DebugState.Stopped || !Context.DebugStep())
+            lock (_activityOperationLock)
             {
-                return false;
-            }
+                if (_debugState != (int)DebugState.Stopped
+                    || (_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0
+                    || !Context.DebugStep())
+                {
+                    return false;
+                }
 
-            DebugHalt.Reset();
-            SetActivity(false);
-            DebugHalt.WaitOne();
-            return true;
+                DebugHalt.Reset();
+                Resume(ThreadSchedState.ThreadPauseFlag);
+                DebugHalt.WaitOne();
+
+                return true;
+            }
         }
 
         public void DebugStop()
         {
-            if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
-                    (int)DebugState.Running) != (int)DebugState.Running)
+            lock (_activityOperationLock)
             {
-                return;
-            }
+                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
+                        (int)DebugState.Running) != (int)DebugState.Running)
+                {
+                    return;
+                }
 
-            Context.DebugStop();
-            DebugHalt.WaitOne();
-            DebugHalt.Reset();
-            _debugState = (int)DebugState.Stopped;
+                if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
+                {
+                    Suspend(ThreadSchedState.ThreadPauseFlag);
+                }
+
+                Context.DebugStop();
+                DebugHalt.WaitOne();
+
+                _debugState = (int)DebugState.Stopped;
+            }
         }
 
         public void DebugContinue()
         {
-            if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
-                    (int)DebugState.Stopped) != (int)DebugState.Stopped)
+            lock (_activityOperationLock)
             {
-                return;
-            }
+                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
+                        (int)DebugState.Stopped) != (int)DebugState.Stopped)
+                {
+                    return;
+                }
 
-            Context.DebugContinue();
-            SetActivity(false);
+                Context.DebugContinue();
+
+                if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
+                {
+                    Resume(ThreadSchedState.ThreadPauseFlag);
+                }
+            }
         }
 
         public DebugState GetDebugState()
