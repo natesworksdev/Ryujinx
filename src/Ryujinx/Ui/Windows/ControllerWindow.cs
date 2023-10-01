@@ -184,7 +184,6 @@ namespace Ryujinx.Ui.Windows
             _rSl.Clicked += Button_Pressed;
             _rSr.Clicked += Button_Pressed;
             _enableCemuHook.Clicked += CemuHookCheckButtonPressed;
-            _enableMotionInvertZ.Clicked += InvertMotionZPressed;
 
             // Setup current values.
             UpdateInputDeviceList();
@@ -205,11 +204,6 @@ namespace Ryujinx.Ui.Windows
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
         {
             UpdateCemuHookSpecificFieldsVisibility();
-        }
-
-        private void InvertMotionZPressed(object sender, EventArgs e)
-        {
-            
         }
 
         private void HandleOnGamepadDisconnected(string id)

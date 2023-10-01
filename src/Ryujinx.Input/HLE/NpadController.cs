@@ -297,8 +297,9 @@ namespace Ryujinx.Input.HLE
 
                             accelerometer = new Vector3(accelerometer.X, -accelerometer.Z, accelerometer.Y);
 
-                            var gyroZ = -gyroscope.Z;
-                            if (controllerConfig.Motion.InvertZAxis) gyroZ *= -1;
+                            float gyroZ = -gyroscope.Z;
+                            if (controllerConfig.Motion.InvertZAxis) 
+                                gyroZ *= -1;
                             gyroscope = new Vector3(gyroscope.X, gyroZ, gyroscope.Y);
 
                             _leftMotionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
