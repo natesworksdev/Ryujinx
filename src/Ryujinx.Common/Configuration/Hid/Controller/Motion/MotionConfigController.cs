@@ -21,5 +21,10 @@ namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
         /// Enable Motion Controls
         /// </summary>
         public bool EnableMotion { get; set; }
+
+        /// <summary>
+        /// Invert Z axis (Horizontal)
+        /// </summary>
+        public bool InvertZAxis { get; set; }
     }
 }

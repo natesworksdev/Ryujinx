@@ -45,6 +45,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] Adjustment _gyroDeadzone;
         [GUI] CheckButton _enableMotion;
         [GUI] CheckButton _enableCemuHook;
+        [GUI] CheckButton _enableMotionInvertZ;
         [GUI] CheckButton _mirrorInput;
         [GUI] Entry _dsuServerHost;
         [GUI] Entry _dsuServerPort;
@@ -183,6 +184,7 @@ namespace Ryujinx.Ui.Windows
             _rSl.Clicked += Button_Pressed;
             _rSr.Clicked += Button_Pressed;
             _enableCemuHook.Clicked += CemuHookCheckButtonPressed;
+            _enableMotionInvertZ.Clicked += InvertMotionZPressed;
 
             // Setup current values.
             UpdateInputDeviceList();
@@ -203,6 +205,11 @@ namespace Ryujinx.Ui.Windows
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
         {
             UpdateCemuHookSpecificFieldsVisibility();
+        }
+
+        private void InvertMotionZPressed(object sender, EventArgs e)
+        {
+            
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -434,6 +441,7 @@ namespace Ryujinx.Ui.Windows
             _dsuServerHost.Buffer.Text = "";
             _dsuServerPort.Buffer.Text = "";
             _enableRumble.Active = false;
+            _enableMotionInvertZ.Active = false;
         }
 
         private void SetValues(InputConfig config)
@@ -526,6 +534,7 @@ namespace Ryujinx.Ui.Windows
                     _gyroDeadzone.Value = controllerConfig.Motion.GyroDeadzone;
                     _enableMotion.Active = controllerConfig.Motion.EnableMotion;
                     _enableCemuHook.Active = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
+                    _enableMotionInvertZ.Active = controllerConfig.Motion.InvertZAxis;
 
                     // If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0.
                     if (_controllerRangeLeft.Value <= 0.0 && _controllerRangeRight.Value <= 0.0)
@@ -690,6 +699,7 @@ namespace Ryujinx.Ui.Windows
                         EnableMotion = _enableMotion.Active,
                         Sensitivity = (int)_sensitivity.Value,
                         GyroDeadzone = _gyroDeadzone.Value,
+                        InvertZAxis = _enableMotionInvertZ.Active
                     };
                 }
 
