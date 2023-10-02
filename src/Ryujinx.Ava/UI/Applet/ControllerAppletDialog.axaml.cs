@@ -20,7 +20,7 @@ namespace Ryujinx.Ava.UI.Applet
         private const string JoyConLeftResource = "Ryujinx.Ui.Common/Resources/Icon_Controller_JoyConLeft.svg";
         private const string JoyConRightResource = "Ryujinx.Ui.Common/Resources/Icon_Controller_JoyConRight.svg";
 
-        public SvgImage ProControllerImage
+        public static SvgImage ProControllerImage
         {
             get
             {
@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.UI.Applet
             }
         }
 
-        public SvgImage JoyconPairImage
+        public static SvgImage JoyconPairImage
         {
             get
             {
@@ -36,7 +36,7 @@ namespace Ryujinx.Ava.UI.Applet
             }
         }
 
-        public SvgImage JoyconLeftImage
+        public static SvgImage JoyconLeftImage
         {
             get
             {
@@ -44,7 +44,7 @@ namespace Ryujinx.Ava.UI.Applet
             }
         }
 
-        public SvgImage JoyconRightImage
+        public static SvgImage JoyconRightImage
         {
             get
             {
