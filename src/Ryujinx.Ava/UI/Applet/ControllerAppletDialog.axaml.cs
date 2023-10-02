@@ -9,6 +9,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Hid;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Applet
@@ -58,7 +59,9 @@ namespace Ryujinx.Ava.UI.Applet
         public bool SupportsRightJoycon { get; set; }
         public bool SupportsJoyconPair { get; set; }
 
-        public ControllerAppletDialog(ControllerAppletUiArgs args)
+        private MainWindow _mainWindow;
+
+        public ControllerAppletDialog(ControllerAppletUiArgs args, MainWindow mainWindow)
         {
             if (args.PlayerCountMin == args.PlayerCountMax)
             {
@@ -74,23 +77,26 @@ namespace Ryujinx.Ava.UI.Applet
             SupportsRightJoycon = (args.SupportedStyles & ControllerType.JoyconRight) != 0;
             SupportsJoyconPair = (args.SupportedStyles & ControllerType.JoyconPair) != 0;
 
+            _mainWindow = mainWindow;
+
             DataContext = this;
             InitializeComponent();
         }
 
-        public ControllerAppletDialog()
+        public ControllerAppletDialog(MainWindow mainWindow)
         {
+            _mainWindow = mainWindow;
             DataContext = this;
             InitializeComponent();
         }
 
-        public static async Task<UserResult> ShowControllerAppletDialog(ControllerAppletUiArgs args)
+        public static async Task<UserResult> ShowControllerAppletDialog(ControllerAppletUiArgs args, MainWindow window)
         {
             ContentDialog contentDialog = new();
 
             UserResult result = UserResult.Cancel;
 
-            ControllerAppletDialog content = new(args);
+            ControllerAppletDialog content = new(args, window);
 
             contentDialog.Title = LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle];
             contentDialog.Content = content;
@@ -135,13 +141,11 @@ namespace Ryujinx.Ava.UI.Applet
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                // FIX
-                if (Parent is MainWindow window)
-                {
-                    window.SettingsWindow = new SettingsWindow(window.VirtualFileSystem, window.ContentManager);
+                _mainWindow.SettingsWindow = new SettingsWindow(_mainWindow.VirtualFileSystem, _mainWindow.ContentManager);
+                _mainWindow.SettingsWindow.NavPanel.Content = _mainWindow.SettingsWindow.InputPage;
+                _mainWindow.SettingsWindow.NavPanel.SelectedItem = _mainWindow.SettingsWindow.NavPanel.MenuItems.ElementAt(1);
 
-                    await window.SettingsWindow.ShowDialog(window);
-                }
+                await _mainWindow.SettingsWindow.ShowDialog(_mainWindow);
             });
         }
 
