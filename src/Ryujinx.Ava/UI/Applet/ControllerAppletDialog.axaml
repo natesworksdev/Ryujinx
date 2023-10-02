@@ -37,7 +37,7 @@
                     VerticalAlignment="Center"
                     TextAlignment="Center"
                     FontWeight="Bold"
-                    Text="Supported Controllers:" />
+                    Text="{locale:Locale ControllerAppletControllers}" />
                 <StackPanel
                     Spacing="10"
                     HorizontalAlignment="Center"
@@ -77,7 +77,7 @@
                     VerticalAlignment="Center"
                     TextAlignment="Center"
                     FontWeight="Bold"
-                    Text="Players:" />
+                    Text="{locale:Locale ControllerAppletPlayers}" />
                 <Border Height="50">
                     <TextBlock
                         HorizontalAlignment="Center"
