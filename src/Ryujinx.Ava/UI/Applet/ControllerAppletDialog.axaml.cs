@@ -101,12 +101,14 @@ namespace Ryujinx.Ava.UI.Applet
                 }
             }
 
+            contentDialog.Closed += Handler;
+
             await ContentDialogHelper.ShowAsync(contentDialog);
 
             return result;
         }
 
-        public SvgImage GetResource(string path)
+        private static SvgImage GetResource(string path)
         {
             SvgImage image = new();
 
