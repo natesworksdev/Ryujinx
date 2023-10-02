@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:applet="using:Ryujinx.Ava.UI.Applet"
     mc:Ignorable="d"
     Width="400"
@@ -15,47 +16,85 @@
         VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <StackPanel
+        <Border
             Grid.Column="0"
             Grid.Row="0"
-            Orientation="Vertical">
-            <TextBlock Text="Supported Controllers:"></TextBlock>
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="50"
-                    Source="{Binding ProControllerImage}"
-                    IsVisible="{Binding SupportsProController}" />
-                <Image
-                    Width="50"
-                    Source="{Binding JoyconPairImage}"
-                    IsVisible="{Binding SupportsJoyconPair}" />
-                <Image
-                    Width="50"
-                    Source="{Binding JoyconLeftImage}"
-                    IsVisible="{Binding SupportsLeftJoycon}" />
-                <Image
-                    Width="50"
-                    Source="{Binding JoyconRightImage}"
-                    IsVisible="{Binding SupportsRightJoycon}" />
+            BorderBrush="{DynamicResource ThemeControlBorderColor}"
+            BorderThickness="1"
+            CornerRadius="5"
+            Margin="0 0 10 0">
+            <StackPanel
+                Margin="10"
+                Spacing="10"
+                Orientation="Vertical">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    TextAlignment="Center"
+                    FontWeight="Bold"
+                    Text="Supported Controllers:" />
+                <StackPanel
+                    Spacing="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Image
+                        Width="50"
+                        Source="{Binding ProControllerImage}"
+                        IsVisible="{Binding SupportsProController}" />
+                    <Image
+                        Width="50"
+                        Source="{Binding JoyconPairImage}"
+                        IsVisible="{Binding SupportsJoyconPair}" />
+                    <Image
+                        Width="50"
+                        Source="{Binding JoyconLeftImage}"
+                        IsVisible="{Binding SupportsLeftJoycon}" />
+                    <Image
+                        Width="50"
+                        Source="{Binding JoyconRightImage}"
+                        IsVisible="{Binding SupportsRightJoycon}" />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-        <StackPanel
-            Grid.Column="2"
+        </Border>
+        <Border
+            Grid.Column="1"
             Grid.Row="0"
-            Orientation="Vertical">
-            <TextBlock
-                Text="Players:" />
-            <TextBlock
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Classes="h1"
-                Text="{Binding PlayerCount}"></TextBlock>
+            BorderBrush="{DynamicResource ThemeControlBorderColor}"
+            BorderThickness="1"
+            CornerRadius="5">
+            <StackPanel
+                Margin="10"
+                Spacing="10"
+                Orientation="Vertical">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    TextAlignment="Center"
+                    FontWeight="Bold"
+                    Text="Players:" />
+                <Border Height="50">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"
+                        FontSize="40"
+                        FontWeight="Thin"
+                        Text="{Binding PlayerCount}" />
+                </Border>
+            </StackPanel>
+        </Border>
+        <StackPanel
+            Grid.Column="0"
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Height="100">
         </StackPanel>
     </Grid>
 </UserControl>
