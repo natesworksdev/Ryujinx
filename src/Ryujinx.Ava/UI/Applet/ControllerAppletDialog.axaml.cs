@@ -1,9 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Svg.Skia;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Hid;
@@ -127,6 +129,25 @@ namespace Ryujinx.Ava.UI.Applet
             }
 
             return image;
+        }
+
+        public void OpenSettingsWindow()
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                // FIX
+                if (Parent is MainWindow window)
+                {
+                    window.SettingsWindow = new SettingsWindow(window.VirtualFileSystem, window.ContentManager);
+
+                    await window.SettingsWindow.ShowDialog(window);
+                }
+            });
+        }
+
+        public void Close()
+        {
+            ((ContentDialog)Parent).Hide();
         }
     }
 }

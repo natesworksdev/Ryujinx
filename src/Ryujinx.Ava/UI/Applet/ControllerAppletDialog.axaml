@@ -112,13 +112,15 @@
                 HorizontalAlignment="Right">
                 <Button
                     Name="SaveButton"
-                    MinWidth="90">
+                    MinWidth="90"
+                    Command="{Binding OpenSettingsWindow}">
                     <TextBlock Text="{locale:Locale DialogOpenSettingsWindowLabel}" />
                 </Button>
                 <Button
                     Name="CancelButton"
-                    MinWidth="90">
-                    <TextBlock Text="{locale:Locale InputDialogCancel}" />
+                    MinWidth="90"
+                    Command="{Binding Close}">
+                    <TextBlock Text="{locale:Locale SettingsButtonClose}" />
                 </Button>
             </StackPanel>
         </Panel>
