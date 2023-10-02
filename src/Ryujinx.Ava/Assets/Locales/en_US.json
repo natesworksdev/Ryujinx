@@ -551,6 +551,8 @@
   "SoftwareKeyboardModeASCII": "Must be ASCII text only",
   "ControllerAppletControllers": "Supported Controllers:",
   "ControllerAppletPlayers": "Players:",
+  "ControllerAppletDescription": "Your current configuration is invalid. Open settings and reconfigure your inputs.",
+  "ControllerAppletDocked": "Docked mode set. Handheld control should be disabled.",
   "UpdaterRenaming": "Renaming Old Files...",
   "UpdaterRenameFailed": "Updater was unable to rename file: {0}",
   "UpdaterAddingFiles": "Adding New Files...",

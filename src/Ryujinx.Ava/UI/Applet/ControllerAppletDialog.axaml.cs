@@ -58,6 +58,7 @@ namespace Ryujinx.Ava.UI.Applet
         public bool SupportsLeftJoycon { get; set; }
         public bool SupportsRightJoycon { get; set; }
         public bool SupportsJoyconPair { get; set; }
+        public bool IsDocked { get; set; }
 
         private readonly MainWindow _mainWindow;
 
@@ -76,6 +77,8 @@ namespace Ryujinx.Ava.UI.Applet
             SupportsLeftJoycon = (args.SupportedStyles & ControllerType.JoyconLeft) != 0;
             SupportsRightJoycon = (args.SupportedStyles & ControllerType.JoyconRight) != 0;
             SupportsJoyconPair = (args.SupportedStyles & ControllerType.JoyconPair) != 0;
+
+            IsDocked = args.IsDocked;
 
             _mainWindow = mainWindow;
 
