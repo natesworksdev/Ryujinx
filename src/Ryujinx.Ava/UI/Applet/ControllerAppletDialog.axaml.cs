@@ -81,7 +81,7 @@ namespace Ryujinx.Ava.UI.Applet
             InitializeComponent();
         }
 
-        public static async Task<UserResult> ShowInputDialog(ControllerAppletUiArgs args)
+        public static async Task<UserResult> ShowControllerAppletDialog(ControllerAppletUiArgs args)
         {
             ContentDialog contentDialog = new();
 
