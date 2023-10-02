@@ -29,14 +29,25 @@ namespace Ryujinx.Ava.UI.Applet
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
         {
-            string message = LocaleManager.Instance.UpdateAndGetDynamicValue(
-                args.PlayerCountMin == args.PlayerCountMax ? LocaleKeys.DialogControllerAppletMessage : LocaleKeys.DialogControllerAppletMessagePlayerRange,
-                args.PlayerCountMin == args.PlayerCountMax ? args.PlayerCountMin.ToString() : $"{args.PlayerCountMin}-{args.PlayerCountMax}",
-                args.SupportedStyles,
-                string.Join(", ", args.SupportedPlayers),
-                args.IsDocked ? LocaleManager.Instance[LocaleKeys.DialogControllerAppletDockModeSet] : "");
+            ManualResetEvent dialogCloseEvent = new(false);
 
-            return DisplayMessageDialog(LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle], message);
+            bool okPressed = false;
+
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                var response = await ControllerAppletDialog.ShowInputDialog(LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle], args);
+
+                if (response == UserResult.Ok)
+                {
+                    okPressed = true;
+                }
+
+                dialogCloseEvent.Set();
+            });
+
+            dialogCloseEvent.WaitOne();
+
+            return okPressed;
         }
 
         public bool DisplayMessageDialog(string title, string message)

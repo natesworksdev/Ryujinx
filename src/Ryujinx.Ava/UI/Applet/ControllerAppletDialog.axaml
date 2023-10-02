@@ -1,0 +1,62 @@
+<UserControl
+    x:Class="Ryujinx.Ava.UI.Applet.ControllerAppletDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:applet="using:Ryujinx.Ava.UI.Applet"
+    mc:Ignorable="d"
+    Width="400"
+    Focusable="True"
+    x:DataType="applet:ControllerAppletDialog">
+    <Grid
+        Margin="20"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel
+            Grid.Column="0"
+            Grid.Row="0"
+            Orientation="Vertical">
+            <TextBlock Text="Supported Controllers:"></TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Image
+                    Width="50"
+                    Source="{Binding ProControllerImage}"
+                    IsVisible="{Binding SupportsProController}" />
+                <Image
+                    Width="50"
+                    Source="{Binding JoyconPairImage}"
+                    IsVisible="{Binding SupportsJoyconPair}" />
+                <Image
+                    Width="50"
+                    Source="{Binding JoyconLeftImage}"
+                    IsVisible="{Binding SupportsLeftJoycon}" />
+                <Image
+                    Width="50"
+                    Source="{Binding JoyconRightImage}"
+                    IsVisible="{Binding SupportsRightJoycon}" />
+            </StackPanel>
+        </StackPanel>
+        <StackPanel
+            Grid.Column="2"
+            Grid.Row="0"
+            Orientation="Vertical">
+            <TextBlock
+                Text="Players:" />
+            <TextBlock
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Classes="h1"
+                Text="{Binding PlayerCount}"></TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>
+
