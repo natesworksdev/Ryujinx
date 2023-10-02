@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.Svg.Skia;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -90,7 +91,6 @@ namespace Ryujinx.Ava.UI.Applet
             ControllerAppletDialog content = new(args);
 
             contentDialog.Title = LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle];
-            contentDialog.CloseButtonText = LocaleManager.Instance[LocaleKeys.InputDialogCancel];
             contentDialog.Content = content;
 
             void Handler(ContentDialog sender, ContentDialogClosedEventArgs eventArgs)
@@ -102,6 +102,11 @@ namespace Ryujinx.Ava.UI.Applet
             }
 
             contentDialog.Closed += Handler;
+
+            Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());
+            bottomBorder.Setters.Add(new Setter(IsVisibleProperty, false));
+
+            contentDialog.Styles.Add(bottomBorder);
 
             await ContentDialogHelper.ShowAsync(contentDialog);
 
