@@ -81,7 +81,7 @@ namespace Ryujinx.Ava.UI.Applet
             InitializeComponent();
         }
 
-        public static async Task<UserResult> ShowInputDialog(string title, ControllerAppletUiArgs args)
+        public static async Task<UserResult> ShowInputDialog(ControllerAppletUiArgs args)
         {
             ContentDialog contentDialog = new();
 
@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.Applet
 
             ControllerAppletDialog content = new(args);
 
-            contentDialog.Title = title;
+            contentDialog.Title = LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle];
             contentDialog.CloseButtonText = LocaleManager.Instance[LocaleKeys.InputDialogCancel];
             contentDialog.Content = content;
 

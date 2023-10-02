@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.UI.Applet
 
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                var response = await ControllerAppletDialog.ShowInputDialog(LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle], args);
+                var response = await ControllerAppletDialog.ShowInputDialog(args);
 
                 if (response == UserResult.Ok)
                 {
