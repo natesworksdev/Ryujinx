@@ -10,6 +10,10 @@
     <None Remove="Resources\Controller_JoyConPair.svg" />
     <None Remove="Resources\Controller_JoyConRight.svg" />
     <None Remove="Resources\Controller_ProCon.svg" />
+    <None Remove="Resources\Icon_Controller_JoyConLeft.svg" />
+    <None Remove="Resources\Icon_Controller_JoyConPair.svg" />
+    <None Remove="Resources\Icon_Controller_JoyConRight.svg" />
+    <None Remove="Resources\Icon_Controller_ProCon.svg" />
     <None Remove="Resources\Icon_NCA.png" />
     <None Remove="Resources\Icon_NRO.png" />
     <None Remove="Resources\Icon_NSO.png" />
@@ -28,6 +32,10 @@
     <EmbeddedResource Include="Resources\Controller_JoyConPair.svg" />
     <EmbeddedResource Include="Resources\Controller_JoyConRight.svg" />
     <EmbeddedResource Include="Resources\Controller_ProCon.svg" />
+    <EmbeddedResource Include="Resources\Icon_Controller_JoyConLeft.svg" />
+    <EmbeddedResource Include="Resources\Icon_Controller_JoyConPair.svg" />
+    <EmbeddedResource Include="Resources\Icon_Controller_JoyConRight.svg" />
+    <EmbeddedResource Include="Resources\Icon_Controller_ProCon.svg" />
     <EmbeddedResource Include="Resources\Icon_NCA.png" />
     <EmbeddedResource Include="Resources\Icon_NRO.png" />
     <EmbeddedResource Include="Resources\Icon_NSO.png" />

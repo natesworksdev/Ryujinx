@@ -44,19 +44,19 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <Image
-                        Width="50"
+                        Height="50"
                         Source="{Binding ProControllerImage}"
                         IsVisible="{Binding SupportsProController}" />
                     <Image
-                        Width="50"
+                        Height="50"
                         Source="{Binding JoyconPairImage}"
                         IsVisible="{Binding SupportsJoyconPair}" />
                     <Image
-                        Width="50"
+                        Height="50"
                         Source="{Binding JoyconLeftImage}"
                         IsVisible="{Binding SupportsLeftJoycon}" />
                     <Image
-                        Width="50"
+                        Height="50"
                         Source="{Binding JoyconRightImage}"
                         IsVisible="{Binding SupportsRightJoycon}" />
                 </StackPanel>
