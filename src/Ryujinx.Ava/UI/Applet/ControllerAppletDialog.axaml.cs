@@ -59,7 +59,7 @@ namespace Ryujinx.Ava.UI.Applet
         public bool SupportsRightJoycon { get; set; }
         public bool SupportsJoyconPair { get; set; }
 
-        private MainWindow _mainWindow;
+        private readonly MainWindow _mainWindow;
 
         public ControllerAppletDialog(ControllerAppletUiArgs args, MainWindow mainWindow)
         {
