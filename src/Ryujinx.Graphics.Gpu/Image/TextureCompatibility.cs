@@ -619,12 +619,20 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
             {
-                if (lhsFormat.Format == rhsFormat.Format)
+                bool forSampler = flags.HasFlag(TextureSearchFlags.ForSampler);
+                bool depthAlias = flags.HasFlag(TextureSearchFlags.DepthAlias);
+
+                TextureMatchQuality matchQuality = FormatMatches(lhs, rhs, forSampler, depthAlias);
+
+                if (matchQuality == TextureMatchQuality.Perfect)
                 {
                     return TextureViewCompatibility.Full;
                 }
-                else if (IsValidColorAsDepthAlias(lhsFormat.Format, rhsFormat.Format) ||
-                         IsValidDepthAsColorAlias(lhsFormat.Format, rhsFormat.Format))
+                else if (matchQuality == TextureMatchQuality.FormatAlias)
+                {
+                    return TextureViewCompatibility.FormatAlias;
+                }
+                else if (IsValidColorAsDepthAlias(lhsFormat.Format, rhsFormat.Format) || IsValidDepthAsColorAlias(lhsFormat.Format, rhsFormat.Format))
                 {
                     return TextureViewCompatibility.CopyOnly;
                 }
