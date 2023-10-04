@@ -42,21 +42,15 @@ namespace Ryujinx.Ava.Common.SaveManager
         }
 
         #region Backup
-        public async Task<BackupRequestOutcome> BackupUserSaveDataToZip(LibHacUserId userId,
-            Uri savePath,
-            SaveOptions saveOptions = SaveOptions.Default)
+        public async Task<bool> BackupUserSaveDataToZip(LibHacUserId userId, Uri savePath)
         {
             // TODO: Eventually add cancellation source
 
-            var userSaves = GetUserSaveData(userId, saveOptions);
+            var userSaves = GetUserSaveData(userId);
             if (userSaves.IsNullOrEmpty())
             {
                 Logger.Warning?.Print(LogClass.Application, "No save data found");
-                return new BackupRequestOutcome
-                {
-                    DidFail = false,
-                    Message = "No save data found"
-                };
+                return true;
             }
 
             _loadingEventArgs.Curr = 0;
@@ -72,25 +66,13 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // Delete temp for good measure?
                 _ = Directory.CreateDirectory(backupTempDir);
 
-                var outcome = await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
-                              && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
-
-                return new BackupRequestOutcome
-                {
-                    DidFail = !outcome,
-                    Message = outcome
-                        ? string.Empty
-                        : "Failed to backup user saves"
-                };
+                return await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
+                       && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
             }
             catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to backup user data - {ex.Message}");
-                return new BackupRequestOutcome
-                {
-                    DidFail = true,
-                    Message = $"Failed to backup user data - {ex.Message}"
-                };
+                return false;
             }
             finally
             {
@@ -101,7 +83,7 @@ namespace Ryujinx.Ava.Common.SaveManager
             }
         }
 
-        private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId, SaveOptions saveOptions)
+        private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId)
         {
             try
             {
@@ -109,14 +91,10 @@ namespace Ryujinx.Ava.Common.SaveManager
                 var userSaves = GetSaveData(userId, SaveDataType.Account)
                     .ToList();
 
-                var deviceSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
-                    ? GetSaveData(default, SaveDataType.Device)
-                    : Enumerable.Empty<BackupSaveMeta>();
+                var deviceSaves = GetSaveData(default, SaveDataType.Device);
                 userSaves.AddRange(deviceSaves);
 
-                var bcatSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
-                    ? GetSaveData(default, SaveDataType.Bcat)
-                    : Enumerable.Empty<BackupSaveMeta>();
+                var bcatSaves = GetSaveData(default, SaveDataType.Bcat);
                 userSaves.AddRange(bcatSaves);
 
                 return userSaves;
@@ -302,7 +280,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         #endregion
 
         #region Restore
-        public async Task<BackupRequestOutcome> RestoreUserSaveDataFromZip(LibHacUserId userId,
+        public async Task<bool> RestoreUserSaveDataFromZip(LibHacUserId userId,
             string sourceDataPath)
         {
             var sourceInfo = new FileInfo(sourceDataPath);
@@ -325,11 +303,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                     var error = $"Failed to extract save backup zip {ex.Message}";
                     Logger.Error?.Print(LogClass.Application, error);
 
-                    return new()
-                    {
-                        DidFail = true,
-                        Message = error
-                    };
+                    return false;
                 }
             }
 
@@ -343,10 +317,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 var identifiedTitleDirectories = GetTitleDirectories(sourceInfo);
                 if (identifiedTitleDirectories.IsNullOrEmpty())
                 {
-                    return new()
-                    {
-                        DidFail = true,
-                    };
+                    return false;
                 }
 
                 // Start import
@@ -376,18 +347,12 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // let the import complete
                 _ = await Task.WhenAll(importBuffer);
 
-                return new BackupRequestOutcome
-                {
-                    DidFail = false
-                };
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to import save data - {ex.Message}");
-                return new BackupRequestOutcome
-                {
-                    DidFail = false
-                };
+                return false;
             }
             finally
             {

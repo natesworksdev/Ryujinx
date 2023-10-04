@@ -193,13 +193,13 @@ namespace Ryujinx.Ava.UI.Views.User
                     _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     file.Path);
 
-                var notificationType = result.DidFail
-                    ? NotificationType.Error
-                    : NotificationType.Success;
+                var notificationType = result
+                    ? NotificationType.Success
+                    : NotificationType.Error;
 
-                var message = result.DidFail
-                    ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed]
-                    : LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete];
+                var message = result
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed];
 
                 NotificationHelper.Show(
                     LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
@@ -265,13 +265,13 @@ namespace Ryujinx.Ava.UI.Views.User
                     _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
                     saveBackupZip);
 
-                var notificationType = result.DidFail
-                    ? NotificationType.Error
-                    : NotificationType.Success;
+                var notificationType = result
+                    ? NotificationType.Success
+                    : NotificationType.Error;
 
-                var message = result.DidFail
-                    ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed]
-                    : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete];
+                var message = result
+                    ? LocaleManager.Instance[LocaleKeys.SaveManagerRestoreComplete]
+                    : LocaleManager.Instance[LocaleKeys.SaveManagerRestoreFailed];
 
                 if (!string.IsNullOrWhiteSpace(ViewModel.Search))
                 {
