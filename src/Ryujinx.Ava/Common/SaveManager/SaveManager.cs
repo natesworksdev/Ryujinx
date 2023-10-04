@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Common.SaveManager;
 using System;
@@ -27,33 +26,27 @@ namespace Ryujinx.Ava.Common.SaveManager
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
         public event EventHandler<ImportSaveEventArgs> BackupImportSave;
-        private readonly LoadingBarEventArgs _loadingEventArgs;
+        private readonly LoadingBarEventArgs _loadingEventArgs = new();
 
         private readonly HorizonClient _horizonClient;
-        private readonly AccountManager _accountManager;
 
-        public SaveManager(HorizonClient hzClient, AccountManager acctManager)
+        public SaveManager(HorizonClient hzClient)
         {
-            _loadingEventArgs = new();
-
             _horizonClient = hzClient;
-            _accountManager = acctManager;
         }
 
         #region Backup
         public async Task<bool> BackupUserSaveDataToZip(LibHacUserId userId, Uri savePath)
         {
-            // TODO: Eventually add cancellation source
-
-            var userSaves = GetUserSaveData(userId);
-            if (userSaves.IsNullOrEmpty())
+            var userSaves = GetUserSaveData(userId).ToArray();
+            if (userSaves.Length == 0)
             {
                 Logger.Warning?.Print(LogClass.Application, "No save data found");
-                return true;
+                return false;
             }
 
             _loadingEventArgs.Curr = 0;
-            _loadingEventArgs.Max = userSaves.Count() + 1; // add one for metadata file
+            _loadingEventArgs.Max = userSaves.Length + 1; // Add one for metadata file
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
             // Create the top level temp dir for the intermediate copies - ensure it's empty
@@ -65,7 +58,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // Delete temp for good measure?
                 _ = Directory.CreateDirectory(backupTempDir);
 
-                return await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
+                return await BatchCopySavesToTempDir(userSaves, backupTempDir)
                        && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
             }
             catch (Exception ex)
@@ -86,7 +79,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         {
             try
             {
-                // Almost all games have user savess
+                // Almost all games have user saves
                 var userSaves = GetSaveData(userId, SaveDataType.Account)
                     .ToList();
 
@@ -152,11 +145,11 @@ namespace Ryujinx.Ava.Common.SaveManager
             return saves;
         }
 
-        private async Task<bool> BatchCopySavesToTempDir(LibHacUserId userId, IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
+        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
             try
             {
-                // batch intermediate copies so we don't overwhelm systems
+                // Batch intermediate copies so we don't overwhelm systems
                 const int BATCH_SIZE = 5;
                 List<Task<bool>> tempCopyTasks = new(BATCH_SIZE);
 

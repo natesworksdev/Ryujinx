@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.UI.Views.User
                     (_parent, _accountManager, _horizonClient, _) =
                         ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
 
-                    _saveManager = new SaveManager(_horizonClient, _accountManager);
+                    _saveManager = new SaveManager(_horizonClient);
                     _saveManager.BackupProgressUpdated += BackupManager_ProgressUpdate;
                     _saveManager.BackupImportSave += BackupManager_ImportSave;
 
