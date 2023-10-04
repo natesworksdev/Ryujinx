@@ -147,13 +147,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
         public bool EnableColorSpacePassthrough { get; set; }
-        public static bool ColorSpacePassthroughAvailable
-        {
-            get
-            {
-                return OperatingSystem.IsMacOS();
-            }
-        }
+        public bool ColorSpacePassthroughAvailable => IsMacOS;
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
         public bool EnableInfo { get; set; }
