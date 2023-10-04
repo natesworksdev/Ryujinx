@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.UI.Controls
                 Value = newValue;
             }
 
-            base.OnPointerWheelChanged(e);
+            e.Handled = true;
         }
     }
 }
