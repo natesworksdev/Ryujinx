@@ -15,7 +15,7 @@ namespace Ryujinx.Ava.Common.SaveManager
 
         #region Backup
         public Task<BackupRequestOutcome> BackupUserSaveDataToZip(UserId userId,
-            string location,
+            Uri savePath,
             SaveOptions saveOptions = SaveOptions.Default);
 
         public Task<BackupRequestOutcome> BackupUserTitleSaveDataToZip(UserId userId,

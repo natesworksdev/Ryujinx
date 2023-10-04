@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         }
 
         public async Task<BackupRequestOutcome> BackupUserSaveDataToZip(LibHacUserId userId,
-            string location,
+            Uri savePath,
             SaveOptions saveOptions = SaveOptions.Default)
         {
             // TODO: Eventually add cancellation source
@@ -81,7 +81,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 _ = Directory.CreateDirectory(backupTempDir);
 
                 var outcome = await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
-                    && CompleteBackup(location, userId, backupTempDir);
+                              && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
 
                 return new BackupRequestOutcome
                 {
@@ -106,18 +106,6 @@ namespace Ryujinx.Ava.Common.SaveManager
                 {
                     Directory.Delete(backupTempDir, true);
                 }
-            }
-
-            // Produce the actual zip
-            bool CompleteBackup(string location, LibHacUserId userId, string backupTempDir)
-            {
-                var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                var profileName = _accountManager
-                    .GetAllUsers()
-                    .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId)?.Name;
-
-                var backupFile = Path.Combine(location, $"{profileName}_{currDate}_saves.zip");
-                return CreateOrReplaceZipFile(backupTempDir, backupFile);
             }
         }
 

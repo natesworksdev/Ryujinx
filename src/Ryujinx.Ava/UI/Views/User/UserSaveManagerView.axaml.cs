@@ -163,19 +163,25 @@ namespace Ryujinx.Ava.UI.Views.User
         private async void GenerateProfileSaveBackup(object sender, RoutedEventArgs e)
         {
             var window = ((TopLevel)_parent.GetVisualRoot()) as Window;
+            var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            var profileName = _accountManager.LastOpenedUser.Name;
+            var fileName = $"{profileName}_{currDate}_saves";
 
-            var dirResult = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            var file = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                AllowMultiple = false,
-                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle]
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle],
+                DefaultExtension = "zip",
+                SuggestedFileName = fileName,
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("zip")
+                    {
+                        Patterns = new[] { "*.zip" },
+                        AppleUniformTypeIdentifiers = new[] { "public.zip-archive" },
+                        MimeTypes = new[] { "application/zip" }
+                    }
+                }
             });
-
-            if (dirResult.Count <= 0)
-            {
-                return;
-            }
-
-            var backupDir = dirResult[0].Path.LocalPath;
 
             // Disable the user from doing anything until we complete
             ViewModel.IsGoBackEnabled = false;
@@ -185,7 +191,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
                 var result = await _saveManager.BackupUserSaveDataToZip(
                     _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
-                    backupDir);
+                    file.Path);
 
                 var notificationType = result.DidFail
                     ? NotificationType.Error
