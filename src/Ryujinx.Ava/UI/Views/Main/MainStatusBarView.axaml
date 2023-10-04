@@ -139,6 +139,7 @@
                 Content="{Binding VolumeStatusText}"
                 IsChecked="{Binding VolumeMuted}"
                 IsVisible="{Binding !ShowLoadProgress}"
+                PointerWheelChanged="VolumeStatus_OnPointerWheelChanged"
                 Background="Transparent"
                 BorderThickness="0"
                 CornerRadius="0">
