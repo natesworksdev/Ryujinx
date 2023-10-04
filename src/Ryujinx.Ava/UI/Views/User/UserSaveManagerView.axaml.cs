@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DynamicData;
@@ -22,6 +23,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Common.SaveManager;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,7 +38,6 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private AccountManager _accountManager;
         private HorizonClient _horizonClient;
-        private VirtualFileSystem _virtualFileSystem;
         private NavigationDialogHost _parent;
         private ISaveManager _saveManager;
 
@@ -59,7 +60,7 @@ namespace Ryujinx.Ava.UI.Views.User
             switch (arg.NavigationMode)
             {
                 case NavigationMode.New:
-                    (_parent, _accountManager, _horizonClient, _virtualFileSystem) =
+                    (_parent, _accountManager, _horizonClient, _) =
                         ((NavigationDialogHost parent, AccountManager accountManager, HorizonClient client, VirtualFileSystem virtualFileSystem))arg.Parameter;
 
                     _saveManager = new SaveManager(_horizonClient, _accountManager);
@@ -79,11 +80,11 @@ namespace Ryujinx.Ava.UI.Views.User
             ViewModel.Saves.Clear();
             var saves = new ObservableCollection<SaveModel>();
             var saveDataFilter = SaveDataFilter.Make(
-                programId: default,
-                saveType: SaveDataType.Account,
+                default,
+                SaveDataType.Account,
                 new UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low),
-                saveDataId: default,
-                index: default);
+                default,
+                default);
 
             using var saveDataIterator = new UniqueRef<SaveDataIterator>();
 
@@ -143,7 +144,8 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 if (button.DataContext is SaveModel saveModel)
                 {
-                    var result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DeleteUserSave],
+                    var result = await ContentDialogHelper.CreateConfirmationDialog(
+                        LocaleManager.Instance[LocaleKeys.DeleteUserSave],
                         LocaleManager.Instance[LocaleKeys.IrreversibleActionNote],
                         LocaleManager.Instance[LocaleKeys.InputDialogYes],
                         LocaleManager.Instance[LocaleKeys.InputDialogNo], "");
@@ -160,16 +162,20 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void GenerateProfileSaveBackup(object sender, RoutedEventArgs e)
         {
-            OpenFolderDialog dialog = new()
-            {
-                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle]
-            };
+            var window = ((TopLevel)_parent.GetVisualRoot()) as Window;
 
-            var backupDir = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
-            if (string.IsNullOrWhiteSpace(backupDir))
+            var dirResult = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseBackupFolderTitle]
+            });
+
+            if (dirResult.Count <= 0)
             {
                 return;
             }
+
+            var backupDir = dirResult[0].Path.LocalPath;
 
             // Disable the user from doing anything until we complete
             ViewModel.IsGoBackEnabled = false;
@@ -178,9 +184,8 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
                 var result = await _saveManager.BackupUserSaveDataToZip(
-                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
-                    location: backupDir,
-                    saveOptions: SaveOptions.Default);
+                    _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
+                    backupDir);
 
                 var notificationType = result.DidFail
                     ? NotificationType.Error
@@ -190,11 +195,10 @@ namespace Ryujinx.Ava.UI.Views.User
                     ? LocaleManager.Instance[LocaleKeys.SaveManagerBackupFailed]
                     : LocaleManager.Instance[LocaleKeys.SaveManagerBackupComplete];
 
-                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
+                NotificationHelper.Show(
+                    LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
                     message,
                     notificationType);
-
-                return;
             }
             catch (Exception ex)
             {
@@ -209,36 +213,41 @@ namespace Ryujinx.Ava.UI.Views.User
 
         private async void ImportSaveBackup(object sender, RoutedEventArgs e)
         {
-            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.SaveManagerConfirmRestoreTitle],
+            bool userConfirmation = await ContentDialogHelper.CreateChoiceDialog(
+                LocaleManager.Instance[LocaleKeys.SaveManagerConfirmRestoreTitle],
                 LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipPrimaryMessage],
                 LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipSecondaryMessage],
-                primaryButtonKey: LocaleKeys.SaveMangerRestoreUserConfirm,
-                closeButtonKey: LocaleKeys.SaveMangerRestoreUserCancel);
+                LocaleKeys.SaveMangerRestoreUserConfirm,
+                LocaleKeys.SaveMangerRestoreUserCancel);
 
             if (!userConfirmation)
             {
                 return;
             }
 
-            OpenFileDialog dialog = new()
+            var window = ((TopLevel)_parent.GetVisualRoot()) as Window;
+
+            var fileResult = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SaveManagerChooseRestoreZipTitle],
                 AllowMultiple = false,
-                Filters = {
-                    new FileDialogFilter() {
-                        Name = "Zip files",
-                        Extensions = { "zip" },
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new("zip")
+                    {
+                        Patterns = new[] { "*.zip" },
+                        AppleUniformTypeIdentifiers = new[] { "public.zip-archive" },
+                        MimeTypes = new[] { "application/zip" }
                     }
                 }
-            };
+            });
 
-            var saveBackupZip = await dialog.ShowAsync(((TopLevel)_parent.GetVisualRoot()) as Window);
-            if (saveBackupZip is null
-                || saveBackupZip.Length == 0
-                || string.IsNullOrWhiteSpace(saveBackupZip[0]))
+            if (fileResult.Count <= 0)
             {
                 return;
             }
+
+            var saveBackupZip = fileResult[0].Path.LocalPath;
 
             // Disable the user from doing anything until we complete
             ViewModel.IsGoBackEnabled = false;
@@ -247,8 +256,8 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 // Could potentially seed with existing saves already enumerated but we still need bcat and device data
                 var result = await _saveManager.RestoreUserSaveDataFromZip(
-                    userId: _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
-                    sourceDataPath: saveBackupZip[0]);
+                    _accountManager.LastOpenedUser.UserId.ToLibHacUserId(),
+                    saveBackupZip);
 
                 var notificationType = result.DidFail
                     ? NotificationType.Error
@@ -266,7 +275,8 @@ namespace Ryujinx.Ava.UI.Views.User
                     });
                 }
 
-                NotificationHelper.Show(LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
+                NotificationHelper.Show(
+                    LocaleManager.Instance[LocaleKeys.NotificationBackupTitle],
                     message,
                     notificationType);
             }
