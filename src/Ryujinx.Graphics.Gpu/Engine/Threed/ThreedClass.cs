@@ -250,27 +250,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     Unsafe.As<T, Vector256<uint>>(ref rhs)
                 );
             }
-            else if (Vector128.IsHardwareAccelerated)
+            else
             {
                 ref var lhsVec = ref Unsafe.As<T, Vector128<uint>>(ref lhs);
                 ref var rhsVec = ref Unsafe.As<T, Vector128<uint>>(ref rhs);
 
                 return Vector128.EqualsAll(lhsVec, rhsVec) &&
                     Vector128.EqualsAll(Unsafe.Add(ref lhsVec, 1), Unsafe.Add(ref rhsVec, 1));
-            }
-            else
-            {
-                ref var lhsInt = ref Unsafe.As<T, uint>(ref lhs);
-                ref var rhsInt = ref Unsafe.As<T, uint>(ref rhs);
-
-                return lhsInt == rhsInt &&
-                    Unsafe.Add(ref lhsInt, 1) == Unsafe.Add(ref rhsInt, 1) &&
-                    Unsafe.Add(ref lhsInt, 2) == Unsafe.Add(ref rhsInt, 2) &&
-                    Unsafe.Add(ref lhsInt, 3) == Unsafe.Add(ref rhsInt, 3) &&
-                    Unsafe.Add(ref lhsInt, 4) == Unsafe.Add(ref rhsInt, 4) &&
-                    Unsafe.Add(ref lhsInt, 5) == Unsafe.Add(ref rhsInt, 5) &&
-                    Unsafe.Add(ref lhsInt, 6) == Unsafe.Add(ref rhsInt, 6) &&
-                    Unsafe.Add(ref lhsInt, 7) == Unsafe.Add(ref rhsInt, 7);
             }
         }
 
