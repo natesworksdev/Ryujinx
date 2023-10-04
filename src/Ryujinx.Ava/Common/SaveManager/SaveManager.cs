@@ -5,11 +5,9 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ns;
 using Microsoft.IdentityModel.Tokens;
-using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Common.SaveManager;
 using System;
@@ -23,52 +21,32 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common.SaveManager
 {
-    public class SaveManager : ISaveManager
+    public class SaveManager
     {
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
         public event EventHandler<ImportSaveEventArgs> BackupImportSave;
-        private readonly LoadingBarEventArgs _loadingEventArgs;
+        private readonly LoadingBarEventArgs _loadingEventArgs = new();
 
         private readonly HorizonClient _horizonClient;
-        private readonly AccountManager _accountManager;
 
-        public SaveManager(HorizonClient hzClient, AccountManager acctManager)
+        public SaveManager(HorizonClient hzClient)
         {
-            _loadingEventArgs = new();
-
             _horizonClient = hzClient;
-            _accountManager = acctManager;
         }
 
         #region Backup
-        public Task<BackupRequestOutcome> BackupUserTitleSaveDataToZip(LibHacUserId userId,
-            ulong titleId,
-            string location,
-            SaveOptions saveOptions = SaveOptions.Default)
+        public async Task<bool> BackupUserSaveDataToZip(LibHacUserId userId, Uri savePath)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<BackupRequestOutcome> BackupUserSaveDataToZip(LibHacUserId userId,
-            string location,
-            SaveOptions saveOptions = SaveOptions.Default)
-        {
-            // TODO: Eventually add cancellation source
-
-            var userSaves = GetUserSaveData(userId, saveOptions);
-            if (userSaves.IsNullOrEmpty())
+            var userSaves = GetUserSaveData(userId).ToArray();
+            if (userSaves.Length == 0)
             {
                 Logger.Warning?.Print(LogClass.Application, "No save data found");
-                return new BackupRequestOutcome
-                {
-                    DidFail = false,
-                    Message = "No save data found"
-                };
+                return false;
             }
 
             _loadingEventArgs.Curr = 0;
-            _loadingEventArgs.Max = userSaves.Count() + 1; // add one for metadata file
+            _loadingEventArgs.Max = userSaves.Length + 1; // Add one for metadata file
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
             // Create the top level temp dir for the intermediate copies - ensure it's empty
@@ -80,25 +58,13 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // Delete temp for good measure?
                 _ = Directory.CreateDirectory(backupTempDir);
 
-                var outcome = await BatchCopySavesToTempDir(userId, userSaves, backupTempDir)
-                    && CompleteBackup(location, userId, backupTempDir);
-
-                return new BackupRequestOutcome
-                {
-                    DidFail = !outcome,
-                    Message = outcome
-                        ? string.Empty
-                        : "Failed to backup user saves"
-                };
+                return await BatchCopySavesToTempDir(userSaves, backupTempDir)
+                       && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
             }
             catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to backup user data - {ex.Message}");
-                return new BackupRequestOutcome
-                {
-                    DidFail = true,
-                    Message = $"Failed to backup user data - {ex.Message}"
-                };
+                return false;
             }
             finally
             {
@@ -107,36 +73,20 @@ namespace Ryujinx.Ava.Common.SaveManager
                     Directory.Delete(backupTempDir, true);
                 }
             }
-
-            // Produce the actual zip
-            bool CompleteBackup(string location, LibHacUserId userId, string backupTempDir)
-            {
-                var currDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                var profileName = _accountManager
-                    .GetAllUsers()
-                    .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId)?.Name;
-
-                var backupFile = Path.Combine(location, $"{profileName}_{currDate}_saves.zip");
-                return CreateOrReplaceZipFile(backupTempDir, backupFile);
-            }
         }
 
-        private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId, SaveOptions saveOptions)
+        private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId)
         {
             try
             {
-                // Almost all games have user savess
+                // Almost all games have user saves
                 var userSaves = GetSaveData(userId, SaveDataType.Account)
                     .ToList();
 
-                var deviceSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
-                    ? GetSaveData(default, SaveDataType.Device)
-                    : Enumerable.Empty<BackupSaveMeta>();
+                var deviceSaves = GetSaveData(default, SaveDataType.Device);
                 userSaves.AddRange(deviceSaves);
 
-                var bcatSaves = saveOptions.HasFlag(SaveOptions.SaveTypeDevice)
-                    ? GetSaveData(default, SaveDataType.Bcat)
-                    : Enumerable.Empty<BackupSaveMeta>();
+                var bcatSaves = GetSaveData(default, SaveDataType.Bcat);
                 userSaves.AddRange(bcatSaves);
 
                 return userSaves;
@@ -195,14 +145,11 @@ namespace Ryujinx.Ava.Common.SaveManager
             return saves;
         }
 
-        private async Task<bool> BatchCopySavesToTempDir(LibHacUserId userId, IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
+        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
-            // Generate a metadata item so users know what titleIds ares in case they're moving around, jksv, sanity, etc
-            Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
-
             try
             {
-                // batch intermediate copies so we don't overwhelm systems
+                // Batch intermediate copies so we don't overwhelm systems
                 const int BATCH_SIZE = 5;
                 List<Task<bool>> tempCopyTasks = new(BATCH_SIZE);
 
@@ -219,29 +166,11 @@ namespace Ryujinx.Ava.Common.SaveManager
 
                     // Add backup task
                     tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
-
-                    // Add title metadata entry - might be dupe from bcat/device
-                    if (!userFriendlyMetadataMap.ContainsKey(meta.TitleId.Value))
-                    {
-                        var titleIdHex = meta.TitleId.Value.ToString("x16");
-
-                        var appData = MainWindow.MainWindowViewModel.Applications
-                                .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
-
-                        userFriendlyMetadataMap.Add(meta.TitleId.Value, new UserFriendlyAppData
-                        {
-                            Title = appData?.TitleName,
-                            TitleId = meta.TitleId.Value,
-                            TitleIdHex = titleIdHex
-                        });
-                    }
                 }
 
                 // wait for any outstanding temp copies to complete
                 _ = await Task.WhenAll(tempCopyTasks);
 
-                // finally, move the metadata tag file into the backup dir and track progress
-                await WriteMetadataFile(backupTempDir, userId, userFriendlyMetadataMap);
                 _loadingEventArgs.Curr++;
                 BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
@@ -253,34 +182,6 @@ namespace Ryujinx.Ava.Common.SaveManager
             }
 
             return false;
-
-            #region LocalMethods
-            async Task WriteMetadataFile(string backupTempDir,
-                LibHacUserId userId,
-                Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
-            {
-                try
-                {
-                    var userProfile = _accountManager.GetAllUsers()
-                        .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId);
-
-                    var tagFile = Path.Combine(backupTempDir, "tag.json");
-
-                    var completeMeta = System.Text.Json.JsonSerializer.Serialize(new UserFriendlySaveMetadata
-                    {
-                        UserId = userId.ToString(),
-                        ProfileName = userProfile.Name,
-                        CreationTimeUtc = DateTime.UtcNow,
-                        ApplicationMap = userFriendlyMetadataMap.Values
-                    });
-                    await File.WriteAllTextAsync(tagFile, completeMeta);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error?.Print(LogClass.Application, $"Failed to write user friendly save metadata file - {ex.Message}");
-                }
-            }
-            #endregion
         }
 
         private async Task<bool> CopySaveDataToIntermediateDirectory(BackupSaveMeta saveMeta, string destinationDir)
@@ -322,14 +223,7 @@ namespace Ryujinx.Ava.Common.SaveManager
         #endregion
 
         #region Restore
-        public Task<BackupRequestOutcome> RestoreUserTitleSaveFromZip(LibHacUserId userId,
-            ulong titleId,
-            string sourceDataPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<BackupRequestOutcome> RestoreUserSaveDataFromZip(LibHacUserId userId,
+        public async Task<bool> RestoreUserSaveDataFromZip(LibHacUserId userId,
             string sourceDataPath)
         {
             var sourceInfo = new FileInfo(sourceDataPath);
@@ -352,11 +246,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                     var error = $"Failed to extract save backup zip {ex.Message}";
                     Logger.Error?.Print(LogClass.Application, error);
 
-                    return new()
-                    {
-                        DidFail = true,
-                        Message = error
-                    };
+                    return false;
                 }
             }
 
@@ -370,10 +260,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 var identifiedTitleDirectories = GetTitleDirectories(sourceInfo);
                 if (identifiedTitleDirectories.IsNullOrEmpty())
                 {
-                    return new()
-                    {
-                        DidFail = true,
-                    };
+                    return false;
                 }
 
                 // Start import
@@ -403,18 +290,12 @@ namespace Ryujinx.Ava.Common.SaveManager
                 // let the import complete
                 _ = await Task.WhenAll(importBuffer);
 
-                return new BackupRequestOutcome
-                {
-                    DidFail = false
-                };
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to import save data - {ex.Message}");
-                return new BackupRequestOutcome
-                {
-                    DidFail = false
-                };
+                return false;
             }
             finally
             {
