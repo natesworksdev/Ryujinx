@@ -5,7 +5,6 @@ using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ns;
 using Microsoft.IdentityModel.Tokens;
-using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -155,9 +154,6 @@ namespace Ryujinx.Ava.Common.SaveManager
 
         private async Task<bool> BatchCopySavesToTempDir(LibHacUserId userId, IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
         {
-            // Generate a metadata item so users know what titleIds ares in case they're moving around, jksv, sanity, etc
-            Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap = new();
-
             try
             {
                 // batch intermediate copies so we don't overwhelm systems
@@ -177,29 +173,11 @@ namespace Ryujinx.Ava.Common.SaveManager
 
                     // Add backup task
                     tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
-
-                    // Add title metadata entry - might be dupe from bcat/device
-                    if (!userFriendlyMetadataMap.ContainsKey(meta.TitleId.Value))
-                    {
-                        var titleIdHex = meta.TitleId.Value.ToString("x16");
-
-                        var appData = MainWindow.MainWindowViewModel.Applications
-                                .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
-
-                        userFriendlyMetadataMap.Add(meta.TitleId.Value, new UserFriendlyAppData
-                        {
-                            Title = appData?.TitleName,
-                            TitleId = meta.TitleId.Value,
-                            TitleIdHex = titleIdHex
-                        });
-                    }
                 }
 
                 // wait for any outstanding temp copies to complete
                 _ = await Task.WhenAll(tempCopyTasks);
 
-                // finally, move the metadata tag file into the backup dir and track progress
-                await WriteMetadataFile(backupTempDir, userId, userFriendlyMetadataMap);
                 _loadingEventArgs.Curr++;
                 BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
@@ -211,34 +189,6 @@ namespace Ryujinx.Ava.Common.SaveManager
             }
 
             return false;
-
-            #region LocalMethods
-            async Task WriteMetadataFile(string backupTempDir,
-                LibHacUserId userId,
-                Dictionary<ulong, UserFriendlyAppData> userFriendlyMetadataMap)
-            {
-                try
-                {
-                    var userProfile = _accountManager.GetAllUsers()
-                        .FirstOrDefault(u => u.UserId.ToLibHacUserId() == userId);
-
-                    var tagFile = Path.Combine(backupTempDir, "tag.json");
-
-                    var completeMeta = System.Text.Json.JsonSerializer.Serialize(new UserFriendlySaveMetadata
-                    {
-                        UserId = userId.ToString(),
-                        ProfileName = userProfile.Name,
-                        CreationTimeUtc = DateTime.UtcNow,
-                        ApplicationMap = userFriendlyMetadataMap.Values
-                    });
-                    await File.WriteAllTextAsync(tagFile, completeMeta);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error?.Print(LogClass.Application, $"Failed to write user friendly save metadata file - {ex.Message}");
-                }
-            }
-            #endregion
         }
 
         private async Task<bool> CopySaveDataToIntermediateDirectory(BackupSaveMeta saveMeta, string destinationDir)
