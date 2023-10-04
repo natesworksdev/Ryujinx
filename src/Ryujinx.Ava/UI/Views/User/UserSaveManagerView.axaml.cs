@@ -39,7 +39,7 @@ namespace Ryujinx.Ava.UI.Views.User
         private AccountManager _accountManager;
         private HorizonClient _horizonClient;
         private NavigationDialogHost _parent;
-        private ISaveManager _saveManager;
+        private SaveManager _saveManager;
 
         public UserSaveManagerView()
         {

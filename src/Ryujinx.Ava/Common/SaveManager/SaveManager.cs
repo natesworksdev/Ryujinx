@@ -23,7 +23,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common.SaveManager
 {
-    public class SaveManager : ISaveManager
+    public class SaveManager
     {
         // UI Metadata
         public event EventHandler<LoadingBarEventArgs> BackupProgressUpdated;
