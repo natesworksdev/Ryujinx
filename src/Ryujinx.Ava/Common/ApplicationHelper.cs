@@ -39,11 +39,9 @@ namespace Ryujinx.Ava.Common
         private static HorizonClient _horizonClient;
         private static AccountManager _accountManager;
         private static VirtualFileSystem _virtualFileSystem;
-        private static StyleableWindow _owner;
 
-        public static void Initialize(VirtualFileSystem virtualFileSystem, AccountManager accountManager, HorizonClient horizonClient, StyleableWindow owner)
+        public static void Initialize(VirtualFileSystem virtualFileSystem, AccountManager accountManager, HorizonClient horizonClient)
         {
-            _owner = owner;
             _virtualFileSystem = virtualFileSystem;
             _horizonClient = horizonClient;
             _accountManager = accountManager;
@@ -159,7 +157,7 @@ namespace Ryujinx.Ava.Common
             var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.FolderDialogExtractTitle],
-                AllowMultiple = false
+                AllowMultiple = false,
             });
 
             if (result.Count == 0)
