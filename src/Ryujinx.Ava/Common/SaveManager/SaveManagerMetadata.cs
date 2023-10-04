@@ -1,5 +1,6 @@
 using LibHac.Fs;
 using LibHac.Ncm;
+using System.IO.Compression;
 
 namespace Ryujinx.Ava.Common.SaveManager
 {
@@ -14,6 +15,11 @@ namespace Ryujinx.Ava.Common.SaveManager
     {
         public ulong TitleId { get; init; }
         public SaveDataType SaveType { get; init; }
-        public string ImportPath { get; init; }
+    }
+
+    internal readonly record struct MetaToLocalMap
+    {
+        public string RelativeDir { get; init; }
+        public string LocalDir { get; init; }
     }
 }

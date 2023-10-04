@@ -4,9 +4,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.Ns;
-using Microsoft.IdentityModel.Tokens;
 using Ryujinx.Ava.UI.Windows;
-using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Common.SaveManager;
@@ -49,30 +47,7 @@ namespace Ryujinx.Ava.Common.SaveManager
             _loadingEventArgs.Max = userSaves.Length + 1; // Add one for metadata file
             BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
 
-            // Create the top level temp dir for the intermediate copies - ensure it's empty
-            // TODO: should this go in the location since data has to go there anyway? might make the ultimate zip faster since IO is local?
-            var backupTempDir = Path.Combine(AppDataManager.BackupDirPath, $"{userId}_library_saveTemp");
-
-            try
-            {
-                // Delete temp for good measure?
-                _ = Directory.CreateDirectory(backupTempDir);
-
-                return await BatchCopySavesToTempDir(userSaves, backupTempDir)
-                       && CreateOrReplaceZipFile(backupTempDir, savePath.LocalPath);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.Application, $"Failed to backup user data - {ex.Message}");
-                return false;
-            }
-            finally
-            {
-                if (Directory.Exists(backupTempDir))
-                {
-                    Directory.Delete(backupTempDir, true);
-                }
-            }
+            return await CreateOrReplaceZipFile(userSaves, savePath.LocalPath);
         }
 
         private IEnumerable<BackupSaveMeta> GetUserSaveData(LibHacUserId userId)
@@ -145,169 +120,147 @@ namespace Ryujinx.Ava.Common.SaveManager
             return saves;
         }
 
-        private async Task<bool> BatchCopySavesToTempDir(IEnumerable<BackupSaveMeta> userSaves, string backupTempDir)
+        private async static Task<bool> CreateOrReplaceZipFile(IEnumerable<BackupSaveMeta> userSaves, string zipPath)
         {
-            try
-            {
-                // Batch intermediate copies so we don't overwhelm systems
-                const int BATCH_SIZE = 5;
-                List<Task<bool>> tempCopyTasks = new(BATCH_SIZE);
+            await using FileStream zipFileSteam = new(zipPath, FileMode.Create, FileAccess.ReadWrite);
+            using ZipArchive zipArchive = new(zipFileSteam, ZipArchiveMode.Create);
 
-                // Copy each applications save data to it's own folder in the temp dir
-                foreach (var meta in userSaves)
+            foreach (var save in userSaves)
+            {
+                // Find the most recent version of the data, there is a committed (0) and working (1) paths directory
+                var saveRootPath = ApplicationHelper.FindValidSaveDir(save.SaveDataId);
+
+                // The actual title in the name would be nice but titleId is more reliable
+                // /[titleId]/[saveType]
+                var copyDestPath = Path.Combine(save.TitleId.Value.ToString(), save.Type.ToString());
+
+                foreach (string filename in Directory.EnumerateFileSystemEntries(saveRootPath, "*", SearchOption.AllDirectories))
                 {
-                    // if the buffer is full, wait for it to drain
-                    if (tempCopyTasks.Count >= BATCH_SIZE)
+                    var attributes = File.GetAttributes(filename);
+                    if (attributes.HasFlag(FileAttributes.Hidden | FileAttributes.System | FileAttributes.Directory))
                     {
-                        // TODO: error handling with options
-                        _ = await Task.WhenAll(tempCopyTasks);
-                        tempCopyTasks.Clear();
+                        continue;
                     }
 
-                    // Add backup task
-                    tempCopyTasks.Add(CopySaveDataToIntermediateDirectory(meta, backupTempDir));
+                    try
+                    {
+                        await using FileStream sourceFile = new(filename, FileMode.Open, FileAccess.Read);
+
+                        var filePath = Path.Join(copyDestPath, Path.GetRelativePath(saveRootPath, filename));
+
+                        ZipArchiveEntry entry = zipArchive.CreateEntry(filePath, CompressionLevel.SmallestSize);
+
+                        await using StreamWriter writer = new(entry.Open());
+
+                        await sourceFile.CopyToAsync(writer.BaseStream);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Failed to zip file: {ex.Message}");
+                    }
                 }
-
-                // wait for any outstanding temp copies to complete
-                _ = await Task.WhenAll(tempCopyTasks);
-
-                _loadingEventArgs.Curr++;
-                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.Application, $"Failed to copy save data to intermediate directory - {ex.Message}");
             }
 
-            return false;
-        }
-
-        private async Task<bool> CopySaveDataToIntermediateDirectory(BackupSaveMeta saveMeta, string destinationDir)
-        {
-            // Find the most recent version of the data, there is a commited (0) and working (1) paths directory
-            var saveRootPath = ApplicationHelper.FindValidSaveDir(saveMeta.SaveDataId);
-
-            // the actual title in the name would be nice but titleId is more reliable
-            // [backupLocation]/[titleId]/[saveType]
-            var copyDestPath = Path.Combine(destinationDir, saveMeta.TitleId.Value.ToString(), saveMeta.Type.ToString());
-
-            var result = await CopyDirectoryAsync(saveRootPath, copyDestPath);
-
-            // Update progress for each dir we copy save data for
-            _loadingEventArgs.Curr++;
-            BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
-
-            return result;
-        }
-
-        public static bool CreateOrReplaceZipFile(string sourceDataDirectory, string backupDestinationFullPath)
-        {
-            try
-            {
-                if (File.Exists(backupDestinationFullPath))
-                {
-                    File.Delete(backupDestinationFullPath);
-                }
-
-                ZipFile.CreateFromDirectory(sourceDataDirectory, backupDestinationFullPath, CompressionLevel.SmallestSize, false);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.Application, $"Failed to zip data.\n{ex.Message}");
-                return false;
-            }
+            return true;
         }
         #endregion
 
         #region Restore
-        public async Task<bool> RestoreUserSaveDataFromZip(LibHacUserId userId,
-            string sourceDataPath)
+        public async Task<bool> RestoreUserSaveDataFromZip(LibHacUserId userId, string zipPath)
         {
-            var sourceInfo = new FileInfo(sourceDataPath);
-            var determinedSourcePath = sourceInfo.FullName;
-            bool requireSourceCleanup = false;
-
-            if (sourceInfo.Extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
-            {
-                determinedSourcePath = Path.Combine(AppDataManager.BackupDirPath, userId.ToString(), "import", "temp");
-                Directory.CreateDirectory(determinedSourcePath);
-                requireSourceCleanup = true;
-
-                try
-                {
-                    ZipFile.ExtractToDirectory(sourceInfo.FullName, determinedSourcePath, true);
-                    sourceInfo = new FileInfo(determinedSourcePath);
-                }
-                catch (Exception ex)
-                {
-                    var error = $"Failed to extract save backup zip {ex.Message}";
-                    Logger.Error?.Print(LogClass.Application, error);
-
-                    return false;
-                }
-            }
+            var titleDirectories = new List<RestoreSaveMeta>();
 
             try
             {
-                // Reset progress bar
-                _loadingEventArgs.Curr = 0;
-                _loadingEventArgs.Max = 0;
-                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+                await using FileStream zipFileSteam = new(zipPath, FileMode.Open, FileAccess.Read);
+                using ZipArchive zipArchive = new(zipFileSteam, ZipArchiveMode.Read);
 
-                var identifiedTitleDirectories = GetTitleDirectories(sourceInfo);
-                if (identifiedTitleDirectories.IsNullOrEmpty())
+                // Directories do not always have entries
+                foreach (var entry in zipArchive.Entries)
                 {
-                    return false;
-                }
+                    var pathByDepth = entry.FullName.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
 
-                // Start import
-                _loadingEventArgs.Max = identifiedTitleDirectories.Count();
-                BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
-
-                // buffer of concurrent saves to import -- limited so we don't overwhelm systems
-                const int BUFFER_SIZE = 4; // multiple of cores is ideal
-                List<Task<bool>> importBuffer = new(BUFFER_SIZE);
-
-                // find the saveId for each titleId and migrate it. Use cache to avoid duplicate lookups of known titleId
-                foreach (var importMeta in identifiedTitleDirectories)
-                {
-                    if (importBuffer.Count >= BUFFER_SIZE)
+                    // Depth 1 is title IDs, Depth 2 the save type
+                    if (pathByDepth.Length < 2)
                     {
-                        _ = await Task.WhenAll(importBuffer);
-                        importBuffer.Clear();
+                        continue;
                     }
 
-                    importBuffer.Add(ImportSaveData(importMeta, userId));
+                    var parentDirectoryName = pathByDepth[0];
+                    var directoryName = pathByDepth[1];
 
-                    // Mark complete
-                    _loadingEventArgs.Curr++;
-                    BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
+                    if (!ulong.TryParse(parentDirectoryName, out var titleId))
+                    {
+                        continue;
+                    }
+
+                    if (Enum.TryParse<SaveDataType>(directoryName, out var saveType))
+                    {
+                        var meta = new RestoreSaveMeta { TitleId = titleId, SaveType = saveType };
+
+                        if (!titleDirectories.Contains(meta))
+                        {
+                            titleDirectories.Add(meta);
+                        }
+                    }
                 }
 
-                // let the import complete
-                _ = await Task.WhenAll(importBuffer);
+                try
+                {
+                    var mappings = new List<MetaToLocalMap?>();
 
-                return true;
+                    // Find the saveId for each titleId and migrate it. Use cache to avoid duplicate lookups of known titleId
+                    foreach (var importMeta in titleDirectories)
+                    {
+                        if (PrepareLocalSaveData(importMeta, userId, out string localDir))
+                        {
+                            mappings.Add(new MetaToLocalMap
+                            {
+                                RelativeDir = Path.Join(importMeta.TitleId.ToString(), importMeta.SaveType.ToString()),
+                                LocalDir = localDir
+                            });
+                        }
+                    }
+
+                    foreach (var entry in zipArchive.Entries)
+                    {
+                        if (entry.FullName[^1] == Path.DirectorySeparatorChar)
+                        {
+                            continue;
+                        }
+
+                        var optional = mappings.FirstOrDefault(x => entry.FullName.Contains(x.Value.RelativeDir), null);
+
+                        if (!optional.HasValue)
+                        {
+                            continue;
+                        }
+
+                        var map = optional.Value;
+                        var localPath = Path.Join(map.LocalDir, Path.GetRelativePath(map.RelativeDir, entry.FullName));
+                        entry.ExtractToFile(localPath, true);
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error?.Print(LogClass.Application, $"Failed to import save data - {ex.Message}");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"Failed to import save data - {ex.Message}");
+                var error = $"Failed to load save backup zip: {ex.Message}";
+                Logger.Error?.Print(LogClass.Application, error);
+
                 return false;
-            }
-            finally
-            {
-                if (requireSourceCleanup)
-                {
-                    Directory.Delete(determinedSourcePath, true);
-                }
             }
         }
 
-        private async Task<bool> ImportSaveData(RestoreSaveMeta meta, LibHacUserId userId)
+        private bool PrepareLocalSaveData(RestoreSaveMeta meta, UserId userId, out String? path)
         {
+            path = null;
             // Lookup the saveId based on title for the user we're importing too
             var saveDataFilter = SaveDataFilter.Make(meta.TitleId,
                 meta.SaveType,
@@ -340,7 +293,7 @@ namespace Ryujinx.Ava.Common.SaveManager
                 }
             }
 
-            // Find the most recent version of the data, there is a commited (0) and working (1) directory
+            // Find the most recent version of the data, there is a committed (0) and working (1) directory
             var userHostSavePath = ApplicationHelper.FindValidSaveDir(saveDataInfo.SaveDataId);
             if (string.IsNullOrWhiteSpace(userHostSavePath))
             {
@@ -348,154 +301,41 @@ namespace Ryujinx.Ava.Common.SaveManager
                 return false;
             }
 
-            // copy from backup path to host save path
-            var copyResult = await CopyDirectoryAsync(meta.ImportPath, userHostSavePath);
-
-            _loadingEventArgs.Curr++;
-            BackupProgressUpdated?.Invoke(this, _loadingEventArgs);
-
-            BackupImportSave?.Invoke(this, new ImportSaveEventArgs
-            {
-                SaveInfo = saveDataInfo
-            });
-
-            return copyResult;
-
-            #region LocalFunction
-            bool TryGenerateSaveEntry(ulong titleId, LibHacUserId userId)
-            {
-                // resolve from app data
-                var titleIdHex = titleId.ToString("x16");
-                var appData = MainWindow.MainWindowViewModel.Applications
-                    .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
-                if (appData is null)
-                {
-                    Logger.Error?.Print(LogClass.Application, $"No application loaded with titleId {titleIdHex}");
-                    return false;
-                }
-
-                ref ApplicationControlProperty control = ref appData.ControlHolder.Value;
-
-                Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: [{titleId:x16}]");
-
-                if (appData.ControlHolder.ByteSpan.IsZeros())
-                {
-                    // If the current application doesn't have a loaded control property, create a dummy one
-                    // and set the savedata sizes so a user savedata will be created.
-                    control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
-
-                    // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
-                    control.UserAccountSaveDataSize = 0x4000;
-                    control.UserAccountSaveDataJournalSize = 0x4000;
-
-                    Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
-                }
-
-                Uid user = new(userId.Id.High, userId.Id.Low);
-                return _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user)
-                    .IsSuccess();
-            }
-            #endregion
+            path = userHostSavePath;
+            return true;
         }
 
-        private static IEnumerable<RestoreSaveMeta> GetTitleDirectories(FileInfo sourceInfo)
+        private void TryGenerateSaveEntry(ulong titleId, UserId userId)
         {
-            if ((sourceInfo.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+            // Resolve from app data
+            var titleIdHex = titleId.ToString("x16");
+            var appData = MainWindow.MainWindowViewModel.Applications
+                .FirstOrDefault(x => x.TitleId.Equals(titleIdHex, StringComparison.OrdinalIgnoreCase));
+            if (appData is null)
             {
-                Logger.Error?.Print(LogClass.Application, $"Unsupported entry specified to extract save data from {sourceInfo.FullName}");
-                return Enumerable.Empty<RestoreSaveMeta>();
+                Logger.Error?.Print(LogClass.Application, $"No application loaded with titleId {titleIdHex}");
+                return;
             }
 
-            // Find the "root" save directories
-            var outcome = new List<RestoreSaveMeta>();
-            foreach (var entry in Directory.EnumerateDirectories(sourceInfo.FullName))
+            ref ApplicationControlProperty control = ref appData.ControlHolder.Value;
+
+            Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: [{titleId:x16}]");
+
+            if (appData.ControlHolder.ByteSpan.IsZeros())
             {
-                // check if the leaf directory is a titleId
-                if (!ulong.TryParse(entry[(entry.LastIndexOf(Path.DirectorySeparatorChar) + 1)..], out var titleId))
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Skipping import of unknown directory {entry}");
-                    continue;
-                }
+                // If the current application doesn't have a loaded control property, create a dummy one
+                // and set the save data sizes so a user save data will be created.
+                control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
 
-                // it looks like a titleId, see if we can find the save type directories we expect
-                foreach (var saveTypeDir in Directory.EnumerateDirectories(entry))
-                {
-                    var saveTypeEntryInfo = new FileInfo(saveTypeDir);
+                // The set sizes don't actually matter as long as they're non-zero because we use directory save data.
+                control.UserAccountSaveDataSize = 0x4000;
+                control.UserAccountSaveDataJournalSize = 0x4000;
 
-                    // Check empty dirs?
-                    if (Enum.TryParse<SaveDataType>(saveTypeEntryInfo.Name, out var saveType))
-                    {
-                        outcome.Add(new RestoreSaveMeta
-                        {
-                            TitleId = titleId,
-                            SaveType = saveType,
-                            ImportPath = saveTypeEntryInfo.FullName
-                        });
-                    }
-                }
+                Logger.Warning?.Print(LogClass.Application, "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            return outcome;
-        }
-        #endregion
-
-        #region Utilities
-        private static async Task<bool> CopyDirectoryAsync(string sourceDirectory, string destDirectory)
-        {
-            bool result = true;
-            Directory.CreateDirectory(destDirectory);
-
-            foreach (string filename in Directory.EnumerateFileSystemEntries(sourceDirectory))
-            {
-                var itemDest = Path.Combine(destDirectory, Path.GetFileName(filename));
-                var attrs = File.GetAttributes(filename);
-
-                result &= attrs switch
-                {
-                    _ when (attrs & FileAttributes.Directory) == FileAttributes.Directory => await CopyDirectoryAsync(filename, itemDest),
-                    _ => await CopyFileAsync(filename, itemDest)
-                };
-
-                if (!result)
-                {
-                    // TODO: use options to decide hard fail
-                    continue;
-                }
-            }
-
-            return result;
-
-            #region LocalMethod
-            static async Task<bool> CopyFileAsync(string source, string destination, int retryCount = 0)
-            {
-                try
-                {
-                    if (retryCount > 0)
-                    {
-                        Logger.Debug?.Print(LogClass.Application, $"Backing off retrying copy of {source}");
-                        await Task.Delay((int)(Math.Pow(2, retryCount) * 200));
-                    }
-
-                    using FileStream sourceStream = File.Open(source, FileMode.Open, FileAccess.Read);
-                    using FileStream destinationStream = File.Create(destination);
-
-                    await sourceStream.CopyToAsync(destinationStream);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    if (ex.Message.Contains("is being used by another process", StringComparison.OrdinalIgnoreCase))
-                    {
-                        const int RetryThreshold = 3;
-                        return ++retryCount < RetryThreshold
-                            && await CopyFileAsync(source, destination, retryCount);
-                    }
-
-                    Logger.Error?.Print(LogClass.Application, $"Failed to copy file {source} - {ex.Message}");
-                    return false;
-                }
-            }
-            #endregion
+            Uid user = new(userId.Id.High, userId.Id.Low);
+            _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
         }
         #endregion
     }
