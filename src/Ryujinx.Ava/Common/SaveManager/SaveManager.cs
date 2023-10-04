@@ -42,14 +42,6 @@ namespace Ryujinx.Ava.Common.SaveManager
         }
 
         #region Backup
-        public Task<BackupRequestOutcome> BackupUserTitleSaveDataToZip(LibHacUserId userId,
-            ulong titleId,
-            string location,
-            SaveOptions saveOptions = SaveOptions.Default)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<BackupRequestOutcome> BackupUserSaveDataToZip(LibHacUserId userId,
             Uri savePath,
             SaveOptions saveOptions = SaveOptions.Default)
@@ -310,13 +302,6 @@ namespace Ryujinx.Ava.Common.SaveManager
         #endregion
 
         #region Restore
-        public Task<BackupRequestOutcome> RestoreUserTitleSaveFromZip(LibHacUserId userId,
-            ulong titleId,
-            string sourceDataPath)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<BackupRequestOutcome> RestoreUserSaveDataFromZip(LibHacUserId userId,
             string sourceDataPath)
         {
