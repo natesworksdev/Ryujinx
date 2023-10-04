@@ -655,7 +655,7 @@
   "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
   "SettingsTabNetworkMultiplayer": "Multiplayer",
   "MultiplayerMode": "Mode:",
-  "MultiplayerModeTooltip": "Change multiplayer mode"
+  "MultiplayerModeTooltip": "Change multiplayer mode",
   "SaveManagerChooseBackupFolderTitle": "Choose Backup Folder",
   "SaveManagerConfirmRestoreTitle": "Confirm Restore",
   "SaveManagerChooseRestoreZipTitle": "Choose Backup Save Zip",
