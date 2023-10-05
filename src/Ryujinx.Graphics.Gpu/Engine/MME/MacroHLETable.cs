@@ -69,24 +69,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         /// <returns>True if the host supports the HLE macro, false otherwise</returns>
         private static bool IsMacroHLESupported(Capabilities caps, MacroHLEFunctionName name)
         {
-            if (name == MacroHLEFunctionName.BindShaderProgram ||
-                name == MacroHLEFunctionName.ClearColor ||
-                name == MacroHLEFunctionName.ClearDepthStencil ||
-                name == MacroHLEFunctionName.DrawArraysInstanced ||
-                name == MacroHLEFunctionName.DrawElements ||
-                name == MacroHLEFunctionName.DrawElementsInstanced ||
-                name == MacroHLEFunctionName.DrawElementsIndirect ||
-                name == MacroHLEFunctionName.UpdateBlendState ||
-                name == MacroHLEFunctionName.UpdateColorMasks ||
-                name == MacroHLEFunctionName.UpdateUniformBufferState ||
-                name == MacroHLEFunctionName.UpdateUniformBufferStateCbu ||
-                name == MacroHLEFunctionName.UpdateUniformBufferStateCbuV2)
-            {
-                return true;
-            }
-            else if (name == MacroHLEFunctionName.MultiDrawElementsIndirectCount)
+            if (name == MacroHLEFunctionName.MultiDrawElementsIndirectCount)
             {
                 return caps.SupportsIndirectParameters;
+            }
+            else if (name != MacroHLEFunctionName.None)
+            {
+                return true;
             }
 
             return false;

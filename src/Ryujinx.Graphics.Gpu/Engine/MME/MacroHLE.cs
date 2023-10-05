@@ -131,6 +131,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             _processor.ThreedClass.SetShaderOffset(arg0, (uint)offset);
 
+            // Removes overflow on the method address into the increment portion.
+            // Present in the original macro.
             int addrMask = unchecked((int)0xfffc0fff) << 2;
 
             state.Write(scratchOffset & addrMask, id);

@@ -13,17 +13,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
     static class SetMmeShadowRamControlModeExtensions
     {
-        public static bool Track(this SetMmeShadowRamControlMode mode)
+        public static bool IsTrack(this SetMmeShadowRamControlMode mode)
         {
             return mode == SetMmeShadowRamControlMode.MethodTrack || mode == SetMmeShadowRamControlMode.MethodTrackWithFilter;
         }
 
-        public static bool Passthrough(this SetMmeShadowRamControlMode mode)
+        public static bool IsPassthrough(this SetMmeShadowRamControlMode mode)
         {
             return mode == SetMmeShadowRamControlMode.MethodPassthrough;
         }
 
-        public static bool Replay(this SetMmeShadowRamControlMode mode)
+        public static bool IsReplay(this SetMmeShadowRamControlMode mode)
         {
             return mode == SetMmeShadowRamControlMode.MethodReplay;
         }
