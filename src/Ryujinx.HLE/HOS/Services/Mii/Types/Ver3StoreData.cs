@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.Common.Utilities;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
@@ -8,9 +10,10 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
     {
         public const int Size = 0x60;
 
-        private byte _storage;
+        private Array64<byte> _storage;
+        private Array32<byte> _storage2;
 
-        public Span<byte> Storage => MemoryMarshal.CreateSpan(ref _storage, Size);
+        public Span<byte> Storage => SpanHelpers.CreateSpan(ref MemoryMarshal.GetReference(_storage.AsSpan()), Size);
 
         // TODO: define all getters/setters
     }
