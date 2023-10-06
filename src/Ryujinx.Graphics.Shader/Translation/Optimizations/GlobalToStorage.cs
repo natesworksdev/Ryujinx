@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
@@ -785,30 +786,31 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static string GetFunctionName(Operation baseOp, bool isMultiTarget, IReadOnlyList<uint> targetCbs)
         {
-            string name = baseOp.Inst.ToString();
+            StringBuilder nameBuilder = new();
+            nameBuilder.Append(baseOp.Inst.ToString());
 
-            name += baseOp.StorageKind switch
+            nameBuilder.Append(baseOp.StorageKind switch
             {
                 StorageKind.GlobalMemoryS8 => "S8",
                 StorageKind.GlobalMemoryS16 => "S16",
                 StorageKind.GlobalMemoryU8 => "U8",
                 StorageKind.GlobalMemoryU16 => "U16",
                 _ => string.Empty,
-            };
+            });
 
             if (isMultiTarget)
             {
-                name += "Multi";
+                nameBuilder.Append("Multi");
             }
 
             foreach (uint targetCb in targetCbs)
             {
                 (int sbCbSlot, int sbCbOffset) = UnpackCbSlotAndOffset(targetCb);
 
-                name += $"_c{sbCbSlot}o{sbCbOffset}";
+                nameBuilder.Append($"_c{sbCbSlot}o{sbCbOffset}");
             }
 
-            return name;
+            return nameBuilder.ToString();
         }
 
         private static bool TryGenerateStorageOp(
@@ -1126,7 +1128,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // so we want to get the byte offset back, since each one of those word
             // offsets are a new "local variable" which will not match.
 
-            if (operation.GetSource(0).AsgOp is Operation shiftRightOp &&
+            if (operation.GetSource(1).AsgOp is Operation shiftRightOp &&
                 shiftRightOp.Inst == Instruction.ShiftRightU32 &&
                 shiftRightOp.GetSource(1).Type == OperandType.Constant &&
                 shiftRightOp.GetSource(1).Value == 2)
@@ -1158,9 +1160,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static bool TryGetLocalMemoryOffset(Operation operation, out int constOffset)
         {
-            if (operation.GetSource(0).Type == OperandType.Constant)
+            Operand offset = operation.GetSource(1);
+
+            if (offset.Type == OperandType.Constant)
             {
-                constOffset = operation.GetSource(0).Value;
+                constOffset = offset.Value;
                 return true;
             }
 

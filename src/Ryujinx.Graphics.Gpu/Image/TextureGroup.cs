@@ -79,6 +79,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private int[] _allOffsets;
         private int[] _sliceSizes;
         private readonly bool _is3D;
+        private readonly bool _isBuffer;
         private bool _hasMipViews;
         private bool _hasLayerViews;
         private readonly int _layers;
@@ -118,6 +119,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             _physicalMemory = physicalMemory;
 
             _is3D = storage.Info.Target == Target.Texture3D;
+            _isBuffer = storage.Info.Target == Target.TextureBuffer;
             _layers = storage.Info.GetSlices();
             _levels = storage.Info.Levels;
 
@@ -276,6 +278,24 @@ namespace Ryujinx.Graphics.Gpu.Image
             });
 
             return dirty;
+        }
+
+        /// <summary>
+        /// Discards all data for a given texture.
+        /// This clears all dirty flags, modified flags, and pending copies from other textures.
+        /// </summary>
+        /// <param name="texture">The texture being discarded</param>
+        public void DiscardData(Texture texture)
+        {
+            EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
+            {
+                for (int i = 0; i < regionCount; i++)
+                {
+                    TextureGroupHandle group = _handles[baseHandle + i];
+
+                    group.DiscardData();
+                }
+            });
         }
 
         /// <summary>
@@ -776,7 +796,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             int targetLayerHandles = _hasLayerViews ? slices : 1;
             int targetLevelHandles = _hasMipViews ? levels : 1;
 
-            if (_is3D)
+            if (_isBuffer)
+            {
+                return;
+            }
+            else if (_is3D)
             {
                 // Future mip levels come after all layers of the last mip level. Each mipmap has less layers (depth) than the last.
 
@@ -1309,7 +1333,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             TextureGroupHandle[] handles;
 
-            if (!(_hasMipViews || _hasLayerViews))
+            if (_isBuffer)
+            {
+                handles = Array.Empty<TextureGroupHandle>();
+            }
+            else if (!(_hasMipViews || _hasLayerViews))
             {
                 // Single dirty region.
                 var cpuRegionHandles = new RegionHandle[TextureRange.Count];
