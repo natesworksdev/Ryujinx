@@ -749,14 +749,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            if (currentThread.GetDebugState() != DebugState.Running)
-            {
-                KernelContext.CriticalSection.Enter();
-                currentThread.Suspend(ThreadSchedState.ThreadPauseFlag);
-                currentThread.DebugHalt.Set();
-                KernelContext.CriticalSection.Leave();
-            }
-
             if (currentThread.Context.Running &&
                 currentThread.Owner != null &&
                 currentThread.GetUserDisableCount() != 0 &&

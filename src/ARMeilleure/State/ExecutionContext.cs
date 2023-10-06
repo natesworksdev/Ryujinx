@@ -14,7 +14,7 @@ namespace ARMeilleure.State
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
 
-        private bool _interrupted;
+        internal bool Interrupted { get; private set; }
 
         private readonly ICounter _counter;
 
@@ -103,9 +103,9 @@ namespace ARMeilleure.State
 
         internal int ShouldStep;
         internal int DebugStopped;
-
-        // This is only valid while debugging is enabled.
-        public ulong DebugPc;
+        
+        public ulong DebugPc; // This is only valid while debugging is enabled.
+        public Barrier StepBarrier = new Barrier(2);
 
         public ExecutionContext(
             IJitMemoryAllocator allocator,
@@ -141,9 +141,9 @@ namespace ARMeilleure.State
 
         internal void CheckInterrupt()
         {
-            if (_interrupted)
+            if (Interrupted)
             {
-                _interrupted = false;
+                Interrupted = false;
 
                 _interruptCallback?.Invoke(this);
             }
@@ -153,31 +153,13 @@ namespace ARMeilleure.State
 
         public void RequestInterrupt()
         {
-            _interrupted = true;
+            Interrupted = true;
         }
 
-        public void DebugStop()
+        public void RequestDebugStep()
         {
-            if (Interlocked.CompareExchange(ref DebugStopped, 1, 0) == 0)
-            {
-                RequestInterrupt();
-            }
-        }
-
-        public bool DebugStep()
-        {
-            if (DebugStopped != 1)
-            {
-                return false;
-            }
-
-            ShouldStep = 1;
-            return true;
-        }
-
-        public void DebugContinue()
-        {
-            Interlocked.CompareExchange(ref DebugStopped, 0, 1);
+            Interlocked.Exchange(ref ShouldStep, 1);
+            RequestInterrupt();
         }
 
         internal void OnBreak(ulong address, int imm)

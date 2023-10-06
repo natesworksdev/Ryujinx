@@ -145,17 +145,17 @@ namespace ARMeilleure.Translation
                 context.DebugPc = address;
                 do
                 {
-                    context.DebugPc = ExecuteSingle(context, context.DebugPc);
-
-                    while (context.DebugStopped == 1)
+                    if (Interlocked.CompareExchange(ref context.ShouldStep, 0, 1) == 1)
                     {
-                        if (Interlocked.CompareExchange(ref context.ShouldStep, 0, 1) == 1)
-                        {
-                            context.DebugPc = Step(context, context.DebugPc);
-                            context.RequestInterrupt();
-                        }
-                        context.CheckInterrupt();
+                        context.DebugPc = Step(context, context.DebugPc);
+                        context.StepBarrier.SignalAndWait();
+                        context.StepBarrier.SignalAndWait();
                     }
+                    else
+                    {
+                        context.DebugPc = ExecuteSingle(context, context.DebugPc);
+                    }
+                    context.CheckInterrupt();
                 }
                 while (context.Running && context.DebugPc != 0);
             }

@@ -1,5 +1,6 @@
 using ARMeilleure.State;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Cpu
 {
@@ -115,10 +116,9 @@ namespace Ryujinx.Cpu
         void StopRunning();
 
         // TODO: comments
-        void DebugStop();
-        bool DebugStep();
-        void DebugContinue();
+        void RequestDebugStep();
 
         ulong DebugPc { get; set; }
+        Barrier StepBarrier { get; }
     }
 }

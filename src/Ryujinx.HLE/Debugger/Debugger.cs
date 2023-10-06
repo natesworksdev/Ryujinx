@@ -53,6 +53,7 @@ namespace Ryujinx.HLE.Debugger
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
         private void InvalidateCacheRegion(ulong address, ulong size) =>
             Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
+        private KernelContext KernelContext => Device.System.KernelContext;
 
         const int GdbRegisterCount = 68;
 
@@ -77,7 +78,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private string GdbReadRegister(Ryujinx.Cpu.IExecutionContext state, int gdbRegId)
+        private string GdbReadRegister(IExecutionContext state, int gdbRegId)
         {
             switch (gdbRegId)
             {
@@ -724,13 +725,32 @@ namespace Ryujinx.HLE.Debugger
 
         public void ThreadBreak(IExecutionContext ctx, ulong address, int imm)
         {
-            KThread thread = GetThread(ctx.ThreadUid);
-
-            thread.DebugStop();
-
             Logger.Notice.Print(LogClass.GdbStub, $"Break hit on thread {ctx.ThreadUid} at pc {address:x016}");
 
             Messages.Add(new ThreadBreakMessage(ctx, address, imm));
+
+            KThread currentThread = GetThread(ctx.ThreadUid);
+
+            if (currentThread.Context.Running &&
+                currentThread.Owner != null &&
+                currentThread.GetUserDisableCount() != 0 &&
+                currentThread.Owner.PinnedThreads[currentThread.CurrentCore] == null)
+            {
+                KernelContext.CriticalSection.Enter();
+
+                currentThread.Owner.PinThread(currentThread);
+
+                currentThread.SetUserInterruptFlag();
+
+                KernelContext.CriticalSection.Leave();
+            }
+
+            if (currentThread.IsSchedulable)
+            {
+                KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
+            }
+
+            currentThread.HandlePostSyscall();
         }
     }
 }

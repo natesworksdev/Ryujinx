@@ -1,5 +1,7 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using System.Threading;
+using ExecutionContext = ARMeilleure.State.ExecutionContext;
 
 namespace Ryujinx.Cpu.Jit
 {
@@ -117,13 +119,7 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public void DebugStop() => _impl.DebugStop();
-
-        /// <inheritdoc/>
-        public bool DebugStep() => _impl.DebugStep();
-
-        /// <inheritdoc/>
-        public void DebugContinue() => _impl.DebugContinue();
+        public void RequestDebugStep() => _impl.RequestDebugStep();
 
         /// <inheritdoc/>
         public ulong DebugPc
@@ -131,6 +127,9 @@ namespace Ryujinx.Cpu.Jit
             get => _impl.DebugPc;
             set => _impl.DebugPc = value;
         }
+
+        /// <inheritdoc/>
+        public Barrier StepBarrier => _impl.StepBarrier;
 
         /// <inheritdoc/>
         public void StopRunning()

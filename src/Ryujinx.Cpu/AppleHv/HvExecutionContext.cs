@@ -11,7 +11,18 @@ namespace Ryujinx.Cpu.AppleHv
     class HvExecutionContext : IExecutionContext
     {
         /// <inheritdoc/>
-        public ulong Pc => _impl.ElrEl1;
+        public ulong Pc
+        {
+            get
+            {
+                uint currentEl = Pstate & ~((uint)ExceptionLevel.PstateMask);
+                if (currentEl == (uint)ExceptionLevel.EL1h)
+                {
+                    return _impl.ElrEl1;
+                }
+                return _impl.Pc;
+            }
+        }
 
         /// <inheritdoc/>
         public long TpidrEl0
@@ -71,7 +82,6 @@ namespace Ryujinx.Cpu.AppleHv
         private readonly IHvExecutionContext _shadowContext;
         private IHvExecutionContext _impl;
         private int _shouldStep;
-        private int _debugStopped;
 
         private readonly ExceptionCallbacks _exceptionCallbacks;
 
@@ -83,6 +93,7 @@ namespace Ryujinx.Cpu.AppleHv
             _shadowContext = new HvExecutionContextShadow();
             _impl = _shadowContext;
             _exceptionCallbacks = exceptionCallbacks;
+            StepBarrier = new(2);
             Running = true;
         }
 
@@ -133,38 +144,30 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         /// <inheritdoc/>
-        public void DebugStop()
+        public void RequestDebugStep()
         {
-            if (Interlocked.CompareExchange(ref _debugStopped, 1, 0) == 0)
-            {
-                RequestInterrupt();
-            }
-        }
-
-        /// <inheritdoc/>
-        public bool DebugStep()
-        {
-            if (_debugStopped != 1)
-            {
-                return false;
-            }
-            
-            _shouldStep = 1;
-            return true;
-        }
-
-        /// <inheritdoc/>
-        public void DebugContinue()
-        {
-            Interlocked.CompareExchange(ref _debugStopped, 0, 1);
+            Interlocked.Exchange(ref _shouldStep, 1);
         }
 
         /// <inheritdoc/>
         public ulong DebugPc
         {
-            get => _impl.ElrEl1;
-            set => _impl.ElrEl1 = value;
+            get => Pc;
+            set
+            {
+                uint currentEl = Pstate & ~((uint)ExceptionLevel.PstateMask);
+                if (currentEl == (uint)ExceptionLevel.EL1h)
+                {
+                    _impl.ElrEl1 = value;
+                }
+                else
+                {
+                    _impl.Pc = value;
+                }
+            }
         }
+
+        public Barrier StepBarrier { get; private set; }
 
         /// <inheritdoc/>
         public void StopRunning()
@@ -183,12 +186,16 @@ namespace Ryujinx.Cpu.AppleHv
             {
                 if (Interlocked.CompareExchange(ref _shouldStep, 0, 1) == 1)
                 {
-                    uint currentEl = Pstate & ~(0xfffffff0);
-                    if (currentEl == 0b0101)
+                    uint currentEl = Pstate & ~((uint)ExceptionLevel.PstateMask);
+                    if (currentEl == (uint)ExceptionLevel.EL1h)
                     {
                         HvApi.hv_vcpu_get_sys_reg(vcpu.Handle, HvSysReg.SPSR_EL1, out ulong spsr).ThrowOnError();
                         spsr |= (1 << 21);
                         HvApi.hv_vcpu_set_sys_reg(vcpu.Handle, HvSysReg.SPSR_EL1, spsr);
+                    }
+                    else
+                    {
+                        Pstate |= (1 << 21);
                     }
                     HvApi.hv_vcpu_set_sys_reg(vcpu.Handle, HvSysReg.MDSCR_EL1, 1);
                 }
@@ -206,7 +213,6 @@ namespace Ryujinx.Cpu.AppleHv
                     {
                         throw new Exception($"Unhandled exception from guest kernel with ESR 0x{hvEsr:X} ({hvEc}).");
                     }
-
                     address = SynchronousException(memoryManager, ref vcpu);
                     HvApi.hv_vcpu_set_reg(vcpu.Handle, HvReg.PC, address).ThrowOnError();
                 }
@@ -266,13 +272,14 @@ namespace Ryujinx.Cpu.AppleHv
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1,  spsr).ThrowOnError();
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.MDSCR_EL1, 0);
                     ReturnToPool(vcpu);
+                    StepBarrier.SignalAndWait();
+                    StepBarrier.SignalAndWait();
                     InterruptHandler();
                     vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
                     break;
                 case ExceptionClass.BrkAarch64:
                     ReturnToPool(vcpu);
                     BreakHandler(elr, (ushort)esr);
-                    InterruptHandler();
                     vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
                     break;
                 default:

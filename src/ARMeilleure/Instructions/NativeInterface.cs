@@ -2,6 +2,8 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
+using System.Threading;
+using ExecutionContext = ARMeilleure.State.ExecutionContext;
 
 namespace ARMeilleure.Instructions
 {
@@ -175,7 +177,7 @@ namespace ARMeilleure.Instructions
 
             ExecutionContext context = GetContext();
 
-            if (context.DebugStopped == 1)
+            if (Optimizations.EnableDebugging && context.Interrupted)
             {
                 return false;
             }
