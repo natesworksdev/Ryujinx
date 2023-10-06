@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -616,46 +617,56 @@ namespace Ryujinx.HLE.Debugger
 
                 while (true)
                 {
-                    switch (ReadStream.ReadByte())
+                    try
                     {
-                        case -1:
-                            goto eof;
-                        case '+':
-                            continue;
-                        case '-':
-                            Logger.Notice.Print(LogClass.GdbStub, "NACK received!");
-                            continue;
-                        case '\x03':
-                            Messages.Add(new BreakInMessage());
-                            break;
-                        case '$':
-                            string cmd = "";
-                            while (true)
-                            {
-                                int x = ReadStream.ReadByte();
-                                if (x == -1)
-                                    goto eof;
-                                if (x == '#')
-                                    break;
-                                cmd += (char)x;
-                            }
+                        switch (ReadStream.ReadByte())
+                        {
+                            case -1:
+                                goto eof;
+                            case '+':
+                                continue;
+                            case '-':
+                                Logger.Notice.Print(LogClass.GdbStub, "NACK received!");
+                                continue;
+                            case '\x03':
+                                Messages.Add(new BreakInMessage());
+                                break;
+                            case '$':
+                                string cmd = "";
+                                while (true)
+                                {
+                                    int x = ReadStream.ReadByte();
+                                    if (x == -1)
+                                        goto eof;
+                                    if (x == '#')
+                                        break;
+                                    cmd += (char)x;
+                                }
 
-                            string checksum = $"{(char)ReadStream.ReadByte()}{(char)ReadStream.ReadByte()}";
-                            if (checksum == $"{CalculateChecksum(cmd):x2}")
-                            {
-                                Messages.Add(new CommandMessage(cmd));
-                            }
-                            else
-                            {
-                                Messages.Add(new SendNackMessage());
-                            }
+                                string checksum = $"{(char)ReadStream.ReadByte()}{(char)ReadStream.ReadByte()}";
+                                if (checksum == $"{CalculateChecksum(cmd):x2}")
+                                {
+                                    Messages.Add(new CommandMessage(cmd));
+                                }
+                                else
+                                {
+                                    Messages.Add(new SendNackMessage());
+                                }
 
-                            break;
+                                break;
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        goto eof;
                     }
                 }
 
                 eof:
                 Logger.Notice.Print(LogClass.GdbStub, "GDB client lost connection");
+                ReadStream.Close();
+                WriteStream.Close();
+                ClientSocket.Close();
             }
         }
 
