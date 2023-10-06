@@ -562,9 +562,14 @@ namespace Ryujinx.HLE.Debugger
                 thread.Context.DebugPc = newPc.Value;
             }
 
-            thread.DebugStep();
-
-            Reply($"T05thread:{thread.ThreadUid:x};");
+            if (!thread.DebugStep())
+            {
+                ReplyError();
+            }
+            else
+            {
+                Reply($"T05thread:{thread.ThreadUid:x};");
+            }
         }
 
         private void CommandIsAlive(ulong? threadId)
