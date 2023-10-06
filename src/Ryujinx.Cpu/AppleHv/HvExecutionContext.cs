@@ -167,7 +167,7 @@ namespace Ryujinx.Cpu.AppleHv
             }
         }
 
-        public Barrier StepBarrier { get; private set; }
+        public Barrier StepBarrier { get; }
 
         /// <inheritdoc/>
         public void StopRunning()

@@ -130,6 +130,7 @@ namespace Ryujinx.Cpu
         /// Step barrier
         /// </summary>
         /// <remarks>
+        /// The participant count should be 2.
         /// Should be signaled and waited on twice after single-stepping.
         /// </remarks>
         Barrier StepBarrier { get; }
