@@ -10,10 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
     {
         public const int Size = 0x60;
 
-        private Array64<byte> _storage;
-        private Array32<byte> _storage2;
+        private Array96<byte> _storage;
 
-        public Span<byte> Storage => SpanHelpers.CreateSpan(ref MemoryMarshal.GetReference(_storage.AsSpan()), Size);
+        public Span<byte> Storage => _storage.AsSpan();
 
         // TODO: define all getters/setters
     }
