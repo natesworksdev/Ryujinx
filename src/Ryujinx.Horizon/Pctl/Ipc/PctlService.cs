@@ -52,8 +52,8 @@ namespace Ryujinx.Horizon.Pctl.Ipc
 
                 if ((_permissionFlag & 0x8040) == 0)
                 {
-                    // TODO: Services store TitleId and FreeCommunicationEnabled in a static object.
-                    // When initialisation is complete, signal an event on that static object.
+                    // TODO: Service store ApplicationId and FreeCommunicationEnabled in a static object.
+                    //       When initialisation is complete, signal an event on that static object.
                     Logger.Stub?.PrintStub(LogClass.ServicePctl);
                 }
 
@@ -68,8 +68,8 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         {
             if (_parentalControlFlag == PctlFlagValue.FreeCommunication && _restrictionEnabled)
             {
-                // TODO: Checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
-                // Returns FreeCommunicationDisabled if entry doesn't exist.
+                // TODO: Checks if an entry exists in the FreeCommunicationApplicationList using the ApplicationId.
+                //       Returns FreeCommunicationDisabled if entry doesn't exist.
 
                 return PctlResult.FreeCommunicationDisabled;
             }
@@ -203,7 +203,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
             throw new NotImplementedException();
         }
 
-        [CmifCommand(1013)] // 4.0.0+
+        [CmifCommand(1013)]
         public Result ConfirmStereoVisionPermission()
         {
             return IsStereoVisionPermittedImpl();
@@ -253,8 +253,8 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         {
             if (_parentalControlFlag == PctlFlagValue.FreeCommunication && _restrictionEnabled)
             {
-                // TODO: Checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
-                // Returns FreeCommunicationDisabled if entry doesn't exist.
+                // TODO: Checks if an entry exists in the FreeCommunicationApplicationList using the ApplicationId.
+                //       Returns FreeCommunicationDisabled if entry doesn't exist.
 
                 return PctlResult.FreeCommunicationDisabled;
             }
@@ -270,6 +270,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
             if ((_permissionFlag & 0x140) == 0)
             {
                 restrictionEnabled = default;
+
                 return PctlResult.PermissionDenied;
             }
 
@@ -480,6 +481,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
             if ((_permissionFlag & 0x200) == 0)
             {
                 stereoVisionRestriction = default;
+
                 return PctlResult.PermissionDenied;
             }
 
@@ -533,7 +535,7 @@ namespace Ryujinx.Horizon.Pctl.Ipc
         private Result IsStereoVisionPermittedImpl()
         {
             // TODO: Application Exemptions are read from file "appExemptions.dat" in the service savedata.
-            // Since we don't support the pctl savedata for now, this can be implemented later.
+            //       Since we don't support the pctl savedata for now, this can be implemented later.
 
             if (_stereoVisionRestrictionConfigurable && _stereoVisionRestriction)
             {
