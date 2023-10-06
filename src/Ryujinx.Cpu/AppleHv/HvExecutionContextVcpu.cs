@@ -138,7 +138,6 @@ namespace Ryujinx.Cpu.AppleHv
 
         private readonly ulong _vcpu;
         private int _interruptRequested;
-        private int _breakRequested;
 
         public HvExecutionContextVcpu(ulong vcpu)
         {
