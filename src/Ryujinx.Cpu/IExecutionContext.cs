@@ -115,10 +115,31 @@ namespace Ryujinx.Cpu
         /// </remarks>
         void StopRunning();
 
-        // TODO: comments
+        /// <summary>
+        /// Requests the thread to stop running temporarily and call <see cref="ExceptionCallbacks.InterruptCallback"/>.
+        /// </summary>
+        /// <remarks>
+        /// The thread might not pause immediately.
+        /// One must not assume that guest code is no longer being executed by the thread after calling this function.
+        /// After single stepping, the thread should signal and wait on <see cref="StepBarrier"/> twice to allow
+        /// changing the thread state after stepping.
+        /// </remarks>
         void RequestDebugStep();
 
-        ulong DebugPc { get; set; }
+        /// <summary>
+        /// Step barrier
+        /// </summary>
+        /// <remarks>
+        /// Should be signaled and waited on twice after single-stepping.
+        /// </remarks>
         Barrier StepBarrier { get; }
+
+        /// <summary>
+        /// Current Program Counter (for debugging).
+        /// </summary>
+        /// <remarks>
+        /// PC register for the debugger. Must not be accessed while the thread isn't stopped for debugging.
+        /// </remarks>
+        ulong DebugPc { get; set; }
     }
 }

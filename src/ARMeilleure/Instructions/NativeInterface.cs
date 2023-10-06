@@ -176,7 +176,8 @@ namespace ARMeilleure.Instructions
             Statistics.PauseTimer();
 
             ExecutionContext context = GetContext();
-
+            
+            // If debugging, we'll handle interrupts outside
             if (Optimizations.EnableDebugging && context.Interrupted)
             {
                 return false;

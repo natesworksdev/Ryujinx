@@ -102,10 +102,8 @@ namespace ARMeilleure.State
         private readonly ExceptionCallback _undefinedCallback;
 
         internal int ShouldStep;
-        internal int DebugStopped;
-        
-        public ulong DebugPc; // This is only valid while debugging is enabled.
-        public Barrier StepBarrier = new Barrier(2);
+        public ulong DebugPc { get; set; }
+        public Barrier StepBarrier { get; }
 
         public ExecutionContext(
             IJitMemoryAllocator allocator,
@@ -123,6 +121,7 @@ namespace ARMeilleure.State
             _undefinedCallback = undefinedCallback;
 
             Running = true;
+            StepBarrier = new Barrier(2);
 
             _nativeContext.SetCounter(MinCountForCheck);
         }
