@@ -1442,12 +1442,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             lock (_activityOperationLock)
             {
+                KernelContext.CriticalSection.Enter();
+                bool blocked = MutexOwner != null || WaitingInArbitration || WaitingSync;
                 if (_debugState != (int)DebugState.Stopped
                     || (_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0
-                    || MutexOwner != null)
+                    || blocked)
                 {
+                    KernelContext.CriticalSection.Leave();
                     return false;
                 }
+                KernelContext.CriticalSection.Leave();
 
                 Context.RequestDebugStep();
                 Resume(ThreadSchedState.ThreadPauseFlag);
