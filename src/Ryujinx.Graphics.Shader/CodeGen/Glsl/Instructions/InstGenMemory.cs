@@ -517,7 +517,33 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return texCall;
         }
 
-        public static string TextureSize(CodeGenContext context, AstOperation operation)
+        public static string TextureQuerySamples(CodeGenContext context, AstOperation operation)
+        {
+            AstTextureOperation texOp = (AstTextureOperation)operation;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return NumberFormatter.FormatInt(0);
+            }
+
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            string indexExpr = null;
+
+            if (isIndexed)
+            {
+                indexExpr = GetSoureExpr(context, texOp.GetSource(0), AggregateType.S32);
+            }
+
+            string samplerName = GetSamplerName(context.Properties, texOp, indexExpr);
+
+            return $"textureSamples({samplerName})";
+        }
+
+        public static string TextureQuerySize(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
@@ -753,17 +779,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetMaskMultiDest(int mask)
         {
-            string swizzle = ".";
+            StringBuilder swizzleBuilder = new();
+            swizzleBuilder.Append('.');
 
             for (int i = 0; i < 4; i++)
             {
                 if ((mask & (1 << i)) != 0)
                 {
-                    swizzle += "xyzw"[i];
+                    swizzleBuilder.Append("xyzw"[i]);
                 }
             }
 
-            return swizzle;
+            return swizzleBuilder.ToString();
         }
     }
 }
