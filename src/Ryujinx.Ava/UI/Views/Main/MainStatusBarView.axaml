@@ -123,7 +123,8 @@
                 CornerRadius="0"
                 IsVisible="{Binding !ShowLoadProgress}"
                 Content="{Binding AspectRatioStatusText}"
-                Click="AspectRatioStatus_OnClick">
+                Click="AspectRatioStatus_OnClick"
+                ToolTip.Tip="{locale:Locale AspectRatioTooltip}">
                 <SplitButton.Styles>
                     <Style Selector="Border#SeparatorBorder">
                         <Setter Property="Opacity" Value="0" />
