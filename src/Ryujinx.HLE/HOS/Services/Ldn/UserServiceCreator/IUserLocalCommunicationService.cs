@@ -1028,7 +1028,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SetState(NetworkState.None);
 
-            NetworkClient?.DisconnectAndStop();
+            NetworkClient?.Dispose();
             NetworkClient = null;
 
             return ResultCode.Success;
@@ -1079,7 +1079,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     }
                     else
                     {
-                        // NOTE: Service returns differents ResultCode here related to the nifm ResultCode.
+                        // NOTE: Service returns different ResultCode here related to the nifm ResultCode.
                         resultCode = ResultCode.DeviceDisabled;
                         _nifmResultCode = resultCode;
                     }
@@ -1091,14 +1091,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public void Dispose()
         {
-            if (NetworkClient != null)
-            {
-                _station?.Dispose();
-                _accessPoint?.Dispose();
+            _station?.Dispose();
+            _station = null;
 
-                NetworkClient.DisconnectAndStop();
-            }
+            _accessPoint?.Dispose();
+            _accessPoint = null;
 
+            NetworkClient?.Dispose();
             NetworkClient = null;
         }
     }
