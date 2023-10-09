@@ -550,9 +550,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             bool wasInReadLock = _flushLock.IsReadLockHeld;
 
-            // Try to get into a write lock if not already.
+            // Try to get into a read lock if not already.
             if (!wasInReadLock)
+            {
                 _flushLock.EnterReadLock();
+            }
 
             try
             {
@@ -585,7 +587,9 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         _flushLock.ExitWriteLock();
                         if (wasInReadLock)
+                        {
                             _flushLock.EnterReadLock(); // Re-enter read lock if we were originally in it.
+                        }
                     }
                 }
             }
@@ -593,7 +597,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // If we catch an exception, ensure we have the appropriate locks restored.
                 if (wasInReadLock && !_flushLock.IsReadLockHeld)
+                {
                     _flushLock.EnterReadLock();
+                }
 
                 throw;
             }
