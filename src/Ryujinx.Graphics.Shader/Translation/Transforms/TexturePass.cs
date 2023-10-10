@@ -449,38 +449,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                 int destIndex = 0;
 
-                Operand[] sourceTexels = new Operand[coordsCount];
-
-                for (int index = 0; index < coordsCount; index++)
-                {
-                    Operand source = sources[coordsIndex + index];
-
-                    Operand sourceUnscaled = Local();
-
-                    node.List.AddBefore(node, new Operation(
-                        Instruction.Multiply | Instruction.FP32,
-                        sourceUnscaled,
-                        source,
-                        GenerateI2f(node, texSizes[index])));
-
-                    Operand floatSourceTexel = Local();
-
-                    node.List.AddBefore(node, new Operation(
-                        Instruction.Subtract | Instruction.FP32,
-                        floatSourceTexel,
-                        sourceUnscaled,
-                        ConstF(0.5f)));
-
-                    Operand floorSourceTexel = Local();
-
-                    node.List.AddBefore(node, new Operation(
-                        Instruction.Floor | Instruction.FP32,
-                        floorSourceTexel,
-                        floatSourceTexel));
-
-                    sourceTexels[index] = GenerateF2i(node, floorSourceTexel);
-                }
-
                 for (int compIndex = 0; compIndex < 4; compIndex++)
                 {
                     if (((texOp.Index >> compIndex) & 1) == 0)
@@ -490,47 +458,32 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                     for (int index = 0; index < coordsCount; index++)
                     {
-                        Operand newSource = Local();
+                        Operand offset = Local();
 
                         Operand intOffset = offsets[index + compIndex * coordsCount];
 
-                        Operand intTexelCoord = Local();
-
-                        node.List.AddBefore(node, new Operation(
-                            Instruction.Add,
-                            intTexelCoord,
-                            sourceTexels[index],
-                            intOffset));
-
-                        Operand floatTexelCoordWithHalf = Local();
-
-                        node.List.AddBefore(node, new Operation(
-                            Instruction.Add | Instruction.FP32,
-                            floatTexelCoordWithHalf,
-                            GenerateI2f(node, intTexelCoord),
-                            ConstF(0.5f)));
-
                         node.List.AddBefore(node, new Operation(
                             Instruction.FP32 | Instruction.Divide,
-                            newSource,
-                            floatTexelCoordWithHalf,
+                            offset,
+                            GenerateI2f(node, intOffset),
                             GenerateI2f(node, texSizes[index])));
 
-                        newSources[coordsIndex + index] = newSource;
+                        Operand source = sources[coordsIndex + index];
+
+                        Operand coordPlusOffset = Local();
+
+                        node.List.AddBefore(node, new Operation(Instruction.FP32 | Instruction.Add, coordPlusOffset, source, offset));
+
+                        newSources[coordsIndex + index] = coordPlusOffset;
                     }
-
-                    Operand colorComponent = sources[coordsIndex + coordsCount];
-
-                    // LOD Level replaces color component.
-                    newSources[coordsIndex + coordsCount] = ConstF(0.0f);
 
                     TextureOperation newTexOp = new(
                         Instruction.TextureSample,
                         texOp.Type,
                         texOp.Format,
-                        (texOp.Flags & ~(TextureFlags.Offset | TextureFlags.Offsets | TextureFlags.Gather)) | TextureFlags.LodLevel,
+                        texOp.Flags & ~(TextureFlags.Offset | TextureFlags.Offsets),
                         texOp.Binding,
-                        1 << colorComponent.Value,
+                        1 << 3, // W component: i=0, j=0
                         new[] { dests[destIndex++] },
                         newSources);
 
