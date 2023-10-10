@@ -548,61 +548,39 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void WaitForFlushFence()
         {
-            bool wasInReadLock = _flushLock.IsReadLockHeld;
-
-            // Try to get into a read lock if not already.
-            if (!wasInReadLock)
+            if (_flushFence == null)
             {
-                _flushLock.EnterReadLock();
+                return;
             }
 
-            try
+            // If storage has changed, make sure the fence has been reached so that the data is in place.
+            _flushLock.ExitReadLock();
+            _flushLock.EnterWriteLock();
+
+            if (_flushFence != null)
             {
-                if (_flushFence != null)
+                var fence = _flushFence;
+                Interlocked.Increment(ref _flushWaiting);
+
+                // Don't wait in the lock.
+
+                _flushLock.ExitWriteLock();
+
+                fence.Wait();
+
+                _flushLock.EnterWriteLock();
+
+                if (Interlocked.Decrement(ref _flushWaiting) == 0)
                 {
-                    _flushLock.ExitReadLock();
-                    _flushLock.EnterWriteLock();
-
-                    try
-                    {
-                        if (_flushFence != null)
-                        {
-                            var fence = _flushFence;
-                            Interlocked.Increment(ref _flushWaiting);
-
-                            // Don't wait inside the write lock.
-                            _flushLock.ExitWriteLock();
-                            fence.Wait();
-                            _flushLock.EnterWriteLock();
-
-                            if (Interlocked.Decrement(ref _flushWaiting) == 0)
-                            {
-                                fence.Put();
-                            }
-
-                            _flushFence = null;
-                        }
-                    }
-                    finally
-                    {
-                        _flushLock.ExitWriteLock();
-                        if (wasInReadLock)
-                        {
-                            _flushLock.EnterReadLock(); // Re-enter read lock if we were originally in it.
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // If we catch an exception, ensure we have the appropriate locks restored.
-                if (wasInReadLock && !_flushLock.IsReadLockHeld)
-                {
-                    _flushLock.EnterReadLock();
+                    fence.Put();
                 }
 
-                throw;
+                _flushFence = null;
             }
+
+            // Assumes the _flushLock is held as reader, returns in same state.
+            _flushLock.ExitWriteLock();
+            _flushLock.EnterReadLock();
         }
 
         public PinnedSpan<byte> GetData(int offset, int size)
