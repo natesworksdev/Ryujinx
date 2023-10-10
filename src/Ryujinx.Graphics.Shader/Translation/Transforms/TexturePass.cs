@@ -445,7 +445,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                 sources.CopyTo(newSources, 0);
 
-                Operand[] texSizes = InsertTextureBaseSize(node, texOp, lodSources, bindlessHandle, coordsCount);
+                Operand[] texSizes = InsertTextureBaseSize(node, texOp, bindlessHandle, coordsCount);
 
                 int destIndex = 0;
 
@@ -604,7 +604,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
         private static Operand[] InsertTextureBaseSize(
             LinkedListNode<INode> node,
             TextureOperation texOp,
-            Operand[] lodSources,
             Operand bindlessHandle,
             int coordsCount)
         {
