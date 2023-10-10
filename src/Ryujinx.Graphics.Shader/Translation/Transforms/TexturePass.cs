@@ -554,7 +554,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
                 else
                 {
-                    Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
+                    Operand[] texSizes = isGather ? InsertTextureBaseSize(node, texOp, bindlessHandle, coordsCount) :
+                        InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
 
                     for (int index = 0; index < coordsCount; index++)
                     {
