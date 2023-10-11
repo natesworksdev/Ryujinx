@@ -88,6 +88,7 @@ namespace Ryujinx.HLE.HOS
         internal ServerBase ViServer { get; private set; }
         internal ServerBase ViServerM { get; private set; }
         internal ServerBase ViServerS { get; private set; }
+        internal ServerBase LdnServer { get; private set; }
 
         internal KSharedMemory HidSharedMem { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -319,14 +320,17 @@ namespace Ryujinx.HLE.HOS
             ViServer = new ServerBase(KernelContext, "ViServerU");
             ViServerM = new ServerBase(KernelContext, "ViServerM");
             ViServerS = new ServerBase(KernelContext, "ViServerS");
+            LdnServer = new ServerBase(KernelContext, "LdnServer");
 
             StartNewServices();
         }
 
         private void StartNewServices()
         {
+            HorizonFsClient fsClient = new(this);
+
             ServiceTable = new ServiceTable();
-            var services = ServiceTable.GetServices(new HorizonOptions(Device.Configuration.IgnoreMissingServices, LibHacHorizonManager.BcatClient));
+            var services = ServiceTable.GetServices(new HorizonOptions(Device.Configuration.IgnoreMissingServices, LibHacHorizonManager.BcatClient, fsClient));
 
             foreach (var service in services)
             {

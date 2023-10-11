@@ -327,6 +327,7 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.OcclusionQueryPrecise,
                 _physicalDevice.PhysicalDeviceFeatures.PipelineStatisticsQuery,
                 _physicalDevice.PhysicalDeviceFeatures.GeometryShader,
+                _physicalDevice.PhysicalDeviceFeatures.TessellationShader,
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
@@ -346,7 +347,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
-            DescriptorSetManager = new DescriptorSetManager(_device);
+            DescriptorSetManager = new DescriptorSetManager(_device, PipelineBase.DescriptorSetLayouts);
 
             PipelineLayoutCache = new PipelineLayoutCache();
 
