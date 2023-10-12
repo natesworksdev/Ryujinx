@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 {
                     node = InsertCoordNormalization(context.Hfm, node, context.ResourceManager, context.GpuAccessor, context.Stage);
                     node = InsertCoordGatherBias(node, context.ResourceManager, context.GpuAccessor);
-                    node = InsertConstOffsets(node, context.ResourceManager, context.GpuAccessor);
+                    node = InsertConstOffsets(node, context.GpuAccessor, context.Stage);
 
                     if (texOp.Type == SamplerType.TextureBuffer && !context.GpuAccessor.QueryHostSupportsSnormBufferTextureFormat())
                     {
@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
-            if (texOp.Inst == Instruction.TextureSize &&
+            if (texOp.Inst == Instruction.TextureQuerySize &&
                 texOp.Index < 2 &&
                 !isBindless &&
                 !isIndexed &&
@@ -153,14 +153,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            if (isBindless)
+            if (isBindless || !resourceManager.TryGetCbufSlotAndHandleForTexture(texOp.Binding, out int cbufSlot, out int handle))
             {
                 return node;
             }
 
             bool intCoords = (texOp.Flags & TextureFlags.IntCoords) != 0;
-
-            (int cbufSlot, int handle) = resourceManager.GetCbufSlotAndHandleForTexture(texOp.Binding);
 
             bool isCoordNormalized = gpuAccessor.QueryTextureCoordNormalized(handle, cbufSlot);
 
@@ -192,7 +190,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
 
                 LinkedListNode<INode> textureSizeNode = node.List.AddBefore(node, new TextureOperation(
-                    Instruction.TextureSize,
+                    Instruction.TextureQuerySize,
                     texOp.Type,
                     texOp.Format,
                     texOp.Flags,
@@ -261,7 +259,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
 
                 node.List.AddBefore(node, new TextureOperation(
-                    Instruction.TextureSize,
+                    Instruction.TextureQuerySize,
                     texOp.Type,
                     texOp.Format,
                     texOp.Flags,
@@ -289,7 +287,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return node;
         }
 
-        private static LinkedListNode<INode> InsertConstOffsets(LinkedListNode<INode> node, ResourceManager resourceManager, IGpuAccessor gpuAccessor)
+        private static LinkedListNode<INode> InsertConstOffsets(LinkedListNode<INode> node, IGpuAccessor gpuAccessor, ShaderStage stage)
         {
             // Non-constant texture offsets are not allowed (according to the spec),
             // however some GPUs does support that.
@@ -442,7 +440,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                 sources.CopyTo(newSources, 0);
 
-                Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount);
+                Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
 
                 int destIndex = 0;
 
@@ -504,7 +502,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
                 else
                 {
-                    Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount);
+                    Operand[] texSizes = InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
 
                     for (int index = 0; index < coordsCount; index++)
                     {
@@ -556,21 +554,31 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             TextureOperation texOp,
             Operand[] lodSources,
             Operand bindlessHandle,
-            int coordsCount)
+            int coordsCount,
+            ShaderStage stage)
         {
             Operand[] texSizes = new Operand[coordsCount];
 
-            Operand lod = Local();
+            Operand lod;
 
-            node.List.AddBefore(node, new TextureOperation(
-                Instruction.Lod,
-                texOp.Type,
-                texOp.Format,
-                texOp.Flags,
-                texOp.Binding,
-                0,
-                new[] { lod },
-                lodSources));
+            if (stage == ShaderStage.Fragment)
+            {
+                lod = Local();
+
+                node.List.AddBefore(node, new TextureOperation(
+                    Instruction.Lod,
+                    texOp.Type,
+                    texOp.Format,
+                    texOp.Flags,
+                    texOp.Binding,
+                    0,
+                    new[] { lod },
+                    lodSources));
+            }
+            else
+            {
+                lod = Const(0);
+            }
 
             for (int index = 0; index < coordsCount; index++)
             {
@@ -588,7 +596,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
 
                 node.List.AddBefore(node, new TextureOperation(
-                    Instruction.TextureSize,
+                    Instruction.TextureQuerySize,
                     texOp.Type,
                     texOp.Format,
                     texOp.Flags,
@@ -607,12 +615,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
             // We can't query the format of a bindless texture,
             // because the handle is unknown, it can have any format.
-            if (texOp.Flags.HasFlag(TextureFlags.Bindless))
+            if (texOp.Flags.HasFlag(TextureFlags.Bindless) || !resourceManager.TryGetCbufSlotAndHandleForTexture(texOp.Binding, out int cbufSlot, out int handle))
             {
                 return node;
             }
-
-            (int cbufSlot, int handle) = resourceManager.GetCbufSlotAndHandleForTexture(texOp.Binding);
 
             TextureFormat format = gpuAccessor.QueryTextureFormat(handle, cbufSlot);
 

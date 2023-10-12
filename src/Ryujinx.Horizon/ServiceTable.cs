@@ -1,7 +1,10 @@
 using Ryujinx.Horizon.Bcat;
+using Ryujinx.Horizon.Lbl;
 using Ryujinx.Horizon.LogManager;
 using Ryujinx.Horizon.MmNv;
+using Ryujinx.Horizon.Ngc;
 using Ryujinx.Horizon.Prepo;
+using Ryujinx.Horizon.Wlan;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -23,10 +26,13 @@ namespace Ryujinx.Horizon
                 entries.Add(new ServiceEntry(T.Main, this, options));
             }
 
-            RegisterService<LmMain>();
-            RegisterService<PrepoMain>();
             RegisterService<BcatMain>();
+            RegisterService<LblMain>();
+            RegisterService<LmMain>();
             RegisterService<MmNvMain>();
+            RegisterService<PrepoMain>();
+            RegisterService<WlanMain>();
+            RegisterService<NgcMain>();
 
             _totalServices = entries.Count;
 
