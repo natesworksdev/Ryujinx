@@ -86,43 +86,46 @@ namespace Ryujinx.Ui.Windows
 
         private void AddUpdate(string path)
         {
-            if (File.Exists(path))
+            if (!File.Exists(path))
             {
-                using FileStream file = new(path, FileMode.Open, FileAccess.Read);
+                GtkDialog.CreateErrorDialog($"Update file {path} was not found! Current game saves can become corrupted!");
+                return;
+            }
 
-                PartitionFileSystem nsp = new(file.AsStorage());
+            using FileStream file = new(path, FileMode.Open, FileAccess.Read);
 
-                try
+            PartitionFileSystem nsp = new(file.AsStorage());
+
+            try
+            {
+                (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
+
+                if (controlNca != null && patchNca != null)
                 {
-                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
+                    ApplicationControlProperty controlData = new();
 
-                    if (controlNca != null && patchNca != null)
-                    {
-                        ApplicationControlProperty controlData = new();
+                    using var nacpFile = new UniqueRef<IFile>();
 
-                        using var nacpFile = new UniqueRef<IFile>();
+                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
-                        controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                        nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
+                    RadioButton radioButton = new($"Version {controlData.DisplayVersionString.ToString()} - {path}");
+                    radioButton.JoinGroup(_noUpdateRadioButton);
 
-                        RadioButton radioButton = new($"Version {controlData.DisplayVersionString.ToString()} - {path}");
-                        radioButton.JoinGroup(_noUpdateRadioButton);
+                    _availableUpdatesBox.Add(radioButton);
+                    _radioButtonToPathDictionary.Add(radioButton, path);
 
-                        _availableUpdatesBox.Add(radioButton);
-                        _radioButtonToPathDictionary.Add(radioButton, path);
-
-                        radioButton.Show();
-                        radioButton.Active = true;
-                    }
-                    else
-                    {
-                        GtkDialog.CreateErrorDialog("The specified file does not contain an update for the selected title!");
-                    }
+                    radioButton.Show();
+                    radioButton.Active = true;
                 }
-                catch (Exception exception)
+                else
                 {
-                    GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {path}");
+                    GtkDialog.CreateErrorDialog("The specified file does not contain an update for the selected title!");
                 }
+            }
+            catch (Exception exception)
+            {
+                GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {path}");
             }
         }
 
