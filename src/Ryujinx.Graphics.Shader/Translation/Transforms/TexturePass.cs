@@ -507,8 +507,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 }
                 else
                 {
-                    Operand[] texSizes = isGather ? InsertTextureBaseSize(node, texOp, bindlessHandle, coordsCount) :
-                        InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
+                    Operand[] texSizes = isGather
+                        ? InsertTextureBaseSize(node, texOp, bindlessHandle, coordsCount)
+                        : InsertTextureLod(node, texOp, lodSources, bindlessHandle, coordsCount, stage);
 
                     for (int index = 0; index < coordsCount; index++)
                     {
@@ -571,11 +572,11 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
                 if (bindlessHandle != null)
                 {
-                    texSizeSources = new Operand[] { bindlessHandle, ConstF(0.0f) };
+                    texSizeSources = new Operand[] { bindlessHandle, Const(0) };
                 }
                 else
                 {
-                    texSizeSources = new Operand[] { ConstF(0.0f) };
+                    texSizeSources = new Operand[] { Const(0) };
                 }
 
                 node.List.AddBefore(node, new TextureOperation(
