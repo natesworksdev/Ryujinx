@@ -926,11 +926,11 @@ namespace Ryujinx.Ui.App.Common
 
                 if (File.Exists(titleUpdateMetadataPath))
                 {
-                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, _titleSerializerContext.TitleUpdateMetadata).Selected;
+                    updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, _titleSerializerContext.TitleUpdateMetadata).Selected;               
 
                     if (!File.Exists(updatePath))
                     {
-                        Logger.Warning?.Print(LogClass.Loader, $"Update file {titleUpdateMetadataPath} was not found! Game saves will not work!");
+                        Logger.Warning?.Print(LogClass.Loader, $"Update file {updatePath} was not found! Game saves will not work!");
                     }
 
                     FileStream file = new(updatePath, FileMode.Open, FileAccess.Read);
