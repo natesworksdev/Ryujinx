@@ -15,8 +15,16 @@ namespace Ryujinx.Horizon.Usb
         private const int UsbPdMMaxSessionsCount = 1;
         private const int UsbPmMaxSessionsCount = 5;
         private const int UsbQdbMaxSessionsCount = 4;
-        private const int TotalMaxSessionsCount = UsbDsMaxSessionsCount + UsbHsMaxSessionsCount + UsbHsAMaxSessionsCount + UsbObsvMaxSessionsCount
-            + UsbPdMaxSessionsCount + UsbPdCMaxSessionsCount + UsbPdMMaxSessionsCount + UsbPmMaxSessionsCount + UsbQdbMaxSessionsCount;
+        private const int TotalMaxSessionsCount =
+            UsbDsMaxSessionsCount +
+            UsbHsMaxSessionsCount +
+            UsbHsAMaxSessionsCount +
+            UsbObsvMaxSessionsCount +
+            UsbPdMaxSessionsCount +
+            UsbPdCMaxSessionsCount +
+            UsbPdMMaxSessionsCount +
+            UsbPmMaxSessionsCount +
+            UsbQdbMaxSessionsCount;
 
         private const int PointerBufferSize = 0;
         private const int MaxDomains = 0;
