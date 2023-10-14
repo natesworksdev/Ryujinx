@@ -123,6 +123,9 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 null,
                 nsoExecutables);
 
+            // TODO: This should be stored using ProcessId instead.
+            device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(metaLoader.GetProgramId());
+
             return processResult;
         }
     }

@@ -1,9 +1,11 @@
 using LibHac;
 using LibHac.Bcat;
+using LibHac.Common;
 using LibHac.FsSrv.Impl;
 using LibHac.Loader;
 using LibHac.Ncm;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Services.Arp;
 using System;
 
 namespace Ryujinx.HLE.HOS
@@ -22,6 +24,9 @@ namespace Ryujinx.HLE.HOS
         public HorizonClient PmClient { get; private set; }
         public HorizonClient SdbClient { get; private set; }
 
+        private SharedRef<LibHacIReader> _arpIReader;
+        internal LibHacIReader ArpIReader => _arpIReader.Get;
+
         public LibHacHorizonManager()
         {
             InitializeServer();
@@ -32,6 +37,12 @@ namespace Ryujinx.HLE.HOS
             Server = new LibHac.Horizon(new HorizonConfiguration());
 
             RyujinxClient = Server.CreatePrivilegedHorizonClient();
+        }
+
+        public void InitializeArpServer()
+        {
+            _arpIReader.Reset(new LibHacIReader());
+            RyujinxClient.Sm.RegisterService(new LibHacArpServiceObject(ref _arpIReader), "arp:r").ThrowIfFailure();
         }
 
         public void InitializeBcatServer()

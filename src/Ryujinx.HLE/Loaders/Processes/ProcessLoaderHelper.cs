@@ -442,7 +442,7 @@ namespace Ryujinx.HLE.Loaders.Processes
             {
                 ApplicationId = new Horizon.Sdk.Ncm.ApplicationId(programId),
                 Version = 0x00,
-                Storage = Horizon.Sdk.Ncm.StorageId.BuiltInUser,
+                Storage = Horizon.Sdk.Ncm.StorageId.BuiltInSystem,
                 PatchStorage = Horizon.Sdk.Ncm.StorageId.None,
                 ApplicationKind = ApplicationKind.Application,
             });

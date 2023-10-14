@@ -186,6 +186,7 @@ namespace Ryujinx.Ava.UI.Windows
             ContentManager = new ContentManager(VirtualFileSystem);
 
             LibHacHorizonManager.InitializeFsServer(VirtualFileSystem);
+            LibHacHorizonManager.InitializeArpServer();
             LibHacHorizonManager.InitializeBcatServer();
             LibHacHorizonManager.InitializeSystemClients();
 
