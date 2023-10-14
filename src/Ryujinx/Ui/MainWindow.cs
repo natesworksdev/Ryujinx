@@ -165,7 +165,6 @@ namespace Ryujinx.Ui
             _libHacHorizonManager = new LibHacHorizonManager();
 
             _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
-            _libHacHorizonManager.InitializeArpServer();
             _libHacHorizonManager.InitializeBcatServer();
             _libHacHorizonManager.InitializeSystemClients();
 
