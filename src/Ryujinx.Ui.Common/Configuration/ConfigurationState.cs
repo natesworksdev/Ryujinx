@@ -1445,7 +1445,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
             if (configurationFileFormat.Version < 49)
             {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 49.");
 
                 configurationFileFormat.EnableOGLSpirV = false;
 
