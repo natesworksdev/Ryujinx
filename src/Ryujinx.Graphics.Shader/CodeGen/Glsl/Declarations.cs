@@ -25,6 +25,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 context.AppendLine("#extension GL_KHR_shader_subgroup_basic : enable");
                 context.AppendLine("#extension GL_KHR_shader_subgroup_ballot : enable");
+                context.AppendLine("#extension GL_KHR_shader_subgroup_shuffle : enable");
             }
 
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
@@ -99,10 +100,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     else
                     {
                         string outPrimitive = context.Definitions.OutputTopology.ToGlslString();
-
-                        int maxOutputVertices = context.Definitions.GpPassthrough
-                            ? context.Definitions.InputTopology.ToInputVertices()
-                            : context.Definitions.MaxOutputVertices;
+                        int maxOutputVertices = context.Definitions.MaxOutputVertices;
 
                         context.AppendLine($"layout ({outPrimitive}, max_vertices = {maxOutputVertices}) out;");
                     }
@@ -199,26 +197,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighU32) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/MultiplyHighU32.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.Shuffle) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/Shuffle.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleDown) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleDown.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleUp) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleUp.glsl");
-            }
-
-            if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleXor) != 0)
-            {
-                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleXor.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.SwizzleAdd) != 0)
@@ -339,15 +317,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string typeName = GetVarTypeName(context, memory.Type & ~AggregateType.Array);
 
-                if (memory.ArrayLength > 0)
+                if (memory.Type.HasFlag(AggregateType.Array))
                 {
-                    string arraySize = memory.ArrayLength.ToString(CultureInfo.InvariantCulture);
+                    if (memory.ArrayLength > 0)
+                    {
+                        string arraySize = memory.ArrayLength.ToString(CultureInfo.InvariantCulture);
 
-                    context.AppendLine($"{prefix}{typeName} {memory.Name}[{arraySize}];");
+                        context.AppendLine($"{prefix}{typeName} {memory.Name}[{arraySize}];");
+                    }
+                    else
+                    {
+                        context.AppendLine($"{prefix}{typeName} {memory.Name}[];");
+                    }
                 }
                 else
                 {
-                    context.AppendLine($"{prefix}{typeName} {memory.Name}[];");
+                    context.AppendLine($"{prefix}{typeName} {memory.Name};");
                 }
             }
         }

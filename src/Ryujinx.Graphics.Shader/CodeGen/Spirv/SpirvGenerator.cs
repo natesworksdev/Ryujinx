@@ -28,12 +28,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             _poolLock = new object();
         }
 
-        private const HelperFunctionsMask NeedsInvocationIdMask =
-            HelperFunctionsMask.Shuffle |
-            HelperFunctionsMask.ShuffleDown |
-            HelperFunctionsMask.ShuffleUp |
-            HelperFunctionsMask.ShuffleXor |
-            HelperFunctionsMask.SwizzleAdd;
+        private const HelperFunctionsMask NeedsInvocationIdMask = HelperFunctionsMask.SwizzleAdd;
 
         public static byte[] Generate(StructuredProgramInfo info, CodeGenParameters parameters)
         {
@@ -92,6 +87,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (parameters.Definitions.Stage == ShaderStage.Vertex)
             {
                 context.AddCapability(Capability.DrawParameters);
+            }
+
+            if (context.Definitions.Stage != ShaderStage.Fragment &&
+                context.Definitions.Stage != ShaderStage.Geometry &&
+                context.Definitions.Stage != ShaderStage.Compute &&
+                (context.Info.IoDefinitions.Contains(new IoDefinition(StorageKind.Output, IoVariable.Layer)) ||
+                context.Info.IoDefinitions.Contains(new IoDefinition(StorageKind.Output, IoVariable.ViewportIndex))))
+            {
+                context.AddExtension("SPV_EXT_shader_viewport_index_layer");
+                context.AddCapability(Capability.ShaderViewportIndexLayerEXT);
             }
 
             if (context.Info.IoDefinitions.Contains(new IoDefinition(StorageKind.Output, IoVariable.ViewportMask)))
@@ -156,7 +161,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.EnterBlock(function.MainBlock);
 
             Declarations.DeclareLocals(context, function);
-            Declarations.DeclareLocalForArgs(context, info.Functions);
 
             Generate(context, function.MainBlock);
 
@@ -244,9 +248,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         _ => throw new InvalidOperationException($"Invalid output topology \"{context.Definitions.OutputTopology}\"."),
                     });
 
-                    int maxOutputVertices = context.Definitions.GpPassthrough ? context.InputVertices : context.Definitions.MaxOutputVertices;
-
-                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)maxOutputVertices);
+                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)context.Definitions.MaxOutputVertices);
                 }
                 else if (context.Definitions.Stage == ShaderStage.Fragment)
                 {

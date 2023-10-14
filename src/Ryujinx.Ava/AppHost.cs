@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
@@ -21,6 +20,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Graphics.GAL;
@@ -191,6 +191,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.EnableColorSpacePassthrough.Event += UpdateColorSpacePassthrough;
 
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Event += UpdateLanInterfaceIdState;
+            ConfigurationState.Instance.Multiplayer.Mode.Event += UpdateMultiplayerModeState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
             _gpuDoneEvent = new ManualResetEvent(false);
@@ -410,6 +411,11 @@ namespace Ryujinx.Ava
         private void UpdateLanInterfaceIdState(object sender, ReactiveEventArgs<string> e)
         {
             Device.Configuration.MultiplayerLanInterfaceId = e.NewValue;
+        }
+
+        private void UpdateMultiplayerModeState(object sender, ReactiveEventArgs<MultiplayerMode> e)
+        {
+            Device.Configuration.MultiplayerMode = e.NewValue;
         }
 
         public void Stop()
@@ -782,7 +788,8 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.Graphics.AspectRatio,
                                                      ConfigurationState.Instance.System.AudioVolume,
                                                      ConfigurationState.Instance.System.UseHypervisor,
-                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                                                     ConfigurationState.Instance.Multiplayer.Mode);
 
             Device = new Switch(configuration);
         }

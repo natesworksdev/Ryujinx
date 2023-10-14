@@ -27,8 +27,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public ILogger Logger { get; }
         public TargetApi TargetApi { get; }
 
-        public int InputVertices { get; }
-
         public Dictionary<int, Instruction> ConstantBuffers { get; } = new();
         public Dictionary<int, Instruction> StorageBuffers { get; } = new();
 
@@ -46,7 +44,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public StructuredFunction CurrentFunction { get; set; }
         private readonly Dictionary<AstOperand, Instruction> _locals = new();
-        private readonly Dictionary<int, Instruction[]> _localForArgs = new();
         private readonly Dictionary<int, Instruction> _funcArgs = new();
         private readonly Dictionary<int, (StructuredFunction, Instruction)> _functions = new();
 
@@ -101,19 +98,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Logger = parameters.Logger;
             TargetApi = parameters.TargetApi;
 
-            if (parameters.Definitions.Stage == ShaderStage.Geometry)
-            {
-                InputVertices = parameters.Definitions.InputTopology switch
-                {
-                    InputTopology.Points => 1,
-                    InputTopology.Lines => 2,
-                    InputTopology.LinesAdjacency => 2,
-                    InputTopology.Triangles => 3,
-                    InputTopology.TrianglesAdjacency => 3,
-                    _ => throw new InvalidOperationException($"Invalid input topology \"{parameters.Definitions.InputTopology}\"."),
-                };
-            }
-
             AddCapability(Capability.Shader);
             AddCapability(Capability.Float64);
 
@@ -127,7 +111,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             IsMainFunction = isMainFunction;
             MayHaveReturned = false;
             _locals.Clear();
-            _localForArgs.Clear();
             _funcArgs.Clear();
         }
 
@@ -182,11 +165,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public void DeclareLocal(AstOperand local, Instruction spvLocal)
         {
             _locals.Add(local, spvLocal);
-        }
-
-        public void DeclareLocalForArgs(int funcIndex, Instruction[] spvLocals)
-        {
-            _localForArgs.Add(funcIndex, spvLocals);
         }
 
         public void DeclareArgument(int argIndex, Instruction spvLocal)
@@ -291,11 +269,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Instruction GetLocalPointer(AstOperand local)
         {
             return _locals[local];
-        }
-
-        public Instruction[] GetLocalForArgsPointers(int funcIndex)
-        {
-            return _localForArgs[funcIndex];
         }
 
         public Instruction GetArgumentPointer(AstOperand funcArg)

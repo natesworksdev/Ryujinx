@@ -149,10 +149,22 @@ namespace Ryujinx.Graphics.Vulkan
                 DstAccessMask = AccessFlags.MemoryReadBit | AccessFlags.MemoryWriteBit,
             };
 
+            PipelineStageFlags pipelineStageFlags = PipelineStageFlags.VertexShaderBit | PipelineStageFlags.FragmentShaderBit;
+
+            if (Gd.Capabilities.SupportsGeometryShader)
+            {
+                pipelineStageFlags |= PipelineStageFlags.GeometryShaderBit;
+            }
+
+            if (Gd.Capabilities.SupportsTessellationShader)
+            {
+                pipelineStageFlags |= PipelineStageFlags.TessellationControlShaderBit | PipelineStageFlags.TessellationEvaluationShaderBit;
+            }
+
             Gd.Api.CmdPipelineBarrier(
                 CommandBuffer,
-                PipelineStageFlags.FragmentShaderBit,
-                PipelineStageFlags.FragmentShaderBit,
+                pipelineStageFlags,
+                pipelineStageFlags,
                 0,
                 1,
                 memoryBarrier,
@@ -243,10 +255,8 @@ namespace Ryujinx.Graphics.Vulkan
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
 
-        public unsafe void ClearRenderTargetDepthStencil(int layer, int layerCount, float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        public unsafe void ClearRenderTargetDepthStencil(int layer, int layerCount, float depthValue, bool depthMask, int stencilValue, bool stencilMask)
         {
-            // TODO: Use stencilMask (fully).
-
             if (FramebufferParams == null || !FramebufferParams.HasDepthStencil)
             {
                 return;
@@ -255,7 +265,7 @@ namespace Ryujinx.Graphics.Vulkan
             var clearValue = new ClearValue(null, new ClearDepthStencilValue(depthValue, (uint)stencilValue));
             var flags = depthMask ? ImageAspectFlags.DepthBit : 0;
 
-            if (stencilMask != 0)
+            if (stencilMask)
             {
                 flags |= ImageAspectFlags.StencilBit;
             }

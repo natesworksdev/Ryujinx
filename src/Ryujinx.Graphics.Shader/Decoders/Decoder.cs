@@ -297,6 +297,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     case InstName.Ssy:
                         block.AddPushOp(op);
                         break;
+                    case InstName.Shfl:
+                        context.SetUsedFeature(FeatureFlags.Shuffle);
+                        break;
                     case InstName.Ldl:
                     case InstName.Stl:
                         context.SetUsedFeature(FeatureFlags.LocalMemory);
@@ -306,6 +309,23 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     case InstName.Lds:
                     case InstName.Sts:
                         context.SetUsedFeature(FeatureFlags.SharedMemory);
+                        break;
+                    case InstName.Atom:
+                    case InstName.AtomCas:
+                    case InstName.Red:
+                    case InstName.Stg:
+                    case InstName.Suatom:
+                    case InstName.SuatomB:
+                    case InstName.SuatomB2:
+                    case InstName.SuatomCas:
+                    case InstName.SuatomCasB:
+                    case InstName.Sured:
+                    case InstName.SuredB:
+                    case InstName.Sust:
+                    case InstName.SustB:
+                    case InstName.SustD:
+                    case InstName.SustDB:
+                        context.SetUsedFeature(FeatureFlags.Store);
                         break;
                 }
 
@@ -421,6 +441,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                                         context.SetUsedFeature(FeatureFlags.RtLayer);
                                     }
                                     break;
+                                case AttributeConsts.ViewportIndex:
+                                    if (definitions.Stage != ShaderStage.Fragment)
+                                    {
+                                        context.SetUsedFeature(FeatureFlags.ViewportIndex);
+                                    }
+                                    break;
                                 case AttributeConsts.ClipDistance0:
                                 case AttributeConsts.ClipDistance1:
                                 case AttributeConsts.ClipDistance2:
@@ -429,9 +455,15 @@ namespace Ryujinx.Graphics.Shader.Decoders
                                 case AttributeConsts.ClipDistance5:
                                 case AttributeConsts.ClipDistance6:
                                 case AttributeConsts.ClipDistance7:
-                                    if (definitions.Stage == ShaderStage.Vertex)
+                                    if (definitions.Stage.IsVtg())
                                     {
                                         context.SetClipDistanceWritten((attr - AttributeConsts.ClipDistance0) / 4);
+                                    }
+                                    break;
+                                case AttributeConsts.ViewportMask:
+                                    if (definitions.Stage != ShaderStage.Fragment)
+                                    {
+                                        context.SetUsedFeature(FeatureFlags.ViewportMask);
                                     }
                                     break;
                             }

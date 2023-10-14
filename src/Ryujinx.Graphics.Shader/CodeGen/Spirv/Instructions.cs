@@ -134,7 +134,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Subtract,                 GenerateSubtract);
             Add(Instruction.SwizzleAdd,               GenerateSwizzleAdd);
             Add(Instruction.TextureSample,            GenerateTextureSample);
-            Add(Instruction.TextureSize,              GenerateTextureSize);
+            Add(Instruction.TextureQuerySamples,      GenerateTextureQuerySamples);
+            Add(Instruction.TextureQuerySize,         GenerateTextureQuerySize);
             Add(Instruction.Truncate,                 GenerateTruncate);
             Add(Instruction.UnpackDouble2x32,         GenerateUnpackDouble2x32);
             Add(Instruction.UnpackHalf2x16,           GenerateUnpackHalf2x16);
@@ -231,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var execution = context.Constant(context.TypeU32(), Scope.Subgroup);
 
             var maskVector = context.GroupNonUniformBallot(uvec4Type, execution, context.Get(AggregateType.Bool, source));
-            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)0);
+            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)operation.Index);
 
             return new OperationResult(AggregateType.U32, mask);
         }
@@ -310,26 +311,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var (function, spvFunc) = context.GetFunction(funcId.Value);
 
             var args = new SpvInstruction[operation.SourcesCount - 1];
-            var spvLocals = context.GetLocalForArgsPointers(funcId.Value);
 
             for (int i = 0; i < args.Length; i++)
             {
                 var operand = operation.GetSource(i + 1);
 
-                if (i >= function.InArguments.Length)
-                {
-                    args[i] = context.GetLocalPointer((AstOperand)operand);
-                }
-                else
-                {
-                    var type = function.GetArgumentType(i);
-                    var value = context.Get(type, operand);
-                    var spvLocal = spvLocals[i];
-
-                    context.Store(spvLocal, value);
-
-                    args[i] = spvLocal;
-                }
+                AstOperand local = (AstOperand)operand;
+                Debug.Assert(local.Type == OperandType.LocalVariable);
+                args[i] = context.GetLocalPointer(local);
             }
 
             var retType = function.ReturnType;
@@ -1100,117 +1089,40 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateShuffle(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-            var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.BitwiseOr(context.TypeU32(), indexNotSegMask, minThreadId);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleDown(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.IAdd(context.TypeU32(), threadId, index);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleDown(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleUp(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var srcThreadId = context.ISub(context.TypeU32(), threadId, index);
-            var valid = context.SGreaterThanEqual(context.TypeBool(), srcThreadId, minThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleUp(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleXor(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.BitwiseXor(context.TypeU32(), threadId, index);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleXor(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1569,7 +1481,36 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(swizzledResultType, result);
         }
 
-        private static OperationResult GenerateTextureSize(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateTextureQuerySamples(CodeGenContext context, AstOperation operation)
+        {
+            AstTextureOperation texOp = (AstTextureOperation)operation;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return new OperationResult(AggregateType.S32, context.Constant(context.TypeS32(), 0));
+            }
+
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            if (isIndexed)
+            {
+                context.GetS32(texOp.GetSource(0));
+            }
+
+            (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[texOp.Binding];
+
+            var image = context.Load(sampledImageType, sampledImageVariable);
+            image = context.Image(imageType, image);
+
+            SpvInstruction result = context.ImageQuerySamples(context.TypeS32(), image);
+
+            return new OperationResult(AggregateType.S32, result);
+        }
+
+        private static OperationResult GenerateTextureQuerySize(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 

@@ -148,6 +148,16 @@ namespace Ryujinx.Graphics.Vulkan
             return _attachments[index];
         }
 
+        public Auto<DisposableImageView> GetDepthStencilAttachment()
+        {
+            if (!HasDepthStencil)
+            {
+                return null;
+            }
+
+            return _attachments[AttachmentsCount - 1];
+        }
+
         public ComponentType GetAttachmentComponentType(int index)
         {
             if (_colors != null && (uint)index < _colors.Length)
@@ -247,14 +257,22 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (realIndex != -1)
                 {
-                    _colors[realIndex].Storage?.InsertReadToWriteBarrier(cbs, AccessFlags.ColorAttachmentWriteBit, PipelineStageFlags.ColorAttachmentOutputBit);
+                    _colors[realIndex].Storage?.InsertReadToWriteBarrier(
+                        cbs,
+                        AccessFlags.ColorAttachmentWriteBit,
+                        PipelineStageFlags.ColorAttachmentOutputBit,
+                        insideRenderPass: true);
                 }
             }
         }
 
         public void InsertClearBarrierDS(CommandBufferScoped cbs)
         {
-            _depthStencil?.Storage?.InsertReadToWriteBarrier(cbs, AccessFlags.DepthStencilAttachmentWriteBit, PipelineStageFlags.LateFragmentTestsBit);
+            _depthStencil?.Storage?.InsertReadToWriteBarrier(
+                cbs,
+                AccessFlags.DepthStencilAttachmentWriteBit,
+                PipelineStageFlags.LateFragmentTestsBit,
+                insideRenderPass: true);
         }
     }
 }

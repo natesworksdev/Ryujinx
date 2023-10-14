@@ -41,28 +41,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        public static void DeclareLocalForArgs(CodeGenContext context, List<StructuredFunction> functions)
-        {
-            for (int funcIndex = 0; funcIndex < functions.Count; funcIndex++)
-            {
-                StructuredFunction function = functions[funcIndex];
-                SpvInstruction[] locals = new SpvInstruction[function.InArguments.Length];
-
-                for (int i = 0; i < function.InArguments.Length; i++)
-                {
-                    var type = function.GetArgumentType(i);
-                    var localPointerType = context.TypePointer(StorageClass.Function, context.GetType(type));
-                    var spvLocal = context.Variable(localPointerType, StorageClass.Function);
-
-                    context.AddLocalVariable(spvLocal);
-
-                    locals[i] = spvLocal;
-                }
-
-                context.DeclareLocalForArgs(funcIndex, locals);
-            }
-        }
-
         public static void DeclareAll(CodeGenContext context, StructuredProgramInfo info)
         {
             DeclareConstantBuffers(context, context.Properties.ConstantBuffers.Values);
@@ -369,7 +347,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (context.Definitions.Stage != ShaderStage.Vertex)
                 {
                     var perVertexInputStructType = CreatePerVertexStructType(context);
-                    int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                    int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
                     var perVertexInputArrayType = context.TypeArray(perVertexInputStructType, context.Constant(context.TypeU32(), arraySize));
                     var perVertexInputPointerType = context.TypePointer(StorageClass.Input, perVertexInputArrayType);
                     var perVertexInputVariable = context.Variable(perVertexInputPointerType, StorageClass.Input);
@@ -433,6 +411,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.MemberName(perVertexStructType, 3, "gl_CullDistance");
 
             context.Decorate(perVertexStructType, Decoration.Block);
+
+            if (context.HostCapabilities.ReducedPrecision)
+            {
+                context.MemberDecorate(perVertexStructType, 0, Decoration.Invariant);
+            }
 
             context.MemberDecorate(perVertexStructType, 0, Decoration.BuiltIn, (LiteralInteger)BuiltIn.Position);
             context.MemberDecorate(perVertexStructType, 1, Decoration.BuiltIn, (LiteralInteger)BuiltIn.PointSize);
@@ -501,7 +484,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (!isPerPatch && IoMap.IsPerVertex(ioVariable, context.Definitions.Stage, isOutput))
             {
-                int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                int arraySize = context.Definitions.Stage == ShaderStage.Geometry ? context.Definitions.InputTopology.ToInputVertices() : 32;
                 spvType = context.TypeArray(spvType, context.Constant(context.TypeU32(), arraySize));
 
                 if (context.Definitions.GpPassthrough && context.HostCapabilities.SupportsGeometryShaderPassthrough)

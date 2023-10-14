@@ -109,21 +109,23 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.PackDouble2x32,           AggregateType.FP64,   AggregateType.U32,     AggregateType.U32);
             Add(Instruction.PackHalf2x16,             AggregateType.U32,    AggregateType.FP32,    AggregateType.FP32);
             Add(Instruction.ReciprocalSquareRoot,     AggregateType.Scalar, AggregateType.Scalar);
+            Add(Instruction.Return,                   AggregateType.Void,   AggregateType.U32);
             Add(Instruction.Round,                    AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.ShiftLeft,                AggregateType.S32,    AggregateType.S32,     AggregateType.S32);
             Add(Instruction.ShiftRightS32,            AggregateType.S32,    AggregateType.S32,     AggregateType.S32);
             Add(Instruction.ShiftRightU32,            AggregateType.U32,    AggregateType.U32,     AggregateType.S32);
-            Add(Instruction.Shuffle,                  AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32,     AggregateType.U32,     AggregateType.Bool);
-            Add(Instruction.ShuffleDown,              AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32,     AggregateType.U32,     AggregateType.Bool);
-            Add(Instruction.ShuffleUp,                AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32,     AggregateType.U32,     AggregateType.Bool);
-            Add(Instruction.ShuffleXor,               AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32,     AggregateType.U32,     AggregateType.Bool);
+            Add(Instruction.Shuffle,                  AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32);
+            Add(Instruction.ShuffleDown,              AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32);
+            Add(Instruction.ShuffleUp,                AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32);
+            Add(Instruction.ShuffleXor,               AggregateType.FP32,   AggregateType.FP32,    AggregateType.U32);
             Add(Instruction.Sine,                     AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.SquareRoot,               AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.Store,                    AggregateType.Void);
             Add(Instruction.Subtract,                 AggregateType.Scalar, AggregateType.Scalar,  AggregateType.Scalar);
             Add(Instruction.SwizzleAdd,               AggregateType.FP32,   AggregateType.FP32,    AggregateType.FP32,    AggregateType.S32);
             Add(Instruction.TextureSample,            AggregateType.FP32);
-            Add(Instruction.TextureSize,              AggregateType.S32,    AggregateType.S32,     AggregateType.S32);
+            Add(Instruction.TextureQuerySamples,      AggregateType.S32,    AggregateType.S32);
+            Add(Instruction.TextureQuerySize,         AggregateType.S32,    AggregateType.S32,     AggregateType.S32);
             Add(Instruction.Truncate,                 AggregateType.Scalar, AggregateType.Scalar);
             Add(Instruction.UnpackDouble2x32,         AggregateType.U32,    AggregateType.FP64);
             Add(Instruction.UnpackHalf2x16,           AggregateType.FP32,   AggregateType.U32);
@@ -131,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.VoteAll,                  AggregateType.Bool,   AggregateType.Bool);
             Add(Instruction.VoteAllEqual,             AggregateType.Bool,   AggregateType.Bool);
             Add(Instruction.VoteAny,                  AggregateType.Bool,   AggregateType.Bool);
-#pragma warning restore IDE0055v
+#pragma warning restore IDE0055
         }
 
         private static void Add(Instruction inst, AggregateType destType, params AggregateType[] srcTypes)

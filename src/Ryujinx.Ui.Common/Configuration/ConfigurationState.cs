@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
@@ -568,9 +569,15 @@ namespace Ryujinx.Ui.Common.Configuration
             /// </summary>
             public ReactiveObject<string> LanInterfaceId { get; private set; }
 
+            /// <summary>
+            /// Multiplayer Mode
+            /// </summary>
+            public ReactiveObject<MultiplayerMode> Mode { get; private set; }
+
             public MultiplayerSection()
             {
                 LanInterfaceId = new ReactiveObject<string>();
+                Mode = new ReactiveObject<MultiplayerMode>();
             }
         }
 
@@ -749,6 +756,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,
                 MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId,
+                MultiplayerMode = Multiplayer.Mode,
             };
 
             return configurationFile;
@@ -804,6 +812,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.IgnoreMissingServices.Value = false;
             System.UseHypervisor.Value = true;
             Multiplayer.LanInterfaceId.Value = "0";
+            Multiplayer.Mode.Value = MultiplayerMode.Disabled;
             Ui.GuiColumns.FavColumn.Value = true;
             Ui.GuiColumns.IconColumn.Value = true;
             Ui.GuiColumns.AppColumn.Value = true;
@@ -1012,6 +1021,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            // configurationFileFormat.Version == 13 -> LDN1
+
             if (configurationFileFormat.Version < 14)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 14.");
@@ -1048,11 +1059,25 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            // configurationFileFormat.Version == 19 -> LDN2
+
             if (configurationFileFormat.Version < 20)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
 
                 configurationFileFormat.ShowConfirmExit = true;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 21)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
+
+                // Initialize network config.
+
+                configurationFileFormat.MultiplayerMode = MultiplayerMode.Disabled;
+                configurationFileFormat.MultiplayerLanInterfaceId = "0";
 
                 configurationFileUpdated = true;
             }
@@ -1520,6 +1545,7 @@ namespace Ryujinx.Ui.Common.Configuration
             }
 
             Multiplayer.LanInterfaceId.Value = configurationFileFormat.MultiplayerLanInterfaceId;
+            Multiplayer.Mode.Value = configurationFileFormat.MultiplayerMode;
 
             if (configurationFileUpdated)
             {
