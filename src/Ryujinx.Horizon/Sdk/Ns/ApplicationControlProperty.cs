@@ -77,7 +77,7 @@ namespace Ryujinx.Horizon.Sdk.Ns
         public readonly string DisplayVersionString => Encoding.UTF8.GetString(DisplayVersion.AsSpan()).TrimEnd('\0');
         public readonly string ApplicationErrorCodeCategoryString => Encoding.UTF8.GetString(ApplicationErrorCodeCategory.AsSpan()).TrimEnd('\0');
         public readonly string BcatPassphraseString => Encoding.UTF8.GetString(BcatPassphrase.AsSpan()).TrimEnd('\0');
-        
+
         public struct ApplicationTitle
         {
             public ByteArray512 Name;

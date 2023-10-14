@@ -90,7 +90,7 @@ namespace Ryujinx.Horizon.Sdk.Arp
                 data,
                 stackalloc[] { HipcBufferFlags.Out | HipcBufferFlags.MapAlias | HipcBufferFlags.FixedSize },
                 stackalloc[] { new PointerAndSize(bufferAddress, bufferSize) });
-            
+
             if (result.IsFailure)
             {
                 return result;

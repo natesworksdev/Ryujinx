@@ -46,7 +46,7 @@ namespace Ryujinx.Horizon.Arp.Ipc
             // NOTE: Returns InvalidPointer if _applicationInstanceId is null, doesn't occur in our case.
 
             _applicationInstanceManager.Entries[_applicationInstanceId].ProcessProperty = new ApplicationProcessProperty();
-            
+
             return Result.Success;
         }
 

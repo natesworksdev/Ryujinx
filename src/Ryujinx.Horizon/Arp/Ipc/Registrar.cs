@@ -43,7 +43,7 @@ namespace Ryujinx.Horizon.Arp.Ipc
             {
                 return ArpResult.DataAlreadyBound;
             }
-            
+
             _applicationInstance.ControlProperty = applicationControlProperty;
 
             return Result.Success;
