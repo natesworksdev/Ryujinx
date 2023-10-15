@@ -312,7 +312,6 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
-        public NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT> StageRequiredSubgroupSizes;
         public PipelineLayout PipelineLayout;
         public SpecData SpecializationData;
 
@@ -321,16 +320,6 @@ namespace Ryujinx.Graphics.Vulkan
         public void Initialize()
         {
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
-            StageRequiredSubgroupSizes = new NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>(Constants.MaxShaderStages);
-
-            for (int index = 0; index < Constants.MaxShaderStages; index++)
-            {
-                StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT
-                {
-                    SType = StructureType.PipelineShaderStageRequiredSubgroupSizeCreateInfoExt,
-                    RequiredSubgroupSize = RequiredSubgroupSize,
-                };
-            }
 
             AdvancedBlendSrcPreMultiplied = true;
             AdvancedBlendDstPreMultiplied = true;
@@ -630,7 +619,14 @@ namespace Ryujinx.Graphics.Vulkan
                     BasePipelineIndex = -1,
                 };
 
-                gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
+                Result result = gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle);
+
+                if (result.IsError())
+                {
+                    program.AddGraphicsPipeline(ref Internal, null);
+
+                    return null;
+                }
 
                 // Restore previous blend enable values if we changed it.
                 while (blendEnables != 0)
@@ -708,7 +704,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly void Dispose()
         {
             Stages.Dispose();
-            StageRequiredSubgroupSizes.Dispose();
         }
     }
 }

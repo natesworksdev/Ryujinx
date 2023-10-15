@@ -34,7 +34,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected PipelineDynamicState DynamicState;
         private PipelineState _newState;
-        private bool _stateDirty;
+        private bool _graphicsStateDirty;
+        private bool _computeStateDirty;
         private PrimitiveTopology _topology;
 
         private ulong _currentPipelineHandle;
@@ -353,7 +354,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             EndRenderPass();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Compute);
+            RecreateComputePipelineIfNeeded();
 
             Gd.Api.CmdDispatch(CommandBuffer, (uint)groupsX, (uint)groupsY, (uint)groupsZ);
         }
@@ -366,7 +367,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             EndRenderPass();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Compute);
+            RecreateComputePipelineIfNeeded();
 
             Gd.Api.CmdDispatchIndirect(CommandBuffer, indirectBuffer.Get(Cbs, indirectBufferOffset, 12).Value, (ulong)indirectBufferOffset);
         }
@@ -378,7 +379,11 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -443,7 +448,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -486,7 +496,12 @@ namespace Ryujinx.Graphics.Vulkan
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -536,7 +551,12 @@ namespace Ryujinx.Graphics.Vulkan
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -625,7 +645,11 @@ namespace Ryujinx.Graphics.Vulkan
                 .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size, false).Value;
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
@@ -656,7 +680,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             // TODO: Support quads and other unsupported topologies.
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
@@ -1576,10 +1604,23 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected void SignalStateChange()
         {
-            _stateDirty = true;
+            _graphicsStateDirty = true;
+            _computeStateDirty = true;
         }
 
-        private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
+        private void RecreateComputePipelineIfNeeded()
+        {
+            if (_computeStateDirty || Pbp != PipelineBindPoint.Compute)
+            {
+                CreatePipeline(PipelineBindPoint.Compute);
+                _computeStateDirty = false;
+                Pbp = PipelineBindPoint.Compute;
+            }
+
+            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Compute);
+        }
+
+        private bool RecreateGraphicsPipelineIfNeeded()
         {
             if (AutoFlush.ShouldFlushDraw(DrawCount))
             {
@@ -1620,17 +1661,23 @@ namespace Ryujinx.Graphics.Vulkan
                 _vertexBufferUpdater.Commit(Cbs);
             }
 
-            if (_stateDirty || Pbp != pbp)
+            if (_graphicsStateDirty || Pbp != PipelineBindPoint.Graphics)
             {
-                CreatePipeline(pbp);
-                _stateDirty = false;
-                Pbp = pbp;
+                if (!CreatePipeline(PipelineBindPoint.Graphics))
+                {
+                    return false;
+                }
+
+                _graphicsStateDirty = false;
+                Pbp = PipelineBindPoint.Graphics;
             }
 
-            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, pbp);
+            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Graphics);
+
+            return true;
         }
 
-        private void CreatePipeline(PipelineBindPoint pbp)
+        private bool CreatePipeline(PipelineBindPoint pbp)
         {
             // We can only create a pipeline if the have the shader stages set.
             if (_newState.Stages != null)
@@ -1644,6 +1691,11 @@ namespace Ryujinx.Graphics.Vulkan
                     ? _newState.CreateComputePipeline(Gd, Device, _program, PipelineCache)
                     : _newState.CreateGraphicsPipeline(Gd, Device, _program, PipelineCache, _renderPass.Get(Cbs).Value);
 
+                if (pipeline == null)
+                {
+                    return false;
+                }
+
                 ulong pipelineHandle = pipeline.GetUnsafe().Value.Handle;
 
                 if (_currentPipelineHandle != pipelineHandle)
@@ -1655,6 +1707,8 @@ namespace Ryujinx.Graphics.Vulkan
                     Gd.Api.CmdBindPipeline(CommandBuffer, pbp, Pipeline.Get(Cbs).Value);
                 }
             }
+
+            return true;
         }
 
         private unsafe void BeginRenderPass()

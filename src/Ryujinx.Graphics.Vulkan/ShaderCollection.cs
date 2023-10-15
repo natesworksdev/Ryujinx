@@ -511,7 +511,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     foreach (Auto<DisposablePipeline> pipeline in _graphicsPipelineCache.Values)
                     {
-                        pipeline.Dispose();
+                        pipeline?.Dispose();
                     }
                 }
 
