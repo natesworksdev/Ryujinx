@@ -374,7 +374,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked || vertexCount == 0)
+            if (vertexCount == 0)
             {
                 return;
             }
@@ -442,7 +442,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked || indexCount == 0)
+            if (indexCount == 0)
             {
                 return;
             }
@@ -486,11 +486,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexedIndirect(BufferRange indirectBuffer)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             var buffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
@@ -537,11 +532,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             var countBuffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, parameterBuffer.Handle, parameterBuffer.Offset, parameterBuffer.Size, false)
                 .Get(Cbs, parameterBuffer.Offset, parameterBuffer.Size).Value;
@@ -634,11 +624,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndirect(BufferRange indirectBuffer)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             // TODO: Support quads and other unsupported topologies.
 
             var buffer = Gd.BufferManager
@@ -663,11 +648,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // TODO: Fallback for when this is not supported.
                 throw new NotSupportedException();
-            }
-
-            if (!_program.IsLinked)
-            {
-                return;
             }
 
             var buffer = Gd.BufferManager
@@ -769,14 +749,12 @@ namespace Ryujinx.Graphics.Vulkan
             _vertexBufferUpdater.Commit(Cbs);
         }
 
-#pragma warning disable CA1822 // Mark member as static
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
         }
-#pragma warning restore CA1822
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
@@ -1687,12 +1665,22 @@ namespace Ryujinx.Graphics.Vulkan
                     CreateRenderPass();
                 }
 
+                if (!_program.IsLinked)
+                {
+                    // Background compile failed, we likely can't create the pipeline because the shader is broken
+                    // or the driver failed to compile it.
+
+                    return false;
+                }
+
                 var pipeline = pbp == PipelineBindPoint.Compute
                     ? _newState.CreateComputePipeline(Gd, Device, _program, PipelineCache)
                     : _newState.CreateGraphicsPipeline(Gd, Device, _program, PipelineCache, _renderPass.Get(Cbs).Value);
 
                 if (pipeline == null)
                 {
+                    // Host failed to create the pipeline, likely due to driver bugs.
+
                     return false;
                 }
 
