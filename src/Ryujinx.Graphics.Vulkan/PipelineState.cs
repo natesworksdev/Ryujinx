@@ -386,7 +386,8 @@ namespace Ryujinx.Graphics.Vulkan
             Device device,
             ShaderCollection program,
             PipelineCache cache,
-            RenderPass renderPass)
+            RenderPass renderPass,
+            bool throwOnError = false)
         {
             if (program.TryGetGraphicsPipeline(ref Internal, out var pipeline))
             {
@@ -621,7 +622,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 Result result = gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle);
 
-                if (result.IsError())
+                if (throwOnError)
+                {
+                    result.ThrowOnError();
+                }
+                else if (result.IsError())
                 {
                     program.AddGraphicsPipeline(ref Internal, null);
 
