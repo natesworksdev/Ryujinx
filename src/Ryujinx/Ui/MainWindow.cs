@@ -970,9 +970,8 @@ namespace Ryujinx.Ui
 
             _gameTableSelection.GetSelected(out TreeIter treeIter);
             string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-            string updatePath;
 
-            (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
+            (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out string updatePath);
 
             if (!string.IsNullOrWhiteSpace(updatePath)
                 && patchNca is null)
