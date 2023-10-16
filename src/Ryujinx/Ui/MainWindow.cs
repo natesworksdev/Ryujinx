@@ -970,10 +970,12 @@ namespace Ryujinx.Ui
 
             _gameTableSelection.GetSelected(out TreeIter treeIter);
             string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            string updatePath;
 
-            (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out _);
+            (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
 
-            if (patchNca is null)
+            if (!string.IsNullOrWhiteSpace(updatePath) 
+                && patchNca is null)
             {
                 MessageDialog updateMissingWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
