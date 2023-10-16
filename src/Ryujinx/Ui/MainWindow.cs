@@ -974,7 +974,7 @@ namespace Ryujinx.Ui
 
             (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
 
-            if (!string.IsNullOrWhiteSpace(updatePath) 
+            if (!string.IsNullOrWhiteSpace(updatePath)
                 && patchNca is null)
             {
                 MessageDialog updateMissingWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
