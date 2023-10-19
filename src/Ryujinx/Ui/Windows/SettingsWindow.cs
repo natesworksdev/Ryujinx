@@ -2,7 +2,6 @@ using Gtk;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
-using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Multiplayer;
@@ -19,7 +18,6 @@ using System.Globalization;
 using System.IO;
 using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -397,7 +395,6 @@ namespace Ryujinx.Ui.Windows
             _audioBackendStore = new ListStore(typeof(string), typeof(AudioBackend));
 
             TreeIter openAlIter = _audioBackendStore.AppendValues("OpenAL", AudioBackend.OpenAl);
-            TreeIter soundIoIter = _audioBackendStore.AppendValues("SoundIO", AudioBackend.SoundIo);
             TreeIter sdl2Iter = _audioBackendStore.AppendValues("SDL2", AudioBackend.SDL2);
             TreeIter dummyIter = _audioBackendStore.AppendValues("Dummy", AudioBackend.Dummy);
 
@@ -409,9 +406,6 @@ namespace Ryujinx.Ui.Windows
             {
                 case AudioBackend.OpenAl:
                     _audioBackendSelect.SetActiveIter(openAlIter);
-                    break;
-                case AudioBackend.SoundIo:
-                    _audioBackendSelect.SetActiveIter(soundIoIter);
                     break;
                 case AudioBackend.SDL2:
                     _audioBackendSelect.SetActiveIter(sdl2Iter);
@@ -441,13 +435,11 @@ namespace Ryujinx.Ui.Windows
             _audioVolumeSlider.Show();
 
             bool openAlIsSupported = false;
-            bool soundIoIsSupported = false;
             bool sdl2IsSupported = false;
 
             Task.Run(() =>
             {
                 openAlIsSupported = OpenALHardwareDeviceDriver.IsSupported;
-                soundIoIsSupported = !OperatingSystem.IsMacOS() && SoundIoHardwareDeviceDriver.IsSupported;
                 sdl2IsSupported = SDL2HardwareDeviceDriver.IsSupported;
             });
 
@@ -457,7 +449,6 @@ namespace Ryujinx.Ui.Windows
                 cell.Sensitive = ((AudioBackend)_audioBackendStore.GetValue(iter, 1)) switch
                 {
                     AudioBackend.OpenAl => openAlIsSupported,
-                    AudioBackend.SoundIo => soundIoIsSupported,
                     AudioBackend.SDL2 => sdl2IsSupported,
                     AudioBackend.Dummy => true,
                     _ => throw new InvalidOperationException($"{nameof(_audioBackendStore)} contains an invalid value for iteration {iter}: {_audioBackendStore.GetValue(iter, 1)}"),

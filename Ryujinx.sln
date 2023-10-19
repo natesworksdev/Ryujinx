@@ -55,8 +55,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Video", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Audio.Backends.OpenAL", "src\Ryujinx.Audio.Backends.OpenAL\Ryujinx.Audio.Backends.OpenAL.csproj", "{0BE11899-DF2D-4BDE-B9EE-2489E8D35E7D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Audio.Backends.SoundIo", "src\Ryujinx.Audio.Backends.SoundIo\Ryujinx.Audio.Backends.SoundIo.csproj", "{716364DE-B988-41A6-BAB4-327964266ECC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Input", "src\Ryujinx.Input\Ryujinx.Input.csproj", "{C16F112F-38C3-40BC-9F5F-4791112063D6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Input.SDL2", "src\Ryujinx.Input.SDL2\Ryujinx.Input.SDL2.csproj", "{DFAB6F2D-B9BF-4AFF-B22B-7684A328EBA3}"
@@ -185,10 +183,6 @@ Global
 		{0BE11899-DF2D-4BDE-B9EE-2489E8D35E7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BE11899-DF2D-4BDE-B9EE-2489E8D35E7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BE11899-DF2D-4BDE-B9EE-2489E8D35E7D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{716364DE-B988-41A6-BAB4-327964266ECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{716364DE-B988-41A6-BAB4-327964266ECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{716364DE-B988-41A6-BAB4-327964266ECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{716364DE-B988-41A6-BAB4-327964266ECC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C16F112F-38C3-40BC-9F5F-4791112063D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C16F112F-38C3-40BC-9F5F-4791112063D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C16F112F-38C3-40BC-9F5F-4791112063D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
