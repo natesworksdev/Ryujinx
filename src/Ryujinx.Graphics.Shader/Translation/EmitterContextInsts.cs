@@ -831,6 +831,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
         }
 
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), value);
+        }
+
         public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand value)
         {
             return context.Add(Instruction.Store, storageKind, null, Const(binding), e0, value);
@@ -892,7 +897,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             context.Add(new TextureOperation(Instruction.TextureSample, type, TextureFormat.Unknown, flags, binding, compMask, dests, sources));
         }
 
-        public static Operand TextureSize(
+        public static Operand TextureQuerySamples(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int binding,
+            Operand[] sources)
+        {
+            Operand dest = Local();
+
+            context.Add(new TextureOperation(Instruction.TextureQuerySamples, type, TextureFormat.Unknown, flags, binding, 0, new[] { dest }, sources));
+
+            return dest;
+        }
+
+        public static Operand TextureQuerySize(
             this EmitterContext context,
             SamplerType type,
             TextureFlags flags,
@@ -902,7 +921,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.TextureSize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.TextureQuerySize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
 
             return dest;
         }

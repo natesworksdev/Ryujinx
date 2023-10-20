@@ -128,7 +128,26 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>GPU graphics state</returns>
         GpuGraphicsState QueryGraphicsState()
         {
-            return default;
+            return new GpuGraphicsState(
+                false,
+                InputTopology.Points,
+                false,
+                TessPatchType.Triangles,
+                TessSpacing.EqualSpacing,
+                false,
+                false,
+                false,
+                false,
+                false,
+                1f,
+                AlphaTestOp.Always,
+                0f,
+                default,
+                true,
+                default,
+                false,
+                false,
+                false);
         }
 
         /// <summary>
@@ -316,6 +335,15 @@ namespace Ryujinx.Graphics.Shader
         /// </summary>
         /// <returns>True if the GPU and driver supports the formats, false otherwise</returns>
         bool QueryHostSupportsSnormBufferTextureFormat()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host GPU texture gather with multiple offsets support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports texture gather offsets, false otherwise</returns>
+        bool QueryHostSupportsTextureGatherOffsets()
         {
             return true;
         }
