@@ -1,5 +1,7 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.HLE.HOS.Applets;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {
@@ -31,10 +33,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                         LibraryAppletMode = LibraryAppletMode.AllForeground,
                     };
 
-                    byte[] commonArgs = new byte[0x20];
-                    byte[] albumArgs = new byte[3];
+                    var commonArgs = new CommonArguments
+                    {
+                        AppletVersion = 1,
+                        StructureSize = 0x20,
+                        Version = 1,
+                        ThemeColor = (uint)context.Device.System.State.ThemeColor,
+                        PlayStartupSound = true,
+                        SystemTicks = 0,
+                    };
+                    byte[] albumArgs = { 2 };
 
-                    _appletStandalone.InputData.Enqueue(commonArgs);
+                    ReadOnlySpan<byte> data = MemoryMarshal.Cast<CommonArguments, byte>(MemoryMarshal.CreateReadOnlySpan(ref commonArgs, 1));
+
+                    _appletStandalone.InputData.Enqueue(data.ToArray());
                     _appletStandalone.InputData.Enqueue(albumArgs);
                     break;
                 default:
