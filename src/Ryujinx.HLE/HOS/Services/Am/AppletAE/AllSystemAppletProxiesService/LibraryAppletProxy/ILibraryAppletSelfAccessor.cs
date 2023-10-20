@@ -9,23 +9,36 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
-            if (context.Device.Processes.ActiveApplication.ProgramId == 0x0100000000001009)
+            switch (context.Device.Processes.ActiveApplication.ProgramId)
             {
-                // Create MiiEdit data.
-                _appletStandalone = new AppletStandalone()
-                {
-                    AppletId = AppletId.MiiEdit,
-                    LibraryAppletMode = LibraryAppletMode.AllForeground,
-                };
+                case 0x0100000000001009:
+                    // Create MiiEdit data.
+                    _appletStandalone = new AppletStandalone
+                    {
+                        AppletId = AppletId.MiiEdit,
+                        LibraryAppletMode = LibraryAppletMode.AllForeground,
+                    };
 
-                byte[] miiEditInputData = new byte[0x100];
-                miiEditInputData[0] = 0x03; // Hardcoded unknown value.
+                    byte[] miiEditInputData = new byte[0x100];
+                    miiEditInputData[0] = 0x03; // Hardcoded unknown value.
 
-                _appletStandalone.InputData.Enqueue(miiEditInputData);
-            }
-            else
-            {
-                throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId} applet is not implemented.");
+                    _appletStandalone.InputData.Enqueue(miiEditInputData);
+                    break;
+                case 0x010000000000100D:
+                    _appletStandalone = new AppletStandalone
+                    {
+                        AppletId = AppletId.PhotoViewer,
+                        LibraryAppletMode = LibraryAppletMode.AllForeground,
+                    };
+
+                    byte[] commonArgs = new byte[0x20];
+                    byte[] albumArgs = new byte[3];
+
+                    _appletStandalone.InputData.Enqueue(commonArgs);
+                    _appletStandalone.InputData.Enqueue(albumArgs);
+                    break;
+                default:
+                    throw new NotImplementedException($"{context.Device.Processes.ActiveApplication.ProgramId} applet is not implemented.");
             }
         }
 

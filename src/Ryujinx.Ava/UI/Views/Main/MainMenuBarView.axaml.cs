@@ -135,6 +135,16 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
+        public async void OpenPhotoViewerApplet(object sender, RoutedEventArgs e)
+        {
+            string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x010000000000100D, StorageId.BuiltInSystem, NcaContentType.Program);
+
+            if (!string.IsNullOrEmpty(contentPath))
+            {
+                await ViewModel.LoadApplication(contentPath, false, "Photo Viewer");
+            }
+        }
+
         public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.IsAmiiboRequested)

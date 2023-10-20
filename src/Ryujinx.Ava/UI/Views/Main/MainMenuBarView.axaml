@@ -38,6 +38,10 @@
                         Click="OpenMiiApplet"
                         Header="Mii Edit Applet"
                         ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenMiiAppletToolTip}" />
+                    <MenuItem
+                        Click="OpenPhotoViewerApplet"
+                        Header="Photo Viewer Applet"
+                        ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenPhotoViewerAppletToolTip}" />
                 </MenuItem>
                 <Separator />
                 <MenuItem
@@ -89,7 +93,7 @@
                     Command="{Binding ToggleShowConsole}"
                     Header="{locale:Locale MenuBarOptionsShowConsole}">
                     <MenuItem.Icon>
-                        <CheckBox 
+                        <CheckBox
                             MinWidth="{DynamicResource CheckBoxSize}"
                             MinHeight="{DynamicResource CheckBoxSize}"
                             IsChecked="{Binding ShowConsole, Mode=TwoWay}"
@@ -109,11 +113,11 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem
-                    Name="ChangeLanguageMenuItem" 
+                    Name="ChangeLanguageMenuItem"
                     Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarOptionsChangeLanguage}" />
-                <MenuItem 
-                    Name="ToggleFileTypesMenuItem" 
+                <MenuItem
+                    Name="ToggleFileTypesMenuItem"
                     Padding="-10,0,0,0"
                     Header="{locale:Locale MenuBarShowFileTypes}" />
                 <Separator />
