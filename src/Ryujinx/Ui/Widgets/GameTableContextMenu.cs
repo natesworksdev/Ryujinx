@@ -10,6 +10,7 @@ using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
@@ -76,6 +77,8 @@ namespace Ryujinx.Ui.Widgets
             _extractRomFsMenuItem.Sensitive = hasNca;
             _extractExeFsMenuItem.Sensitive = hasNca;
             _extractLogoMenuItem.Sensitive = hasNca;
+
+            _createShortcutMenuItem.Sensitive = !ReleaseInformation.IsFlatHubBuild();
 
             PopupAtPointer(null);
         }

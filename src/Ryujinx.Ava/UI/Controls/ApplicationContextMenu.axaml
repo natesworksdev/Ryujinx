@@ -85,5 +85,6 @@
 	<MenuItem
 		Click="CreateApplicationShortcut_Click"
 		Header="{locale:Locale GameListContextMenuCreateShortcut}"
+        IsEnabled="{Binding CreateShortcutEnabled}"
 		ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
 </MenuFlyout>
