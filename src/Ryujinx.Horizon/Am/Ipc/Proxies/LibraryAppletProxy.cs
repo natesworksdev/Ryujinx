@@ -42,9 +42,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(4)]
-        public Result GetDisplayController()
+        public Result GetDisplayController(out IDisplayController displayController)
         {
-            throw new System.NotImplementedException();
+            displayController = new DisplayController();
+
+            return Result.Success;
         }
 
         [CmifCommand(10)]

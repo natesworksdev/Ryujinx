@@ -9,7 +9,7 @@ namespace Ryujinx.Horizon.Sdk.Am.Proxies
         Result GetSelfController(out ISelfController selfController);
         Result GetWindowController(out IWindowController windowController);
         Result GetAudioController(out IAudioController audioController);
-        Result GetDisplayController();
+        Result GetDisplayController(out IDisplayController displayController);
         Result GetProcessWindingController();
         Result GetLibraryAppletCreator();
         Result GetOverlayFunctions();
