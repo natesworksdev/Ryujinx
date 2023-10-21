@@ -1,6 +1,5 @@
 using Ryujinx.Horizon.Am.Ipc.Controllers;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Am.Proxies;
 using Ryujinx.Horizon.Sdk.Sf;
