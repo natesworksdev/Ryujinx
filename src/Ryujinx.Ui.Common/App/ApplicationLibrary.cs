@@ -928,10 +928,9 @@ namespace Ryujinx.Ui.App.Common
                 {
                     updatePath = JsonHelper.DeserializeFromFile(titleUpdateMetadataPath, _titleSerializerContext.TitleUpdateMetadata).Selected;
 
-                    if (!string.IsNullOrWhiteSpace(updatePath)
-                        && !File.Exists(updatePath))
+                    if (!string.IsNullOrWhiteSpace(updatePath) && !File.Exists(updatePath))
                     {
-                        Logger.Warning?.Print(LogClass.Loader, $"Update file {updatePath} for titleId: {titleId} was not found! Game saves can become corrupted!");
+                        Logger.Warning?.Print(LogClass.Loader, $"Update file \"{updatePath}\" for titleId: {titleId} was not found! Game saves can become corrupted!");
                     }
 
                     if (File.Exists(updatePath))
