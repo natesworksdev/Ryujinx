@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 using Ryujinx.Horizon.Arp;
 using Ryujinx.Horizon.Audio;
+=======
 using Ryujinx.Horizon.Am;
+>>>>>>> 8a4ff3542 (Start new IPC)
 using Ryujinx.Horizon.Bcat;
 using Ryujinx.Horizon.Friends;
 using Ryujinx.Horizon.Hshl;
