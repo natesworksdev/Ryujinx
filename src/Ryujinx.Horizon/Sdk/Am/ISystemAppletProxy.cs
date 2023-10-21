@@ -4,7 +4,7 @@ namespace Ryujinx.Horizon.Sdk.Am
 {
     public interface ISystemAppletProxy
     {
-        Result GetCommonStateGetter();
+        Result GetCommonStateGetter(out ICommonStateGetter commonStateGetter, ulong pid);
         Result GetSelfController();
         Result GetWindowController();
         Result GetAudioController();
