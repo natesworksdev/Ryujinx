@@ -490,17 +490,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     var isStore = binding.BindingInfo.Flags.HasFlag(TextureUsageFlags.ImageStore);
                     var range = binding.BufferCache.GetBufferRange(binding.Address, binding.Size, isStore);
-                    binding.Texture.SetStorage(range);
+                    binding.HostTexture.SetStorage(range);
 
                     // The texture must be rebound to use the new storage if it was updated.
 
                     if (binding.IsImage)
                     {
-                        _context.Renderer.Pipeline.SetImage(binding.BindingInfo.Binding, binding.Texture, binding.Format);
+                        _context.Renderer.Pipeline.SetImage(binding.BindingInfo.Binding, binding.HostTexture, binding.Format);
                     }
                     else
                     {
-                        _context.Renderer.Pipeline.SetTextureAndSampler(binding.Stage, binding.BindingInfo.Binding, binding.Texture, null);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(binding.Stage, binding.BindingInfo.Binding, binding.HostTexture, null);
                     }
                 }
 
@@ -801,25 +801,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="stage">Shader stage accessing the texture</param>
         /// <param name="texture">Buffer texture</param>
-        /// <param name="bufferCache">Buffer cache that owns the buffer texture</param>
-        /// <param name="address">Address of the buffer in memory</param>
-        /// <param name="size">Size of the buffer in bytes</param>
+        /// <param name="hostTexture">Buffer host texture</param>
         /// <param name="bindingInfo">Binding info for the buffer texture</param>
         /// <param name="format">Format of the buffer texture</param>
         /// <param name="isImage">Whether the binding is for an image or a sampler</param>
         public void SetBufferTextureStorage(
             ShaderStage stage,
-            ITexture texture,
-            BufferCache bufferCache,
-            ulong address,
-            ulong size,
+            Image.Texture texture,
+            ITexture hostTexture,
             TextureBindingInfo bindingInfo,
             Format format,
             bool isImage)
         {
-            bufferCache.CreateBuffer(address, size);
+            var binding = new BufferTextureBinding(stage, texture, hostTexture, bindingInfo, format, isImage);
 
-            _bufferTextures.Add(new BufferTextureBinding(stage, texture, bufferCache, address, size, bindingInfo, format, isImage));
+            texture.PhysicalMemory.BufferCache.CreateBuffer(binding.Address, binding.Size);
+
+            _bufferTextures.Add(binding);
         }
 
         /// <summary>

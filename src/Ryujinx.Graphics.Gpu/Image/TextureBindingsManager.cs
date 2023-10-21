@@ -524,8 +524,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Ensure that the buffer texture is using the correct buffer as storage.
                     // Buffers are frequently re-created to accommodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
-                    var bufferCache = _channel.MemoryManager.GetBackingMemory(descriptor.UnpackAddress()).BufferCache;
-                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, bufferCache, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, texture, hostTexture, bindingInfo, bindingInfo.Format, false);
 
                     // Cache is not used for buffer texture, it must always rebind.
                     state.CachedTexture = null;
@@ -662,8 +661,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         format = texture.Format;
                     }
 
-                    var bufferCache = _channel.MemoryManager.GetBackingMemory(descriptor.UnpackAddress()).BufferCache;
-                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, bufferCache, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, texture, hostTexture, bindingInfo, format, true);
 
                     // Cache is not used for buffer texture, it must always rebind.
                     state.CachedTexture = null;
