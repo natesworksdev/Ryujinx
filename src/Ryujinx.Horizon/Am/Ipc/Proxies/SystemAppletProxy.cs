@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
     partial class SystemAppletProxy : ISystemAppletProxy
     {
         [CmifCommand(0)]
-        public Result GetCommonStateGetter(out ICommonStateGetter commonStateGetter, ulong pid)
+        public Result GetCommonStateGetter(out ICommonStateGetter commonStateGetter)
         {
             commonStateGetter = new CommonStateGetter();
 
@@ -16,9 +16,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(1)]
-        public Result GetSelfController()
+        public Result GetSelfController(out ISelfController selfController)
         {
-            throw new System.NotImplementedException();
+            selfController = new SelfController();
+
+            return Result.Success;
         }
 
         [CmifCommand(2)]
