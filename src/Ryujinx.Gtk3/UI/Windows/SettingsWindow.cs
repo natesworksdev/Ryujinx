@@ -117,8 +117,8 @@ namespace Ryujinx.UI.Windows
         [GUI] ToggleButton _configureController7;
         [GUI] ToggleButton _configureController8;
         [GUI] ToggleButton _configureControllerH;
-        [GUI] ToggleButton    _gdbStubToggle;
-        [GUI] Adjustment      _gdbStubPortSpinAdjustment;
+        [GUI] ToggleButton _gdbStubToggle;
+        [GUI] Adjustment _gdbStubPortSpinAdjustment;
 #pragma warning restore CS0649, IDE0044
 
         public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this(parent, new Builder("Ryujinx.Gtk3.UI.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
@@ -667,6 +667,7 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.Graphics.ScalingFilter.Value = Enum.Parse<ScalingFilter>(_scalingFilter.ActiveId);
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value = (int)_scalingFilterLevel.Value;
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value = _multiLanSelect.ActiveId;
+            ConfigurationState.Instance.Debug.EnableGdbStub.Value = _gdbStubToggle.Active;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 
