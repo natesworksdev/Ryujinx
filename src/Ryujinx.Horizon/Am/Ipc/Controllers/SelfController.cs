@@ -1,5 +1,5 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Sf;
 
@@ -10,289 +10,385 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         [CmifCommand(0)]
         public Result Exit()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(1)]
         public Result LockExit()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(2)]
         public Result UnlockExit()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(3)]
         public Result EnterFatalSection()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(4)]
         public Result LeaveFatalSection()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(9)]
         public Result GetLibraryAppletLaunchableEvent()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(10)]
         public Result SetScreenShotPermission()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(11)]
         public Result SetOperationModeChangedNotification()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(12)]
         public Result SetPerformanceModeChangedNotification()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(13)]
         public Result SetFocusHandlingMode()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(14)]
         public Result SetRestartMessageEnabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(15)]
         public Result SetScreenShotAppletIdentityInfo()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(16)]
         public Result SetOutOfFocusSuspendingEnabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(17)]
         public Result SetControllerFirmwareUpdateSection()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(18)]
         public Result SetRequiresCaptureButtonShortPressedMessage()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(19)]
         public Result SetAlbumImageOrientation()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(20)]
         public Result SetDesirableKeyboardLayout()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(21)]
         public Result GetScreenShotProgramId()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(40)]
         public Result CreateManagedDisplayLayer()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(41)]
         public Result IsSystemBufferSharingEnabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(42)]
         public Result GetSystemSharedLayerHandle()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(43)]
         public Result GetSystemSharedBufferHandle()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(44)]
         public Result CreateManagedDisplaySeparableLayer()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(45)]
         public Result SetManagedDisplayLayerSeparationMode()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(46)]
         public Result SetRecordingLayerCompositionEnabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(50)]
         public Result SetHandlesRequestToDisplay()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(51)]
         public Result ApproveToDisplay()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(60)]
         public Result OverrideAutoSleepTimeAndDimmingTime()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(61)]
         public Result SetMediaPlaybackState()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(62)]
         public Result SetIdleTimeDetectionExtension()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(63)]
         public Result GetIdleTimeDetectionExtension()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(64)]
         public Result SetInputDetectionSourceSet()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(65)]
         public Result ReportUserIsActive()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(66)]
         public Result GetCurrentIlluminance()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(67)]
         public Result IsIlluminanceAvailable()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(68)]
         public Result SetAutoSleepDisabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(69)]
         public Result IsAutoSleepDisabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(70)]
         public Result ReportMultimediaError()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(71)]
         public Result GetCurrentIlluminanceEx()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(72)]
         public Result SetInputDetectionPolicy()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(80)]
         public Result SetWirelessPriorityMode()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(90)]
         public Result GetAccumulatedSuspendedTickValue()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(91)]
         public Result GetAccumulatedSuspendedTickChangedEvent()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(100)]
         public Result SetAlbumImageTakenNotificationEnabled()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(110)]
         public Result SetApplicationAlbumUserData()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(120)]
         public Result SaveCurrentScreenshot()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(130)]
         public Result SetRecordVolumeMuted()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(1000)]
         public Result GetDebugStorageChannel()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
     }
 }

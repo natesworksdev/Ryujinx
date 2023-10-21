@@ -1,5 +1,5 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Sf;
 
@@ -10,49 +10,65 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         [CmifCommand(0)]
         public Result CreateWindow()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(1)]
         public Result GetAppletResourceUserId()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(2)]
         public Result GetAppletResourceUserIdOfCallerApplet()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(10)]
         public Result AcquireForegroundRights()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(11)]
         public Result ReleaseForegroundRights()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(12)]
         public Result RejectToChangeIntoBackground()
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(20)]
         public Result SetAppletWindowVisibility(bool visibility)
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
 
         [CmifCommand(21)]
         public Result SetAppletGpuTimeSlice(long gpuTime)
         {
-            throw new System.NotImplementedException();
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return Result.Success;
         }
     }
 }

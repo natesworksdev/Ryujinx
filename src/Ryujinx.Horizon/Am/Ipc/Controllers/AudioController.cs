@@ -1,5 +1,5 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
-using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Sf;
 
@@ -38,12 +38,16 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         [CmifCommand(3)]
         public Result ChangeMainAppletMasterVolume(float volume, ulong value)
         {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
             return Result.Success;
         }
 
         [CmifCommand(4)]
         public Result SetTransparentVolumeRate(float volume)
         {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
             return Result.Success;
         }
     }
