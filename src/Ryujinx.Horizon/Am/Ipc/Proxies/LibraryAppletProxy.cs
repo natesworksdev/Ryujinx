@@ -24,15 +24,19 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(2)]
-        public Result GetWindowController()
+        public Result GetWindowController(out IWindowController windowController)
         {
-            throw new System.NotImplementedException();
+            windowController = new WindowController();
+
+            return Result.Success;
         }
 
         [CmifCommand(3)]
-        public Result GetAudioController()
+        public Result GetAudioController(out IAudioController audioController)
         {
-            throw new System.NotImplementedException();
+            audioController = new AudioController();
+
+            return Result.Success;
         }
 
         [CmifCommand(4)]
