@@ -1,12 +1,13 @@
 using Ryujinx.Horizon.Common;
+using System;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
     public interface IDisplayController
     {
-        Result GetLastForegroundCaptureImage();
-        Result UpdateLastForegroundCaptureImage();
-        Result GetLastApplicationCaptureImage();
+        Result GetLastForegroundCaptureImage(Span<byte> capture);
+        Result UpdateLastForegroundCaptureImage(Span<byte> capture);
+        Result GetLastApplicationCaptureImage(Span<byte> capture);
         Result GetCallerAppletCaptureImage();
         Result UpdateCallerAppletCaptureImage();
         Result GetLastForegroundCaptureImageEx();

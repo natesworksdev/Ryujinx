@@ -2,13 +2,15 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Sf;
+using Ryujinx.Horizon.Sdk.Sf.Hipc;
+using System;
 
 namespace Ryujinx.Horizon.Am.Ipc.Controllers
 {
     partial class DisplayController : IDisplayController
     {
         [CmifCommand(0)]
-        public Result GetLastForegroundCaptureImage()
+        public Result GetLastForegroundCaptureImage([Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> capture)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -16,7 +18,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         }
 
         [CmifCommand(1)]
-        public Result UpdateLastForegroundCaptureImage()
+        public Result UpdateLastForegroundCaptureImage([Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> capture)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -24,7 +26,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         }
 
         [CmifCommand(2)]
-        public Result GetLastApplicationCaptureImage()
+        public Result GetLastApplicationCaptureImage([Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> capture)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
