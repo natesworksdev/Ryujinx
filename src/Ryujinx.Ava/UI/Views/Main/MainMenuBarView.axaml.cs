@@ -145,6 +145,16 @@ namespace Ryujinx.Ava.UI.Views.Main
             }
         }
 
+        public async void OpenCabinetApplet(object sender, RoutedEventArgs e)
+        {
+            string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001002, StorageId.BuiltInSystem, NcaContentType.Program);
+
+            if (!string.IsNullOrEmpty(contentPath))
+            {
+                await ViewModel.LoadApplication(contentPath, false, "Cabinet");
+            }
+        }
+
         public async void OpenAmiiboWindow(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.IsAmiiboRequested)

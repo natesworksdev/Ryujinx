@@ -42,6 +42,10 @@
                         Click="OpenPhotoViewerApplet"
                         Header="Photo Viewer Applet"
                         ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenPhotoViewerAppletToolTip}" />
+                    <MenuItem
+                        Click="OpenCabinetApplet"
+                        Header="Photo Viewer Applet"
+                        ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenCabinetAppletToolTip}" />
                 </MenuItem>
                 <Separator />
                 <MenuItem

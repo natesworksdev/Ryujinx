@@ -11,8 +11,39 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
+            var commonArgs = new CommonArguments
+            {
+                AppletVersion = 1,
+                StructureSize = 0x20,
+                Version = 1,
+                ThemeColor = (uint)context.Device.System.State.ThemeColor,
+                PlayStartupSound = true,
+                SystemTicks = 0,
+            };
+
+            ReadOnlySpan<byte> data = MemoryMarshal.Cast<CommonArguments, byte>(MemoryMarshal.CreateReadOnlySpan(ref commonArgs, 1));
+
             switch (context.Device.Processes.ActiveApplication.ProgramId)
             {
+                case 0x0100000000001000:
+                    _appletStandalone = new AppletStandalone
+                    {
+                        AppletId = AppletId.QLaunch,
+                        LibraryAppletMode = LibraryAppletMode.AllForeground,
+                    };
+                    break;
+                case 0x0100000000001002:
+                    _appletStandalone = new AppletStandalone
+                    {
+                        AppletId = AppletId.Cabinet,
+                        LibraryAppletMode = LibraryAppletMode.AllForeground,
+                    };
+
+                    byte[] cabinetInputData = new byte[0x1A8];
+
+                    _appletStandalone.InputData.Enqueue(data.ToArray());
+                    _appletStandalone.InputData.Enqueue(cabinetInputData);
+                    break;
                 case 0x0100000000001009:
                     // Create MiiEdit data.
                     _appletStandalone = new AppletStandalone
@@ -33,18 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                         LibraryAppletMode = LibraryAppletMode.AllForeground,
                     };
 
-                    var commonArgs = new CommonArguments
-                    {
-                        AppletVersion = 1,
-                        StructureSize = 0x20,
-                        Version = 1,
-                        ThemeColor = (uint)context.Device.System.State.ThemeColor,
-                        PlayStartupSound = true,
-                        SystemTicks = 0,
-                    };
                     byte[] albumArgs = { 2 };
-
-                    ReadOnlySpan<byte> data = MemoryMarshal.Cast<CommonArguments, byte>(MemoryMarshal.CreateReadOnlySpan(ref commonArgs, 1));
 
                     _appletStandalone.InputData.Enqueue(data.ToArray());
                     _appletStandalone.InputData.Enqueue(albumArgs);

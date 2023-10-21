@@ -3,6 +3,7 @@
   "MenuBarFileOpenApplet": "Open Applet",
   "MenuBarFileOpenAppletOpenMiiAppletToolTip": "Open Mii Editor Applet in Standalone mode",
   "MenuBarFileOpenAppletOpenPhotoViewerAppletToolTip": "Open Photo Viewer Applet in Standalone mode",
+  "MenuBarFileOpenAppletOpenCabinetAppletToolTip": "Open Cabinet Applet in Standalone mode",
   "SettingsTabInputDirectMouseAccess": "Direct Mouse Access",
   "SettingsTabSystemMemoryManagerMode": "Memory Manager Mode:",
   "SettingsTabSystemMemoryManagerModeSoftware": "Software",
