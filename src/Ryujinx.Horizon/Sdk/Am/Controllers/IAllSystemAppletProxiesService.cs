@@ -1,6 +1,7 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Am.Proxies;
 
-namespace Ryujinx.Horizon.Sdk.Am
+namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
     public interface IAllSystemAppletProxiesService
     {

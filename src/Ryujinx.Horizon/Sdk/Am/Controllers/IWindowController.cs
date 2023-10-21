@@ -1,7 +1,7 @@
 using Ryujinx.Horizon.Common;
 using System;
 
-namespace Ryujinx.Horizon.Sdk.Am
+namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
     public interface IWindowController
     {

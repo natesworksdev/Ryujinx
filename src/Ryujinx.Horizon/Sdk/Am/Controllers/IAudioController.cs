@@ -1,6 +1,6 @@
 using Ryujinx.Horizon.Common;
 
-namespace Ryujinx.Horizon.Sdk.Am
+namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
     public interface IAudioController
     {
