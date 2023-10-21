@@ -1,5 +1,6 @@
 using LibHac.Diag;
 using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Am.Ipc.Proxies;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Sf;
@@ -11,7 +12,7 @@ namespace Ryujinx.Horizon.Am.Ipc
         [CmifCommand(100)]
         public Result OpenSystemAppletProxy(out ISystemAppletProxy systemAppletProxy, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            systemAppletProxy = new SystemAppletProxy();
 
             return Result.Success;
         }
@@ -19,7 +20,7 @@ namespace Ryujinx.Horizon.Am.Ipc
         [CmifCommand(200)]
         public Result OpenLibraryAppletProxyOld(out ILibraryAppletProxy libraryAppletProxy, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            OpenLibraryAppletProxy(out libraryAppletProxy, pid);
 
             return Result.Success;
         }
@@ -27,7 +28,7 @@ namespace Ryujinx.Horizon.Am.Ipc
         [CmifCommand(201)]
         public Result OpenLibraryAppletProxy(out ILibraryAppletProxy libraryAppletProxy, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            libraryAppletProxy = new LibraryAppletProxy();
 
             return Result.Success;
         }
@@ -35,7 +36,7 @@ namespace Ryujinx.Horizon.Am.Ipc
         [CmifCommand(300)]
         public Result OpenOverlayAppletProxy(out IOverlayAppletProxy overlayAppletProxy, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            overlayAppletProxy = new OverlayAppletProxy();
 
             return Result.Success;
         }
@@ -43,7 +44,7 @@ namespace Ryujinx.Horizon.Am.Ipc
         [CmifCommand(350)]
         public Result OpenSystemApplicationProxy(out IApplicationProxy applicationProxy, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            applicationProxy = new ApplicationProxy();
 
             return Result.Success;
         }

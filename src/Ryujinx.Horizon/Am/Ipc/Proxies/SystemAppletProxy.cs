@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Am.Ipc.Controllers;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am;
 using Ryujinx.Horizon.Sdk.Sf;
@@ -9,7 +10,9 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         [CmifCommand(0)]
         public Result GetCommonStateGetter(out ICommonStateGetter commonStateGetter, ulong pid)
         {
-            throw new System.NotImplementedException();
+            commonStateGetter = new CommonStateGetter();
+
+            return Result.Success;
         }
 
         [CmifCommand(1)]
