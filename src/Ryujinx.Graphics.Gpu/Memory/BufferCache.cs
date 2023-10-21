@@ -358,21 +358,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <remarks>
         /// Both the address and size must be aligned to 4 bytes.
         /// </remarks>
+        /// <param name="context">GPU context</param>
         /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
         /// <param name="gpuVa">GPU virtual address of the region to clear</param>
         /// <param name="size">Number of bytes to clear</param>
         /// <param name="value">Value to be written into the buffer</param>
-        public void ClearBuffer(MemoryManager memoryManager, ulong gpuVa, ulong size, uint value)
+        public static void ClearBuffer(GpuContext context, MemoryManager memoryManager, ulong gpuVa, ulong size, uint value)
         {
-            ulong address = TranslateAndCreateBuffer(memoryManager, gpuVa, size);
+            PhysicalMemory physical = memoryManager.GetBackingMemory(gpuVa);
 
-            Buffer buffer = GetBuffer(address, size);
+            ulong address = physical.BufferCache.TranslateAndCreateBuffer(memoryManager, gpuVa, size);
+            Buffer buffer = physical.BufferCache.GetBuffer(address, size);
 
             int offset = (int)(address - buffer.Address);
 
-            _context.Renderer.Pipeline.ClearBuffer(buffer.Handle, offset, (int)size, value);
+            context.Renderer.Pipeline.ClearBuffer(buffer.Handle, offset, (int)size, value);
 
-            memoryManager.GetBackingMemory(gpuVa).FillTrackedResource(address, size, value, ResourceKind.Buffer);
+            physical.FillTrackedResource(address, size, value, ResourceKind.Buffer);
         }
 
         /// <summary>

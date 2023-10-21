@@ -422,7 +422,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     _state.State.SetRemapComponentsComponentSize == SetRemapComponentsComponentSize.Four)
                 {
                     // Fast path for clears when remap is enabled.
-                    bufferCache.ClearBuffer(memoryManager, dstGpuVa, size * 4, _state.State.SetRemapConstA);
+                    BufferCache.ClearBuffer(_context, memoryManager, dstGpuVa, size * 4, _state.State.SetRemapConstA);
                 }
                 else
                 {
