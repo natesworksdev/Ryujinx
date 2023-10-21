@@ -12,7 +12,17 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         {
             byte storageId = context.RequestData.ReadByte();
 
-            context.ResponseData.Write(Int64.MinValue);
+            context.ResponseData.Write(Int64.MaxValue);
+
+            return ResultCode.Success;
+        }
+
+        [CommandCmif(48)]
+        public ResultCode GetFreeSpaceSize(ServiceCtx context)
+        {
+            byte storageId = context.RequestData.ReadByte();
+
+            context.ResponseData.Write(Int64.MaxValue);
 
             return ResultCode.Success;
         }
