@@ -774,7 +774,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Updates data for the already bound buffer bindings.
         /// </summary>
         /// <param name="bindings">Bindings to update</param>
-        private void UpdateBuffers(BuffersPerStage[] bindings)
+        private static void UpdateBuffers(BuffersPerStage[] bindings)
         {
             for (ShaderStage stage = ShaderStage.Vertex; stage <= ShaderStage.Fragment; stage++)
             {
