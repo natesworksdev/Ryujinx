@@ -721,8 +721,7 @@ namespace Ryujinx.Ava
             Device?.System.TogglePauseEmulation(false);
 
             _viewModel.IsPaused = false;
-            _viewModel.Title = _viewModel.Title.Replace("(Paused)", string.Empty);
-            
+            _viewModel.Title = _viewModel.Title.Replace($"({LocaleManager.Instance[LocaleKeys.Paused]})", string.Empty);
             Logger.Info?.Print(LogClass.Emulation, "Emulation was resumed");
         }
 
@@ -731,8 +730,7 @@ namespace Ryujinx.Ava
             Device?.System.TogglePauseEmulation(true);
 
             _viewModel.IsPaused = true;
-            _viewModel.Title += "(Paused)";
-            
+            _viewModel.Title += $"({LocaleManager.Instance[LocaleKeys.Paused]})";
             Logger.Info?.Print(LogClass.Emulation, "Emulation was paused");
         }
 
