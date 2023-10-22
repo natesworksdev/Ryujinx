@@ -2124,11 +2124,11 @@
                                 </child>
                                 <child>
                                   <object class="GtkCheckButton" id="_enableOGLSpirV">
-                                    <property name="label" translatable="yes">Enable Spir-V Shader in OpenGL</property>
+                                    <property name="label" translatable="yes">Enable SPIR-V Shader in OpenGL</property>
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">False</property>
-                                    <property name="tooltip-text" translatable="yes">Uses shaders in Spir-V format.&#13;Leave OFF if unsure.</property>
+                                    <property name="tooltip-text" translatable="yes">Uses shaders in SPIR-V format.&#13;Leave OFF if unsure.</property>
                                     <property name="halign">start</property>
                                     <property name="margin-top">5</property>
                                     <property name="margin-bottom">5</property>

@@ -158,7 +158,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _isSpirVCapable = _context.Capabilities.SupportsSpirV;
             if (!_isSpirVCapable)
             {
-                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Spir-V Not Available on OpenGL for your GPU");
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"SPIR-V Not Available on OpenGL for your GPU");
             }
 
             if (_diskCacheHostStorage.CacheEnabled)
