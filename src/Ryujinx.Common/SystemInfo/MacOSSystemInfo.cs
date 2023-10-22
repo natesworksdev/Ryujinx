@@ -14,6 +14,8 @@ namespace Ryujinx.Common.SystemInfo
         {
             string cpuName = GetCpuidCpuName();
 
+            OsDescription = $"macOS {Environment.OSVersion.Version} ({RuntimeInformation.OSArchitecture})";
+
             if (cpuName == null && SysctlByName("machdep.cpu.brand_string", out cpuName) != 0)
             {
                 cpuName = "Unknown";
