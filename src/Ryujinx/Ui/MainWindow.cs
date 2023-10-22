@@ -1451,6 +1451,9 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = true;
             _emulationContext.System.TogglePauseEmulation(true);
+            Title += "(Paused)";
+            
+            Logger.Info?.Print(LogClass.Emulation, "Emulation was paused");
         }
 
         private void ResumeEmulation_Pressed(object sender, EventArgs args)
@@ -1458,6 +1461,9 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = true;
             _resumeEmulation.Sensitive = false;
             _emulationContext.System.TogglePauseEmulation(false);
+            Title = Title.Replace("(Paused)", string.Empty);
+            
+            Logger.Info?.Print(LogClass.Emulation, "Emulation was resumed");
         }
 
         public void ActivatePauseMenu()
