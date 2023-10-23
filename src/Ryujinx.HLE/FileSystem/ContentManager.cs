@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.FileSystem
 
                 string ncaId = Convert.ToHexString(cnmt.ContentEntries[0].NcaId).ToLower();
 
-                AddAocItem(cnmt.TitleId, containerPath, $"{ncaId}.nca", true);
+                AddAocItem(cnmt.TitleId, containerPath, $"/{ncaId}.nca", true);
             }
         }
 
