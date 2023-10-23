@@ -129,8 +129,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
             }
 
-            SelectedMods = new(Mods.Where(x => x.Enabled));
-
             Sort();
         }
 
@@ -142,7 +140,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _views.Clear();
             _views.AddRange(view);
+
+            SelectedMods = new(Views.Where(x => x.Enabled));
+
             OnPropertyChanged(nameof(ModCount));
+            OnPropertyChanged(nameof(Views));
+            OnPropertyChanged(nameof(SelectedMods));
         }
 
         private bool Filter(object arg)
