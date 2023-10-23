@@ -46,7 +46,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             contentDialog.Styles.Add(bottomBorder);
 
-            await ContentDialogHelper.ShowAsync(contentDialog);
+            await contentDialog.ShowAsync();
         }
 
         private void SaveAndClose(object sender, RoutedEventArgs e)
@@ -60,14 +60,39 @@ namespace Ryujinx.Ava.UI.Windows
             ((ContentDialog)Parent).Hide();
         }
 
-        private void DeleteMod(object sender, RoutedEventArgs e)
+        private async void DeleteMod(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
             {
                 if (button.DataContext is ModModel model)
                 {
-                    ViewModel.Delete(model);
+                    var result = await ContentDialogHelper.CreateConfirmationDialog(
+                        LocaleManager.Instance[LocaleKeys.DialogWarning],
+                        LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogModManagerDeletionWarningMessage, model.Name),
+                        LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                        LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                        LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+
+                    if (result == UserResult.Yes)
+                    {
+                        ViewModel.Delete(model);
+                    }
                 }
+            }
+        }
+
+        private async void DeleteAll(object sender, RoutedEventArgs e)
+        {
+            var result = await ContentDialogHelper.CreateConfirmationDialog(
+                LocaleManager.Instance[LocaleKeys.DialogWarning],
+                LocaleManager.Instance[LocaleKeys.DialogModManagerDeletionAllWarningMessage],
+                LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+
+            if (result == UserResult.Yes)
+            {
+                ViewModel.DeleteAll();
             }
         }
 

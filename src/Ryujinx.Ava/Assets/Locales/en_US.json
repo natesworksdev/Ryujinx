@@ -397,6 +397,8 @@
   "DialogUpdateAddUpdateErrorMessage": "The specified file does not contain an update for the selected title!",
   "DialogSettingsBackendThreadingWarningTitle": "Warning - Backend Threading",
   "DialogSettingsBackendThreadingWarningMessage": "Ryujinx must be restarted after changing this option for it to apply fully. Depending on your platform, you may need to manually disable your driver's own multithreading when using Ryujinx's.",
+  "DialogModManagerDeletionWarningMessage": "You are about to delete the mod: {0}\n\nAre you sure you want to proceed?",
+  "DialogModManagerDeletionAllWarningMessage": "You are about to delete all mods for this title.\n\nAre you sure you want to proceed?",
   "SettingsTabGraphicsFeaturesOptions": "Features",
   "SettingsTabGraphicsBackendMultithreading": "Graphics Backend Multithreading:",
   "CommonAuto": "Auto",

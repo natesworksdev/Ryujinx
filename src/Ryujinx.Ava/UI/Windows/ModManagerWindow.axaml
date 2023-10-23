@@ -151,7 +151,7 @@
                     Name="RemoveAllButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding DeleteAll}">
+                    Click="DeleteAll">
                     <TextBlock Text="{locale:Locale ModManagerDeleteAllButton}" />
                 </Button>
             </StackPanel>
