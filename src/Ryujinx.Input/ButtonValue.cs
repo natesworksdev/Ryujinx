@@ -6,42 +6,42 @@ namespace Ryujinx.Input
 
     public readonly struct ButtonValue
     {
-        private readonly ButtonValueType _type;
+        public readonly ButtonValueType Type;
         private readonly uint _rawValue;
 
         public ButtonValue(Key key)
         {
-            _type = ButtonValueType.Key;
+            Type = ButtonValueType.Key;
             _rawValue = (uint)key;
         }
 
         public ButtonValue(GamepadButtonInputId gamepad)
         {
-            _type = ButtonValueType.GamepadButtonInputId;
+            Type = ButtonValueType.GamepadButtonInputId;
             _rawValue = (uint)gamepad;
         }
 
         public ButtonValue(StickInputId stick)
         {
-            _type = ButtonValueType.StickId;
+            Type = ButtonValueType.StickId;
             _rawValue = (uint)stick;
         }
 
         public Common.Configuration.Hid.Key AsKey()
         {
-            Debug.Assert(_type == ButtonValueType.Key);
+            Debug.Assert(Type == ButtonValueType.Key);
             return (Common.Configuration.Hid.Key)_rawValue;
         }
 
         public Common.Configuration.Hid.Controller.GamepadInputId AsGamepadButtonInputId()
         {
-            Debug.Assert(_type == ButtonValueType.GamepadButtonInputId);
+            Debug.Assert(Type == ButtonValueType.GamepadButtonInputId);
             return (Common.Configuration.Hid.Controller.GamepadInputId)_rawValue;
         }
 
         public Common.Configuration.Hid.Controller.StickInputId AsGamepadStickId()
         {
-            Debug.Assert(_type == ButtonValueType.StickId);
+            Debug.Assert(Type == ButtonValueType.StickId);
             return (Common.Configuration.Hid.Controller.StickInputId)_rawValue;
         }
     }
