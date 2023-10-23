@@ -160,21 +160,9 @@ namespace Ryujinx.HLE.HOS
         private static DirectoryInfo FindTitleDir(DirectoryInfo contentsDir, string titleId)
             => contentsDir.EnumerateDirectories(titleId, _dirEnumOptions).FirstOrDefault();
 
-        private static void AddModsFromDirectory(ModCache mods, DirectoryInfo dir, string titleId)
+        private static void AddModsFromDirectory(ModCache mods, DirectoryInfo dir, ModMetadata modMetadata)
         {
             System.Text.StringBuilder types = new();
-
-            string modJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId, "mods.json");
-            ModMetadata modMetadata = new();
-
-            try
-            {
-                modMetadata = JsonHelper.DeserializeFromFile(modJsonPath, _serializerContext.ModMetadata);
-            }
-            catch
-            {
-                Logger.Warning?.Print(LogClass.ModLoader, $"Failed to deserialize mod data for {titleId} at {modJsonPath}");
-            }
 
             foreach (var modDir in dir.EnumerateDirectories())
             {
@@ -223,7 +211,7 @@ namespace Ryujinx.HLE.HOS
                 }
                 else
                 {
-                    AddModsFromDirectory(mods, modDir, titleId);
+                    AddModsFromDirectory(mods, modDir, modMetadata);
                 }
 
                 if (types.Length > 0)
@@ -342,7 +330,7 @@ namespace Ryujinx.HLE.HOS
                 mods.ExefsContainers.Add(new Mod<FileInfo>($"<{titleDir.Name} ExeFs>", fsFile, enabled));
             }
 
-            AddModsFromDirectory(mods, titleDir, titleDir.Name);
+            AddModsFromDirectory(mods, titleDir, modMetadata);
         }
 
         public static void QueryContentsDir(ModCache mods, DirectoryInfo contentsDir, ulong titleId)
