@@ -91,15 +91,14 @@ namespace Ryujinx.Ava.UI.Applet
         {
             _mainWindow = mainWindow;
             DataContext = this;
+
             InitializeComponent();
         }
 
         public static async Task<UserResult> ShowControllerAppletDialog(ControllerAppletUiArgs args, MainWindow window)
         {
             ContentDialog contentDialog = new();
-
             UserResult result = UserResult.Cancel;
-
             ControllerAppletDialog content = new(args, window);
 
             contentDialog.Title = LocaleManager.Instance[LocaleKeys.DialogControllerAppletTitle];
