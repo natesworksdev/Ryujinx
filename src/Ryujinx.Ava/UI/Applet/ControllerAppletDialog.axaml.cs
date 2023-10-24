@@ -83,6 +83,7 @@ namespace Ryujinx.Ava.UI.Applet
             _mainWindow = mainWindow;
 
             DataContext = this;
+
             InitializeComponent();
         }
 
