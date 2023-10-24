@@ -221,7 +221,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var result = await _storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = LocaleManager.Instance[LocaleKeys.SelectModDialogTitle]
+                Title = LocaleManager.Instance[LocaleKeys.SelectModDialogTitle],
+                AllowMultiple = true
             });
 
             foreach (var folder in result)
