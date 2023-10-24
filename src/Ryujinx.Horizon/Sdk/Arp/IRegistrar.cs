@@ -7,6 +7,6 @@ namespace Ryujinx.Horizon.Sdk.Arp
     {
         public Result Issue(out ulong applicationInstanceId);
         public Result SetApplicationLaunchProperty(ApplicationLaunchProperty applicationLaunchProperty);
-        public Result SetApplicationControlProperty(ApplicationControlProperty applicationControlProperty);
+        public Result SetApplicationControlProperty(in ApplicationControlProperty applicationControlProperty);
     }
 }

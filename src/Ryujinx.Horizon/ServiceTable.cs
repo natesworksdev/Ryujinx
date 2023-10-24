@@ -25,8 +25,8 @@ namespace Ryujinx.Horizon
 
         private readonly ManualResetEvent _servicesReadyEvent = new(false);
 
-        public IReader ArpReader { get; set; }
-        public IWriter ArpWriter { get; set; }
+        public IReader ArpReader { get; internal set; }
+        public IWriter ArpWriter { get; internal set; }
 
         public IEnumerable<ServiceEntry> GetServices(HorizonOptions options)
         {

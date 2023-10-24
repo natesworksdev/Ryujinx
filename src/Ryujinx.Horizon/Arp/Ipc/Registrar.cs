@@ -37,7 +37,7 @@ namespace Ryujinx.Horizon.Arp.Ipc
         }
 
         [CmifCommand(2)]
-        public Result SetApplicationControlProperty([Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias | HipcBufferFlags.FixedSize, 0x4000)] ApplicationControlProperty applicationControlProperty)
+        public Result SetApplicationControlProperty([Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias | HipcBufferFlags.FixedSize, 0x4000)] in ApplicationControlProperty applicationControlProperty)
         {
             if (_applicationInstance.ControlProperty != null)
             {

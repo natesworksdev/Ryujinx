@@ -18,8 +18,6 @@ namespace Ryujinx.Horizon.Arp.Ipc
         [CmifCommand(0)]
         public Result AcquireRegistrar(out IRegistrar registrar)
         {
-            // NOTE: Returns AllocationFailed if it can't create the object, doesn't occur in our case.
-
             if (_applicationInstanceManager.Entries[0] != null)
             {
                 if (_applicationInstanceManager.Entries[1] != null)
@@ -48,8 +46,6 @@ namespace Ryujinx.Horizon.Arp.Ipc
         [CmifCommand(1)]
         public Result UnregisterApplicationInstance(ulong applicationInstanceId)
         {
-            // NOTE: Returns InvalidPointer if applicationInstanceId is null, doesn't occur in our case.
-
             if (_applicationInstanceManager.Entries[applicationInstanceId] != null)
             {
                 _applicationInstanceManager.Entries[applicationInstanceId] = null;
@@ -63,10 +59,7 @@ namespace Ryujinx.Horizon.Arp.Ipc
         [CmifCommand(2)]
         public Result AcquireApplicationProcessPropertyUpdater(out IUpdater updater, ulong applicationInstanceId)
         {
-            // NOTE: Returns InvalidPointer if applicationInstanceId is null, doesn't occur in our case.
-            //       Returns AllocationFailed if it can't create the object, doesn't occur in our case.
-
-            updater = new Updater(_applicationInstanceManager, applicationInstanceId);
+            updater = new Updater(_applicationInstanceManager, applicationInstanceId, false);
 
             return Result.Success;
         }
@@ -74,10 +67,7 @@ namespace Ryujinx.Horizon.Arp.Ipc
         [CmifCommand(3)]
         public Result AcquireApplicationCertificateUpdater(out IUpdater updater, ulong applicationInstanceId)
         {
-            // NOTE: Returns InvalidPointer if applicationInstanceId is null, doesn't occur in our case.
-            //       Returns AllocationFailed if it can't create the object, doesn't occur in our case.
-
-            updater = new Updater(_applicationInstanceManager, applicationInstanceId);
+            updater = new Updater(_applicationInstanceManager, applicationInstanceId, true);
 
             return Result.Success;
         }

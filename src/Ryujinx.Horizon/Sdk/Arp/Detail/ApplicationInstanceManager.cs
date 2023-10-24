@@ -11,7 +11,7 @@ namespace Ryujinx.Horizon.Sdk.Arp.Detail
         public SystemEventType SystemEvent;
         public int EventHandle;
 
-        public ApplicationInstance[] Entries = new ApplicationInstance[2];
+        public readonly ApplicationInstance[] Entries = new ApplicationInstance[2];
 
         public ApplicationInstanceManager()
         {
