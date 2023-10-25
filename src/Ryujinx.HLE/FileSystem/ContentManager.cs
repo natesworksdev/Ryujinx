@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.FileSystem
@@ -197,7 +198,7 @@ namespace Ryujinx.HLE.FileSystem
             {
                 using var ncaFile = new UniqueRef<IFile>();
 
-                fs.OpenFile(ref ncaFile.Ref, ncaPath.FullPath.ToU8Span(), OpenMode.Read);
+                fs.OpenFile(ref ncaFile.Ref, ncaPath.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 var nca = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
                 if (nca.Header.ContentType != NcaContentType.Meta)
                 {
@@ -209,7 +210,7 @@ namespace Ryujinx.HLE.FileSystem
                 using var pfs0 = nca.OpenFileSystem(0, integrityCheckLevel);
                 using var cnmtFile = new UniqueRef<IFile>();
 
-                pfs0.OpenFile(ref cnmtFile.Ref, pfs0.EnumerateEntries().Single().FullPath.ToU8Span(), OpenMode.Read);
+                pfs0.OpenFile(ref cnmtFile.Ref, pfs0.EnumerateEntries().Single().FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                 var cnmt = new Cnmt(cnmtFile.Get.AsStream());
                 if (cnmt.Type != ContentMetaType.AddOnContent || (cnmt.TitleId & 0xFFFFFFFFFFFFE000) != aocBaseId)
@@ -219,7 +220,7 @@ namespace Ryujinx.HLE.FileSystem
 
                 string ncaId = Convert.ToHexString(cnmt.ContentEntries[0].NcaId).ToLower();
 
-                AddAocItem(cnmt.TitleId, containerPath, $"{ncaId}.nca", true);
+                AddAocItem(cnmt.TitleId, containerPath, $"/{ncaId}.nca", true);
             }
         }
 
@@ -237,7 +238,8 @@ namespace Ryujinx.HLE.FileSystem
                 if (!mergedToContainer)
                 {
                     using FileStream fileStream = File.OpenRead(containerPath);
-                    using PartitionFileSystem partitionFileSystem = new(fileStream.AsStorage());
+                    using PartitionFileSystem partitionFileSystem = new();
+                    partitionFileSystem.Initialize(fileStream.AsStorage()).ThrowIfFailure();
 
                     _virtualFileSystem.ImportTickets(partitionFileSystem);
                 }
@@ -258,17 +260,17 @@ namespace Ryujinx.HLE.FileSystem
             {
                 var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
                 using var ncaFile = new UniqueRef<IFile>();
-                PartitionFileSystem pfs;
 
                 switch (Path.GetExtension(aoc.ContainerPath))
                 {
                     case ".xci":
-                        pfs = new Xci(_virtualFileSystem.KeySet, file.AsStorage()).OpenPartition(XciPartitionType.Secure);
-                        pfs.OpenFile(ref ncaFile.Ref, aoc.NcaPath.ToU8Span(), OpenMode.Read);
+                        var xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage()).OpenPartition(XciPartitionType.Secure);
+                        xci.OpenFile(ref ncaFile.Ref, aoc.NcaPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                         break;
                     case ".nsp":
-                        pfs = new PartitionFileSystem(file.AsStorage());
-                        pfs.OpenFile(ref ncaFile.Ref, aoc.NcaPath.ToU8Span(), OpenMode.Read);
+                        var pfs = new PartitionFileSystem();
+                        pfs.Initialize(file.AsStorage());
+                        pfs.OpenFile(ref ncaFile.Ref, aoc.NcaPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                         break;
                     default:
                         return false; // Print error?
@@ -605,11 +607,11 @@ namespace Ryujinx.HLE.FileSystem
 
             if (filesystem.FileExists($"{path}/00"))
             {
-                filesystem.OpenFile(ref file.Ref, $"{path}/00".ToU8Span(), mode);
+                filesystem.OpenFile(ref file.Ref, $"{path}/00".ToU8Span(), mode).ThrowIfFailure();
             }
             else
             {
-                filesystem.OpenFile(ref file.Ref, path.ToU8Span(), mode);
+                filesystem.OpenFile(ref file.Ref, path.ToU8Span(), mode).ThrowIfFailure();
             }
 
             return file.Release();
@@ -817,13 +819,13 @@ namespace Ryujinx.HLE.FileSystem
 
                     if (updateNcas.Count > 0)
                     {
-                        string extraNcas = string.Empty;
+                        StringBuilder extraNcas = new();
 
                         foreach (var entry in updateNcas)
                         {
                             foreach (var (type, path) in entry.Value)
                             {
-                                extraNcas += path + Environment.NewLine;
+                                extraNcas.AppendLine(path);
                             }
                         }
 
@@ -954,13 +956,13 @@ namespace Ryujinx.HLE.FileSystem
 
                 if (updateNcas.Count > 0)
                 {
-                    string extraNcas = string.Empty;
+                    StringBuilder extraNcas = new();
 
                     foreach (var entry in updateNcas)
                     {
                         foreach (var (type, path) in entry.Value)
                         {
-                            extraNcas += path + Environment.NewLine;
+                            extraNcas.AppendLine(path);
                         }
                     }
 
