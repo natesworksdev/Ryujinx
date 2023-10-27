@@ -128,10 +128,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static string GetArgsString(string basePath, string appFilePath)
         {
             // args are first defined as a list, for easier adjustments in the future
-            var argsList = new List<string>
-            {
-                basePath,
-            };
+            var argsList = new List<string>();
 
             if (!string.IsNullOrEmpty(CommandLineState.BaseDirPathArg))
             {
@@ -140,7 +137,7 @@ namespace Ryujinx.Ui.Common.Helper
             }
 
             argsList.Add($"\"{appFilePath}\"");
-
+            argsList.Add($"--fullscreen");
 
             return String.Join(" ", argsList);
         }
