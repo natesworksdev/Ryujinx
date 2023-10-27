@@ -52,7 +52,7 @@ namespace Ryujinx.Ui.Common.Helper
         [SupportedOSPlatform("macos")]
         private static void CreateShortcutMacos(string appFilePath, byte[] iconData, string desktopPath, string cleanedAppName)
         {
-            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName);
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
             var plistFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.plist");
             // Macos .App folder
             string contentFolderPath = Path.Combine(desktopPath, cleanedAppName + ".app", "Contents");
