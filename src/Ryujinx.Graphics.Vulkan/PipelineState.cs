@@ -312,12 +312,14 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public uint BindlessTexturesCount
-        { readonly get => (uint)((Internal.Id10 >> 0) & 0xFFFFFFFF);
+        {
+            readonly get => (uint)((Internal.Id10 >> 0) & 0xFFFFFFFF);
             set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint BindlessSamplersCount
-        { readonly get => (uint)((Internal.Id10 >> 32) & 0xFFFFFFFF);
+        {
+            readonly get => (uint)((Internal.Id10 >> 32) & 0xFFFFFFFF);
             set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
