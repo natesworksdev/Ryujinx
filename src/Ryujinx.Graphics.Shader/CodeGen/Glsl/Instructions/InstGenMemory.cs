@@ -53,13 +53,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             AggregateType type = texOp.Format.GetComponentType();
 
-            string bindlessHandle = null;
             string imageName;
 
             if (isBindless)
             {
-                bindlessHandle = Src(AggregateType.S32);
-                imageName = GetBindlessImage(context, texOp.Type, type, bindlessHandle);
+                imageName = GetBindlessImage(context, texOp.Type, type, Src(AggregateType.S32));
             }
             else
             {
@@ -283,12 +281,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string bindlessHandle = null;
-
             if (isBindless)
             {
-                bindlessHandle = Src(AggregateType.S32);
-                texCall += "(" + GetBindlessSampler(context, texOp.Type, bindlessHandle);
+                texCall += "(" + GetBindlessSampler(context, texOp.Type, Src(AggregateType.S32));
             }
             else
             {
