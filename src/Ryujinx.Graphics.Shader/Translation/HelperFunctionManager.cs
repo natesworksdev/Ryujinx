@@ -415,7 +415,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScale", true, inArgumentsCount, 0);
         }
 
-        private Function GenerateTexelFetchScaleBindlessFunction()
+        private static Function GenerateTexelFetchScaleBindlessFunction()
         {
             EmitterContext context = new();
 
@@ -462,7 +462,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TextureSizeUnscale", true, 2, 0);
         }
 
-        private Function GenerateTextureSizeUnscaleBindlessFunction()
+        private static Function GenerateTextureSizeUnscaleBindlessFunction()
         {
             EmitterContext context = new();
 
