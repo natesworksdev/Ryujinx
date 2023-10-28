@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 {
     struct RegisterBindlessTextureAndSamplerCommand : IGALCommand, IGALCommand<RegisterBindlessTextureAndSamplerCommand>
     {
-        public CommandType CommandType => CommandType.RegisterBindlessTextureAndSampler;
+        public readonly CommandType CommandType => CommandType.RegisterBindlessTextureAndSampler;
         private int _textureId;
         private int _samplerId;
         private TableRef<ITexture> _texture;

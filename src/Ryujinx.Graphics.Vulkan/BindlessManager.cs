@@ -2,8 +2,8 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
-using System.Numerics;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -187,10 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             int idMapBufferSizeInBytes = _idMap.Length * sizeof(int);
 
-            if (_idMapBuffer == null)
-            {
-                _idMapBuffer = gd.BufferManager.Create(gd, idMapBufferSizeInBytes);
-            }
+            _idMapBuffer ??= gd.BufferManager.Create(gd, idMapBufferSizeInBytes);
 
             if (_idMapDataDirty)
             {
@@ -324,7 +321,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private void Bind(
+        private static void Bind(
             VulkanRenderer gd,
             ShaderCollection program,
             CommandBufferScoped cbs,

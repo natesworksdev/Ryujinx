@@ -1262,7 +1262,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             SpvInstruction pCoords = AssemblePVector(pCount);
-            SpvInstruction bindlessIndex = isBindless ? GenerateBindlessTextureHandleToIndex(context, bindlessHandle) : null;
+
+            _ = isBindless ? GenerateBindlessTextureHandleToIndex(context, bindlessHandle) : null;
 
             SpvInstruction AssembleDerivativesVector(int count)
             {

@@ -497,7 +497,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private Operand GetBindlessScale(EmitterContext context, Operand nvHandle)
+        private static Operand GetBindlessScale(EmitterContext context, Operand nvHandle)
         {
             int bindlessTableBinding = SetBindingPair.Pack(Constants.BindlessTextureSetIndex, Constants.BindlessTableBinding);
             int bindlessScalesBinding = SetBindingPair.Pack(Constants.BindlessTextureSetIndex, Constants.BindlessScalesBinding);

@@ -117,7 +117,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Unpacks the font filter width.
         /// </summary>
         /// <returns>Font filter width</returns>
-        public int UnpackFontFilterWidth()
+        public readonly int UnpackFontFilterWidth()
         {
             return (int)(Word0 >> 14) & 7;
         }
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Unpacks the font filter height.
         /// </summary>
         /// <returns>Font filter height</returns>
-        public int UnpackFontFilterHeight()
+        public readonly int UnpackFontFilterHeight()
         {
             return (int)(Word0 >> 17) & 7;
         }

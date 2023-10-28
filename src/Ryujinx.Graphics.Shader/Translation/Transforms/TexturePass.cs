@@ -870,7 +870,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             // Try to detect a indexed access.
             // The access is considered indexed if the handle is loaded with a LDC instruction
             // from the driver reserved constant buffer used for texture handles.
-            if (!(texOp.GetSource(0).AsgOp is Operation handleAsgOp))
+            if (texOp.GetSource(0).AsgOp is not Operation handleAsgOp)
             {
                 return false;
             }

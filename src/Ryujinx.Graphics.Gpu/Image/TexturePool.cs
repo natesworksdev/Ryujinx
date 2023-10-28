@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return null;
             }
 
-            TextureInfo info = GetInfo(descriptor, out int layerSize);
+            TextureInfo info = GetInfo(descriptor, out _);
             TextureValidationResult validationResult = TextureValidation.Validate(ref info);
 
             if (validationResult != TextureValidationResult.Valid)

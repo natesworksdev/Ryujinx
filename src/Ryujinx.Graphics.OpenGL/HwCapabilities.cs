@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     static class HwCapabilities
     {
-        private static readonly Lazy<bool> _supportsArbBindlessTexture = new Lazy<bool>(() => HasExtension("GL_ARB_bindless_texture"));
+        private static readonly Lazy<bool> _supportsArbBindlessTexture = new(() => HasExtension("GL_ARB_bindless_texture"));
         private static readonly Lazy<bool> _supportsAlphaToCoverageDitherControl = new(() => HasExtension("GL_NV_alpha_to_coverage_dither_control"));
         private static readonly Lazy<bool> _supportsAstcCompression = new(() => HasExtension("GL_KHR_texture_compression_astc_ldr"));
         private static readonly Lazy<bool> _supportsBlendEquationAdvanced = new(() => HasExtension("GL_NV_blend_equation_advanced"));
@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsGeometryShaderPassthrough = new(() => HasExtension("GL_NV_geometry_shader_passthrough"));
         private static readonly Lazy<bool> _supportsImageLoadFormatted = new(() => HasExtension("GL_EXT_shader_image_load_formatted"));
         private static readonly Lazy<bool> _supportsIndirectParameters = new(() => HasExtension("GL_ARB_indirect_parameters"));
-        private static readonly Lazy<bool> _supportsNvBindlessTexture = new Lazy<bool>(() => HasExtension("GL_NV_bindless_texture"));
+        private static readonly Lazy<bool> _supportsNvBindlessTexture = new(() => HasExtension("GL_NV_bindless_texture"));
         private static readonly Lazy<bool> _supportsParallelShaderCompile = new(() => HasExtension("GL_ARB_parallel_shader_compile"));
         private static readonly Lazy<bool> _supportsPolygonOffsetClamp = new(() => HasExtension("GL_EXT_polygon_offset_clamp"));
         private static readonly Lazy<bool> _supportsQuads = new(SupportsQuadsCheck);

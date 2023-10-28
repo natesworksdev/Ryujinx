@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private readonly Dictionary<int, (ITexture, float)> _separateTextures;
         private readonly Dictionary<int, ISampler> _separateSamplers;
 
-        private readonly HashSet<long> _handles = new HashSet<long>();
+        private readonly HashSet<long> _handles = new();
 
         public BindlessManager(OpenGLRenderer renderer)
         {
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (hasDeletedSamplers)
             {
-                List<int> toRemove = new List<int>();
+                List<int> toRemove = new();
 
                 foreach ((int samplerId, ISampler sampler) in _separateSamplers)
                 {

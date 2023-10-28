@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    struct PipelineLayoutUsageInfo : IEquatable<PipelineLayoutUsageInfo>
+    readonly struct PipelineLayoutUsageInfo : IEquatable<PipelineLayoutUsageInfo>
     {
         public readonly uint BindlessTexturesCount;
         public readonly uint BindlessSamplersCount;
@@ -20,14 +20,14 @@ namespace Ryujinx.Graphics.Vulkan
             return obj is PipelineLayoutUsageInfo other && Equals(other);
         }
 
-        public bool Equals(PipelineLayoutUsageInfo other)
+        public readonly bool Equals(PipelineLayoutUsageInfo other)
         {
             return BindlessTexturesCount == other.BindlessTexturesCount &&
                    BindlessSamplersCount == other.BindlessSamplersCount &&
                    UsePushDescriptors == other.UsePushDescriptors;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return HashCode.Combine(BindlessTexturesCount, BindlessSamplersCount, UsePushDescriptors);
         }

@@ -813,7 +813,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Ensure that the buffer texture is using the correct buffer as storage.
                     // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
-                    TextureBindingInfo bindingInfo = new TextureBindingInfo(texture.Target, texture.Format, 0, 0, 0, TextureUsageFlags.None);
+                    TextureBindingInfo bindingInfo = new(texture.Target, texture.Format, 0, 0, 0, TextureUsageFlags.None);
                     ulong address = texture.Range.GetSubRange(0).Address;
                     ulong size = texture.Size;
                     _channel.BufferManager.SetBufferTextureStorage(texture.HostTexture, address, size, bindingInfo, texture.Format, false, textureId);
