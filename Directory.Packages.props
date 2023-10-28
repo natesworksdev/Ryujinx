@@ -18,12 +18,13 @@
     <PackageVersion Include="GtkSharp.Dependencies" Version="1.1.1" />
     <PackageVersion Include="GtkSharp.Dependencies.osx" Version="0.0.5" />
     <PackageVersion Include="jp2masa.Avalonia.Flexbox" Version="0.3.0-beta.4" />
-    <PackageVersion Include="LibHac" Version="0.18.0" />
+    <PackageVersion Include="LibHac" Version="0.19.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
     <PackageVersion Include="MsgPack.Cli" Version="1.0.1" />
+    <PackageVersion Include="NetCoreServer" Version="7.0.0" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageVersion Include="OpenTK.Core" Version="4.7.7" />
