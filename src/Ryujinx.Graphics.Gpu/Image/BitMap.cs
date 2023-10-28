@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool Set(int bit)
         {
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             ulong wordMask = 1UL << wordBit;
 
@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Clear(int bit)
         {
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             ulong wordMask = 1UL << wordBit;
 

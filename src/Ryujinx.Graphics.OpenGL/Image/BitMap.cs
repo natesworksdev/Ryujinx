@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             EnsureCapacity(bit + 1);
 
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             ulong wordMask = 1UL << wordBit;
 
@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             EnsureCapacity(bit + 1);
 
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             ulong wordMask = 1UL << wordBit;
 
