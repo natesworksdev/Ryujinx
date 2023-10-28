@@ -30,7 +30,7 @@ namespace Ryujinx.Ui.Common.Helper
             graphic.DrawImage(image, 0, 0, 128, 128);
             SaveBitmapAsIcon(bitmap, iconPath);
 
-            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(basePath, applicationFilePath), iconPath, 0);
+            var shortcut = Shortcut.CreateShortcut(basePath, GetArgsString(applicationFilePath), iconPath, 0);
             shortcut.StringData.NameString = cleanedAppName;
             shortcut.WriteToFile(Path.Combine(desktopPath, cleanedAppName + ".lnk"));
         }
@@ -46,7 +46,7 @@ namespace Ryujinx.Ui.Common.Helper
             image.SaveAsPng(iconPath);
 
             using StreamWriter outputFile = new(Path.Combine(desktopPath, cleanedAppName + ".desktop"));
-            outputFile.Write(desktopFile, cleanedAppName, iconPath, GetArgsString(basePath, applicationFilePath));
+            outputFile.Write(desktopFile, cleanedAppName, iconPath, $"{basePath} {GetArgsString(applicationFilePath)}");
         }
 
         [SupportedOSPlatform("macos")]
@@ -69,7 +69,7 @@ namespace Ryujinx.Ui.Common.Helper
             using StreamWriter scriptFile = new(scriptPath);
 
             scriptFile.WriteLine("#!/bin/sh");
-            scriptFile.WriteLine(GetArgsString(basePath, appFilePath));
+            scriptFile.WriteLine($"{basePath} {GetArgsString(appFilePath)}");
 
             // Set execute permission
             FileInfo fileInfo = new(scriptPath);
@@ -125,7 +125,7 @@ namespace Ryujinx.Ui.Common.Helper
             throw new NotImplementedException("Shortcut support has not been implemented yet for this OS.");
         }
 
-        private static string GetArgsString(string basePath, string appFilePath)
+        private static string GetArgsString(string appFilePath)
         {
             // args are first defined as a list, for easier adjustments in the future
             var argsList = new List<string>();
@@ -137,7 +137,6 @@ namespace Ryujinx.Ui.Common.Helper
             }
 
             argsList.Add($"\"{appFilePath}\"");
-            argsList.Add($"--fullscreen");
 
             return String.Join(" ", argsList);
         }
