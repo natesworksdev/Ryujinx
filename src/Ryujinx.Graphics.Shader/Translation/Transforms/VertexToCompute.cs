@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                                 SamplerType.TextureBuffer,
                                 TextureFormat.Unknown,
                                 TextureFlags.IntCoords,
-                                context.ResourceManager.Reservations.GetVertexBufferTextureBinding(location),
+                                context.ResourceManager.Reservations.GetVertexBufferTextureSetBinding(location),
                                 1 << component,
                                 new[] { temp },
                                 new[] { vertexElemOffset }));
@@ -83,7 +83,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                                 SamplerType.TextureBuffer,
                                 TextureFormat.Unknown,
                                 TextureFlags.IntCoords,
-                                context.ResourceManager.Reservations.GetVertexBufferTextureBinding(location),
+                                context.ResourceManager.Reservations.GetVertexBufferTextureSetBinding(location),
                                 1,
                                 new[] { temp },
                                 new[] { vertexElemOffset }));
@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static Operand GenerateVertexOffset(ResourceManager resourceManager, LinkedListNode<INode> node, int location, int component)
         {
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
 
             Operand vertexIdVr = Local();
             GenerateVertexIdVertexRateLoad(resourceManager, node, vertexIdVr);
@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             Operand src)
         {
             Operand componentExists = Local();
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
             node = node.List.AddAfter(node, new Operation(
                 Instruction.Load,
                 StorageKind.ConstantBuffer,
@@ -259,7 +259,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GenerateBaseVertexLoad(ResourceManager resourceManager, LinkedListNode<INode> node, Operand dest)
         {
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
 
             return node.List.AddBefore(node, new Operation(
                 Instruction.Load,
@@ -270,7 +270,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GenerateBaseInstanceLoad(ResourceManager resourceManager, LinkedListNode<INode> node, Operand dest)
         {
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
 
             return node.List.AddBefore(node, new Operation(
                 Instruction.Load,

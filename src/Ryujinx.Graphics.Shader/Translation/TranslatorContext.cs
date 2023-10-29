@@ -505,11 +505,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var reservations = GetResourceReservations();
 
-            int vertexInfoCbBinding = reservations.VertexInfoConstantBufferBinding;
-
             if (Stage == ShaderStage.Vertex)
             {
-                BufferDefinition vertexInfoBuffer = new(BufferLayout.Std140, 0, vertexInfoCbBinding, "vb_info", VertexInfoBuffer.GetStructureType());
+                BufferDefinition vertexInfoBuffer = new(BufferLayout.Std140, 0, reservations.VertexInfoConstantBufferBinding, "vb_info", VertexInfoBuffer.GetStructureType());
                 resourceManager.Properties.AddOrUpdateConstantBuffer(vertexInfoBuffer);
             }
 
@@ -518,9 +516,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                 new StructureField(AggregateType.Array | AggregateType.FP32, "data", 0)
             });
 
-            int vertexDataSbBinding = reservations.VertexOutputStorageBufferBinding;
-            BufferDefinition vertexOutputBuffer = new(BufferLayout.Std430, 1, vertexDataSbBinding, "vb_input", vertexInputStruct);
+            BufferDefinition vertexOutputBuffer = new(BufferLayout.Std430, 1, reservations.VertexOutputStorageBufferBinding, "vb_input", vertexInputStruct);
             resourceManager.Properties.AddOrUpdateStorageBuffer(vertexOutputBuffer);
+
+            int vertexInfoCbBinding = reservations.VertexInfoConstantBufferSetBinding;
+            int vertexDataSbBinding = reservations.VertexOutputStorageBufferSetBinding;
 
             var context = new EmitterContext();
 

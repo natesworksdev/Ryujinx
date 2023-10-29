@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                                 Instruction.Load,
                                 StorageKind.StorageBuffer,
                                 operation.Dest,
-                                new[] { Const(context.ResourceManager.Reservations.VertexOutputStorageBufferBinding), Const(0), vertexElemOffset }));
+                                new[] { Const(context.ResourceManager.Reservations.VertexOutputStorageBufferSetBinding), Const(0), vertexElemOffset }));
                         }
                         else
                         {
@@ -123,8 +123,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GenerateEmitVertex(ShaderDefinitions definitions, ResourceManager resourceManager, LinkedListNode<INode> node)
         {
-            int vbOutputBinding = resourceManager.Reservations.GeometryVertexOutputStorageBufferBinding;
-            int ibOutputBinding = resourceManager.Reservations.GeometryIndexOutputStorageBufferBinding;
+            int vbOutputBinding = resourceManager.Reservations.GeometryVertexOutputStorageBufferSetBinding;
+            int ibOutputBinding = resourceManager.Reservations.GeometryIndexOutputStorageBufferSetBinding;
             int stride = resourceManager.Reservations.OutputSizePerInvocation;
 
             Operand outputPrimVertex = IncrementLocalMemory(node, resourceManager.LocalGeometryOutputVertexCountMemoryId);
@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GenerateEndPrimitive(ShaderDefinitions definitions, ResourceManager resourceManager, LinkedListNode<INode> node)
         {
-            int ibOutputBinding = resourceManager.Reservations.GeometryIndexOutputStorageBufferBinding;
+            int ibOutputBinding = resourceManager.Reservations.GeometryIndexOutputStorageBufferSetBinding;
 
             Operand outputPrimIndex = IncrementLocalMemory(node, resourceManager.LocalGeometryOutputIndexCountMemoryId);
             Operand baseIndexOffset = GenerateBaseOffset(
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             int elementOffset,
             Operand primVertex)
         {
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
 
             Operand vertexCount = Local();
             node.List.AddBefore(node, new Operation(
@@ -303,7 +303,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
 
         private static LinkedListNode<INode> GeneratePrimitiveId(ResourceManager resourceManager, LinkedListNode<INode> node, Operand dest)
         {
-            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferBinding;
+            int vertexInfoCbBinding = resourceManager.Reservations.VertexInfoConstantBufferSetBinding;
 
             Operand vertexCount = Local();
             node.List.AddBefore(node, new Operation(

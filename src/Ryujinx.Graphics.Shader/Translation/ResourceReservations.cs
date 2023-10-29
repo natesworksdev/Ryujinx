@@ -18,6 +18,13 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int IndexBufferTextureBinding { get; }
         public int TopologyRemapBufferTextureBinding { get; }
 
+        public int VertexInfoConstantBufferSetBinding => SetBindingPair.Pack(Constants.VkConstantBufferSetIndex, VertexInfoConstantBufferBinding);
+        public int VertexOutputStorageBufferSetBinding => SetBindingPair.Pack(Constants.VkStorageBufferSetIndex, VertexOutputStorageBufferBinding);
+        public int GeometryVertexOutputStorageBufferSetBinding => SetBindingPair.Pack(Constants.VkStorageBufferSetIndex, GeometryVertexOutputStorageBufferBinding);
+        public int GeometryIndexOutputStorageBufferSetBinding => SetBindingPair.Pack(Constants.VkStorageBufferSetIndex, GeometryIndexOutputStorageBufferBinding);
+        public int IndexBufferTextureSetBinding => SetBindingPair.Pack(Constants.VkTextureSetIndex, IndexBufferTextureBinding);
+        public int TopologyRemapBufferTextureSetBinding => SetBindingPair.Pack(Constants.VkTextureSetIndex, TopologyRemapBufferTextureBinding);
+
         public int ReservedConstantBuffers { get; }
         public int ReservedStorageBuffers { get; }
         public int ReservedTextures { get; }
@@ -149,7 +156,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             return variable switch
             {
                 IoVariable.ClipDistance or
-                IoVariable.Position => true,
+                IoVariable.Position or
+                IoVariable.ViewportMask => true,
                 _ => false,
             };
         }
@@ -159,9 +167,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             return _tfeBufferSbBaseBinding + bufferIndex;
         }
 
+        public int GetTfeBufferStorageBufferSetBinding(int bufferIndex)
+        {
+            return SetBindingPair.Pack(Constants.VkStorageBufferSetIndex, _tfeBufferSbBaseBinding + bufferIndex);
+        }
+
         public int GetVertexBufferTextureBinding(int vaLocation)
         {
             return _vertexBufferTextureBaseBinding + vaLocation;
+        }
+
+        public int GetVertexBufferTextureSetBinding(int vaLocation)
+        {
+            return SetBindingPair.Pack(Constants.VkTextureSetIndex, _vertexBufferTextureBaseBinding + vaLocation);
         }
 
         internal bool TryGetOffset(StorageKind storageKind, int location, int component, out int offset)
