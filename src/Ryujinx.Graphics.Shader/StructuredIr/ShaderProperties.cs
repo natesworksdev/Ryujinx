@@ -6,15 +6,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         private readonly Dictionary<SetBindingPair, BufferDefinition> _constantBuffers;
         private readonly Dictionary<SetBindingPair, BufferDefinition> _storageBuffers;
-        private readonly Dictionary<SetBindingPair, TextureDefinition> _textures;
-        private readonly Dictionary<SetBindingPair, TextureDefinition> _images;
+        private readonly Dictionary<SetBindingPairWithType, TextureDefinition> _textures;
+        private readonly Dictionary<SetBindingPairWithType, TextureDefinition> _images;
         private readonly Dictionary<int, MemoryDefinition> _localMemories;
         private readonly Dictionary<int, MemoryDefinition> _sharedMemories;
 
         public IReadOnlyDictionary<SetBindingPair, BufferDefinition> ConstantBuffers => _constantBuffers;
         public IReadOnlyDictionary<SetBindingPair, BufferDefinition> StorageBuffers => _storageBuffers;
-        public IReadOnlyDictionary<SetBindingPair, TextureDefinition> Textures => _textures;
-        public IReadOnlyDictionary<SetBindingPair, TextureDefinition> Images => _images;
+        public IReadOnlyDictionary<SetBindingPairWithType, TextureDefinition> Textures => _textures;
+        public IReadOnlyDictionary<SetBindingPairWithType, TextureDefinition> Images => _images;
         public IReadOnlyDictionary<int, MemoryDefinition> LocalMemories => _localMemories;
         public IReadOnlyDictionary<int, MemoryDefinition> SharedMemories => _sharedMemories;
 
@@ -22,8 +22,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             _constantBuffers = new Dictionary<SetBindingPair, BufferDefinition>();
             _storageBuffers = new Dictionary<SetBindingPair, BufferDefinition>();
-            _textures = new Dictionary<SetBindingPair, TextureDefinition>();
-            _images = new Dictionary<SetBindingPair, TextureDefinition>();
+            _textures = new Dictionary<SetBindingPairWithType, TextureDefinition>();
+            _images = new Dictionary<SetBindingPairWithType, TextureDefinition>();
             _localMemories = new Dictionary<int, MemoryDefinition>();
             _sharedMemories = new Dictionary<int, MemoryDefinition>();
         }
@@ -40,12 +40,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public void AddOrUpdateTexture(TextureDefinition definition)
         {
-            _textures[new(definition.Set, definition.Binding)] = definition;
+            _textures[new(definition.Set, definition.Binding, definition.Type & ~(SamplerType.Shadow | SamplerType.Separate))] = definition;
         }
 
         public void AddOrUpdateImage(TextureDefinition definition)
         {
-            _images[new(definition.Set, definition.Binding)] = definition;
+            _images[new(definition.Set, definition.Binding, definition.Type & ~(SamplerType.Shadow | SamplerType.Separate))] = definition;
         }
 
         public int AddLocalMemory(MemoryDefinition definition)

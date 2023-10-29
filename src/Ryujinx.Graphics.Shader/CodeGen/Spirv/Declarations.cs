@@ -154,9 +154,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static void DeclareSamplers(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, TextureDefinition> samplers)
+        private static void DeclareSamplers(CodeGenContext context, IReadOnlyDictionary<SetBindingPairWithType, TextureDefinition> samplers)
         {
-            foreach ((SetBindingPair sbPair, var sampler) in samplers)
+            foreach ((SetBindingPairWithType sbPair, var sampler) in samplers)
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? sampler.Set : 0;
 
@@ -203,7 +203,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (sampler.ArraySize != 1)
                 {
-                    context.BindlessTextures[sampler.Type & ~(SamplerType.Shadow | SamplerType.Separate)] = (imageType, sampledImageType, sampledImagePointerType, sampledImageVariable);
+                    context.BindlessTextures[sbPair.Type] = (imageType, sampledImageType, sampledImagePointerType, sampledImageVariable);
                 }
                 else
                 {
@@ -218,9 +218,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static void DeclareImages(CodeGenContext context, IReadOnlyDictionary<SetBindingPair, TextureDefinition> images)
+        private static void DeclareImages(CodeGenContext context, IReadOnlyDictionary<SetBindingPairWithType, TextureDefinition> images)
         {
-            foreach ((SetBindingPair sbPair, var image) in images)
+            foreach ((SetBindingPairWithType sbPair, var image) in images)
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? image.Set : 0;
 
@@ -254,7 +254,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (image.ArraySize != 1)
                 {
-                    context.BindlessImages[image.Type] = (imageType, imagePointerType, imageVariable);
+                    context.BindlessImages[sbPair.Type] = (imageType, imagePointerType, imageVariable);
                 }
                 else
                 {
