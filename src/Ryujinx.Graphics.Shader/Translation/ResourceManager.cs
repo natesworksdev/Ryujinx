@@ -270,6 +270,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             for (slot = 0; slot < _cbSlotToBindingMap.Length; slot++)
             {
+                if (_cbSlotToBindingMap[slot] < 0)
+                {
+                    continue;
+                }
+
                 if (SetBindingPair.Pack(Constants.VkConstantBufferSetIndex, _cbSlotToBindingMap[slot]) == binding)
                 {
                     return true;
