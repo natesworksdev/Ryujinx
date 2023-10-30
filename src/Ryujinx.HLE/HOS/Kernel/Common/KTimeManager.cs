@@ -1,11 +1,12 @@
 using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    class KTimeManager : IDisposable
+    partial class KTimeManager : IDisposable
     {
         public static readonly long DefaultTimeIncrementNanoseconds = ConvertGuestTicksToNanoseconds(2);
 
@@ -13,6 +14,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         {
             public IKFutureSchedulerObject Object { get; }
             public long TimePoint { get; }
+
+            public bool AddedToPool { get; set; }
 
             public WaitingObject(IKFutureSchedulerObject schedulerObj, long timePoint)
             {
@@ -26,6 +29,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         private AutoResetEvent _waitEvent;
         private bool _keepRunning;
         private long _enforceWakeupFromSpinWait;
+        private readonly ThreadPoolWaiting _threadPool; 
 
         private const long NanosecondsPerSecond = 1000000000L;
         private const long NanosecondsPerMillisecond = 1000000L;
@@ -35,6 +39,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             _context = context;
             _waitingObjects = new List<WaitingObject>();
             _keepRunning = true;
+
+            _threadPool = new ThreadPoolWaiting(this);
 
             Thread work = new(WaitAndCheckScheduledObjects)
             {
@@ -56,7 +62,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
             lock (_context.CriticalSection.Lock)
             {
-                _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));
+                var obj = new WaitingObject(schedulerObj, timePoint);
+
+                bool addedToPool = _threadPool.TryAdd(obj, timeout);
+
+                _waitingObjects.Add(obj);
+
+                if (addedToPool)
+                    return;
 
                 if (timeout < NanosecondsPerMillisecond)
                 {
@@ -136,10 +149,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                         {
                             lock (_context.CriticalSection.Lock)
                             {
-                                if (_waitingObjects.Remove(next))
-                                {
-                                    next.Object.TimeUp();
-                                }
+                                WaitIsCompleted(next);
                             }
                         }
                     }
@@ -161,6 +171,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             {
                 WaitingObject current = _waitingObjects[index];
 
+                if (current.AddedToPool)
+                    continue;
+
                 if (current.TimePoint <= lowestTimePoint)
                 {
                     selected = current;
@@ -169,6 +182,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             }
 
             return selected;
+        }
+
+        private void WaitIsCompleted(WaitingObject obj)  // lock is enabled from a caller side 
+        {
+            Debug.Assert(obj != null);
+
+            if (_waitingObjects.Remove(obj))
+            {
+                obj.Object.TimeUp();
+            }
         }
 
         public static long ConvertNanosecondsToMilliseconds(long time)
@@ -211,6 +234,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public void Dispose()
         {
+            _threadPool.Dispose();
+
             _keepRunning = false;
             _waitEvent?.Set();
         }

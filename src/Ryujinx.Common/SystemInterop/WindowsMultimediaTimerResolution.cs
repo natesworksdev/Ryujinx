@@ -1,8 +1,10 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace Ryujinx.Common.SystemInterop
 {
@@ -28,6 +30,13 @@ namespace Ryujinx.Common.SystemInterop
         [LibraryImport("winmm.dll", EntryPoint = "timeEndPeriod")]
         private static partial uint TimeEndPeriod(uint uMilliseconds);
 
+        [DllImport("ntdll.dll", SetLastError = true)]
+        static extern int NtSetTimerResolution(int DesiredResolution, bool SetResolution, out int CurrentResolution);
+
+        [DllImport("ntdll.dll", SetLastError = true)]
+        static extern int NtQueryTimerResolution(out int MaximumResolution, out int MinimumResolution, out int CurrentResolution);
+
+
         private uint _targetResolutionInMilliseconds;
         private bool _isActive;
 
@@ -40,7 +49,11 @@ namespace Ryujinx.Common.SystemInterop
             _targetResolutionInMilliseconds = targetResolutionInMilliseconds;
 
             EnsureResolutionSupport();
+
             Activate();
+
+            AcitvateHiRes();            
+            MeasureSleepTime();
         }
 
         private void EnsureResolutionSupport()
@@ -64,6 +77,37 @@ namespace Ryujinx.Common.SystemInterop
                     _targetResolutionInMilliseconds = supportedTargetResolutionInMilliseconds;
                 }
             }
+        }
+
+        private void AcitvateHiRes()
+        {
+            int min, max, curr;
+            NtQueryTimerResolution(out max, out min, out curr);
+
+            if (min > 0)
+            {
+                NtSetTimerResolution(min, true, out curr);
+            }
+
+        }
+
+        [Conditional("DEBUG")]
+        private void MeasureSleepTime()
+        {
+            const int c_iter = 128;
+
+            var start = PerformanceCounter.ElapsedTicks;
+
+            for (int i = 0; i < c_iter; i++)
+            {
+                Thread.Sleep(1);
+            }
+
+            var end = PerformanceCounter.ElapsedTicks;
+
+            var sleepMs = ((end - start) / 10000.0) / c_iter;
+
+            Logger.Notice.Print(LogClass.Application, $"Avg. sleep duration {sleepMs}ms");
         }
 
         private void Activate()
