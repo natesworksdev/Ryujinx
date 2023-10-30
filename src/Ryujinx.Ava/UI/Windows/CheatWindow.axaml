@@ -24,6 +24,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel
                     Orientation="Horizontal"
@@ -38,12 +39,14 @@
                     </Button>
                 </StackPanel>
                 <TextBox
-                    Grid.Column="1"
+                    Grid.Column="2"
                     MinHeight="29"
                     MaxHeight="29"
+                    MinWidth="180"
+                    MaxWidth="180"
                     HorizontalAlignment="Stretch"
                     Watermark="{locale:Locale Search}"
-                    Text="{Binding}" />
+                    Text="" />
             </Grid>
         </Panel>
         <Border
