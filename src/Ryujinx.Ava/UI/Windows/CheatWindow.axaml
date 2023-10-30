@@ -1,25 +1,16 @@
-﻿<window:StyleableWindow
+﻿<UserControl
     x:Class="Ryujinx.Ava.UI.Windows.CheatWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="clr-namespace:Ryujinx.Ava.UI.Models"
     xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
     Width="500"
     Height="500"
-    MinWidth="500"
-    MinHeight="500"
     x:DataType="window:CheatWindow"
-    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d"
     Focusable="True">
-    <Window.Styles>
-        <Style Selector="TreeViewItem">
-            <Setter Property="IsExpanded" Value="True" />
-        </Style>
-    </Window.Styles>
     <Grid Name="CheatGrid" Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -123,4 +114,4 @@
             </DockPanel>
         </DockPanel>
     </Grid>
-</window:StyleableWindow>
+</UserControl>

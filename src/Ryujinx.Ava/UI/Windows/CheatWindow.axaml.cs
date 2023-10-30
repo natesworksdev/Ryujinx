@@ -1,5 +1,9 @@
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Styling;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -9,10 +13,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class CheatWindow : StyleableWindow
+    public partial class CheatWindow : UserControl
     {
         private readonly string _enabledCheatsPath;
         public bool NoCheatsFound { get; }
@@ -27,8 +32,6 @@ namespace Ryujinx.Ava.UI.Windows
             DataContext = this;
 
             InitializeComponent();
-
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
         }
 
         public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string titlePath)
@@ -89,8 +92,25 @@ namespace Ryujinx.Ava.UI.Windows
             }
 
             DataContext = this;
+        }
 
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.CheatWindowTitle];
+        public static async Task Show(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string titlePath)
+        {
+            ContentDialog contentDialog = new()
+            {
+                PrimaryButtonText = "",
+                SecondaryButtonText = "",
+                CloseButtonText = "",
+                Content = new CheatWindow(virtualFileSystem, titleId, titleName, titlePath),
+                Title = string.Format(LocaleManager.Instance[LocaleKeys.CheatWindowTitle]),
+            };
+
+            Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());
+            bottomBorder.Setters.Add(new Setter(IsVisibleProperty, false));
+
+            contentDialog.Styles.Add(bottomBorder);
+
+            await ContentDialogHelper.ShowAsync(contentDialog);
         }
 
         public void Save()
@@ -117,7 +137,12 @@ namespace Ryujinx.Ava.UI.Windows
 
             File.WriteAllLines(_enabledCheatsPath, enabledCheats);
 
-            Close();
+            ((ContentDialog)Parent).Hide();
+        }
+
+        public void Close()
+        {
+            ((ContentDialog)Parent).Hide();
         }
     }
 }
