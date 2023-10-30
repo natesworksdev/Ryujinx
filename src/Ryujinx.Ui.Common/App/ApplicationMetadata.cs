@@ -6,7 +6,7 @@ namespace Ryujinx.Ui.App.Common
     public class ApplicationMetadata
     {
         public string Title { get; set; }
-        public bool   Favorite   { get; set; }
+        public bool Favorite { get; set; }
 
         [JsonPropertyName("timespan_played")]
         public TimeSpan TimePlayed { get; set; } = TimeSpan.Zero;

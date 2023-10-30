@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.GAL
         B5G5R5A1Unorm,
         A1B5G5R5Unorm,
         B8G8R8A8Unorm,
-        B8G8R8A8Srgb
+        B8G8R8A8Srgb,
     }
 
     public static class FormatExtensions
@@ -333,6 +333,45 @@ namespace Ryujinx.Graphics.GAL
             }
 
             return 1;
+        }
+
+        /// <summary>
+        /// Checks if the texture format is a depth or depth-stencil format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the format is a depth or depth-stencil format, false otherwise</returns>
+        public static bool HasDepth(this Format format)
+        {
+            switch (format)
+            {
+                case Format.D16Unorm:
+                case Format.D24UnormS8Uint:
+                case Format.S8UintD24Unorm:
+                case Format.D32Float:
+                case Format.D32FloatS8Uint:
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the texture format is a stencil or depth-stencil format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the format is a stencil or depth-stencil format, false otherwise</returns>
+        public static bool HasStencil(this Format format)
+        {
+            switch (format)
+            {
+                case Format.D24UnormS8Uint:
+                case Format.S8UintD24Unorm:
+                case Format.D32FloatS8Uint:
+                case Format.S8Uint:
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>

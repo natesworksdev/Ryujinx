@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsBgraFormat;
         public readonly bool SupportsR4G4Format;
         public readonly bool SupportsR4G4B4A4Format;
+        public readonly bool SupportsScaledVertexFormats;
         public readonly bool SupportsSnormBufferTextureFormat;
         public readonly bool Supports5BitComponentFormat;
         public readonly bool SupportsBlendEquationAdvanced;
@@ -37,7 +38,9 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsShaderBallot;
         public readonly bool SupportsShaderBarrierDivergence;
         public readonly bool SupportsShaderFloat64;
+        public readonly bool SupportsTextureGatherOffsets;
         public readonly bool SupportsTextureShadowLod;
+        public readonly bool SupportsVertexStoreAndAtomics;
         public readonly bool SupportsViewportIndexVertexTessellation;
         public readonly bool SupportsViewportMask;
         public readonly bool SupportsViewportSwizzle;
@@ -51,7 +54,9 @@ namespace Ryujinx.Graphics.GAL
 
         public readonly int MaximumComputeSharedMemorySize;
         public readonly float MaximumSupportedAnisotropy;
+        public readonly int ShaderSubgroupSize;
         public readonly int StorageBufferOffsetAlignment;
+        public readonly int TextureBufferOffsetAlignment;
 
         public readonly int GatherBiasPrecision;
 
@@ -71,6 +76,7 @@ namespace Ryujinx.Graphics.GAL
             bool supportsBgraFormat,
             bool supportsR4G4Format,
             bool supportsR4G4B4A4Format,
+            bool supportsScaledVertexFormats,
             bool supportsSnormBufferTextureFormat,
             bool supports5BitComponentFormat,
             bool supportsBlendEquationAdvanced,
@@ -87,7 +93,9 @@ namespace Ryujinx.Graphics.GAL
             bool supportsShaderBallot,
             bool supportsShaderBarrierDivergence,
             bool supportsShaderFloat64,
+            bool supportsTextureGatherOffsets,
             bool supportsTextureShadowLod,
+            bool supportsVertexStoreAndAtomics,
             bool supportsViewportIndexVertexTessellation,
             bool supportsViewportMask,
             bool supportsViewportSwizzle,
@@ -99,7 +107,9 @@ namespace Ryujinx.Graphics.GAL
             uint maximumImagesPerStage,
             int maximumComputeSharedMemorySize,
             float maximumSupportedAnisotropy,
+            int shaderSubgroupSize,
             int storageBufferOffsetAlignment,
+            int textureBufferOffsetAlignment,
             int gatherBiasPrecision)
         {
             Api = api;
@@ -117,6 +127,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsBgraFormat = supportsBgraFormat;
             SupportsR4G4Format = supportsR4G4Format;
             SupportsR4G4B4A4Format = supportsR4G4B4A4Format;
+            SupportsScaledVertexFormats = supportsScaledVertexFormats;
             SupportsSnormBufferTextureFormat = supportsSnormBufferTextureFormat;
             Supports5BitComponentFormat = supports5BitComponentFormat;
             SupportsBlendEquationAdvanced = supportsBlendEquationAdvanced;
@@ -133,7 +144,9 @@ namespace Ryujinx.Graphics.GAL
             SupportsShaderBallot = supportsShaderBallot;
             SupportsShaderBarrierDivergence = supportsShaderBarrierDivergence;
             SupportsShaderFloat64 = supportsShaderFloat64;
+            SupportsTextureGatherOffsets = supportsTextureGatherOffsets;
             SupportsTextureShadowLod = supportsTextureShadowLod;
+            SupportsVertexStoreAndAtomics = supportsVertexStoreAndAtomics;
             SupportsViewportIndexVertexTessellation = supportsViewportIndexVertexTessellation;
             SupportsViewportMask = supportsViewportMask;
             SupportsViewportSwizzle = supportsViewportSwizzle;
@@ -145,7 +158,9 @@ namespace Ryujinx.Graphics.GAL
             MaximumImagesPerStage = maximumImagesPerStage;
             MaximumComputeSharedMemorySize = maximumComputeSharedMemorySize;
             MaximumSupportedAnisotropy = maximumSupportedAnisotropy;
+            ShaderSubgroupSize = shaderSubgroupSize;
             StorageBufferOffsetAlignment = storageBufferOffsetAlignment;
+            TextureBufferOffsetAlignment = textureBufferOffsetAlignment;
             GatherBiasPrecision = gatherBiasPrecision;
         }
     }

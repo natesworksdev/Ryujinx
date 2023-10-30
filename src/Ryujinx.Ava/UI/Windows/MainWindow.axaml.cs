@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -14,6 +15,7 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App.Common;
@@ -21,11 +23,10 @@ using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Helper;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
-using InputManager = Ryujinx.Input.HLE.InputManager;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -79,34 +80,16 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Program.PreviewerDetached)
             {
-                Initialize();
-
                 InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
 
-                ViewModel.Initialize(
-                    ContentManager,
-                    ApplicationLibrary,
-                    VirtualFileSystem,
-                    AccountManager,
-                    InputManager,
-                    _userChannelPersistence,
-                    LibHacHorizonManager,
-                    UiHandler,
-                    ShowLoading,
-                    SwitchToGameControl,
-                    SetMainContent,
-                    this);
-
-                ViewModel.RefreshFirmwareStatus();
-
-                LoadGameList();
-
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
+                this.ScalingChanged += OnScalingChanged;
             }
+        }
 
-            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-            ViewModel.ReloadGameList += ReloadGameList;
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
 
             NotificationHelper.SetNotificationManager(this);
         }
@@ -116,37 +99,17 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.IsActive = obj;
         }
 
-        public void LoadGameList()
+        private void OnScalingChanged(object sender, EventArgs e)
         {
-            if (_isLoading)
-            {
-                return;
-            }
-
-            _isLoading = true;
-
-            LoadApplications();
-
-            _isLoading = false;
-        }
-
-        protected override void HandleScalingChanged(double scale)
-        {
-            Program.DesktopScaleFactor = scale;
-            base.HandleScalingChanged(scale);
-        }
-
-        public void AddApplication(ApplicationData applicationData)
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                ViewModel.Applications.Add(applicationData);
-            });
+            Program.DesktopScaleFactor = this.RenderScaling;
         }
 
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
-            AddApplication(e.AppData);
+            Dispatcher.UIThread.Post(() =>
+            {
+                ViewModel.Applications.Add(e.AppData);
+            });
         }
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
@@ -155,7 +118,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             Dispatcher.UIThread.Post(() =>
             {
-                ViewModel.StatusBarProgressValue   = e.NumAppsLoaded;
+                ViewModel.StatusBarProgressValue = e.NumAppsLoaded;
                 ViewModel.StatusBarProgressMaximum = e.NumAppsFound;
 
                 if (e.NumAppsFound == 0)
@@ -178,7 +141,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                 string path = new FileInfo(args.Application.Path).FullName;
 
-                ViewModel.LoadApplication(path);
+                ViewModel.LoadApplication(path).Wait();
             }
 
             args.Handled = true;
@@ -197,13 +160,10 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.ShowContent = true;
             ViewModel.IsLoadingIndeterminate = false;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
             {
-                if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
-                {
-                    ViewModel.ToggleFullscreen();
-                }
-            });
+                ViewModel.ToggleFullscreen();
+            }
         }
 
         public void ShowLoading(bool startFullscreen = false)
@@ -212,22 +172,9 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.ShowLoadProgress = true;
             ViewModel.IsLoadingIndeterminate = true;
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
             {
-                if (startFullscreen && ViewModel.WindowState != WindowState.FullScreen)
-                {
-                    ViewModel.ToggleFullscreen();
-                }
-            });
-        }
-
-        protected override void HandleWindowStateChanged(WindowState state)
-        {
-            ViewModel.WindowState = state;
-
-            if (state != WindowState.Minimized)
-            {
-                Renderer.Start();
+                ViewModel.ToggleFullscreen();
             }
         }
 
@@ -256,11 +203,11 @@ namespace Ryujinx.Ava.UI.Windows
 
             VirtualFileSystem.ReloadKeySet();
 
-            ApplicationHelper.Initialize(VirtualFileSystem, AccountManager, LibHacHorizonManager.RyujinxClient, this);
+            ApplicationHelper.Initialize(VirtualFileSystem, AccountManager, LibHacHorizonManager.RyujinxClient);
         }
 
         [SupportedOSPlatform("linux")]
-        private static async void ShowVmMaxMapCountWarning()
+        private static async Task ShowVmMaxMapCountWarning()
         {
             LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LinuxVmMaxMapCountWarningTextSecondary,
                 LinuxHelper.VmMaxMapCount, LinuxHelper.RecommendedVmMaxMapCount);
@@ -272,7 +219,7 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         [SupportedOSPlatform("linux")]
-        private static async void ShowVmMaxMapCountDialog()
+        private static async Task ShowVmMaxMapCountDialog()
         {
             LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.LinuxVmMaxMapCountDialogTextPrimary,
                 LinuxHelper.RecommendedVmMaxMapCount);
@@ -318,33 +265,46 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void CheckLaunchState()
         {
-            if (ShowKeyErrorOnLoad)
-            {
-                ShowKeyErrorOnLoad = false;
-
-                Dispatcher.UIThread.Post(async () => await
-                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, this));
-            }
-
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
             {
                 Logger.Warning?.Print(LogClass.Application, $"The value of vm.max_map_count is lower than {LinuxHelper.RecommendedVmMaxMapCount}. ({LinuxHelper.VmMaxMapCount})");
 
                 if (LinuxHelper.PkExecPath is not null)
                 {
-                    Dispatcher.UIThread.Post(ShowVmMaxMapCountDialog);
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        if (OperatingSystem.IsLinux())
+                        {
+                            await ShowVmMaxMapCountDialog();
+                        }
+                    });
                 }
                 else
                 {
-                    Dispatcher.UIThread.Post(ShowVmMaxMapCountWarning);
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        if (OperatingSystem.IsLinux())
+                        {
+                            await ShowVmMaxMapCountWarning();
+                        }
+                    });
                 }
             }
 
-            if (_deferLoad)
+            if (!ShowKeyErrorOnLoad)
             {
-                _deferLoad = false;
+                if (_deferLoad)
+                {
+                    _deferLoad = false;
 
-                ViewModel.LoadApplication(_launchPath, _startFullscreen);
+                    ViewModel.LoadApplication(_launchPath, _startFullscreen).Wait();
+                }
+            }
+            else
+            {
+                ShowKeyErrorOnLoad = false;
+
+                Dispatcher.UIThread.Post(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys));
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
@@ -367,30 +327,30 @@ namespace Ryujinx.Ava.UI.Windows
             ApplicationList.ApplicationOpened += Application_Opened;
 
             ApplicationList.DataContext = ViewModel;
-
-            LoadHotKeys();
         }
 
         private void SetWindowSizePosition()
         {
-            PixelPoint SavedPoint = new PixelPoint(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX, 
-                                                   ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
+            PixelPoint savedPoint = new(ConfigurationState.Instance.Ui.WindowStartup.WindowPositionX,
+                                        ConfigurationState.Instance.Ui.WindowStartup.WindowPositionY);
 
             ViewModel.WindowHeight = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeHeight * Program.WindowScaleFactor;
             ViewModel.WindowWidth = ConfigurationState.Instance.Ui.WindowStartup.WindowSizeWidth * Program.WindowScaleFactor;
 
-            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value is true ? WindowState.Maximized : WindowState.Normal;
-        
-            if (CheckScreenBounds(SavedPoint))
-            {
-                Position = SavedPoint;
-            }
+            ViewModel.WindowState = ConfigurationState.Instance.Ui.WindowStartup.WindowMaximized.Value ? WindowState.Maximized : WindowState.Normal;
 
-            else WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            if (CheckScreenBounds(savedPoint))
+            {
+                Position = savedPoint;
+            }
+            else
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
-        {   
+        {
             for (int i = 0; i < Screens.ScreenCount; i++)
             {
                 if (Screens.All[i].Bounds.Contains(configPoint))
@@ -399,7 +359,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            Logger.Warning?.Print(LogClass.Application, $"Failed to find valid start-up coordinates. Defaulting to primary monitor center.");
+            Logger.Warning?.Print(LogClass.Application, "Failed to find valid start-up coordinates. Defaulting to primary monitor center.");
             return false;
         }
 
@@ -420,15 +380,36 @@ namespace Ryujinx.Ava.UI.Windows
         {
             base.OnOpened(e);
 
+            Initialize();
+
+            ViewModel.Initialize(
+                ContentManager,
+                StorageProvider,
+                ApplicationLibrary,
+                VirtualFileSystem,
+                AccountManager,
+                InputManager,
+                _userChannelPersistence,
+                LibHacHorizonManager,
+                UiHandler,
+                ShowLoading,
+                SwitchToGameControl,
+                SetMainContent,
+                this);
+
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
+            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+
+            ViewModel.RefreshFirmwareStatus();
+
+            LoadApplications();
+
             CheckLaunchState();
         }
 
         private void SetMainContent(Control content = null)
         {
-            if (content == null)
-            {
-                content = GameLibrary;
-            }
+            content ??= GameLibrary;
 
             if (MainContent.Content != content)
             {
@@ -438,24 +419,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateGraphicsConfig()
         {
+#pragma warning disable IDE0055 // Disable formatting
             GraphicsConfig.ResScale                   = ConfigurationState.Instance.Graphics.ResScale == -1 ? ConfigurationState.Instance.Graphics.ResScaleCustom : ConfigurationState.Instance.Graphics.ResScale;
             GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
             GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+#pragma warning restore IDE0055
         }
 
-        public void LoadHotKeys()
-        {
-            HotKeyManager.SetHotKey(FullscreenHotKey,      new KeyGesture(Key.Enter, KeyModifiers.Alt));
-            HotKeyManager.SetHotKey(FullscreenHotKey2,     new KeyGesture(Key.F11));
-            HotKeyManager.SetHotKey(FullscreenHotKeyMacOS, new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta));
-            HotKeyManager.SetHotKey(DockToggleHotKey,      new KeyGesture(Key.F9));
-            HotKeyManager.SetHotKey(ExitHotKey,            new KeyGesture(Key.Escape));
-        }
-
-        private void VolumeStatus_CheckedChanged(object sender, SplitButtonClickEventArgs e)
+        private void VolumeStatus_CheckedChanged(object sender, RoutedEventArgs e)
         {
             var volumeSplitButton = sender as ToggleSplitButton;
             if (ViewModel.IsGameRunning)
@@ -473,7 +447,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
             if (!ViewModel.IsClosing && ViewModel.AppHost != null && ConfigurationState.Instance.ShowConfirmExit)
             {
@@ -529,20 +503,36 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
-        public async void LoadApplications()
+        public void LoadApplications()
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                ViewModel.Applications.Clear();
+            ViewModel.Applications.Clear();
 
-                StatusBarView.LoadProgressBar.IsVisible = true;
-                ViewModel.StatusBarProgressMaximum      = 0;
-                ViewModel.StatusBarProgressValue        = 0;
+            StatusBarView.LoadProgressBar.IsVisible = true;
+            ViewModel.StatusBarProgressMaximum = 0;
+            ViewModel.StatusBarProgressValue = 0;
 
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
-            });
+            LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, 0, 0);
 
             ReloadGameList();
+        }
+
+        public void ToggleFileType(string fileType)
+        {
+            _ = fileType switch
+            {
+#pragma warning disable IDE0055 // Disable formatting
+                "NSP"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSP,
+                "PFS0" => ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value = !ConfigurationState.Instance.Ui.ShownFileTypes.PFS0,
+                "XCI"  => ConfigurationState.Instance.Ui.ShownFileTypes.XCI.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.XCI,
+                "NCA"  => ConfigurationState.Instance.Ui.ShownFileTypes.NCA.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NCA,
+                "NRO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NRO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NRO,
+                "NSO"  => ConfigurationState.Instance.Ui.ShownFileTypes.NSO.Value  = !ConfigurationState.Instance.Ui.ShownFileTypes.NSO,
+                _  => throw new ArgumentOutOfRangeException(fileType),
+#pragma warning restore IDE0055
+            };
+
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            LoadApplications();
         }
 
         private void ReloadGameList()
@@ -554,9 +544,17 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
-            ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
+            Thread applicationLibraryThread = new(() =>
+            {
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
-            _isLoading = false;
+                _isLoading = false;
+            })
+            {
+                Name = "GUI.ApplicationLibraryThread",
+                IsBackground = true,
+            };
+            applicationLibraryThread.Start();
         }
     }
 }

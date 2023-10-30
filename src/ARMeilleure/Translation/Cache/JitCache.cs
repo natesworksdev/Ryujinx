@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
 using ARMeilleure.Native;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,8 +13,8 @@ namespace ARMeilleure.Translation.Cache
 {
     static partial class JitCache
     {
-        private const int PageSize = 4 * 1024;
-        private const int PageMask = PageSize - 1;
+        private static readonly int _pageSize = (int)MemoryBlock.GetPageSize();
+        private static readonly int _pageMask = _pageSize - 1;
 
         private const int CodeAlignment = 4; // Bytes.
         private const int CacheSize = 2047 * 1024 * 1024;
@@ -23,9 +24,9 @@ namespace ARMeilleure.Translation.Cache
 
         private static CacheMemoryAllocator _cacheAllocator;
 
-        private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
+        private static readonly List<CacheEntry> _cacheEntries = new();
 
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private static bool _initialized;
 
         [SupportedOSPlatform("windows")]
@@ -34,11 +35,17 @@ namespace ARMeilleure.Translation.Cache
 
         public static void Initialize(IJitMemoryAllocator allocator)
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                return;
+            }
 
             lock (_lock)
             {
-                if (_initialized) return;
+                if (_initialized)
+                {
+                    return;
+                }
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
 
@@ -51,7 +58,7 @@ namespace ARMeilleure.Translation.Cache
 
                 if (OperatingSystem.IsWindows())
                 {
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
+                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(_pageSize));
                 }
 
                 _initialized = true;
@@ -74,7 +81,7 @@ namespace ARMeilleure.Translation.Cache
                 {
                     unsafe
                     {
-                        fixed (byte *codePtr = code)
+                        fixed (byte* codePtr = code)
                         {
                             JitSupportDarwin.Copy(funcPtr, (IntPtr)codePtr, (ulong)code.Length);
                         }
@@ -123,8 +130,8 @@ namespace ARMeilleure.Translation.Cache
         {
             int endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            int regionStart = offset & ~_pageMask;
+            int regionEnd = (endOffs + _pageMask) & ~_pageMask;
 
             _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
@@ -133,8 +140,8 @@ namespace ARMeilleure.Translation.Cache
         {
             int endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            int regionStart = offset & ~_pageMask;
+            int regionEnd = (endOffs + _pageMask) & ~_pageMask;
 
             _jitRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
@@ -162,7 +169,7 @@ namespace ARMeilleure.Translation.Cache
 
         private static void Add(int offset, int size, UnwindInfo unwindInfo)
         {
-            CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
+            CacheEntry entry = new(offset, size, unwindInfo);
 
             int index = _cacheEntries.BinarySearch(entry);
 

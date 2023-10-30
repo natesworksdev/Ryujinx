@@ -6,8 +6,8 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class PhysicalMemory : IDisposable
     {
         private readonly GpuContext _context;
-        private IVirtualMemoryManagerTracked _cpuMemory;
+        private readonly IVirtualMemoryManagerTracked _cpuMemory;
         private int _referenceCount;
 
         /// <summary>
@@ -233,6 +233,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void WriteTrackedResource(ulong address, ReadOnlySpan<byte> data)
         {
             _cpuMemory.SignalMemoryTracking(address, (ulong)data.Length, true, precise: true);
+            _cpuMemory.WriteUntracked(address, data);
+        }
+
+        /// <summary>
+        /// Writes data to the application process, triggering a precise memory tracking event.
+        /// </summary>
+        /// <param name="address">Address to write into</param>
+        /// <param name="data">Data to be written</param>
+        /// <param name="kind">Kind of the resource being written, which will not be signalled as CPU modified</param>
+        public void WriteTrackedResource(ulong address, ReadOnlySpan<byte> data, ResourceKind kind)
+        {
+            _cpuMemory.SignalMemoryTracking(address, (ulong)data.Length, true, precise: true, exemptId: (int)kind);
             _cpuMemory.WriteUntracked(address, data);
         }
 

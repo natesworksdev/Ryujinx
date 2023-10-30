@@ -31,23 +31,13 @@ namespace Ryujinx.Graphics.Vulkan
                 ResourceType.StorageBuffer => PipelineBase.StorageSetIndex,
                 ResourceType.TextureAndSampler or ResourceType.BufferTexture => PipelineBase.TextureSetIndex,
                 ResourceType.Image or ResourceType.BufferImage => PipelineBase.ImageSetIndex,
-                _ => throw new ArgumentException($"Invalid resource type \"{type}\".")
+                _ => throw new ArgumentException($"Invalid resource type \"{type}\"."),
             };
 
-            ResourceAccess access = IsReadOnlyType(type) ? ResourceAccess.Read : ResourceAccess.ReadWrite;
-
             _resourceDescriptors[setIndex].Add(new ResourceDescriptor(binding, 1, type, stages));
-            _resourceUsages[setIndex].Add(new ResourceUsage(binding, type, stages, access));
+            _resourceUsages[setIndex].Add(new ResourceUsage(binding, type, stages));
 
             return this;
-        }
-
-        private static bool IsReadOnlyType(ResourceType type)
-        {
-            return type == ResourceType.UniformBuffer ||
-                   type == ResourceType.Sampler ||
-                   type == ResourceType.TextureAndSampler ||
-                   type == ResourceType.BufferTexture;
         }
 
         public ResourceLayout Build()

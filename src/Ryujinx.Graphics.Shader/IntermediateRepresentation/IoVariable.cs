@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         FrontColorDiffuse,
         FrontColorSpecular,
         FrontFacing,
+        GlobalId,
         InstanceId,
         InstanceIndex,
         InvocationId,
@@ -43,6 +44,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         VertexId,
         VertexIndex,
         ViewportIndex,
-        ViewportMask
+        ViewportMask,
     }
 }

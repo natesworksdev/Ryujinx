@@ -6,10 +6,10 @@ namespace Ryujinx.Ui.Common.Helper
 {
     public static class ValueFormatUtils
     {
-        private static readonly string[] FileSizeUnitStrings =
+        private static readonly string[] _fileSizeUnitStrings =
         {
-            "B", "KB", "MB", "GB", "TB", "PB", "EB", // Base 10 units, used for formatting and parsing
-            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" // Base 2 units, used for parsing legacy values
+            "B", "KB", "MB", "GB", "TB", "PB", "EB",  // Base 10 units, used for formatting and parsing
+            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", // Base 2 units, used for parsing legacy values
         };
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Ryujinx.Ui.Common.Helper
             Gigabytes = 3,
             Terabytes = 4,
             Petabytes = 5,
-            Exabytes = 6
+            Exabytes = 6,
         }
 
         private const double SizeBase = 1024;
@@ -87,7 +87,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             if (size <= 0)
             {
-                return $"0 {FileSizeUnitStrings[0]}";
+                return $"0 {_fileSizeUnitStrings[0]}";
             }
 
             int unitIndex = (int)forceUnit;
@@ -105,7 +105,7 @@ namespace Ryujinx.Ui.Common.Helper
             double sizeRounded = Math.Round(size / Math.Pow(SizeBase, unitIndex), 1);
             string sizeFormatted = sizeRounded.ToString(CultureInfo.InvariantCulture);
 
-            return $"{sizeFormatted} {FileSizeUnitStrings[unitIndex]}";
+            return $"{sizeFormatted} {_fileSizeUnitStrings[unitIndex]}";
         }
 
         #endregion
@@ -166,9 +166,9 @@ namespace Ryujinx.Ui.Common.Helper
         public static long ParseFileSize(string sizeString)
         {
             // Enumerating over the units backwards because otherwise, sizeString.EndsWith("B") would exit the loop in the first iteration.
-            for (int i = FileSizeUnitStrings.Length - 1; i >= 0; i--)
+            for (int i = _fileSizeUnitStrings.Length - 1; i >= 0; i--)
             {
-                string unit = FileSizeUnitStrings[i];
+                string unit = _fileSizeUnitStrings[i];
                 if (!sizeString.EndsWith(unit))
                 {
                     continue;

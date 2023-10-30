@@ -8,10 +8,10 @@ namespace Ryujinx.Graphics.Vulkan
     /// </summary>
     class MultiFenceHolder
     {
-        private static int BufferUsageTrackingGranularity = 4096;
+        private const int BufferUsageTrackingGranularity = 4096;
 
         private readonly FenceHolder[] _fences;
-        private BufferUsageBitmap _bufferUsageBitmap;
+        private readonly BufferUsageBitmap _bufferUsageBitmap;
 
         /// <summary>
         /// Creates a new instance of the multiple fence holder.
@@ -32,14 +32,20 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         /// <summary>
-        /// Adds buffer usage information to the uses list.
+        /// Adds read/write buffer usage information to the uses list.
         /// </summary>
         /// <param name="cbIndex">Index of the command buffer where the buffer is used</param>
         /// <param name="offset">Offset of the buffer being used</param>
         /// <param name="size">Size of the buffer region being used, in bytes</param>
-        public void AddBufferUse(int cbIndex, int offset, int size)
+        /// <param name="write">Whether the access is a write or not</param>
+        public void AddBufferUse(int cbIndex, int offset, int size, bool write)
         {
-            _bufferUsageBitmap.Add(cbIndex, offset, size);
+            _bufferUsageBitmap.Add(cbIndex, offset, size, false);
+
+            if (write)
+            {
+                _bufferUsageBitmap.Add(cbIndex, offset, size, true);
+            }
         }
 
         /// <summary>
@@ -68,10 +74,11 @@ namespace Ryujinx.Graphics.Vulkan
         /// </summary>
         /// <param name="offset">Offset of the buffer being used</param>
         /// <param name="size">Size of the buffer region being used, in bytes</param>
+        /// <param name="write">True if only write usages should count</param>
         /// <returns>True if in use, false otherwise</returns>
-        public bool IsBufferRangeInUse(int offset, int size)
+        public bool IsBufferRangeInUse(int offset, int size, bool write)
         {
-            return _bufferUsageBitmap.OverlapsWith(offset, size);
+            return _bufferUsageBitmap.OverlapsWith(offset, size, write);
         }
 
         /// <summary>
@@ -189,11 +196,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (hasTimeout)
             {
-                signaled = FenceHelper.AllSignaled(api, device, fences.Slice(0, fenceCount), timeout);
+                signaled = FenceHelper.AllSignaled(api, device, fences[..fenceCount], timeout);
             }
             else
             {
-                FenceHelper.WaitAllIndefinitely(api, device, fences.Slice(0, fenceCount));
+                FenceHelper.WaitAllIndefinitely(api, device, fences[..fenceCount]);
             }
 
             for (int i = 0; i < fenceCount; i++)
