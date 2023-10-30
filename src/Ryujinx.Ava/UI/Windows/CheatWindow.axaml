@@ -24,18 +24,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <TextBlock
-            Grid.Row="1"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            MaxWidth="500"
-            Margin="20,15,20,5"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            LineHeight="18"
-            Text="{Binding Heading}"
-            TextAlignment="Center"
-            TextWrapping="Wrap" />
-        <TextBlock
             Grid.Row="2"
             Grid.Column="0"
             MaxWidth="500"

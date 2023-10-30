@@ -23,8 +23,6 @@ namespace Ryujinx.Ava.UI.Windows
         public bool NoCheatsFound { get; }
 
         public AvaloniaList<CheatNode> LoadedCheats { get; }
-
-        public string Heading { get; }
         public string BuildId { get; }
 
         public CheatWindow()
@@ -38,7 +36,6 @@ namespace Ryujinx.Ava.UI.Windows
         {
             LoadedCheats = new AvaloniaList<CheatNode>();
 
-            Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
             BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
 
             InitializeComponent();
@@ -102,7 +99,7 @@ namespace Ryujinx.Ava.UI.Windows
                 SecondaryButtonText = "",
                 CloseButtonText = "",
                 Content = new CheatWindow(virtualFileSystem, titleId, titleName, titlePath),
-                Title = string.Format(LocaleManager.Instance[LocaleKeys.CheatWindowTitle]),
+                Title = string.Format(LocaleManager.Instance[LocaleKeys.CheatWindowHeading], titleName, titleId.ToUpper()),
             };
 
             Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());
