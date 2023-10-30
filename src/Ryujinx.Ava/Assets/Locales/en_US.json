@@ -594,7 +594,7 @@
   "DlcWindowTitle": "Manage Downloadable Content for {0} ({1})",
   "UpdateWindowTitle": "Title Update Manager",
   "CheatWindowHeading": "Manage Cheats for {0} ({1})",
-  "BuildId": "BuildId:",
+  "BuildId": "Build ID:",
   "DlcWindowHeading": "{0} Downloadable Content(s)",
   "UserProfilesEditProfile": "Edit Selected",
   "Cancel": "Cancel",

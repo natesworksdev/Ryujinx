@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Collections;
+using Avalonia.Controls.ApplicationLifetimes;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -56,6 +58,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 var model = new CheatNode(cheat.Name, buildId, "", false, enabled.Contains($"{buildId}-{cheat.Name}"));
                 currentGroup?.SubNodes.Add(model);
+            }
+        }
+
+        public async void CopyToClipboard()
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await desktop.MainWindow.Clipboard.SetTextAsync(BuildId);
             }
         }
 
