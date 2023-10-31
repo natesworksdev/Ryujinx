@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 using Ryujinx.Horizon.Prepo.Types;
+=======
+﻿using Ryujinx.Horizon.Prepo.Types;
+using Ryujinx.Horizon.Sdk.Arp;
+>>>>>>> 7e259965 (ArpApi in PrepoIpcServer and remove LmApi)
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
 
@@ -17,16 +22,19 @@ namespace Ryujinx.Horizon.Prepo
         private static readonly ManagerOptions _managerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
 
         private SmApi _sm;
+        private ArpApi _arp;
         private PrepoServerManager _serverManager;
 
         public void Initialize()
         {
             HeapAllocator allocator = new();
 
+            _arp = new ArpApi(allocator);
+
             _sm = new SmApi();
             _sm.Initialize().AbortOnFailure();
 
-            _serverManager = new PrepoServerManager(allocator, _sm, MaxPortsCount, _managerOptions, TotalMaxSessionsCount);
+            _serverManager = new PrepoServerManager(allocator, _sm, _arp, MaxPortsCount, _managerOptions, TotalMaxSessionsCount);
 
 #pragma warning disable IDE0055 // Disable formatting
             _serverManager.RegisterServer((int)PrepoPortIndex.Admin,   ServiceName.Encode("prepo:a"),  MaxSessionsCount); // 1.0.0-5.1.0
@@ -45,6 +53,7 @@ namespace Ryujinx.Horizon.Prepo
 
         public void Shutdown()
         {
+            _arp.Dispose();
             _serverManager.Dispose();
         }
     }
