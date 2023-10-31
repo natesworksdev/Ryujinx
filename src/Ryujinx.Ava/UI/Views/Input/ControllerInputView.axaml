@@ -5,6 +5,7 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
     xmlns:models="clr-namespace:Ryujinx.Ava.UI.Models"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
@@ -14,7 +15,6 @@
     d:DesignWidth="800"
     x:Class="Ryujinx.Ava.UI.Views.Input.ControllerInputView"
     x:DataType="viewModels:ControllerInputViewModel"
-    x:CompileBindings="True"
     mc:Ignorable="d"
     Focusable="True">
     <Design.DataContext>
@@ -66,7 +66,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         SelectionChanged="PlayerIndexBox_OnSelectionChanged"
-                        Items="{Binding PlayerIndexes}"
+                        ItemsSource="{Binding PlayerIndexes}"
                         SelectedIndex="{Binding PlayerId}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -94,15 +94,15 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{locale:Locale ControllerSettingsProfile}" />
-                    <ui:ComboBox
+                    <ui:FAComboBox
                         Grid.Column="1"
                         IsEditable="True"
                         Name="ProfileBox"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         SelectedIndex="0"
-                        Items="{Binding ProfilesList}"
-                        Text="{Binding ProfileName}" />
+                        ItemsSource="{Binding ProfilesList}" 
+                        Text="{Binding ProfileName, Mode=TwoWay}" />
                     <Button
                         Grid.Column="2"
                         MinWidth="0"
@@ -170,7 +170,7 @@
                         Name="DeviceBox"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Items="{Binding DeviceList}"
+                        ItemsSource="{Binding DeviceList}"
                         SelectedIndex="{Binding Device}" />
                     <Button
                         Grid.Column="2"
@@ -203,8 +203,8 @@
                     <ComboBox
                         Grid.Column="1"
                         HorizontalAlignment="Stretch"
-                        Items="{ReflectionBinding Controllers}"
-                        SelectedIndex="{ReflectionBinding Controller}">
+                        ItemsSource="{Binding Controllers}"
+                        SelectedIndex="{Binding Controller}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate DataType="models:ControllerModel">
                                 <TextBlock Text="{Binding Name}" />
@@ -461,11 +461,12 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
-                                    <Slider
+                                    <controls:SliderScroll
                                         Width="130"
                                         Maximum="1"
                                         TickFrequency="0.01"
                                         IsSnapToTickEnabled="True"
+                                        SmallChange="0.01"
                                         Minimum="0"
                                         Value="{ReflectionBinding Configuration.DeadzoneLeft, Mode=TwoWay}" />
                                     <TextBlock
@@ -480,11 +481,12 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
-                                    <Slider
+                                    <controls:SliderScroll
                                         Width="130"
                                         Maximum="2"
                                         TickFrequency="0.01"
                                         IsSnapToTickEnabled="True"
+                                        SmallChange="0.01"
                                         Minimum="0"
                                         Value="{ReflectionBinding Configuration.RangeLeft, Mode=TwoWay}" />
                                     <TextBlock
@@ -603,11 +605,12 @@
                         <StackPanel
                             HorizontalAlignment="Center"
                             Orientation="Horizontal">
-                            <Slider
+                            <controls:SliderScroll
                                 Width="130"
                                 Maximum="1"
                                 TickFrequency="0.01"
                                 IsSnapToTickEnabled="True"
+                                SmallChange="0.01"
                                 Minimum="0"
                                 Value="{ReflectionBinding Configuration.TriggerThreshold, Mode=TwoWay}" />
                             <TextBlock
@@ -723,7 +726,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{ReflectionBinding ShowMotionConfig}">
+                                Command="{Binding ShowMotionConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
@@ -750,7 +753,7 @@
                             <Button
                                 Margin="10"
                                 Grid.Column="1"
-                                Command="{ReflectionBinding ShowRumbleConfig}">
+                                Command="{Binding ShowRumbleConfig}">
                                 <TextBlock Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
                             </Button>
                         </Grid>
@@ -1081,11 +1084,12 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
-                                    <Slider
+                                    <controls:SliderScroll
                                         Width="130"
                                         Maximum="1"
                                         TickFrequency="0.01"
                                         IsSnapToTickEnabled="True"
+                                        SmallChange="0.01"
                                         Padding="0"
                                         VerticalAlignment="Center"
                                         Minimum="0"
@@ -1102,11 +1106,12 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
-                                    <Slider
+                                    <controls:SliderScroll
                                         Width="130"
                                         Maximum="2"
                                         TickFrequency="0.01"
                                         IsSnapToTickEnabled="True"
+                                        SmallChange="0.01"
                                         Minimum="0"
                                         Value="{ReflectionBinding Configuration.RangeRight, Mode=TwoWay}" />
                                     <TextBlock

@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
-            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample, forceStorage: true);
+            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
 
             var flags = ImageCreateFlags.CreateMutableFormatBit;
 
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static ImageUsageFlags GetImageUsage(Format format, Target target, bool supportsMsStorage, bool forceStorage = false)
+        public static ImageUsageFlags GetImageUsage(Format format, Target target, bool supportsMsStorage)
         {
             var usage = DefaultUsageFlags;
 
@@ -304,7 +304,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
-            if (((forceStorage && !format.IsDepthOrStencil()) || format.IsImageCompatible()) && (supportsMsStorage || !target.IsMultisample()))
+            if (format.IsImageCompatible() && (supportsMsStorage || !target.IsMultisample()))
             {
                 usage |= ImageUsageFlags.StorageBit;
             }
@@ -440,25 +440,50 @@ namespace Ryujinx.Graphics.Vulkan
             _lastModificationStage = stage;
         }
 
-        public void InsertReadToWriteBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
+        public void InsertReadToWriteBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags, bool insideRenderPass)
         {
-            if (_lastReadAccess != AccessFlags.None)
-            {
-                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+            var lastReadStage = _lastReadStage;
 
-                TextureView.InsertImageBarrier(
-                    _gd.Api,
-                    cbs.CommandBuffer,
-                    _imageAuto.Get(cbs).Value,
-                    _lastReadAccess,
-                    dstAccessFlags,
-                    _lastReadStage,
-                    dstStageFlags,
-                    aspectFlags,
-                    0,
-                    0,
-                    _info.GetLayers(),
-                    _info.Levels);
+            if (insideRenderPass)
+            {
+                // We can't have barrier from compute inside a render pass,
+                // as it is invalid to specify compute in the subpass dependency stage mask.
+
+                lastReadStage &= ~PipelineStageFlags.ComputeShaderBit;
+            }
+
+            if (lastReadStage != PipelineStageFlags.None)
+            {
+                // This would result in a validation error, but is
+                // required on MoltenVK as the generic barrier results in
+                // severe texture flickering in some scenarios.
+                if (_gd.IsMoltenVk)
+                {
+                    ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+                    TextureView.InsertImageBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _imageAuto.Get(cbs).Value,
+                        _lastReadAccess,
+                        dstAccessFlags,
+                        _lastReadStage,
+                        dstStageFlags,
+                        aspectFlags,
+                        0,
+                        0,
+                        _info.GetLayers(),
+                        _info.Levels);
+                }
+                else
+                {
+                    TextureView.InsertMemoryBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _lastReadAccess,
+                        dstAccessFlags,
+                        lastReadStage,
+                        dstStageFlags);
+                }
 
                 _lastReadAccess = AccessFlags.None;
                 _lastReadStage = PipelineStageFlags.None;
@@ -472,21 +497,36 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
-
-                TextureView.InsertImageBarrier(
-                    _gd.Api,
-                    cbs.CommandBuffer,
-                    _imageAuto.Get(cbs).Value,
-                    _lastModificationAccess,
-                    dstAccessFlags,
-                    _lastModificationStage,
-                    dstStageFlags,
-                    aspectFlags,
-                    0,
-                    0,
-                    _info.GetLayers(),
-                    _info.Levels);
+                // This would result in a validation error, but is
+                // required on MoltenVK as the generic barrier results in
+                // severe texture flickering in some scenarios.
+                if (_gd.IsMoltenVk)
+                {
+                    ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+                    TextureView.InsertImageBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _imageAuto.Get(cbs).Value,
+                        _lastModificationAccess,
+                        dstAccessFlags,
+                        _lastModificationStage,
+                        dstStageFlags,
+                        aspectFlags,
+                        0,
+                        0,
+                        _info.GetLayers(),
+                        _info.Levels);
+                }
+                else
+                {
+                    TextureView.InsertMemoryBarrier(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        _lastModificationAccess,
+                        dstAccessFlags,
+                        _lastModificationStage,
+                        dstStageFlags);
+                }
 
                 _lastModificationAccess = AccessFlags.None;
             }

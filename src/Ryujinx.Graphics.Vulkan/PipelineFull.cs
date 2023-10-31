@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Vulkan
         private CounterQueueEvent _activeConditionalRender;
 
         private readonly List<BufferedQuery> _pendingQueryCopies;
+        private readonly List<BufferHolder> _activeBufferMirrors;
 
         private ulong _byteWeight;
 
@@ -24,6 +25,7 @@ namespace Ryujinx.Graphics.Vulkan
             _activeQueries = new List<(QueryPool, bool)>();
             _pendingQueryCopies = new();
             _backingSwaps = new();
+            _activeBufferMirrors = new();
 
             CommandBuffer = (Cbs = gd.CommandBufferPool.Rent()).CommandBuffer;
         }
@@ -76,6 +78,42 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 ClearRenderTargetColor(index, layer, layerCount, color);
+            }
+        }
+
+        public void ClearRenderTargetDepthStencil(int layer, int layerCount, float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        {
+            if (FramebufferParams == null)
+            {
+                return;
+            }
+
+            if (stencilMask != 0 && stencilMask != 0xff)
+            {
+                // We can't use CmdClearAttachments if not clearing all (mask is all ones, 0xFF) or none (mask is 0) of the stencil bits,
+                // because on Vulkan, the pipeline state does not affect clears.
+                var dstTexture = FramebufferParams.GetDepthStencilAttachment();
+                if (dstTexture == null)
+                {
+                    return;
+                }
+
+                // TODO: Clear only the specified layer.
+                Gd.HelperShader.Clear(
+                    Gd,
+                    dstTexture,
+                    depthValue,
+                    depthMask,
+                    stencilValue,
+                    stencilMask,
+                    (int)FramebufferParams.Width,
+                    (int)FramebufferParams.Height,
+                    FramebufferParams.AttachmentFormats[FramebufferParams.AttachmentsCount - 1],
+                    ClearScissor);
+            }
+            else
+            {
+                ClearRenderTargetDepthStencil(layer, layerCount, depthValue, depthMask, stencilValue, stencilMask != 0);
             }
         }
 
@@ -233,6 +271,12 @@ namespace Ryujinx.Graphics.Vulkan
             Gd.RegisterFlush();
 
             // Restore per-command buffer state.
+            foreach (BufferHolder buffer in _activeBufferMirrors)
+            {
+                buffer.ClearMirrors();
+            }
+
+            _activeBufferMirrors.Clear();
 
             foreach ((var queryPool, var isOcclusion) in _activeQueries)
             {
@@ -247,6 +291,11 @@ namespace Ryujinx.Graphics.Vulkan
             TryBackingSwaps();
 
             Restore();
+        }
+
+        public void RegisterActiveMirror(BufferHolder buffer)
+        {
+            _activeBufferMirrors.Add(buffer);
         }
 
         public void BeginQuery(BufferedQuery query, QueryPool pool, bool needsReset, bool isOcclusion, bool fromSamplePool)

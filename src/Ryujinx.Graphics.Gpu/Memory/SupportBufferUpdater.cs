@@ -9,54 +9,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Support buffer data updater.
     /// </summary>
-    class SupportBufferUpdater : IDisposable
+    class SupportBufferUpdater : BufferUpdater
     {
         private SupportBuffer _data;
-        private BufferHandle _handle;
-
-        private readonly IRenderer _renderer;
-        private int _startOffset = -1;
-        private int _endOffset = -1;
 
         /// <summary>
         /// Creates a new instance of the support buffer updater.
         /// </summary>
         /// <param name="renderer">Renderer that the support buffer will be used with</param>
-        public SupportBufferUpdater(IRenderer renderer)
+        public SupportBufferUpdater(IRenderer renderer) : base(renderer)
         {
-            _renderer = renderer;
-
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             _data.RenderScale.AsSpan().Fill(defaultScale);
             DirtyRenderScale(0, SupportBuffer.RenderScaleMaxCount);
-        }
-
-        /// <summary>
-        /// Mark a region of the support buffer as modified and needing to be sent to the GPU.
-        /// </summary>
-        /// <param name="startOffset">Start offset of the region in bytes</param>
-        /// <param name="byteSize">Size of the region in bytes</param>
-        private void MarkDirty(int startOffset, int byteSize)
-        {
-            int endOffset = startOffset + byteSize;
-
-            if (_startOffset == -1)
-            {
-                _startOffset = startOffset;
-                _endOffset = endOffset;
-            }
-            else
-            {
-                if (startOffset < _startOffset)
-                {
-                    _startOffset = startOffset;
-                }
-
-                if (endOffset > _endOffset)
-                {
-                    _endOffset = endOffset;
-                }
-            }
         }
 
         /// <summary>
@@ -136,32 +101,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Updates the render scales for shader input textures or images.
         /// </summary>
-        /// <param name="scales">Scale values</param>
+        /// <param name="index">Index of the scale</param>
+        /// <param name="scale">Scale value</param>
+        public void UpdateRenderScale(int index, float scale)
+        {
+            if (_data.RenderScale[1 + index].X != scale)
+            {
+                _data.RenderScale[1 + index].X = scale;
+                DirtyRenderScale(1 + index, 1);
+            }
+        }
+
+        /// <summary>
+        /// Updates the render scales for shader input textures or images.
+        /// </summary>
         /// <param name="totalCount">Total number of scales across all stages</param>
         /// <param name="fragmentCount">Total number of scales on the fragment shader stage</param>
-        public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
+        public void UpdateRenderScaleFragmentCount(int totalCount, int fragmentCount)
         {
-            bool changed = false;
-
-            for (int index = 0; index < totalCount; index++)
-            {
-                if (_data.RenderScale[1 + index].X != scales[index])
-                {
-                    _data.RenderScale[1 + index].X = scales[index];
-                    changed = true;
-                }
-            }
-
             // Only update fragment count if there are scales after it for the vertex stage.
             if (fragmentCount != totalCount && fragmentCount != _data.FragmentRenderScaleCount.X)
             {
                 _data.FragmentRenderScaleCount.X = fragmentCount;
                 DirtyFragmentRenderScaleCount();
-            }
-
-            if (changed)
-            {
-                DirtyRenderScale(0, 1 + totalCount);
             }
         }
 
@@ -172,7 +134,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="isBgra">True if the format is BGRA< false otherwise</param>
         public void SetRenderTargetIsBgra(int index, bool isBgra)
         {
-            bool isBgraChanged = (_data.FragmentIsBgra[index].X != 0) != isBgra;
+            bool isBgraChanged = _data.FragmentIsBgra[index].X != 0 != isBgra;
 
             if (isBgraChanged)
             {
@@ -223,40 +185,40 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Submits all pending buffer updates to the GPU.
+        /// Sets offset for the misaligned portion of a transform feedback buffer, and the buffer size, for transform feedback emulation.
         /// </summary>
-        public void Commit()
+        /// <param name="bufferIndex">Index of the transform feedback buffer</param>
+        /// <param name="offset">Misaligned offset of the buffer</param>
+        public void SetTfeOffset(int bufferIndex, int offset)
         {
-            if (_startOffset != -1)
+            ref int currentOffset = ref GetElementRef(ref _data.TfeOffset, bufferIndex);
+
+            if (currentOffset != offset)
             {
-                if (_handle == BufferHandle.Null)
-                {
-                    _handle = _renderer.CreateBuffer(SupportBuffer.RequiredSize);
-                    _renderer.Pipeline.ClearBuffer(_handle, 0, SupportBuffer.RequiredSize, 0);
-
-                    var range = new BufferRange(_handle, 0, SupportBuffer.RequiredSize);
-                    _renderer.Pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(0, range) });
-                }
-
-                ReadOnlySpan<byte> data = MemoryMarshal.Cast<SupportBuffer, byte>(MemoryMarshal.CreateSpan(ref _data, 1));
-
-                _renderer.SetBufferData(_handle, _startOffset, data[_startOffset.._endOffset]);
-
-                _startOffset = -1;
-                _endOffset = -1;
+                currentOffset = offset;
+                MarkDirty(SupportBuffer.TfeOffsetOffset + bufferIndex * sizeof(int), sizeof(int));
             }
         }
 
         /// <summary>
-        /// Destroys the support buffer.
+        /// Sets the vertex count used for transform feedback emulation with instanced draws.
         /// </summary>
-        public void Dispose()
+        /// <param name="vertexCount">Vertex count of the instanced draw</param>
+        public void SetTfeVertexCount(int vertexCount)
         {
-            if (_handle != BufferHandle.Null)
+            if (_data.TfeVertexCount.X != vertexCount)
             {
-                _renderer.DeleteBuffer(_handle);
-                _handle = BufferHandle.Null;
+                _data.TfeVertexCount.X = vertexCount;
+                MarkDirty(SupportBuffer.TfeVertexCountOffset, sizeof(int));
             }
+        }
+
+        /// <summary>
+        /// Submits all pending buffer updates to the GPU.
+        /// </summary>
+        public void Commit()
+        {
+            Commit(MemoryMarshal.Cast<SupportBuffer, byte>(MemoryMarshal.CreateSpan(ref _data, 1)), SupportBuffer.Binding);
         }
     }
 }

@@ -1,6 +1,6 @@
 using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
 using LibHac.Common;
@@ -90,11 +90,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
+        public IStorageProvider StorageProvider;
+
         public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             _virtualFileSystem = virtualFileSystem;
 
             _titleId = titleId;
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                StorageProvider = desktop.MainWindow.StorageProvider;
+            }
 
             _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
 
@@ -119,7 +126,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     using FileStream containerFile = File.OpenRead(downloadableContentContainer.ContainerPath);
 
-                    PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+                    PartitionFileSystem partitionFileSystem = new();
+                    partitionFileSystem.Initialize(containerFile.AsStorage()).ThrowIfFailure();
 
                     _virtualFileSystem.ImportTickets(partitionFileSystem);
 
@@ -195,29 +203,24 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            OpenFileDialog dialog = new()
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
                 AllowMultiple = true,
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
-            {
-                Name = "NSP",
-                Extensions = { "nsp" },
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new("NSP")
+                    {
+                        Patterns = new[] { "*.nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
+                        MimeTypes = new[] { "application/x-nx-nsp" },
+                    },
+                },
             });
 
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            foreach (var file in result)
             {
-                string[] files = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (files != null)
-                {
-                    foreach (string file in files)
-                    {
-                        await AddDownloadableContent(file);
-                    }
-                }
+                await AddDownloadableContent(file.Path.LocalPath);
             }
         }
 
@@ -230,7 +233,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             using FileStream containerFile = File.OpenRead(path);
 
-            PartitionFileSystem partitionFileSystem = new(containerFile.AsStorage());
+            PartitionFileSystem partitionFileSystem = new();
+            partitionFileSystem.Initialize(containerFile.AsStorage()).ThrowIfFailure();
             bool containsDownloadableContent = false;
 
             _virtualFileSystem.ImportTickets(partitionFileSystem);

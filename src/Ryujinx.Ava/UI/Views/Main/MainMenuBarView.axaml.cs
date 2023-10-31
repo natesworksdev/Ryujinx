@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Views.Main
 {
@@ -30,8 +29,8 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             InitializeComponent();
 
-            ToggleFileTypesMenuItem.Items = GenerateToggleFileTypeItems();
-            ChangeLanguageMenuItem.Items = GenerateLanguageMenuItems();
+            ToggleFileTypesMenuItem.ItemsSource = GenerateToggleFileTypeItems();
+            ChangeLanguageMenuItem.ItemsSource = GenerateLanguageMenuItems();
         }
 
         private CheckBox[] GenerateToggleFileTypeItems()
@@ -45,7 +44,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 {
                     Content = $".{fileName}",
                     IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.Ui.ShownFileTypes),
-                    Command = MiniCommand.Create(() => ViewModel.ToggleFileType(fileName)),
+                    Command = MiniCommand.Create(() => Window.ToggleFileType(fileName)),
                 });
             }
 
@@ -107,20 +106,14 @@ namespace Ryujinx.Ava.UI.Views.Main
             await Window.ViewModel.AppHost?.ShowExitPrompt();
         }
 
-        private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
+        private void PauseEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                Window.ViewModel.AppHost?.Pause();
-            });
+            Window.ViewModel.AppHost?.Pause();
         }
 
-        private async void ResumeEmulation_Click(object sender, RoutedEventArgs e)
+        private void ResumeEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                Window.ViewModel.AppHost?.Resume();
-            });
+            Window.ViewModel.AppHost?.Resume();
         }
 
         public async void OpenSettings(object sender, RoutedEventArgs e)
@@ -132,13 +125,13 @@ namespace Ryujinx.Ava.UI.Views.Main
             ViewModel.LoadConfigurableHotKeys();
         }
 
-        public void OpenMiiApplet(object sender, RoutedEventArgs e)
+        public async void OpenMiiApplet(object sender, RoutedEventArgs e)
         {
             string contentPath = ViewModel.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
 
             if (!string.IsNullOrEmpty(contentPath))
             {
-                ViewModel.LoadApplication(contentPath, false, "Mii Applet");
+                await ViewModel.LoadApplication(contentPath, false, "Mii Applet");
             }
         }
 
@@ -196,8 +189,7 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             if (FileAssociationHelper.Install())
             {
-                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesSuccessMessage],
-                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogInstallFileTypesSuccessMessage], string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
             }
             else
             {
@@ -209,8 +201,7 @@ namespace Ryujinx.Ava.UI.Views.Main
         {
             if (FileAssociationHelper.Uninstall())
             {
-                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesSuccessMessage],
-                    string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
+                await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesSuccessMessage], string.Empty, LocaleManager.Instance[LocaleKeys.InputDialogOk], string.Empty, string.Empty);
             }
             else
             {

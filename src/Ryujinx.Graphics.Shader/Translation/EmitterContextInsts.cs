@@ -112,9 +112,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.AtomicXor, storageKind, Local(), Const(binding), e0, e1, value);
         }
 
-        public static Operand Ballot(this EmitterContext context, Operand a)
+        public static Operand Ballot(this EmitterContext context, Operand a, int index)
         {
-            return context.Add(Instruction.Ballot, Local(), a);
+            Operand dest = Local();
+
+            context.Add(new Operation(Instruction.Ballot, index, dest, a));
+
+            return dest;
         }
 
         public static Operand Barrier(this EmitterContext context)
@@ -782,9 +786,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.ShiftRightU32, Local(), a, b);
         }
 
+        public static Operand Shuffle(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.Shuffle, Local(), a, b);
+        }
+
         public static (Operand, Operand) Shuffle(this EmitterContext context, Operand a, Operand b, Operand c)
         {
             return context.Add(Instruction.Shuffle, (Local(), Local()), a, b, c);
+        }
+
+        public static Operand ShuffleDown(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.ShuffleDown, Local(), a, b);
         }
 
         public static (Operand, Operand) ShuffleDown(this EmitterContext context, Operand a, Operand b, Operand c)
@@ -792,9 +806,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.ShuffleDown, (Local(), Local()), a, b, c);
         }
 
+        public static Operand ShuffleUp(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.ShuffleUp, Local(), a, b);
+        }
+
         public static (Operand, Operand) ShuffleUp(this EmitterContext context, Operand a, Operand b, Operand c)
         {
             return context.Add(Instruction.ShuffleUp, (Local(), Local()), a, b, c);
+        }
+
+        public static Operand ShuffleXor(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.ShuffleXor, Local(), a, b);
         }
 
         public static (Operand, Operand) ShuffleXor(this EmitterContext context, Operand a, Operand b, Operand c)
@@ -805,6 +829,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         public static Operand Store(this EmitterContext context, StorageKind storageKind, Operand e0, Operand e1, Operand value)
         {
             return context.Add(Instruction.Store, storageKind, null, e0, e1, value);
+        }
+
+        public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand value)
+        {
+            return context.Add(Instruction.Store, storageKind, null, Const(binding), value);
         }
 
         public static Operand Store(this EmitterContext context, StorageKind storageKind, int binding, Operand e0, Operand value)
@@ -868,7 +897,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             context.Add(new TextureOperation(Instruction.TextureSample, type, TextureFormat.Unknown, flags, binding, compMask, dests, sources));
         }
 
-        public static Operand TextureSize(
+        public static Operand TextureQuerySamples(
+            this EmitterContext context,
+            SamplerType type,
+            TextureFlags flags,
+            int binding,
+            Operand[] sources)
+        {
+            Operand dest = Local();
+
+            context.Add(new TextureOperation(Instruction.TextureQuerySamples, type, TextureFormat.Unknown, flags, binding, 0, new[] { dest }, sources));
+
+            return dest;
+        }
+
+        public static Operand TextureQuerySize(
             this EmitterContext context,
             SamplerType type,
             TextureFlags flags,
@@ -878,7 +921,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.TextureSize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.TextureQuerySize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
 
             return dest;
         }

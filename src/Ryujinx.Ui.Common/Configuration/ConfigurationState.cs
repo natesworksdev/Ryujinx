@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
@@ -486,6 +487,11 @@ namespace Ryujinx.Ui.Common.Configuration
             public ReactiveObject<bool> EnableMacroHLE { get; private set; }
 
             /// <summary>
+            /// Enables or disables color space passthrough, if available.
+            /// </summary>
+            public ReactiveObject<bool> EnableColorSpacePassthrough { get; private set; }
+
+            /// <summary>
             /// Graphics backend
             /// </summary>
             public ReactiveObject<GraphicsBackend> GraphicsBackend { get; private set; }
@@ -535,6 +541,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 PreferredGpu.Event += static (sender, e) => LogValueChange(e, nameof(PreferredGpu));
                 EnableMacroHLE = new ReactiveObject<bool>();
                 EnableMacroHLE.Event += static (sender, e) => LogValueChange(e, nameof(EnableMacroHLE));
+                EnableColorSpacePassthrough = new ReactiveObject<bool>();
+                EnableColorSpacePassthrough.Event += static (sender, e) => LogValueChange(e, nameof(EnableColorSpacePassthrough));
                 AntiAliasing = new ReactiveObject<AntiAliasing>();
                 AntiAliasing.Event += static (sender, e) => LogValueChange(e, nameof(AntiAliasing));
                 ScalingFilter = new ReactiveObject<ScalingFilter>();
@@ -554,9 +562,16 @@ namespace Ryujinx.Ui.Common.Configuration
             /// </summary>
             public ReactiveObject<string> LanInterfaceId { get; private set; }
 
+            /// <summary>
+            /// Multiplayer Mode
+            /// </summary>
+            public ReactiveObject<MultiplayerMode> Mode { get; private set; }
+
             public MultiplayerSection()
             {
                 LanInterfaceId = new ReactiveObject<string>();
+                Mode = new ReactiveObject<MultiplayerMode>();
+                Mode.Event += static (_, e) => LogValueChange(e, nameof(MultiplayerMode));
             }
         }
 
@@ -667,6 +682,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableShaderCache = Graphics.EnableShaderCache,
                 EnableTextureRecompression = Graphics.EnableTextureRecompression,
                 EnableMacroHLE = Graphics.EnableMacroHLE,
+                EnableColorSpacePassthrough = Graphics.EnableColorSpacePassthrough,
                 EnablePtc = System.EnablePtc,
                 EnableInternetAccess = System.EnableInternetAccess,
                 EnableFsIntegrityChecks = System.EnableFsIntegrityChecks,
@@ -733,6 +749,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,
                 MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId,
+                MultiplayerMode = Multiplayer.Mode,
             };
 
             return configurationFile;
@@ -772,6 +789,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.EnableShaderCache.Value = true;
             Graphics.EnableTextureRecompression.Value = false;
             Graphics.EnableMacroHLE.Value = true;
+            Graphics.EnableColorSpacePassthrough.Value = false;
             Graphics.AntiAliasing.Value = AntiAliasing.None;
             Graphics.ScalingFilter.Value = ScalingFilter.Bilinear;
             Graphics.ScalingFilterLevel.Value = 80;
@@ -786,6 +804,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.IgnoreMissingServices.Value = false;
             System.UseHypervisor.Value = true;
             Multiplayer.LanInterfaceId.Value = "0";
+            Multiplayer.Mode.Value = MultiplayerMode.Disabled;
             Ui.GuiColumns.FavColumn.Value = true;
             Ui.GuiColumns.IconColumn.Value = true;
             Ui.GuiColumns.AppColumn.Value = true;
@@ -994,6 +1013,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            // configurationFileFormat.Version == 13 -> LDN1
+
             if (configurationFileFormat.Version < 14)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 14.");
@@ -1030,11 +1051,25 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            // configurationFileFormat.Version == 19 -> LDN2
+
             if (configurationFileFormat.Version < 20)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
 
                 configurationFileFormat.ShowConfirmExit = true;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 21)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
+
+                // Initialize network config.
+
+                configurationFileFormat.MultiplayerMode = MultiplayerMode.Disabled;
+                configurationFileFormat.MultiplayerLanInterfaceId = "0";
 
                 configurationFileUpdated = true;
             }
@@ -1391,6 +1426,15 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 48)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 48.");
+
+                configurationFileFormat.EnableColorSpacePassthrough = false;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
@@ -1426,6 +1470,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.EnableShaderCache.Value = configurationFileFormat.EnableShaderCache;
             Graphics.EnableTextureRecompression.Value = configurationFileFormat.EnableTextureRecompression;
             Graphics.EnableMacroHLE.Value = configurationFileFormat.EnableMacroHLE;
+            Graphics.EnableColorSpacePassthrough.Value = configurationFileFormat.EnableColorSpacePassthrough;
             System.EnablePtc.Value = configurationFileFormat.EnablePtc;
             System.EnableInternetAccess.Value = configurationFileFormat.EnableInternetAccess;
             System.EnableFsIntegrityChecks.Value = configurationFileFormat.EnableFsIntegrityChecks;
@@ -1482,6 +1527,7 @@ namespace Ryujinx.Ui.Common.Configuration
             }
 
             Multiplayer.LanInterfaceId.Value = configurationFileFormat.MultiplayerLanInterfaceId;
+            Multiplayer.Mode.Value = configurationFileFormat.MultiplayerMode;
 
             if (configurationFileUpdated)
             {

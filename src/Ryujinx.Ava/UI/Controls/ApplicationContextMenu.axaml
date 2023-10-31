@@ -2,7 +2,9 @@
     x:Class="Ryujinx.Ava.UI.Controls.ApplicationContextMenu"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale">
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
+    x:DataType="viewModels:MainWindowViewModel">
 	<MenuItem
         Click="RunApplication_Click"
         Header="{locale:Locale GameListContextMenuRunApplication}" />
@@ -80,4 +82,9 @@
             Header="{locale:Locale GameListContextMenuExtractDataLogo}"
             ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
     </MenuItem>
+	<MenuItem
+		Click="CreateApplicationShortcut_Click"
+		Header="{locale:Locale GameListContextMenuCreateShortcut}"
+        IsEnabled="{Binding CreateShortcutEnabled}"
+		ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
 </MenuFlyout>

@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
+using System.Text;
 
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenBallot;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenCall;
@@ -9,6 +10,7 @@ using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenFSI;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenHelper;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenMemory;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenPacking;
+using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenShuffle;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenVector;
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
@@ -66,11 +68,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 int arity = (int)(info.Type & InstType.ArityMask);
 
-                string args = string.Empty;
+                StringBuilder builder = new();
 
                 if (atomic && (operation.StorageKind == StorageKind.StorageBuffer || operation.StorageKind == StorageKind.SharedMemory))
                 {
-                    args = GenerateLoadOrStore(context, operation, isStore: false);
+                    builder.Append(GenerateLoadOrStore(context, operation, isStore: false));
 
                     AggregateType dstType = operation.Inst == Instruction.AtomicMaxS32 || operation.Inst == Instruction.AtomicMinS32
                         ? AggregateType.S32
@@ -78,7 +80,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     for (int argIndex = operation.SourcesCount - arity + 2; argIndex < operation.SourcesCount; argIndex++)
                     {
-                        args += ", " + GetSoureExpr(context, operation.GetSource(argIndex), dstType);
+                        builder.Append($", {GetSoureExpr(context, operation.GetSource(argIndex), dstType)}");
                     }
                 }
                 else
@@ -87,16 +89,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     {
                         if (argIndex != 0)
                         {
-                            args += ", ";
+                            builder.Append(", ");
                         }
 
                         AggregateType dstType = GetSrcVarType(inst, argIndex);
 
-                        args += GetSoureExpr(context, operation.GetSource(argIndex), dstType);
+                        builder.Append(GetSoureExpr(context, operation.GetSource(argIndex), dstType));
                     }
                 }
 
-                return info.OpName + '(' + args + ')';
+                return $"{info.OpName}({builder})";
             }
             else if ((info.Type & InstType.Op) != 0)
             {
@@ -174,14 +176,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.PackHalf2x16:
                         return PackHalf2x16(context, operation);
 
+                    case Instruction.Shuffle:
+                        return Shuffle(context, operation);
+
                     case Instruction.Store:
                         return Store(context, operation);
 
                     case Instruction.TextureSample:
                         return TextureSample(context, operation);
 
-                    case Instruction.TextureSize:
-                        return TextureSize(context, operation);
+                    case Instruction.TextureQuerySamples:
+                        return TextureQuerySamples(context, operation);
+
+                    case Instruction.TextureQuerySize:
+                        return TextureQuerySize(context, operation);
 
                     case Instruction.UnpackDouble2x32:
                         return UnpackDouble2x32(context, operation);

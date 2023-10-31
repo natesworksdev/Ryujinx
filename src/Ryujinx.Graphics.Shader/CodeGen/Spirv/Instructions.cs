@@ -134,7 +134,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Subtract,                 GenerateSubtract);
             Add(Instruction.SwizzleAdd,               GenerateSwizzleAdd);
             Add(Instruction.TextureSample,            GenerateTextureSample);
-            Add(Instruction.TextureSize,              GenerateTextureSize);
+            Add(Instruction.TextureQuerySamples,      GenerateTextureQuerySamples);
+            Add(Instruction.TextureQuerySize,         GenerateTextureQuerySize);
             Add(Instruction.Truncate,                 GenerateTruncate);
             Add(Instruction.UnpackDouble2x32,         GenerateUnpackDouble2x32);
             Add(Instruction.UnpackHalf2x16,           GenerateUnpackHalf2x16);
@@ -231,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var execution = context.Constant(context.TypeU32(), Scope.Subgroup);
 
             var maskVector = context.GroupNonUniformBallot(uvec4Type, execution, context.Get(AggregateType.Bool, source));
-            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)0);
+            var mask = context.CompositeExtract(context.TypeU32(), maskVector, (SpvLiteralInteger)operation.Index);
 
             return new OperationResult(AggregateType.U32, mask);
         }
@@ -240,10 +241,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             // Barrier on divergent control flow paths may cause the GPU to hang,
             // so skip emitting the barrier for those cases.
-            if (!context.Config.GpuAccessor.QueryHostSupportsShaderBarrierDivergence() &&
+            if (!context.HostCapabilities.SupportsShaderBarrierDivergence &&
                 (context.CurrentBlock.Type != AstBlockType.Main || context.MayHaveReturned || !context.IsMainFunction))
             {
-                context.Config.GpuAccessor.Log($"Shader has barrier on potentially divergent block, the barrier will be removed.");
+                context.Logger.Log("Shader has barrier on potentially divergent block, the barrier will be removed.");
 
                 return OperationResult.Invalid;
             }
@@ -310,26 +311,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var (function, spvFunc) = context.GetFunction(funcId.Value);
 
             var args = new SpvInstruction[operation.SourcesCount - 1];
-            var spvLocals = context.GetLocalForArgsPointers(funcId.Value);
 
             for (int i = 0; i < args.Length; i++)
             {
                 var operand = operation.GetSource(i + 1);
 
-                if (i >= function.InArguments.Length)
-                {
-                    args[i] = context.GetLocalPointer((AstOperand)operand);
-                }
-                else
-                {
-                    var type = function.GetArgumentType(i);
-                    var value = context.Get(type, operand);
-                    var spvLocal = spvLocals[i];
-
-                    context.Store(spvLocal, value);
-
-                    args[i] = spvLocal;
-                }
+                AstOperand local = (AstOperand)operand;
+                Debug.Assert(local.Type == OperandType.LocalVariable);
+                args[i] = context.GetLocalPointer(local);
             }
 
             var retType = function.ReturnType;
@@ -546,7 +535,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateFSIBegin(CodeGenContext context, AstOperation operation)
         {
-            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            if (context.HostCapabilities.SupportsFragmentShaderInterlock)
             {
                 context.BeginInvocationInterlockEXT();
             }
@@ -556,7 +545,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateFSIEnd(CodeGenContext context, AstOperation operation)
         {
-            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            if (context.HostCapabilities.SupportsFragmentShaderInterlock)
             {
                 context.EndInvocationInterlockEXT();
             }
@@ -1100,117 +1089,40 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateShuffle(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-            var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.BitwiseOr(context.TypeU32(), indexNotSegMask, minThreadId);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleDown(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.IAdd(context.TypeU32(), threadId, index);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleDown(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleUp(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var srcThreadId = context.ISub(context.TypeU32(), threadId, index);
-            var valid = context.SGreaterThanEqual(context.TypeBool(), srcThreadId, minThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleUp(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
 
         private static OperationResult GenerateShuffleXor(CodeGenContext context, AstOperation operation)
         {
-            var x = context.GetFP32(operation.GetSource(0));
+            var value = context.GetFP32(operation.GetSource(0));
             var index = context.GetU32(operation.GetSource(1));
-            var mask = context.GetU32(operation.GetSource(2));
 
-            var const31 = context.Constant(context.TypeU32(), 31);
-            var const8 = context.Constant(context.TypeU32(), 8);
-
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
-            var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-
-            var threadId = GetScalarInput(context, IoVariable.SubgroupLaneId);
-
-            var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
-            var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
-            var srcThreadId = context.BitwiseXor(context.TypeU32(), threadId, index);
-            var valid = context.ULessThanEqual(context.TypeBool(), srcThreadId, maxThreadId);
-            var value = context.GroupNonUniformShuffle(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), x, srcThreadId);
-            var result = context.Select(context.TypeFP32(), valid, value, x);
-
-            var validLocal = (AstOperand)operation.GetSource(3);
-
-            context.Store(context.GetLocalPointer(validLocal), context.BitcastIfNeeded(validLocal.VarType, AggregateType.Bool, valid));
+            var result = context.GroupNonUniformShuffleXor(context.TypeFP32(), context.Constant(context.TypeU32(), (int)Scope.Subgroup), value, index);
 
             return new OperationResult(AggregateType.FP32, result);
         }
@@ -1446,7 +1358,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 lodBias = Src(AggregateType.FP32);
             }
 
-            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Config.Stage != ShaderStage.Fragment)
+            if (!isGather && !intCoords && !isMultisample && !hasLodLevel && !hasDerivatives && context.Definitions.Stage != ShaderStage.Fragment)
             {
                 // Implicit LOD is only valid on fragment.
                 // Use the LOD bias as explicit LOD if available.
@@ -1569,7 +1481,36 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(swizzledResultType, result);
         }
 
-        private static OperationResult GenerateTextureSize(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateTextureQuerySamples(CodeGenContext context, AstOperation operation)
+        {
+            AstTextureOperation texOp = (AstTextureOperation)operation;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return new OperationResult(AggregateType.S32, context.Constant(context.TypeS32(), 0));
+            }
+
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            if (isIndexed)
+            {
+                context.GetS32(texOp.GetSource(0));
+            }
+
+            (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[texOp.Binding];
+
+            var image = context.Load(sampledImageType, sampledImageVariable);
+            image = context.Image(imageType, image);
+
+            SpvInstruction result = context.ImageQuerySamples(context.TypeS32(), image);
+
+            return new OperationResult(AggregateType.S32, result);
+        }
+
+        private static OperationResult GenerateTextureQuerySize(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
@@ -1788,6 +1729,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             StorageClass storageClass;
             SpvInstruction baseObj;
             int srcIndex = 0;
+            IoVariable? perVertexBuiltIn = null;
 
             switch (storageKind)
             {
@@ -1804,8 +1746,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
 
                     BufferDefinition buffer = storageKind == StorageKind.ConstantBuffer
-                        ? context.Config.Properties.ConstantBuffers[bindingIndex.Value]
-                        : context.Config.Properties.StorageBuffers[bindingIndex.Value];
+                        ? context.Properties.ConstantBuffers[bindingIndex.Value]
+                        : context.Properties.StorageBuffers[bindingIndex.Value];
                     StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
                     storageClass = StorageClass.Uniform;
@@ -1825,13 +1767,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     if (storageKind == StorageKind.LocalMemory)
                     {
                         storageClass = StorageClass.Private;
-                        varType = context.Config.Properties.LocalMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
+                        varType = context.Properties.LocalMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
                         baseObj = context.LocalMemories[bindingId.Value];
                     }
                     else
                     {
                         storageClass = StorageClass.Workgroup;
-                        varType = context.Config.Properties.SharedMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
+                        varType = context.Properties.SharedMemories[bindingId.Value].Type & AggregateType.ElementTypeMask;
                         baseObj = context.SharedMemories[bindingId.Value];
                     }
                     break;
@@ -1851,7 +1793,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     int location = 0;
                     int component = 0;
 
-                    if (context.Config.HasPerLocationInputOrOutput(ioVariable, isOutput))
+                    if (context.Definitions.HasPerLocationInputOrOutput(ioVariable, isOutput))
                     {
                         if (operation.GetSource(srcIndex++) is not AstOperand vecIndex || vecIndex.Type != OperandType.Constant)
                         {
@@ -1863,7 +1805,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         if (operation.SourcesCount > srcIndex &&
                             operation.GetSource(srcIndex) is AstOperand elemIndex &&
                             elemIndex.Type == OperandType.Constant &&
-                            context.Config.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
+                            context.Definitions.HasPerLocationInputOrOutputComponent(ioVariable, location, elemIndex.Value, isOutput))
                         {
                             component = elemIndex.Value;
                             srcIndex++;
@@ -1872,15 +1814,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                     if (ioVariable == IoVariable.UserDefined)
                     {
-                        varType = context.Config.GetUserDefinedType(location, isOutput);
+                        varType = context.Definitions.GetUserDefinedType(location, isOutput);
                     }
                     else if (ioVariable == IoVariable.FragmentOutputColor)
                     {
-                        varType = context.Config.GetFragmentOutputColorType(location);
+                        varType = context.Definitions.GetFragmentOutputColorType(location);
                     }
                     else
                     {
                         (_, varType) = IoMap.GetSpirvBuiltIn(ioVariable);
+
+                        if (IoMap.IsPerVertexBuiltIn(ioVariable))
+                        {
+                            perVertexBuiltIn = ioVariable;
+                            ioVariable = IoVariable.Position;
+                        }
                     }
 
                     varType &= AggregateType.ElementTypeMask;
@@ -1901,6 +1849,31 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             bool isStoreOrAtomic = operation.Inst == Instruction.Store || operation.Inst.IsAtomic();
             int inputsCount = (isStoreOrAtomic ? operation.SourcesCount - 1 : operation.SourcesCount) - srcIndex;
+
+            if (perVertexBuiltIn.HasValue)
+            {
+                int fieldIndex = IoMap.GetPerVertexStructFieldIndex(perVertexBuiltIn.Value);
+
+                var indexes = new SpvInstruction[inputsCount + 1];
+                int index = 0;
+
+                if (IoMap.IsPerVertexArrayBuiltIn(storageKind, context.Definitions.Stage))
+                {
+                    indexes[index++] = context.Get(AggregateType.S32, operation.GetSource(srcIndex++));
+                    indexes[index++] = context.Constant(context.TypeS32(), fieldIndex);
+                }
+                else
+                {
+                    indexes[index++] = context.Constant(context.TypeS32(), fieldIndex);
+                }
+
+                for (; index < inputsCount + 1; srcIndex++, index++)
+                {
+                    indexes[index] = context.Get(AggregateType.S32, operation.GetSource(srcIndex));
+                }
+
+                return context.AccessChain(context.TypePointer(storageClass, context.GetType(varType)), baseObj, indexes);
+            }
 
             if (operation.Inst == Instruction.AtomicCompareAndSwap)
             {
@@ -2076,7 +2049,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2087,7 +2060,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2147,7 +2120,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2), context.GetFP64(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }
@@ -2158,7 +2131,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2), context.GetFP32(src3));
 
-                if (!context.Config.GpuAccessor.QueryHostReducedPrecision() || operation.ForcePrecise)
+                if (!context.HostCapabilities.ReducedPrecision || operation.ForcePrecise)
                 {
                     context.Decorate(result, Decoration.NoContraction);
                 }

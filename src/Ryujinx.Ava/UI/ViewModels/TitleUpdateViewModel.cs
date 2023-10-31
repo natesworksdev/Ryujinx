@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using LibHac.Common;
 using LibHac.Fs;
@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Path = System.IO.Path;
 using SpanHelpers = LibHac.Common.SpanHelpers;
 
@@ -70,11 +71,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public IStorageProvider StorageProvider;
+
         public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ulong titleId)
         {
             VirtualFileSystem = virtualFileSystem;
 
             TitleId = titleId;
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                StorageProvider = desktop.MainWindow.StorageProvider;
+            }
 
             TitleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "updates.json");
 
@@ -162,7 +170,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 try
                 {
-                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(VirtualFileSystem, new PartitionFileSystem(file.AsStorage()), TitleId.ToString("x16"), 0);
+                    var pfs = new PartitionFileSystem();
+                    pfs.Initialize(file.AsStorage()).ThrowIfFailure();
+                    (Nca patchNca, Nca controlNca) = ApplicationLibrary.GetGameUpdateDataFromPartition(VirtualFileSystem, pfs, TitleId.ToString("x16"), 0);
 
                     if (controlNca != null && patchNca != null)
                     {
@@ -177,18 +187,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                     }
                     else
                     {
-                        Dispatcher.UIThread.Post(async () =>
-                        {
-                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]);
-                        });
+                        Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Dispatcher.UIThread.Post(async () =>
-                    {
-                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadNcaErrorMessage, ex.Message, path));
-                    });
+                    Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadNcaErrorMessage, ex.Message, path)));
                 }
             }
         }
@@ -200,31 +204,25 @@ namespace Ryujinx.Ava.UI.ViewModels
             SortUpdates();
         }
 
-        public async void Add()
+        public async Task Add()
         {
-            OpenFileDialog dialog = new()
+            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = LocaleManager.Instance[LocaleKeys.SelectUpdateDialogTitle],
                 AllowMultiple = true,
-            };
-
-            dialog.Filters.Add(new FileDialogFilter
-            {
-                Name = "NSP",
-                Extensions = { "nsp" },
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
+                    {
+                        Patterns = new[] { "*.nsp" },
+                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
+                        MimeTypes = new[] { "application/x-nx-nsp" },
+                    },
+                },
             });
 
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            foreach (var file in result)
             {
-                string[] files = await dialog.ShowAsync(desktop.MainWindow);
-
-                if (files != null)
-                {
-                    foreach (string file in files)
-                    {
-                        AddUpdate(file);
-                    }
-                }
+                AddUpdate(file.Path.LocalPath);
             }
 
             SortUpdates();

@@ -17,9 +17,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class StateUpdater
     {
         public const int ShaderStateIndex = 26;
+        public const int RtColorMaskIndex = 14;
         public const int RasterizerStateIndex = 15;
         public const int ScissorStateIndex = 16;
         public const int VertexBufferStateIndex = 0;
+        public const int BlendStateIndex = 2;
+        public const int IndexBufferStateIndex = 23;
         public const int PrimitiveRestartStateIndex = 12;
         public const int RenderTargetStateIndex = 27;
 
@@ -290,7 +293,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // of the shader for the new state.
             if (_shaderSpecState != null && _currentSpecState.HasChanged())
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), _vsUsesDrawParameters, false))
+                if (!_shaderSpecState.MatchesGraphics(
+                    _channel,
+                    ref _currentSpecState.GetPoolState(),
+                    ref _currentSpecState.GetGraphicsState(),
+                    _drawState.VertexAsCompute != null,
+                    _vsUsesDrawParameters,
+                    checkTextures: false))
                 {
                     // Shader must be reloaded. _vtgWritesRtLayer should not change.
                     UpdateShaderState();
@@ -331,7 +340,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 UpdateShaderState();
             }
 
-            _channel.BufferManager.CommitGraphicsBindings();
+            _channel.BufferManager.CommitGraphicsBindings(_drawState.DrawIndexed);
         }
 
         /// <summary>
@@ -440,6 +449,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool useControl = updateFlags.HasFlag(RenderTargetUpdateFlags.UseControl);
             bool layered = updateFlags.HasFlag(RenderTargetUpdateFlags.Layered);
             bool singleColor = updateFlags.HasFlag(RenderTargetUpdateFlags.SingleColor);
+            bool discard = updateFlags.HasFlag(RenderTargetUpdateFlags.DiscardClip);
 
             int count = useControl ? rtControl.UnpackCount() : Constants.TotalRenderTargets;
 
@@ -479,6 +489,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     memoryManager,
                     colorState,
                     _vtgWritesRtLayer || layered,
+                    discard,
                     samplesInX,
                     samplesInY,
                     sizeHint);
@@ -518,6 +529,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     dsState,
                     dsSize,
                     _vtgWritesRtLayer || layered,
+                    discard,
                     samplesInX,
                     samplesInY,
                     sizeHint);
@@ -932,6 +944,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateVertexAttribState()
         {
+            bool supportsScaledFormats = _context.Capabilities.SupportsScaledVertexFormats;
             uint vbEnableMask = _vbEnableMask;
 
             Span<VertexAttribDescriptor> vertexAttribs = stackalloc VertexAttribDescriptor[Constants.TotalVertexAttribs];
@@ -949,7 +962,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     continue;
                 }
 
-                if (!FormatTable.TryGetAttribFormat(vertexAttrib.UnpackFormat(), out Format format))
+                uint packedFormat = vertexAttrib.UnpackFormat();
+
+                if (!supportsScaledFormats)
+                {
+                    packedFormat = vertexAttrib.UnpackType() switch
+                    {
+                        VertexAttribType.Uscaled => ((uint)VertexAttribType.Uint << 27) | (packedFormat & (0x3f << 21)),
+                        VertexAttribType.Sscaled => ((uint)VertexAttribType.Sint << 27) | (packedFormat & (0x3f << 21)),
+                        _ => packedFormat,
+                    };
+                }
+
+                if (!FormatTable.TryGetAttribFormat(packedFormat, out Format format))
                 {
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid attribute format 0x{vertexAttrib.UnpackFormat():X}.");
 
@@ -1440,6 +1465,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _fsReadsFragCoord = false;
             }
 
+            if (gs.VertexAsCompute != null)
+            {
+                _drawState.VertexAsCompute = gs.VertexAsCompute;
+                _drawState.GeometryAsCompute = gs.GeometryAsCompute;
+                _drawState.VertexPassthrough = gs.HostProgram;
+            }
+            else
+            {
+                _drawState.VertexAsCompute = null;
+                _drawState.GeometryAsCompute = null;
+                _drawState.VertexPassthrough = null;
+            }
+
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }
 
@@ -1526,6 +1564,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void ForceShaderUpdate()
         {
             _updateTracker.ForceDirty(ShaderStateIndex);
+        }
+
+        /// <summary>
+        /// Forces a register group as dirty, by index.
+        /// </summary>
+        /// <param name="groupIndex">Index of the group to be dirtied</param>
+        public void ForceDirty(int groupIndex)
+        {
+            _updateTracker.ForceDirty(groupIndex);
         }
     }
 }
