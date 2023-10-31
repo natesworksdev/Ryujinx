@@ -10,12 +10,10 @@ namespace Ryujinx.Horizon.Prepo
 {
     class PrepoServerManager : ServerManager
     {
-        private readonly HeapAllocator _allocator;
         private readonly ArpApi _arp;
 
         public PrepoServerManager(HeapAllocator allocator, SmApi sm, ArpApi arp, int maxPorts, ManagerOptions options, int maxSessions) : base(allocator, sm, maxPorts, options, maxSessions)
         {
-            _allocator = allocator;
             _arp = arp;
         }
 
