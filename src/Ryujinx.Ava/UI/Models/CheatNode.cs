@@ -49,7 +49,7 @@ namespace Ryujinx.Ava.UI.Models
             SubNodes.CollectionChanged += CheatsList_CollectionChanged;
         }
 
-        private void CheatsList_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void CheatsList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             OnPropertyChanged(nameof(IsEnabled));
         }
