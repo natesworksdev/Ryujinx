@@ -69,11 +69,11 @@ namespace Ryujinx.Tests.Graphics
         public void Paramterized_BlockSizes_Test(int blockWidth, int blockHeight)
         {
             TestContext.Out.WriteLine($"Testing Block Size {blockWidth}x{blockHeight}");
-            var (encodedRef, decodedRef) = _getTestDataTupleFromShortname("MoreRocks", blockWidth, blockHeight);
+            var (encodedRef, decodedRef) = GetTestDataTupleFromShortname("MoreRocks", blockWidth, blockHeight);
             int astcHeaderLength = 16;
 
             // skip the header. Decode method doesn't work without this and will return false.
-            var rawastc = encodedRef.Slice(astcHeaderLength, encodedRef.Length - astcHeaderLength);
+            var rawastc = encodedRef[astcHeaderLength..];
 
             int texWidth = 256;
             int texHeight = 256;
@@ -102,7 +102,7 @@ namespace Ryujinx.Tests.Graphics
             var matchPercent = ((float)matchCount / outputBuffer.Length);
 
             var wordUnchangedCount = wordDifferences.Count(x => x.diff.IsZero());
-            var wordUnchangedPercent = (float)wordUnchangedCount / wordDifferences.Count();
+            var wordUnchangedPercent = (float)wordUnchangedCount / wordDifferences.Length;
 
             TestContext.Out.WriteLine($"Pixel-wise comparison: {wordUnchangedPercent * 100:F4} ({wordUnchangedCount}/{wordDifferences.Length})");
             TestContext.Out.WriteLine($"Byte-wise comparison: {matchPercent * 100:F4} ({matchCount}/{byteDifferences.Count}) were same.");
@@ -115,62 +115,7 @@ namespace Ryujinx.Tests.Graphics
                     TestContext.Out.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
             }
 
-            Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) < 2));
-        }
-
-        public void _Linear_4x4_Static_Test()
-        {
-            /// This test doesn't do anything particularly tricky. 
-            GraphicsConfig.EnableTextureRecompression = false;
-            int blockWidth = 4;
-            int blockHeight = 4;
-
-            var (encodedRef, decodedRef) = _getTestDataTupleFromShortname("MoreRocks", blockWidth, blockHeight);
-            int astcHeaderLength = 16;
-
-            // skip the header. Decode method doesn't work without this and will return false.
-            var rawastc = encodedRef.Slice(astcHeaderLength, encodedRef.Length - astcHeaderLength);
-
-            int texWidth = 256;
-            int texHeight = 256;
-            byte[] outputBuffer = Array.Empty<byte>();
-
-            int depth = 1;
-            int levels = 1;
-            int layers = 1;
-
-            bool succeeded = AstcDecoder.TryDecodeToRgba8P(rawastc, blockWidth, blockHeight, texWidth, texHeight, depth, levels, layers, out outputBuffer);
-
-            // The decode function said it was valid data and that it could parse it.
-            Assert.AreEqual(true, succeeded);
-            // Length is the same as the one we made w/ ARM's decoder. That's good.
-            Assert.AreEqual(decodedRef.Length, outputBuffer.Length);
-
-            var wordsRef = RgbaWord.FromBytes(decodedRef.ToArray());
-            var wordsOut = RgbaWord.FromBytes(outputBuffer);
-            var wordDifferences = wordsRef.Select((x, i) => new { index = i, diff = x.Diff(wordsOut[i]) }).ToArray();
-
-            // BUT compression is funny.
-            // Calculate the byte differences. 
-            var byteDifferences = decodedRef.ToArray().Select((x, i) => new { index = i, delta = x - outputBuffer[i] }).ToList();
-
-            var matchCount = byteDifferences.Count(x => x.delta == 0);
-            var matchPercent = ((float)matchCount / outputBuffer.Length);
-
-            var wordUnchangedCount = wordDifferences.Count(x => x.diff.IsZero());
-            var wordUnchangedPercent = (float)wordUnchangedCount / wordDifferences.Count();
-
-            Debug.WriteLine($"Pixel-wise comparison: {wordUnchangedPercent * 100:F4} ({wordUnchangedCount}/{wordDifferences.Length})");
-            Debug.WriteLine($"Byte-wise comparison: {matchPercent * 100:F4} ({matchCount}/{byteDifferences.Count}) were same.");
-
-            for (var threshold = 1; threshold < 16; threshold++)
-            {
-                var tc = byteDifferences.Count(x => Math.Abs(x.delta) >= threshold);
-                var tcp = ((float)tc / byteDifferences.Count);
-                Debug.WriteLine($"{tcp * 100:F4}% ({tc}/{byteDifferences.Count}) are different by at least {threshold}.");
-            }
-
-            Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) < 2));
+            Assert.IsTrue(byteDifferences.All(x => Math.Abs(x.delta) <= 1));
         }
 
         /// <summary>
@@ -178,16 +123,16 @@ namespace Ryujinx.Tests.Graphics
         /// </summary>
         /// <param name="shortName"></param>
         /// <returns></returns>
-        private (ReadOnlyMemory<byte>, ReadOnlyMemory<byte>) _getTestDataTupleFromShortname(string shortName, int blockWidth, int blockHeight)
+        private (ReadOnlyMemory<byte>, ReadOnlyMemory<byte>) GetTestDataTupleFromShortname(string shortName, int blockWidth, int blockHeight)
         {
-            var encodedRef = _getFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc");
+            var encodedRef = GetFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc");
             // var decodedRef = _getFileDataFromPath($"{shortName}.s4x4.astc.png");
-            var rgba8raw = _getFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc.rgba");
+            var rgba8raw = GetFileDataFromPath($"{shortName}.l-{blockWidth}x{blockHeight}-100.astc.rgba");
 
             return (encodedRef, rgba8raw);
         }
 
-        private ReadOnlyMemory<byte> _getFileDataFromPath(string relativeFilePath)
+        private ReadOnlyMemory<byte> GetFileDataFromPath(string relativeFilePath)
         {
             var fullPath = Path.Join(_testDataDir, relativeFilePath);
             return File.ReadAllBytes(fullPath);
