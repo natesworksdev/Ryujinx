@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Microsleep;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -23,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private readonly KernelContext _context;
         private readonly List<WaitingObject> _waitingObjects;
-        private AutoResetEvent _waitEvent;
+        private IMicrosleepEvent _waitEvent;
         private bool _keepRunning;
         private long _enforceWakeupFromSpinWait;
 
@@ -64,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                 }
             }
 
-            _waitEvent.Set();
+            _waitEvent.Signal();
         }
 
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject schedulerObj)
@@ -86,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             SpinWait spinWait = new();
             WaitingObject next;
 
-            using (_waitEvent = new AutoResetEvent(false))
+            using (_waitEvent = MicrosleepHelper.CreateEvent())
             {
                 while (_keepRunning)
                 {
@@ -103,13 +104,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
                         if (next.TimePoint > timePoint)
                         {
-                            long ms = Math.Min((next.TimePoint - timePoint) / PerformanceCounter.TicksPerMillisecond, int.MaxValue);
-
-                            if (ms > 0)
-                            {
-                                _waitEvent.WaitOne((int)ms);
-                            }
-                            else
+                            if (!_waitEvent.SleepUntil(next.TimePoint))
                             {
                                 while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks < next.TimePoint)
                                 {
@@ -145,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                     }
                     else
                     {
-                        _waitEvent.WaitOne();
+                        _waitEvent.Sleep();
                     }
                 }
             }
@@ -212,7 +207,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         public void Dispose()
         {
             _keepRunning = false;
-            _waitEvent?.Set();
+            _waitEvent?.Signal();
         }
     }
 }
