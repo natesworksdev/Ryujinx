@@ -235,7 +235,7 @@ dotnet_naming_style.IPascalCase.capitalization = pascal_case
 
 # TODO:
 # .NET 8 migration (new warnings are casued by the NEt 8 C# compiler and aanalyzer)
-# The following infor messages might need to be fixed in the source code instead of hiding the actual meassege
+# The following info messages might need to be fixed in the source code instead of hiding the actual message
 # Without the following lines, dotnet format would fail
 # Disable "Collection initialization can be simplified"
 dotnet_diagnostic.IDE0028.severity = none

@@ -34,9 +34,6 @@ namespace Ryujinx.HLE.Exceptions
             Context = context;
             Request = context.Request;
         }
-
-        protected ServiceNotImplementedException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
         public override string Message
         {
             get
