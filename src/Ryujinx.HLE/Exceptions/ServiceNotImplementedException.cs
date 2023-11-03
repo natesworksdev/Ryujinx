@@ -34,6 +34,7 @@ namespace Ryujinx.HLE.Exceptions
             Context = context;
             Request = context.Request;
         }
+
         public override string Message
         {
             get
