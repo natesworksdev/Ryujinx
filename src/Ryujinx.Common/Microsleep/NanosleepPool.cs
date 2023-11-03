@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
     public class NanosleepPool : IDisposable
     {
-        public const int MaxThreads = 32;
+        public const int MaxThreads = 8;
 
         private class NanosleepThread : IDisposable
         {
@@ -35,9 +32,12 @@ namespace Ryujinx.Common.Microsleep
             {
                 _parent = parent;
 
-                _thread = new Thread(Loop);
-                _thread.Name = $"Common.Nanosleep.{id}";
-                _thread.IsBackground = true;
+                _thread = new Thread(Loop)
+                {
+                    Name = $"Common.Nanosleep.{id}",
+                    Priority = ThreadPriority.AboveNormal,
+                    IsBackground = true
+                };
                 _thread.Start();
             }
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Common.Microsleep
 
                     var diff = ticks - _timePoint;
 
-                    Ryujinx.Common.Logging.Logger.Error?.Print(Ryujinx.Common.Logging.LogClass.Ptc, $"Nanosleep inaccuracy: {diff / (float)PerformanceCounter.TicksPerMillisecond}ms");
+                    Ryujinx.Common.Logging.Logger.Error?.Print(Ryujinx.Common.Logging.LogClass.Ptc, $"Sleep: {_nanoseconds / 1_000_000f}ms, Nanosleep inaccuracy: {diff / (float)PerformanceCounter.TicksPerMillisecond}ms");
                     */
 
                     _parent.Signal(this);
@@ -90,7 +90,7 @@ namespace Ryujinx.Common.Microsleep
         private readonly object _lock = new();
         private readonly List<NanosleepThread> _threads = new();
         private readonly List<NanosleepThread> _active = new();
-        private readonly Queue<NanosleepThread> _free = new();
+        private readonly Stack<NanosleepThread> _free = new();
         private readonly AutoResetEvent _signalTarget;
 
         private long _signalId;
@@ -105,7 +105,7 @@ namespace Ryujinx.Common.Microsleep
             lock (_lock)
             {
                 _active.Remove(thread);
-                _free.Enqueue(thread);
+                _free.Push(thread);
 
                 if (thread.SignalId == _signalId)
                 {
@@ -114,7 +114,6 @@ namespace Ryujinx.Common.Microsleep
             }
         }
 
-        private int _updater;
 
         public bool SleepAndSignal(long nanoseconds, long timePoint)
         {
@@ -131,7 +130,7 @@ namespace Ryujinx.Common.Microsleep
                     }
                 }
 
-                if (!_free.TryDequeue(out NanosleepThread thread))
+                if (!_free.TryPop(out NanosleepThread thread))
                 {
                     if (_threads.Count >= MaxThreads)
                     {
@@ -141,18 +140,9 @@ namespace Ryujinx.Common.Microsleep
                     thread = new NanosleepThread(this, _threads.Count);
 
                     _threads.Add(thread);
-
-                    Ryujinx.Common.Logging.Logger.Error?.Print(Ryujinx.Common.Logging.LogClass.Ptc, $"Nanosleep count: {_threads.Count}");
                 }
 
                 _active.Add(thread);
-
-                /*
-                if (++_updater % 100 == 0)
-                {
-                    Ryujinx.Common.Logging.Logger.Error?.Print(Ryujinx.Common.Logging.LogClass.Ptc, $"Active Nanosleep count: {_active.Count}");
-                }
-                */
 
                 thread.SleepAndSignal(nanoseconds, _signalId, timePoint);
 

@@ -66,6 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _composerThread = new Thread(HandleComposition)
             {
                 Name = "SurfaceFlinger.Composer",
+                Priority = ThreadPriority.AboveNormal
             };
 
             _chrono = new Stopwatch();
