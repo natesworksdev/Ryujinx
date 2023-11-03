@@ -5,21 +5,20 @@ namespace Ryujinx.Common.Microsleep
 {
     public static partial class Nanosleep
     {
-        private const long X64NanosleepBias = 50000; // 0.05ms
-        private const long ARMNanosleepBias = 5000; // 0.005ms
+        private const long NanosleepBias = 50000; // 0.05ms
+
+        private const long StrictNanosleepBias = 150000; // 0.15ms (todo: better)
 
         public static long Bias { get; }
+        public static long StrictBias { get; }
 
         static Nanosleep()
         {
-            if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
-            {
-                Bias = X64NanosleepBias;
-            }
-            else
-            {
-                Bias = ARMNanosleepBias;
-            }
+            // TODO: Operating systems can apply a bias depending on how long the requested timeout is.
+
+            Bias = NanosleepBias;
+
+            StrictBias = StrictNanosleepBias;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -44,6 +43,20 @@ namespace Ryujinx.Common.Microsleep
         public static void Sleep(long nanoseconds)
         {
             nanoseconds -= Bias;
+
+            if (nanoseconds >= 0)
+            {
+                Timespec req = GetTimespecFromNanoseconds((ulong)nanoseconds);
+                Timespec rem = new();
+
+                nanosleep(ref req, ref rem);
+            }
+        }
+
+        public static void SleepBefore(long nanoseconds)
+        {
+            // Stricter bias to ensure we wake before the timepoint.
+            nanoseconds -= StrictBias;
 
             if (nanoseconds >= 0)
             {

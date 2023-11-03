@@ -55,6 +55,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                 timePoint = long.MaxValue;
             }
 
+            timePoint = _waitEvent.AdjustTimePoint(timePoint, timeout);
+
             lock (_context.CriticalSection.Lock)
             {
                 _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));

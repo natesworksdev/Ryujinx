@@ -5,25 +5,15 @@ namespace Ryujinx.Common.Microsleep
 {
     public class NanosleepEvent : IMicrosleepEvent
     {
-        private AutoResetEvent _waitEvent = new(false);
-        private NanosleepPool _pool;
+        private readonly AutoResetEvent _waitEvent = new(false);
+        private readonly NanosleepPool _pool;
 
         public NanosleepEvent()
         {
             _pool = new NanosleepPool(_waitEvent);
         }
 
-        public bool CanSleepTil(long timePoint)
-        {
-            // Delay to timePoint is more than the bias
-            long now = PerformanceCounter.ElapsedTicks;
-            long delta = (timePoint - now);
-            long ns = (delta * 1_000_000) / PerformanceCounter.TicksPerMillisecond;
-
-            return ns - Nanosleep.Bias > 0;
-        }
-
-        public long AdjustTimePoint(long timePoint)
+        public long AdjustTimePoint(long timePoint, long timeoutNs)
         {
             // No adjustment
             return timePoint;

@@ -5,7 +5,7 @@ namespace Ryujinx.Common.Microsleep
 {
     public class SleepEvent : IMicrosleepEvent
     {
-        private AutoResetEvent _waitEvent = new(false);
+        private readonly AutoResetEvent _waitEvent = new(false);
 
         public bool CanSleepTil(long timePoint)
         {
@@ -16,7 +16,7 @@ namespace Ryujinx.Common.Microsleep
             return ms > 0;
         }
 
-        public long AdjustTimePoint(long timePoint)
+        public long AdjustTimePoint(long timePoint, long timeoutNs)
         {
             // No adjustment
             return timePoint;

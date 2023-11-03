@@ -5,9 +5,7 @@ namespace Ryujinx.Common.Microsleep
 {
     public interface IMicrosleepEvent : IDisposable
     {
-        bool CanSleepTil(long timePoint);
-
-        long AdjustTimePoint(long timePoint);
+        long AdjustTimePoint(long timePoint, long timeoutNs);
 
         bool SleepUntil(long timePoint, bool strictlyBefore = false);
 
