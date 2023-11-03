@@ -22,11 +22,17 @@ namespace Ryujinx.Common.Microsleep
             }
         }
 
+        /// <summary>
+        /// Sleeps up to the closest point to the timepoint that the OS reasonably allows.
+        /// The provided event is used by the timer to wake the current thread, and should not be signalled from any other source.
+        /// </summary>
+        /// <param name="evt">Event used to wake this thread</param>
+        /// <param name="timePoint">Timepoint in host ticks</param>
         public static void SleepUntilTimePoint(AutoResetEvent evt, long timePoint)
         {
             if (OperatingSystem.IsWindows())
             {
-                WindowsGranularTimer.Instance.SleepUntilTimePoint(evt, timePoint);
+                WindowsGranularTimer.Instance.SleepUntilTimePointWithoutExternalSignal(evt, timePoint);
             }
             else
             {

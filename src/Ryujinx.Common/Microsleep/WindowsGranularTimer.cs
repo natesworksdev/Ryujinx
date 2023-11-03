@@ -12,11 +12,13 @@ namespace Ryujinx.Common.SystemInterop
     {
         private readonly struct WaitingObject
         {
+            public readonly long Id;
             public readonly AutoResetEvent Signal;
             public readonly long TimePoint;
 
-            public WaitingObject(AutoResetEvent signal, long timePoint)
+            public WaitingObject(long id, AutoResetEvent signal, long timePoint)
             {
+                Id = id;
                 Signal = signal;
                 TimePoint = timePoint;
             }
@@ -41,6 +43,7 @@ namespace Ryujinx.Common.SystemInterop
         private long _granularityTicks;
         private bool _running = true;
         private long _lastTicks = PerformanceCounter.ElapsedTicks;
+        private long _lastId;
 
         private object _lock = new();
         private List<WaitingObject> _waitingObjects = new();
@@ -85,24 +88,23 @@ namespace Ryujinx.Common.SystemInterop
                 long newTicks = PerformanceCounter.ElapsedTicks;
                 long nextTicks = newTicks + _granularityTicks;
 
-                if (newTicks > _lastTicks + (_granularityNs * 3) / 2)
+                /*
+                if (newTicks > _lastTicks + (_granularityTicks * 3) / 2)
                 {
                     System.Console.WriteLine($"Missed sleep... {(newTicks - _lastTicks) / (float)PerformanceCounter.TicksPerMillisecond}ms");
                 }
+                */
 
                 lock (_lock)
                 {
-                    if (_waitingObjects.Count > 0)
+                    for (int i = 0; i < _waitingObjects.Count; i++)
                     {
-                        for (int i = 0; i < _waitingObjects.Count; i++)
+                        if (nextTicks > _waitingObjects[i].TimePoint)
                         {
-                            if (nextTicks > _waitingObjects[i].TimePoint)
-                            {
-                                // The next clock tick will be after the timepoint, we need to signal now.
-                                _waitingObjects[i].Signal.Set();
+                            // The next clock tick will be after the timepoint, we need to signal now.
+                            _waitingObjects[i].Signal.Set();
 
-                                _waitingObjects.RemoveAt(i--);
-                            }
+                            _waitingObjects.RemoveAt(i--);
                         }
                     }
 
@@ -118,6 +120,8 @@ namespace Ryujinx.Common.SystemInterop
                 return true;
             }
 
+            long id;
+
             lock (_lock)
             {
                 // Return immediately if the next tick is after the requested timepoint.
@@ -128,7 +132,45 @@ namespace Ryujinx.Common.SystemInterop
                     return false;
                 }
 
-                _waitingObjects.Add(new WaitingObject(evt, timePoint));
+                id = ++_lastId;
+
+                _waitingObjects.Add(new WaitingObject(id, evt, timePoint));
+            }
+
+            evt.WaitOne();
+
+            lock (_lock)
+            {
+                for (int i = 0; i < _waitingObjects.Count; i++)
+                {
+                    if (id == _waitingObjects[i].Id)
+                    {
+                        _waitingObjects.RemoveAt(i--);
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public bool SleepUntilTimePointWithoutExternalSignal(AutoResetEvent evt, long timePoint)
+        {
+            long id;
+
+            lock (_lock)
+            {
+                // Return immediately if the next tick is after the requested timepoint.
+                long nextTicks = _lastTicks + _granularityTicks;
+
+                if (nextTicks > timePoint)
+                {
+                    return false;
+                }
+
+                id = ++_lastId;
+
+                _waitingObjects.Add(new WaitingObject(id, evt, timePoint));
             }
 
             evt.WaitOne();
