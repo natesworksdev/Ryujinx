@@ -35,9 +35,6 @@ namespace Ryujinx.Ava
 
         public static void Main(string[] args)
         {
-            //Ryujinx.Common.Microsleep.Nanosleep.NanosleepTest();
-            //return;
-
             Version = ReleaseInformation.GetVersion();
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))

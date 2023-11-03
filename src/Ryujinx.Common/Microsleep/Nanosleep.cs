@@ -11,8 +11,19 @@ namespace Ryujinx.Common.Microsleep
 {
     public static partial class Nanosleep
     {
-        private const long LinuxNanosleepBias = 50000; // 0.05ms
-        private const long LinuxStrictNanosleepBias = 150000; // 0.15ms (todo: better)
+        private const long LinuxBaseNanosleepBias = 50000; // 0.05ms
+        
+        // Penalty for max allowed sleep duration
+        private const long LinuxNanosleepAccuracyPenaltyThreshold = 200000; // 0.2ms
+        private const long LinuxNanosleepAccuracyPenalty = 30000; // 0.03ms
+
+        // Penalty for base sleep duration
+        private const long LinuxNanosleepBasePenaltyThreshold = 500000; // 0.5ms
+        private const long LinuxNanosleepBasePenalty = 30000; // 0.03ms
+        private const long LinuxNanosleepPenaltyPerMillisecond = 18000; // 0.018ms
+        private const long LinuxNanosleepPenaltyCap = 18000; // 0.018ms
+
+        private const long LinuxStrictBiasOffset = 150_000; // 0.15ms
 
         // Nanosleep duration is biased depending on the requested timeout on MacOS.
         // These match the results when measuring on an M1 processor at AboveNormal priority.
@@ -38,7 +49,15 @@ namespace Ryujinx.Common.Microsleep
             }
             else
             {
-                return LinuxNanosleepBias;
+                long bias = LinuxBaseNanosleepBias;
+                
+                if (timeoutNs > LinuxNanosleepBasePenaltyThreshold)
+                {
+                    long penalty = (timeoutNs - LinuxNanosleepBasePenaltyThreshold) * LinuxNanosleepPenaltyPerMillisecond / 1_000_000;
+                    bias += LinuxNanosleepBasePenalty + Math.Min(LinuxNanosleepPenaltyCap, penalty);
+                }
+
+                return bias;
             }
         }
 
@@ -54,7 +73,14 @@ namespace Ryujinx.Common.Microsleep
             }
             else
             {
-                return LinuxStrictNanosleepBias;
+                long bias = GetBias(timeoutNs) + LinuxStrictBiasOffset;
+
+                if (timeoutNs > LinuxNanosleepAccuracyPenaltyThreshold)
+                {
+                    bias += LinuxNanosleepAccuracyPenalty;
+                }
+
+                return bias;
             }
         }
 

@@ -36,7 +36,11 @@ namespace Ryujinx.Common.Microsleep
             }
             else
             {
-                long now = PerformanceCounter.ElapsedTicks;
+                // Events might oversleep by a little, depending on OS.
+                // We don't want to miss the timepoint, so bias the wait to be lower.
+                // Nanosleep can possibly handle it better, too.
+                long accuracyBias = PerformanceCounter.TicksPerMillisecond / 2;
+                long now = PerformanceCounter.ElapsedTicks + accuracyBias;
                 long ms = Math.Min((timePoint - now) / PerformanceCounter.TicksPerMillisecond, int.MaxValue);
 
                 if (ms > 0)
