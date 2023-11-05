@@ -908,6 +908,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsClosing { get; set; }
         public LibHacHorizonManager LibHacHorizonManager { get; internal set; }
         public IHostUiHandler UiHandler { get; internal set; }
+        public string TitleBackup { get; internal set; }
         public bool IsSortedByFavorite => SortMode == ApplicationSort.Favorite;
         public bool IsSortedByTitle => SortMode == ApplicationSort.Title;
         public bool IsSortedByDeveloper => SortMode == ApplicationSort.Developer;
