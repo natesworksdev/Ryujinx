@@ -8,8 +8,8 @@ namespace Ryujinx.Ui.Common.Helper
     {
         private static readonly string[] _fileSizeUnitStrings =
         {
-            "B", "KB", "MB", "GB", "TB", "PB", "EB",  // Base 10 units, used for formatting and parsing
-            "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", // Base 2 units, used for parsing legacy values
+            "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",  // Base 10 units, used for formatting and parsing
+            "KB", "MB", "GB", "TB", "PB", "EB",             // Base 2 units, used for parsing legacy values
         };
 
         /// <summary>
@@ -19,15 +19,22 @@ namespace Ryujinx.Ui.Common.Helper
         {
             Auto = -1,
             Bytes = 0,
-            Kilobytes = 1,
-            Megabytes = 2,
-            Gigabytes = 3,
-            Terabytes = 4,
-            Petabytes = 5,
-            Exabytes = 6,
+            Kibibytes = 1,
+            Mebibytes = 2,
+            Gibibytes = 3,
+            Tebibytes = 4,
+            Pebibytes = 5,
+            Exbibytes = 6,
+            Kilobytes = 7,
+            Megabytes = 8,
+            Gigabytes = 9,
+            Terabytes = 10,
+            Petabytes = 11,
+            Exabytes = 12,
         }
 
-        private const double SizeBase = 1024;
+        private const double SizeBase10 = 1000;
+        private const double SizeBase2 = 1024;
         private const int UnitEBIndex = 6;
 
         #region Value formatters
@@ -93,7 +100,7 @@ namespace Ryujinx.Ui.Common.Helper
             int unitIndex = (int)forceUnit;
             if (forceUnit == FileSizeUnits.Auto)
             {
-                unitIndex = Convert.ToInt32(Math.Floor(Math.Log(size, SizeBase)));
+                unitIndex = Convert.ToInt32(Math.Floor(Math.Log(size, SizeBase10)));
 
                 // Apply an upper bound so that exabytes are the biggest unit used when formatting.
                 if (unitIndex > UnitEBIndex)
@@ -102,7 +109,17 @@ namespace Ryujinx.Ui.Common.Helper
                 }
             }
 
-            double sizeRounded = Math.Round(size / Math.Pow(SizeBase, unitIndex), 1);
+            double sizeRounded;
+
+            if (unitIndex > UnitEBIndex)
+            {
+                sizeRounded = Math.Round(size / Math.Pow(SizeBase10, unitIndex - UnitEBIndex), 1);
+            }
+            else
+            {
+                sizeRounded = Math.Round(size / Math.Pow(SizeBase2, unitIndex), 1);
+            }
+
             string sizeFormatted = sizeRounded.ToString(CultureInfo.InvariantCulture);
 
             return $"{sizeFormatted} {_fileSizeUnitStrings[unitIndex]}";
@@ -180,13 +197,16 @@ namespace Ryujinx.Ui.Common.Helper
                     break;
                 }
 
-                // If the unit index is one that points to a base 2 unit in the FileSizeUnitStrings array, subtract 6 to arrive at a usable power value.
+                double sizeBase = SizeBase2;
+
+                // If the unit index is one that points to a base 10 unit in the FileSizeUnitStrings array, subtract 6 to arrive at a usable power value.
                 if (i > UnitEBIndex)
                 {
                     i -= UnitEBIndex;
+                    sizeBase = SizeBase10;
                 }
 
-                number *= Math.Pow(SizeBase, i);
+                number *= Math.Pow(sizeBase, i);
 
                 return Convert.ToInt64(number);
             }

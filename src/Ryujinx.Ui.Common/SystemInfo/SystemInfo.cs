@@ -21,7 +21,7 @@ namespace Ryujinx.Ui.Common.SystemInfo
             CpuName = "Unknown";
         }
 
-        private static string ToGBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : ValueFormatUtils.FormatFileSize((long)bytesValue, ValueFormatUtils.FileSizeUnits.Gigabytes);
+        private static string ToGBString(ulong bytesValue) => (bytesValue == 0) ? "Unknown" : ValueFormatUtils.FormatFileSize((long)bytesValue, ValueFormatUtils.FileSizeUnits.Gibibytes);
 
         public void Print()
         {
