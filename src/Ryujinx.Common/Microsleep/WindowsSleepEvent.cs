@@ -60,7 +60,7 @@ namespace Ryujinx.Common.Microsleep
 
         public bool SleepUntil(long timePoint, bool strictlyBefore = false)
         {
-            return _timer.SleepUntilTimePoint(_waitEvent, timePoint + ErrorBias);
+            return _timer.SleepUntilTimePoint(_waitEvent, timePoint + (ErrorBias * PerformanceCounter.TicksPerMillisecond) / 1_000_000);
         }
 
         public void Sleep()
