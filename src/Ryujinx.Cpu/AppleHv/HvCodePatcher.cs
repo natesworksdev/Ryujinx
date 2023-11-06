@@ -37,7 +37,7 @@ namespace Ryujinx.Cpu.AppleHv
                         }
 
                         bool isPair = (inst & (1u << 21)) != 0;
-                        bool isLoad = (inst & (1u << 21)) != 0;
+                        bool isLoad = (inst & (1u << 22)) != 0;
 
                         uint rt2 = (inst >> 10) & 0x1fu;
                         uint rs = (inst >> 16) & 0x1fu;
