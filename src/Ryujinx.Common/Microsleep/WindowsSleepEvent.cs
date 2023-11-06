@@ -1,9 +1,11 @@
 using Ryujinx.Common.SystemInterop;
 using System;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    [SupportedOSPlatform("windows")]
     public class WindowsSleepEvent : IMicrosleepEvent
     {
         /// <summary>
@@ -58,7 +60,7 @@ namespace Ryujinx.Common.Microsleep
             return timePoint;
         }
 
-        public bool SleepUntil(long timePoint, bool strictlyBefore = false)
+        public bool SleepUntil(long timePoint)
         {
             return _timer.SleepUntilTimePoint(_waitEvent, timePoint + (ErrorBias * PerformanceCounter.TicksPerMillisecond) / 1_000_000);
         }
@@ -75,6 +77,8 @@ namespace Ryujinx.Common.Microsleep
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             _waitEvent.Dispose();
         }
     }

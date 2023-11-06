@@ -7,7 +7,7 @@ namespace Ryujinx.Common.Microsleep
     {
         long AdjustTimePoint(long timePoint, long timeoutNs);
 
-        bool SleepUntil(long timePoint, bool strictlyBefore = false);
+        bool SleepUntil(long timePoint);
 
         void Sleep();
 

@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("android")]
+    [SupportedOSPlatform("ios")]
     public static partial class Nanosleep
     {
         private const long LinuxBaseNanosleepBias = 50000; // 0.05ms

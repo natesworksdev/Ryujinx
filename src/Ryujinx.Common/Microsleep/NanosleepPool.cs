@@ -1,25 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("android")]
+    [SupportedOSPlatform("ios")]
     public class NanosleepPool : IDisposable
     {
         public const int MaxThreads = 8;
 
         private class NanosleepThread : IDisposable
         {
-            private static long TimePointEpsilon;
+            private static readonly long _timePointEpsilon;
 
             static NanosleepThread()
             {
-                TimePointEpsilon = PerformanceCounter.TicksPerMillisecond / 100; // 0.01ms
+                _timePointEpsilon = PerformanceCounter.TicksPerMillisecond / 100; // 0.01ms
             }
 
-            private Thread _thread;
-            private NanosleepPool _parent;
-            private AutoResetEvent _newWaitEvent = new(false);
+            private readonly Thread _thread;
+            private readonly NanosleepPool _parent;
+            private readonly AutoResetEvent _newWaitEvent;
             private bool _running = true;
 
             private long _signalId;
@@ -31,6 +36,7 @@ namespace Ryujinx.Common.Microsleep
             public NanosleepThread(NanosleepPool parent, int id)
             {
                 _parent = parent;
+                _newWaitEvent = new(false);
 
                 _thread = new Thread(Loop)
                 {
@@ -38,12 +44,14 @@ namespace Ryujinx.Common.Microsleep
                     Priority = ThreadPriority.AboveNormal,
                     IsBackground = true
                 };
+
                 _thread.Start();
             }
 
             private void Loop()
             {
                 _newWaitEvent.WaitOne();
+
                 while (_running)
                 {
                     Nanosleep.Sleep(_nanoseconds);
@@ -59,6 +67,8 @@ namespace Ryujinx.Common.Microsleep
                     _parent.Signal(this);
                     _newWaitEvent.WaitOne();
                 }
+
+                _newWaitEvent.Dispose();
             }
 
             public void SleepAndSignal(long nanoseconds, long signalId, long timePoint)
@@ -71,7 +81,7 @@ namespace Ryujinx.Common.Microsleep
 
             public bool Resurrect(long signalId, long timePoint)
             {
-                if (Math.Abs(timePoint - _timePoint) < TimePointEpsilon)
+                if (Math.Abs(timePoint - _timePoint) < _timePointEpsilon)
                 {
                     _signalId = signalId;
 
@@ -83,7 +93,8 @@ namespace Ryujinx.Common.Microsleep
 
             public void Dispose()
             {
-                _newWaitEvent.Dispose();
+                _running = false;
+                _newWaitEvent.Set();
             }
         }
 
@@ -157,6 +168,8 @@ namespace Ryujinx.Common.Microsleep
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             foreach (NanosleepThread thread in _threads)
             {
                 thread.Dispose();

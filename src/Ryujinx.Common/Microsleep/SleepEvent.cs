@@ -7,22 +7,13 @@ namespace Ryujinx.Common.Microsleep
     {
         private readonly AutoResetEvent _waitEvent = new(false);
 
-        public bool CanSleepTil(long timePoint)
-        {
-            // Delay to timePoint is more than 1ms
-            long now = PerformanceCounter.ElapsedTicks;
-            long ms = Math.Min((timePoint - now) / PerformanceCounter.TicksPerMillisecond, int.MaxValue);
-
-            return ms > 0;
-        }
-
         public long AdjustTimePoint(long timePoint, long timeoutNs)
         {
             // No adjustment
             return timePoint;
         }
 
-        public bool SleepUntil(long timePoint, bool strictlyBefore = false)
+        public bool SleepUntil(long timePoint)
         {
             long now = PerformanceCounter.ElapsedTicks;
             long ms = Math.Min((timePoint - now) / PerformanceCounter.TicksPerMillisecond, int.MaxValue);
@@ -49,6 +40,8 @@ namespace Ryujinx.Common.Microsleep
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             _waitEvent.Dispose();
         }
     }

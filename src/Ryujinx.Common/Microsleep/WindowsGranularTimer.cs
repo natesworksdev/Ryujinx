@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Common.SystemInterop
@@ -8,6 +9,7 @@ namespace Ryujinx.Common.SystemInterop
     /// <summary>
     /// Timer that attempts to align with the system timer interrupt.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class WindowsGranularTimer
     {
         private readonly struct WaitingObject

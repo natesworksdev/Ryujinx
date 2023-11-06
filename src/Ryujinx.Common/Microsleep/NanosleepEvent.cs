@@ -1,8 +1,13 @@
 using System;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("android")]
+    [SupportedOSPlatform("ios")]
     public class NanosleepEvent : IMicrosleepEvent
     {
         private readonly AutoResetEvent _waitEvent = new(false);
@@ -19,7 +24,7 @@ namespace Ryujinx.Common.Microsleep
             return timePoint;
         }
 
-        public bool SleepUntil(long timePoint, bool strictlyBefore = false)
+        public bool SleepUntil(long timePoint)
         {
             long now = PerformanceCounter.ElapsedTicks;
             long delta = (timePoint - now);
@@ -67,6 +72,8 @@ namespace Ryujinx.Common.Microsleep
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             _pool.Dispose();
             _waitEvent.Dispose();
         }
