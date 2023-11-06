@@ -106,7 +106,6 @@ namespace Ryujinx.Memory
 
         /// <summary>
         /// Fills the specified memory region with the value specified in <paramref name="value"/>.
-        /// This triggers read memory tracking, as a redundancy check would be useless if the data is not up to date.
         /// </summary>
         /// <param name="va">Virtual address to fill the value into</param>
         /// <param name="size">Size of the memory region to fill</param>
