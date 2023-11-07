@@ -726,7 +726,7 @@ namespace Ryujinx.Cpu.AppleHv
         {
             if (protection.HasFlag(MemoryPermission.Execute))
             {
-                // Some applications uses unordered exclusive memory access instructions
+                // Some applications use unordered exclusive memory access instructions
                 // where it is not valid to do so, leading to memory re-ordering that
                 // makes the code behave incorrectly on some CPUs.
                 // To work around this, we force all such accesses to be ordered.
