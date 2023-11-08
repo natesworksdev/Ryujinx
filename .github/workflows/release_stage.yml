@@ -1,9 +1,9 @@
-name: Release job
+name: Release staging build
 
 on:
   workflow_dispatch:
   push:
-    branches: [ weekly ]
+    branches: [ master ]
     paths-ignore:
       - '.github/**'
       - '*.yml'
@@ -11,32 +11,16 @@ on:
       - '*.config'
       - 'README.md'
 
-concurrency: release-weekly
+concurrency: release-master
 
 env:
   POWERSHELL_TELEMETRY_OPTOUT: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  RYUJINX_VERSION: "1.1.${{ github.run_number }}"
-  RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "weekly"
+  RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "staging"
   RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "Ryujinx"
-  RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "release-channel-master"
+  RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "release-channel-staging"
 
 jobs:
-  tag:
-    name: Create tag
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create tag
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ env.RYUJINX_VERSION }}',
-              sha: context.sha
-            })
-
   release:
     name: Release ${{ matrix.OS_NAME }}
     runs-on: ${{ matrix.os }}
@@ -78,11 +62,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get version
+        id: version
+        run: |
+          base_version=$(gh api /repos/$REPO/tags --jq '.[0].name')
+          version_suffix=$(gh api /repos/$RELEASE_REPO/tags --jq 'map(select(.name | startswith("'$base_version'."))) | (.[0].name | split(".")[-1] | tonumber | . + 1) // 1')
+          echo "version=$base_version.$version_suffix" >> "$GITHUB_OUTPUT"
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_REPO: "${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}"
+
       - name: Prepare release
         id: release
         uses: ./.github/actions/ryujinx-release
         with:
-          version: ${{ env.RYUJINX_VERSION }}
+          version: ${{ steps.version.outputs.version }}
           rid: ${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}
           channel: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_NAME }}
           owner: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}
@@ -91,20 +87,12 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ env.RYUJINX_VERSION }}
+          name: ${{ steps.version.outputs.version }}
           artifacts: "release_output/*.tar.gz,release_output/*.zip"
-          tag: ${{ env.RYUJINX_VERSION }}
-          body: "For more information about this release please check out the official [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog)."
-          omitBodyDuringUpdate: true
+          tag: ${{ steps.version.outputs.version }}
           allowUpdates: true
+          removeArtifacts: true
           replacesArtifacts: true
           owner: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}
           repo: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}
           token: ${{ secrets.RELEASE_TOKEN }}
-
-  flatpak_release:
-    uses: ./.github/workflows/flatpak.yml
-    needs: release
-    with:
-      ryujinx_version: ${{ env.RYUJINX_VERSION }}
-    secrets: inherit
