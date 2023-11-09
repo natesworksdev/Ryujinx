@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Indicates that the texture was modified since the last time it was flushed.
         /// </summary>
-        public bool ModifiedSinceLastFlush  { get; set; }
+        public bool ModifiedSinceLastFlush { get; set; }
 
         /// <summary>
         /// Increments when the host texture is swapped, or when the texture is removed from all pools.
