@@ -1444,7 +1444,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 _modifiedStale = false;
 
-                if (bound || ModifiedSinceLastFlush)
+                if (bound || ModifiedSinceLastFlush || Group.HasCopyDependencies || Group.HasFlushBuffer)
                 {
                     Group.SignalModifying(this, bound);
                 }
