@@ -12,7 +12,7 @@ namespace Ryujinx.Horizon.Sdk.Am.Proxies
         Result GetDisplayController(out IDisplayController displayController);
         Result GetProcessWindingController(out IProcessWindingController processWindingController);
         Result GetLibraryAppletCreator(out ILibraryAppletCreator libraryAppletCreator);
-        Result OpenLibraryAppletSelfAccessor();
+        Result OpenLibraryAppletSelfAccessor(out ILibraryAppletSelfAccessor libraryAppletSelfAccessor);
         Result GetAppletCommonFunctions(out IAppletCommonFunctions appletCommonFunctions);
         Result GetHomeMenuFunctions();
         Result GetGlobalStateController();

@@ -54,7 +54,6 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
             processWindingController = new ProcessWindingController();
 
             return Result.Success;
-            throw new System.NotImplementedException();
         }
 
         [CmifCommand(11)]

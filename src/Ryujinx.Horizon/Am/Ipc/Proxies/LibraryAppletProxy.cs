@@ -65,9 +65,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(20)]
-        public Result OpenLibraryAppletSelfAccessor()
+        public Result OpenLibraryAppletSelfAccessor(out ILibraryAppletSelfAccessor libraryAppletSelfAccessor)
         {
-            throw new System.NotImplementedException();
+            libraryAppletSelfAccessor = new LibraryAppletSelfAccessor();
+
+            return Result.Success;
         }
 
         [CmifCommand(21)]
