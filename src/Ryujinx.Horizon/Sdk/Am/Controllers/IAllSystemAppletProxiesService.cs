@@ -1,10 +1,11 @@
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Proxies;
+using Ryujinx.Horizon.Sdk.Sf;
 using System;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
-    public interface IAllSystemAppletProxiesService
+    interface IAllSystemAppletProxiesService : IServiceObject
     {
         Result OpenSystemAppletProxy(out ISystemAppletProxy systemAppletProxy, ulong unknown1, int unknown2, ulong pid);
         Result OpenLibraryAppletProxyOld(out ILibraryAppletProxy libraryAppletProxy, ulong unknown1, int unknown2, ulong pid);

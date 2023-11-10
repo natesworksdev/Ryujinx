@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Am.Ipc;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
 
@@ -5,12 +6,12 @@ namespace Ryujinx.Horizon.Am
 {
     internal class AmIpcServer
     {
-        // TODO: Get actual values from RE
-        private const int MaxSessionsCount = 10;
-        private const int TotalMaxSessionsCount = MaxSessionsCount * 4;
+        private const int MaxSessionsCountAE = 9;
+        private const int MaxSessionsCountOE = 1;
+        private const int TotalMaxSessionsCount = MaxSessionsCountAE + MaxSessionsCountOE;
 
         private const int PointerBufferSize = 0;
-        private const int MaxDomains = 0;
+        private const int MaxDomains = 10;
         private const int MaxDomainObjects = 64;
         private const int MaxPortsCount = 4;
 
@@ -28,7 +29,8 @@ namespace Ryujinx.Horizon.Am
 
             _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _options, TotalMaxSessionsCount);
 
-            _serverManager.RegisterServer(0, ServiceName.Encode("appletAE"), MaxSessionsCount);
+            _serverManager.RegisterObjectForServer(new ProxiesService(), ServiceName.Encode("appletAE"), MaxSessionsCountAE);
+            _serverManager.RegisterObjectForServer(new ProxiesService(), ServiceName.Encode("appletOE"), MaxSessionsCountOE);
         }
 
         public void ServiceRequests()
