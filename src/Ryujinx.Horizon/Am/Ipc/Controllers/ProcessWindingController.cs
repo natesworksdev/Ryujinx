@@ -1,8 +1,9 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Am.Controllers;
 using Ryujinx.Horizon.Sdk.Sf;
 
-namespace Ryujinx.Horizon.Sdk.Am.Controllers
+namespace Ryujinx.Horizon.Am.Ipc.Controllers
 {
     partial class ProcessWindingController : IProcessWindingController
     {
