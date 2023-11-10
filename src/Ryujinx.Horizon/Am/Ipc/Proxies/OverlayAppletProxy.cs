@@ -49,27 +49,36 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(10)]
-        public Result GetProcessWindingController()
+        public Result GetProcessWindingController(out IProcessWindingController processWindingController)
         {
+            processWindingController = new ProcessWindingController();
+
+            return Result.Success;
             throw new System.NotImplementedException();
         }
 
         [CmifCommand(11)]
-        public Result GetLibraryAppletCreator()
+        public Result GetLibraryAppletCreator(out ILibraryAppletCreator libraryAppletCreator)
         {
-            throw new System.NotImplementedException();
+            libraryAppletCreator = new LibraryAppletCreator();
+
+            return Result.Success;
         }
 
         [CmifCommand(20)]
-        public Result GetOverlayFunctions()
+        public Result GetOverlayFunctions(out IOverlayFunctions overlayFunctions)
         {
-            throw new System.NotImplementedException();
+            overlayFunctions = new OverlayFunctions();
+
+            return Result.Success;
         }
 
         [CmifCommand(21)]
-        public Result GetAppletCommonFunctions()
+        public Result GetAppletCommonFunctions(out IAppletCommonFunctions appletCommonFunctions)
         {
-            throw new System.NotImplementedException();
+            appletCommonFunctions = new AppletCommonFunctions();
+
+            return Result.Success;
         }
 
         [CmifCommand(23)]
@@ -79,9 +88,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(1000)]
-        public Result GetDebugFunctions()
+        public Result GetDebugFunctions(out IDebugFunctions debugFunctions)
         {
-            throw new System.NotImplementedException();
+            debugFunctions = new DebugFunctions();
+
+            return Result.Success;
         }
     }
 }

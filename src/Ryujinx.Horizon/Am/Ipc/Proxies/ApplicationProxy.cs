@@ -49,27 +49,35 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(10)]
-        public Result GetProcessWindingController()
+        public Result GetProcessWindingController(out IProcessWindingController processWindingController)
         {
-            throw new System.NotImplementedException();
+            processWindingController = new ProcessWindingController();
+
+            return Result.Success;
         }
 
         [CmifCommand(11)]
-        public Result GetLibraryAppletCreator()
+        public Result GetLibraryAppletCreator(out ILibraryAppletCreator libraryAppletCreator)
         {
-            throw new System.NotImplementedException();
+            libraryAppletCreator = new LibraryAppletCreator();
+
+            return Result.Success;
         }
 
         [CmifCommand(20)]
-        public Result GetApplicationFunctions()
+        public Result GetApplicationFunctions(out IApplicationFunctions applicationFunctions)
         {
-            throw new System.NotImplementedException();
+            applicationFunctions = new ApplicationFunctions();
+
+            return Result.Success;
         }
 
         [CmifCommand(1000)]
-        public Result GetDebugFunctions()
+        public Result GetDebugFunctions(out IDebugFunctions debugFunctions)
         {
-            throw new System.NotImplementedException();
+            debugFunctions = new DebugFunctions();
+
+            return Result.Success;
         }
     }
 }

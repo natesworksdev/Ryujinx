@@ -10,12 +10,12 @@ namespace Ryujinx.Horizon.Sdk.Am.Proxies
         Result GetWindowController(out IWindowController windowController);
         Result GetAudioController(out IAudioController audioController);
         Result GetDisplayController(out IDisplayController displayController);
-        Result GetProcessWindingController();
-        Result GetLibraryAppletCreator();
+        Result GetProcessWindingController(out IProcessWindingController processWindingController);
+        Result GetLibraryAppletCreator(out ILibraryAppletCreator libraryAppletCreator);
         Result GetHomeMenuFunctions();
         Result GetGlobalStateController();
         Result GetApplicationCreator();
-        Result GetAppletCommonFunctions();
-        Result GetDebugFunctions();
+        Result GetAppletCommonFunctions(out IAppletCommonFunctions commonFunctions);
+        Result GetDebugFunctions(out IDebugFunctions debugFunctions);
     }
 }
