@@ -1,0 +1,70 @@
+using Ryujinx.Horizon.Common;
+
+namespace Ryujinx.Horizon.Sdk.Am.Controllers
+{
+    public interface IApplicationFunctions
+    {
+        Result PopLaunchParameter();
+        Result CreateApplicationAndPushAndRequestToStart();
+        Result CreateApplicationAndPushAndRequestToStartForQuest();
+        Result CreateApplicationAndRequestToStart();
+        Result CreateApplicationAndRequestToStartForQuest();
+        Result CreateApplicationWithAttributeAndPushAndRequestToStartForQuest();
+        Result CreateApplicationWithAttributeAndRequestToStartForQuest();
+        Result EnsureSaveData();
+        Result GetDesiredLanguage();
+        Result SetTerminateResult();
+        Result GetDisplayVersion();
+        Result GetLaunchStorageInfoForDebug();
+        Result ExtendSaveData();
+        Result GetSaveDataSize();
+        Result CreateCacheStorage();
+        Result GetSaveDataSizeMax();
+        Result GetCacheStorageMax();
+        Result BeginBlockingHomeButtonShortAndLongPressed();
+        Result EndBlockingHomeButtonShortAndLongPressed();
+        Result BeginBlockingHomeButton();
+        Result EndBlockingHomeButton();
+        Result SelectApplicationLicense();
+        Result GetDeviceSaveDataSizeMax();
+        Result GetLimitedApplicationLicense();
+        Result GetLimitedApplicationLicenseUpgradableEvent();
+        Result NotifyRunning();
+        Result GetPseudoDeviceId();
+        Result SetMediaPlaybackStateForApplication();
+        Result IsGamePlayRecordingSupported();
+        Result InitializeGamePlayRecording();
+        Result SetGamePlayRecordingState();
+        Result RequestFlushGamePlayingMovieForDebug();
+        Result RequestToShutdown();
+        Result RequestToReboot();
+        Result RequestToSleep();
+        Result ExitAndRequestToShowThanksMessage();
+        Result EnableApplicationCrashReport();
+        Result InitializeApplicationCopyrightFrameBuffer();
+        Result SetApplicationCopyrightImage();
+        Result SetApplicationCopyrightVisibility();
+        Result QueryApplicationPlayStatistics();
+        Result QueryApplicationPlayStatisticsByUid();
+        Result ExecuteProgram();
+        Result ClearUserChannel();
+        Result UnpopToUserChannel();
+        Result GetPreviousProgramIndex();
+        Result EnableApplicationAllThreadDumpOnCrash();
+        Result GetGpuErrorDetectedSystemEvent();
+        Result SetDelayTimeToAbortOnGpuError();
+        Result GetFriendInvitationStorageChannelEvent();
+        Result TryPopFromFriendInvitationStorageChannel();
+        Result GetNotificationStorageChannelEvent();
+        Result TryPopFromNotificationStorageChannel();
+        Result GetHealthWarningDisappearedSystemEvent();
+        Result SetHdcpAuthenticationActivated();
+        Result GetLaunchRequiredVersion();
+        Result UpgradeLaunchRequiredVersion();
+        Result SendServerMaintenanceOverlayNotification();
+        Result GetLastApplicationExitReason();
+        Result StartContinuousRecordingFlushForDebug();
+        Result CreateMovieMaker();
+        Result PrepareForJit();
+    }
+}
