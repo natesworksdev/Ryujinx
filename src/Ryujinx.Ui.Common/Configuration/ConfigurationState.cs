@@ -11,6 +11,7 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
+using Ryujinx.Graphics.Vulkan;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -763,7 +764,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.ResScaleCustom.Value = 1.0f;
             Graphics.MaxAnisotropy.Value = -1.0f;
             Graphics.AspectRatio.Value = AspectRatio.Fixed16x9;
-            Graphics.GraphicsBackend.Value = OperatingSystem.IsMacOS() ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGl;
+            Graphics.GraphicsBackend.Value = DefaultGraphicsBackend();
             Graphics.PreferredGpu.Value = "";
             Graphics.ShadersDumpPath.Value = "";
             Logger.EnableDebug.Value = false;
@@ -1537,6 +1538,18 @@ namespace Ryujinx.Ui.Common.Configuration
             }
 
             return result;
+        }
+
+        private static GraphicsBackend DefaultGraphicsBackend()
+        {
+            // Any system running macOS or returning any amount of valid Vulkan devices should default to Vulkan.
+            // Checks for if the Vulkan version and featureset is compatible should be performed within VulkanRenderer.
+            if (OperatingSystem.IsMacOS() || VulkanRenderer.GetPhysicalDevices().Length > 0)
+            {
+                return GraphicsBackend.Vulkan;
+            }
+
+            return GraphicsBackend.OpenGl;
         }
 
         private static void LogValueChange<T>(ReactiveEventArgs<T> eventArgs, string valueName)
