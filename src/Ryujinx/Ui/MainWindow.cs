@@ -75,8 +75,6 @@ namespace Ryujinx.Ui
         private string _lastScannedAmiiboId = "";
         private bool _lastScannedAmiiboShowAll = false;
 
-        private string _titleBackup = "";
-
         public RendererWidgetBase RendererWidget;
         public InputManager InputManager;
 
@@ -1453,8 +1451,7 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = true;
             _emulationContext.System.TogglePauseEmulation(true);
-            _titleBackup = Title;
-            Title += "(Paused)";
+            Title = TitleHelper.ActiveApplicationTitle(_emulationContext.Processes.ActiveApplication, Program.Version, "Paused");
             Logger.Info?.Print(LogClass.Emulation, "Emulation was paused");
         }
 
@@ -1463,7 +1460,7 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = true;
             _resumeEmulation.Sensitive = false;
             _emulationContext.System.TogglePauseEmulation(false);
-            Title = !string.IsNullOrEmpty(_titleBackup) ? _titleBackup : Title;
+            Title = TitleHelper.ActiveApplicationTitle(_emulationContext.Processes.ActiveApplication, Program.Version);
             Logger.Info?.Print(LogClass.Emulation, "Emulation was resumed");
         }
 
