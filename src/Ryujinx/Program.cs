@@ -184,7 +184,6 @@ namespace Ryujinx
 
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-
             }
             else
             {
