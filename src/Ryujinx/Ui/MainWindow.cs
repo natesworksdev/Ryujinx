@@ -959,7 +959,7 @@ namespace Ryujinx.Ui
 
                 ApplicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
                 {
-                    appMetadata.LastPlayed = DateTime.UtcNow;
+                    appMetadata.UpdatePreGame();
                 });
             }
         }
@@ -1102,13 +1102,7 @@ namespace Ryujinx.Ui
             {
                 ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
                 {
-                    if (appMetadata.LastPlayed.HasValue)
-                    {
-                        double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
-                        appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
-                    }
-
-                    appMetadata.LastPlayed = DateTime.UtcNow;
+                    appMetadata.UpdatePostGame();
                 });
             }
         }
@@ -1182,10 +1176,10 @@ namespace Ryujinx.Ui
                     $"{args.AppData.Name}\n{args.AppData.IdString.ToUpper()}",
                     args.AppData.Developer,
                     args.AppData.Version,
-                    args.AppData.TimePlayed,
+                    args.AppData.TimePlayedString,
                     args.AppData.LastPlayedString,
                     args.AppData.FileExtension,
-                    args.AppData.FileSize,
+                    args.AppData.FileSizeString,
                     args.AppData.Path,
                     args.AppData.ControlHolder);
             });
@@ -1274,10 +1268,10 @@ namespace Ryujinx.Ui
                 Id = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
                 Developer = (string)_tableStore.GetValue(treeIter, 3),
                 Version = (string)_tableStore.GetValue(treeIter, 4),
-                TimePlayed = (string)_tableStore.GetValue(treeIter, 5),
-                LastPlayed = DateTime.Parse((string)_tableStore.GetValue(treeIter, 6), DateTimeFormatInfo.CurrentInfo).ToUniversalTime(),
+                TimePlayed = ValueFormatUtils.ParseTimeSpan((string)_tableStore.GetValue(treeIter, 5)),
+                LastPlayed = ValueFormatUtils.ParseDateTime((string)_tableStore.GetValue(treeIter, 6)),
                 FileExtension = (string)_tableStore.GetValue(treeIter, 7),
-                FileSize = (string)_tableStore.GetValue(treeIter, 8),
+                FileSize = ValueFormatUtils.ParseFileSize((string)_tableStore.GetValue(treeIter, 8)),
                 Path = (string)_tableStore.GetValue(treeIter, 9),
                 ControlHolder = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10),
             };
@@ -1347,10 +1341,10 @@ namespace Ryujinx.Ui
                 Id = ulong.Parse(((string)_tableStore.GetValue(treeIter, 2)).Split('\n')[1], NumberStyles.HexNumber),
                 Developer = (string)_tableStore.GetValue(treeIter, 3),
                 Version = (string)_tableStore.GetValue(treeIter, 4),
-                TimePlayed = (string)_tableStore.GetValue(treeIter, 5),
-                LastPlayed = DateTime.Parse((string)_tableStore.GetValue(treeIter, 6), DateTimeFormatInfo.CurrentInfo).ToUniversalTime(),
+                TimePlayed = ValueFormatUtils.ParseTimeSpan((string)_tableStore.GetValue(treeIter, 5)),
+                LastPlayed = ValueFormatUtils.ParseDateTime((string)_tableStore.GetValue(treeIter, 6)),
                 FileExtension = (string)_tableStore.GetValue(treeIter, 7),
-                FileSize = (string)_tableStore.GetValue(treeIter, 8),
+                FileSize = ValueFormatUtils.ParseFileSize((string)_tableStore.GetValue(treeIter, 8)),
                 Path = (string)_tableStore.GetValue(treeIter, 9),
                 ControlHolder = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10),
             };
