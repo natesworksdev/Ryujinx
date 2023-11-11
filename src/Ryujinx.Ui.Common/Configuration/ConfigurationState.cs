@@ -5,13 +5,13 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using Ryujinx.Graphics.Vulkan;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
