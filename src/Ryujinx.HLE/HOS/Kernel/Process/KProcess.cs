@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public IVirtualMemoryManager CpuMemory => Context.AddressSpace;
 
         public HleProcessDebugger Debugger { get; private set; }
-        public IDebuggableProcess GdbStubInterface { get { return new DebuggerInterface(this); } }
+        public IDebuggableProcess DebugInterface { get; private set; }
 
         public KProcess(KernelContext context, bool allowCodeMemoryForJit = false) : base(context)
         {
@@ -113,6 +113,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _threads = new LinkedList<KThread>();
 
             Debugger = new HleProcessDebugger(this);
+            DebugInterface = new DebuggerInterface(this);
         }
 
         public Result InitializeKip(
@@ -1189,24 +1190,103 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private class DebuggerInterface : IDebuggableProcess
         {
             private readonly KProcess _parent;
+            private readonly KernelContext KernelContext;
+            private int _debugState = (int)DebugState.Running;
 
             public DebuggerInterface(KProcess p)
             {
                 _parent = p;
             }
 
-            public void DebugStopAllThreads()
+            public void DebugStop()
             {
+                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
+                        (int)DebugState.Running) != (int)DebugState.Running)
+                {
+                    return;
+                }
+
+                _parent.KernelContext.CriticalSection.Enter();
                 lock (_parent._threadingLock)
                 {
                     foreach (KThread thread in _parent._threads)
                     {
-                        thread.DebugStop();
+                        thread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                        thread.Context.RequestInterrupt();
+                        thread.DebugHalt.WaitOne();
                     }
                 }
+
+                _debugState = (int)DebugState.Stopped;
+                _parent.KernelContext.CriticalSection.Leave();
             }
 
-            public ulong[] DebugGetThreadUids()
+            public void DebugContinue()
+            {
+                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
+                        (int)DebugState.Stopped) != (int)DebugState.Stopped)
+                {
+                    return;
+                }
+
+                _parent.KernelContext.CriticalSection.Enter();
+                lock (_parent._threadingLock)
+                {
+                    foreach (KThread thread in _parent._threads)
+                    {
+                        thread.Resume(ThreadSchedState.ThreadPauseFlag);
+                    }
+                }
+                _parent.KernelContext.CriticalSection.Leave();
+            }
+
+            public bool DebugStep(KThread target)
+            {
+                if (_debugState != (int)DebugState.Stopped)
+                {
+                    return false;
+                }
+                _parent.KernelContext.CriticalSection.Enter();
+                bool wasPaused = (target.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused;
+                target.Context.RequestDebugStep();
+                target.Resume(ThreadSchedState.ThreadPauseFlag);
+                if (wasPaused)
+                {
+                    lock (_parent._threadingLock)
+                    {
+                        foreach (KThread thread in _parent._threads)
+                        {
+                            thread.Resume(ThreadSchedState.ThreadPauseFlag);
+                        }
+                    }
+                }
+                _parent.KernelContext.CriticalSection.Leave();
+
+                target.Context.StepBarrier.SignalAndWait();
+                target.Context.StepBarrier.SignalAndWait();
+
+                _parent.KernelContext.CriticalSection.Enter();
+                target.Suspend(ThreadSchedState.ThreadPauseFlag);
+                if (wasPaused)
+                {
+                    lock (_parent._threadingLock)
+                    {
+                        foreach (KThread thread in _parent._threads)
+                        {
+                            thread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                        }
+                    }
+                }
+                _parent.KernelContext.CriticalSection.Leave();
+                return true;
+            }
+
+            public DebugState GetDebugState()
+            {
+                return (DebugState)_debugState;
+            }
+
+            public ulong[] GetThreadUids()
             {
                 lock (_parent._threadingLock)
                 {
@@ -1214,7 +1294,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            public KThread DebugGetThread(ulong threadUid)
+            public KThread GetThread(ulong threadUid)
             {
                 lock (_parent._threadingLock)
                 {

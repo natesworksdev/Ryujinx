@@ -115,7 +115,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private readonly object _activityOperationLock = new();
 
-        private int _debugState = (int)DebugState.Running;
         internal readonly ManualResetEvent DebugHalt = new(false);
 
         public KThread(KernelContext context) : base(context)
@@ -1436,71 +1435,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public void ClearUserInterruptFlag()
         {
             Owner.CpuMemory.Write<ushort>(_tlsAddress + TlsUserInterruptFlagOffset, 0);
-        }
-        
-        public bool DebugStep()
-        {
-            lock (_activityOperationLock)
-            {
-                KernelContext.CriticalSection.Enter();
-                bool blocked = MutexOwner != null || WaitingInArbitration || WaitingSync;
-                if (_debugState != (int)DebugState.Stopped
-                    || (_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0
-                    || blocked)
-                {
-                    KernelContext.CriticalSection.Leave();
-                    return false;
-                }
-                KernelContext.CriticalSection.Leave();
-
-                Context.RequestDebugStep();
-                Resume(ThreadSchedState.ThreadPauseFlag);
-                Context.StepBarrier.SignalAndWait();
-                Suspend(ThreadSchedState.ThreadPauseFlag);
-                Context.StepBarrier.SignalAndWait();
-
-                return true;
-            }
-        }
-
-        public void DebugStop()
-        {
-            lock (_activityOperationLock)
-            {
-                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
-                        (int)DebugState.Running) != (int)DebugState.Running)
-                {
-                    return;
-                }
-
-                Suspend(ThreadSchedState.ThreadPauseFlag);
-                Context.RequestInterrupt();
-                DebugHalt.WaitOne();
-
-                _debugState = (int)DebugState.Stopped;
-            }
-        }
-
-        public void DebugContinue()
-        {
-            lock (_activityOperationLock)
-            {
-                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
-                        (int)DebugState.Stopped) != (int)DebugState.Stopped)
-                {
-                    return;
-                }
-
-                if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
-                {
-                    Resume(ThreadSchedState.ThreadPauseFlag);
-                }
-            }
-        }
-
-        public DebugState GetDebugState()
-        {
-            return (DebugState)_debugState;
         }
     }
 }

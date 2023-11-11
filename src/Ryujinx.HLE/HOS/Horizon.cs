@@ -479,7 +479,7 @@ namespace Ryujinx.HLE.HOS
         {
             lock (KernelContext.Processes)
             {
-                return KernelContext.Processes.Values.FirstOrDefault(x => x.IsApplication)?.GdbStubInterface;
+                return KernelContext.Processes.Values.FirstOrDefault(x => x.IsApplication)?.DebugInterface;
             }
         }
     }

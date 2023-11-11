@@ -47,11 +47,9 @@ namespace Ryujinx.HLE.Debugger
             HandlerThread.Start();
         }
 
-        private void HaltApplication() => Device.System.DebugGetApplicationProcess().DebugStopAllThreads();
-        private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
-        private KThread GetThread(ulong threadUid) => Device.System.DebugGetApplicationProcess().DebugGetThread(threadUid);
-        private KThread[] GetThreads() => GetThreadIds().Select(x => GetThread(x)).ToArray();
-        private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
+        private IDebuggableProcess DebugProcess => Device.System.DebugGetApplicationProcess();
+        private KThread[] GetThreads() => DebugProcess.GetThreadUids().Select(x => DebugProcess.GetThread(x)).ToArray();
+        private IVirtualMemoryManager GetMemory() => DebugProcess.CpuMemory;
         private void InvalidateCacheRegion(ulong address, ulong size) =>
             Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
         private KernelContext KernelContext => Device.System.KernelContext;
@@ -171,7 +169,7 @@ namespace Ryujinx.HLE.Debugger
                         break;
 
                     case ThreadBreakMessage msg:
-                        HaltApplication();
+                        DebugProcess.DebugStop();
                         Reply($"T05thread:{msg.Context.ThreadUid:x};");
                         break;
                 }
@@ -289,7 +287,7 @@ namespace Ryujinx.HLE.Debugger
 
                     if (ss.ConsumeRemaining("fThreadInfo"))
                     {
-                        Reply($"m{string.Join(",", GetThreadIds().Select(x => $"{x:x}"))}");
+                        Reply($"m{string.Join(",", DebugProcess.GetThreadUids().Select(x => $"{x:x}"))}");
                         break;
                     }
 
@@ -308,8 +306,7 @@ namespace Ryujinx.HLE.Debugger
                             break;
                         }
 
-                        KThread thread = GetThread(threadId.Value);
-                        if (thread.GetDebugState() == DebugState.Stopped)
+                        if (DebugProcess.GetDebugState() == DebugState.Stopped)
                         {
                             Reply(ToHex("Stopped"));
                         }
@@ -376,8 +373,8 @@ namespace Ryujinx.HLE.Debugger
         void CommandQuery()
         {
             // GDB is performing initial contact. Stop everything.
-            HaltApplication();
-            gThread = cThread = GetThreadIds().First();
+            DebugProcess.DebugStop();
+            gThread = cThread = DebugProcess.GetThreadUids().First();
             Reply($"T05thread:{cThread:x};");
         }
 
@@ -391,13 +388,10 @@ namespace Ryujinx.HLE.Debugger
                     return;
                 }
 
-                GetThread(cThread.Value).Context.DebugPc = newPc.Value;
+                DebugProcess.GetThread(cThread.Value).Context.DebugPc = newPc.Value;
             }
 
-            foreach (var thread in GetThreads())
-            {
-                thread.DebugContinue();
-            }
+            DebugProcess.DebugContinue();
         }
 
         void CommandDetach()
@@ -414,7 +408,7 @@ namespace Ryujinx.HLE.Debugger
                 return;
             }
 
-            var ctx = GetThread(gThread.Value).Context;
+            var ctx = DebugProcess.GetThread(gThread.Value).Context;
             string registers = "";
             for (int i = 0; i < GdbRegisterCount; i++)
             {
@@ -432,7 +426,7 @@ namespace Ryujinx.HLE.Debugger
                 return;
             }
 
-            var ctx = GetThread(gThread.Value).Context;
+            var ctx = DebugProcess.GetThread(gThread.Value).Context;
             for (int i = 0; i < GdbRegisterCount; i++)
             {
                 if (!GdbWriteRegister(ctx, i, ss))
@@ -517,7 +511,7 @@ namespace Ryujinx.HLE.Debugger
                 return;
             }
 
-            var ctx = GetThread(gThread.Value).Context;
+            var ctx = DebugProcess.GetThread(gThread.Value).Context;
             string result = GdbReadRegister(ctx, gdbRegId);
             if (result != null)
             {
@@ -537,7 +531,7 @@ namespace Ryujinx.HLE.Debugger
                 return;
             }
 
-            var ctx = GetThread(gThread.Value).Context;
+            var ctx = DebugProcess.GetThread(gThread.Value).Context;
             if (GdbWriteRegister(ctx, gdbRegId, ss) && ss.IsEmpty())
             {
                 ReplyOK();
@@ -556,14 +550,14 @@ namespace Ryujinx.HLE.Debugger
                 return;
             }
 
-            var thread = GetThread(cThread.Value);
+            var thread = DebugProcess.GetThread(cThread.Value);
 
             if (newPc.HasValue)
             {
                 thread.Context.DebugPc = newPc.Value;
             }
 
-            if (!thread.DebugStep())
+            if (!DebugProcess.DebugStep(thread))
             {
                 ReplyError();
             }
@@ -745,7 +739,7 @@ namespace Ryujinx.HLE.Debugger
 
             Messages.Add(new ThreadBreakMessage(ctx, address, imm));
 
-            KThread currentThread = GetThread(ctx.ThreadUid);
+            KThread currentThread = DebugProcess.GetThread(ctx.ThreadUid);
 
             if (currentThread.Context.Running &&
                 currentThread.Owner != null &&
