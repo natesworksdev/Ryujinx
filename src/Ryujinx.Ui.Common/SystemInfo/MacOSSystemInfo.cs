@@ -5,13 +5,20 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 
-namespace Ryujinx.Common.SystemInfo
+namespace Ryujinx.Ui.Common.SystemInfo
 {
     [SupportedOSPlatform("macos")]
     partial class MacOSSystemInfo : SystemInfo
     {
         internal MacOSSystemInfo()
         {
+            if (SysctlByName("kern.osversion", out string buildRevision) != 0)
+            {
+                buildRevision = "Unknown Build";
+            }
+
+            OsDescription = $"macOS {Environment.OSVersion.Version} ({buildRevision}) ({RuntimeInformation.OSArchitecture})";
+
             string cpuName = GetCpuidCpuName();
 
             if (cpuName == null && SysctlByName("machdep.cpu.brand_string", out cpuName) != 0)

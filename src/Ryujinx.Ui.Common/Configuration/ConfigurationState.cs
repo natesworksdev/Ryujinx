@@ -571,6 +571,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 LanInterfaceId = new ReactiveObject<string>();
                 Mode = new ReactiveObject<MultiplayerMode>();
+                Mode.Event += static (_, e) => LogValueChange(e, nameof(MultiplayerMode));
             }
         }
 
@@ -783,7 +784,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration.Value = true;
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
-            HideCursor.Value = HideCursorMode.Never;
+            HideCursor.Value = HideCursorMode.OnIdle;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
             Graphics.EnableTextureRecompression.Value = false;

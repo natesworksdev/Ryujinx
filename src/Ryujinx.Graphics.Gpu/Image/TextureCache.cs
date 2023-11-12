@@ -107,8 +107,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                             // Any texture that has been unmapped at any point or is partially unmapped
                             // should update their pool references after the remap completes.
 
-                            MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
-
                             foreach (var texture in _partiallyMappedTextures)
                             {
                                 texture.UpdatePoolMappings();
@@ -735,9 +733,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     if (overlap.IsView)
                     {
-                        overlapCompatibility = overlapCompatibility == TextureViewCompatibility.FormatAlias ?
-                            TextureViewCompatibility.Incompatible :
-                            TextureViewCompatibility.CopyOnly;
+                        overlapCompatibility = TextureViewCompatibility.CopyOnly;
                     }
                     else
                     {
@@ -815,7 +811,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     OverlapInfo oInfo = _overlapInfo[index];
 
-                    if (oInfo.Compatibility <= TextureViewCompatibility.LayoutIncompatible || oInfo.Compatibility == TextureViewCompatibility.FormatAlias)
+                    if (oInfo.Compatibility <= TextureViewCompatibility.LayoutIncompatible)
                     {
                         if (!overlap.IsView && texture.DataOverlaps(overlap, oInfo.Compatibility))
                         {
