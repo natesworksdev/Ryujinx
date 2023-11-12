@@ -41,13 +41,13 @@ namespace Ryujinx.Common.Microsleep
             long granularity = _timer.GranularityNs;
             long misalignment = timeoutNs % granularity;
             
-            if (misalignment < ClockAlignedBias || misalignment > granularity - ClockAlignedBias)
+            if ((misalignment < ClockAlignedBias || misalignment > granularity - ClockAlignedBias) && timeoutNs > ClockAlignedBias)
             {
                 // Inaccurate sleep for 0.5ms increments, typically.
 
                 (long low, long high) = _timer.ReturnNearestTicks(timePoint);
 
-                if (timePoint - low < granularity / ReverseTimePointFraction)
+                if (timePoint - low < _timer.GranularityTicks / ReverseTimePointFraction)
                 {
                     timePoint = low;
                 }

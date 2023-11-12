@@ -39,6 +39,7 @@ namespace Ryujinx.Common.SystemInterop
         public static WindowsGranularTimer Instance => _instance;
 
         public long GranularityNs => _granularityNs;
+        public long GranularityTicks => _granularityTicks;
 
         private Thread _timerThread;
         private long _granularityNs = 500000;
