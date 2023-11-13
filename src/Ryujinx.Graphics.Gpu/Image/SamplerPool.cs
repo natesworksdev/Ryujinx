@@ -147,6 +147,29 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets the sampler with the specified ID, and return true or false depending on the sampler entry being modified or not since the last call.
+        /// </summary>
+        /// <param name="id">ID of the texture</param>
+        /// <param name="sampler">Sampler with the specified ID</param>
+        /// <returns>True if the sampler entry was modified since the last call, false otherwise</returns>
+        public bool TryGetBindlessSampler(int id, out Sampler sampler)
+        {
+            if ((uint)id < Items.Length)
+            {
+                if (ModifiedEntries.Clear(id))
+                {
+                    sampler = Items[id] ?? GetValidated(id);
+
+                    return true;
+                }
+            }
+
+            sampler = null;
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets the sampler at the given <paramref name="id"/> from the cache,
         /// or creates a new one if not found.
         /// This will return null if the sampler entry is considered invalid.
@@ -174,8 +197,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             ulong endAddress = address + size;
 
-            UpdateModifiedEntries(address, endAddress);
-
             for (; address < endAddress; address += DescriptorSize)
             {
                 int id = (int)((address - Address) / DescriptorSize);
@@ -192,9 +213,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
+                    UpdateModifiedEntry(id);
+
                     sampler.Dispose();
 
                     Items[id] = null;
+                }
+                else
+                {
+                    UpdateModifiedEntry(id);
                 }
             }
         }

@@ -236,25 +236,81 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             while ((id = ModifiedEntries.GetNextAndClear()) >= 0)
             {
-                Texture texture = Items[id] ?? GetValidated(id);
+                UpdateBindlessInternal(renderer, id);
+            }
+        }
 
-                if (texture != null)
+        /// <summary>
+        /// Updates the bindless texture with the given pool ID, if the pool entry has been modified since the last call.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="samplerPool">Optional sampler pool. If null, the sampler ID is ignored</param>
+        /// <param name="textureId">ID of the texture</param>
+        /// <param name="samplerId">ID of the sampler</param>
+        public void UpdateBindlessCombined(IRenderer renderer, SamplerPool samplerPool, int textureId, int samplerId)
+        {
+            if ((uint)textureId >= Items.Length)
+            {
+                return;
+            }
+
+            Items[textureId]?.SynchronizeMemory();
+
+            bool textureModified = ModifiedEntries.Clear(textureId);
+
+            if (samplerPool != null)
+            {
+                bool samplerModified = samplerPool.TryGetBindlessSampler(samplerId, out Sampler sampler);
+
+                if (sampler == null)
                 {
-                    if (texture.Target == Target.TextureBuffer)
+                    if (textureModified)
                     {
-                        _channel.BufferManager.SetBufferTextureStorage(
-                            texture.HostTexture,
-                            texture.Range.GetSubRange(0).Address,
-                            texture.Size,
-                            default,
-                            0,
-                            false,
-                            id);
+                        UpdateBindlessInternal(renderer, textureId);
+                    }
+                }
+                else if (textureModified || samplerModified)
+                {
+                    Texture texture = Items[textureId] ?? GetValidated(textureId);
+
+                    if (texture != null)
+                    {
+                        if (texture.Target != Target.TextureBuffer)
+                        {
+                            renderer.Pipeline.RegisterBindlessTextureAndSampler(
+                                textureId,
+                                texture.HostTexture,
+                                texture.ScaleFactor,
+                                samplerId,
+                                sampler.GetHostSampler(null));
+                        }
                     }
                     else
                     {
-                        renderer.Pipeline.RegisterBindlessTexture(id, texture.HostTexture, texture.ScaleFactor);
+                        renderer.Pipeline.RegisterBindlessSampler(samplerId, sampler.GetHostSampler(null));
                     }
+                }
+            }
+            else if (textureModified)
+            {
+                UpdateBindlessInternal(renderer, textureId);
+            }
+        }
+
+        /// <summary>
+        /// Updates the bindless texture with the given pool ID.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="id">ID of the texture</param>
+        private void UpdateBindlessInternal(IRenderer renderer, int id)
+        {
+            Texture texture = Items[id] ?? GetValidated(id);
+
+            if (texture != null)
+            {
+                if (texture.Target != Target.TextureBuffer)
+                {
+                    renderer.Pipeline.RegisterBindlessTexture(id, texture.HostTexture, texture.ScaleFactor);
                 }
             }
         }
@@ -431,8 +487,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             ulong endAddress = address + size;
 
-            UpdateModifiedEntries(address, endAddress);
-
             for (; address < endAddress; address += DescriptorSize)
             {
                 int id = (int)((address - Address) / DescriptorSize);
@@ -451,6 +505,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
+                    UpdateModifiedEntry(id);
+
                     if (texture.HasOneReference())
                     {
                         _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture, ref cachedDescriptor);
@@ -460,6 +516,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         texture.DecrementReferenceCount(this, id);
                     }
+                }
+                else
+                {
+                    UpdateModifiedEntry(id);
                 }
             }
         }

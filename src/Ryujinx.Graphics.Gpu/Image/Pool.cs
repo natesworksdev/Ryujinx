@@ -214,6 +214,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="endAddress">End address of the region of the pool that has been modified, exclusive</param>
         protected void UpdateModifiedEntries(ulong address, ulong endAddress)
         {
+            // TODO: Remove this method (it's unused now).
+
             int startId = (int)((address - Address) / DescriptorSize);
             int endId = (int)((endAddress - Address + (DescriptorSize - 1)) / DescriptorSize) - 1;
 
@@ -226,6 +228,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _minimumAccessedId = Math.Min(_minimumAccessedId, startId);
             _maximumAccessedId = Math.Max(_maximumAccessedId, endId);
+        }
+
+        /// <summary>
+        /// Updates a entry that has been modified.
+        /// </summary>
+        /// <param name="id">Pool entry index</param>
+        protected void UpdateModifiedEntry(int id)
+        {
+            ModifiedEntries.Set(id);
+
+            _minimumAccessedId = Math.Min(_minimumAccessedId, id);
+            _maximumAccessedId = Math.Max(_maximumAccessedId, id);
         }
 
         /// <summary>

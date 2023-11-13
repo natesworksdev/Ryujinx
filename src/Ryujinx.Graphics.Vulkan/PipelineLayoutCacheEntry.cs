@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Vulkan
                 // All bindless resources have the update after bind flag set,
                 // this is required for Intel, otherwise it just crashes when binding the descriptor sets
                 // for bindless resources (maybe because it is above the limit?)
-                bool updateAfterBind = setIndex >= PipelineBase.BindlessBufferTextureSetIndex;
+                bool updateAfterBind = setIndex >= PipelineBase.BindlessTexturesSetIndex;
 
                 var dsc = _gd.DescriptorSetManager.AllocateDescriptorSet(
                     _gd.Api,

@@ -265,6 +265,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             HelperFunctionManager hfm = new(funcs, Definitions.Stage);
 
             BindlessTextureFlags bindlessTextureFlags = BindlessTextureFlags.None;
+            uint bindlessIndexedBuffersMask = 0;
             bool bindlessTexturesAllowed = true;
 
             for (int i = 0; i < functions.Length; i++)
@@ -302,6 +303,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Definitions.Stage,
                         ref usedFeatures,
                         ref bindlessTextureFlags,
+                        ref bindlessIndexedBuffersMask,
                         ref bindlessTexturesAllowed);
 
                     Optimizer.RunPass(context);
@@ -319,6 +321,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager,
                 usedFeatures,
                 bindlessTextureFlags,
+                bindlessIndexedBuffersMask,
                 clipDistancesWritten);
         }
 
@@ -330,6 +333,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             ResourceManager resourceManager,
             FeatureFlags usedFeatures,
             BindlessTextureFlags bindlessTextureFlags,
+            uint bindlessIndexedBuffersMask,
             byte clipDistancesWritten)
         {
             var sInfo = StructuredProgram.MakeStructuredProgram(
@@ -354,6 +358,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager.GetImageDescriptors(),
                 originalDefinitions.Stage,
                 bindlessTextureFlags,
+                bindlessIndexedBuffersMask,
                 geometryVerticesPerPrimitive,
                 originalDefinitions.MaxOutputVertices,
                 originalDefinitions.ThreadsPerInputPrimitive,
@@ -586,6 +591,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager,
                 FeatureFlags.None,
                 BindlessTextureFlags.None,
+                0,
                 0);
         }
 
@@ -683,6 +689,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager,
                 FeatureFlags.RtLayer,
                 BindlessTextureFlags.None,
+                0,
                 0);
         }
     }

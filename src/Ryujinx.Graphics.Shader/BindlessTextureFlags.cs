@@ -5,7 +5,10 @@ namespace Ryujinx.Graphics.Shader
         None = 0,
 
         BindlessConverted = 1 << 0,
-        BindlessNvn = 1 << 1,
-        BindlessFull = 1 << 2,
+        BindlessNvnCombined = 1 << 1,
+        BindlessNvnSeparateTexture = 1 << 2,
+        BindlessNvnSeparateSampler = 1 << 3,
+        BindlessFull = 1 << 4,
+        BindlessNvnAny = BindlessNvnCombined | BindlessNvnSeparateTexture | BindlessNvnSeparateSampler,
     }
 }

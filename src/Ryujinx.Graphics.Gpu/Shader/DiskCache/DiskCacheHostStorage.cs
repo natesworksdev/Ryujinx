@@ -189,6 +189,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// Flags indicating if and how bindless texture accesses were translated for the shader stage.
             /// </summary>
             public BindlessTextureFlags BindlessTextureFlags;
+
+            /// <summary>
+            /// Bit mask indicating which constant buffers are accessed on the shader using indexing to load texture handles.
+            /// </summary>
+            public uint BindlessIndexedBuffersMask;
         }
 
         private readonly DiskCacheGuestStorage _guestStorage;
@@ -805,6 +810,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 images,
                 dataInfo.Stage,
                 dataInfo.BindlessTextureFlags,
+                dataInfo.BindlessIndexedBuffersMask,
                 dataInfo.GeometryVerticesPerPrimitive,
                 dataInfo.GeometryMaxOutputVertices,
                 dataInfo.ThreadsPerInputPrimitive,
@@ -836,6 +842,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 ImagesCount = (ushort)info.Images.Count,
                 Stage = info.Stage,
                 BindlessTextureFlags = info.BindlessTextureFlags,
+                BindlessIndexedBuffersMask = info.BindlessIndexedBuffersMask,
                 GeometryVerticesPerPrimitive = (byte)info.GeometryVerticesPerPrimitive,
                 GeometryMaxOutputVertices = (ushort)info.GeometryMaxOutputVertices,
                 ThreadsPerInputPrimitive = (ushort)info.ThreadsPerInputPrimitive,

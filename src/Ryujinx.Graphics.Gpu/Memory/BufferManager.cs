@@ -430,6 +430,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Gets the size of the compute uniform buffer currently bound at the given index.
+        /// </summary>
+        /// <param name="index">Index of the uniform buffer binding</param>
+        /// <returns>The uniform buffer size, or an undefined value if the buffer is not currently bound</returns>
+        public ulong GetComputeUniformBufferSize(int index)
+        {
+            return _cpUniformBuffers.Buffers[index].Size;
+        }
+
+        /// <summary>
+        /// Gets the size of the graphics uniform buffer currently bound at the given index.
+        /// </summary>
+        /// <param name="stage">Index of the shader stage</param>
+        /// <param name="index">Index of the uniform buffer binding</param>
+        /// <returns>The uniform buffer size, or an undefined value if the buffer is not currently bound</returns>
+        public ulong GetGraphicsUniformBufferSize(int stage, int index)
+        {
+            return _gpUniformBuffers[stage].Buffers[index].Size;
+        }
+
+        /// <summary>
         /// Gets the bounds of the uniform buffer currently bound at the given index.
         /// </summary>
         /// <param name="isCompute">Indicates whenever the uniform is requested by the 3D or compute engine</param>

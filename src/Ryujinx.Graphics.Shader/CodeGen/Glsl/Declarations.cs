@@ -14,7 +14,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine(context.TargetApi == TargetApi.Vulkan ? "#version 460 core" : "#version 450 core");
-            context.AppendLine("#extension GL_ARB_bindless_texture : enable");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
 
             if (context.HostCapabilities.SupportsShaderBallot)
@@ -35,6 +34,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if (context.TargetApi == TargetApi.Vulkan)
             {
                 context.AppendLine("#extension GL_EXT_nonuniform_qualifier : enable");
+            }
+            else
+            {
+                context.AppendLine("#extension GL_ARB_bindless_texture : enable");
             }
 
             if (context.Definitions.Stage == ShaderStage.Compute)

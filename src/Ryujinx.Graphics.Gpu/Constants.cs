@@ -86,6 +86,11 @@ namespace Ryujinx.Graphics.Gpu
         public const int DriverReservedUniformBuffer = 0;
 
         /// <summary>
+        /// Number of the uniform buffer reserved by the driver to store texture binding handles.
+        /// </summary>
+        public const int DriverReserveTextureBindingsBuffer = 2;
+
+        /// <summary>
         /// Maximum size that an storage buffer is assumed to have when the correct size is unknown.
         /// </summary>
         public const ulong MaxUnknownStorageSize = 0x100000;

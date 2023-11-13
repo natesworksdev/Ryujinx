@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                     context.ResourceManager,
                     context.TargetApi,
                     ref context.BindlessTextureFlags,
+                    ref context.BindlessIndexedBuffersMask,
                     context.BindlessTexturesAllowed,
                     context.GpuAccessor.QueryTextureBufferIndex());
 
@@ -784,6 +785,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             ResourceManager resourceManager,
             TargetApi targetApi,
             ref BindlessTextureFlags bindlessTextureFlags,
+            ref uint bindlessIndexedBuffersMask,
             bool bindlessTexturesAllowed,
             int textureBufferIndex)
         {
@@ -797,9 +799,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             {
                 resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage());
 
-                if (IsIndexedAccess(resourceManager, texOp, textureBufferIndex))
+                if (IsIndexedAccess(resourceManager, texOp, ref bindlessTextureFlags, ref bindlessIndexedBuffersMask, textureBufferIndex))
                 {
-                    bindlessTextureFlags |= BindlessTextureFlags.BindlessNvn;
                     return node;
                 }
 
@@ -865,7 +866,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return node;
         }
 
-        private static bool IsIndexedAccess(ResourceManager resourceManager, TextureOperation texOp, int textureBufferIndex)
+        private static bool IsIndexedAccess(
+            ResourceManager resourceManager,
+            TextureOperation texOp,
+            ref BindlessTextureFlags bindlessTextureFlags,
+            ref uint bindlessIndexedBuffersMask,
+            int textureBufferIndex)
         {
             // Try to detect a indexed access.
             // The access is considered indexed if the handle is loaded with a LDC instruction
@@ -875,6 +881,70 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 return false;
             }
 
+            if (handleAsgOp.Inst == Instruction.BitwiseOr)
+            {
+                if (IsCbLoadOrCb(resourceManager, handleAsgOp.GetSource(0), ref bindlessTextureFlags, out int ldc0CbSlot, textureBufferIndex) &&
+                    IsCbLoadOrCb(resourceManager, handleAsgOp.GetSource(1), ref bindlessTextureFlags, out int ldc1CbSlot, textureBufferIndex))
+                {
+                    bindlessIndexedBuffersMask |= (1u << ldc0CbSlot) | (1u << ldc1CbSlot);
+
+                    return true;
+                }
+            }
+            else if (IsCbLoad(resourceManager, handleAsgOp, out int cbSlot))
+            {
+                bindlessTextureFlags |= BindlessTextureFlags.BindlessNvnCombined;
+                bindlessIndexedBuffersMask |= 1u << cbSlot;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsCbLoadOrCb(
+            ResourceManager resourceManager,
+            Operand operand,
+            ref BindlessTextureFlags bindlessTextureFlags,
+            out int cbSlot,
+            int textureBufferIndex)
+        {
+            cbSlot = 0;
+
+            if (operand.Type == OperandType.ConstantBuffer)
+            {
+                cbSlot = operand.GetCbufSlot();
+
+                if (cbSlot == textureBufferIndex && textureBufferIndex == Constants.NvnTextureCbSlot)
+                {
+                    int cbOffset = operand.GetCbufOffset();
+
+                    if (cbOffset >= Constants.NvnSeparateTextureBindingsStartByteOffset / 4 &&
+                        cbOffset < Constants.NvnSeparateTextureBindingsEndByteOffset / 4)
+                    {
+                        bindlessTextureFlags |= BindlessTextureFlags.BindlessNvnSeparateTexture;
+
+                        return true;
+                    }
+                    else if (cbOffset >= Constants.NvnSeparateSamplerBindingsStartByteOffset / 4 &&
+                        cbOffset < Constants.NvnSeparateSamplerBindingsEndByteOffset / 4)
+                    {
+                        bindlessTextureFlags |= BindlessTextureFlags.BindlessNvnSeparateSampler;
+
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            return operand.AsgOp is Operation operation && IsCbLoad(resourceManager, operation, out cbSlot);
+        }
+
+        private static bool IsCbLoad(ResourceManager resourceManager, Operation handleAsgOp, out int cbSlot)
+        {
+            cbSlot = 0;
+
             if (handleAsgOp.Inst != Instruction.Load || handleAsgOp.StorageKind != StorageKind.ConstantBuffer)
             {
                 return false;
@@ -883,8 +953,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             Operand ldcSrc0 = handleAsgOp.GetSource(0);
 
             return ldcSrc0.Type == OperandType.Constant &&
-                   resourceManager.TryGetConstantBufferSlot(ldcSrc0.Value, out int cbSlot) &&
-                   cbSlot == textureBufferIndex;
+                   resourceManager.TryGetConstantBufferSlot(ldcSrc0.Value, out cbSlot);
         }
     }
 }

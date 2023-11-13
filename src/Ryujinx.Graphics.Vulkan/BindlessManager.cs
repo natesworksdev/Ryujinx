@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -270,25 +271,26 @@ namespace Ryujinx.Graphics.Vulkan
                         bbiDsc.UpdateBufferImage(0, 0, i, bufferView, DescriptorType.StorageTexelBuffer);
                     }
                 }
+                else
+                {
+                    btDsc.UpdateImage(0, 2, i, default, DescriptorType.SampledImage);
+                }
             }
 
             for (int i = 0; i < _samplerRefs.Length; i++)
             {
                 var sampler = _samplerRefs[i];
-                if (sampler != null)
+                var sd = new DescriptorImageInfo()
                 {
-                    var sd = new DescriptorImageInfo()
-                    {
-                        Sampler = sampler.Get(cbs).Value
-                    };
+                    Sampler = sampler?.Get(cbs).Value ?? default
+                };
 
-                    if (sd.Sampler.Handle == 0)
-                    {
-                        sd.Sampler = dummySampler.GetSampler().Get(cbs).Value;
-                    }
-
-                    bsDsc.UpdateImage(0, 0, i, sd, DescriptorType.Sampler);
+                if (sd.Sampler.Handle == 0)
+                {
+                    sd.Sampler = dummySampler.GetSampler().Get(cbs).Value;
                 }
+
+                bsDsc.UpdateImage(0, 0, i, sd, DescriptorType.Sampler);
             }
 
             _pipelineLayout = plce.PipelineLayout;

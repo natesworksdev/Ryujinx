@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public readonly ShaderStage Stage;
         public readonly ref FeatureFlags UsedFeatures;
         public readonly ref BindlessTextureFlags BindlessTextureFlags;
+        public readonly ref uint BindlessIndexedBuffersMask;
         public readonly ref bool BindlessTexturesAllowed;
 
         public TransformContext(
@@ -27,6 +28,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             ShaderStage stage,
             ref FeatureFlags usedFeatures,
             ref BindlessTextureFlags bindlessTextureFlags,
+            ref uint bindlessIndexedBuffersMask,
             ref bool bindlessTexturesAllowed)
         {
             Hfm = hfm;
@@ -39,6 +41,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Stage = stage;
             UsedFeatures = ref usedFeatures;
             BindlessTextureFlags = ref bindlessTextureFlags;
+            BindlessIndexedBuffersMask = ref bindlessIndexedBuffersMask;
             BindlessTexturesAllowed = ref bindlessTexturesAllowed;
         }
     }

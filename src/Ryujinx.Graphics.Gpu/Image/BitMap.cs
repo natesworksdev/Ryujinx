@@ -87,14 +87,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Sets a bit to 0.
         /// </summary>
         /// <param name="bit">Index of the bit</param>
-        public void Clear(int bit)
+        /// <returns>True if the bit was set, false otherwise</returns>
+        public bool Clear(int bit)
         {
             int wordIndex = bit / IntSize;
             int wordBit = bit & IntMask;
 
             ulong wordMask = 1UL << wordBit;
 
+            if ((_masks[wordIndex] & wordMask) == 0)
+            {
+                return false;
+            }
+
             _masks[wordIndex] &= ~wordMask;
+
+            return true;
         }
 
         /// <summary>
