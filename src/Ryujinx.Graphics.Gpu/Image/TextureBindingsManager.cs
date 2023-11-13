@@ -863,12 +863,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int index = 0; index < cbData.Length; index += 2)
             {
                 int packedId = cbData[index];
-                int highWord = cbData[index + 1];
-
-                if (highWord != 1)
-                {
-                    continue;
-                }
 
                 int textureId = TextureHandle.UnpackTextureId(packedId);
                 int samplerId;
@@ -899,13 +893,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int index = 0; index < cbData.Length; index += 2)
             {
                 int packedId = cbData[index];
-                int highWord = cbData[index + 1];
-
-                if (highWord != 1)
-                {
-                    continue;
-                }
-
                 int textureId = TextureHandle.UnpackTextureId(packedId);
 
                 pool.UpdateBindlessCombined(_context.Renderer, null, textureId, 0);
@@ -931,13 +918,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int index = 0; index < cbData.Length; index += 2)
             {
                 int packedId = cbData[index];
-                int highWord = cbData[index + 1];
-
-                if (highWord != 1)
-                {
-                    continue;
-                }
-
                 int samplerId;
 
                 if (_samplerIndex == SamplerIndex.ViaHeaderIndex)
