@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private void AddBindlessDefinition(int set, int binding, string name, SamplerType samplerType)
         {
             TextureDefinition definition = new(set, binding, name, samplerType, TextureFormat.Unknown, TextureUsageFlags.None, 0);
-            Properties.AddOrUpdateTexture(definition);
+            Properties.AddOrUpdateTexture(definition, samplerType & ~(SamplerType.Separate | SamplerType.Shadow));
         }
 
         private void AddBindlessSeparateDefinition(int set, int binding, string name, SamplerType samplerType)

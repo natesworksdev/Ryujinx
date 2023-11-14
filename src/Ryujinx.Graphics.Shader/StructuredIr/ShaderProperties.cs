@@ -38,14 +38,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             _storageBuffers[new(definition.Set, definition.Binding)] = definition;
         }
 
-        public void AddOrUpdateTexture(TextureDefinition definition)
+        public void AddOrUpdateTexture(TextureDefinition definition, SamplerType type = SamplerType.None)
         {
-            _textures[new(definition.Set, definition.Binding, definition.Type & ~(SamplerType.Shadow | SamplerType.Separate))] = definition;
+            _textures[new(definition.Set, definition.Binding, type)] = definition;
         }
 
-        public void AddOrUpdateImage(TextureDefinition definition)
+        public void AddOrUpdateImage(TextureDefinition definition, SamplerType type = SamplerType.None)
         {
-            _images[new(definition.Set, definition.Binding, definition.Type & ~(SamplerType.Shadow | SamplerType.Separate))] = definition;
+            _images[new(definition.Set, definition.Binding, type)] = definition;
         }
 
         public int AddLocalMemory(MemoryDefinition definition)
