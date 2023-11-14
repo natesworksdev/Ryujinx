@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    /// <summary>
+    /// A cross-platform precise sleep event that has millisecond granularity.
+    /// </summary>
     public class SleepEvent : IMicrosleepEvent
     {
         private readonly AutoResetEvent _waitEvent = new(false);

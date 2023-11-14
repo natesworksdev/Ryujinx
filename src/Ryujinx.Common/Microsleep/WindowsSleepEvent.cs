@@ -5,6 +5,10 @@ using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    /// <summary>
+    /// A precise sleep event that uses Windows specific methods to increase clock resolution beyond 1ms,
+    /// use the clock's phase for more precise waits, and potentially align timepoints with it.
+    /// </summary>
     [SupportedOSPlatform("windows")]
     public class WindowsSleepEvent : IMicrosleepEvent
     {
@@ -27,6 +31,9 @@ namespace Ryujinx.Common.Microsleep
         private readonly AutoResetEvent _waitEvent = new(false);
         private readonly WindowsGranularTimer _timer = WindowsGranularTimer.Instance;
 
+        /// <summary>
+        /// Set to true to disable timepoint realignment.
+        /// </summary>
         public bool Precise { get; set; } = false;
 
         public long AdjustTimePoint(long timePoint, long timeoutNs)

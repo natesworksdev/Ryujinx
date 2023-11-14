@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    /// <summary>
+    /// A pool of threads used to allow "interruptable" nanosleep for a single target event.
+    /// </summary>
     [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
@@ -13,6 +16,9 @@ namespace Ryujinx.Common.Microsleep
     {
         public const int MaxThreads = 8;
 
+        /// <summary>
+        /// A thread that nanosleeps and may signal an event on wake.
+        /// </summary>
         private class NanosleepThread : IDisposable
         {
             private static readonly long _timePointEpsilon;
@@ -106,11 +112,20 @@ namespace Ryujinx.Common.Microsleep
 
         private long _signalId;
 
+        /// <summary>
+        /// Creates a new NanosleepPool with a target event to signal when a nanosleep completes.
+        /// </summary>
+        /// <param name="signalTarget"></param>
         public NanosleepPool(AutoResetEvent signalTarget)
         {
             _signalTarget = signalTarget;
         }
 
+        /// <summary>
+        /// Signal the target event (if the source sleep has not been superceded)
+        /// and free the nanosleep thread.
+        /// </summary>
+        /// <param name="thread">Nanosleep thread that completed</param>
         private void Signal(NanosleepThread thread)
         {
             lock (_lock)
@@ -124,7 +139,6 @@ namespace Ryujinx.Common.Microsleep
                 }
             }
         }
-
 
         public bool SleepAndSignal(long nanoseconds, long timePoint)
         {

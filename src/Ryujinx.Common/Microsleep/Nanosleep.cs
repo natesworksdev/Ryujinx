@@ -8,6 +8,9 @@ using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    /// <summary>
+    /// Access to Linux/MacOS nanosleep, with platform specific bias to improve precision.
+    /// </summary>
     [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
@@ -39,6 +42,12 @@ namespace Ryujinx.Common.Microsleep
 
         private static bool NoBias;
 
+        /// <summary>
+        /// Get bias for a given nanosecond timeout.
+        /// Some platforms calculate their bias differently, this method can be used to counteract it.
+        /// </summary>
+        /// <param name="timeoutNs">Nanosecond timeout</param>
+        /// <returns>Bias in nanoseconds</returns>
         public static long GetBias(long timeoutNs)
         {
             if (NoBias)
@@ -64,6 +73,13 @@ namespace Ryujinx.Common.Microsleep
             }
         }
 
+        /// <summary>
+        /// Get a stricter bias for a given nanosecond timeout,
+        /// which can improve the chances the sleep completes before the timeout.
+        /// Some platforms calculate their bias differently, this method can be used to counteract it.
+        /// </summary>
+        /// <param name="timeoutNs">Nanosecond timeout</param>
+        /// <returns>Strict bias in nanoseconds</returns>
         public static long GetStrictBias(long timeoutNs)
         {
             if (NoBias)
@@ -89,8 +105,6 @@ namespace Ryujinx.Common.Microsleep
 
         static Nanosleep()
         {
-            // TODO: Operating systems can apply a bias depending on how long the requested timeout is.
-
             Bias = GetBias(0);
         }
 
@@ -104,6 +118,11 @@ namespace Ryujinx.Common.Microsleep
         [LibraryImport("libc", SetLastError = true)]
         private static partial int nanosleep(ref Timespec req, ref Timespec rem);
 
+        /// <summary>
+        /// Convert a timeout in nanoseconds to a timespec for nanosleep.
+        /// </summary>
+        /// <param name="nanoseconds">Timeout in nanoseconds</param>
+        /// <returns>Timespec for nanosleep</returns>
         private static Timespec GetTimespecFromNanoseconds(ulong nanoseconds)
         {
             return new Timespec
@@ -113,6 +132,10 @@ namespace Ryujinx.Common.Microsleep
             };
         }
 
+        /// <summary>
+        /// Sleep for approximately a given time period in nanoseconds.
+        /// </summary>
+        /// <param name="nanoseconds">Time to sleep for in nanoseconds</param>
         public static void Sleep(long nanoseconds)
         {
             nanoseconds -= GetBias(nanoseconds);
@@ -126,6 +149,14 @@ namespace Ryujinx.Common.Microsleep
             }
         }
 
+        /// <summary>
+        /// Sleep for at most a given time period in nanoseconds.
+        /// Uses a stricter bias to wake before the requested duration.
+        /// </summary>
+        /// <remarks>
+        /// Due to OS scheduling behaviour, this timeframe may still be missed.
+        /// </remarks>
+        /// <param name="nanoseconds">Maximum allowed time for sleep</param>
         public static void SleepBefore(long nanoseconds)
         {
             // Stricter bias to ensure we wake before the timepoint.
@@ -139,6 +170,8 @@ namespace Ryujinx.Common.Microsleep
                 nanosleep(ref req, ref rem);
             }
         }
+
+        // TODO: remove all this stuff?
 
         private static float TicksToMs(long ticks)
         {

@@ -4,6 +4,9 @@ using System.Threading;
 
 namespace Ryujinx.Common.Microsleep
 {
+    /// <summary>
+    /// A precise sleep event for linux and macos that uses nanosleep for more precise timeouts.
+    /// </summary>
     [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]

@@ -6,6 +6,10 @@ namespace Ryujinx.Common.Microsleep
 {
     public static class MicrosleepHelper
     {
+        /// <summary>
+        /// Create a precise sleep event for the current platform.
+        /// </summary>
+        /// <returns>A precise sleep event</returns>
         public static IMicrosleepEvent CreateEvent()
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsAndroid())

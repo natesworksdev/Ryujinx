@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -7,11 +6,15 @@ using System.Threading;
 namespace Ryujinx.Common.SystemInterop
 {
     /// <summary>
-    /// Timer that attempts to align with the system timer interrupt.
+    /// Timer that attempts to align with the hardware timer interrupt,
+    /// and can alert listeners on ticks.
     /// </summary>
     [SupportedOSPlatform("windows")]
     public partial class WindowsGranularTimer
     {
+        private static WindowsGranularTimer _instance = new();
+        public static WindowsGranularTimer Instance => _instance;
+
         private readonly struct WaitingObject
         {
             public readonly long Id;
@@ -35,9 +38,6 @@ namespace Ryujinx.Common.SystemInterop
         [LibraryImport("ntdll.dll", SetLastError = true)]
         private static partial uint NtDelayExecution([MarshalAs(UnmanagedType.Bool)] bool Alertable, ref long DelayInterval);
 
-        private static WindowsGranularTimer _instance = new();
-        public static WindowsGranularTimer Instance => _instance;
-
         public long GranularityNs => _granularityNs;
         public long GranularityTicks => _granularityTicks;
 
@@ -51,7 +51,7 @@ namespace Ryujinx.Common.SystemInterop
         private object _lock = new();
         private List<WaitingObject> _waitingObjects = new();
 
-        public WindowsGranularTimer()
+        private WindowsGranularTimer()
         {
             _timerThread = new Thread(Loop)
             {
@@ -62,6 +62,9 @@ namespace Ryujinx.Common.SystemInterop
             _timerThread.Start();
         }
 
+        /// <summary>
+        /// Measure and initialize the timer's target granularity.
+        /// </summary>
         private void Initialize()
         {
             NtQueryTimerResolution(out _, out int min, out int curr);
@@ -79,7 +82,11 @@ namespace Ryujinx.Common.SystemInterop
             _granularityTicks = (_granularityNs * PerformanceCounter.TicksPerMillisecond) / 1_000_000;
         }
 
-        public void Loop()
+        /// <summary>
+        /// Main loop for the timer thread. Wakes every clock tick and signals any listeners,
+        /// as well as keeping track of clock alignment.
+        /// </summary>
+        private void Loop()
         {
             Initialize();
             while (_running)
@@ -116,6 +123,12 @@ namespace Ryujinx.Common.SystemInterop
             }
         }
 
+        /// <summary>
+        /// Sleep until a timepoint.
+        /// </summary>
+        /// <param name="evt">Reset event to use to be awoken by the clock tick, or an external signal</param>
+        /// <param name="timePoint">Target timepoint</param>
+        /// <returns>True if waited or signalled, false otherwise</returns>
         public bool SleepUntilTimePoint(AutoResetEvent evt, long timePoint)
         {
             if (evt.WaitOne(0))
@@ -157,6 +170,15 @@ namespace Ryujinx.Common.SystemInterop
             return true;
         }
 
+        /// <summary>
+        /// Sleep until a timepoint, but don't expect any external signals.
+        /// </summary>
+        /// <remarks>
+        /// Saves some effort compared to the sleep that expects to be signalled.
+        /// </remarks>
+        /// <param name="evt">Reset event to use to be awoken by the clock tick</param>
+        /// <param name="timePoint">Target timepoint</param>
+        /// <returns>True if waited, false otherwise</returns>
         public bool SleepUntilTimePointWithoutExternalSignal(AutoResetEvent evt, long timePoint)
         {
             long id;
@@ -181,6 +203,11 @@ namespace Ryujinx.Common.SystemInterop
             return true;
         }
 
+        /// <summary>
+        /// Returns the two nearest clock ticks for a given timepoint.
+        /// </summary>
+        /// <param name="timePoint">Target timepoint</param>
+        /// <returns>The nearest clock ticks before and after the given timepoint</returns>
         public (long, long) ReturnNearestTicks(long timePoint)
         {
             long last = _lastTicks;
