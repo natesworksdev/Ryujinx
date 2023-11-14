@@ -929,7 +929,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     samplerId = TextureHandle.UnpackSamplerId(packedId);
                 }
 
-                if (samplerPool.TryGetBindlessSampler(samplerId, out Sampler sampler))
+                if (samplerPool.TryGetBindlessSampler(samplerId, out Sampler sampler) && sampler != null)
                 {
                     _context.Renderer.Pipeline.RegisterBindlessSampler(samplerId, sampler.GetHostSampler(null));
                 }

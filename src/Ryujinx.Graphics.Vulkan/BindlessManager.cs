@@ -3,7 +3,6 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
