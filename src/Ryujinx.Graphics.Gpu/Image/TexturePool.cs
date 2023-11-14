@@ -254,8 +254,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            Items[textureId]?.SynchronizeMemory();
-
             bool textureModified = ModifiedEntries.Clear(textureId);
 
             if (samplerPool != null)
@@ -304,6 +302,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="id">ID of the texture</param>
         private void UpdateBindlessInternal(IRenderer renderer, int id)
         {
+            // If the texture already exists, check if it has not been modified since the last use.
+            // If it was, update the data.
+            Items[id]?.SynchronizeMemory();
+
             Texture texture = Items[id] ?? GetValidated(id);
 
             if (texture != null)

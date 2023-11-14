@@ -621,6 +621,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void SignalGroupDirty()
         {
             _dirty = true;
+
+            // If this used as a bindless texture, we must force it to be updated on next use,
+            // since the CPU modified the data.
+            ForceTexturePoolUpdate();
         }
 
         /// <summary>
@@ -1471,9 +1475,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private void ForceTexturePoolUpdate()
         {
-            foreach (TexturePoolOwner poolOwner in _poolOwners)
+            lock (_poolOwners)
             {
-                poolOwner.Pool.ForceModifiedEntry(poolOwner.ID);
+                foreach (TexturePoolOwner poolOwner in _poolOwners)
+                {
+                    poolOwner.Pool.ForceModifiedEntry(poolOwner.ID);
+                }
             }
         }
 
@@ -1536,6 +1543,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             lock (_poolOwners)
             {
                 _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id, GpuAddress = gpuVa });
+            }
+
+            if (_dirty)
+            {
+                pool.ForceModifiedEntry(id);
             }
 
             _referenceCount++;
