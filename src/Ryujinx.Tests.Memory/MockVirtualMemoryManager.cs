@@ -79,7 +79,7 @@ namespace Ryujinx.Tests.Memory
 
         IEnumerable<MemoryRange> IVirtualMemoryManager.GetPhysicalRegions(ulong va, ulong size)
         {
-            return NoMappings ? [] : new MemoryRange[] { new MemoryRange(va, size) };
+            return NoMappings ? [] : new MemoryRange[] { new(va, size) };
         }
 
         public bool IsMapped(ulong va)
