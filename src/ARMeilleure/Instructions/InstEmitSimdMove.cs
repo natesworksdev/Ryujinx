@@ -601,7 +601,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand d = GetVec(op.Rd);
 
-                List<Operand> args = new();
+                List<Operand> args = [];
 
                 if (!isTbl)
                 {
