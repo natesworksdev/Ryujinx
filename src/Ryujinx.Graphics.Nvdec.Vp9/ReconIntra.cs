@@ -105,13 +105,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static readonly unsafe IntraPredFn[][][] _dcPred = [
             [
-                new IntraPredFn[]
-                {
+                [
                     Dc128Predictor4x4,
                     Dc128Predictor8x8,
                     Dc128Predictor16x16,
                     Dc128Predictor32x32,
-                },
+                ],
                 [
                     DcTopPredictor4x4,
                     DcTopPredictor8x8,
@@ -120,13 +119,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 ],
             ],
             [
-                new IntraPredFn[]
-                {
+                [
                     DcLeftPredictor4x4,
                     DcLeftPredictor8x8,
                     DcLeftPredictor16x16,
                     DcLeftPredictor32x32,
-                },
+                ],
                 [
                     DcPredictor4x4,
                     DcPredictor8x8,
@@ -203,13 +201,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         private static readonly unsafe IntraHighPredFn[][][] _dcPredHigh = [
             [
-                new IntraHighPredFn[]
-                {
+                [
                     HighbdDc128Predictor4x4,
                     HighbdDc128Predictor8x8,
                     HighbdDc128Predictor16x16,
                     HighbdDc128Predictor32x32,
-                },
+                ],
                 [
                     HighbdDcTopPredictor4x4,
                     HighbdDcTopPredictor8x8,
@@ -218,13 +215,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 ],
             ],
             [
-                new IntraHighPredFn[]
-                {
+                [
                     HighbdDcLeftPredictor4x4,
                     HighbdDcLeftPredictor8x8,
                     HighbdDcLeftPredictor16x16,
                     HighbdDcLeftPredictor32x32,
-                },
+                ],
                 [
                     HighbdDcPredictor4x4,
                     HighbdDcPredictor8x8,

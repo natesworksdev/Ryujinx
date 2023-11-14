@@ -40,22 +40,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe ConvolveFn[][][] _predictX16Y16 = [
             [
-                new ConvolveFn[]
-                {
+                [
                     ConvolveCopy,
                     ConvolveAvg,
-                },
+                ],
                 [
                     Convolve8Vert,
                     Convolve8AvgVert,
                 ],
             ],
             [
-                new ConvolveFn[]
-                {
+                [
                     Convolve8Horiz,
                     Convolve8AvgHoriz,
-                },
+                ],
                 [
                     Convolve8,
                     Convolve8Avg,
@@ -65,22 +63,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe ConvolveFn[][][] _predictX16 = [
             [
-                new ConvolveFn[]
-                {
+                [
                     ScaledVert,
                     ScaledAvgVert,
-                },
+                ],
                 [
                     ScaledVert,
                     ScaledAvgVert,
                 ],
             ],
             [
-                new ConvolveFn[]
-                {
+                [
                     Scaled2D,
                     ScaledAvg2D,
-                },
+                ],
                 [
                     Scaled2D,
                     ScaledAvg2D,
@@ -90,22 +86,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe ConvolveFn[][][] _predictY16 = [
             [
-                new ConvolveFn[]
-                {
+                [
                     ScaledHoriz,
                     ScaledAvgHoriz,
-                },
+                ],
                 [
                     Scaled2D,
                     ScaledAvg2D,
                 ],
             ],
             [
-                new ConvolveFn[]
-                {
+                [
                     ScaledHoriz,
                     ScaledAvgHoriz,
-                },
+                ],
                 [
                     Scaled2D,
                     ScaledAvg2D,
@@ -115,22 +109,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe ConvolveFn[][][] _predict = [
             [
-                new ConvolveFn[]
-                {
+                [
                     Scaled2D,
                     ScaledAvg2D,
-                },
+                ],
                 [
                     Scaled2D,
                     ScaledAvg2D,
                 ],
             ],
             [
-                new ConvolveFn[]
-                {
+                [
                     Scaled2D,
                     ScaledAvg2D,
-                },
+                ],
                 [
                     Scaled2D,
                     ScaledAvg2D,
@@ -140,22 +132,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictX16Y16 = [
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolveCopy,
                     HighbdConvolveAvg,
-                },
+                ],
                 [
                     HighbdConvolve8Vert,
                     HighbdConvolve8AvgVert,
                 ],
             ],
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8Horiz,
                     HighbdConvolve8AvgHoriz,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
@@ -165,22 +155,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictX16 = [
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8Vert,
                     HighbdConvolve8AvgVert,
-                },
+                ],
                 [
                     HighbdConvolve8Vert,
                     HighbdConvolve8AvgVert,
                 ],
             ],
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
@@ -190,22 +178,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe HighbdConvolveFn[][][] _highbdPredictY16 = [
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8Horiz,
                     HighbdConvolve8AvgHoriz,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
                 ],
             ],
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8Horiz,
                     HighbdConvolve8AvgHoriz,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
@@ -215,22 +201,20 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         private static readonly unsafe HighbdConvolveFn[][][] _highbdPredict = [
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
                 ],
             ],
             [
-                new HighbdConvolveFn[]
-                {
+                [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
-                },
+                ],
                 [
                     HighbdConvolve8,
                     HighbdConvolve8Avg,
