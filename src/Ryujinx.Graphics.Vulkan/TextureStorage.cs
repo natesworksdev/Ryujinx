@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_aliasedStorages == null || !_aliasedStorages.TryGetValue(format, out var storage))
             {
-                _aliasedStorages ??= new Dictionary<Format, TextureStorage>();
+                _aliasedStorages ??= [];
 
                 var info = NewCreateInfoWith(ref _info, format, _info.BytesPerPixel);
 

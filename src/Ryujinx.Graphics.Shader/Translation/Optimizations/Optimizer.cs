@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand dest = copyOp.Dest;
             Operand src = copyOp.GetSource(0);
 
-            INode[] uses = dest.UseOps.ToArray();
+            INode[] uses = [.. dest.UseOps];
 
             foreach (INode useNode in uses)
             {
@@ -158,7 +158,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             Operand dest = phi.Dest;
 
-            INode[] uses = dest.UseOps.ToArray();
+            INode[] uses = [.. dest.UseOps];
 
             foreach (INode useNode in uses)
             {
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand src0 = packOp.GetSource(0);
             Operand src1 = packOp.GetSource(1);
 
-            INode[] uses = dest.UseOps.ToArray();
+            INode[] uses = [.. dest.UseOps];
 
             foreach (INode useNode in uses)
             {
@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // - The mask should be 0b10100101 for DDY, or 0b10011001 for DDX.
             // - The first source operand must be the shuffle output.
             // - The second source operand must be the shuffle first source operand.
-            INode[] uses = operation.Dest.UseOps.ToArray();
+            INode[] uses = [.. operation.Dest.UseOps];
 
             foreach (INode use in uses)
             {

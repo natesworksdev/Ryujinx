@@ -33,7 +33,7 @@ namespace Ryujinx.Ui.Applet
             DefaultForegroundColor = new ThemeColor((float)defaultForegroundColor.Alpha, (float)defaultForegroundColor.Red, (float)defaultForegroundColor.Green, (float)defaultForegroundColor.Blue);
             SelectionForegroundColor = new ThemeColor((float)selectedForegroundColor.Alpha, (float)selectedForegroundColor.Red, (float)selectedForegroundColor.Green, (float)selectedForegroundColor.Blue);
 
-            ListBoxRow row = new();
+            ListBoxRow row = [];
             row.SetStateFlags(StateFlags.Selected, true);
 
             // Request the main thread to render some UI elements to an image to get an approximation for the color.

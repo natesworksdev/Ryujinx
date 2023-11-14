@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         private static WindowNotificationManager _notificationManager;
 
-        private static readonly BlockingCollection<Notification> _notifications = new();
+        private static readonly BlockingCollection<Notification> _notifications = [];
 
         public static void SetNotificationManager(Window host)
         {

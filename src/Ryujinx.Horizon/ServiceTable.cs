@@ -25,7 +25,7 @@ namespace Ryujinx.Horizon
 
         public IEnumerable<ServiceEntry> GetServices(HorizonOptions options)
         {
-            List<ServiceEntry> entries = new();
+            List<ServiceEntry> entries = [];
 
             void RegisterService<T>() where T : IService
             {

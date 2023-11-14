@@ -56,8 +56,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             for (int index = 0; index < TotalSets; index++)
             {
-                _resourceDescriptors[index] = new();
-                _resourceUsages[index] = new();
+                _resourceDescriptors[index] = [];
+                _resourceUsages[index] = [];
             }
 
             AddDescriptor(SupportBufferStages, ResourceType.UniformBuffer, UniformSetIndex, 0, 1);

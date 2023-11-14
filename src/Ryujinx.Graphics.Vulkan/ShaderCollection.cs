@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < sets.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new();
+                List<ResourceBindingSegment> currentSegments = [];
 
                 ResourceDescriptor currentDescriptor = default;
                 int currentCount = 0;
@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.Vulkan
                         currentDescriptor.Stages));
                 }
 
-                segments[setIndex] = currentSegments.ToArray();
+                segments[setIndex] = [.. currentSegments];
             }
 
             return segments;
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new();
+                List<ResourceBindingSegment> currentSegments = [];
 
                 ResourceUsage currentUsage = default;
                 int currentCount = 0;
@@ -235,7 +235,7 @@ namespace Ryujinx.Graphics.Vulkan
                         currentUsage.Stages));
                 }
 
-                segments[setIndex] = currentSegments.ToArray();
+                segments[setIndex] = [.. currentSegments];
             }
 
             return segments;

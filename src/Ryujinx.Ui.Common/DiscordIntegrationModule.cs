@@ -24,14 +24,14 @@ namespace Ryujinx.Ui.Common
                 Details = "Main Menu",
                 State = "Idling",
                 Timestamps = Timestamps.Now,
-                Buttons = new[]
-                {
+                Buttons =
+                [
                     new Button
                     {
                         Label = "Website",
                         Url   = "https://ryujinx.org/",
                     },
-                },
+                ],
             };
 
             ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
@@ -74,14 +74,14 @@ namespace Ryujinx.Ui.Common
                 Details = $"Playing {titleName}",
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
-                Buttons = new[]
-                {
+                Buttons =
+                [
                     new Button
                     {
                         Label = "Website",
                         Url = "https://ryujinx.org/",
                     },
-                },
+                ],
             });
         }
 

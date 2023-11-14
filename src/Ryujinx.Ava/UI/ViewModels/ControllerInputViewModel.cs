@@ -257,11 +257,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public ControllerInputViewModel()
         {
-            PlayerIndexes = new ObservableCollection<PlayerModel>();
-            Controllers = new ObservableCollection<ControllerModel>();
-            Devices = new ObservableCollection<(DeviceType Type, string Id, string Name)>();
-            ProfilesList = new AvaloniaList<string>();
-            DeviceList = new AvaloniaList<string>();
+            PlayerIndexes = [];
+            Controllers = [];
+            Devices = [];
+            ProfilesList = [];
+            DeviceList = [];
 
             ControllerImage = ProControllerResource;
 
@@ -814,9 +814,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             IsModified = false;
 
-            List<InputConfig> newConfig = new();
-
-            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+            List<InputConfig> newConfig = [.. ConfigurationState.Instance.Hid.InputConfig.Value];
 
             newConfig.Remove(newConfig.Find(x => x == null));
 

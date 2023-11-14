@@ -54,13 +54,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             _context = context;
             _physicalMemory = physicalMemory;
 
-            _textures = new MultiRangeList<Texture>();
-            _partiallyMappedTextures = new HashSet<Texture>();
+            _textures = [];
+            _partiallyMappedTextures = [];
 
             _textureOverlaps = new Texture[OverlapsBufferInitialCapacity];
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
 
-            _cache = new AutoDeleteCache();
+            _cache = [];
         }
 
         /// <summary>
@@ -790,7 +790,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         texture = new Texture(_context, _physicalMemory, info, sizeInfo, range.Value, scaleMode);
 
-                        texture.InitializeGroup(true, true, new List<TextureIncompatibleOverlap>());
+                        texture.InitializeGroup(true, true, []);
                         texture.InitializeData(false, false);
 
                         overlap.SynchronizeMemory();

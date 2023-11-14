@@ -396,7 +396,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int spanEndIndex = -1;
             int spanBase = 0;
-            ReadOnlySpan<byte> dataSpan = ReadOnlySpan<byte>.Empty;
+            ReadOnlySpan<byte> dataSpan = [];
 
             for (int i = 0; i < regionCount; i++)
             {
@@ -1082,7 +1082,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 firstLevel,
                 viewStart,
                 views,
-                result.ToArray());
+                [.. result]);
 
             foreach (RegionHandle handle in result)
             {
@@ -1336,7 +1336,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_isBuffer)
             {
-                handles = Array.Empty<TextureGroupHandle>();
+                handles = [];
             }
             else if (!(_hasMipViews || _hasLayerViews))
             {
@@ -1365,7 +1365,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     handle.RegisterDirtyEvent(() => DirtyAction(groupHandle));
                 }
 
-                handles = new TextureGroupHandle[] { groupHandle };
+                handles = [groupHandle];
             }
             else
             {
@@ -1397,7 +1397,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         layerHandles = Math.Max(1, layerHandles >> 1);
                     }
 
-                    handles = handlesList.ToArray();
+                    handles = [.. handlesList];
                 }
                 else
                 {

@@ -561,7 +561,7 @@ namespace Ryujinx.Ui.Widgets
 
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to queue a PPTC rebuild on the next boot of:\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
 
-            List<FileInfo> cacheFiles = new();
+            List<FileInfo> cacheFiles = [];
 
             if (mainDir.Exists)
             {
@@ -597,8 +597,8 @@ namespace Ryujinx.Ui.Widgets
 
             using MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the shader cache for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
 
-            List<DirectoryInfo> oldCacheDirectories = new();
-            List<FileInfo> newCacheFiles = new();
+            List<DirectoryInfo> oldCacheDirectories = [];
+            List<FileInfo> newCacheFiles = [];
 
             if (shaderCacheDir.Exists)
             {

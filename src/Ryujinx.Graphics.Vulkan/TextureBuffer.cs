@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (bufferView != null)
             {
-                (_selfManagedViews ??= new Dictionary<Format, Auto<DisposableBufferView>>()).Add(format, bufferView);
+                (_selfManagedViews ??= []).Add(format, bufferView);
             }
 
             return bufferView?.Get(cbs, _offset, _size, write).Value ?? default;

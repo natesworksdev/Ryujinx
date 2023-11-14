@@ -127,7 +127,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static Bgra32[] GetBuffer(Image<Bgra32> image)
         {
-            return image.TryGetSinglePixelSpan(out var data) ? data.ToArray() : Array.Empty<Bgra32>();
+            return image.TryGetSinglePixelSpan(out var data) ? data.ToArray() : [];
         }
 
         private static int GetColorScore(Dictionary<int, int> dominantColorBin, int maxHitCount, PaletteColor color)

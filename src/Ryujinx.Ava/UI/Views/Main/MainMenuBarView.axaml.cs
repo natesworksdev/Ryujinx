@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private CheckBox[] GenerateToggleFileTypeItems()
         {
-            List<CheckBox> checkBoxes = new();
+            List<CheckBox> checkBoxes = [];
 
             foreach (var item in Enum.GetValues(typeof(FileTypes)))
             {
@@ -48,12 +48,12 @@ namespace Ryujinx.Ava.UI.Views.Main
                 });
             }
 
-            return checkBoxes.ToArray();
+            return [.. checkBoxes];
         }
 
         private static MenuItem[] GenerateLanguageMenuItems()
         {
-            List<MenuItem> menuItems = new();
+            List<MenuItem> menuItems = [];
 
             string localePath = "Ryujinx.Ava/Assets/Locales";
             string localeExt = ".json";
@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 menuItems.Add(menuItem);
             }
 
-            return menuItems.ToArray();
+            return [.. menuItems];
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

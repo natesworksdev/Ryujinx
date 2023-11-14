@@ -19,7 +19,7 @@ namespace Ryujinx.Common.Memory
         public SpanOrArray(T[] array)
         {
             Array = array;
-            Span = ReadOnlySpan<T>.Empty;
+            Span = [];
         }
 
         /// <summary>

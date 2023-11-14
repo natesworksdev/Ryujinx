@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] _desirableExtensions = {
+        private static readonly string[] _desirableExtensions = [
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -42,11 +42,11 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_depth_clip_control",
             "VK_KHR_portability_subset", // As per spec, we should enable this if present.
             "VK_EXT_4444_formats",
-        };
+        ];
 
-        private static readonly string[] _requiredExtensions = {
+        private static readonly string[] _requiredExtensions = [
             KhrSwapchain.ExtensionName,
-        };
+        ];
 
         internal static VulkanInstance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions)
         {
@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (instanceExtensions.Contains("VK_EXT_debug_utils"))
             {
-                enabledExtensions = enabledExtensions.Append(ExtDebugUtils.ExtensionName).ToArray();
+                enabledExtensions = [.. enabledExtensions, ExtDebugUtils.ExtensionName];
             }
 
             var appName = Marshal.StringToHGlobalAnsi(AppName);
@@ -192,12 +192,12 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Remove this once we relax our initialization codepaths.
             if (instance.InstanceVersion < _minimalInstanceVulkanVersion)
             {
-                return Array.Empty<DeviceInfo>();
+                return [];
             }
 
             instance.EnumeratePhysicalDevices(out VulkanPhysicalDevice[] physicalDevices).ThrowOnError();
 
-            List<DeviceInfo> deviceInfos = new();
+            List<DeviceInfo> deviceInfos = [];
 
             foreach (VulkanPhysicalDevice physicalDevice in physicalDevices)
             {
@@ -209,7 +209,7 @@ namespace Ryujinx.Graphics.Vulkan
                 deviceInfos.Add(physicalDevice.ToDeviceInfo());
             }
 
-            return deviceInfos.ToArray();
+            return [.. deviceInfos];
         }
 
         private static bool IsPreferredAndSuitableDevice(Vk api, VulkanPhysicalDevice physicalDevice, SurfaceKHR surface, string preferredGpuId)

@@ -33,7 +33,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName, string titlePath)
         {
-            LoadedCheats = new AvaloniaList<CheatsList>();
+            LoadedCheats = [];
 
             Heading = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.CheatWindowHeading, titleName, titleId.ToUpper());
             BuildId = ApplicationData.GetApplicationBuildId(virtualFileSystem, titlePath);
@@ -46,7 +46,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             _enabledCheatsPath = Path.Combine(titleModsPath, "cheats", "enabled.txt");
 
-            string[] enabled = Array.Empty<string>();
+            string[] enabled = [];
 
             if (File.Exists(_enabledCheatsPath))
             {
@@ -100,7 +100,7 @@ namespace Ryujinx.Ava.UI.Windows
                 return;
             }
 
-            List<string> enabledCheats = new();
+            List<string> enabledCheats = [];
 
             foreach (var cheats in LoadedCheats)
             {

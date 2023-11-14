@@ -31,11 +31,11 @@ namespace ARMeilleure.Common
             _pageIndex = -1;
 
             _page = null;
-            _pages = new List<PageInfo>();
+            _pages = [];
             _pageSize = pageSize;
             _pageCount = pageCount;
 
-            _extras = new List<IntPtr>();
+            _extras = [];
         }
 
         public Span<T> AllocateSpan<T>(ulong count) where T : unmanaged

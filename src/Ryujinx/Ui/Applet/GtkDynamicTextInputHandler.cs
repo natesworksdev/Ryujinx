@@ -12,7 +12,7 @@ namespace Ryujinx.Ui.Applet
     internal class GtkDynamicTextInputHandler : IDynamicTextInputHandler
     {
         private readonly Window _parent;
-        private readonly OffscreenWindow _inputToTextWindow = new();
+        private readonly OffscreenWindow _inputToTextWindow = [];
         private readonly RawInputToTextEntry _inputToTextEntry = new();
 
         private bool _canProcessInput;

@@ -427,7 +427,7 @@ namespace Ryujinx.HLE.FileSystem
 
             var mountName = "system".ToU8Span();
             DirectoryHandle handle = default;
-            List<ulong> localList = new();
+            List<ulong> localList = [];
 
             try
             {
@@ -624,7 +624,7 @@ namespace Ryujinx.HLE.FileSystem
         }
 
         private static readonly ExtraDataFixInfo[] _systemExtraDataFixInfo =
-        {
+        [
             new ExtraDataFixInfo()
             {
                 StaticSaveDataId = 0x8000000000000030,
@@ -641,7 +641,7 @@ namespace Ryujinx.HLE.FileSystem
                 DataSize = 0xC000,
                 JournalSize = 0xC000,
             },
-        };
+        ];
 
         public void Dispose()
         {

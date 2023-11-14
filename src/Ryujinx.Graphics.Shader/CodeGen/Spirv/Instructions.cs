@@ -1294,11 +1294,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (hasDerivatives)
             {
-                derivatives = new[]
-                {
+                derivatives =
+                [
                     AssembleDerivativesVector(coordsCount), // dPdx
                     AssembleDerivativesVector(coordsCount), // dPdy
-                };
+                ];
             }
 
             SpvInstruction sample = null;
@@ -1338,17 +1338,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (hasOffset)
             {
-                offsets = new[] { AssembleOffsetVector(coordsCount) };
+                offsets = [AssembleOffsetVector(coordsCount)];
             }
             else if (hasOffsets)
             {
-                offsets = new[]
-                {
+                offsets =
+                [
                     AssembleOffsetVector(coordsCount),
                     AssembleOffsetVector(coordsCount),
                     AssembleOffsetVector(coordsCount),
                     AssembleOffsetVector(coordsCount),
-                };
+                ];
             }
 
             SpvInstruction lodBias = null;

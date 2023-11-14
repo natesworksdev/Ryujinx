@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sets = dsc.GetSets();
 
-            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
+            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, []);
         }
 
         private unsafe void UpdateBuffers(

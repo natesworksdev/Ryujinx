@@ -36,7 +36,7 @@ namespace Ryujinx.Memory.Tracking
             _pageSize = pageSize;
             _invalidAccessHandler = invalidAccessHandler;
 
-            _virtualRegions = new NonOverlappingRangeList<VirtualRegion>();
+            _virtualRegions = [];
         }
 
         private (ulong address, ulong size) PageAlign(ulong address, ulong size)
@@ -114,7 +114,7 @@ namespace Ryujinx.Memory.Tracking
         /// <returns>A list of virtual regions within the given range</returns>
         internal List<VirtualRegion> GetVirtualRegionsForHandle(ulong va, ulong size)
         {
-            List<VirtualRegion> result = new();
+            List<VirtualRegion> result = [];
             _virtualRegions.GetOrAddRegions(result, va, size, (va, size) => new VirtualRegion(this, va, size));
 
             return result;

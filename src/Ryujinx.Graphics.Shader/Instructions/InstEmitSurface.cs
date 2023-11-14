@@ -269,7 +269,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             sourcesList.Add(Rb());
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             TextureFlags flags = compareAndSwap ? TextureFlags.CAS : GetAtomicOpFlags(atomicOp);
 
@@ -355,7 +355,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             int handle = imm;
 
@@ -543,7 +543,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             sourcesList.Add(Rb());
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             TextureFlags flags = GetAtomicOpFlags((SuatomOp)atomicOp);
 
@@ -668,7 +668,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 format = GetTextureFormat(size);
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             int handle = imm;
 

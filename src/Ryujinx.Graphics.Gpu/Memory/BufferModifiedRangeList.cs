@@ -422,11 +422,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 _context.RegisterBufferMigration(migration);
 
-                inheritRanges = ranges.ToArray();
+                inheritRanges = [.. ranges];
 
                 lock (_lock)
                 {
-                    (_sources ??= new List<BufferMigration>()).Add(migration);
+                    (_sources ??= []).Add(migration);
 
                     foreach (BufferModifiedRange range in inheritRanges)
                     {

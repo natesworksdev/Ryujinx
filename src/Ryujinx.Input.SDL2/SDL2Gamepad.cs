@@ -16,8 +16,8 @@ namespace Ryujinx.Input.SDL2
 
         private StandardControllerInputConfig _configuration;
 
-        private static readonly SDL_GameControllerButton[] _buttonsDriverMapping = new SDL_GameControllerButton[(int)GamepadButtonInputId.Count]
-        {
+        private static readonly SDL_GameControllerButton[] _buttonsDriverMapping =
+        [
             // Unbound, ignored.
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
 
@@ -53,18 +53,18 @@ namespace Ryujinx.Input.SDL2
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
-        };
+        ];
 
         private readonly object _userMappingLock = new();
 
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
 
-        private readonly StickInputId[] _stickUserMapping = new StickInputId[(int)StickInputId.Count]
-        {
+        private readonly StickInputId[] _stickUserMapping =
+        [
             StickInputId.Unbound,
             StickInputId.Left,
             StickInputId.Right,
-        };
+        ];
 
         public GamepadFeaturesFlag Features { get; }
 

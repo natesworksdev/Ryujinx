@@ -25,11 +25,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [Service("nvdrv:t")]
     class INvDrvServices : IpcService
     {
-        private static readonly List<string> _deviceFileDebugRegistry = new()
-        {
+        private static readonly List<string> _deviceFileDebugRegistry =
+        [
             "/dev/nvhost-dbg-gpu",
             "/dev/nvhost-prof-gpu",
-        };
+        ];
 
         private static readonly Dictionary<string, Type> _deviceFileRegistry = new()
         {

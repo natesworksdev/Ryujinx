@@ -163,7 +163,7 @@ namespace Ryujinx.Memory
         {
             if (size == 0)
             {
-                return ReadOnlySpan<byte>.Empty;
+                return [];
             }
 
             if (IsContiguousAndMapped(va, size))

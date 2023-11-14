@@ -53,8 +53,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public EmitterContext()
         {
-            _operations = new List<Operation>();
-            _labels = new Dictionary<ulong, BlockLabel>();
+            _operations = [];
+            _labels = [];
         }
 
         public EmitterContext(
@@ -125,8 +125,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                         TextureFlags.IntCoords,
                         ResourceManager.Reservations.IndexBufferTextureBinding,
                         1,
-                        new[] { vertexIndexVr },
-                        new[] { this.IAdd(ibBaseOffset, outputVertexOffset) });
+                        [vertexIndexVr],
+                        [this.IAdd(ibBaseOffset, outputVertexOffset)]);
 
                     this.Store(StorageKind.LocalMemory, ResourceManager.LocalVertexIndexVertexRateMemoryId, this.IAdd(firstVertex, vertexIndexVr));
                     this.Store(StorageKind.LocalMemory, ResourceManager.LocalVertexIndexInstanceRateMemoryId, this.IAdd(firstInstance, outputInstanceOffset));
@@ -146,8 +146,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                             TextureFlags.IntCoords,
                             ResourceManager.Reservations.TopologyRemapBufferTextureBinding,
                             1,
-                            new[] { vertexIndex },
-                            new[] { this.IAdd(baseVertex, Const(index)) });
+                            [vertexIndex],
+                            [this.IAdd(baseVertex, Const(index))]);
 
                         this.Store(StorageKind.LocalMemory, ResourceManager.LocalTopologyRemapMemoryId, Const(index), vertexIndex);
                     }
@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public (Operand, Operand) Add(Instruction inst, (Operand, Operand) dest, params Operand[] sources)
         {
-            Operand[] dests = new[] { dest.Item1, dest.Item2 };
+            Operand[] dests = [dest.Item1, dest.Item2];
 
             Operation operation = new(inst, 0, dests, sources);
 
@@ -620,7 +620,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public Operation[] GetOperations()
         {
-            return _operations.ToArray();
+            return [.. _operations];
         }
     }
 }

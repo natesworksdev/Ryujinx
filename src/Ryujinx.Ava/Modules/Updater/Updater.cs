@@ -46,7 +46,7 @@ namespace Ryujinx.Modules
         private static bool _updateSuccessful;
         private static bool _running;
 
-        private static readonly string[] _windowsDependencyDirs = Array.Empty<string>();
+        private static readonly string[] _windowsDependencyDirs = [];
 
         public static async Task BeginParse(Window mainWindow, bool showVersionUpToDate)
         {
@@ -280,7 +280,7 @@ namespace Ryujinx.Modules
 
                 if (shouldRestart)
                 {
-                    List<string> arguments = CommandLineState.Arguments.ToList();
+                    List<string> arguments = [.. CommandLineState.Arguments];
                     string executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
                     // On macOS we perform the update at relaunch.
@@ -345,7 +345,7 @@ namespace Ryujinx.Modules
 
             for (int i = 0; i < ConnectionCount; i++)
             {
-                list.Add(Array.Empty<byte>());
+                list.Add([]);
             }
 
             for (int i = 0; i < ConnectionCount; i++)

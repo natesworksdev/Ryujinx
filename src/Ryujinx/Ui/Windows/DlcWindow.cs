@@ -49,7 +49,7 @@ namespace Ryujinx.Ui.Windows
             }
             catch
             {
-                _dlcContainerList = new List<DownloadableContentContainer>();
+                _dlcContainerList = [];
             }
 
             _dlcTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string));
@@ -216,7 +216,7 @@ namespace Ryujinx.Ui.Windows
 
         private void RemoveAllButton_Clicked(object sender, EventArgs args)
         {
-            List<TreeIter> toRemove = new();
+            List<TreeIter> toRemove = [];
 
             if (_dlcTreeView.Model.GetIterFirst(out TreeIter iter))
             {
@@ -247,7 +247,7 @@ namespace Ryujinx.Ui.Windows
                         DownloadableContentContainer dlcContainer = new()
                         {
                             ContainerPath = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
-                            DownloadableContentNcaList = new List<DownloadableContentNca>(),
+                            DownloadableContentNcaList = [],
                         };
 
                         do

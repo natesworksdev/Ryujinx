@@ -262,7 +262,7 @@ namespace Ryujinx
             }
 
             // Show the main window UI.
-            MainWindow mainWindow = new();
+            MainWindow mainWindow = [];
             mainWindow.Show();
 
             if (OperatingSystem.IsLinux())

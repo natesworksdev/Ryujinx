@@ -61,27 +61,27 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                _api.DestroyFence(_device, _fence, Span<AllocationCallbacks>.Empty);
+                _api.DestroyFence(_device, _fence, []);
                 _fence = default;
             }
         }
 
         public void Wait()
         {
-            Span<Fence> fences = stackalloc Fence[]
-            {
+            Span<Fence> fences =
+            [
                 _fence,
-            };
+            ];
 
             FenceHelper.WaitAllIndefinitely(_api, _device, fences);
         }
 
         public bool IsSignaled()
         {
-            Span<Fence> fences = stackalloc Fence[]
-            {
+            Span<Fence> fences =
+            [
                 _fence,
-            };
+            ];
 
             return FenceHelper.AllSignaled(_api, _device, fences);
         }

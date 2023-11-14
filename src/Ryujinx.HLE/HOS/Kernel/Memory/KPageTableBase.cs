@@ -12,14 +12,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     abstract class KPageTableBase
     {
-        private static readonly int[] _mappingUnitSizes = {
+        private static readonly int[] _mappingUnitSizes = [
             0x1000,
             0x10000,
             0x200000,
             0x400000,
             0x2000000,
             0x40000000,
-        };
+        ];
 
         private const ulong RegionAlignment = 0x200000;
 
@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _reservedAddressSpaceSize = reservedAddressSpaceSize;
         }
 
-        private static readonly int[] _addrSpaceSizes = { 32, 36, 32, 39 };
+        private static readonly int[] _addrSpaceSizes = [32, 36, 32, 39];
 
         public Result InitializeForProcess(
             AddressSpaceType addrSpaceType,

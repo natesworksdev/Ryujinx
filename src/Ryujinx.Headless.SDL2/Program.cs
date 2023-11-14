@@ -387,7 +387,7 @@ namespace Ryujinx.Headless.SDL2
                 return;
             }
 
-            _inputConfiguration = new List<InputConfig>();
+            _inputConfiguration = [];
             _enableKeyboard = option.EnableKeyboard;
             _enableMouse = option.EnableMouse;
 

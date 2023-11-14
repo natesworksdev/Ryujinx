@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         private ShaderSpecializationState()
         {
-            _textureSpecialization = new Dictionary<TextureKey, Box<TextureSpecializationState>>();
+            _textureSpecialization = [];
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="stages">The shader stages</param>
         public void Prepare(CachedShaderStage[] stages)
         {
-            _allTextures = _textureSpecialization.ToArray();
+            _allTextures = [.. _textureSpecialization];
 
             _textureByBinding = new Box<TextureSpecializationState>[stages.Length][];
             _imageByBinding = new Box<TextureSpecializationState>[stages.Length][];
@@ -667,8 +667,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 int cachedTextureBufferIndex = -1;
                 int cachedSamplerBufferIndex = -1;
                 int cachedStageIndex = -1;
-                ReadOnlySpan<int> cachedTextureBuffer = Span<int>.Empty;
-                ReadOnlySpan<int> cachedSamplerBuffer = Span<int>.Empty;
+                ReadOnlySpan<int> cachedTextureBuffer = [];
+                ReadOnlySpan<int> cachedSamplerBuffer = [];
 
                 foreach (var kv in _allTextures)
                 {

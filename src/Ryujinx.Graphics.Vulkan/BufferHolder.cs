@@ -266,7 +266,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _gd.Api.CreateBufferView(_device, bufferViewCreateInfo, null, out var bufferView).ThrowOnError();
 
-            (_swapActions ??= new List<Action>()).Add(invalidateView);
+            (_swapActions ??= []).Add(invalidateView);
 
             return new Auto<DisposableBufferView>(new DisposableBufferView(_gd.Api, _device, bufferView), this, _waitable, _buffer);
         }
@@ -649,7 +649,7 @@ namespace Ryujinx.Graphics.Vulkan
                 (int keyOffset, int keySize) = FromMirrorKey(key);
                 if (!(offset + size <= keyOffset || offset >= keyOffset + keySize))
                 {
-                    toRemove ??= new List<ulong>();
+                    toRemove ??= [];
 
                     toRemove.Add(key);
                 }
@@ -715,7 +715,7 @@ namespace Ryujinx.Graphics.Vulkan
                 if (_pendingData == null)
                 {
                     _pendingData = new byte[Size];
-                    _mirrors = new Dictionary<ulong, StagingBufferReserved>();
+                    _mirrors = [];
                 }
 
                 data[..dataSize].CopyTo(_pendingData.AsSpan(offset, dataSize));

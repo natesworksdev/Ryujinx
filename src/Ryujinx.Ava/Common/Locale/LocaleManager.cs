@@ -21,8 +21,8 @@ namespace Ryujinx.Ava.Common.Locale
 
         public LocaleManager()
         {
-            _localeStrings = new Dictionary<LocaleKeys, string>();
-            _localeDefaultStrings = new Dictionary<LocaleKeys, string>();
+            _localeStrings = [];
+            _localeDefaultStrings = [];
             _dynamicValues = new ConcurrentDictionary<LocaleKeys, object[]>();
 
             Load();

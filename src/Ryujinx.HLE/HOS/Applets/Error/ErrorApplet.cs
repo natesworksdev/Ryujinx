@@ -189,23 +189,19 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             string messageText = Encoding.ASCII.GetString(messageTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
             string detailsText = Encoding.ASCII.GetString(detailsTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
 
-            List<string> buttons = new();
+            List<string> buttons =
+            [
+                // TODO: Handle the LanguageCode to return the translated "OK" and "Details".
+                .. detailsText.Trim() != "" ? ["Details"] : [],
+                "OK",
+            ];
 
-            // TODO: Handle the LanguageCode to return the translated "OK" and "Details".
-
-            if (detailsText.Trim() != "")
-            {
-                buttons.Add("Details");
-            }
-
-            buttons.Add("OK");
-
-            bool showDetails = _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Number: {applicationErrorArg.ErrorNumber}", "\n" + messageText, buttons.ToArray());
+            bool showDetails = _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Number: {applicationErrorArg.ErrorNumber}", "\n" + messageText, [.. buttons]);
             if (showDetails)
             {
                 buttons.RemoveAt(0);
 
-                _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Number: {applicationErrorArg.ErrorNumber} (Details)", "\n" + detailsText, buttons.ToArray());
+                _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Number: {applicationErrorArg.ErrorNumber} (Details)", "\n" + detailsText, [.. buttons]);
             }
         }
 

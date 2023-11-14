@@ -79,10 +79,10 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _hashTable[bucketIndex] = new[]
-                {
+                _hashTable[bucketIndex] =
+                [
                     entry,
-                };
+                ];
             }
         }
 

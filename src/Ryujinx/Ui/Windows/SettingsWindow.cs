@@ -557,7 +557,7 @@ namespace Ryujinx.Ui.Windows
         {
             if (_directoryChanged)
             {
-                List<string> gameDirs = new();
+                List<string> gameDirs = [];
 
                 _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
 

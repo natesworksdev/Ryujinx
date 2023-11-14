@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
             {
                 unsafe
                 {
-                    return (IntPtr)_destinationsData != IntPtr.Zero ? new Span<SplitterDestination>(_destinationsData, 1) : Span<SplitterDestination>.Empty;
+                    return (IntPtr)_destinationsData != IntPtr.Zero ? new Span<SplitterDestination>(_destinationsData, 1) : [];
                 }
             }
         }

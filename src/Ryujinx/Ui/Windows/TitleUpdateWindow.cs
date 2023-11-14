@@ -49,7 +49,7 @@ namespace Ryujinx.Ui.Windows
             _titleId = titleId;
             _virtualFileSystem = virtualFileSystem;
             _updateJsonPath = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "updates.json");
-            _radioButtonToPathDictionary = new Dictionary<RadioButton, string>();
+            _radioButtonToPathDictionary = [];
 
             try
             {
@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Windows
                 _titleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths = new List<string>(),
+                    Paths = [],
                 };
             }
 

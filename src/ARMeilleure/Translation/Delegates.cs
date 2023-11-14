@@ -80,7 +80,7 @@ namespace ARMeilleure.Translation
 
         static Delegates()
         {
-            _delegates = new SortedList<string, DelegateInfo>();
+            _delegates = [];
 
             SetDelegateInfo(new MathAbs(Math.Abs));
             SetDelegateInfo(new MathCeiling(Math.Ceiling));

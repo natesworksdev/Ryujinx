@@ -623,7 +623,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.ImageAtomic, type, format, flags, binding, 0, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.ImageAtomic, type, format, flags, binding, 0, [dest], sources));
 
             return dest;
         }
@@ -724,7 +724,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.Lod, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.Lod, type, TextureFormat.Unknown, flags, binding, compIndex, [dest], sources));
 
             return dest;
         }
@@ -906,7 +906,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.TextureQuerySamples, type, TextureFormat.Unknown, flags, binding, 0, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.TextureQuerySamples, type, TextureFormat.Unknown, flags, binding, 0, [dest], sources));
 
             return dest;
         }
@@ -921,7 +921,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operand dest = Local();
 
-            context.Add(new TextureOperation(Instruction.TextureQuerySize, type, TextureFormat.Unknown, flags, binding, compIndex, new[] { dest }, sources));
+            context.Add(new TextureOperation(Instruction.TextureQuerySize, type, TextureFormat.Unknown, flags, binding, compIndex, [dest], sources));
 
             return dest;
         }

@@ -27,7 +27,7 @@ namespace Ryujinx.Ui.Windows
         public byte[] SelectedProfileImage;
         public bool NewUser;
 
-        private static readonly Dictionary<string, byte[]> _avatarDict = new();
+        private static readonly Dictionary<string, byte[]> _avatarDict = [];
 
         private readonly ListStore _listStore;
         private readonly IconView _iconView;

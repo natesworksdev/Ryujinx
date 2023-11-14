@@ -111,7 +111,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public MainWindowViewModel()
         {
-            Applications = new ObservableCollection<ApplicationData>();
+            Applications = [];
 
             Applications.ToObservableChangeSet()
                 .Filter(Filter)

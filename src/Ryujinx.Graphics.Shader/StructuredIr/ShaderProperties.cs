@@ -20,12 +20,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public ShaderProperties()
         {
-            _constantBuffers = new Dictionary<int, BufferDefinition>();
-            _storageBuffers = new Dictionary<int, BufferDefinition>();
-            _textures = new Dictionary<int, TextureDefinition>();
-            _images = new Dictionary<int, TextureDefinition>();
-            _localMemories = new Dictionary<int, MemoryDefinition>();
-            _sharedMemories = new Dictionary<int, MemoryDefinition>();
+            _constantBuffers = [];
+            _storageBuffers = [];
+            _textures = [];
+            _images = [];
+            _localMemories = [];
+            _sharedMemories = [];
         }
 
         public void AddOrUpdateConstantBuffer(BufferDefinition definition)

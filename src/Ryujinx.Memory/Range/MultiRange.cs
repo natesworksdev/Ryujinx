@@ -91,7 +91,7 @@ namespace Ryujinx.Memory.Range
                     offset -= range.Size;
                 }
 
-                return new MultiRange(ranges.ToArray());
+                return new MultiRange([.. ranges]);
             }
         }
 

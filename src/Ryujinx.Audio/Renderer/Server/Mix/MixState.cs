@@ -125,7 +125,7 @@ namespace Ryujinx.Audio.Renderer.Server.Mix
             {
                 if (_effectProcessingOrderArrayPointer == IntPtr.Zero)
                 {
-                    return Span<int>.Empty;
+                    return [];
                 }
 
                 unsafe

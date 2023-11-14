@@ -27,30 +27,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public ILogger Logger { get; }
         public TargetApi TargetApi { get; }
 
-        public Dictionary<int, Instruction> ConstantBuffers { get; } = new();
-        public Dictionary<int, Instruction> StorageBuffers { get; } = new();
+        public Dictionary<int, Instruction> ConstantBuffers { get; } = [];
+        public Dictionary<int, Instruction> StorageBuffers { get; } = [];
 
-        public Dictionary<int, Instruction> LocalMemories { get; } = new();
-        public Dictionary<int, Instruction> SharedMemories { get; } = new();
+        public Dictionary<int, Instruction> LocalMemories { get; } = [];
+        public Dictionary<int, Instruction> SharedMemories { get; } = [];
 
-        public Dictionary<int, SamplerType> SamplersTypes { get; } = new();
-        public Dictionary<int, (Instruction, Instruction, Instruction)> Samplers { get; } = new();
-        public Dictionary<int, (Instruction, Instruction)> Images { get; } = new();
+        public Dictionary<int, SamplerType> SamplersTypes { get; } = [];
+        public Dictionary<int, (Instruction, Instruction, Instruction)> Samplers { get; } = [];
+        public Dictionary<int, (Instruction, Instruction)> Images { get; } = [];
 
-        public Dictionary<IoDefinition, Instruction> Inputs { get; } = new();
-        public Dictionary<IoDefinition, Instruction> Outputs { get; } = new();
-        public Dictionary<IoDefinition, Instruction> InputsPerPatch { get; } = new();
-        public Dictionary<IoDefinition, Instruction> OutputsPerPatch { get; } = new();
+        public Dictionary<IoDefinition, Instruction> Inputs { get; } = [];
+        public Dictionary<IoDefinition, Instruction> Outputs { get; } = [];
+        public Dictionary<IoDefinition, Instruction> InputsPerPatch { get; } = [];
+        public Dictionary<IoDefinition, Instruction> OutputsPerPatch { get; } = [];
 
         public StructuredFunction CurrentFunction { get; set; }
-        private readonly Dictionary<AstOperand, Instruction> _locals = new();
-        private readonly Dictionary<int, Instruction> _funcArgs = new();
-        private readonly Dictionary<int, (StructuredFunction, Instruction)> _functions = new();
+        private readonly Dictionary<AstOperand, Instruction> _locals = [];
+        private readonly Dictionary<int, Instruction> _funcArgs = [];
+        private readonly Dictionary<int, (StructuredFunction, Instruction)> _functions = [];
 
         private class BlockState
         {
             private int _entryCount;
-            private readonly List<Instruction> _labels = new();
+            private readonly List<Instruction> _labels = [];
 
             public Instruction GetNextLabel(CodeGenContext context)
             {
@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private readonly Dictionary<AstBlock, BlockState> _labels = new();
+        private readonly Dictionary<AstBlock, BlockState> _labels = [];
 
         public Dictionary<AstBlock, (Instruction, Instruction)> LoopTargets { get; set; }
 
@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             mainInterface.AddRange(InputsPerPatch.Values);
             mainInterface.AddRange(OutputsPerPatch.Values);
 
-            return mainInterface.ToArray();
+            return [.. mainInterface];
         }
 
         public void DeclareLocal(AstOperand local, Instruction spvLocal)

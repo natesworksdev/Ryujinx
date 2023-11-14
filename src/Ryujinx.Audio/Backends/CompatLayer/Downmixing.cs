@@ -31,19 +31,19 @@ namespace Ryujinx.Audio.Backends.CompatLayer
         private const int Minus6dBInQ15 = (int)(0.501f * RawQ15One);
         private const int Minus12dBInQ15 = (int)(0.251f * RawQ15One);
 
-        private static readonly int[] _defaultSurroundToStereoCoefficients = new int[4]
-        {
+        private static readonly int[] _defaultSurroundToStereoCoefficients =
+        [
             RawQ15One,
             Minus3dBInQ15,
             Minus12dBInQ15,
             Minus3dBInQ15,
-        };
+        ];
 
-        private static readonly int[] _defaultStereoToMonoCoefficients = new int[2]
-        {
+        private static readonly int[] _defaultStereoToMonoCoefficients =
+        [
             Minus6dBInQ15,
             Minus6dBInQ15,
-        };
+        ];
 
         private const int SurroundChannelCount = 6;
         private const int StereoChannelCount = 2;

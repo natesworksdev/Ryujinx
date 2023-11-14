@@ -168,7 +168,7 @@ namespace Ryujinx.Audio.Output
 #pragma warning disable CA1822 // Mark member as static
         public string[] ListAudioOuts()
         {
-            return new[] { Constants.DefaultDeviceOutputName };
+            return [Constants.DefaultDeviceOutputName];
         }
 #pragma warning restore CA1822
 
@@ -288,7 +288,7 @@ namespace Ryujinx.Audio.Output
 
                 lock (_sessionLock)
                 {
-                    sessions = _sessions.ToArray();
+                    sessions = [.. _sessions];
                 }
 
                 foreach (AudioOutputSystem output in sessions)

@@ -8,8 +8,8 @@ namespace Ryujinx.Input.GTK3
 {
     public static class GTK3MappingHelper
     {
-        private static readonly GtkKey[] _keyMapping = new GtkKey[(int)Key.Count]
-        {
+        private static readonly GtkKey[] _keyMapping =
+        [
             // NOTE: invalid
             GtkKey.blank,
 
@@ -145,7 +145,7 @@ namespace Ryujinx.Input.GTK3
 
             // NOTE: invalid
             GtkKey.blank,
-        };
+        ];
 
         private static readonly Dictionary<GtkKey, Key> _gtkKeyMapping;
 
@@ -154,7 +154,7 @@ namespace Ryujinx.Input.GTK3
             var inputKeys = Enum.GetValues<Key>().SkipLast(1);
 
             // GtkKey is not contiguous and quite large, so use a dictionary instead of an array.
-            _gtkKeyMapping = new Dictionary<GtkKey, Key>();
+            _gtkKeyMapping = [];
 
             foreach (var key in inputKeys)
             {

@@ -41,7 +41,7 @@ namespace Ryujinx.Modules
         private static readonly GithubReleasesJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         // On Windows, GtkSharp.Dependencies adds these extra dirs that must be cleaned during updates.
-        private static readonly string[] _windowsDependencyDirs = { "bin", "etc", "lib", "share" };
+        private static readonly string[] _windowsDependencyDirs = ["bin", "etc", "lib", "share"];
 
         private static HttpClient ConstructHttpClient()
         {
@@ -243,7 +243,7 @@ namespace Ryujinx.Modules
 
             for (int i = 0; i < ConnectionCount; i++)
             {
-                list.Add(Array.Empty<byte>());
+                list.Add([]);
             }
 
             for (int i = 0; i < ConnectionCount; i++)

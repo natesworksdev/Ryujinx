@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS
 
             PerformanceState = new PerformanceState();
 
-            NfpDevices = new List<NfpDevice>();
+            NfpDevices = [];
 
             // Note: This is not really correct, but with HLE of services, the only memory
             // region used that is used is Application, so we can use the other ones for anything.
@@ -342,14 +342,14 @@ namespace Ryujinx.HLE.HOS
 
                 ProcessCreationInfo creationInfo = new("Service", 1, 0, 0x8000000, 1, Flags, 0, 0);
 
-                uint[] defaultCapabilities = {
+                uint[] defaultCapabilities = [
                     0x030363F7,
                     0x1FFFFFCF,
                     0x207FFFEF,
                     0x47E0060F,
                     0x0048BFFF,
                     0x01007FFF,
-                };
+                ];
 
                 // TODO:
                 // - Pass enough information (capabilities, process creation info, etc) on ServiceEntry for proper initialization.

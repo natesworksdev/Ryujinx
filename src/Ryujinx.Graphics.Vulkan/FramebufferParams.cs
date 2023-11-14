@@ -38,16 +38,16 @@ namespace Ryujinx.Graphics.Vulkan
             VkFormat format)
         {
             _device = device;
-            _attachments = new[] { view };
+            _attachments = [view];
             _validColorAttachments = isDepthStencil ? 0u : 1u;
 
             Width = width;
             Height = height;
             Layers = 1;
 
-            AttachmentSamples = new[] { samples };
-            AttachmentFormats = new[] { format };
-            AttachmentIndices = isDepthStencil ? Array.Empty<int>() : new[] { 0 };
+            AttachmentSamples = [samples];
+            AttachmentFormats = [format];
+            AttachmentIndices = isDepthStencil ? [] : [0];
 
             AttachmentsCount = 1;
 

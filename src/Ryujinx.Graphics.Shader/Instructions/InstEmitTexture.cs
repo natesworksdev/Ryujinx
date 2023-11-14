@@ -298,7 +298,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 type |= SamplerType.Multisample;
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
             Operand[] dests = new Operand[BitOperations.PopCount((uint)componentMask)];
 
             int outputIndex = 0;
@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            List<Operand> sourcesList = new();
+            List<Operand> sourcesList = [];
 
             Operand Ra()
             {
@@ -599,10 +599,10 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 throw new ArgumentException($"Invalid TEXS type \"{texsType}\".");
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
-            Operand[] rd0 = new Operand[2] { ConstF(0), ConstF(0) };
-            Operand[] rd1 = new Operand[2] { ConstF(0), ConstF(0) };
+            Operand[] rd0 = [ConstF(0), ConstF(0)];
+            Operand[] rd1 = [ConstF(0), ConstF(0)];
 
             int handle = imm;
             int componentMask = _maskLut[dest2 == RegisterConsts.RegisterZeroIndex ? 0 : 1][writeMask];
@@ -697,7 +697,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand arrayIndex = isArray ? Ra() : null;
 
-            List<Operand> sourcesList = new();
+            List<Operand> sourcesList = [];
 
             SamplerType type = ConvertSamplerType(dimensions);
             TextureFlags flags = TextureFlags.Gather;
@@ -771,7 +771,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Const((int)component));
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
             Operand[] dests = new Operand[BitOperations.PopCount((uint)componentMask)];
 
             int outputIndex = 0;
@@ -831,7 +831,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.None;
 
-            List<Operand> sourcesList = new();
+            List<Operand> sourcesList = [];
 
             if (isBindless)
             {
@@ -869,7 +869,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(arrayIndex);
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             Operand GetDest()
             {
@@ -959,7 +959,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = TextureFlags.Derivatives;
 
-            List<Operand> sourcesList = new();
+            List<Operand> sourcesList = [];
 
             if (isBindless)
             {
@@ -1025,7 +1025,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 flags |= TextureFlags.Offset;
             }
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
             Operand[] dests = new Operand[BitOperations.PopCount((uint)componentMask)];
 
             int outputIndex = 0;
@@ -1081,7 +1081,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             sourcesList.Add(Ra());
 
-            Operand[] sources = sourcesList.ToArray();
+            Operand[] sources = [.. sourcesList];
 
             Operand GetDest()
             {

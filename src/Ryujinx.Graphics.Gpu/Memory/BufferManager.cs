@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _gpUniformBuffers[index] = new BuffersPerStage(Constants.TotalGpUniformBuffers);
             }
 
-            _bufferTextures = new List<BufferTextureBinding>();
+            _bufferTextures = [];
 
             _ranges = new BufferAssignment[Constants.TotalGpUniformBuffers * Constants.ShaderStages];
         }

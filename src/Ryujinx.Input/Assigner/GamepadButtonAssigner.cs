@@ -120,7 +120,7 @@ namespace Ryujinx.Input.Assigner
 
             public JoystickButtonDetector()
             {
-                _stats = new Dictionary<GamepadButtonInputId, InputSummary>();
+                _stats = [];
             }
 
             public bool HasAnyButtonPressed()

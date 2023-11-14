@@ -124,7 +124,7 @@ namespace Ryujinx.Ava.UI.Controls
 
             Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];
 
-            HashSet<UserId> lostAccounts = new();
+            HashSet<UserId> lostAccounts = [];
 
             while (true)
             {

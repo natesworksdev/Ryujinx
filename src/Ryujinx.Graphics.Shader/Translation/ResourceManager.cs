@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         // TODO: Non-hardcoded array size.
         public const int SamplerArraySize = 4;
 
-        private static readonly string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] _stagePrefixes = ["cp", "vp", "tcp", "tep", "gp", "fp"];
 
         private readonly IGpuAccessor _gpuAccessor;
         private readonly ShaderStage _stage;
@@ -72,13 +72,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             _cbSlotToBindingMap.AsSpan().Fill(-1);
             _sbSlotToBindingMap.AsSpan().Fill(-1);
 
-            _sbSlots = new();
-            _sbSlotsReverse = new();
+            _sbSlots = [];
+            _sbSlotsReverse = [];
 
-            _usedConstantBufferBindings = new();
+            _usedConstantBufferBindings = [];
 
-            _usedTextures = new();
-            _usedImages = new();
+            _usedTextures = [];
+            _usedImages = [];
 
             Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, 0, SupportBuffer.Binding, "support_buffer", SupportBuffer.GetStructureType()));
 
@@ -533,20 +533,20 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private void AddNewConstantBuffer(int binding, string name)
         {
-            StructureType type = new(new[]
-            {
+            StructureType type = new(
+            [
                 new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16),
-            });
+            ]);
 
             Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, 0, binding, name, type));
         }
 
         private void AddNewStorageBuffer(int binding, string name)
         {
-            StructureType type = new(new[]
-            {
+            StructureType type = new(
+            [
                 new StructureField(AggregateType.Array | AggregateType.U32, "data", 0),
-            });
+            ]);
 
             Properties.AddOrUpdateStorageBuffer(new(BufferLayout.Std430, 1, binding, name, type));
         }

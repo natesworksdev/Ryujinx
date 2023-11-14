@@ -80,11 +80,11 @@ namespace Ryujinx.HLE.HOS
 
             public ModCache()
             {
-                RomfsContainers = new List<Mod<FileInfo>>();
-                ExefsContainers = new List<Mod<FileInfo>>();
-                RomfsDirs = new List<Mod<DirectoryInfo>>();
-                ExefsDirs = new List<Mod<DirectoryInfo>>();
-                Cheats = new List<Cheat>();
+                RomfsContainers = [];
+                ExefsContainers = [];
+                RomfsDirs = [];
+                ExefsDirs = [];
+                Cheats = [];
             }
         }
 
@@ -99,9 +99,9 @@ namespace Ryujinx.HLE.HOS
 
             public PatchCache()
             {
-                NsoPatches = new List<Mod<DirectoryInfo>>();
-                NroPatches = new List<Mod<DirectoryInfo>>();
-                KipPatches = new List<Mod<DirectoryInfo>>();
+                NsoPatches = [];
+                NroPatches = [];
+                KipPatches = [];
 
                 Initialized = false;
             }
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS
 
         public ModLoader()
         {
-            _appMods = new Dictionary<ulong, ModCache>();
+            _appMods = [];
             _patches = new PatchCache();
         }
 
@@ -328,8 +328,8 @@ namespace Ryujinx.HLE.HOS
         private static IEnumerable<Cheat> GetCheatsInFile(FileInfo cheatFile)
         {
             string cheatName = DefaultCheatName;
-            List<string> instructions = new();
-            List<Cheat> cheats = new();
+            List<string> instructions = [];
+            List<Cheat> cheats = [];
 
             using StreamReader cheatData = cheatFile.OpenText();
             while (cheatData.ReadLine() is { } line)
@@ -356,7 +356,7 @@ namespace Ryujinx.HLE.HOS
 
                     // Start a new cheat section.
                     cheatName = line[1..^1];
-                    instructions = new List<string>();
+                    instructions = [];
                 }
                 else if (line.Length > 0)
                 {

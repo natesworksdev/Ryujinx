@@ -32,7 +32,7 @@ namespace Ryujinx.Input.GTK3
             _driver = driver;
             Id = id;
             Name = name;
-            _buttonsUserMapping = new List<ButtonMappingEntry>();
+            _buttonsUserMapping = [];
         }
 
         private bool HasConfiguration => _configuration != null;

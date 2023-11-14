@@ -217,7 +217,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Cmif
         {
             _entryManager = new EntryManager(entryCount);
             _entryOwnerLock = new object();
-            _domains = new HashSet<Domain>();
+            _domains = [];
             _maxDomains = maxDomains;
         }
 

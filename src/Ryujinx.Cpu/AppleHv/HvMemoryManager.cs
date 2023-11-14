@@ -324,7 +324,7 @@ namespace Ryujinx.Cpu.AppleHv
         {
             if (size == 0)
             {
-                return ReadOnlySpan<byte>.Empty;
+                return [];
             }
 
             if (tracked)
