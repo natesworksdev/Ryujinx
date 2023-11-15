@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 // but only if we are doing a complete copy,
                 // and not for block linear to linear copies, since those are typically accessed from the CPU.
 
-                if (completeSource && completeDest && (srcLinear || !dstLinear))
+                if (completeSource && completeDest && !(dstLinear && !srcLinear))
                 {
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
