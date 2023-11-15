@@ -29,7 +29,7 @@ namespace Ryujinx.Ui.Common
                     new Button
                     {
                         Label = "Website",
-                        Url   = "https://ryujinx.org/",
+                        Url = "https://ryujinx.org/",
                     },
                 ],
             };

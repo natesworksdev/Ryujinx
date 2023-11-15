@@ -46,10 +46,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             0.46666667f,
         ];
 
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly float[] _maxAnisotropyLut =
         [
             1, 2, 4, 6, 8, 10, 12, 16,
         ];
+#pragma warning restore IDE0055
 
         private const float Frac8ToF32 = 1.0f / 256.0f;
 

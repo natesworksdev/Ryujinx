@@ -36,6 +36,7 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
+#pragma warning disable IDE0055 // Disable formatting
         private static ulong[] _8B_()
         {
             return [
@@ -43,6 +44,7 @@ namespace Ryujinx.Tests.Cpu
                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul,
             ];
         }
+#pragma warning restore IDE0055
 
         private static IEnumerable<ulong> _GenIdxsForTbl1_()
         {

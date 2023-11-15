@@ -22,6 +22,7 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly AddressTable<ulong>.Level[] _levels64Bit =
             [
                 new(31, 17),
@@ -39,6 +40,7 @@ namespace ARMeilleure.Translation
                 new( 7,  8),
                 new( 1,  6),
             ];
+#pragma warning restore IDE0055
 
         private readonly IJitMemoryAllocator _allocator;
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;

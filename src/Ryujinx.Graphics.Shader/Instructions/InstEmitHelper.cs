@@ -140,22 +140,10 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             return swizzle switch
             {
-                HalfSwizzle.F16 =>
-                                    [
-                        context.UnpackHalf2x16Low (src),
-                        context.UnpackHalf2x16High(src),
-                                    ],
+                HalfSwizzle.F16 => [context.UnpackHalf2x16Low(src), context.UnpackHalf2x16High(src)],
                 HalfSwizzle.F32 => [src, src],
-                HalfSwizzle.H0H0 =>
-                    [
-                        context.UnpackHalf2x16Low(src),
-                        context.UnpackHalf2x16Low(src),
-                    ],
-                HalfSwizzle.H1H1 =>
-                    [
-                        context.UnpackHalf2x16High(src),
-                        context.UnpackHalf2x16High(src),
-                    ],
+                HalfSwizzle.H0H0 => [context.UnpackHalf2x16Low(src), context.UnpackHalf2x16Low(src)],
+                HalfSwizzle.H1H1 => [context.UnpackHalf2x16High(src), context.UnpackHalf2x16High(src)],
                 _ => throw new ArgumentException($"Invalid swizzle \"{swizzle}\"."),
             };
         }

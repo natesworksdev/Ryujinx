@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Texture
         private const int BlockWidth = 4;
         private const int BlockHeight = 4;
 
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly int[][] _etc1Lut =
         [
             [2, 8, -2, -8],
@@ -48,6 +49,7 @@ namespace Ryujinx.Graphics.Texture
             [-4, -6, -8, -9, 3, 5, 7, 8],
             [-3, -5, -7, -9, 2, 4, 6, 8],
         ];
+#pragma warning restore IDE0055
 
         public static byte[] DecodeRgb(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
