@@ -163,11 +163,11 @@ namespace Ryujinx.Ava
             // Check if graphics backend was overridden
             if (CommandLineState.OverrideGraphicsBackend != null)
             {
-                if (CommandLineState.OverrideGraphicsBackend.ToLower() == "opengl")
+                if (CommandLineState.OverrideGraphicsBackend.Equals("opengl", StringComparison.CurrentCultureIgnoreCase))
                 {
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.OpenGl;
                 }
-                else if (CommandLineState.OverrideGraphicsBackend.ToLower() == "vulkan")
+                else if (CommandLineState.OverrideGraphicsBackend.Equals("vulkan", StringComparison.CurrentCultureIgnoreCase))
                 {
                     ConfigurationState.Instance.Graphics.GraphicsBackend.Value = GraphicsBackend.Vulkan;
                 }

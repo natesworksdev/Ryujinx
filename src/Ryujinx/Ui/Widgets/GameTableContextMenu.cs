@@ -207,9 +207,9 @@ namespace Ryujinx.Ui.Widgets
                     Nca mainNca = null;
                     Nca patchNca = null;
 
-                    if ((System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nsp") ||
-                        (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".pfs0") ||
-                        (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".xci"))
+                    if ((System.IO.Path.GetExtension(_titleFilePath).Equals(".nsp", StringComparison.CurrentCultureIgnoreCase)) ||
+                        (System.IO.Path.GetExtension(_titleFilePath).Equals(".pfs0", StringComparison.CurrentCultureIgnoreCase)) ||
+                        (System.IO.Path.GetExtension(_titleFilePath).Equals(".xci", StringComparison.CurrentCultureIgnoreCase)))
                     {
                         IFileSystem pfs;
 
@@ -249,7 +249,7 @@ namespace Ryujinx.Ui.Widgets
                             }
                         }
                     }
-                    else if (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".nca")
+                    else if (System.IO.Path.GetExtension(_titleFilePath).Equals(".nca", StringComparison.CurrentCultureIgnoreCase))
                     {
                         mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
                     }
