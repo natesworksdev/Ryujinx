@@ -709,8 +709,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="texture">The texture that has been modified</param>
         /// <param name="bound">True if this texture is being bound, false if unbound</param>
-        /// <param name="setModified">Indicates if the modified flag should be set</param>
-        public void SignalModifying(Texture texture, bool bound, bool setModified)
+        public void SignalModifying(Texture texture, bool bound)
         {
             ModifiedSequence = _context.GetModifiedSequence();
 
@@ -722,7 +721,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     TextureGroupHandle group = _handles[baseHandle + i];
 
-                    group.SignalModifying(bound, _context, setModified);
+                    group.SignalModifying(bound, _context);
                 }
             });
         }
@@ -1665,8 +1664,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 return;
             }
-
-            Storage.ModifiedSinceLastFlush = false;
 
             // There is a small gap here where the action is removed but _actionRegistered is still 1.
             // In this case it will skip registering the action, but here we are already handling it,
