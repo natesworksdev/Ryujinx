@@ -493,6 +493,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             _context.Renderer.Pipeline.SetRenderTargets(_rtHostColors, _rtHostDs);
         }
 
+        /// <summary>
+        /// Marks all currently bound render target textures as modified, and also makes them be set as modified again on next use.
+        /// </summary>
         public void RefreshModifiedTextures()
         {
             Texture dsTexture = _rtDepthStencil;
