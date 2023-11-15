@@ -152,6 +152,30 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Linear textures are presumed to be used for readback initially.
                 _flushBalance = FlushBalanceThreshold + FlushBalanceIncrement;
             }
+
+            foreach (RegionHandle handle in handles)
+            {
+                handle.RegisterDirtyEvent(DirtyAction);
+            }
+        }
+
+        /// <summary>
+        /// The action to perform when a memory tracking handle is flipped to dirty.
+        /// This notifies overlapping textures that the memory needs to be synchronized.
+        /// </summary>
+        private void DirtyAction()
+        {
+            // Notify all textures that belong to this handle.
+
+            _group.Storage.SignalGroupDirty();
+
+            lock (Overlaps)
+            {
+                foreach (Texture overlap in Overlaps)
+                {
+                    overlap.SignalGroupDirty();
+                }
+            }
         }
 
         /// <summary>

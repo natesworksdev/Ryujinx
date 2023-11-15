@@ -993,26 +993,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// The action to perform when a memory tracking handle is flipped to dirty.
-        /// This notifies overlapping textures that the memory needs to be synchronized.
-        /// </summary>
-        /// <param name="groupHandle">The handle that a dirty flag was set on</param>
-        private void DirtyAction(TextureGroupHandle groupHandle)
-        {
-            // Notify all textures that belong to this handle.
-
-            Storage.SignalGroupDirty();
-
-            lock (groupHandle.Overlaps)
-            {
-                foreach (Texture overlap in groupHandle.Overlaps)
-                {
-                    overlap.SignalGroupDirty();
-                }
-            }
-        }
-
-        /// <summary>
         /// Generate a CpuRegionHandle for a given address and size range in CPU VA.
         /// </summary>
         /// <param name="address">The start address of the tracked region</param>
@@ -1082,11 +1062,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 viewStart,
                 views,
                 result.ToArray());
-
-            foreach (RegionHandle handle in result)
-            {
-                handle.RegisterDirtyEvent(() => DirtyAction(groupHandle));
-            }
 
             return groupHandle;
         }
@@ -1358,11 +1333,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
 
                 var groupHandle = new TextureGroupHandle(this, 0, Storage.Size, _views, 0, 0, 0, _allOffsets.Length, cpuRegionHandles);
-
-                foreach (RegionHandle handle in cpuRegionHandles)
-                {
-                    handle.RegisterDirtyEvent(() => DirtyAction(groupHandle));
-                }
 
                 handles = new TextureGroupHandle[] { groupHandle };
             }
