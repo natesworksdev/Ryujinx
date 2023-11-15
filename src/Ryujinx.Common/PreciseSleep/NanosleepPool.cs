@@ -62,14 +62,6 @@ namespace Ryujinx.Common.PreciseSleep
                 {
                     Nanosleep.Sleep(_nanoseconds);
 
-                    /*
-                    var ticks = PerformanceCounter.ElapsedTicks;
-
-                    var diff = ticks - _timePoint;
-
-                    Ryujinx.Common.Logging.Logger.Error?.Print(Ryujinx.Common.Logging.LogClass.Ptc, $"Sleep: {_nanoseconds / 1_000_000f}ms, Nanosleep inaccuracy: {diff / (float)PerformanceCounter.TicksPerMillisecond}ms");
-                    */
-
                     _parent.Signal(this);
                     _newWaitEvent.WaitOne();
                 }

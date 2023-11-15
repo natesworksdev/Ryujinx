@@ -98,13 +98,6 @@ namespace Ryujinx.Common.SystemInterop
                 long newTicks = PerformanceCounter.ElapsedTicks;
                 long nextTicks = newTicks + _granularityTicks;
 
-                /*
-                if (newTicks > _lastTicks + (_granularityTicks * 3) / 2)
-                {
-                    System.Console.WriteLine($"Missed sleep... {(newTicks - _lastTicks) / (float)PerformanceCounter.TicksPerMillisecond}ms");
-                }
-                */
-
                 lock (_lock)
                 {
                     for (int i = 0; i < _waitingObjects.Count; i++)
