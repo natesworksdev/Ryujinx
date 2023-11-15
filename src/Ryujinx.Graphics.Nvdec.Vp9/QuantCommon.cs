@@ -9,6 +9,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         public const int MinQ = 0;
         public const int MaxQ = 255;
 
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly short[] _dcQlookup = [
             4,    8,    8,    9,    10,  11,  12,  12,  13,  14,  15,   16,   17,   18,
             19,   19,   20,   21,   22,  23,  24,  25,  26,  26,  27,   28,   29,   30,
@@ -153,6 +154,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             22766, 23214, 23662, 24126, 24590, 25070, 25551, 26047, 26559, 27071, 27599,
             28143, 28687, 29247,
         ];
+#pragma warning restore IDE0055
 
         public static short DcQuant(int qindex, int delta, BitDepth bitDepth)
         {

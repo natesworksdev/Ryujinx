@@ -98,6 +98,8 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
+#pragma warning disable IDE0055 // Disable formatting
+
         #region "ValueSource (Types)"
         private static ulong[] _1B1H1S1D_()
         {
@@ -690,6 +692,8 @@ namespace Ryujinx.Tests.Cpu
             }
         }
         #endregion
+
+#pragma warning restore IDE0055
 
         #region "ValueSource (Opcodes)"
         private static uint[] _SU_Add_Max_Min_V_V_8BB_4HH_()

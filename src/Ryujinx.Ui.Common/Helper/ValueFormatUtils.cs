@@ -6,11 +6,13 @@ namespace Ryujinx.Ui.Common.Helper
 {
     public static class ValueFormatUtils
     {
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly string[] _fileSizeUnitStrings =
         [
             "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB",  // Base 10 units, used for formatting and parsing
             "KB", "MB", "GB", "TB", "PB", "EB",             // Base 2 units, used for parsing legacy values
         ];
+#pragma warning restore IDE0055
 
         /// <summary>
         /// Used by <see cref="FormatFileSize"/>.

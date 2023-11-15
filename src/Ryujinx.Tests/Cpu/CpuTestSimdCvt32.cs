@@ -26,6 +26,7 @@ namespace Ryujinx.Tests.Cpu
         #endregion
 
         #region "ValueSource (Types)"
+#pragma warning disable IDE0055 // Disable formatting
         private static uint[] _1S_()
         {
             return [
@@ -33,6 +34,7 @@ namespace Ryujinx.Tests.Cpu
                 0x80000000u, 0xFFFFFFFFu,
             ];
         }
+#pragma warning restore IDE0055
 
         private static IEnumerable<ulong> _1S_F_()
         {

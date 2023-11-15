@@ -11,6 +11,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdRegElem
 
         #region "ValueSource (Types)"
+#pragma warning disable IDE0055 // Disable formatting
         private static ulong[] _2S_()
         {
             return [
@@ -26,6 +27,7 @@ namespace Ryujinx.Tests.Cpu
                 0x8000800080008000ul, 0xFFFFFFFFFFFFFFFFul,
             ];
         }
+#pragma warning restore IDE0055
         #endregion
 
         #region "ValueSource (Opcodes)"

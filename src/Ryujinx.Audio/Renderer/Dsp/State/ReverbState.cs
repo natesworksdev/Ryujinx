@@ -7,6 +7,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 {
     public struct ReverbState
     {
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly float[] _fdnDelayTimes =
         [
             // Room
@@ -62,6 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             // Disabled
             0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
         ];
+#pragma warning restore IDE0055
 
         private static readonly float[] _preDelayTimes =
         [

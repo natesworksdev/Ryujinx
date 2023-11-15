@@ -9,6 +9,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 {
     public static class ResamplerHelper
     {
+#pragma warning disable IDE0055 // Disable formatting
         #region "Default Quality Lookup Tables"
         private static readonly short[] _normalCurveLut0 = [
             6600,  19426, 6722,  3,     6479,  19424, 6845,  9,     6359,  19419, 6968,  15,    6239,  19412, 7093,  22,
@@ -318,6 +319,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             1,   415,   -2588, 6479,  24611, 5939,  -2512, 420, 0,   417,   -2563, 6298,  24615, 6118,  -2538, 418,
         ];
         #endregion
+#pragma warning restore IDE0055
 
         private static readonly float[] _normalCurveLut0F;
         private static readonly float[] _normalCurveLut1F;

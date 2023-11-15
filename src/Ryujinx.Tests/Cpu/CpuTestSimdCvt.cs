@@ -13,6 +13,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdCvt
 
         #region "ValueSource (Types)"
+#pragma warning disable IDE0055 // Disable formatting
         private static uint[] _W_()
         {
             return [
@@ -28,6 +29,7 @@ namespace Ryujinx.Tests.Cpu
                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
             ];
         }
+#pragma warning restore IDE0055
 
         private static IEnumerable<ulong> _1S_F_WX_()
         {

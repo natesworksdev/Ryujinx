@@ -205,10 +205,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         private const ushort AboveBorderUv = 0x000f;
 #pragma warning restore IDE0051
 
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly int[] _modeLfLut = [
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // INTRA_MODES
             1, 1, 0, 1, // INTER_MODES (ZEROMV == 0)
         ];
+#pragma warning restore IDE0055
 
         private static byte GetFilterLevel(ref LoopFilterInfoN lfiN, ref ModeInfo mi)
         {
@@ -222,12 +224,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
         // 8x8 blocks in a superblock. A "1" represents the first block in a 16x16
         // or greater area.
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly byte[][] _firstBlockIn16X16 = [
             [1, 0, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 1, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0],
         ];
+#pragma warning restore IDE0055
 
         // This function sets up the bit masks for a block represented
         // by miRow, miCol in a 64x64 region.

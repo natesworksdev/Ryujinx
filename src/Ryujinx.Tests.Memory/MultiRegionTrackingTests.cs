@@ -342,6 +342,7 @@ namespace Ryujinx.Tests.Memory
 
             MultiRegionHandle combined = _tracking.BeginGranularTracking(0, PageSize * 18, handleGroups.SelectMany((handles) => handles), PageSize, 0);
 
+#pragma warning disable IDE0055 // Disable formatting
             bool[] expectedDirty =
             [
                 true, true, true, // Gap.
@@ -351,6 +352,7 @@ namespace Ryujinx.Tests.Memory
                 false, false, true, true, false, false, // Double size handles.
                 true, // Gap.
             ];
+#pragma warning restore IDE0055
 
             for (int i = 0; i < 18; i++)
             {

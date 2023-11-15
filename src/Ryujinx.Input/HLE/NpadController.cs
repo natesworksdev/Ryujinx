@@ -27,6 +27,7 @@ namespace Ryujinx.Input.HLE
             }
         }
 
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly HLEButtonMappingEntry[] _hleButtonMapping = [
             new(GamepadButtonInputId.A, ControllerKeys.A),
             new(GamepadButtonInputId.B, ControllerKeys.B),
@@ -202,6 +203,7 @@ namespace Ryujinx.Input.HLE
             new(Key.ScrollLock,   9),
             new(Key.NumLock,      10),
         ];
+#pragma warning restore IDE0055
 
         private bool _isValid;
 

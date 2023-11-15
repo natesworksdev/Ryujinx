@@ -14,6 +14,7 @@
             new BC7ModeInfo(2, 6, 4, 0, 0, 2, 0, 5, 5),
         ];
 
+#pragma warning disable IDE0055 // Disable formatting
         public static readonly byte[][] Weights =
         [
             [0, 21, 43, 64],
@@ -287,5 +288,6 @@
                 [0, 1, 1, 1, 2, 0, 1, 1, 2, 2, 0, 1, 2, 2, 2, 0], // 63
             ],
         ];
+#pragma warning restore IDE0055
     }
 }

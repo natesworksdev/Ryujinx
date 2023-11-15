@@ -1,5 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Settings
 {
+#pragma warning disable IDE0055 // Disable formatting
     static class KeyCodeMaps
     {
         public static byte[] Default =
@@ -4846,4 +4847,5 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             0x00, 0x00, 0x00, 0x00,
         ];
     };
+#pragma warning restore IDE0055
 }

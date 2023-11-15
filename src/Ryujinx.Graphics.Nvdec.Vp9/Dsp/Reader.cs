@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
 {
     internal struct Reader
     {
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly byte[] _norm = [
             0, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
             3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -18,6 +19,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ];
+#pragma warning restore IDE0055
         private const int BdValueSize = sizeof(ulong) * 8;
 
         // This is meant to be a large, positive constant that can still be efficiently

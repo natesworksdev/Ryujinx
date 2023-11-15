@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     {
         public static ReadOnlySpan<byte> SizeGroupLookup => new byte[] { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3 };
 
+#pragma warning disable IDE0055 // Disable formatting
         public static readonly BlockSize[][] SubsizeLookup = [
             [ // PARTITION_NONE
                 BlockSize.Block4x4, BlockSize.Block4x8, BlockSize.Block8x4, BlockSize.Block8x8, BlockSize.Block8x16, BlockSize.Block16x8,
@@ -1557,4 +1558,5 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ],
         ];
     }
+#pragma warning restore IDE0055
 }

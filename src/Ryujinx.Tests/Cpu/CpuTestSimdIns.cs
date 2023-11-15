@@ -11,6 +11,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdIns
 
         #region "ValueSource"
+#pragma warning disable IDE0055 // Disable formatting
         private static ulong[] _1D_()
         {
             return [
@@ -80,6 +81,7 @@ namespace Ryujinx.Tests.Cpu
                 0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul,
             ];
         }
+#pragma warning restore IDE0055
         #endregion
 
         [Test, Pairwise, Description("DUP <Vd>.<T>, W<n>")]
