@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Microsleep;
+using Ryujinx.Common.PreciseSleep;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
@@ -342,7 +342,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
                     if (diff > 0)
                     {
-                        MicrosleepHelper.SleepUntilTimePoint(_event, PerformanceCounter.ElapsedTicks + diff);
+                        PreciseSleepHelper.SleepUntilTimePoint(_event, PerformanceCounter.ElapsedTicks + diff);
 
                         diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
 

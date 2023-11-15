@@ -3,14 +3,14 @@ using System;
 using System.Runtime.Versioning;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// A precise sleep event that uses Windows specific methods to increase clock resolution beyond 1ms,
     /// use the clock's phase for more precise waits, and potentially align timepoints with it.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public class WindowsSleepEvent : IMicrosleepEvent
+    public class WindowsSleepEvent : IPreciseSleepEvent
     {
         /// <summary>
         /// The clock can drift a bit, so add this to encourage the clock to still wait if the next tick is forecasted slightly before it.

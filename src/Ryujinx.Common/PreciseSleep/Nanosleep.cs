@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// Access to Linux/MacOS nanosleep, with platform specific bias to improve precision.

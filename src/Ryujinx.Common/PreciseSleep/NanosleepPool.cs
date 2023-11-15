@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Versioning;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// A pool of threads used to allow "interruptable" nanosleep for a single target event.

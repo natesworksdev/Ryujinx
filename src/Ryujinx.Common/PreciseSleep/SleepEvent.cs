@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// A cross-platform precise sleep event that has millisecond granularity.
     /// </summary>
-    public class SleepEvent : IMicrosleepEvent
+    public class SleepEvent : IPreciseSleepEvent
     {
         private readonly AutoResetEvent _waitEvent = new(false);
 

@@ -2,15 +2,15 @@ using Ryujinx.Common.SystemInterop;
 using System;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
-    public static class MicrosleepHelper
+    public static class PreciseSleepHelper
     {
         /// <summary>
         /// Create a precise sleep event for the current platform.
         /// </summary>
         /// <returns>A precise sleep event</returns>
-        public static IMicrosleepEvent CreateEvent()
+        public static IPreciseSleepEvent CreateEvent()
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsAndroid())
             {

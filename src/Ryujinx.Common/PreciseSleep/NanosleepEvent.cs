@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Versioning;
 using System.Threading;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// A precise sleep event for linux and macos that uses nanosleep for more precise timeouts.
@@ -11,7 +11,7 @@ namespace Ryujinx.Common.Microsleep
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
     [SupportedOSPlatform("ios")]
-    public class NanosleepEvent : IMicrosleepEvent
+    public class NanosleepEvent : IPreciseSleepEvent
     {
         private readonly AutoResetEvent _waitEvent = new(false);
         private readonly NanosleepPool _pool;

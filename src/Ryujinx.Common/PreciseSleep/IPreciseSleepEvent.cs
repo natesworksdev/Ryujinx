@@ -1,12 +1,12 @@
 using System;
 
-namespace Ryujinx.Common.Microsleep
+namespace Ryujinx.Common.PreciseSleep
 {
     /// <summary>
     /// An event which works similarly to an AutoResetEvent, but is backed by a
     /// more precise timer that allows waits of less than a millisecond.
     /// </summary>
-    public interface IMicrosleepEvent : IDisposable
+    public interface IPreciseSleepEvent : IDisposable
     {
         /// <summary>
         /// Adjust a timepoint to better fit the host clock.

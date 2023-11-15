@@ -1,5 +1,5 @@
 using Ryujinx.Common;
-using Ryujinx.Common.Microsleep;
+using Ryujinx.Common.PreciseSleep;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private readonly KernelContext _context;
         private readonly List<WaitingObject> _waitingObjects;
-        private IMicrosleepEvent _waitEvent;
+        private IPreciseSleepEvent _waitEvent;
         private bool _keepRunning;
         private long _enforceWakeupFromSpinWait;
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             SpinWait spinWait = new();
             WaitingObject next;
 
-            using (_waitEvent = MicrosleepHelper.CreateEvent())
+            using (_waitEvent = PreciseSleepHelper.CreateEvent())
             {
                 while (_keepRunning)
                 {
