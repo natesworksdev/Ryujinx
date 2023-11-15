@@ -6,6 +6,7 @@ using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Common.Configuration;
@@ -138,7 +139,7 @@ namespace Ryujinx.Ui.Windows
 
                         romfs.OpenFile(ref file.Ref, ("/" + item.FullPath).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                        using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                        using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
                         using MemoryStream streamPng = MemoryStreamManager.Shared.GetStream();
                         file.Get.AsStream().CopyTo(stream);
 
