@@ -1589,6 +1589,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if ((ignore == null || !handle.HasDependencyTo(ignore)) && handle.Modified)
                     {
                         handle.Modified = false;
+                        handle.DeferredCopy = null;
                         Storage.SignalModifiedDirty();
 
                         lock (handle.Overlaps)

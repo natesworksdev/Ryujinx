@@ -176,6 +176,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     overlap.SignalGroupDirty();
                 }
             }
+
+            DeferredCopy = null;
         }
 
         /// <summary>
@@ -473,7 +475,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void DeferCopy(TextureGroupHandle copyFrom)
         {
             Modified = false;
-
             DeferredCopy = copyFrom;
 
             _group.Storage.SignalGroupDirty();
@@ -530,7 +531,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     existing.Other.Handle.CreateCopyDependency(this);
 
-                    if (copyToOther)
+                    if (copyToOther && Modified)
                     {
                         existing.Other.Handle.DeferCopy(this);
                     }
@@ -574,10 +575,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (fromHandle != null)
                 {
                     // Only copy if the copy texture is still modified.
-                    // It will be set as unmodified if new data is written from CPU, as the data previously in the texture will flush.
+                    // DeferredCopy will be set to null if new data is written from CPU (see the DirtyAction method).
                     // It will also set as unmodified if a copy is deferred to it.
 
-                    shouldCopy = fromHandle.Modified;
+                    shouldCopy = true;
 
                     if (fromHandle._bindCount == 0)
                     {
