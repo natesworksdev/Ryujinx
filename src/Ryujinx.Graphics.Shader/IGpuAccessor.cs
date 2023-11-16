@@ -147,6 +147,7 @@ namespace Ryujinx.Graphics.Shader
                 default,
                 false,
                 false,
+                false,
                 false);
         }
 

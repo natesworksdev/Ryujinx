@@ -160,6 +160,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsCubemapView: true,
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
                 supportsScaledVertexFormats: true,
+                supportsQuads: HwCapabilities.SupportsQuads,
                 supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
                 supportsShaderBarrierDivergence: !(intelWindows || intelUnix),
                 supportsShaderFloat64: true,
