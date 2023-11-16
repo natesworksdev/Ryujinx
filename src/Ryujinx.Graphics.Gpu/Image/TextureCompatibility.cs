@@ -718,7 +718,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 (lhsFormat, rhsFormat) = (rhsFormat, lhsFormat);
             }
 
-            return lhsFormat.Format == Format.R8Unorm && rhsFormat.Format == Format.R8G8B8A8Unorm;
+            return (lhsFormat.Format == Format.R8G8B8A8Unorm && rhsFormat.Format == Format.R32G32B32A32Float) ||
+                   (lhsFormat.Format == Format.R8Unorm && rhsFormat.Format == Format.R8G8B8A8Unorm);
         }
 
         /// <summary>
