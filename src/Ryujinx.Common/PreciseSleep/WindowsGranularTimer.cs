@@ -13,10 +13,10 @@ namespace Ryujinx.Common.SystemInterop
     [SupportedOSPlatform("windows")]
     public partial class WindowsGranularTimer
     {
-        private static WindowsGranularTimer _instance = new();
-        public static WindowsGranularTimer Instance => _instance;
+        private const int MinimumGranularity = 5000;
 
-        private static int MinimumGranularity = 5000;
+        private static readonly WindowsGranularTimer _instance = new();
+        public static WindowsGranularTimer Instance => _instance;
 
         private readonly struct WaitingObject
         {
@@ -44,15 +44,14 @@ namespace Ryujinx.Common.SystemInterop
         public long GranularityNs => _granularityNs;
         public long GranularityTicks => _granularityTicks;
 
-        private Thread _timerThread;
+        private readonly Thread _timerThread;
         private long _granularityNs = MinimumGranularity * 100L;
         private long _granularityTicks;
-        private bool _running = true;
         private long _lastTicks = PerformanceCounter.ElapsedTicks;
         private long _lastId;
 
-        private object _lock = new();
-        private List<WaitingObject> _waitingObjects = new();
+        private readonly object _lock = new();
+        private readonly List<WaitingObject> _waitingObjects = new();
 
         private WindowsGranularTimer()
         {
@@ -62,6 +61,7 @@ namespace Ryujinx.Common.SystemInterop
                 Name = "Common.WindowsTimer",
                 Priority = ThreadPriority.Highest
             };
+
             _timerThread.Start();
         }
 
@@ -94,7 +94,7 @@ namespace Ryujinx.Common.SystemInterop
         private void Loop()
         {
             Initialize();
-            while (_running)
+            while (true)
             {
                 long delayInterval = -1; // Next tick
                 NtSetTimerResolution((int)(_granularityNs / 100), true, out _);
