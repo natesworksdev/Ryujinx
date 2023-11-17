@@ -179,7 +179,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <inheritdoc/>
         public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
-            return MemoryMarshal.Cast<uint, byte>(_state.TransformFeedbackDescriptors[bufferIndex].VaryingLocations);
+            int varyingCount = _state.TransformFeedbackDescriptors[bufferIndex].VaryingCount;
+
+            return MemoryMarshal.Cast<uint, byte>(_state.TransformFeedbackDescriptors[bufferIndex].VaryingLocations)[..Math.Min(128, varyingCount)];
         }
 
         /// <inheritdoc/>
