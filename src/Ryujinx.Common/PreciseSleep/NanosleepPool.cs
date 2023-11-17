@@ -18,6 +18,8 @@ namespace Ryujinx.Common.PreciseSleep
 
         /// <summary>
         /// A thread that nanosleeps and may signal an event on wake.
+        /// When a thread is assigned a nanosleep to perform, it also gets a signal ID.
+        /// The pool's target event is only signalled if this ID matches the latest dispatched one.
         /// </summary>
         private class NanosleepThread : IDisposable
         {
@@ -39,6 +41,11 @@ namespace Ryujinx.Common.PreciseSleep
 
             public long SignalId => _signalId;
 
+            /// <summary>
+            /// Creates a new NanosleepThread for a parent pool, with a specified thread ID.
+            /// </summary>
+            /// <param name="parent">Parent NanosleepPool</param>
+            /// <param name="id">Thread ID</param>
             public NanosleepThread(NanosleepPool parent, int id)
             {
                 _parent = parent;
@@ -54,6 +61,9 @@ namespace Ryujinx.Common.PreciseSleep
                 _thread.Start();
             }
 
+            /// <summary>
+            /// Service requests to perform a nanosleep, signal parent pool when complete.
+            /// </summary>
             private void Loop()
             {
                 _newWaitEvent.WaitOne();
@@ -69,6 +79,12 @@ namespace Ryujinx.Common.PreciseSleep
                 _newWaitEvent.Dispose();
             }
 
+            /// <summary>
+            /// Assign a nanosleep for this thread to perform, then signal at the end.
+            /// </summary>
+            /// <param name="nanoseconds">Nanoseconds to sleep</param>
+            /// <param name="signalId">Signal ID</param>
+            /// <param name="timePoint">Target timepoint</param>
             public void SleepAndSignal(long nanoseconds, long signalId, long timePoint)
             {
                 _signalId = signalId;
@@ -77,6 +93,12 @@ namespace Ryujinx.Common.PreciseSleep
                 _newWaitEvent.Set();
             }
 
+            /// <summary>
+            /// Resurrect an active nanosleep's signal if its target timepoint is a close enough match.
+            /// </summary>
+            /// <param name="signalId">New signal id to assign the nanosleep</param>
+            /// <param name="timePoint">Target timepoint</param>
+            /// <returns>True if resurrected, false otherwise</returns>
             public bool Resurrect(long signalId, long timePoint)
             {
                 if (Math.Abs(timePoint - _timePoint) < _timePointEpsilon)
@@ -89,6 +111,9 @@ namespace Ryujinx.Common.PreciseSleep
                 return false;
             }
 
+            /// <summary>
+            /// Dispose the NanosleepThread, interrupting its worker loop.
+            /// </summary>
             public void Dispose()
             {
                 _running = false;
@@ -132,6 +157,13 @@ namespace Ryujinx.Common.PreciseSleep
             }
         }
 
+        /// <summary>
+        /// Sleep for the given number of nanoseconds and signal the target event.
+        /// This does not block the caller thread.
+        /// </summary>
+        /// <param name="nanoseconds">Nanoseconds to sleep</param>
+        /// <param name="timePoint">Target timepoint</param>
+        /// <returns>True if the signal will be set, false otherwise</returns>
         public bool SleepAndSignal(long nanoseconds, long timePoint)
         {
             lock (_lock)
@@ -167,11 +199,17 @@ namespace Ryujinx.Common.PreciseSleep
             }
         }
 
+        /// <summary>
+        /// Ignore the latest nanosleep.
+        /// </summary>
         public void IgnoreSignal()
         {
             _signalId++;
         }
 
+        /// <summary>
+        /// Dispose the NanosleepPool, disposing all of its active threads.
+        /// </summary>
         public void Dispose()
         {
             GC.SuppressFinalize(this);
