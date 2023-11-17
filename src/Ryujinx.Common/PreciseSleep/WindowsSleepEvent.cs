@@ -47,7 +47,7 @@ namespace Ryujinx.Common.PreciseSleep
 
             long granularity = _timer.GranularityNs;
             long misalignment = timeoutNs % granularity;
-            
+
             if ((misalignment < ClockAlignedBias || misalignment > granularity - ClockAlignedBias) && timeoutNs > ClockAlignedBias)
             {
                 // Inaccurate sleep for 0.5ms increments, typically.
@@ -63,7 +63,7 @@ namespace Ryujinx.Common.PreciseSleep
                     timePoint = high;
                 }
             }
-            
+
             return timePoint;
         }
 

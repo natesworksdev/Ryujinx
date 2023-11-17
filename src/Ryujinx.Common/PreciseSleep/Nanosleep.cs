@@ -14,7 +14,7 @@ namespace Ryujinx.Common.PreciseSleep
     public static partial class Nanosleep
     {
         private const long LinuxBaseNanosleepBias = 50000; // 0.05ms
-        
+
         // Penalty for max allowed sleep duration
         private const long LinuxNanosleepAccuracyPenaltyThreshold = 200000; // 0.2ms
         private const long LinuxNanosleepAccuracyPenalty = 30000; // 0.03ms
@@ -52,7 +52,7 @@ namespace Ryujinx.Common.PreciseSleep
             else
             {
                 long bias = LinuxBaseNanosleepBias;
-                
+
                 if (timeoutNs > LinuxNanosleepBasePenaltyThreshold)
                 {
                     long penalty = (timeoutNs - LinuxNanosleepBasePenaltyThreshold) * LinuxNanosleepPenaltyPerMillisecond / 1_000_000;

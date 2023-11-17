@@ -27,7 +27,7 @@ namespace Ryujinx.Common.PreciseSleep
 
                 return true;
             }
-            
+
             return false;
         }
 
