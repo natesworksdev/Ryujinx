@@ -35,6 +35,7 @@ namespace Ryujinx.Modules
 
         private static string _buildVer;
         private static string _platformExt;
+        private static string _platformPrefix = "test-ava-ryujinx";
         private static string _buildUrl;
         private static long _buildSize;
 
@@ -79,6 +80,7 @@ namespace Ryujinx.Modules
             else if (OperatingSystem.IsLinux())
             {
                 _platformExt = "linux_x64.tar.gz";
+                _platformPrefix = "ryujinx";
                 artifactIndex = 0;
             }
 
@@ -117,7 +119,7 @@ namespace Ryujinx.Modules
 
                 foreach (var asset in fetched.Assets)
                 {
-                    if (asset.Name.StartsWith("ryujinx") && asset.Name.EndsWith(_platformExt))
+                    if (asset.Name.StartsWith(_platformPrefix) && asset.Name.EndsWith(_platformExt))
                     {
                         _buildUrl = asset.BrowserDownloadUrl;
 
