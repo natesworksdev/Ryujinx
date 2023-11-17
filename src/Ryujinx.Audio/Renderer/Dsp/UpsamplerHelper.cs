@@ -71,7 +71,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 return;
             }
 
-            float DoFilterBank(ref UpsamplerBufferState state, in Array20<float> bank)
+            float DoFilterBank(ref UpsamplerBufferState state, ReadOnlySpan<float> bank)
             {
                 float result = 0.0f;
 
@@ -87,8 +87,8 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     while (curIdx < stopIdx)
                     {
                         result += Vector.Dot(
-                            new Vector<float>(bank.AsSpan().Slice(curIdx, Vector<float>.Count)),
-                            new Vector<float>(state.History.AsSpan().Slice(curIdx, Vector<float>.Count)));
+                            new Vector<float>(bank.Slice(curIdx, Vector<float>.Count)),
+                            new Vector<float>(((Span<float>)state.History).Slice(curIdx, Vector<float>.Count)));
                         curIdx += Vector<float>.Count;
                     }
                 }
@@ -105,7 +105,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             void NextInput(ref UpsamplerBufferState state, float input)
             {
-                state.History.AsSpan()[1..].CopyTo(state.History.AsSpan());
+                state.History[1..].CopyTo(state.History);
                 state.History[HistoryLength - 1] = input;
             }
 

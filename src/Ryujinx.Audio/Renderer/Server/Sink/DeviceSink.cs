@@ -63,10 +63,10 @@ namespace Ryujinx.Audio.Renderer.Server.Sink
             else
             {
                 Parameter.DownMixParameterEnabled = inputDeviceParameter.DownMixParameterEnabled;
-                inputDeviceParameter.DownMixParameter.AsSpan().CopyTo(Parameter.DownMixParameter.AsSpan());
+                ((Span<float>)inputDeviceParameter.DownMixParameter).CopyTo(Parameter.DownMixParameter);
             }
 
-            Parameter.DownMixParameter.AsSpan().CopyTo(DownMixCoefficients.AsSpan());
+            ((Span<float>)Parameter.DownMixParameter).CopyTo(DownMixCoefficients.AsSpan());
 
             errorInfo = new BehaviourParameter.ErrorInfo();
             outStatus = new SinkOutStatus();

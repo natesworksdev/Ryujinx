@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <inheritdoc/>
         public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
-            return _oldSpecState.TransformFeedbackDescriptors[bufferIndex].AsSpan();
+            return MemoryMarshal.Cast<uint, byte>(_oldSpecState.TransformFeedbackDescriptors[bufferIndex].VaryingLocations);
         }
 
         /// <inheritdoc/>

@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 SamplingNumber = previousEntry.SamplingNumber + 1,
             };
 
-            keyState.Keys.AsSpan().CopyTo(newState.Keys.RawData.AsSpan());
+            keyState.Keys.AsSpan().CopyTo(newState.Keys.RawData);
             newState.Modifiers = (KeyboardModifier)keyState.Modifier;
 
             lifo.Write(ref newState);

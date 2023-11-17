@@ -400,10 +400,10 @@ namespace Ryujinx.Input.Motion.CemuHook
             writer.Seek(6, SeekOrigin.Begin);
             writer.Write(header.Length);
 
-            Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
+            Crc32.Hash(stream.ToArray(), header.Crc32);
 
             writer.Seek(8, SeekOrigin.Begin);
-            writer.Write(header.Crc32.AsSpan());
+            writer.Write(header.Crc32);
 
             byte[] data = stream.ToArray();
 
@@ -438,10 +438,10 @@ namespace Ryujinx.Input.Motion.CemuHook
             writer.Seek(6, SeekOrigin.Begin);
             writer.Write(header.Length);
 
-            Crc32.Hash(stream.ToArray(), header.Crc32.AsSpan());
+            Crc32.Hash(stream.ToArray(), header.Crc32);
 
             writer.Seek(8, SeekOrigin.Begin);
-            writer.Write(header.Crc32.AsSpan());
+            writer.Write(header.Crc32);
 
             byte[] data = stream.ToArray();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Device
 {
@@ -26,6 +27,14 @@ namespace Ryujinx.Graphics.Device
                 if (type.StructLayoutAttribute.Size != 0)
                 {
                     return type.StructLayoutAttribute.Size;
+                }
+
+                // If the struct has the InlineArray attribute, the size is specified on the attribute, and the first field has the type.
+                if (type.GetCustomAttribute<InlineArrayAttribute>() is InlineArrayAttribute attribute)
+                {
+                    Type field0Type = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0].FieldType;
+
+                    return attribute.Length * SizeOf(field0Type);
                 }
 
                 // Otherwise we calculate the sum of the sizes of all fields.

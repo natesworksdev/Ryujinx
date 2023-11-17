@@ -9,21 +9,21 @@ namespace Ryujinx.Graphics.Vulkan
         void BitMapSignal(int index, int count);
     }
 
-    struct BitMapStruct<T> where T : IArray<long>
+    struct BitMapStruct
     {
         public const int IntSize = 64;
 
         private const int IntShift = 6;
         private const int IntMask = IntSize - 1;
 
-        private T _masks;
+        private Array2<long> _masks;
 
         public BitMapStruct()
         {
             _masks = default;
         }
 
-        public bool BecomesUnsetFrom(in BitMapStruct<T> from, ref BitMapStruct<T> into)
+        public readonly bool BecomesUnsetFrom(in BitMapStruct from, ref BitMapStruct into)
         {
             bool result = false;
 
@@ -40,9 +40,9 @@ namespace Ryujinx.Graphics.Vulkan
             return result;
         }
 
-        public void SetAndSignalUnset<T2>(in BitMapStruct<T> from, ref T2 listener) where T2 : struct, IBitMapListener
+        public void SetAndSignalUnset<T2>(in BitMapStruct from, ref T2 listener) where T2 : struct, IBitMapListener
         {
-            BitMapStruct<T> result = new();
+            BitMapStruct result = new();
 
             if (BecomesUnsetFrom(from, ref result))
             {
@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 int offset = 0;
                 int masks = _masks.Length;
-                ref T resultMasks = ref result._masks;
+                ref Array2<long> resultMasks = ref result._masks;
                 for (int i = 0; i < masks; i++)
                 {
                     long value = resultMasks[i];
@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Vulkan
             _masks = from._masks;
         }
 
-        public void SignalSet(Action<int, int> action)
+        public readonly void SignalSet(Action<int, int> action)
         {
             // Iterate the set bits in the result, and signal them.
 
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public bool AnySet()
+        public readonly bool AnySet()
         {
             for (int i = 0; i < _masks.Length; i++)
             {
@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Vulkan
             return false;
         }
 
-        public bool IsSet(int bit)
+        public readonly bool IsSet(int bit)
         {
             int wordIndex = bit >> IntShift;
             int wordBit = bit & IntMask;
@@ -218,9 +218,9 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public BitMapStruct<T> Union(BitMapStruct<T> other)
+        public BitMapStruct Union(BitMapStruct other)
         {
-            var result = new BitMapStruct<T>();
+            var result = new BitMapStruct();
 
             ref var masks = ref _masks;
             ref var otherMasks = ref other._masks;

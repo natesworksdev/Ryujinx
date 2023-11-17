@@ -129,7 +129,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
             const uint ExitCodeStillActive = 259;
             const int ThreadQueryInformation = 0x40;
 
-            Span<int> ids = LocalCounts.ThreadIds.AsSpan();
+            Span<int> ids = LocalCounts.ThreadIds;
 
             for (int i = 0; i < ids.Length; i++)
             {

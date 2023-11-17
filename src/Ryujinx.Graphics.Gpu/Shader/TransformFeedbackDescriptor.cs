@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Location of varyings to be written into the buffer. Each byte is one location.
         /// </summary>
-        public Array32<uint> VaryingLocations; // Making this readonly breaks AsSpan
+        public Array32<uint> VaryingLocations;
 
         /// <summary>
         /// Creates a new transform feedback descriptor.
@@ -44,15 +44,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             Stride = stride;
             VaryingCount = varyingCount;
             VaryingLocations = varyingLocations;
-        }
-
-        /// <summary>
-        /// Gets a span of the <see cref="VaryingLocations"/>.
-        /// </summary>
-        /// <returns>Span of varying locations</returns>
-        public ReadOnlySpan<byte> AsSpan()
-        {
-            return MemoryMarshal.Cast<uint, byte>(VaryingLocations.AsSpan())[..Math.Min(128, VaryingCount)];
         }
     }
 }

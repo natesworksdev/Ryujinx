@@ -13,13 +13,13 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
         public void Set(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
             _vertices = vertices;
-            defaultOuterLevel.CopyTo(_defaultOuterLevel.AsSpan());
-            defaultInnerLevel.CopyTo(_defaultInnerLevel.AsSpan());
+            defaultOuterLevel.CopyTo(_defaultOuterLevel);
+            defaultInnerLevel.CopyTo(_defaultInnerLevel);
         }
 
         public static void Run(ref SetPatchParametersCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetPatchParameters(command._vertices, command._defaultOuterLevel.AsSpan(), command._defaultInnerLevel.AsSpan());
+            renderer.Pipeline.SetPatchParameters(command._vertices, command._defaultOuterLevel, command._defaultInnerLevel);
         }
     }
 }

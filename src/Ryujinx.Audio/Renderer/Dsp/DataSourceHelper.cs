@@ -76,7 +76,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                     if (!info.DecodingBehaviour.HasFlag(DecodingBehaviour.SkipPitchAndSampleRateConversion))
                     {
-                        voiceState.Pitch.AsSpan()[..pitchMaxLength].CopyTo(tempBuffer);
+                        voiceState.Pitch[..pitchMaxLength].CopyTo(tempBuffer);
                         tempBufferIndex += pitchMaxLength;
                     }
 
@@ -239,7 +239,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                         ResamplerHelper.Resample(outputBuffer, tempBuffer, sampleRateRatio, ref fraction, sampleCountToProcess, info.SrcQuality, y != sourceSampleCountToProcess || info.Pitch != 1.0f);
 
-                        tempBuffer.Slice(sampleCountToDecode, pitchMaxLength).CopyTo(voiceState.Pitch.AsSpan());
+                        tempBuffer.Slice(sampleCountToDecode, pitchMaxLength).CopyTo(voiceState.Pitch);
                     }
 
                     i += sampleCountToProcess;

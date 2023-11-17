@@ -204,7 +204,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             Pitch = 0.0f;
             Volume = 0.0f;
             PreviousVolume = 0.0f;
-            BiquadFilters.AsSpan().Clear();
+            ((Span<BiquadFilterParameter>)BiquadFilters).Clear();
             WaveBuffersCount = 0;
             WaveBuffersIndex = 0;
             MixId = Constants.UnusedMixId;
@@ -290,7 +290,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             ChannelsCount = parameter.ChannelCount;
             Pitch = parameter.Pitch;
             Volume = parameter.Volume;
-            parameter.BiquadFilters.AsSpan().CopyTo(BiquadFilters.AsSpan());
+            ((Span<BiquadFilterParameter>)parameter.BiquadFilters).CopyTo(BiquadFilters);
             WaveBuffersCount = parameter.WaveBuffersCount;
             WaveBuffersIndex = parameter.WaveBuffersIndex;
 
@@ -310,7 +310,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
                 SplitterId = Constants.UnusedSplitterId;
             }
 
-            parameter.ChannelResourceIds.AsSpan().CopyTo(ChannelResourceIds.AsSpan());
+            ((Span<int>)parameter.ChannelResourceIds).CopyTo(ChannelResourceIds);
 
             DecodingBehaviour behaviour = DecodingBehaviour.Default;
 
@@ -640,7 +640,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                         voiceUpdateState.Offset = 0;
                         voiceUpdateState.PlayedSampleCount = 0;
-                        voiceUpdateState.Pitch.AsSpan().Clear();
+                        ((Span<short>)voiceUpdateState.Pitch).Clear();
                         voiceUpdateState.Fraction = 0;
                         voiceUpdateState.LoopContext = new AdpcmLoopContext();
                     }
@@ -652,7 +652,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
                 case PlayState.Stopped:
                 case PlayState.Paused:
-                    foreach (ref WaveBuffer wavebuffer in WaveBuffers.AsSpan())
+                    foreach (ref WaveBuffer wavebuffer in WaveBuffers)
                     {
                         wavebuffer.BufferAddressInfo.GetReference(true);
                         wavebuffer.ContextAddressInfo.GetReference(true);

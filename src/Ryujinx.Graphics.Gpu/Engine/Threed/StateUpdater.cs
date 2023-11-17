@@ -392,8 +392,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _context.Renderer.Pipeline.SetPatchParameters(
                 _state.State.PatchVertices,
-                _state.State.TessOuterLevel.AsSpan(),
-                _state.State.TessInnerLevel.AsSpan());
+                _state.State.TessOuterLevel,
+                _state.State.TessInnerLevel);
 
             _currentSpecState.SetTessellationMode(_state.State.TessMode);
         }

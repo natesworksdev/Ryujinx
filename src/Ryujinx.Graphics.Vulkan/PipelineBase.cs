@@ -1462,7 +1462,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected void UpdatePipelineAttachmentFormats()
         {
-            var dstAttachmentFormats = _newState.Internal.AttachmentFormats.AsSpan();
+            var dstAttachmentFormats = _newState.Internal.AttachmentFormats;
             FramebufferParams.AttachmentFormats.CopyTo(dstAttachmentFormats);
             _newState.Internal.AttachmentIntegerFormatMask = FramebufferParams.AttachmentIntegerFormatMask;
 

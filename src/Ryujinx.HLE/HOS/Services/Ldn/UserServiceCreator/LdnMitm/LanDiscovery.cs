@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             {
                 Length = LdnConst.SsidLengthMax,
             };
-            _random.NextBytes(_fakeSsid.Name.AsSpan()[..32]);
+            _random.NextBytes(_fakeSsid.Name[..32]);
 
             _protocol = new LanProtocol(this);
             _protocol.Accept += OnConnect;
@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
                 return false;
             }
 
-            data.CopyTo(NetworkInfo.Ldn.AdvertiseData.AsSpan());
+            data.CopyTo(NetworkInfo.Ldn.AdvertiseData);
             NetworkInfo.Ldn.AdvertiseDataSize = (ushort)data.Length;
 
             // NOTE: Otherwise this results in SessionKeepFailed or MasterDisconnected
@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             byte[] ip = address.GetAddressBytes();
 
             var macAddress = new Array6<byte>();
-            new byte[] { 0x02, 0x00, ip[0], ip[1], ip[2], ip[3] }.CopyTo(macAddress.AsSpan());
+            new byte[] { 0x02, 0x00, ip[0], ip[1], ip[2], ip[3] }.CopyTo(macAddress);
 
             return macAddress;
         }
@@ -356,7 +356,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
                 if (filter.Flag.HasFlag(ScanFilterFlag.SessionId))
                 {
-                    copy &= filter.NetworkId.SessionId.AsSpan().SequenceEqual(item.Value.NetworkId.SessionId.AsSpan());
+                    Array16<byte> lSessionId = filter.NetworkId.SessionId;
+                    Array16<byte> rSessionId = item.Value.NetworkId.SessionId;
+
+                    copy &= ((Span<byte>)lSessionId).SequenceEqual(rSessionId);
                 }
 
                 if (filter.Flag.HasFlag(ScanFilterFlag.NetworkType))
@@ -366,8 +369,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
                 if (filter.Flag.HasFlag(ScanFilterFlag.Ssid))
                 {
-                    Span<byte> gameSsid = item.Value.Common.Ssid.Name.AsSpan()[item.Value.Common.Ssid.Length..];
-                    Span<byte> scanSsid = filter.Ssid.Name.AsSpan()[filter.Ssid.Length..];
+                    Array33<byte> ssidName = item.Value.Common.Ssid.Name;
+                    ReadOnlySpan<byte> gameSsid = ssidName[item.Value.Common.Ssid.Length..];
+                    ReadOnlySpan<byte> scanSsid = filter.Ssid.Name[filter.Ssid.Length..];
+
                     copy &= gameSsid.SequenceEqual(scanSsid);
                 }
 
@@ -486,7 +491,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
             NetworkInfo.Common.Channel = networkConfig.Channel == 0 ? (ushort)6 : networkConfig.Channel;
 
             NetworkInfo.NetworkId.SessionId = new Array16<byte>();
-            _random.NextBytes(NetworkInfo.NetworkId.SessionId.AsSpan());
+            _random.NextBytes(NetworkInfo.NetworkId.SessionId);
             NetworkInfo.NetworkId.IntentId = networkConfig.IntentId;
 
             NetworkInfo.Ldn.Nodes[0] = GetNodeInfo(NetworkInfo.Ldn.Nodes[0], userConfig, networkConfig.LocalCommunicationVersion);

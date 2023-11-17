@@ -1,4 +1,5 @@
 using Ryujinx.Common.Memory;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Parameter.Effect
@@ -24,8 +25,8 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// </summary>
         public void Reset()
         {
-            InputMax.AsSpan().Clear();
-            CompressionGainMin.AsSpan().Fill(1.0f);
+            ((Span<float>)InputMax).Clear();
+            ((Span<float>)CompressionGainMin).Fill(1.0f);
         }
     }
 }

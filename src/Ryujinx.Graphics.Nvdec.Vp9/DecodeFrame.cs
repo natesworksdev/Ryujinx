@@ -1295,12 +1295,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             GetTileBuffers(ref cm, data, tileCols, ref tileBuffers);
 
-            tileBuffers.AsSpan()[..tileCols].Sort(CompareTileBuffers);
+            tileBuffers[..tileCols].Sort(CompareTileBuffers);
 
             if (numWorkers == tileCols)
             {
                 TileBuffer largest = tileBuffers[0];
-                Span<TileBuffer> buffers = tileBuffers.AsSpan();
+                Span<TileBuffer> buffers = tileBuffers;
                 buffers[1..].CopyTo(buffers[..(tileBuffers.Length - 1)]);
                 tileBuffers[tileCols - 1] = largest;
             }
