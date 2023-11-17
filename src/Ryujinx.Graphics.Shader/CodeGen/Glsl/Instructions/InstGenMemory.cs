@@ -710,12 +710,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         private static string GetSamplerName(ShaderProperties resourceDefinitions, AstTextureOperation texOp)
         {
-            return resourceDefinitions.Textures[SetBindingPairWithType.Unpack(texOp.Binding, texOp.Type)].Name;
+            return resourceDefinitions.Textures[SetBindingPairWithType.Unpack(texOp.Binding, SamplerType.None)].Name;
         }
 
         private static string GetImageName(ShaderProperties resourceDefinitions, AstTextureOperation texOp)
         {
-            return resourceDefinitions.Images[SetBindingPairWithType.Unpack(texOp.Binding, texOp.Type)].Name;
+            return resourceDefinitions.Images[SetBindingPairWithType.Unpack(texOp.Binding, SamplerType.None)].Name;
         }
 
         private static string GetMask(int index)
