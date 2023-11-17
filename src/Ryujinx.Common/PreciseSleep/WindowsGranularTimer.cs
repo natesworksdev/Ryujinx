@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -14,6 +15,8 @@ namespace Ryujinx.Common.SystemInterop
     {
         private static WindowsGranularTimer _instance = new();
         public static WindowsGranularTimer Instance => _instance;
+
+        private static int MinimumGranularity = 5000;
 
         private readonly struct WaitingObject
         {
@@ -42,7 +45,7 @@ namespace Ryujinx.Common.SystemInterop
         public long GranularityTicks => _granularityTicks;
 
         private Thread _timerThread;
-        private long _granularityNs = 500000;
+        private long _granularityNs = MinimumGranularity * 100L;
         private long _granularityTicks;
         private bool _running = true;
         private long _lastTicks = PerformanceCounter.ElapsedTicks;
@@ -71,6 +74,8 @@ namespace Ryujinx.Common.SystemInterop
 
             if (min > 0)
             {
+                min = Math.Max(min, MinimumGranularity);
+
                 _granularityNs = min * 100L;
                 NtSetTimerResolution(min, true, out _);
             }

@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Threading;
 
 namespace Ryujinx.Common.PreciseSleep
 {
@@ -40,8 +36,6 @@ namespace Ryujinx.Common.PreciseSleep
 
         public static long Bias { get; }
 
-        private static bool NoBias;
-
         /// <summary>
         /// Get bias for a given nanosecond timeout.
         /// Some platforms calculate their bias differently, this method can be used to counteract it.
@@ -50,11 +44,7 @@ namespace Ryujinx.Common.PreciseSleep
         /// <returns>Bias in nanoseconds</returns>
         public static long GetBias(long timeoutNs)
         {
-            if (NoBias)
-            {
-                return 0;
-            }
-            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS())
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS())
             {
                 long biasNs = Math.Min(timeoutNs, MacosBiasMaxNanoseconds);
                 return MacosBaseNanosleepBias + biasNs * MacosBiasPerMillisecond / 1_000_000;
@@ -82,11 +72,7 @@ namespace Ryujinx.Common.PreciseSleep
         /// <returns>Strict bias in nanoseconds</returns>
         public static long GetStrictBias(long timeoutNs)
         {
-            if (NoBias)
-            {
-                return 0;
-            }
-            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS())
+            if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS())
             {
                 return GetBias(timeoutNs) + MacosStrictBiasOffset;
             }

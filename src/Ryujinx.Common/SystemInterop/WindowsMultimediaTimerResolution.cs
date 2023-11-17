@@ -37,7 +37,6 @@ namespace Ryujinx.Common.SystemInterop
         /// <param name="targetResolutionInMilliseconds"></param>
         public WindowsMultimediaTimerResolution(uint targetResolutionInMilliseconds)
         {
-            return;
             _targetResolutionInMilliseconds = targetResolutionInMilliseconds;
 
             EnsureResolutionSupport();
