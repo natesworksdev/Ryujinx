@@ -49,7 +49,6 @@ namespace Ryujinx.UI
 
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        private bool _isActive;
         private bool _isStopped;
 
         private bool _toggleFullscreen;
@@ -459,7 +458,7 @@ namespace Ryujinx.UI
 
                 (Toplevel as MainWindow)?.ActivatePauseMenu();
 
-                while (_isActive)
+                while (Device.IsActive)
                 {
                     if (_isStopped)
                     {
@@ -519,7 +518,7 @@ namespace Ryujinx.UI
         {
             _chrono.Restart();
 
-            _isActive = true;
+            Device.IsActive = true;
 
             Gtk.Window parent = Toplevel as Gtk.Window;
 
@@ -573,9 +572,9 @@ namespace Ryujinx.UI
 
             _isStopped = true;
 
-            if (_isActive)
+            if (Device.IsActive)
             {
-                _isActive = false;
+                Device.IsActive = false;
 
                 _exitEvent.WaitOne();
                 _exitEvent.Dispose();
@@ -584,7 +583,7 @@ namespace Ryujinx.UI
 
         private void NvidiaStutterWorkaround()
         {
-            while (_isActive)
+            while (Device.IsActive)
             {
                 // When NVIDIA Threaded Optimization is on, the driver will snapshot all threads in the system whenever the application creates any new ones.
                 // The ThreadPool has something called a "GateThread" which terminates itself after some inactivity.
@@ -603,7 +602,7 @@ namespace Ryujinx.UI
 
         public void MainLoop()
         {
-            while (_isActive)
+            while (Device.IsActive)
             {
                 UpdateFrame();
 
@@ -616,7 +615,7 @@ namespace Ryujinx.UI
 
         private bool UpdateFrame()
         {
-            if (!_isActive)
+            if (!Device.IsActive)
             {
                 return true;
             }

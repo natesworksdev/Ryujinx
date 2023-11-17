@@ -311,7 +311,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             KernelContext.CriticalSection.Enter();
 
-            if (Owner != null && Owner.PinnedThreads[KernelStatic.GetCurrentThread().CurrentCore] == this)
+            KThread currentThread = KernelStatic.GetCurrentThread();
+
+            if (Owner != null && currentThread != null && Owner.PinnedThreads[currentThread.CurrentCore] == this)
             {
                 Owner.UnpinThread(this);
             }
@@ -366,7 +368,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             ThreadSchedState state = PrepareForTermination();
 
-            if (state != ThreadSchedState.TerminationPending)
+            if (KernelStatic.GetCurrentThread() == this && state != ThreadSchedState.TerminationPending)
             {
                 KernelContext.Synchronization.WaitFor(new KSynchronizationObject[] { this }, -1, out _);
             }

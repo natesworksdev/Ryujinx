@@ -10,6 +10,7 @@ using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.HLE.UI;
 using Ryujinx.Memory;
 using System;
+using System.Threading;
 
 namespace Ryujinx.HLE
 {
@@ -27,10 +28,13 @@ namespace Ryujinx.HLE
         public TamperMachine TamperMachine { get; }
         public IHostUIHandler UIHandler { get; }
         public Debugger.Debugger Debugger { get; }
+        public ManualResetEvent ExitStatus { get; }
 
         public bool EnableDeviceVsync { get; set; } = true;
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
+
+        public bool IsActive { get; set; } = true;
 
         public Switch(HLEConfiguration configuration)
         {
@@ -56,6 +60,7 @@ namespace Ryujinx.HLE
             Hid               = new Hid(this, System.HidStorage);
             Processes         = new ProcessLoader(this);
             TamperMachine     = new TamperMachine();
+            ExitStatus        = new ManualResetEvent(false);
 
             System.InitializeServices();
             System.State.SetLanguage(Configuration.SystemLanguage);
@@ -157,6 +162,7 @@ namespace Ryujinx.HLE
                 FileSystem.Dispose();
                 Memory.Dispose();
                 Debugger.Dispose();
+                ExitStatus.Set();
             }
         }
     }

@@ -1076,9 +1076,11 @@ namespace Ryujinx.UI
             RendererWidget.WaitEvent.WaitOne();
 
             RendererWidget.Start();
+            _pauseEmulation.Sensitive = false;
+            _resumeEmulation.Sensitive = false;
+            UpdateMenuItem.Sensitive = true;
 
             _emulationContext.Dispose();
-            _deviceExitStatus.Set();
 
             // NOTE: Everything that is here will not be executed when you close the UI.
             Application.Invoke(delegate
@@ -1173,7 +1175,7 @@ namespace Ryujinx.UI
                     RendererWidget.Exit();
 
                     // Wait for the other thread to dispose the HLE context before exiting.
-                    _deviceExitStatus.WaitOne();
+                    _emulationContext.ExitStatus.WaitOne();
                     RendererWidget.Dispose();
                 }
             }
@@ -1511,9 +1513,6 @@ namespace Ryujinx.UI
                 UpdateGameMetadata(_emulationContext.Processes.ActiveApplication.ProgramIdText);
             }
 
-            _pauseEmulation.Sensitive = false;
-            _resumeEmulation.Sensitive = false;
-            UpdateMenuItem.Sensitive = true;
             RendererWidget?.Exit();
         }
 
