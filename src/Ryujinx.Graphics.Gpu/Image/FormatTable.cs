@@ -661,7 +661,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             bool found = _textureFormats.TryGetValue((TextureFormat)encoded, out format);
 
-            if (found && isPacked)
+            if (found && isPacked && !format.Format.IsDepthOrStencil())
             {
                 // If the packed flag is set, then the components of the pixel are tightly packed into the
                 // GPU registers on the shader.
