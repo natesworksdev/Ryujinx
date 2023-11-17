@@ -9,7 +9,7 @@ namespace Ryujinx.Common.Memory
     /// Represents an array of unmanaged resources.
     /// </summary>
     /// <typeparam name="T">Array element type</typeparam>
-    public unsafe struct ArrayPtr<T> : IEquatable<ArrayPtr<T>>, IArray<T> where T : unmanaged
+    public unsafe struct ArrayPtr<T> : IEquatable<ArrayPtr<T>> where T : unmanaged
     {
         private IntPtr _ptr;
 

@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         public uint KeyGeneration; // 9.0.0+
         private Array8<byte> _reserved;
         public NRRCertification Certification;
-        public ByteArray256 Signature;
+        public Array256<byte> Signature;
         public ulong TitleId;
         public uint Size;
         public byte Kind; // 7.0.0+
