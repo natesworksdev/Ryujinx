@@ -505,7 +505,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand id = context.BitwiseAnd(nvHandle, Const(0xfffff));
             Operand tableIndex = context.ShiftRightU32(id, Const(8));
             Operand scaleIndex = context.Load(StorageKind.ConstantBuffer, bindlessTableBinding, Const(0), tableIndex, Const(0));
-            Operand scale = context.Load(StorageKind.ConstantBuffer, bindlessScalesBinding, Const(0), scaleIndex);
+            Operand scale = context.Load(StorageKind.StorageBuffer, bindlessScalesBinding, Const(0), scaleIndex);
 
             return scale;
         }

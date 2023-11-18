@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -139,35 +140,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void BeginIterating()
         {
             _iterIndex = 0;
-            _iterMask = _masks.Length != 0 ? _masks[0] : 0;
-        }
+            _iterMask = 0UL;
 
-        /// <summary>
-        /// Gets the next bit set to 1.
-        /// </summary>
-        /// <returns>Index of the bit, or -1 if none found</returns>
-        public int GetNext()
-        {
-            if (_iterIndex >= _masks.Length)
+            if (_masks.Length != 0)
             {
-                return -1;
+                _iterMask = Interlocked.Exchange(ref _masks[0], 0UL);
             }
-
-            while (_iterMask == 0 && _iterIndex + 1 < _masks.Length)
-            {
-                _iterMask = _masks[++_iterIndex];
-            }
-
-            if (_iterMask == 0)
-            {
-                return -1;
-            }
-
-            int bit = BitOperations.TrailingZeroCount(_iterMask);
-
-            _iterMask &= ~(1UL << bit);
-
-            return _iterIndex * IntSize + bit;
         }
 
         /// <summary>
@@ -181,23 +159,19 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return -1;
             }
 
-            ulong mask = _masks[_iterIndex];
-
-            while (mask == 0 && _iterIndex + 1 < _masks.Length)
+            while (_iterMask == 0 && _iterIndex + 1 < _masks.Length)
             {
-                mask = _masks[++_iterIndex];
+                _iterMask = Interlocked.Exchange(ref _masks[++_iterIndex], 0UL);
             }
 
-            if (mask == 0)
+            if (_iterMask == 0)
             {
                 return -1;
             }
 
-            int bit = BitOperations.TrailingZeroCount(mask);
+            int bit = BitOperations.TrailingZeroCount(_iterMask);
 
-            mask &= ~(1UL << bit);
-
-            _masks[_iterIndex] = mask;
+            _iterMask &= ~(1UL << bit);
 
             return _iterIndex * IntSize + bit;
         }
