@@ -155,17 +155,11 @@ namespace Ryujinx.Graphics.Vulkan
                     output[2] = new(DescriptorType.SampledImage, _bindlessTexturesCount);
                     count = 3;
                     break;
-                case PipelineBase.BindlessBufferTextureSetIndex:
-                    output[0] = new(DescriptorType.UniformTexelBuffer, _bindlessTexturesCount);
-                    break;
                 case PipelineBase.BindlessSamplersSetIndex:
                     output[0] = new(DescriptorType.Sampler, _bindlessSamplersCount);
                     break;
                 case PipelineBase.BindlessImagesSetIndex:
                     output[0] = new(DescriptorType.StorageImage, _bindlessTexturesCount);
-                    break;
-                case PipelineBase.BindlessBufferImageSetIndex:
-                    output[0] = new(DescriptorType.StorageTexelBuffer, _bindlessTexturesCount);
                     break;
             }
 

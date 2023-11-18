@@ -1659,7 +1659,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static SpvInstruction GenerateBindlessTextureHandleToIndex(CodeGenContext context, SpvInstruction bindlessHandle)
         {
-            var bindlessTable = context.ConstantBuffers[SetBindingPair.Pack(Constants.BindlessTextureSetIndex, Constants.BindlessTableBinding)];
+            var bindlessTable = context.ConstantBuffers[SetBindingPair.Pack(Constants.VkBindlessTextureSetIndex, Constants.BindlessTableBinding)];
             var id = context.BitwiseAnd(context.TypeS32(), bindlessHandle, context.Constant(context.TypeS32(), 0xfffff));
             var tableIndex = context.ShiftRightArithmetic(context.TypeS32(), id, context.Constant(context.TypeS32(), 8));
 
@@ -1681,7 +1681,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static SpvInstruction GenerateBindlessSamplerHandleToIndex(CodeGenContext context, SpvInstruction bindlessHandle)
         {
-            var bindlessTable = context.ConstantBuffers[SetBindingPair.Pack(Constants.BindlessTextureSetIndex, Constants.BindlessTableBinding)];
+            var bindlessTable = context.ConstantBuffers[SetBindingPair.Pack(Constants.VkBindlessTextureSetIndex, Constants.BindlessTableBinding)];
             var idHigh = context.ShiftRightArithmetic(context.TypeS32(), bindlessHandle, context.Constant(context.TypeS32(), 20));
             var id = context.BitwiseAnd(context.TypeS32(), idHigh, context.Constant(context.TypeS32(), 0xfff));
             var tableIndex = context.ShiftRightArithmetic(context.TypeS32(), id, context.Constant(context.TypeS32(), 8));

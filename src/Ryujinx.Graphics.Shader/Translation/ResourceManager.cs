@@ -41,6 +41,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         private readonly Dictionary<TextureInfo, TextureMeta> _usedTextures;
         private readonly Dictionary<TextureInfo, TextureMeta> _usedImages;
 
+        private SamplerType _selectedTextureType;
+        private SamplerType _selectedImageType;
+
         public int LocalMemoryId { get; private set; }
         public int SharedMemoryId { get; private set; }
 
@@ -142,20 +145,43 @@ namespace Ryujinx.Graphics.Shader.Translation
             return Properties.AddLocalMemory(new MemoryDefinition(name, type, arrayLength));
         }
 
-        public void EnsureBindlessBinding(TargetApi targetApi, SamplerType samplerType, bool isImage)
+        public bool EnsureBindlessBinding(TargetApi targetApi, SamplerType samplerType, bool isImage)
         {
             if (targetApi == TargetApi.Vulkan)
             {
+                if (_gpuAccessor.QueryHostHasUnsizedDescriptorArrayBug())
+                {
+                    // MoltenVK does not support overlapping bindings,
+                    // so select just one. The other bindless accesses will be removed.
+                    // TODO: Find a way to make this work?
+
+                    SamplerType currentType = samplerType & ~SamplerType.Shadow;
+
+                    ref SamplerType selectedType = ref _selectedTextureType;
+
+                    if (isImage)
+                    {
+                        selectedType = ref _selectedImageType;
+                    }
+
+                    if (selectedType != SamplerType.None && selectedType != samplerType)
+                    {
+                        return false;
+                    }
+
+                    selectedType = currentType;
+                }
+
                 Properties.AddOrUpdateConstantBuffer(new BufferDefinition(
                     BufferLayout.Std140,
-                    Constants.BindlessTextureSetIndex,
+                    Constants.VkBindlessTextureSetIndex,
                     Constants.BindlessTableBinding,
                     "bindless_table",
                     new StructureType(new[] { new StructureField(AggregateType.Array | AggregateType.Vector2 | AggregateType.U32, "table", 0x1000) })));
 
                 Properties.AddOrUpdateStorageBuffer(new BufferDefinition(
                     BufferLayout.Std430,
-                    Constants.BindlessTextureSetIndex,
+                    Constants.VkBindlessTextureSetIndex,
                     Constants.BindlessScalesBinding,
                     "bindless_scales",
                     new StructureType(new[] { new StructureField(AggregateType.Array | AggregateType.FP32, "scales", 0) })));
@@ -164,32 +190,18 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     string name = $"bindless_{samplerType.ToGlslImageType(AggregateType.FP32)}";
 
-                    if (samplerType == SamplerType.TextureBuffer)
-                    {
-                        AddBindlessDefinition(8, 0, name, SamplerType.TextureBuffer);
-                    }
-                    else
-                    {
-                        AddBindlessDefinition(7, 0, name, samplerType);
-                    }
+                    AddBindlessDefinition(Constants.VkBindlessImageSetIndex, 0, name, samplerType);
                 }
                 else
                 {
                     string name = $"bindless_{(samplerType & ~SamplerType.Shadow).ToGlslSamplerType()}";
 
-                    if (samplerType == SamplerType.TextureBuffer)
-                    {
-                        AddBindlessSeparateDefinition(5, 0, name, SamplerType.TextureBuffer);
-                    }
-                    else
-                    {
-                        AddBindlessSeparateDefinition(4, 2, name, samplerType);
-                    }
-
-                    // Sampler
-                    AddBindlessDefinition(6, 0, "bindless_samplers", SamplerType.None);
+                    AddBindlessSeparateDefinition(Constants.VkBindlessTextureSetIndex, 2, name, samplerType);
+                    AddBindlessDefinition(Constants.VkBindlessSamplerSetIndex, 0, "bindless_samplers", SamplerType.None);
                 }
             }
+
+            return true;
         }
 
         private void AddBindlessDefinition(int set, int binding, string name, SamplerType samplerType)

@@ -24,7 +24,9 @@ namespace Ryujinx.Graphics.Shader
 
         // Bindless emulation.
 
-        public const int BindlessTextureSetIndex = 4;
+        public const int VkBindlessTextureSetIndex = 4;
+        public const int VkBindlessSamplerSetIndex = 5;
+        public const int VkBindlessImageSetIndex = 6;
         public const int BindlessTableBinding = 0;
         public const int BindlessScalesBinding = 1;
     }

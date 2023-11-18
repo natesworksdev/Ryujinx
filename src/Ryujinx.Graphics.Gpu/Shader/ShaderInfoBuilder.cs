@@ -11,17 +11,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
     class ShaderInfoBuilder
     {
         private const int TotalSets = 4;
-        private const int TotalBindlessSets = 9;
+        private const int TotalBindlessSets = 7;
 
         private const int UniformSetIndex = 0;
         private const int StorageSetIndex = 1;
         private const int TextureSetIndex = 2;
         private const int ImageSetIndex = 3;
         private const int BindlessTextureSetIndex = 4;
-        private const int BindlessBufferTextureSetIndex = 5;
-        private const int BindlessSamplerSetIndex = 6;
-        private const int BindlessImageSetIndex = 7;
-        private const int BindlessBufferImageSetIndex = 8;
+        private const int BindlessSamplerSetIndex = 5;
+        private const int BindlessImageSetIndex = 6;
 
         private const ResourceStages SupportBufferStages =
             ResourceStages.Compute |
@@ -126,10 +124,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 AddDescriptor(bindlessStages, ResourceType.UniformBuffer, BindlessTextureSetIndex, 0, 1);
                 AddDescriptor(bindlessStages, ResourceType.StorageBuffer, BindlessTextureSetIndex, 1, 1);
                 AddArrayDescriptor(bindlessStages, ResourceType.Texture, BindlessTextureSetIndex, 2, 0);
-                AddArrayDescriptor(bindlessStages, ResourceType.BufferTexture, BindlessBufferTextureSetIndex, 0, 0);
                 AddArrayDescriptor(bindlessStages, ResourceType.Sampler, BindlessSamplerSetIndex, 0, 0);
                 AddArrayDescriptor(bindlessStages, ResourceType.Image, BindlessImageSetIndex, 0, 0);
-                AddArrayDescriptor(bindlessStages, ResourceType.BufferImage, BindlessBufferImageSetIndex, 0, 0);
 
                 _anyBindless = true;
             }

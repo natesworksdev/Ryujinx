@@ -25,6 +25,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                     ref context.BindlessIndexedBuffersMask,
                     context.BindlessTexturesAllowed,
                     context.GpuAccessor.QueryTextureBufferIndex(),
+                    context.GpuAccessor.QueryHostHasUnsizedDescriptorArrayBug(),
                     context.GpuAccessor.QueryHostSupportsBindlessTextures());
 
                 if (prevNode != node)
@@ -789,6 +790,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             ref uint bindlessIndexedBuffersMask,
             bool bindlessTexturesAllowed,
             int textureBufferIndex,
+            bool hasUnsizedDescriptorArrayBug,
             bool supportsBindlessTextures)
         {
             if (node.Value is not TextureOperation texOp)
@@ -799,10 +801,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             // If it's already bindless, then we have nothing to do.
             if (texOp.Flags.HasFlag(TextureFlags.Bindless))
             {
-                if (SupportsBindlessAccess(texOp.Type, supportsBindlessTextures))
+                if (SupportsBindlessAccess(texOp.Type, hasUnsizedDescriptorArrayBug, supportsBindlessTextures) &&
+                    resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage()))
                 {
-                    resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage());
-
                     if (IsIndexedAccess(resourceManager, texOp, ref bindlessTextureFlags, ref bindlessIndexedBuffersMask, textureBufferIndex))
                     {
                         return node;
@@ -869,10 +870,16 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             return node;
         }
 
-        private static bool SupportsBindlessAccess(SamplerType type, bool supportsBindlessTextures)
+        private static bool SupportsBindlessAccess(SamplerType type, bool hasUnsizedDescriptorArrayBug, bool supportsBindlessTextures)
         {
             // TODO: Support bindless buffer texture access.
             if ((type & SamplerType.Mask) == SamplerType.TextureBuffer)
+            {
+                return false;
+            }
+
+            // This seems broken on MoltenVK (causes crashes, but the type might not be the actual cause).
+            if (hasUnsizedDescriptorArrayBug && (type & ~SamplerType.Shadow) == SamplerType.TextureCube)
             {
                 return false;
             }

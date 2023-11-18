@@ -50,8 +50,6 @@ namespace Ryujinx.Graphics.Vulkan
         private DescriptorSetCollection _bindlessTextures;
         private DescriptorSetCollection _bindlessSamplers;
         private DescriptorSetCollection _bindlessImages;
-        private DescriptorSetCollection _bindlessBufferTextures;
-        private DescriptorSetCollection _bindlessBufferImages;
 
         public BindlessManager()
         {
@@ -180,10 +178,8 @@ namespace Ryujinx.Graphics.Vulkan
             plce.UpdateCommandBufferIndex(cbs.CommandBufferIndex);
 
             var btDsc = plce.GetNewDescriptorSetCollection(PipelineBase.BindlessTexturesSetIndex, out _).Get(cbs);
-            var bbtDsc = plce.GetNewDescriptorSetCollection(PipelineBase.BindlessBufferTextureSetIndex, out _).Get(cbs);
             var bsDsc = plce.GetNewDescriptorSetCollection(PipelineBase.BindlessSamplersSetIndex, out _).Get(cbs);
             var biDsc = plce.GetNewDescriptorSetCollection(PipelineBase.BindlessImagesSetIndex, out _).Get(cbs);
-            var bbiDsc = plce.GetNewDescriptorSetCollection(PipelineBase.BindlessBufferImageSetIndex, out _).Get(cbs);
 
             int idMapBufferSizeInBytes = _idMap.Length * sizeof(int);
 
@@ -258,18 +254,6 @@ namespace Ryujinx.Graphics.Vulkan
                         biDsc.UpdateImage(0, 0, i, td, DescriptorType.StorageImage);
                     }
                 }
-                else if (texture is TextureBuffer buffer)
-                {
-                    bool isImageCompatible = buffer.Format.IsImageCompatible();
-                    var bufferView = buffer.GetBufferView(cbs, isImageCompatible);
-
-                    bbtDsc.UpdateBufferImage(0, 0, i, bufferView, DescriptorType.UniformTexelBuffer);
-
-                    if (isImageCompatible)
-                    {
-                        bbiDsc.UpdateBufferImage(0, 0, i, bufferView, DescriptorType.StorageTexelBuffer);
-                    }
-                }
                 else
                 {
                     btDsc.UpdateImage(0, 2, i, default, DescriptorType.SampledImage);
@@ -296,12 +280,10 @@ namespace Ryujinx.Graphics.Vulkan
             _bindlessTextures = btDsc;
             _bindlessSamplers = bsDsc;
             _bindlessImages = biDsc;
-            _bindlessBufferTextures = bbtDsc;
-            _bindlessBufferImages = bbiDsc;
 
             _hasDescriptors = true;
 
-            Bind(gd, program, cbs, pbp, plce.PipelineLayout, btDsc, bsDsc, biDsc, bbtDsc, bbiDsc);
+            Bind(gd, cbs, pbp, plce.PipelineLayout, btDsc, bsDsc, biDsc);
         }
 
         private void Rebind(VulkanRenderer gd, ShaderCollection program, CommandBufferScoped cbs, PipelineBindPoint pbp)
@@ -310,35 +292,27 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Bind(
                     gd,
-                    program,
                     cbs,
                     pbp,
                     _pipelineLayout,
                     _bindlessTextures,
                     _bindlessSamplers,
-                    _bindlessImages,
-                    _bindlessBufferTextures,
-                    _bindlessBufferImages);
+                    _bindlessImages);
             }
         }
 
         private static void Bind(
             VulkanRenderer gd,
-            ShaderCollection program,
             CommandBufferScoped cbs,
             PipelineBindPoint pbp,
             PipelineLayout pipelineLayout,
             DescriptorSetCollection bindlessTextures,
             DescriptorSetCollection bindlessSamplers,
-            DescriptorSetCollection bindlessImages,
-            DescriptorSetCollection bindlessBufferTextures,
-            DescriptorSetCollection bindlessBufferImages)
+            DescriptorSetCollection bindlessImages)
         {
             gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, pipelineLayout, PipelineBase.BindlessTexturesSetIndex, 1, bindlessTextures.GetSets(), 0, ReadOnlySpan<uint>.Empty);
-            gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, pipelineLayout, PipelineBase.BindlessBufferTextureSetIndex, 1, bindlessBufferTextures.GetSets(), 0, ReadOnlySpan<uint>.Empty);
             gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, pipelineLayout, PipelineBase.BindlessSamplersSetIndex, 1, bindlessSamplers.GetSets(), 0, ReadOnlySpan<uint>.Empty);
             gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, pipelineLayout, PipelineBase.BindlessImagesSetIndex, 1, bindlessImages.GetSets(), 0, ReadOnlySpan<uint>.Empty);
-            gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, pipelineLayout, PipelineBase.BindlessBufferImageSetIndex, 1, bindlessBufferImages.GetSets(), 0, ReadOnlySpan<uint>.Empty);
         }
 
         protected virtual void Dispose(bool disposing)
