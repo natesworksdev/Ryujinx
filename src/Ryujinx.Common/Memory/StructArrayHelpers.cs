@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
+#pragma warning disable CS0169, IDE0051, IDE0251 // Remove unused private member, Member can be made 'readonly'
 namespace Ryujinx.Common.Memory
 {
     [InlineArray(1)]
@@ -3607,3 +3608,4 @@ namespace Ryujinx.Common.Memory
         private T _element;
     }
 }
+#pragma warning restore CS0169, IDE0051, IDE0251
