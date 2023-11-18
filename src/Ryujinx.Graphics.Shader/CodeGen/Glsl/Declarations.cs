@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
@@ -31,6 +30,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
             context.AppendLine("#extension GL_EXT_shader_image_load_formatted : enable");
             context.AppendLine("#extension GL_EXT_texture_shadow_lod : enable");
+
+            if (context.TargetApi == TargetApi.Vulkan)
+            {
+                context.AppendLine("#extension GL_EXT_nonuniform_qualifier : enable");
+            }
+            else
+            {
+                context.AppendLine("#extension GL_ARB_bindless_texture : enable");
+            }
 
             if (context.Definitions.Stage == ShaderStage.Compute)
             {
@@ -189,6 +197,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 }
             }
 
+            if (context.BindlessTextureFlags != BindlessTextureFlags.None)
+            {
+                if (context.TargetApi == TargetApi.Vulkan)
+                {
+                    AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GetBindlessHandleVk.glsl");
+                }
+                else
+                {
+                    AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GetBindlessHandle.glsl");
+                }
+            }
+
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/MultiplyHighS32.glsl");
@@ -337,83 +357,84 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static void DeclareSamplers(CodeGenContext context, IEnumerable<TextureDefinition> definitions)
+        private static void DeclareSamplers(CodeGenContext context, IEnumerable<TextureDefinition> samplers)
         {
-            int arraySize = 0;
-
-            foreach (var definition in definitions)
+            foreach (var sampler in samplers)
             {
-                string indexExpr = string.Empty;
-
-                if (definition.Type.HasFlag(SamplerType.Indexed))
-                {
-                    if (arraySize == 0)
-                    {
-                        arraySize = ResourceManager.SamplerArraySize;
-                    }
-                    else if (--arraySize != 0)
-                    {
-                        continue;
-                    }
-
-                    indexExpr = $"[{NumberFormatter.FormatInt(arraySize)}]";
-                }
-
-                string samplerTypeName = definition.Type.ToGlslSamplerType();
+                string samplerTypeName = sampler.Type.HasFlag(SamplerType.Separate)
+                    ? (sampler.Type & ~SamplerType.Separate).ToGlslTextureType()
+                    : sampler.Type.ToGlslSamplerType();
 
                 string layout = string.Empty;
 
                 if (context.TargetApi == TargetApi.Vulkan)
                 {
-                    layout = $", set = {definition.Set}";
+                    layout = $"set = {sampler.Set}, ";
                 }
 
-                context.AppendLine($"layout (binding = {definition.Binding}{layout}) uniform {samplerTypeName} {definition.Name}{indexExpr};");
+                string suffix = string.Empty;
+
+                if (sampler.ArraySize == 0)
+                {
+                    suffix = "[]";
+                }
+                else if (sampler.ArraySize != 1)
+                {
+                    suffix = $"[{(uint)sampler.ArraySize}]";
+                }
+
+                if (sampler.ArraySize != 1)
+                {
+                    Console.WriteLine($"found bindless {sampler.Name} {(sampler.Type & ~SamplerType.Shadow)}");
+                    context.OperandManager.BindlessTextures[sampler.Type & ~(SamplerType.Shadow | SamplerType.Separate)] = sampler.Name;
+                }
+
+                context.AppendLine($"layout ({layout}binding = {sampler.Binding}) uniform {samplerTypeName} {sampler.Name}{suffix};");
             }
         }
 
-        private static void DeclareImages(CodeGenContext context, IEnumerable<TextureDefinition> definitions)
+        private static void DeclareImages(CodeGenContext context, IEnumerable<TextureDefinition> images)
         {
-            int arraySize = 0;
-
-            foreach (var definition in definitions)
+            foreach (var image in images)
             {
-                string indexExpr = string.Empty;
+                string imageTypeName = image.Type.ToGlslImageType(image.Format.GetComponentType());
 
-                if (definition.Type.HasFlag(SamplerType.Indexed))
-                {
-                    if (arraySize == 0)
-                    {
-                        arraySize = ResourceManager.SamplerArraySize;
-                    }
-                    else if (--arraySize != 0)
-                    {
-                        continue;
-                    }
-
-                    indexExpr = $"[{NumberFormatter.FormatInt(arraySize)}]";
-                }
-
-                string imageTypeName = definition.Type.ToGlslImageType(definition.Format.GetComponentType());
-
-                if (definition.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
+                if (image.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
                 {
                     imageTypeName = "coherent " + imageTypeName;
                 }
 
-                string layout = definition.Format.ToGlslFormat();
-
-                if (!string.IsNullOrEmpty(layout))
-                {
-                    layout = ", " + layout;
-                }
+                string layout = string.Empty;
 
                 if (context.TargetApi == TargetApi.Vulkan)
                 {
-                    layout = $", set = {definition.Set}{layout}";
+                    layout = $"set = {image.Set}, ";
                 }
 
-                context.AppendLine($"layout (binding = {definition.Binding}{layout}) uniform {imageTypeName} {definition.Name}{indexExpr};");
+                string format = image.Format.ToGlslFormat();
+
+                if (!string.IsNullOrEmpty(format))
+                {
+                    format = ", " + format;
+                }
+
+                string suffix = string.Empty;
+
+                if (image.ArraySize == 0)
+                {
+                    suffix = "[]";
+                }
+                else if (image.ArraySize != 1)
+                {
+                    suffix = $"[{(uint)image.ArraySize}]";
+                }
+
+                if (image.ArraySize != 1)
+                {
+                    context.OperandManager.BindlessTextures[image.Type] = image.Name;
+                }
+
+                context.AppendLine($"layout ({layout}binding = {image.Binding}{format}) uniform {imageTypeName} {image.Name}{suffix};");
             }
         }
 

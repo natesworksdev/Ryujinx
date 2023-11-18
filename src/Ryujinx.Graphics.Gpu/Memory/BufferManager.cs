@@ -430,6 +430,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Gets the size of the compute uniform buffer currently bound at the given index.
+        /// </summary>
+        /// <param name="index">Index of the uniform buffer binding</param>
+        /// <returns>The uniform buffer size, or an undefined value if the buffer is not currently bound</returns>
+        public ulong GetComputeUniformBufferSize(int index)
+        {
+            return _cpUniformBuffers.Buffers[index].Size;
+        }
+
+        /// <summary>
+        /// Gets the size of the graphics uniform buffer currently bound at the given index.
+        /// </summary>
+        /// <param name="stage">Index of the shader stage</param>
+        /// <param name="index">Index of the uniform buffer binding</param>
+        /// <returns>The uniform buffer size, or an undefined value if the buffer is not currently bound</returns>
+        public ulong GetGraphicsUniformBufferSize(int stage, int index)
+        {
+            return _gpUniformBuffers[stage].Buffers[index].Size;
+        }
+
+        /// <summary>
         /// Gets the bounds of the uniform buffer currently bound at the given index.
         /// </summary>
         /// <param name="isCompute">Indicates whenever the uniform is requested by the 3D or compute engine</param>
@@ -482,7 +503,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     // The texture must be rebound to use the new storage if it was updated.
 
-                    if (binding.IsImage)
+                    if (binding.AsBindless)
+                    {
+                        _context.Renderer.Pipeline.RegisterBindlessTexture(binding.TextureId, binding.Texture, 1f);
+                    }
+                    else if (binding.IsImage)
                     {
                         _context.Renderer.Pipeline.SetImage(binding.BindingInfo.Binding, binding.Texture, binding.Format);
                     }
@@ -810,6 +835,30 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _channel.MemoryManager.Physical.BufferCache.CreateBuffer(address, size);
 
             _bufferTextures.Add(new BufferTextureBinding(stage, texture, address, size, bindingInfo, format, isImage));
+        }
+
+        /// <summary>
+        /// Sets the buffer storage of a bindless buffer texture. This will be bound when the buffer manager commits bindings.
+        /// </summary>
+        /// <param name="texture">Buffer texture</param>
+        /// <param name="address">Address of the buffer in memory</param>
+        /// <param name="size">Size of the buffer in bytes</param>
+        /// <param name="bindingInfo">Binding info for the buffer texture</param>
+        /// <param name="format">Format of the buffer texture</param>
+        /// <param name="isImage">Whether the binding is for an image or a sampler</param>
+        /// <param name="textureid">ID of the texture on the pool/param>
+        public void SetBufferTextureStorage(
+            ITexture texture,
+            ulong address,
+            ulong size,
+            TextureBindingInfo bindingInfo,
+            Format format,
+            bool isImage,
+            int textureId)
+        {
+            _channel.MemoryManager.Physical.BufferCache.CreateBuffer(address, size);
+
+            _bufferTextures.Add(new BufferTextureBinding(texture, address, size, bindingInfo, format, isImage, textureId));
         }
 
         /// <summary>

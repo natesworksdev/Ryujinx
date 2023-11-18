@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Shader[] _shaders;
 
         private readonly PipelineLayoutCacheEntry _plce;
+        private readonly ReadOnlyCollection<ResourceDescriptorCollection> _setDescriptors;
 
-        public PipelineLayout PipelineLayout => _plce.PipelineLayout;
-
+        public bool HasBindless { get; }
         public bool HasMinimalLayout { get; }
         public bool UsePushDescriptors { get; }
         public bool IsCompute { get; }
@@ -62,6 +62,7 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderSource[] shaders,
             ResourceLayout resourceLayout,
             SpecDescription[] specDescription = null,
+            bool hasBindless = false,
             bool isMinimal = false)
         {
             _gd = gd;
@@ -109,8 +110,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool usePushDescriptors = !isMinimal && VulkanConfiguration.UsePushDescriptors && _gd.Capabilities.SupportsPushDescriptors;
 
-            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, resourceLayout.Sets, usePushDescriptors);
+            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, resourceLayout.Sets, new PipelineLayoutUsageInfo(0, 0, usePushDescriptors));
+            _setDescriptors = resourceLayout.Sets;
 
+            HasBindless = hasBindless;
             HasMinimalLayout = isMinimal;
             UsePushDescriptors = usePushDescriptors;
 
@@ -129,7 +132,8 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderSource[] sources,
             ResourceLayout resourceLayout,
             ProgramPipelineState state,
-            bool fromCache) : this(gd, device, sources, resourceLayout)
+            bool hasBindless,
+            bool fromCache) : this(gd, device, sources, resourceLayout, null, hasBindless)
         {
             _state = state;
 
@@ -325,7 +329,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.Stages[0] = _shaders[0].GetInfo();
             pipeline.StagesCount = 1;
-            pipeline.PipelineLayout = PipelineLayout;
+
+            if (HasBindless)
+            {
+                pipeline.BindlessTexturesCount = BindlessManager.MinimumTexturesCount;
+                pipeline.BindlessSamplersCount = BindlessManager.MinimumSamplersCount;
+            }
 
             pipeline.CreateComputePipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
             pipeline.Dispose();
@@ -353,7 +362,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             pipeline.StagesCount = (uint)_shaders.Length;
-            pipeline.PipelineLayout = PipelineLayout;
+
+            if (HasBindless)
+            {
+                pipeline.BindlessTexturesCount = BindlessManager.MinimumTexturesCount;
+                pipeline.BindlessSamplersCount = BindlessManager.MinimumSamplersCount;
+            }
 
             pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache, renderPass.Value);
             pipeline.Dispose();
@@ -472,6 +486,26 @@ namespace Ryujinx.Graphics.Vulkan
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(int setIndex, out bool isNew)
         {
             return _plce.GetNewDescriptorSetCollection(setIndex, out isNew);
+        }
+
+        public PipelineLayout GetPipelineLayout(VulkanRenderer gd, uint bindlessTextureCount, uint bindlessSamplersCount)
+        {
+            return GetPipelineLayoutCacheEntry(gd, bindlessTextureCount, bindlessSamplersCount).PipelineLayout;
+        }
+
+        public PipelineLayoutCacheEntry GetPipelineLayoutCacheEntry(VulkanRenderer gd, uint bindlessTextureCount, uint bindlessSamplersCount)
+        {
+            if ((bindlessTextureCount | bindlessSamplersCount) == 0)
+            {
+                return _plce;
+            }
+
+            var usageInfo = new PipelineLayoutUsageInfo(
+                bindlessTextureCount,
+                bindlessSamplersCount,
+                UsePushDescriptors);
+
+            return gd.PipelineLayoutCache.GetOrCreate(gd, _device, _setDescriptors, usageInfo);
         }
 
         protected virtual void Dispose(bool disposing)

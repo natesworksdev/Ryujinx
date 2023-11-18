@@ -40,7 +40,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="vertexAsCompute">Indicates that the vertex shader will be emulated on a compute shader</param>
         public void InitializeReservedCounts(bool tfEnabled, bool vertexAsCompute)
         {
-            ResourceReservationCounts rrc = new(!_context.Capabilities.SupportsTransformFeedback && tfEnabled, vertexAsCompute);
+            ResourceReservationCounts rrc = new(
+                _context.Capabilities.Api,
+                !_context.Capabilities.SupportsTransformFeedback && tfEnabled,
+                vertexAsCompute);
 
             _reservedConstantBuffers = rrc.ReservedConstantBuffers;
             _reservedStorageBuffers = rrc.ReservedStorageBuffers;
@@ -154,6 +157,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public bool QueryHostHasFrontFacingBug() => _context.Capabilities.HasFrontFacingBug;
 
+        public bool QueryHostHasUnsizedDescriptorArrayBug() => _context.Capabilities.HasUnsizedDescriptorArrayBug;
+
         public bool QueryHostHasVectorIndexingBug() => _context.Capabilities.HasVectorIndexingBug;
 
         public int QueryHostStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
@@ -161,6 +166,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public int QueryHostSubgroupSize() => _context.Capabilities.ShaderSubgroupSize;
 
         public bool QueryHostSupportsBgraFormat() => _context.Capabilities.SupportsBgraFormat;
+
+        public bool QueryHostSupportsBindlessTextures() => _context.Capabilities.SupportsBindlessTextures;
 
         public bool QueryHostSupportsFragmentShaderInterlock() => _context.Capabilities.SupportsFragmentShaderInterlock;
 

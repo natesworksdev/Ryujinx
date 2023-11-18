@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                 return node;
             }
 
-            BufferDefinition buffer = context.ResourceManager.Properties.ConstantBuffers[bindingIndex.Value];
+            BufferDefinition buffer = context.ResourceManager.Properties.ConstantBuffers[SetBindingPair.Unpack(bindingIndex.Value)];
             StructureField field = buffer.Type.Fields[fieldIndex.Value];
 
             int elemCount = (field.Type & AggregateType.ElementCountMask) switch

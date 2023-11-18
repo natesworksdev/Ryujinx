@@ -30,11 +30,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             PrimitiveTopology = 1 << 1,
             TransformFeedback = 1 << 3,
+            TextureBufferIndex = 1 << 4,
         }
 
         private QueriedStateFlags _queriedState;
         private bool _compute;
         private byte _constantBufferUsePerStage;
+        private byte _textureBufferIndex;
 
         /// <summary>
         /// Compute engine state.
@@ -324,6 +326,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Records the index of the constant buffer with texture handles.
+        /// </summary>
+        /// <param name="index">Index of the constant buffer with texture handles</param>
+        public void RecordTextureBufferIndex(byte index)
+        {
+            _textureBufferIndex = index;
+            _queriedState |= QueriedStateFlags.TextureBufferIndex;
+        }
+
+        /// <summary>
         /// Indicates that the format of a given texture was used during the shader translation process.
         /// </summary>
         /// <param name="stageIndex">Shader stage where the texture is used</param>
@@ -385,10 +397,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="stageIndex">Shader stage where the texture is used</param>
         /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
         /// <param name="cbufSlot">Slot of the texture buffer constant buffer</param>
+        /// <returns>Format of the given texture, and whether that format is a sRGB format</returns>
         public (uint, bool) GetFormat(int stageIndex, int handle, int cbufSlot)
         {
             TextureSpecializationState state = GetTextureSpecState(stageIndex, handle, cbufSlot).Value;
             return (state.Format, state.FormatSrgb);
+        }
+
+        /// <summary>
+        /// Gets the index of the constant buffer with texture handles.
+        /// </summary>
+        /// <returns>Index of the constant buffer with texture handles</returns>
+        public byte GetTextureBufferIndex()
+        {
+            // Note: We assume the NVN default if the cache is old and did not store the buffer index.
+            return _queriedState.HasFlag(QueriedStateFlags.TextureBufferIndex) ? _textureBufferIndex : (byte)TextureHandle.NvnTextureBufferIndex;
         }
 
         /// <summary>
@@ -397,6 +420,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="stageIndex">Shader stage where the texture is used</param>
         /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
         /// <param name="cbufSlot">Slot of the texture buffer constant buffer</param>
+        /// <returns>Target of the given texture</returns>
         public TextureTarget GetTextureTarget(int stageIndex, int handle, int cbufSlot)
         {
             return GetTextureSpecState(stageIndex, handle, cbufSlot).Value.TextureTarget;
@@ -408,6 +432,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="stageIndex">Shader stage where the texture is used</param>
         /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
         /// <param name="cbufSlot">Slot of the texture buffer constant buffer</param>
+        /// <returns>Normalization state of the given texture</returns>
         public bool GetCoordNormalized(int stageIndex, int handle, int cbufSlot)
         {
             return GetTextureSpecState(stageIndex, handle, cbufSlot).Value.CoordNormalized;
@@ -799,6 +824,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 constantBufferUsePerStageMask &= ~(1 << index);
             }
 
+            if (specState._queriedState.HasFlag(QueriedStateFlags.TextureBufferIndex))
+            {
+                dataReader.Read(ref specState._textureBufferIndex);
+            }
+
             bool hasPipelineState = false;
 
             dataReader.Read(ref hasPipelineState);
@@ -868,6 +898,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 int index = BitOperations.TrailingZeroCount(constantBufferUsePerStageMask);
                 dataWriter.Write(ref ConstantBufferUse[index]);
                 constantBufferUsePerStageMask &= ~(1 << index);
+            }
+
+            if (_queriedState.HasFlag(QueriedStateFlags.TextureBufferIndex))
+            {
+                dataWriter.Write(ref _textureBufferIndex);
             }
 
             bool hasPipelineState = PipelineState.HasValue;

@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public HostCapabilities HostCapabilities { get; }
         public ILogger Logger { get; }
         public TargetApi TargetApi { get; }
+        public BindlessTextureFlags BindlessTextureFlags { get; }
 
         public OperandManager OperandManager { get; }
 
@@ -36,6 +37,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             HostCapabilities = parameters.HostCapabilities;
             Logger = parameters.Logger;
             TargetApi = parameters.TargetApi;
+            BindlessTextureFlags = parameters.BindlessTextureFlags;
 
             OperandManager = new OperandManager();
 

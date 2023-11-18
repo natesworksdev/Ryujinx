@@ -17,6 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public BufferDescriptor[][] ConstantBufferBindings { get; }
         public BufferDescriptor[][] StorageBufferBindings { get; }
 
+        public BindlessTextureFlags[] BindlessTextureFlags { get; }
+        public uint[] BindlessIndexedBuffersMask { get; }
+
         public int MaxTextureBinding { get; }
         public int MaxImageBinding { get; }
 
@@ -33,6 +36,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ImageBindings = new TextureBindingInfo[stageCount][];
             ConstantBufferBindings = new BufferDescriptor[stageCount][];
             StorageBufferBindings = new BufferDescriptor[stageCount][];
+
+            BindlessTextureFlags = new BindlessTextureFlags[stageCount];
+            BindlessIndexedBuffersMask = new uint[stageCount];
 
             int maxTextureBinding = -1;
             int maxImageBinding = -1;
@@ -94,6 +100,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 ConstantBufferBindings[i] = stage.Info.CBuffers.ToArray();
                 StorageBufferBindings[i] = stage.Info.SBuffers.ToArray();
+
+                BindlessTextureFlags[i] = stage.Info.BindlessTextureFlags;
+                BindlessIndexedBuffersMask[i] = stage.Info.BindlessIndexedBuffersMask;
             }
 
             MaxTextureBinding = maxTextureBinding;

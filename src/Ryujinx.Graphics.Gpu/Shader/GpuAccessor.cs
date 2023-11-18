@@ -135,6 +135,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
+        public int QueryTextureBufferIndex()
+        {
+            byte textureBufferIndex = (byte)_state.PoolState.TextureBufferIndex;
+            _state.SpecializationState?.RecordTextureBufferIndex(textureBufferIndex);
+            return textureBufferIndex;
+        }
+
+        /// <inheritdoc/>
         public bool QueryTextureCoordNormalized(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);

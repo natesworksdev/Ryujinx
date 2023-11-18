@@ -3,6 +3,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     class HostCapabilities
     {
         public readonly bool ReducedPrecision;
+        public readonly bool HasUnsizedDescriptorArrayBug;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsFragmentShaderOrderingIntel;
         public readonly bool SupportsGeometryShaderPassthrough;
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public HostCapabilities(
             bool reducedPrecision,
+            bool hasUnsizedDescriptorArrayBug,
             bool supportsFragmentShaderInterlock,
             bool supportsFragmentShaderOrderingIntel,
             bool supportsGeometryShaderPassthrough,
@@ -22,6 +24,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool supportsViewportMask)
         {
             ReducedPrecision = reducedPrecision;
+            HasUnsizedDescriptorArrayBug = hasUnsizedDescriptorArrayBug;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsFragmentShaderOrderingIntel = supportsFragmentShaderOrderingIntel;
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;

@@ -5,6 +5,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     static class HwCapabilities
     {
+        private static readonly Lazy<bool> _supportsArbBindlessTexture = new(() => HasExtension("GL_ARB_bindless_texture"));
         private static readonly Lazy<bool> _supportsAlphaToCoverageDitherControl = new(() => HasExtension("GL_NV_alpha_to_coverage_dither_control"));
         private static readonly Lazy<bool> _supportsAstcCompression = new(() => HasExtension("GL_KHR_texture_compression_astc_ldr"));
         private static readonly Lazy<bool> _supportsBlendEquationAdvanced = new(() => HasExtension("GL_NV_blend_equation_advanced"));
@@ -14,6 +15,7 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsGeometryShaderPassthrough = new(() => HasExtension("GL_NV_geometry_shader_passthrough"));
         private static readonly Lazy<bool> _supportsImageLoadFormatted = new(() => HasExtension("GL_EXT_shader_image_load_formatted"));
         private static readonly Lazy<bool> _supportsIndirectParameters = new(() => HasExtension("GL_ARB_indirect_parameters"));
+        private static readonly Lazy<bool> _supportsNvBindlessTexture = new(() => HasExtension("GL_NV_bindless_texture"));
         private static readonly Lazy<bool> _supportsParallelShaderCompile = new(() => HasExtension("GL_ARB_parallel_shader_compile"));
         private static readonly Lazy<bool> _supportsPolygonOffsetClamp = new(() => HasExtension("GL_EXT_polygon_offset_clamp"));
         private static readonly Lazy<bool> _supportsQuads = new(SupportsQuadsCheck);
@@ -51,6 +53,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static bool UsePersistentBufferForFlush => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.Nvidia;
 
+        public static bool SupportsArbBindlessTexture => _supportsArbBindlessTexture.Value;
         public static bool SupportsAlphaToCoverageDitherControl => _supportsAlphaToCoverageDitherControl.Value;
         public static bool SupportsAstcCompression => _supportsAstcCompression.Value;
         public static bool SupportsBlendEquationAdvanced => _supportsBlendEquationAdvanced.Value;
@@ -60,6 +63,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static bool SupportsGeometryShaderPassthrough => _supportsGeometryShaderPassthrough.Value;
         public static bool SupportsImageLoadFormatted => _supportsImageLoadFormatted.Value;
         public static bool SupportsIndirectParameters => _supportsIndirectParameters.Value;
+        public static bool SupportsNvBindlessTexture => _supportsNvBindlessTexture.Value;
         public static bool SupportsParallelShaderCompile => _supportsParallelShaderCompile.Value;
         public static bool SupportsPolygonOffsetClamp => _supportsPolygonOffsetClamp.Value;
         public static bool SupportsQuads => _supportsQuads.Value;

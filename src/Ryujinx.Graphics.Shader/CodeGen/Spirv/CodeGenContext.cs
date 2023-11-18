@@ -29,15 +29,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Dictionary<int, Instruction> ConstantBuffers { get; } = new();
         public Dictionary<int, Instruction> StorageBuffers { get; } = new();
-
         public Dictionary<int, Instruction> LocalMemories { get; } = new();
         public Dictionary<int, Instruction> SharedMemories { get; } = new();
-
         public Dictionary<int, SamplerType> SamplersTypes { get; } = new();
         public Dictionary<int, (Instruction, Instruction, Instruction)> Samplers { get; } = new();
         public Dictionary<int, (Instruction, Instruction)> Images { get; } = new();
-
         public Dictionary<IoDefinition, Instruction> Inputs { get; } = new();
+        public Dictionary<SamplerType, (Instruction, Instruction, Instruction, Instruction)> BindlessTextures { get; } = new();
+        public Dictionary<SamplerType, (Instruction, Instruction, Instruction)> BindlessImages { get; } = new();
         public Dictionary<IoDefinition, Instruction> Outputs { get; } = new();
         public Dictionary<IoDefinition, Instruction> InputsPerPatch { get; } = new();
         public Dictionary<IoDefinition, Instruction> OutputsPerPatch { get; } = new();

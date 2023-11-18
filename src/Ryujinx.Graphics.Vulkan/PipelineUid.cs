@@ -21,6 +21,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ulong Id8;
         public ulong Id9;
+        public ulong Id10;
+        public ulong Id11;
 
         private readonly uint VertexAttributeDescriptionsCount => (byte)((Id6 >> 38) & 0xFF);
         private readonly uint VertexBindingDescriptionsCount => (byte)((Id6 >> 46) & 0xFF);
@@ -44,7 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (!Unsafe.As<ulong, Vector256<byte>>(ref Id0).Equals(Unsafe.As<ulong, Vector256<byte>>(ref other.Id0)) ||
                 !Unsafe.As<ulong, Vector256<byte>>(ref Id4).Equals(Unsafe.As<ulong, Vector256<byte>>(ref other.Id4)) ||
-                !Unsafe.As<ulong, Vector128<byte>>(ref Id8).Equals(Unsafe.As<ulong, Vector128<byte>>(ref other.Id8)))
+                !Unsafe.As<ulong, Vector256<byte>>(ref Id8).Equals(Unsafe.As<ulong, Vector256<byte>>(ref other.Id8)))
             {
                 return false;
             }
@@ -88,7 +90,8 @@ namespace Ryujinx.Graphics.Vulkan
                            Id6 * 23 ^
                            Id7 * 23 ^
                            Id8 * 23 ^
-                           Id9 * 23;
+                           Id9 * 23 ^
+                           Id10 * 23;
 
             for (int i = 0; i < (int)VertexAttributeDescriptionsCount; i++)
             {

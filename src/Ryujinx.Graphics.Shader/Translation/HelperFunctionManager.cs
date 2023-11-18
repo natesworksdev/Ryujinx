@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -77,7 +78,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                 HelperFunctionName.ConvertDoubleToFloat => GenerateConvertDoubleToFloatFunction(),
                 HelperFunctionName.ConvertFloatToDouble => GenerateConvertFloatToDoubleFunction(),
                 HelperFunctionName.TexelFetchScale => GenerateTexelFetchScaleFunction(),
+                HelperFunctionName.TexelFetchScaleBindless => GenerateTexelFetchScaleBindlessFunction(),
                 HelperFunctionName.TextureSizeUnscale => GenerateTextureSizeUnscaleFunction(),
+                HelperFunctionName.TextureSizeUnscaleBindless => GenerateTextureSizeUnscaleBindlessFunction(),
                 _ => throw new ArgumentException($"Invalid function name {functionName}"),
             };
         }
@@ -412,6 +415,29 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScale", true, inArgumentsCount, 0);
         }
 
+        private static Function GenerateTexelFetchScaleBindlessFunction()
+        {
+            EmitterContext context = new();
+
+            Operand input = Argument(0);
+            Operand nvHandle = Argument(1);
+
+            Operand scale = GetBindlessScale(context, nvHandle);
+
+            Operand scaleIsOne = context.FPCompareEqual(scale, ConstF(1f));
+            Operand lblScaleNotOne = Label();
+
+            context.BranchIfFalse(lblScaleNotOne, scaleIsOne);
+            context.Return(input);
+            context.MarkLabel(lblScaleNotOne);
+
+            Operand inputScaled2 = context.FPMultiply(context.IConvertS32ToFP32(input), scale);
+
+            context.Return(context.FP32ConvertToS32(inputScaled2));
+
+            return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScaleBindless", true, 2, 0);
+        }
+
         private Function GenerateTextureSizeUnscaleFunction()
         {
             EmitterContext context = new();
@@ -436,6 +462,29 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TextureSizeUnscale", true, 2, 0);
         }
 
+        private static Function GenerateTextureSizeUnscaleBindlessFunction()
+        {
+            EmitterContext context = new();
+
+            Operand input = Argument(0);
+            Operand nvHandle = Argument(1);
+
+            Operand scale = GetBindlessScale(context, nvHandle);
+
+            Operand scaleIsOne = context.FPCompareEqual(scale, ConstF(1f));
+            Operand lblScaleNotOne = Label();
+
+            context.BranchIfFalse(lblScaleNotOne, scaleIsOne);
+            context.Return(input);
+            context.MarkLabel(lblScaleNotOne);
+
+            Operand inputUnscaled = context.FPDivide(context.IConvertS32ToFP32(input), scale);
+
+            context.Return(context.FP32ConvertToS32(inputUnscaled));
+
+            return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TextureSizeUnscaleBindless", true, 2, 0);
+        }
+
         private Operand GetScaleIndex(EmitterContext context, Operand index)
         {
             switch (_stage)
@@ -446,6 +495,19 @@ namespace Ryujinx.Graphics.Shader.Translation
                 default:
                     return context.IAdd(Const(1), index);
             }
+        }
+
+        private static Operand GetBindlessScale(EmitterContext context, Operand nvHandle)
+        {
+            int bindlessTableBinding = SetBindingPair.Pack(Constants.VkBindlessTextureSetIndex, Constants.BindlessTableBinding);
+            int bindlessScalesBinding = SetBindingPair.Pack(Constants.VkBindlessTextureSetIndex, Constants.BindlessScalesBinding);
+
+            Operand id = context.BitwiseAnd(nvHandle, Const(0xfffff));
+            Operand tableIndex = context.ShiftRightU32(id, Const(8));
+            Operand scaleIndex = context.Load(StorageKind.ConstantBuffer, bindlessTableBinding, Const(0), tableIndex, Const(0));
+            Operand scale = context.Load(StorageKind.StorageBuffer, bindlessScalesBinding, Const(0), scaleIndex);
+
+            return scale;
         }
 
         public static Operand GetBitOffset(EmitterContext context, Operand offset)

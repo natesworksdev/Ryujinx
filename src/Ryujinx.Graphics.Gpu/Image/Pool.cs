@@ -22,6 +22,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         protected T1[] Items;
         protected T2[] DescriptorCache;
 
+        protected readonly BitMap ModifiedEntries;
+
+        private int _minimumAccessedId;
+        private int _maximumAccessedId;
+
         /// <summary>
         /// The maximum ID value of resources on the pool (inclusive).
         /// </summary>
@@ -60,6 +65,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             MaximumId = maximumId;
 
             int count = maximumId + 1;
+
+            ModifiedEntries = new BitMap(count);
+
+            _minimumAccessedId = int.MaxValue;
+            _maximumAccessedId = 0;
 
             ulong size = (ulong)(uint)count * DescriptorSize;
 
@@ -195,6 +205,32 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Updates a entry that has been modified.
+        /// </summary>
+        /// <param name="id">Pool entry index</param>
+        protected void UpdateModifiedEntry(int id)
+        {
+            ModifiedEntries.Set(id);
+
+            _minimumAccessedId = Math.Min(_minimumAccessedId, id);
+            _maximumAccessedId = Math.Max(_maximumAccessedId, id);
+        }
+
+        /// <summary>
+        /// Forces all entries as modified, to be updated if any shader uses bindless textures.
+        /// </summary>
+        public void ForceModifiedEntries()
+        {
+            for (int id = _minimumAccessedId; id <= _maximumAccessedId; id++)
+            {
+                if (Items[id] != null)
+                {
+                    ModifiedEntries.Set(id);
+                }
+            }
         }
 
         protected abstract void InvalidateRangeImpl(ulong address, ulong size);

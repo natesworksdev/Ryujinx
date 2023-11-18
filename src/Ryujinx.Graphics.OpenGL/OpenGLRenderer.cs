@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public OpenGLRenderer()
         {
-            _pipeline = new Pipeline();
+            _pipeline = new Pipeline(this);
             _counters = new Counters();
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);
@@ -134,6 +134,7 @@ namespace Ryujinx.Graphics.OpenGL
                 api: TargetApi.OpenGL,
                 vendorName: GpuVendor,
                 hasFrontFacingBug: intelWindows,
+                hasUnsizedDescriptorArrayBug: false,
                 hasVectorIndexingBug: amdWindows,
                 needsFragmentOutputSpecialization: false,
                 reduceShaderPrecision: false,
@@ -148,6 +149,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsR4G4B4A4Format: true,
                 supportsSnormBufferTextureFormat: false,
                 supports5BitComponentFormat: true,
+                supportsBindlessTextures: HwCapabilities.SupportsArbBindlessTexture,
                 supportsBlendEquationAdvanced: HwCapabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,

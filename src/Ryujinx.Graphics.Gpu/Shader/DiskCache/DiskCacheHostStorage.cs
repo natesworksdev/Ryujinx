@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private const ushort FileFormatVersionMajor = 1;
         private const ushort FileFormatVersionMinor = 2;
         private const uint FileFormatVersionPacked = ((uint)FileFormatVersionMajor << 16) | FileFormatVersionMinor;
-        private const uint CodeGenVersion = 5791;
+        private const uint CodeGenVersion = 3001;
 
         private const string SharedTocFileName = "shared.toc";
         private const string SharedDataFileName = "shared.data";
@@ -184,6 +184,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// Indicates if the vertex shader accesses draw parameters.
             /// </summary>
             public bool UsesDrawParameters;
+
+            /// <summary>
+            /// Flags indicating if and how bindless texture accesses were translated for the shader stage.
+            /// </summary>
+            public BindlessTextureFlags BindlessTextureFlags;
+
+            /// <summary>
+            /// Bit mask indicating which constant buffers are accessed on the shader using indexing to load texture handles.
+            /// </summary>
+            public uint BindlessIndexedBuffersMask;
         }
 
         private readonly DiskCacheGuestStorage _guestStorage;
@@ -799,6 +809,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 textures,
                 images,
                 dataInfo.Stage,
+                dataInfo.BindlessTextureFlags,
+                dataInfo.BindlessIndexedBuffersMask,
                 dataInfo.GeometryVerticesPerPrimitive,
                 dataInfo.GeometryMaxOutputVertices,
                 dataInfo.ThreadsPerInputPrimitive,
@@ -829,6 +841,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 TexturesCount = (ushort)info.Textures.Count,
                 ImagesCount = (ushort)info.Images.Count,
                 Stage = info.Stage,
+                BindlessTextureFlags = info.BindlessTextureFlags,
+                BindlessIndexedBuffersMask = info.BindlessIndexedBuffersMask,
                 GeometryVerticesPerPrimitive = (byte)info.GeometryVerticesPerPrimitive,
                 GeometryMaxOutputVertices = (ushort)info.GeometryMaxOutputVertices,
                 ThreadsPerInputPrimitive = (ushort)info.ThreadsPerInputPrimitive,

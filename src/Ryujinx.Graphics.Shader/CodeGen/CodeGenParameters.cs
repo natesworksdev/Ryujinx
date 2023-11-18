@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen
         public readonly HostCapabilities HostCapabilities;
         public readonly ILogger Logger;
         public readonly TargetApi TargetApi;
+        public readonly BindlessTextureFlags BindlessTextureFlags;
 
         public CodeGenParameters(
             AttributeUsage attributeUsage,
@@ -18,7 +19,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen
             ShaderProperties properties,
             HostCapabilities hostCapabilities,
             ILogger logger,
-            TargetApi targetApi)
+            TargetApi targetApi,
+            BindlessTextureFlags bindlessTextureFlags)
         {
             AttributeUsage = attributeUsage;
             Definitions = definitions;
@@ -26,6 +28,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen
             HostCapabilities = hostCapabilities;
             Logger = logger;
             TargetApi = targetApi;
+            BindlessTextureFlags = bindlessTextureFlags;
         }
     }
 }

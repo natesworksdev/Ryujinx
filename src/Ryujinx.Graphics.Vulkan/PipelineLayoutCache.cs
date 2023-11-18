@@ -11,12 +11,12 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly struct PlceKey : IEquatable<PlceKey>
         {
             public readonly ReadOnlyCollection<ResourceDescriptorCollection> SetDescriptors;
-            public readonly bool UsePushDescriptors;
+            public readonly PipelineLayoutUsageInfo UsageInfo;
 
-            public PlceKey(ReadOnlyCollection<ResourceDescriptorCollection> setDescriptors, bool usePushDescriptors)
+            public PlceKey(ReadOnlyCollection<ResourceDescriptorCollection> setDescriptors, PipelineLayoutUsageInfo usageInfo)
             {
                 SetDescriptors = setDescriptors;
-                UsePushDescriptors = usePushDescriptors;
+                UsageInfo = usageInfo;
             }
 
             public override int GetHashCode()
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                hasher.Add(UsePushDescriptors);
+                hasher.Add(UsageInfo);
 
                 return hasher.ToHashCode();
             }
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                return UsePushDescriptors == other.UsePushDescriptors;
+                return UsageInfo.Equals(other.UsageInfo);
             }
         }
 
@@ -72,18 +72,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public PipelineLayoutCache()
         {
-            _plces = new ConcurrentDictionary<PlceKey, PipelineLayoutCacheEntry>();
+            _plces = new();
         }
 
         public PipelineLayoutCacheEntry GetOrCreate(
             VulkanRenderer gd,
             Device device,
             ReadOnlyCollection<ResourceDescriptorCollection> setDescriptors,
-            bool usePushDescriptors)
+            PipelineLayoutUsageInfo usageInfo)
         {
-            var key = new PlceKey(setDescriptors, usePushDescriptors);
+            var key = new PlceKey(setDescriptors, usageInfo);
 
-            return _plces.GetOrAdd(key, newKey => new PipelineLayoutCacheEntry(gd, device, setDescriptors, usePushDescriptors));
+            return _plces.GetOrAdd(key, newKey => new PipelineLayoutCacheEntry(gd, device, setDescriptors, usageInfo));
         }
 
         protected virtual void Dispose(bool disposing)

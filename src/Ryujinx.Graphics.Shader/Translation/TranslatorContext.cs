@@ -264,6 +264,10 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             HelperFunctionManager hfm = new(funcs, Definitions.Stage);
 
+            BindlessTextureFlags bindlessTextureFlags = BindlessTextureFlags.None;
+            uint bindlessIndexedBuffersMask = 0;
+            bool bindlessTexturesAllowed = true;
+
             for (int i = 0; i < functions.Length; i++)
             {
                 var cfg = cfgs[i];
@@ -294,9 +298,13 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Definitions,
                         resourceManager,
                         GpuAccessor,
+                        Options.TargetApi,
                         Options.TargetLanguage,
                         Definitions.Stage,
-                        ref usedFeatures);
+                        ref usedFeatures,
+                        ref bindlessTextureFlags,
+                        ref bindlessIndexedBuffersMask,
+                        ref bindlessTexturesAllowed);
 
                     Optimizer.RunPass(context);
                     TransformPasses.RunPass(context);
@@ -312,6 +320,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 Definitions,
                 resourceManager,
                 usedFeatures,
+                bindlessTextureFlags,
+                bindlessIndexedBuffersMask,
                 clipDistancesWritten);
         }
 
@@ -322,6 +332,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             ShaderDefinitions originalDefinitions,
             ResourceManager resourceManager,
             FeatureFlags usedFeatures,
+            BindlessTextureFlags bindlessTextureFlags,
+            uint bindlessIndexedBuffersMask,
             byte clipDistancesWritten)
         {
             var sInfo = StructuredProgram.MakeStructuredProgram(
@@ -345,6 +357,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 resourceManager.GetTextureDescriptors(),
                 resourceManager.GetImageDescriptors(),
                 originalDefinitions.Stage,
+                bindlessTextureFlags,
+                bindlessIndexedBuffersMask,
                 geometryVerticesPerPrimitive,
                 originalDefinitions.MaxOutputVertices,
                 originalDefinitions.ThreadsPerInputPrimitive,
@@ -357,6 +371,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var hostCapabilities = new HostCapabilities(
                 GpuAccessor.QueryHostReducedPrecision(),
+                GpuAccessor.QueryHostHasUnsizedDescriptorArrayBug(),
                 GpuAccessor.QueryHostSupportsFragmentShaderInterlock(),
                 GpuAccessor.QueryHostSupportsFragmentShaderOrderingIntel(),
                 GpuAccessor.QueryHostSupportsGeometryShaderPassthrough(),
@@ -365,7 +380,14 @@ namespace Ryujinx.Graphics.Shader.Translation
                 GpuAccessor.QueryHostSupportsTextureShadowLod(),
                 GpuAccessor.QueryHostSupportsViewportMask());
 
-            var parameters = new CodeGenParameters(attributeUsage, definitions, resourceManager.Properties, hostCapabilities, GpuAccessor, Options.TargetApi);
+            var parameters = new CodeGenParameters(
+                attributeUsage,
+                definitions,
+                resourceManager.Properties,
+                hostCapabilities,
+                GpuAccessor,
+                Options.TargetApi,
+                bindlessTextureFlags);
 
             return Options.TargetLanguage switch
             {
@@ -474,7 +496,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 ioUsage = ioUsage.Combine(_vertexOutput);
             }
 
-            return new ResourceReservations(GpuAccessor, IsTransformFeedbackEmulated, vertexAsCompute: true, _vertexOutput, ioUsage);
+            return new ResourceReservations(GpuAccessor, Options.TargetApi, IsTransformFeedbackEmulated, vertexAsCompute: true, _vertexOutput, ioUsage);
         }
 
         public void SetVertexOutputMapForGeometryAsCompute(TranslatorContext vertexContext)
@@ -489,11 +511,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var reservations = GetResourceReservations();
 
-            int vertexInfoCbBinding = reservations.VertexInfoConstantBufferBinding;
-
             if (Stage == ShaderStage.Vertex)
             {
-                BufferDefinition vertexInfoBuffer = new(BufferLayout.Std140, 0, vertexInfoCbBinding, "vb_info", VertexInfoBuffer.GetStructureType());
+                BufferDefinition vertexInfoBuffer = new(BufferLayout.Std140, 0, reservations.VertexInfoConstantBufferBinding, "vb_info", VertexInfoBuffer.GetStructureType());
                 resourceManager.Properties.AddOrUpdateConstantBuffer(vertexInfoBuffer);
             }
 
@@ -502,9 +522,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                 new StructureField(AggregateType.Array | AggregateType.FP32, "data", 0)
             });
 
-            int vertexDataSbBinding = reservations.VertexOutputStorageBufferBinding;
-            BufferDefinition vertexOutputBuffer = new(BufferLayout.Std430, 1, vertexDataSbBinding, "vb_input", vertexInputStruct);
+            BufferDefinition vertexOutputBuffer = new(BufferLayout.Std430, 1, reservations.VertexOutputStorageBufferBinding, "vb_input", vertexInputStruct);
             resourceManager.Properties.AddOrUpdateStorageBuffer(vertexOutputBuffer);
+
+            int vertexInfoCbBinding = reservations.VertexInfoConstantBufferSetBinding;
+            int vertexDataSbBinding = reservations.VertexOutputStorageBufferSetBinding;
 
             var context = new EmitterContext();
 
@@ -569,6 +591,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 definitions,
                 resourceManager,
                 FeatureFlags.None,
+                BindlessTextureFlags.None,
+                0,
                 0);
         }
 
@@ -665,6 +689,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 definitions,
                 resourceManager,
                 FeatureFlags.RtLayer,
+                BindlessTextureFlags.None,
+                0,
                 0);
         }
     }

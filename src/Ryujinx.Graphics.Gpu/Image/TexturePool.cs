@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
+using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
@@ -213,6 +214,152 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Loads all the textures currently registered by the guest application on the pool.
+        /// This is required for bindless access, as it's not possible to predict which textures will be used.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="activeSamplerPool">The currently active sampler pool</param>
+        public void LoadAll(IRenderer renderer, SamplerPool activeSamplerPool)
+        {
+            activeSamplerPool?.LoadAll();
+
+            if (SequenceNumber != Context.SequenceNumber)
+            {
+                SequenceNumber = Context.SequenceNumber;
+
+                SynchronizeMemory();
+            }
+
+            ModifiedEntries.BeginIterating();
+
+            int id;
+
+            while ((id = ModifiedEntries.GetNextAndClear()) >= 0)
+            {
+                UpdateBindlessInternal(renderer, id);
+            }
+        }
+
+        /// <summary>
+        /// Updates the bindless texture with the given pool ID, if the pool entry has been modified since the last call.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="samplerPool">Optional sampler pool. If null, the sampler ID is ignored</param>
+        /// <param name="textureId">ID of the texture</param>
+        /// <param name="samplerId">ID of the sampler</param>
+        public void UpdateBindlessCombined(IRenderer renderer, SamplerPool samplerPool, int textureId, int samplerId)
+        {
+            if ((uint)textureId >= Items.Length)
+            {
+                return;
+            }
+
+            bool textureModified = ModifiedEntries.Clear(textureId);
+
+            if (samplerPool != null)
+            {
+                bool samplerModified = samplerPool.TryGetBindlessSampler(samplerId, out Sampler sampler);
+
+                if (sampler == null)
+                {
+                    if (textureModified)
+                    {
+                        UpdateBindlessInternal(renderer, textureId);
+                    }
+                }
+                else if (textureModified || samplerModified)
+                {
+                    Texture texture = Items[textureId] ?? GetValidated(textureId);
+
+                    if (texture != null)
+                    {
+                        if (texture.Target != Target.TextureBuffer)
+                        {
+                            renderer.Pipeline.RegisterBindlessTextureAndSampler(
+                                textureId,
+                                texture.HostTexture,
+                                texture.ScaleFactor,
+                                samplerId,
+                                sampler.GetHostSampler(null));
+                        }
+                    }
+                    else
+                    {
+                        renderer.Pipeline.RegisterBindlessSampler(samplerId, sampler.GetHostSampler(null));
+                    }
+                }
+            }
+            else if (textureModified)
+            {
+                UpdateBindlessInternal(renderer, textureId);
+            }
+        }
+
+        /// <summary>
+        /// Updates the bindless texture with the given pool ID.
+        /// </summary>
+        /// <param name="renderer">Renderer of the current GPU context</param>
+        /// <param name="id">ID of the texture</param>
+        private void UpdateBindlessInternal(IRenderer renderer, int id)
+        {
+            // If the texture already exists, check if it has not been modified since the last use.
+            // If it was, update the data.
+            Items[id]?.SynchronizeMemory();
+
+            Texture texture = Items[id] ?? GetValidated(id);
+
+            if (texture != null)
+            {
+                if (texture.Target != Target.TextureBuffer)
+                {
+                    renderer.Pipeline.RegisterBindlessTexture(id, texture.HostTexture, texture.ScaleFactor);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the texture at the given <paramref name="id"/> from the cache,
+        /// or creates a new one if not found.
+        /// This will return null if the texture entry is considered invalid.
+        /// </summary>
+        /// <param name="id">Index of the texture on the pool</param>
+        /// <returns>Texture for the given pool index</returns>
+        private Texture GetValidated(int id)
+        {
+            TextureDescriptor descriptor = GetDescriptor(id);
+
+            if (!FormatTable.TryGetTextureFormat(descriptor.UnpackFormat(), descriptor.UnpackSrgb(), out _))
+            {
+                return null;
+            }
+
+            TextureInfo info = GetInfo(descriptor, out _);
+            TextureValidationResult validationResult = TextureValidation.Validate(ref info);
+
+            if (validationResult != TextureValidationResult.Valid)
+            {
+                return null;
+            }
+
+            // TODO: Eventually get rid of that...
+            // For now it avoids creating textures for garbage entries in some cases, but it is not
+            // correct as a width or height of 8192 is valid (although extremely unlikely).
+            if (info.Width > 8192 || info.Height > 8192 || info.DepthOrLayers > 8192)
+            {
+                return null;
+            }
+
+            try
+            {
+                return Get(id);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Forcibly remove a texture from this pool's items.
         /// If deferred, the dereference will be queued to occur on the render thread.
         /// </summary>
@@ -360,6 +507,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
+                    UpdateModifiedEntry(id);
+
                     if (texture.HasOneReference())
                     {
                         _channel.MemoryManager.Physical.TextureCache.AddShortCache(texture, ref cachedDescriptor);
@@ -370,7 +519,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                         texture.DecrementReferenceCount(this, id);
                     }
                 }
+                else
+                {
+                    UpdateModifiedEntry(id);
+                }
             }
+        }
+
+        /// <summary>
+        /// Forces a entry as modified, to be updated if any shader uses bindless textures.
+        /// </summary>
+        /// <param name="id">ID of the entry to be updated</param>
+        public void ForceModifiedEntry(int id)
+        {
+            ModifiedEntries.Set(id);
         }
 
         /// <summary>

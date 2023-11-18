@@ -347,7 +347,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
-            DescriptorSetManager = new DescriptorSetManager(_device, PipelineBase.DescriptorSetLayouts);
+            DescriptorSetManager = new DescriptorSetManager(_device, PipelineBase.DescriptorSetLayoutsBindless);
 
             PipelineLayoutCache = new PipelineLayoutCache();
 
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (info.State.HasValue || isCompute)
             {
-                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.FromCache);
+                return new ShaderCollection(this, _device, sources, info.ResourceLayout, info.State ?? default, info.HasBindless, info.FromCache);
             }
 
             return new ShaderCollection(this, _device, sources, info.ResourceLayout);
@@ -572,10 +572,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             var limits = _physicalDevice.PhysicalDeviceProperties.Limits;
 
+            bool supportsDescriptorIndexing = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_descriptor_indexing");
+
             return new Capabilities(
                 api: TargetApi.Vulkan,
                 GpuVendor,
                 hasFrontFacingBug: IsIntelWindows,
+                hasUnsizedDescriptorArrayBug: IsMoltenVk,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 needsFragmentOutputSpecialization: IsMoltenVk,
                 reduceShaderPrecision: IsMoltenVk,
@@ -590,6 +593,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsR4G4B4A4Format: supportsR4G4B4A4Format,
                 supportsSnormBufferTextureFormat: true,
                 supports5BitComponentFormat: supports5BitComponentFormat,
+                supportsBindlessTextures: supportsDescriptorIndexing,
                 supportsBlendEquationAdvanced: Capabilities.SupportsBlendEquationAdvanced,
                 supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
