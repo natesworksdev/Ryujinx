@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly string VendorName;
 
         public readonly bool HasFrontFacingBug;
+        public readonly bool HasUnsizedDescriptorArrayBug;
         public readonly bool HasVectorIndexingBug;
         public readonly bool NeedsFragmentOutputSpecialization;
         public readonly bool ReduceShaderPrecision;
@@ -24,6 +25,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsScaledVertexFormats;
         public readonly bool SupportsSnormBufferTextureFormat;
         public readonly bool Supports5BitComponentFormat;
+        public readonly bool SupportsBindlessTextures;
         public readonly bool SupportsBlendEquationAdvanced;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsFragmentShaderOrderingIntel;
@@ -64,6 +66,7 @@ namespace Ryujinx.Graphics.GAL
             TargetApi api,
             string vendorName,
             bool hasFrontFacingBug,
+            bool hasUnsizedDescriptorArrayBug,
             bool hasVectorIndexingBug,
             bool needsFragmentOutputSpecialization,
             bool reduceShaderPrecision,
@@ -79,6 +82,7 @@ namespace Ryujinx.Graphics.GAL
             bool supportsScaledVertexFormats,
             bool supportsSnormBufferTextureFormat,
             bool supports5BitComponentFormat,
+            bool supportsBindlessTextures,
             bool supportsBlendEquationAdvanced,
             bool supportsFragmentShaderInterlock,
             bool supportsFragmentShaderOrderingIntel,
@@ -115,6 +119,7 @@ namespace Ryujinx.Graphics.GAL
             Api = api;
             VendorName = vendorName;
             HasFrontFacingBug = hasFrontFacingBug;
+            HasUnsizedDescriptorArrayBug = hasUnsizedDescriptorArrayBug;
             HasVectorIndexingBug = hasVectorIndexingBug;
             NeedsFragmentOutputSpecialization = needsFragmentOutputSpecialization;
             ReduceShaderPrecision = reduceShaderPrecision;
@@ -130,6 +135,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsScaledVertexFormats = supportsScaledVertexFormats;
             SupportsSnormBufferTextureFormat = supportsSnormBufferTextureFormat;
             Supports5BitComponentFormat = supports5BitComponentFormat;
+            SupportsBindlessTextures = supportsBindlessTextures;
             SupportsBlendEquationAdvanced = supportsBlendEquationAdvanced;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsFragmentShaderOrderingIntel = supportsFragmentShaderOrderingIntel;

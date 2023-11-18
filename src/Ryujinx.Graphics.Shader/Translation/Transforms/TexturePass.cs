@@ -24,7 +24,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
                     ref context.BindlessTextureFlags,
                     ref context.BindlessIndexedBuffersMask,
                     context.BindlessTexturesAllowed,
-                    context.GpuAccessor.QueryTextureBufferIndex());
+                    context.GpuAccessor.QueryTextureBufferIndex(),
+                    context.GpuAccessor.QueryHostSupportsBindlessTextures());
 
                 if (prevNode != node)
                 {
@@ -787,7 +788,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             ref BindlessTextureFlags bindlessTextureFlags,
             ref uint bindlessIndexedBuffersMask,
             bool bindlessTexturesAllowed,
-            int textureBufferIndex)
+            int textureBufferIndex,
+            bool supportsBindlessTextures)
         {
             if (node.Value is not TextureOperation texOp)
             {
@@ -797,35 +799,36 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             // If it's already bindless, then we have nothing to do.
             if (texOp.Flags.HasFlag(TextureFlags.Bindless))
             {
-                resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage());
-
-                if (IsIndexedAccess(resourceManager, texOp, ref bindlessTextureFlags, ref bindlessIndexedBuffersMask, textureBufferIndex))
+                if (SupportsBindlessAccess(texOp.Type, supportsBindlessTextures))
                 {
-                    return node;
-                }
+                    resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage());
 
-                if (bindlessTexturesAllowed)
-                {
-                    bindlessTextureFlags |= BindlessTextureFlags.BindlessFull;
-                    return node;
-                }
-                else
-                {
-                    // Set any destination operand to zero and remove the texture access.
-                    // This is a case where bindless elimination failed, and we assume
-                    // it's too risky to try using full bindless emulation.
-
-                    for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
+                    if (IsIndexedAccess(resourceManager, texOp, ref bindlessTextureFlags, ref bindlessIndexedBuffersMask, textureBufferIndex))
                     {
-                        Operand dest = texOp.GetDest(destIndex);
-                        node.List.AddBefore(node, new Operation(Instruction.Copy, dest, Const(0)));
+                        return node;
                     }
 
-                    LinkedListNode<INode> prevNode = node.Previous;
-                    node.List.Remove(node);
-
-                    return prevNode;
+                    if (bindlessTexturesAllowed)
+                    {
+                        bindlessTextureFlags |= BindlessTextureFlags.BindlessFull;
+                        return node;
+                    }
                 }
+
+                // Set any destination operand to zero and remove the texture access.
+                // This is a case where bindless elimination failed, and we assume
+                // it's too risky or not possible to try using full bindless emulation.
+
+                for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
+                {
+                    Operand dest = texOp.GetDest(destIndex);
+                    node.List.AddBefore(node, new Operation(Instruction.Copy, dest, Const(0)));
+                }
+
+                LinkedListNode<INode> prevNode = node.Previous;
+                node.List.Remove(node);
+
+                return prevNode;
             }
 
             // If the index is within the host API limits, then we don't need to make it bindless.
@@ -864,6 +867,17 @@ namespace Ryujinx.Graphics.Shader.Translation.Transforms
             resourceManager.EnsureBindlessBinding(targetApi, texOp.Type, texOp.Inst.IsImage());
 
             return node;
+        }
+
+        private static bool SupportsBindlessAccess(SamplerType type, bool supportsBindlessTextures)
+        {
+            // TODO: Support bindless buffer texture access.
+            if ((type & SamplerType.Mask) == SamplerType.TextureBuffer)
+            {
+                return false;
+            }
+
+            return supportsBindlessTextures;
         }
 
         private static bool IsIndexedAccess(

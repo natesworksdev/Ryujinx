@@ -196,6 +196,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host about the presence of the unsized descriptor array bug.
+        /// </summary>
+        /// <returns>True if the bug is present on the host device used, false otherwise</returns>
+        bool QueryHostHasUnsizedDescriptorArrayBug()
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Queries host about the presence of the vector indexing bug.
         /// </summary>
         /// <returns>True if the bug is present on the host device used, false otherwise</returns>
@@ -227,6 +236,15 @@ namespace Ryujinx.Graphics.Shader
         /// </summary>
         /// <returns>True if BGRA formats are supported, false otherwise</returns>
         bool QueryHostSupportsBgraFormat()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Queries host support for accessing bindless textures.
+        /// </summary>
+        /// <returns>True if bindless textures are supported, false otherwise</returns>
+        bool QueryHostSupportsBindlessTextures()
         {
             return true;
         }

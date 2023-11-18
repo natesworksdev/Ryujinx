@@ -190,7 +190,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (sampler.ArraySize == 0)
                 {
-                    var sampledImageArrayType = context.TypeRuntimeArray(imageTypeForSampler);
+                    var sampledImageArrayType = context.HostCapabilities.HasUnsizedDescriptorArrayBug
+                        ? context.TypeArray(imageTypeForSampler, context.Constant(context.TypeU32(), 1))
+                        : context.TypeRuntimeArray(imageTypeForSampler);
                     sampledImageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageArrayType);
                 }
                 else if (sampler.ArraySize != 1)
@@ -241,7 +243,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (image.ArraySize == 0)
                 {
-                    var imageArrayType = context.TypeRuntimeArray(imageType);
+                    var imageArrayType = context.HostCapabilities.HasUnsizedDescriptorArrayBug
+                        ? context.TypeArray(imageType, context.Constant(context.TypeU32(), 1))
+                        : context.TypeRuntimeArray(imageType);
                     imageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, imageArrayType);
                 }
                 else if (image.ArraySize != 1)

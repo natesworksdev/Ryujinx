@@ -371,6 +371,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var hostCapabilities = new HostCapabilities(
                 GpuAccessor.QueryHostReducedPrecision(),
+                GpuAccessor.QueryHostHasUnsizedDescriptorArrayBug(),
                 GpuAccessor.QueryHostSupportsFragmentShaderInterlock(),
                 GpuAccessor.QueryHostSupportsFragmentShaderOrderingIntel(),
                 GpuAccessor.QueryHostSupportsGeometryShaderPassthrough(),

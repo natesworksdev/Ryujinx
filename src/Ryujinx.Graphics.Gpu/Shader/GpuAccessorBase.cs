@@ -157,6 +157,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public bool QueryHostHasFrontFacingBug() => _context.Capabilities.HasFrontFacingBug;
 
+        public bool QueryHostHasUnsizedDescriptorArrayBug() => _context.Capabilities.HasUnsizedDescriptorArrayBug;
+
         public bool QueryHostHasVectorIndexingBug() => _context.Capabilities.HasVectorIndexingBug;
 
         public int QueryHostStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
@@ -164,6 +166,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public int QueryHostSubgroupSize() => _context.Capabilities.ShaderSubgroupSize;
 
         public bool QueryHostSupportsBgraFormat() => _context.Capabilities.SupportsBgraFormat;
+
+        public bool QueryHostSupportsBindlessTextures() => _context.Capabilities.SupportsBindlessTextures;
 
         public bool QueryHostSupportsFragmentShaderInterlock() => _context.Capabilities.SupportsFragmentShaderInterlock;
 
