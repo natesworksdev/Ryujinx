@@ -908,7 +908,7 @@ namespace Ryujinx.Ui.Common.Configuration
             };
         }
 
-        public ConfigurationLoadResult Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
+        public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
         {
             bool configurationFileUpdated = false;
 
@@ -917,11 +917,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
                 LoadDefault();
-
-                return ConfigurationLoadResult.NotLoaded;
             }
-
-            ConfigurationLoadResult result = ConfigurationLoadResult.Success;
 
             if (configurationFileFormat.Version < 2)
             {
@@ -1337,8 +1333,6 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.GraphicsBackend = GraphicsBackend.OpenGl;
 
-                result |= ConfigurationLoadResult.MigratedFromPreVulkan;
-
                 configurationFileUpdated = true;
             }
 
@@ -1536,8 +1530,6 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 Ryujinx.Common.Logging.Logger.Notice.Print(LogClass.Application, $"Configuration file updated to version {ConfigurationFileFormat.CurrentVersion}");
             }
-
-            return result;
         }
 
         private static GraphicsBackend DefaultGraphicsBackend()
