@@ -1104,9 +1104,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _allocationAuto.DecrementReferenceCount();
             }
-            else if (_allocationAuto != null)
+            else
             {
-                _allocationAuto.Dispose();
+                _allocationAuto?.Dispose();
             }
 
             _flushLock.EnterWriteLock();
