@@ -21,10 +21,10 @@ namespace Ryujinx.Common.SystemInterop
         private readonly struct WaitingObject
         {
             public readonly long Id;
-            public readonly AutoResetEvent Signal;
+            public readonly EventWaitHandle Signal;
             public readonly long TimePoint;
 
-            public WaitingObject(long id, AutoResetEvent signal, long timePoint)
+            public WaitingObject(long id, EventWaitHandle signal, long timePoint)
             {
                 Id = id;
                 Signal = signal;
@@ -177,7 +177,7 @@ namespace Ryujinx.Common.SystemInterop
         /// <param name="evt">Reset event to use to be awoken by the clock tick</param>
         /// <param name="timePoint">Target timepoint</param>
         /// <returns>True if waited, false otherwise</returns>
-        public bool SleepUntilTimePointWithoutExternalSignal(AutoResetEvent evt, long timePoint)
+        public bool SleepUntilTimePointWithoutExternalSignal(EventWaitHandle evt, long timePoint)
         {
             long id;
 

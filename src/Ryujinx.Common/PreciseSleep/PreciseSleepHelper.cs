@@ -32,7 +32,7 @@ namespace Ryujinx.Common.PreciseSleep
         /// </summary>
         /// <param name="evt">Event used to wake this thread</param>
         /// <param name="timePoint">Timepoint in host ticks</param>
-        public static void SleepUntilTimePoint(AutoResetEvent evt, long timePoint)
+        public static void SleepUntilTimePoint(EventWaitHandle evt, long timePoint)
         {
             if (OperatingSystem.IsWindows())
             {
