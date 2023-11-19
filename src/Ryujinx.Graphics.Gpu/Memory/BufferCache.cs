@@ -163,16 +163,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (range.Count > 1)
             {
-                for (int i = 0; i < range.Count; i++)
-                {
-                    MemoryRange subRange = range.GetSubRange(i);
-
-                    if (subRange.Address != MemoryManager.PteUnmapped)
-                    {
-                        CreateBuffer(subRange.Address, subRange.Size, SparseBufferAlignmentSize);
-                    }
-                }
-
                 CreateMultiRangeBuffer(range);
             }
             else
@@ -181,17 +171,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (subRange.Address != MemoryManager.PteUnmapped)
                 {
-                    // If we have multi-range buffers, we need to ensure all buffers
-                    // are valid for sparse mapping by properly aligning them.
-
-                    if (_multiRangeBuffers.Count != 0)
-                    {
-                        CreateBuffer(subRange.Address, subRange.Size, SparseBufferAlignmentSize);
-                    }
-                    else
-                    {
-                        CreateBuffer(subRange.Address, subRange.Size);
-                    }
+                    CreateBuffer(subRange.Address, subRange.Size);
                 }
             }
         }
@@ -250,6 +230,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="range">Physical ranges of memory</param>
         private void CreateMultiRangeBuffer(MultiRange range)
         {
+            // Ensure all non-contiguous buffer we might use are sparse aligned.
+            for (int i = 0; i < range.Count; i++)
+            {
+                MemoryRange subRange = range.GetSubRange(i);
+
+                if (subRange.Address != MemoryManager.PteUnmapped)
+                {
+                    CreateBuffer(subRange.Address, subRange.Size, SparseBufferAlignmentSize);
+                }
+            }
+
+            // Create sparse buffer.
             MultiRangeBuffer[] overlaps = new MultiRangeBuffer[10];
 
             int overlapCount = _multiRangeBuffers.FindOverlaps(range, ref overlaps);
@@ -483,6 +475,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (overlap0.Address > address ||
                     overlap0.EndAddress < endAddress ||
+                    (overlap0.Address & (alignment - 1)) != 0 ||
                     !overlap0.SparseCompatible)
                 {
                     // We need to make sure the new buffer is properly aligned.
