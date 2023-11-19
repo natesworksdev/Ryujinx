@@ -10,7 +10,7 @@ namespace Ryujinx.Common.PreciseSleep
     {
         /// <summary>
         /// Adjust a timepoint to better fit the host clock.
-        /// When no adjustment is made, the inout timepoint will be returned.
+        /// When no adjustment is made, the input timepoint will be returned.
         /// </summary>
         /// <param name="timePoint">Timepoint to adjust</param>
         /// <param name="timeoutNs">Requested timeout in nanoseconds</param>
@@ -21,7 +21,7 @@ namespace Ryujinx.Common.PreciseSleep
         /// Sleep until a timepoint, or a signal is received.
         /// Given no signal, may wake considerably before, or slightly after the timeout.
         /// </summary>
-        /// <param name="timePoint"></param>
+        /// <param name="timePoint">Timepoint to sleep until</param>
         /// <returns>True if signalled or waited, false if a wait could not be performed</returns>
         bool SleepUntil(long timePoint);
 

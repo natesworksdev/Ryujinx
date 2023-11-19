@@ -10,7 +10,7 @@ namespace Ryujinx.Common.PreciseSleep
     /// use the clock's phase for more precise waits, and potentially align timepoints with it.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public class WindowsSleepEvent : IPreciseSleepEvent
+    internal class WindowsSleepEvent : IPreciseSleepEvent
     {
         /// <summary>
         /// The clock can drift a bit, so add this to encourage the clock to still wait if the next tick is forecasted slightly before it.

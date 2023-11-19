@@ -11,7 +11,7 @@ namespace Ryujinx.Common.PreciseSleep
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
     [SupportedOSPlatform("ios")]
-    public class NanosleepEvent : IPreciseSleepEvent
+    internal class NanosleepEvent : IPreciseSleepEvent
     {
         private readonly AutoResetEvent _waitEvent = new(false);
         private readonly NanosleepPool _pool;

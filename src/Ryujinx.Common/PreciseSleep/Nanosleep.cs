@@ -11,7 +11,7 @@ namespace Ryujinx.Common.PreciseSleep
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
     [SupportedOSPlatform("ios")]
-    public static partial class Nanosleep
+    internal static partial class Nanosleep
     {
         private const long LinuxBaseNanosleepBias = 50000; // 0.05ms
 
@@ -143,7 +143,7 @@ namespace Ryujinx.Common.PreciseSleep
         /// Due to OS scheduling behaviour, this timeframe may still be missed.
         /// </remarks>
         /// <param name="nanoseconds">Maximum allowed time for sleep</param>
-        public static void SleepBefore(long nanoseconds)
+        public static void SleepAtMost(long nanoseconds)
         {
             // Stricter bias to ensure we wake before the timepoint.
             nanoseconds -= GetStrictBias(nanoseconds);

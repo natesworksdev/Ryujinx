@@ -12,7 +12,7 @@ namespace Ryujinx.Common.PreciseSleep
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("android")]
     [SupportedOSPlatform("ios")]
-    public class NanosleepPool : IDisposable
+    internal class NanosleepPool : IDisposable
     {
         public const int MaxThreads = 8;
 
@@ -116,8 +116,11 @@ namespace Ryujinx.Common.PreciseSleep
             /// </summary>
             public void Dispose()
             {
-                _running = false;
-                _newWaitEvent.Set();
+                if (_running)
+                {
+                    _running = false;
+                    _newWaitEvent.Set();
+                }
             }
         }
 
@@ -132,14 +135,14 @@ namespace Ryujinx.Common.PreciseSleep
         /// <summary>
         /// Creates a new NanosleepPool with a target event to signal when a nanosleep completes.
         /// </summary>
-        /// <param name="signalTarget"></param>
+        /// <param name="signalTarget">Event to signal when nanosleeps complete</param>
         public NanosleepPool(AutoResetEvent signalTarget)
         {
             _signalTarget = signalTarget;
         }
 
         /// <summary>
-        /// Signal the target event (if the source sleep has not been superceded)
+        /// Signal the target event (if the source sleep has not been superseded)
         /// and free the nanosleep thread.
         /// </summary>
         /// <param name="thread">Nanosleep thread that completed</param>
@@ -218,6 +221,8 @@ namespace Ryujinx.Common.PreciseSleep
             {
                 thread.Dispose();
             }
+
+            _threads.Clear();
         }
     }
 }

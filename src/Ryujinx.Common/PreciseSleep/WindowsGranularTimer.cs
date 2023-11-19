@@ -11,7 +11,7 @@ namespace Ryujinx.Common.SystemInterop
     /// and can alert listeners on ticks.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public partial class WindowsGranularTimer
+    internal partial class WindowsGranularTimer
     {
         private const int MinimumGranularity = 5000;
 

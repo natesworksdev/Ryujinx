@@ -58,7 +58,7 @@ namespace Ryujinx.Common.PreciseSleep
                     now = PerformanceCounter.ElapsedTicks;
                     long ns = ((timePoint - now) * 1_000_000) / PerformanceCounter.TicksPerMillisecond;
 
-                    Nanosleep.SleepBefore(ns);
+                    Nanosleep.SleepAtMost(ns);
                 }
             }
         }
