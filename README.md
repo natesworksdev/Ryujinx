@@ -26,7 +26,7 @@
             alt="">
     </a>
     <a href="https://discord.com/invite/VkQYXAZ">
-        <img src="https://img.shields.io/discord/410208534861447168?color=5865F2&label=Ryujinx&logo=discord&logoColor=white"
+        <img src="https://img.shields.io/discord/410208534861447168?color=5662F6&label=Ryujinx&logo=discord&logoColor=white"
             alt="Discord">
     </a>
     <br>
