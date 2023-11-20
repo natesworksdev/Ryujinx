@@ -211,6 +211,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             int xCount = (int)_state.State.LineLengthIn;
             int yCount = (int)_state.State.LineCount;
 
+            _channel.TextureManager.RefreshModifiedTextures();
             _3dEngine.CreatePendingSyncs();
             _3dEngine.FlushUboDirty();
 
@@ -279,7 +280,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
 
-                if (completeSource && completeDest)
+                // Try to set the texture data directly,
+                // but only if we are doing a complete copy,
+                // and not for block linear to linear copies, since those are typically accessed from the CPU.
+
+                if (completeSource && completeDest && !(dstLinear && !srcLinear))
                 {
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
