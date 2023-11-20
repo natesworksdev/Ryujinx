@@ -25,8 +25,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly Thread _composerThread;
 
-        private readonly Stopwatch _chrono;
-
         private readonly AutoResetEvent _event = new(false);
         private readonly AutoResetEvent _nextFrameEvent = new(true);
         private long _ticks;
@@ -68,9 +66,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Name = "SurfaceFlinger.Composer",
                 Priority = ThreadPriority.AboveNormal
             };
-
-            _chrono = new Stopwatch();
-            _chrono.Start();
 
             _ticks = 0;
             _spinTicks = Stopwatch.Frequency / 500;
@@ -302,11 +297,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _isRunning = true;
 
-            long lastTicks = _chrono.ElapsedTicks;
+            long lastTicks = PerformanceCounter.ElapsedTicks;
 
             while (_isRunning)
             {
-                long ticks = _chrono.ElapsedTicks;
+                long ticks = PerformanceCounter.ElapsedTicks;
 
                 if (_swapInterval == 0)
                 {
@@ -339,12 +334,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
 
                     // Sleep if possible. If the time til the next frame is too low, spin wait instead.
-                    long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
+                    long diff = _ticksPerFrame - (_ticks + PerformanceCounter.ElapsedTicks - ticks);
                     if (diff > 0)
                     {
                         PreciseSleepHelper.SleepUntilTimePoint(_event, PerformanceCounter.ElapsedTicks + diff);
 
-                        diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
+                        diff = _ticksPerFrame - (_ticks + PerformanceCounter.ElapsedTicks - ticks);
 
                         if (diff < _spinTicks)
                         {
@@ -354,7 +349,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                                 // The value of 5 still gives us quite a bit of precision (~0.0003ms variance at worst) while waiting a reasonable amount of time.
                                 Thread.SpinWait(5);
 
-                                ticks = _chrono.ElapsedTicks;
+                                ticks = PerformanceCounter.ElapsedTicks;
                                 _ticks += ticks - lastTicks;
                                 lastTicks = ticks;
                             } while (_ticks < _ticksPerFrame);
