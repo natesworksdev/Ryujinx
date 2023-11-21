@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetTargetFramework)</TargetFramework>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Audio\Ryujinx.Audio.csproj" />
