@@ -343,16 +343,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                         if (diff < _spinTicks)
                         {
-                            do
-                            {
-                                // SpinWait is a little more HT/SMT friendly than aggressively updating/checking ticks.
-                                // The value of 5 still gives us quite a bit of precision (~0.0003ms variance at worst) while waiting a reasonable amount of time.
-                                Thread.SpinWait(5);
-
-                                ticks = PerformanceCounter.ElapsedTicks;
-                                _ticks += ticks - lastTicks;
-                                lastTicks = ticks;
-                            } while (_ticks < _ticksPerFrame);
+                            PreciseSleepHelper.SpinWaitUntilTimePoint(PerformanceCounter.ElapsedTicks + diff);
                         }
                         else
                         {

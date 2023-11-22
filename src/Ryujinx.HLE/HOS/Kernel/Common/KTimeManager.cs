@@ -86,7 +86,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private void WaitAndCheckScheduledObjects()
         {
-            SpinWait spinWait = new();
             WaitingObject next;
 
             using (_waitEvent = PreciseSleepHelper.CreateEvent())
@@ -108,22 +107,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                         {
                             if (!_waitEvent.SleepUntil(next.TimePoint))
                             {
-                                while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks < next.TimePoint)
-                                {
-                                    // Our time is close - don't let SpinWait go off and potentially Thread.Sleep().
-                                    if (spinWait.NextSpinWillYield)
-                                    {
-                                        Thread.Yield();
-
-                                        spinWait.Reset();
-                                    }
-                                    else
-                                    {
-                                        spinWait.SpinOnce();
-                                    }
-                                }
-
-                                spinWait.Reset();
+                                PreciseSleepHelper.SpinWaitUntilTimePoint(next.TimePoint, ref _enforceWakeupFromSpinWait);
                             }
                         }
 
