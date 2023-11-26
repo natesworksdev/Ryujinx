@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             {
                 return Dns.GetHostEntry(Socket.RemoteEndPoint.Address).HostName;
             }
-            catch (SocketException _)
+            catch (SocketException)
             {
                 return hostName;
             }
