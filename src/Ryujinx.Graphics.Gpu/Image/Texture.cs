@@ -40,9 +40,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         private GpuContext _context;
-        private PhysicalMemory _physicalMemory;
-
         private SizeInfo _sizeInfo;
+
+        /// <summary>
+        /// Backing memory for the texture.
+        /// </summary>
+        public PhysicalMemory PhysicalMemory { get; private set; }
 
         /// <summary>
         /// Texture format.
@@ -252,7 +255,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             MultiRange range)
         {
             _context = context;
-            _physicalMemory = physicalMemory;
+            PhysicalMemory = physicalMemory;
             _sizeInfo = sizeInfo;
             Range = range;
 
@@ -316,7 +319,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="incompatibleOverlaps">Groups that overlap with this one but are incompatible</param>
         public void InitializeGroup(bool hasLayerViews, bool hasMipViews, List<TextureIncompatibleOverlap> incompatibleOverlaps)
         {
-            Group = new TextureGroup(_context, _physicalMemory, this, incompatibleOverlaps);
+            Group = new TextureGroup(_context, PhysicalMemory, this, incompatibleOverlaps);
 
             Group.Initialize(ref _sizeInfo, hasLayerViews, hasMipViews);
         }
@@ -337,7 +340,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             Texture texture = new(
                 _context,
-                _physicalMemory,
+                PhysicalMemory,
                 info,
                 sizeInfo,
                 range,
@@ -637,7 +640,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SynchronizeFull()
         {
-            ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Range);
+            ReadOnlySpan<byte> data = PhysicalMemory.GetSpan(Range);
 
             // If the host does not support ASTC compression, we need to do the decompression.
             // The decompression is slow, so we want to avoid it as much as possible.
@@ -1028,7 +1031,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
         public void FlushTextureDataToGuest(bool tracked, ITexture texture = null)
         {
-            using WritableRegion region = _physicalMemory.GetWritableRegion(Range, tracked);
+            using WritableRegion region = PhysicalMemory.GetWritableRegion(Range, tracked);
 
             GetTextureDataFromGpu(region.Memory.Span, tracked, texture);
         }
@@ -1420,7 +1423,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Group.SignalModified(this);
             }
 
-            _physicalMemory.TextureCache.Lift(this);
+            PhysicalMemory.TextureCache.Lift(this);
         }
 
         /// <summary>
@@ -1441,7 +1444,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Group.SignalModifying(this, bound);
             }
 
-            _physicalMemory.TextureCache.Lift(this);
+            PhysicalMemory.TextureCache.Lift(this);
 
             if (bound)
             {
@@ -1529,7 +1532,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (ShortCacheEntry != null)
             {
-                _physicalMemory.TextureCache.RemoveShortCache(this);
+                PhysicalMemory.TextureCache.RemoveShortCache(this);
             }
         }
 
@@ -1558,7 +1561,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     _viewStorage.RemoveView(this);
                 }
 
-                _physicalMemory.TextureCache.RemoveTextureFromCache(this);
+                PhysicalMemory.TextureCache.RemoveTextureFromCache(this);
             }
 
             Debug.Assert(newRefCount >= 0);
@@ -1614,7 +1617,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // If this is called from another thread (unmapped), the short cache will
                 // have to remove this texture on a future tick.
 
-                _physicalMemory.TextureCache.RemoveShortCache(this);
+                PhysicalMemory.TextureCache.RemoveShortCache(this);
             }
 
             InvalidatedSequence++;

@@ -17,17 +17,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// The buffer texture.
         /// </summary>
-        public ITexture Texture { get; }
+        public Image.Texture Texture { get; }
+
+        /// <summary>
+        /// The buffer host texture.
+        /// </summary>
+        public ITexture HostTexture { get; }
+
+        /// <summary>
+        /// Buffer cache that owns the buffer.
+        /// </summary>
+        public BufferCache BufferCache => Texture.PhysicalMemory.BufferCache;
 
         /// <summary>
         /// The base address of the buffer binding.
         /// </summary>
-        public ulong Address { get; }
+        public ulong Address => Texture.Range.GetSubRange(0).Address;
 
         /// <summary>
         /// The size of the buffer binding in bytes.
         /// </summary>
-        public ulong Size { get; }
+        public ulong Size => Texture.Size;
 
         /// <summary>
         /// The image or sampler binding info for the buffer texture.
@@ -49,24 +59,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="stage">Shader stage accessing the texture</param>
         /// <param name="texture">Buffer texture</param>
-        /// <param name="address">Base address</param>
-        /// <param name="size">Size in bytes</param>
+        /// <param name="hostTexture">Buffer host texture</param>
         /// <param name="bindingInfo">Binding info</param>
         /// <param name="format">Binding format</param>
         /// <param name="isImage">Whether the binding is for an image or a sampler</param>
         public BufferTextureBinding(
             ShaderStage stage,
-            ITexture texture,
-            ulong address,
-            ulong size,
+            Image.Texture texture,
+            ITexture hostTexture,
             TextureBindingInfo bindingInfo,
             Format format,
             bool isImage)
         {
             Stage = stage;
             Texture = texture;
-            Address = address;
-            Size = size;
+            HostTexture = hostTexture;
             BindingInfo = bindingInfo;
             Format = format;
             IsImage = isImage;
