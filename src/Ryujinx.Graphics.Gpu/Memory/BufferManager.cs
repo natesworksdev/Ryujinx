@@ -210,7 +210,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the transform feedback buffer</param>
         public void SetTransformFeedbackBuffer(int index, ulong gpuVa, ulong size)
         {
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateMultiBuffers(_channel.MemoryManager, gpuVa, size);
 
             _transformFeedbackBuffers[index] = new BufferBounds(range);
             _transformFeedbackBuffersDirty = true;
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             gpuVa = BitUtils.AlignDown<ulong>(gpuVa, (ulong)_context.Capabilities.StorageBufferOffsetAlignment);
 
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateMultiBuffers(_channel.MemoryManager, gpuVa, size);
 
             _cpStorageBuffers.SetBounds(index, range, flags);
         }
@@ -281,7 +281,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             gpuVa = BitUtils.AlignDown<ulong>(gpuVa, (ulong)_context.Capabilities.StorageBufferOffsetAlignment);
 
-            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateBuffers(_channel.MemoryManager, gpuVa, size);
+            MultiRange range = _channel.MemoryManager.Physical.BufferCache.TranslateAndCreateMultiBuffers(_channel.MemoryManager, gpuVa, size);
 
             if (!buffers.Buffers[index].Range.Equals(range))
             {

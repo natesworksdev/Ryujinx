@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the buffer</param>
         /// <returns>Physical ranges of the buffer, after address translation</returns>
-        public MultiRange TranslateAndCreateBuffers(MemoryManager memoryManager, ulong gpuVa, ulong size)
+        public MultiRange TranslateAndCreateMultiBuffers(MemoryManager memoryManager, ulong gpuVa, ulong size)
         {
             if (gpuVa == 0)
             {
@@ -320,7 +320,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 result.EndGpuAddress < gpuVa + size ||
                 result.UnmappedSequence != result.Buffer.UnmappedSequence)
             {
-                MultiRange range = TranslateAndCreateBuffers(memoryManager, gpuVa, size);
+                MultiRange range = TranslateAndCreateBuffer(memoryManager, gpuVa, size);
                 ulong address = range.GetSubRange(0).Address;
                 result = new BufferCacheEntry(address, gpuVa, GetBuffer(address, size));
 
@@ -355,7 +355,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 result.EndGpuAddress < alignedEndGpuVa ||
                 result.UnmappedSequence != result.Buffer.UnmappedSequence)
             {
-                MultiRange range = TranslateAndCreateBuffers(memoryManager, alignedGpuVa, size);
+                MultiRange range = TranslateAndCreateBuffer(memoryManager, alignedGpuVa, size);
                 ulong address = range.GetSubRange(0).Address;
                 result = new BufferCacheEntry(address, alignedGpuVa, GetBuffer(address, size));
 
@@ -404,12 +404,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     // Allowing for 2 pages (rather than just one) is necessary to catch cases where the
                     // range crosses a page, and after alignment, ends having a size of 2 pages.
                     if (overlapsCount == 1 &&
-                        address >= overlaps[0].Address &&
-                        endAddress - overlaps[0].EndAddress <= BufferAlignmentSize * 2)
+                        address >= overlap0.Address &&
+                        endAddress - overlap0.EndAddress <= BufferAlignmentSize * 2)
                     {
                         // Try to grow the buffer by 1.5x of its current size.
                         // This improves performance in the cases where the buffer is resized often by small amounts.
-                        ulong existingSize = overlaps[0].Size;
+                        ulong existingSize = overlap0.Size;
                         ulong growthSize = (existingSize + Math.Min(existingSize >> 1, MaxDynamicGrowthSize)) & ~BufferAlignmentMask;
 
                         size = Math.Max(size, growthSize);
@@ -464,6 +464,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             Buffer[] overlaps = _bufferOverlaps;
             int overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref overlaps);
+            bool sparseAligned = alignment >= SparseBufferAlignmentSize;
 
             if (overlapsCount != 0)
             {
@@ -476,7 +477,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 if (overlap0.Address > address ||
                     overlap0.EndAddress < endAddress ||
                     (overlap0.Address & (alignment - 1)) != 0 ||
-                    !overlap0.SparseCompatible)
+                    (!overlap0.SparseCompatible && sparseAligned))
                 {
                     // We need to make sure the new buffer is properly aligned.
                     // However, after the range is aligned, it is possible that it
@@ -512,13 +513,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     ulong newSize = endAddress - address;
 
-                    CreateBufferAligned(address, newSize, sparseCompatible: true, overlaps, overlapsCount);
+                    CreateBufferAligned(address, newSize, sparseAligned, overlaps, overlapsCount);
                 }
             }
             else
             {
                 // No overlap, just create a new buffer.
-                Buffer buffer = new(_context, _physicalMemory, address, size, sparseCompatible: true);
+                Buffer buffer = new(_context, _physicalMemory, address, size, sparseAligned);
 
                 lock (_buffers)
                 {
@@ -619,8 +620,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the copy</param>
         public void CopyBuffer(MemoryManager memoryManager, ulong srcVa, ulong dstVa, ulong size)
         {
-            MultiRange srcRange = TranslateAndCreateBuffers(memoryManager, srcVa, size);
-            MultiRange dstRange = TranslateAndCreateBuffers(memoryManager, dstVa, size);
+            MultiRange srcRange = TranslateAndCreateMultiBuffers(memoryManager, srcVa, size);
+            MultiRange dstRange = TranslateAndCreateMultiBuffers(memoryManager, dstVa, size);
 
             if (srcRange.Count == 1 && dstRange.Count == 1)
             {
@@ -714,7 +715,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="value">Value to be written into the buffer</param>
         public void ClearBuffer(MemoryManager memoryManager, ulong gpuVa, ulong size, uint value)
         {
-            MultiRange range = TranslateAndCreateBuffers(memoryManager, gpuVa, size);
+            MultiRange range = TranslateAndCreateMultiBuffers(memoryManager, gpuVa, size);
 
             for (int index = 0; index < range.Count; index++)
             {

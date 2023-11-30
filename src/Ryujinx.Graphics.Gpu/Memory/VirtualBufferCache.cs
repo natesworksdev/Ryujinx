@@ -1,6 +1,7 @@
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -64,6 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly RangeList<VirtualRange> _virtualRanges;
         private VirtualRange[] _virtualRangeOverlaps;
         private readonly ConcurrentQueue<VirtualRange> _deferredUnmaps;
+        private int _hasDeferredUnmaps;
 
         /// <summary>
         /// Creates a new instance of the virtual buffer cache.
@@ -87,6 +89,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             void EnqueueUnmap()
             {
                 _deferredUnmaps.Enqueue(new VirtualRange(e.Address, e.Size, default));
+
+                Interlocked.Exchange(ref _hasDeferredUnmaps, 1);
             }
 
             e.AddRemapAction(EnqueueUnmap);
@@ -106,13 +110,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
             VirtualRange[] overlaps = _virtualRangeOverlaps;
             int overlapsCount;
 
-            while (_deferredUnmaps.TryDequeue(out VirtualRange unmappedRange))
+            if (Interlocked.Exchange(ref _hasDeferredUnmaps, 0) != 0)
             {
-                overlapsCount = _virtualRanges.FindOverlapsNonOverlapping(unmappedRange.Address, unmappedRange.Size, ref overlaps);
-
-                for (int index = 0; index < overlapsCount; index++)
+                while (_deferredUnmaps.TryDequeue(out VirtualRange unmappedRange))
                 {
-                    _virtualRanges.Remove(overlaps[index]);
+                    overlapsCount = _virtualRanges.FindOverlapsNonOverlapping(unmappedRange.Address, unmappedRange.Size, ref overlaps);
+
+                    for (int index = 0; index < overlapsCount; index++)
+                    {
+                        _virtualRanges.Remove(overlaps[index]);
+                    }
                 }
             }
 
@@ -124,11 +131,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (overlapsCount != 0)
             {
-                // The buffer already exists. We can just return the existing buffer
-                // if the buffer we need is fully contained inside the overlapping buffer.
-                // Otherwise, we must delete the overlapping buffers and create a bigger buffer
-                // that fits all the data we need. We also need to copy the contents from the
-                // old buffer(s) to the new buffer.
+                // The virtual range already exists. We just need to check if our range fits inside
+                // the existing one, and if not, we must extend the existing one.
 
                 ulong endAddress = gpuVa + size;
                 VirtualRange overlap0 = overlaps[0];
@@ -160,7 +164,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                // No overlap, just create a new buffer.
+                // No overlap, just create a new virtual range.
                 range = _memoryManager.GetPhysicalRegions(gpuVa, size);
 
                 VirtualRange virtualRange = new(gpuVa, size, range);
@@ -193,7 +197,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (range.Count == 1)
             {
-                return true;
+                return (range.GetSubRange(0).Address & (BufferCache.SparseBufferAlignmentSize - 1)) == 0;
             }
 
             for (int i = 0; i < range.Count; i++)
