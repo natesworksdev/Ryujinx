@@ -183,8 +183,8 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             byte[] messageTextBuffer = new byte[0x800];
             byte[] detailsTextBuffer = new byte[0x800];
 
-            applicationErrorArg.MessageText.AsSpan().CopyTo(messageTextBuffer);
-            applicationErrorArg.DetailsText.AsSpan().CopyTo(detailsTextBuffer);
+            ((Span<byte>)applicationErrorArg.MessageText).CopyTo(messageTextBuffer);
+            ((Span<byte>)applicationErrorArg.DetailsText).CopyTo(detailsTextBuffer);
 
             string messageText = Encoding.ASCII.GetString(messageTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
             string detailsText = Encoding.ASCII.GetString(detailsTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());

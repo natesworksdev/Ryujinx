@@ -1,4 +1,5 @@
 using Ryujinx.Common.Memory;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Server.Voice
@@ -34,7 +35,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
 
         public void UpdateState()
         {
-            Mix.AsSpan().CopyTo(PreviousMix.AsSpan());
+            ((Span<float>)Mix).CopyTo(PreviousMix);
         }
     }
 }

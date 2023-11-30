@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.GAL
         public void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)
         {
             VertexAttribCount = vertexAttribs.Length;
-            vertexAttribs.CopyTo(VertexAttribs.AsSpan());
+            vertexAttribs.CopyTo(VertexAttribs);
         }
 
         public void SetLogicOpState(bool enable, LogicalOp op)

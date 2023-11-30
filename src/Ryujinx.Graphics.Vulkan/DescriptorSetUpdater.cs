@@ -54,10 +54,10 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly BufferView[] _bufferTextures;
         private readonly BufferView[] _bufferImages;
 
-        private BitMapStruct<Array2<long>> _uniformSet;
-        private BitMapStruct<Array2<long>> _storageSet;
-        private BitMapStruct<Array2<long>> _uniformMirrored;
-        private BitMapStruct<Array2<long>> _storageMirrored;
+        private BitMapStruct _uniformSet;
+        private BitMapStruct _storageSet;
+        private BitMapStruct _uniformMirrored;
+        private BitMapStruct _storageMirrored;
 
         private bool _updateDescriptorCacheCbIndex;
 

@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
@@ -12,7 +13,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private Array96<byte> _storage;
 
-        public Span<byte> Storage => _storage.AsSpan();
+        [UnscopedRef]
+        public Span<byte> Storage => _storage;
 
         // TODO: define all getters/setters
     }

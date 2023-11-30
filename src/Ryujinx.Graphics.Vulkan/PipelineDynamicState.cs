@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecordBlend(Vk api, CommandBuffer commandBuffer)
         {
-            api.CmdSetBlendConstants(commandBuffer, _blendConstants.AsSpan());
+            api.CmdSetBlendConstants(commandBuffer, _blendConstants);
         }
 
         private readonly void RecordDepthBias(Vk api, CommandBuffer commandBuffer)
@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (ScissorsCount != 0)
             {
-                api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors.AsSpan());
+                api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors);
             }
         }
 
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (ViewportsCount != 0)
             {
-                api.CmdSetViewport(commandBuffer, 0, ViewportsCount, Viewports.AsSpan());
+                api.CmdSetViewport(commandBuffer, 0, ViewportsCount, Viewports);
             }
         }
     }

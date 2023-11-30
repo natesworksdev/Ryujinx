@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Vic.Image
             bool isField = frameFormat.IsField();
             bool isTopField = frameFormat.IsTopField(isLuma);
             int stride = GetPitch(width, bytesPerPixel);
-            uint offset = GetOffset(ref offsets[0], plane);
+            uint offset = GetOffset(offsets[0], plane);
 
             int dstStart = 0;
             int dstStride = stride;
@@ -362,12 +362,12 @@ namespace Ryujinx.Graphics.Vic.Image
 
                 if (config.PrevFieldEnable)
                 {
-                    prevBuffer = ReadBufferNoDeinterlace(rm, ref offsets[1], linear, plane, width, height, bytesPerPixel, gobBlocksInY);
+                    prevBuffer = ReadBufferNoDeinterlace(rm, offsets[1], linear, plane, width, height, bytesPerPixel, gobBlocksInY);
                 }
 
                 if (config.NextFieldEnable)
                 {
-                    nextBuffer = ReadBufferNoDeinterlace(rm, ref offsets[2], linear, plane, width, height, bytesPerPixel, gobBlocksInY);
+                    nextBuffer = ReadBufferNoDeinterlace(rm, offsets[2], linear, plane, width, height, bytesPerPixel, gobBlocksInY);
                 }
 
                 int w = width * bytesPerPixel;
@@ -410,7 +410,7 @@ namespace Ryujinx.Graphics.Vic.Image
             return buffer;
         }
 
-        private static uint GetOffset(ref PlaneOffsets offsets, int plane)
+        private static uint GetOffset(PlaneOffsets offsets, int plane)
         {
             return plane switch
             {
@@ -423,7 +423,7 @@ namespace Ryujinx.Graphics.Vic.Image
 
         private static RentedBuffer ReadBufferNoDeinterlace(
             ResourceManager rm,
-            ref PlaneOffsets offsets,
+            PlaneOffsets offsets,
             bool linear,
             int plane,
             int width,
@@ -432,7 +432,7 @@ namespace Ryujinx.Graphics.Vic.Image
             int gobBlocksInY)
         {
             int stride = GetPitch(width, bytesPerPixel);
-            uint offset = GetOffset(ref offsets, plane);
+            uint offset = GetOffset(offsets, plane);
 
             if (linear)
             {

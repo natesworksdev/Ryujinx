@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
 
         public IPEndPoint ToIPEndPoint()
         {
-            IPAddress address = new(Address.AsSpan());
+            IPAddress address = new(Address);
             int port = (ushort)IPAddress.NetworkToHostOrder((short)Port);
 
             return new IPEndPoint(address, port);
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
                 Port = (ushort)IPAddress.HostToNetworkOrder((short)endpoint.Port),
             };
 
-            endpoint.Address.GetAddressBytes().AsSpan().CopyTo(result.Address.AsSpan());
+            endpoint.Address.GetAddressBytes().AsSpan().CopyTo(result.Address);
 
             return result;
         }

@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Memory;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -16,8 +17,10 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public static Nickname Default => FromString("no name");
         public static Nickname Question => FromString("???");
 
-        public Span<byte> Raw => _storage.AsSpan();
+        [UnscopedRef]
+        public Span<byte> Raw => _storage;
 
+        [UnscopedRef]
         private ReadOnlySpan<ushort> Characters => MemoryMarshal.Cast<byte, ushort>(Raw);
 
         private int GetEndCharacterIndex()

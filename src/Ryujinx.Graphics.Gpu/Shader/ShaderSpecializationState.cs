@@ -514,7 +514,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
             else
             {
-                if (!graphicsState.AttributeTypes.AsSpan().SequenceEqual(GraphicsState.AttributeTypes.AsSpan()))
+                if (!((Span<AttributeType>)graphicsState.AttributeTypes).SequenceEqual(GraphicsState.AttributeTypes))
                 {
                     return false;
                 }
@@ -530,7 +530,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
-            if (channel.Capabilities.NeedsFragmentOutputSpecialization && !graphicsState.FragmentOutputTypes.AsSpan().SequenceEqual(GraphicsState.FragmentOutputTypes.AsSpan()))
+            if (channel.Capabilities.NeedsFragmentOutputSpecialization &&
+                !((Span<AttributeType>)graphicsState.FragmentOutputTypes).SequenceEqual(GraphicsState.FragmentOutputTypes))
             {
                 return false;
             }

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
     {
         public uint ErrorNumber;
         public ulong LanguageCode;
-        public ByteArray2048 MessageText;
-        public ByteArray2048 DetailsText;
+        public Array2048<byte> MessageText;
+        public Array2048<byte> DetailsText;
     }
 }

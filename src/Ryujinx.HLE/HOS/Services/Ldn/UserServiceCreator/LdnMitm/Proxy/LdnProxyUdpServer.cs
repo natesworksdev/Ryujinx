@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm.Proxy
         {
             Span<byte> mac = stackalloc byte[8];
 
-            info.Common.MacAddress.AsSpan().CopyTo(mac);
+            ((Span<byte>)info.Common.MacAddress).CopyTo(mac);
 
             lock (_scanLock)
             {

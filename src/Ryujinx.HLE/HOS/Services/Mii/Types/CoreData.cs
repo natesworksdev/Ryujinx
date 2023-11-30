@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Memory;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static Ryujinx.HLE.HOS.Services.Mii.Types.RandomMiiConstants;
@@ -13,7 +14,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private Array48<byte> _storage;
 
-        public Span<byte> Storage => _storage.AsSpan();
+        [UnscopedRef]
+        public Span<byte> Storage => _storage;
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0x18)]
         public struct ElementInfo
@@ -373,6 +375,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             set => SetValue(ElementInfoIndex.MoleScale, value);
         }
 
+        [UnscopedRef]
         public Span<byte> GetNicknameStorage()
         {
             return Storage[0x1c..];

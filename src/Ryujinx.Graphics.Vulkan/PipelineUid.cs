@@ -49,22 +49,22 @@ namespace Ryujinx.Graphics.Vulkan
                 return false;
             }
 
-            if (!SequenceEqual<VertexInputAttributeDescription>(VertexAttributeDescriptions.AsSpan(), other.VertexAttributeDescriptions.AsSpan(), VertexAttributeDescriptionsCount))
+            if (!SequenceEqual<VertexInputAttributeDescription>(VertexAttributeDescriptions, other.VertexAttributeDescriptions, VertexAttributeDescriptionsCount))
             {
                 return false;
             }
 
-            if (!SequenceEqual<VertexInputBindingDescription>(VertexBindingDescriptions.AsSpan(), other.VertexBindingDescriptions.AsSpan(), VertexBindingDescriptionsCount))
+            if (!SequenceEqual<VertexInputBindingDescription>(VertexBindingDescriptions, other.VertexBindingDescriptions, VertexBindingDescriptionsCount))
             {
                 return false;
             }
 
-            if (!SequenceEqual<PipelineColorBlendAttachmentState>(ColorBlendAttachmentState.AsSpan(), other.ColorBlendAttachmentState.AsSpan(), ColorBlendAttachmentStateCount))
+            if (!SequenceEqual<PipelineColorBlendAttachmentState>(ColorBlendAttachmentState, other.ColorBlendAttachmentState, ColorBlendAttachmentStateCount))
             {
                 return false;
             }
 
-            if (!SequenceEqual<Format>(AttachmentFormats.AsSpan(), other.AttachmentFormats.AsSpan(), ColorBlendAttachmentStateCount + (HasDepthStencil ? 1u : 0u)))
+            if (!SequenceEqual<Format>(AttachmentFormats, other.AttachmentFormats, ColorBlendAttachmentStateCount + (HasDepthStencil ? 1u : 0u)))
             {
                 return false;
             }

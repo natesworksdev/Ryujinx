@@ -292,7 +292,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             Array16<byte> randomGuid = new();
 
-            Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid.AsSpan());
+            Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid);
 
             PlayHistoryRegistrationKey playHistoryRegistrationKey = new()
             {

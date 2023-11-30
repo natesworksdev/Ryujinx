@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Memory;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -37,6 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
             return (index + 1) % MaxEntries;
         }
 
+        [UnscopedRef]
         public ref AtomicStorage<T> GetCurrentAtomicEntryRef()
         {
             ulong countAvailaible = Math.Min(Math.Max(0, ReadCurrentCount()), 1);
@@ -73,6 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
             }
         }
 
+        [UnscopedRef]
         public ref T GetCurrentEntryRef()
         {
             return ref GetCurrentAtomicEntryRef().Object;

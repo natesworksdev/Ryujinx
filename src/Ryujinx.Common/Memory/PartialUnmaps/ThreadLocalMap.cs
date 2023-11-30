@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Threading;
 using static Ryujinx.Common.Memory.PartialUnmaps.PartialUnmapHelpers;
 
@@ -74,6 +75,7 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         /// </summary>
         /// <param name="index">Index of the entry</param>
         /// <returns>A reference to the struct value</returns>
+        [UnscopedRef]
         public ref T GetValue(int index)
         {
             return ref Structs[index];

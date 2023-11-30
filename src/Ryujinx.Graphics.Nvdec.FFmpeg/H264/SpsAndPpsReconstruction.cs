@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.H264
             3 + 1 * 4, 3 + 2 * 4, 2 + 3 * 4, 3 + 3 * 4,
         };
 
-        private static void WriteScalingList(ref H264BitStreamWriter writer, IArray<byte> list)
+        private static void WriteScalingList(ref H264BitStreamWriter writer, ReadOnlySpan<byte> list)
         {
             ReadOnlySpan<byte> scan = list.Length == 16 ? ZigZagScan : ZigZagDirect;
 

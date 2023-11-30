@@ -549,7 +549,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 Attributes = SixAxisSensorAttribute.IsConnected,
             };
 
-            state.Orientation.AsSpan().CopyTo(newState.Direction.AsSpan());
+            state.Orientation.AsSpan().CopyTo(newState.Direction);
 
             ref RingLifo<SixAxisSensorState> lifo = ref GetSixAxisSensorLifo(ref currentNpad, isRightPair);
 
