@@ -5,6 +5,7 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
 using Ryujinx.Ui.Common.Helper;
@@ -578,6 +579,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 LanInterfaceId = new ReactiveObject<string>();
                 Mode = new ReactiveObject<MultiplayerMode>();
+                Mode.Event += static (_, e) => LogValueChange(e, nameof(MultiplayerMode));
             }
         }
 
@@ -770,7 +772,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.ResScaleCustom.Value = 1.0f;
             Graphics.MaxAnisotropy.Value = -1.0f;
             Graphics.AspectRatio.Value = AspectRatio.Fixed16x9;
-            Graphics.GraphicsBackend.Value = OperatingSystem.IsMacOS() ? GraphicsBackend.Vulkan : GraphicsBackend.OpenGl;
+            Graphics.GraphicsBackend.Value = DefaultGraphicsBackend();
             Graphics.PreferredGpu.Value = "";
             Graphics.ShadersDumpPath.Value = "";
             Logger.EnableDebug.Value = false;
@@ -791,7 +793,7 @@ namespace Ryujinx.Ui.Common.Configuration
             EnableDiscordIntegration.Value = true;
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
-            HideCursor.Value = HideCursorMode.Never;
+            HideCursor.Value = HideCursorMode.OnIdle;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
             Graphics.EnableOGLSpirV.Value = false;
@@ -915,7 +917,7 @@ namespace Ryujinx.Ui.Common.Configuration
             };
         }
 
-        public ConfigurationLoadResult Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
+        public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
         {
             bool configurationFileUpdated = false;
 
@@ -924,11 +926,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
                 LoadDefault();
-
-                return ConfigurationLoadResult.NotLoaded;
             }
-
-            ConfigurationLoadResult result = ConfigurationLoadResult.Success;
 
             if (configurationFileFormat.Version < 2)
             {
@@ -1344,8 +1342,6 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileFormat.GraphicsBackend = GraphicsBackend.OpenGl;
 
-                result |= ConfigurationLoadResult.MigratedFromPreVulkan;
-
                 configurationFileUpdated = true;
             }
 
@@ -1553,8 +1549,18 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 Ryujinx.Common.Logging.Logger.Notice.Print(LogClass.Application, $"Configuration file updated to version {ConfigurationFileFormat.CurrentVersion}");
             }
+        }
 
-            return result;
+        private static GraphicsBackend DefaultGraphicsBackend()
+        {
+            // Any system running macOS or returning any amount of valid Vulkan devices should default to Vulkan.
+            // Checks for if the Vulkan version and featureset is compatible should be performed within VulkanRenderer.
+            if (OperatingSystem.IsMacOS() || VulkanRenderer.GetPhysicalDevices().Length > 0)
+            {
+                return GraphicsBackend.Vulkan;
+            }
+
+            return GraphicsBackend.OpenGl;
         }
 
         private static void LogValueChange<T>(ReactiveEventArgs<T> eventArgs, string valueName)

@@ -149,6 +149,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool HadPoolOwner { get; private set; }
 
+        /// <summary>
         /// Physical memory ranges where the texture data is located.
         /// </summary>
         public MultiRange Range { get; private set; }
@@ -1700,7 +1701,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (Group.Storage == this)
             {
                 Group.Unmapped();
-
                 Group.ClearModified(unmapRange);
             }
         }
