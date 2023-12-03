@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private SwapchainKHR _swapchain;
 
         private Image[] _swapchainImages;
-        private Auto<DisposableImageView>[] _swapchainImageViews;
+        private TextureView[] _swapchainImageViews;
 
         private Semaphore[] _imageAvailableSemaphores;
         private Semaphore[] _renderFinishedSemaphores;
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _gd.SwapchainApi.GetSwapchainImages(_device, _swapchain, &imageCount, pSwapchainImages);
             }
 
-            _swapchainImageViews = new Auto<DisposableImageView>[imageCount];
+            _swapchainImageViews = new TextureView[imageCount];
 
             for (int i = 0; i < _swapchainImageViews.Length; i++)
             {
@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private unsafe Auto<DisposableImageView> CreateSwapchainImageView(Image swapchainImage, VkFormat format)
+        private unsafe TextureView CreateSwapchainImageView(Image swapchainImage, VkFormat format)
         {
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.R,
@@ -204,7 +204,9 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
-            return new Auto<DisposableImageView>(new DisposableImageView(_gd.Api, _device, imageView));
+
+            // TODO: pass create info?
+            return new TextureView(_gd, _device, new DisposableImageView(_gd.Api, _device, imageView));
         }
 
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats, bool colorSpacePassthroughEnabled)
@@ -406,7 +408,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _scalingFilter.Run(
                     view,
                     cbs,
-                    _swapchainImageViews[nextImage],
+                    _swapchainImageViews[nextImage].GetImageViewForAttachment(),
                     _format,
                     _width,
                     _height,

@@ -290,7 +290,7 @@ namespace Ryujinx.Graphics.Vulkan
                             gd,
                             cbs,
                             srcView,
-                            dst.GetImageViewForAttachment(),
+                            dst,
                             dstWidth,
                             dstHeight,
                             dstSamples,
@@ -304,7 +304,7 @@ namespace Ryujinx.Graphics.Vulkan
                             gd,
                             cbs,
                             srcView,
-                            dst.GetImageViewForAttachment(),
+                            dst,
                             dstWidth,
                             dstHeight,
                             dstSamples,
@@ -367,7 +367,7 @@ namespace Ryujinx.Graphics.Vulkan
                         gd,
                         cbs,
                         srcView,
-                        dstView.GetImageViewForAttachment(),
+                        dstView,
                         dstView.Width,
                         dstView.Height,
                         dstView.Info.Samples,
@@ -394,7 +394,7 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanRenderer gd,
             CommandBufferScoped cbs,
             TextureView src,
-            Auto<DisposableImageView> dst,
+            TextureView dst,
             int dstWidth,
             int dstHeight,
             int dstSamples,
@@ -496,7 +496,7 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanRenderer gd,
             CommandBufferScoped cbs,
             TextureView src,
-            Auto<DisposableImageView> dst,
+            TextureView dst,
             int dstWidth,
             int dstHeight,
             int dstSamples,
@@ -660,7 +660,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Clear(
             VulkanRenderer gd,
-            Auto<DisposableImageView> dst,
+            TextureView dst,
             ReadOnlySpan<float> clearColor,
             uint componentMask,
             int dstWidth,
@@ -721,7 +721,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Clear(
             VulkanRenderer gd,
-            Auto<DisposableImageView> dst,
+            TextureView dst,
             float depthValue,
             bool depthMask,
             int stencilValue,
@@ -1164,7 +1164,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var dstView = Create2DLayerView(dst, dstLayer + z, 0);
 
                     _pipeline.SetRenderTarget(
-                        dstView.GetImageViewForAttachment(),
+                        dstView,
                         (uint)dst.Width,
                         (uint)dst.Height,
                         true,
@@ -1295,7 +1295,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var dstView = Create2DLayerView(dst, dstLayer + z, 0);
 
                     _pipeline.SetRenderTarget(
-                        dstView.GetImageViewForAttachment(),
+                        dstView,
                         (uint)dst.Width,
                         (uint)dst.Height,
                         (uint)samples,
@@ -1329,7 +1329,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     _pipeline.SetTextureAndSamplerIdentitySwizzle(ShaderStage.Fragment, 0, srcView, null);
                     _pipeline.SetRenderTarget(
-                        dstView.GetView(format).GetImageViewForAttachment(),
+                        dstView.GetView(format),
                         (uint)dst.Width,
                         (uint)dst.Height,
                         (uint)samples,

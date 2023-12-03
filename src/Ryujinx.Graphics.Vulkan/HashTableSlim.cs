@@ -86,6 +86,41 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public bool Remove(ref TKey key)
+        {
+            int hashCode = key.GetHashCode();
+
+            var bucket = _hashTable[hashCode & TotalBucketsMask];
+            if (bucket != null)
+            {
+                for (int i = 0; i < bucket.Length; i++)
+                {
+                    ref var entry = ref bucket[i];
+
+                    if (entry.Hash == hashCode && entry.Key.Equals(ref key))
+                    {
+                        if (bucket.Length == 1)
+                        {
+                            _hashTable[hashCode & TotalBucketsMask] = null;
+                        }
+                        else
+                        {
+                            var newBucket = new Entry[bucket.Length - 1];
+
+                            bucket.AsSpan(0, i).CopyTo(newBucket);
+                            bucket.AsSpan(i + 1).CopyTo(newBucket.AsSpan(i));
+
+                            _hashTable[hashCode & TotalBucketsMask] = newBucket;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public bool TryGetValue(ref TKey key, out TValue value)
         {
             int hashCode = key.GetHashCode();

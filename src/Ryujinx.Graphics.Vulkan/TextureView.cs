@@ -3,6 +3,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Format = Ryujinx.Graphics.GAL.Format;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -23,6 +24,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly TextureCreateInfo _info;
 
+        private HashTableSlim<RenderPassCacheKey, RenderPassHolder> _renderPasses;
+
         public TextureCreateInfo Info => _info;
 
         public TextureStorage Storage { get; }
@@ -34,6 +37,18 @@ namespace Ryujinx.Graphics.Vulkan
         public int FirstLevel { get; }
         public VkFormat VkFormat { get; }
         public bool Valid { get; private set; }
+
+        public TextureView(VulkanRenderer gd, Device device, DisposableImageView view)
+        {
+            _gd = gd;
+            _device = device;
+
+            _imageView = new Auto<DisposableImageView>(view);
+            _imageViewDraw = _imageView;
+            _imageViewIdentity = _imageView;
+
+            Valid = true;
+        }
 
         public TextureView(
             VulkanRenderer gd,
@@ -939,6 +954,37 @@ namespace Ryujinx.Graphics.Vulkan
             throw new NotImplementedException();
         }
 
+        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetFramebuffer(
+            VulkanRenderer gd,
+            Device device,
+            CommandBufferScoped cbs,
+            FramebufferParams fb)
+        {
+            // Searches for render pass matching params colors and ds
+            var key = fb.GetRenderPassCacheKey();
+
+            RenderPassHolder rpHolder;
+
+            if (_renderPasses == null || !_renderPasses.TryGetValue(ref key, out rpHolder))
+            {
+                rpHolder = new RenderPassHolder(gd, device, key, fb);
+            }
+
+            return (rpHolder.GetRenderPass(), rpHolder.GetFramebuffer(gd, cbs, fb));
+        }
+
+        public void AddRenderPass(RenderPassCacheKey key, RenderPassHolder renderPass)
+        {
+            _renderPasses ??= new HashTableSlim<RenderPassCacheKey, RenderPassHolder>();
+
+            _renderPasses.Add(ref key, renderPass);
+        }
+
+        public void RemoveRenderPass(RenderPassCacheKey key)
+        {
+            _renderPasses.Remove(ref key);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -948,8 +994,12 @@ namespace Ryujinx.Graphics.Vulkan
                 if (_gd.Textures.Remove(this))
                 {
                     _imageView.Dispose();
-                    _imageViewIdentity.Dispose();
                     _imageView2dArray?.Dispose();
+
+                    if (_imageViewIdentity != _imageView)
+                    {
+                        _imageViewIdentity.Dispose();
+                    }
 
                     if (_imageViewDraw != _imageViewIdentity)
                     {
@@ -957,6 +1007,16 @@ namespace Ryujinx.Graphics.Vulkan
                     }
 
                     Storage.DecrementViewsCount();
+
+                    if (_renderPasses != null)
+                    {
+                        var renderPasses = _renderPasses.Values.ToArray();
+
+                        foreach (var pass in renderPasses)
+                        {
+                            pass.Dispose();
+                        }
+                    }
                 }
             }
         }
