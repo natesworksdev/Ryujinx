@@ -21,10 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             // Create a template from the set usages. Assumes the descriptor set is updated in segment order then binding order.
 
-            int entryCount = segments.Sum(segment => segment.Count);
-
-            DescriptorUpdateTemplateEntry* entries = stackalloc DescriptorUpdateTemplateEntry[entryCount];
-            int entryI = 0;
+            DescriptorUpdateTemplateEntry* entries = stackalloc DescriptorUpdateTemplateEntry[segments.Length];
             nuint structureOffset = 0;
 
             for (int seg = 0; seg < segments.Length; seg++)
@@ -36,7 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (setIndex == PipelineBase.UniformSetIndex)
                 {
-                    entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                    entries[seg] = new DescriptorUpdateTemplateEntry()
                     {
                         DescriptorType = DescriptorType.UniformBuffer,
                         DstBinding = (uint)binding,
@@ -49,7 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
                 else if (setIndex == PipelineBase.StorageSetIndex)
                 {
-                    entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                    entries[seg] = new DescriptorUpdateTemplateEntry()
                     {
                         DescriptorType = DescriptorType.StorageBuffer,
                         DstBinding = (uint)binding,
@@ -64,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (segment.Type != ResourceType.BufferTexture)
                     {
-                        entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                        entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.CombinedImageSampler,
                             DstBinding = (uint)binding,
@@ -79,7 +76,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         // NOTE: Current non-templated path skips these if null, we just send an empty handle.
 
-                        entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                        entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.UniformTexelBuffer,
                             DstBinding = (uint)binding,
@@ -95,7 +92,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (segment.Type != ResourceType.BufferImage)
                     {
-                        entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                        entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.StorageImage,
                             DstBinding = (uint)binding,
@@ -110,7 +107,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         // NOTE: Current non-templated path skips these if null, we just send an empty handle.
 
-                        entries[entryI++] = new DescriptorUpdateTemplateEntry()
+                        entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.StorageTexelBuffer,
                             DstBinding = (uint)binding,
@@ -129,7 +126,7 @@ namespace Ryujinx.Graphics.Vulkan
             var info = new DescriptorUpdateTemplateCreateInfo()
             {
                 SType = StructureType.DescriptorUpdateTemplateCreateInfo,
-                DescriptorUpdateEntryCount = (uint)entryI,
+                DescriptorUpdateEntryCount = (uint)segments.Length,
                 PDescriptorUpdateEntries = entries,
 
                 TemplateType = DescriptorUpdateTemplateType.DescriptorSet,
