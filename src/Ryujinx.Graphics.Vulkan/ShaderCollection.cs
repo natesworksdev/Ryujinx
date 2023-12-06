@@ -247,7 +247,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var templates = new DescriptorSetTemplate[BindingSegments.Length];
 
-            if (!HasMinimalLayout) // or if unsupported...
+            if (VulkanConfiguration.UseDescriptorUpdateTemplates)
             {
                 for (int setIndex = 0; setIndex < BindingSegments.Length; setIndex++)
                 {
