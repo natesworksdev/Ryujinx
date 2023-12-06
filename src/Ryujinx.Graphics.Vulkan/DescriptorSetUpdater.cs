@@ -640,8 +640,8 @@ namespace Ryujinx.Graphics.Vulkan
                         {
                             dsc.UpdateBufferImages(0, binding, bufferTextures[..count], DescriptorType.UniformTexelBuffer);
                         }
-                        }
                     }
+                }
                 else if (setIndex == PipelineBase.ImageSetIndex)
                 {
                     if (segment.Type != ResourceType.BufferImage)

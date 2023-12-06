@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Vulkan
