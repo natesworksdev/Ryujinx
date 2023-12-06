@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else
                     {
-                        // NOTE: Current non-templated path skips these if null, we just send a 0 handle.
+                        // NOTE: Current non-templated path skips these if null, we just send an empty handle.
 
                         entries[entryI++] = new DescriptorUpdateTemplateEntry()
                         {
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else
                     {
-                        // NOTE: Current non-templated path skips these if null, we just send a 0 handle.
+                        // NOTE: Current non-templated path skips these if null, we just send an empty handle.
 
                         entries[entryI++] = new DescriptorUpdateTemplateEntry()
                         {
