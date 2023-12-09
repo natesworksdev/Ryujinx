@@ -54,7 +54,7 @@ namespace Ryujinx.HLE
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
-            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, configuration.GdbStubPort) : null;
+            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, Configuration.GdbStubPort) : null;
             System            = new HOS.Horizon(this);
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
