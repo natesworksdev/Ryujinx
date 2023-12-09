@@ -42,6 +42,7 @@
             <settings:SettingsAudioView Name="AudioPage" />
             <settings:SettingsNetworkView Name="NetworkPage" />
             <settings:SettingsLoggingView Name="LoggingPage" />
+            <settings:SettingsDebugView Name="DebugPage" />
         </Grid>
         <ui:NavigationView
             Grid.Row="1"
@@ -96,6 +97,10 @@
                     Content="{locale:Locale SettingsTabLogging}"
                     Tag="LoggingPage"
                     IconSource="Document" />
+                <ui:NavigationViewItem
+                    Content="{locale:Locale SettingsTabDebug}"
+                    Tag="DebugPage"
+                    IconSource="Star" />
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.Styles>
                 <Style Selector="Grid#PlaceholderGrid">

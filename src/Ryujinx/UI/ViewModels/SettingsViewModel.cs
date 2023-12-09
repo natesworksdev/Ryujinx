@@ -54,6 +54,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         public event Action SaveSettingsEvent;
         private int _networkInterfaceIndex;
         private int _multiplayerModeIndex;
+        private bool _enableGDBStub;
+        private ushort _gdbStubPort;
 
         public int ResolutionScale
         {
@@ -256,6 +258,26 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _multiplayerModeIndex = value;
                 ConfigurationState.Instance.Multiplayer.Mode.Value = (MultiplayerMode)_multiplayerModeIndex;
+            }
+        }
+
+        public bool EnableGdbStub
+        {
+            get => _enableGDBStub;
+            set
+            {
+                _enableGDBStub = value;
+                ConfigurationState.Instance.Debug.EnableGdbStub.Value = _enableGDBStub;
+            }
+        }
+        
+        public ushort GDBStubPort
+        {
+            get => _gdbStubPort;
+            set
+            {
+                _gdbStubPort = value;
+                ConfigurationState.Instance.Debug.GdbStubPort.Value = _gdbStubPort;
             }
         }
 
@@ -472,7 +494,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             FsGlobalAccessLogMode = config.System.FsGlobalAccessLogMode;
             OpenglDebugLevel = (int)config.Logger.GraphicsDebugLevel.Value;
 
+            // Multiplayer
             MultiplayerModeIndex = (int)config.Multiplayer.Mode.Value;
+            
+            // Debug
+            EnableGdbStub = config.Debug.EnableGdbStub.Value;
+            GDBStubPort = config.Debug.GdbStubPort.Value;
         }
 
         public void SaveSettings()
@@ -578,8 +605,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 
+            // Multiplayer
             config.Multiplayer.LanInterfaceId.Value = _networkInterfaces[NetworkInterfaceList[NetworkInterfaceIndex]];
             config.Multiplayer.Mode.Value = (MultiplayerMode)MultiplayerModeIndex;
+
+            // Debug
+            config.Debug.EnableGdbStub.Value = EnableGdbStub;
+            config.Debug.GdbStubPort.Value = GDBStubPort;
 
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 

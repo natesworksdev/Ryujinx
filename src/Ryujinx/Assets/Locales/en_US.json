@@ -780,5 +780,10 @@
   "MultiplayerMode": "Mode:",
   "MultiplayerModeTooltip": "Change LDN multiplayer mode.\n\nLdnMitm will modify local wireless/local play functionality in games to function as if it were LAN, allowing for local, same-network connections with other Ryujinx instances and hacked Nintendo Switch consoles that have the ldn_mitm module installed.\n\nMultiplayer requires all players to be on the same game version (i.e. Super Smash Bros. Ultimate v13.0.1 can't connect to v13.0.0).\n\nLeave DISABLED if unsure.",
   "MultiplayerModeDisabled": "Disabled",
-  "MultiplayerModeLdnMitm": "ldn_mitm"
+  "MultiplayerModeLdnMitm": "ldn_mitm",
+  "SettingsTabDebug": "Debug",
+  "SettingsTabDebugTitle": "Debug (WARNING: For developer use only)",
+  "SettingsTabDebugEnableGDBStub": "Enable GDB Stub",
+  "GDBStubToggleTooltip": "Enables the GDB stub which makes it possible to debug the running application. For development use only!",
+  "GDBStubPort": "GDB stub port:"
 }
