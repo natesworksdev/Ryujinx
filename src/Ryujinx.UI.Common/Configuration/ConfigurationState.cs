@@ -1476,7 +1476,7 @@ namespace Ryujinx.UI.Common.Configuration
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
 
                 configurationFileFormat.EnableGdbStub = false;
-                configurationFileFormat.GdbStubPort   = 55555;
+                configurationFileFormat.GdbStubPort = 55555;
 
                 configurationFileUpdated = true;
             }

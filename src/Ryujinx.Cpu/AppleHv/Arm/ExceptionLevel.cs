@@ -1,6 +1,6 @@
 namespace Ryujinx.Cpu.AppleHv.Arm
 {
-    enum ExceptionLevel: uint
+    enum ExceptionLevel : uint
     {
         PstateMask = 0xfffffff0,
         EL1h = 0b0101,

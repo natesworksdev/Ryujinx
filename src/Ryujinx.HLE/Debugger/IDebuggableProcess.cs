@@ -1,5 +1,5 @@
-﻿using Ryujinx.Memory;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.Debugger
 {

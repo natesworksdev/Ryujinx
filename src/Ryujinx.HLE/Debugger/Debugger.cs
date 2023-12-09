@@ -1,9 +1,9 @@
 using ARMeilleure.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Memory;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -151,13 +151,13 @@ namespace Ryujinx.HLE.Debugger
                     WriteStream.WriteByte((byte)'-');
                     break;
 
-                case CommandMessage {Command: var cmd}:
+                case CommandMessage { Command: var cmd }:
                     Logger.Debug?.Print(LogClass.GdbStub, $"Received Command: {cmd}");
                     WriteStream.WriteByte((byte)'+');
                     ProcessCommand(cmd);
                     break;
 
-                case ThreadBreakMessage {Context: var ctx}:
+                case ThreadBreakMessage { Context: var ctx }:
                     DebugProcess.DebugStop();
                     Reply($"T05thread:{ctx.ThreadUid:x};");
                     break;
@@ -353,7 +353,7 @@ namespace Ryujinx.HLE.Debugger
                         break;
                     }
                 default:
-                    unknownCommand:
+                unknownCommand:
                     Logger.Notice.Print(LogClass.GdbStub, $"Unknown command: {cmd}");
                     Reply("");
                     break;
@@ -654,7 +654,7 @@ namespace Ryujinx.HLE.Debugger
                     }
                 }
 
-                eof:
+            eof:
                 Logger.Notice.Print(LogClass.GdbStub, "GDB client lost connection");
                 ReadStream.Close();
                 ReadStream = null;

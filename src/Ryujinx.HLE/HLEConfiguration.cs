@@ -169,7 +169,7 @@ namespace Ryujinx.HLE
         /// </summary>
         public Action RefreshInputConfig { internal get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Enables gdbstub to allow for debugging of the guest .
         /// </summary>
         public bool EnableGdbStub { get; internal set; }
@@ -205,8 +205,8 @@ namespace Ryujinx.HLE
                                 bool useHypervisor,
                                 string multiplayerLanInterfaceId,
                                 MultiplayerMode multiplayerMode,
-								bool enableGdbStub,
-								ushort gdbStubPort)
+                                bool enableGdbStub,
+                                ushort gdbStubPort)
         {
             VirtualFileSystem = virtualFileSystem;
             LibHacHorizonManager = libHacHorizonManager;

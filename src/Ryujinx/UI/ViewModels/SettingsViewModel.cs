@@ -270,7 +270,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ConfigurationState.Instance.Debug.EnableGdbStub.Value = _enableGDBStub;
             }
         }
-        
+
         public ushort GDBStubPort
         {
             get => _gdbStubPort;
@@ -496,7 +496,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Multiplayer
             MultiplayerModeIndex = (int)config.Multiplayer.Mode.Value;
-            
+
             // Debug
             EnableGdbStub = config.Debug.EnableGdbStub.Value;
             GDBStubPort = config.Debug.GdbStubPort.Value;

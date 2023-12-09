@@ -269,7 +269,7 @@ namespace Ryujinx.Cpu.AppleHv
                 case ExceptionClass.SoftwareStepLowerEl:
                     HvApi.hv_vcpu_get_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1, out ulong spsr).ThrowOnError();
                     spsr &= ~((ulong)(1 << 21));
-                    HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1,  spsr).ThrowOnError();
+                    HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1, spsr).ThrowOnError();
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.MDSCR_EL1, 0);
                     ReturnToPool(vcpu);
                     StepBarrier.SignalAndWait();
