@@ -161,8 +161,8 @@ namespace Ryujinx.HLE
                 AudioDeviceDriver.Dispose();
                 FileSystem.Dispose();
                 Memory.Dispose();
-                Debugger.Dispose();
                 ExitStatus.Set();
+                Debugger.Dispose();
             }
         }
     }
