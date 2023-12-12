@@ -28,6 +28,7 @@ namespace Ryujinx.HLE.Debugger
         private NetworkStream WriteStream = null;
         private BlockingCollection<IMessage> Messages = new BlockingCollection<IMessage>(1);
         private Thread DebuggerThread;
+        private Thread MessageHandlerThread;
         private bool _shuttingDown = false;
 
         private ulong? cThread;
@@ -42,6 +43,8 @@ namespace Ryujinx.HLE.Debugger
 
             DebuggerThread = new Thread(DebuggerThreadMain);
             DebuggerThread.Start();
+            MessageHandlerThread = new Thread(MessageHandlerMain);
+            MessageHandlerThread.Start();
         }
 
         private IDebuggableProcess DebugProcess => Device.System.DebugGetApplicationProcess();
@@ -138,29 +141,33 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private void HandleMessage(IMessage msg)
+        private void MessageHandlerMain()
         {
-            switch (msg)
+            while (!_shuttingDown)
             {
-                case BreakInMessage:
-                    Logger.Notice.Print(LogClass.GdbStub, "Break-in requested");
-                    CommandQuery();
-                    break;
+                IMessage msg = Messages.Take();
+                switch (msg)
+                {
+                    case BreakInMessage:
+                        Logger.Notice.Print(LogClass.GdbStub, "Break-in requested");
+                        CommandQuery();
+                        break;
 
-                case SendNackMessage:
-                    WriteStream.WriteByte((byte)'-');
-                    break;
+                    case SendNackMessage:
+                        WriteStream.WriteByte((byte)'-');
+                        break;
 
-                case CommandMessage { Command: var cmd }:
-                    Logger.Debug?.Print(LogClass.GdbStub, $"Received Command: {cmd}");
-                    WriteStream.WriteByte((byte)'+');
-                    ProcessCommand(cmd);
-                    break;
+                    case CommandMessage { Command: var cmd }:
+                        Logger.Debug?.Print(LogClass.GdbStub, $"Received Command: {cmd}");
+                        WriteStream.WriteByte((byte)'+');
+                        ProcessCommand(cmd);
+                        break;
 
-                case ThreadBreakMessage { Context: var ctx }:
-                    DebugProcess.DebugStop();
-                    Reply($"T05thread:{ctx.ThreadUid:x};");
-                    break;
+                    case ThreadBreakMessage { Context: var ctx }:
+                        DebugProcess.DebugStop();
+                        Reply($"T05thread:{ctx.ThreadUid:x};");
+                        break;
+                }
             }
         }
 
@@ -621,7 +628,7 @@ namespace Ryujinx.HLE.Debugger
                                 Logger.Notice.Print(LogClass.GdbStub, "NACK received!");
                                 continue;
                             case '\x03':
-                                HandleMessage(new BreakInMessage());
+                                Messages.Add(new BreakInMessage());
                                 break;
                             case '$':
                                 string cmd = "";
@@ -638,11 +645,11 @@ namespace Ryujinx.HLE.Debugger
                                 string checksum = $"{(char)ReadStream.ReadByte()}{(char)ReadStream.ReadByte()}";
                                 if (checksum == $"{CalculateChecksum(cmd):x2}")
                                 {
-                                    HandleMessage(new CommandMessage(cmd));
+                                    Messages.Add(new CommandMessage(cmd));
                                 }
                                 else
                                 {
-                                    HandleMessage(new SendNackMessage());
+                                    Messages.Add(new SendNackMessage());
                                 }
 
                                 break;
@@ -725,6 +732,8 @@ namespace Ryujinx.HLE.Debugger
                 ReadStream?.Close();
                 WriteStream?.Close();
                 DebuggerThread.Join();
+                Messages.Dispose();
+                MessageHandlerThread.Join();
             }
         }
 
