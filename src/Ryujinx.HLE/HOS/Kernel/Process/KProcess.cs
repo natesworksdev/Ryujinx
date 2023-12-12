@@ -1196,6 +1196,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             public DebuggerInterface(KProcess p)
             {
                 _parent = p;
+                KernelContext = p.KernelContext;
             }
 
             public void DebugStop()
@@ -1206,7 +1207,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     return;
                 }
 
-                _parent.KernelContext.CriticalSection.Enter();
+                KernelContext.CriticalSection.Enter();
                 lock (_parent._threadingLock)
                 {
                     foreach (KThread thread in _parent._threads)
@@ -1217,8 +1218,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     }
                 }
 
-                _debugState = (int)DebugState.Stopped;
-                _parent.KernelContext.CriticalSection.Leave();
+                _debugState = (int)DebugState.Stopped; 
+                KernelContext.CriticalSection.Leave();
             }
 
             public void DebugContinue()
@@ -1229,7 +1230,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     return;
                 }
 
-                _parent.KernelContext.CriticalSection.Enter();
+                KernelContext.CriticalSection.Enter();
                 lock (_parent._threadingLock)
                 {
                     foreach (KThread thread in _parent._threads)
@@ -1237,7 +1238,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         thread.Resume(ThreadSchedState.ThreadPauseFlag);
                     }
                 }
-                _parent.KernelContext.CriticalSection.Leave();
+                KernelContext.CriticalSection.Leave();
             }
 
             public bool DebugStep(KThread target)
@@ -1246,10 +1247,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     return false;
                 }
-                _parent.KernelContext.CriticalSection.Enter();
+                KernelContext.CriticalSection.Enter();
                 bool waiting = target.MutexOwner != null || target.WaitingSync || target.WaitingInArbitration;
                 target.Context.RequestDebugStep();
-                target.Resume(ThreadSchedState.ThreadPauseFlag);
                 if (waiting)
                 {
                     lock (_parent._threadingLock)
@@ -1260,13 +1260,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         }
                     }
                 }
-                _parent.KernelContext.CriticalSection.Leave();
+                else
+                {
+                    target.Resume(ThreadSchedState.ThreadPauseFlag);
+                }
+                KernelContext.CriticalSection.Leave();
 
                 target.Context.StepBarrier.SignalAndWait();
                 target.Context.StepBarrier.SignalAndWait();
 
-                _parent.KernelContext.CriticalSection.Enter();
-                target.Suspend(ThreadSchedState.ThreadPauseFlag);
+                KernelContext.CriticalSection.Enter();
                 if (waiting)
                 {
                     lock (_parent._threadingLock)
@@ -1277,7 +1280,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         }
                     }
                 }
-                _parent.KernelContext.CriticalSection.Leave();
+                else
+                {
+                    target.Suspend(ThreadSchedState.ThreadPauseFlag);
+                }
+                KernelContext.CriticalSection.Leave();
                 return true;
             }
 
