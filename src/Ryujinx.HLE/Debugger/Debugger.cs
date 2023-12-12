@@ -225,9 +225,9 @@ namespace Ryujinx.HLE.Debugger
                     }
                 case 'k':
                     Logger.Notice.Print(LogClass.GdbStub, "Kill request received");
+                    Reply("");
                     Device.IsActive = false;
                     Device.ExitStatus.WaitOne();
-                    Reply("");
                     break;
                 case 'm':
                     {
