@@ -74,6 +74,7 @@ namespace Ryujinx.Cpu.Jit
                 counter,
                 InterruptHandler,
                 BreakHandler,
+                StepHandler,
                 SupervisorCallHandler,
                 UndefinedHandler);
 
@@ -102,6 +103,11 @@ namespace Ryujinx.Cpu.Jit
             _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
         }
 
+        private void StepHandler(ExecutionContext context)
+        {
+            _exceptionCallbacks.StepCallback?.Invoke(this);
+        }
+        
         private void SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
         {
             _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
@@ -127,9 +133,6 @@ namespace Ryujinx.Cpu.Jit
             get => _impl.DebugPc;
             set => _impl.DebugPc = value;
         }
-
-        /// <inheritdoc/>
-        public Barrier StepBarrier => _impl.StepBarrier;
 
         /// <inheritdoc/>
         public void StopRunning()

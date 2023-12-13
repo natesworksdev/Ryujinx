@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.Debugger
@@ -11,6 +12,7 @@ namespace Ryujinx.HLE.Debugger
         KThread GetThread(ulong threadUid);
         DebugState GetDebugState();
         ulong[] GetThreadUids();
+        public void DebugInterruptHandler(IExecutionContext ctx);
         IVirtualMemoryManager CpuMemory { get; }
         void InvalidateCacheRegion(ulong address, ulong size);
     }

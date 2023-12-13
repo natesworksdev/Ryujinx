@@ -25,7 +25,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private readonly ulong[] _x = new ulong[32];
 
         public ulong DebugPc { get; set; }
-        public Barrier StepBarrier { get; }
 
         public ulong GetX(int index) => _x[index];
         public void SetX(int index, ulong value) => _x[index] = value;

@@ -121,19 +121,9 @@ namespace Ryujinx.Cpu
         /// <remarks>
         /// The thread might not pause immediately.
         /// One must not assume that guest code is no longer being executed by the thread after calling this function.
-        /// After single stepping, the thread should signal and wait on <see cref="StepBarrier"/> twice to allow
-        /// changing the thread state after stepping.
+        /// After single stepping, the thread should call call <see cref="ExceptionCallbacks.StepCallback"/>.
         /// </remarks>
         void RequestDebugStep();
-
-        /// <summary>
-        /// Step barrier
-        /// </summary>
-        /// <remarks>
-        /// The participant count should be 2.
-        /// Should be signaled and waited on twice after single-stepping.
-        /// </remarks>
-        Barrier StepBarrier { get; }
 
         /// <summary>
         /// Current Program Counter (for debugging).

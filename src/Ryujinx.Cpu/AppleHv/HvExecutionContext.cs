@@ -93,7 +93,6 @@ namespace Ryujinx.Cpu.AppleHv
             _shadowContext = new HvExecutionContextShadow();
             _impl = _shadowContext;
             _exceptionCallbacks = exceptionCallbacks;
-            StepBarrier = new(2);
             Running = true;
         }
 
@@ -117,6 +116,11 @@ namespace Ryujinx.Cpu.AppleHv
         private void BreakHandler(ulong address, int imm)
         {
             _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
+        }
+
+        private void StepHandler()
+        {
+            _exceptionCallbacks.StepCallback?.Invoke(this);
         }
 
         private void SupervisorCallHandler(ulong address, int imm)
@@ -166,8 +170,6 @@ namespace Ryujinx.Cpu.AppleHv
                 }
             }
         }
-
-        public Barrier StepBarrier { get; }
 
         /// <inheritdoc/>
         public void StopRunning()
@@ -272,9 +274,7 @@ namespace Ryujinx.Cpu.AppleHv
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.SPSR_EL1, spsr).ThrowOnError();
                     HvApi.hv_vcpu_set_sys_reg(vcpuHandle, HvSysReg.MDSCR_EL1, 0);
                     ReturnToPool(vcpu);
-                    StepBarrier.SignalAndWait();
-                    StepBarrier.SignalAndWait();
-                    InterruptHandler();
+                    StepHandler();
                     vcpu = RentFromPool(memoryManager.AddressSpace, vcpu);
                     break;
                 case ExceptionClass.BrkAarch64:

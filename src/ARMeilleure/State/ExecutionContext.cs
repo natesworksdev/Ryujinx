@@ -98,18 +98,19 @@ namespace ARMeilleure.State
 
         private readonly ExceptionCallbackNoArgs _interruptCallback;
         private readonly ExceptionCallback _breakCallback;
+        private readonly ExceptionCallbackNoArgs _stepCallback;
         private readonly ExceptionCallback _supervisorCallback;
         private readonly ExceptionCallback _undefinedCallback;
 
         internal int ShouldStep;
         public ulong DebugPc { get; set; }
-        public Barrier StepBarrier { get; }
 
         public ExecutionContext(
             IJitMemoryAllocator allocator,
             ICounter counter,
             ExceptionCallbackNoArgs interruptCallback = null,
             ExceptionCallback breakCallback = null,
+            ExceptionCallbackNoArgs stepCallback = null,
             ExceptionCallback supervisorCallback = null,
             ExceptionCallback undefinedCallback = null)
         {
@@ -117,11 +118,11 @@ namespace ARMeilleure.State
             _counter = counter;
             _interruptCallback = interruptCallback;
             _breakCallback = breakCallback;
+            _stepCallback = stepCallback;
             _supervisorCallback = supervisorCallback;
             _undefinedCallback = undefinedCallback;
 
             Running = true;
-            StepBarrier = new Barrier(2);
 
             _nativeContext.SetCounter(MinCountForCheck);
         }
@@ -155,6 +156,11 @@ namespace ARMeilleure.State
             Interrupted = true;
         }
 
+        public void StepHandler()
+        {
+            _stepCallback.Invoke(this);
+        }
+        
         public void RequestDebugStep()
         {
             Interlocked.Exchange(ref ShouldStep, 1);

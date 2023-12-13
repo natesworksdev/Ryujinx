@@ -737,34 +737,17 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        public void ThreadBreak(IExecutionContext ctx, ulong address, int imm)
+        public void BreakHandler(IExecutionContext ctx, ulong address, int imm)
         {
             Logger.Notice.Print(LogClass.GdbStub, $"Break hit on thread {ctx.ThreadUid} at pc {address:x016}");
 
             Messages.Add(new ThreadBreakMessage(ctx, address, imm));
+            DebugProcess.DebugInterruptHandler(ctx);
+        }
 
-            KThread currentThread = DebugProcess.GetThread(ctx.ThreadUid);
-
-            if (currentThread.Context.Running &&
-                currentThread.Owner != null &&
-                currentThread.GetUserDisableCount() != 0 &&
-                currentThread.Owner.PinnedThreads[currentThread.CurrentCore] == null)
-            {
-                KernelContext.CriticalSection.Enter();
-
-                currentThread.Owner.PinThread(currentThread);
-
-                currentThread.SetUserInterruptFlag();
-
-                KernelContext.CriticalSection.Leave();
-            }
-
-            if (currentThread.IsSchedulable)
-            {
-                KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
-            }
-
-            currentThread.HandlePostSyscall();
+        public void StepHandler(IExecutionContext ctx)
+        {
+            DebugProcess.DebugInterruptHandler(ctx);
         }
     }
 }
