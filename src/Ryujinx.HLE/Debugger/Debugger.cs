@@ -167,6 +167,9 @@ namespace Ryujinx.HLE.Debugger
                         DebugProcess.DebugStop();
                         Reply($"T05thread:{ctx.ThreadUid:x};");
                         break;
+
+                    case KillMessage:
+                        return;
                 }
             }
         }
@@ -732,8 +735,9 @@ namespace Ryujinx.HLE.Debugger
                 ReadStream?.Close();
                 WriteStream?.Close();
                 DebuggerThread.Join();
-                Messages.Dispose();
+                Messages.Add(new KillMessage());
                 MessageHandlerThread.Join();
+                Messages.Dispose();
             }
         }
 
