@@ -51,30 +51,14 @@ namespace Ryujinx.HLE.Debugger
         private KThread[] GetThreads() => DebugProcess.GetThreadUids().Select(x => DebugProcess.GetThread(x)).ToArray();
         private KernelContext KernelContext => Device.System.KernelContext;
 
-        const int GdbRegisterCount = 68;
-
-        private int GdbRegisterHexSize(int gdbRegId)
-        {
-            switch (gdbRegId)
-            {
-                case >= 0 and <= 31:
-                    return 16;
-                case 32:
-                    return 16;
-                case 33:
-                    return 8;
-                case >= 34 and <= 65:
-                    return 32;
-                case 66:
-                    return 8;
-                case 67:
-                    return 8;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private string GdbReadRegister(IExecutionContext state, int gdbRegId)
+        const int GdbRegisterCount64 = 68;
+        const int GdbRegisterCount32 = 66;
+        /* FPCR = FPSR & ~FpcrMask
+        All of FPCR's bits are reserved in FPCR and vice versa,
+        see ARM's documentation. */
+        private const uint FpcrMask = 0xfc1fffff;
+        
+        private string GdbReadRegister64(IExecutionContext state, int gdbRegId)
         {
             switch (gdbRegId)
             {
@@ -95,7 +79,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private bool GdbWriteRegister(IExecutionContext state, int gdbRegId, StringStream ss)
+        private bool GdbWriteRegister64(IExecutionContext state, int gdbRegId, StringStream ss)
         {
             switch (gdbRegId)
             {
@@ -107,7 +91,7 @@ namespace Ryujinx.HLE.Debugger
                     }
                 case 32:
                     {
-                        ulong value = ss.ReadLengthAsHex(8);
+                        ulong value = ss.ReadLengthAsHex(16);
                         state.DebugPc = value;
                         return true;
                     }
@@ -134,6 +118,83 @@ namespace Ryujinx.HLE.Debugger
                     {
                         ulong value = ss.ReadLengthAsHex(8);
                         state.Fpcr = (uint)value;
+                        return true;
+                    }
+                default:
+                    return false;
+            }
+        }
+
+        private string GdbReadRegister32(IExecutionContext state, int gdbRegId)
+        {
+            switch (gdbRegId)
+            {
+                case >= 0 and <= 14:
+                    return ToHex(BitConverter.GetBytes((uint)state.GetX(gdbRegId)));
+                case 15:
+                    return ToHex(BitConverter.GetBytes((uint)state.DebugPc));
+                case 16:
+                    return ToHex(BitConverter.GetBytes((uint)state.Pstate));
+                case >= 17 and <= 32:
+                    return ToHex(state.GetV(gdbRegId - 17).ToArray());
+                case >= 33 and <= 64:
+                    int reg = (gdbRegId - 33);
+                    int n = reg / 2;
+                    int shift = reg % 2;
+                    ulong value = state.GetV(n).Extract<ulong>(shift);
+                    return ToHex(BitConverter.GetBytes(value));
+                case 65:
+                    uint fpscr = (uint)state.Fpsr | (uint)state.Fpcr;
+                    return ToHex(BitConverter.GetBytes(fpscr));
+                default:
+                    return null;
+            }
+        }
+
+        private bool GdbWriteRegister32(IExecutionContext state, int gdbRegId, StringStream ss)
+        {
+            switch (gdbRegId)
+            {
+                case >= 0 and <= 14:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.SetX(gdbRegId, value);
+                        return true;
+                    }
+                case 15:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.DebugPc = value;
+                        return true;
+                    }
+                case 16:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.Pstate = (uint)value;
+                        return true;
+                    }
+                case >= 17 and <= 32:
+                    {
+                        ulong value0 = ss.ReadLengthAsHex(16);
+                        ulong value1 = ss.ReadLengthAsHex(16);
+                        state.SetV(gdbRegId - 17, new V128(value0, value1));
+                        return true;
+                    }
+                case >= 33 and <= 64:
+                    {
+                        ulong value = ss.ReadLengthAsHex(16);
+                        int regId = (gdbRegId - 33);
+                        int regNum = regId / 2;
+                        int shift = regId % 2;
+                        V128 reg = state.GetV(regNum);
+                        reg.Insert(shift, value);
+                        return true;
+                    }
+                case 65:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.Fpsr = (uint)value & FpcrMask;
+                        state.Fpcr = (uint)value & ~FpcrMask;
                         return true;
                     }
                 default:
@@ -267,15 +328,31 @@ namespace Ryujinx.HLE.Debugger
 
                     if (ss.ConsumeRemaining("HostInfo"))
                     {
-                        Reply(
-                            $"triple:{ToHex("aarch64-unknown-linux-android")};endian:little;ptrsize:8;hostname:{ToHex("Ryujinx")};");
+                        if (IsProcessAarch32())
+                        {
+                            Reply(
+                                $"triple:{ToHex("arm-unknown-linux-android")};endian:little;ptrsize:4;hostname:{ToHex("Ryujinx")};");
+                        }
+                        else
+                        {
+                            Reply(
+                                $"triple:{ToHex("aarch64-unknown-linux-android")};endian:little;ptrsize:8;hostname:{ToHex("Ryujinx")};");
+                        }
                         break;
                     }
 
                     if (ss.ConsumeRemaining("ProcessInfo"))
                     {
-                        Reply(
-                            $"pid:1;cputype:100000c;cpusubtype:0;triple:{ToHex("aarch64-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:8;");
+                        if (IsProcessAarch32())
+                        {
+                            Reply(
+                                $"pid:1;cputype:12;cpusubtype:0;triple:{ToHex("arm-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:4;");
+                        }
+                        else
+                        {
+                            Reply(
+                                $"pid:1;cputype:100000c;cpusubtype:0;triple:{ToHex("aarch64-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:8;");
+                        }
                         break;
                     }
 
@@ -322,6 +399,11 @@ namespace Ryujinx.HLE.Debugger
                         string feature = ss.ReadUntil(':');
                         ulong addr = ss.ReadUntilAsHex(',');
                         ulong len = ss.ReadRemainingAsHex();
+
+                        if (feature == "target.xml")
+                        {
+                            feature = IsProcessAarch32() ? "target32.xml" : "target64.xml";
+                        }
 
                         string data;
                         if (RegisterInformation.Features.TryGetValue(feature, out data))
@@ -410,9 +492,19 @@ namespace Ryujinx.HLE.Debugger
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
             string registers = "";
-            for (int i = 0; i < GdbRegisterCount; i++)
+            if (IsProcessAarch32())
             {
-                registers += GdbReadRegister(ctx, i);
+                for (int i = 0; i < GdbRegisterCount32; i++)
+                {
+                    registers += GdbReadRegister32(ctx, i);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < GdbRegisterCount64; i++)
+                {
+                    registers += GdbReadRegister64(ctx, i);
+                }
             }
 
             Reply(registers);
@@ -427,12 +519,26 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
-            for (int i = 0; i < GdbRegisterCount; i++)
+            if (IsProcessAarch32())
             {
-                if (!GdbWriteRegister(ctx, i, ss))
+                for (int i = 0; i < GdbRegisterCount32; i++)
                 {
-                    ReplyError();
-                    return;
+                    if (!GdbWriteRegister32(ctx, i, ss))
+                    {
+                        ReplyError();
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < GdbRegisterCount64; i++)
+                {
+                    if (!GdbWriteRegister64(ctx, i, ss))
+                    {
+                        ReplyError();
+                        return;
+                    }
                 }
             }
 
@@ -512,14 +618,30 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
-            string result = GdbReadRegister(ctx, gdbRegId);
-            if (result != null)
+            string result;
+            if (IsProcessAarch32())
             {
-                Reply(result);
+                result = GdbReadRegister32(ctx, gdbRegId);
+                if (result != null)
+                {
+                    Reply(result);
+                }
+                else
+                {
+                    ReplyError();
+                }
             }
             else
             {
-                ReplyError();
+                result = GdbReadRegister64(ctx, gdbRegId);
+                if (result != null)
+                {
+                    Reply(result);
+                }
+                else
+                {
+                    ReplyError();
+                }
             }
         }
 
@@ -532,13 +654,27 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
-            if (GdbWriteRegister(ctx, gdbRegId, ss) && ss.IsEmpty())
+            if (IsProcessAarch32())
             {
-                ReplyOK();
+                if (GdbWriteRegister32(ctx, gdbRegId, ss) && ss.IsEmpty())
+                {
+                    ReplyOK();
+                }
+                else
+                {
+                    ReplyError();
+                }
             }
             else
             {
-                ReplyError();
+                if (GdbWriteRegister64(ctx, gdbRegId, ss) && ss.IsEmpty())
+                {
+                    ReplyOK();
+                }
+                else
+                {
+                    ReplyError();
+                }
             }
         }
 
@@ -673,6 +809,11 @@ namespace Ryujinx.HLE.Debugger
                 ClientSocket.Close();
                 ClientSocket = null;
             }
+        }
+
+        private bool IsProcessAarch32()
+        {
+            return DebugProcess.GetThread(gThread.Value).Context.IsAarch32;
         }
 
         private byte CalculateChecksum(string cmd)
