@@ -554,9 +554,15 @@ namespace Ryujinx.HLE.Debugger
 
         void CommandSetThread(char op, ulong? threadId)
         {
-            if (threadId == 0)
+            if (threadId == 0 || threadId == null)
             {
                 threadId = GetThreads().First().ThreadUid;
+            }
+
+            if (DebugProcess.GetThread(threadId.Value) == null)
+            {
+                ReplyError();
+                return;
             }
 
             switch (op)
