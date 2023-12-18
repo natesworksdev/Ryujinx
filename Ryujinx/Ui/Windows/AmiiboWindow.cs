@@ -126,11 +126,13 @@ namespace Ryujinx.Ui.Windows
             try
             {
                 amiiboJson = JsonHelper.Deserialize<AmiiboJson>(json);
+
                 return true;
             }
             catch
             {
                 amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DEFAULT_JSON);
+
                 return false;
             }
         }

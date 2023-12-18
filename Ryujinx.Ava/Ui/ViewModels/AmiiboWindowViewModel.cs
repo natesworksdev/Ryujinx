@@ -187,11 +187,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
             try
             {
                 amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(json);
+
                 return true;
             }
             catch
             {
                 amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(DefaultJson);
+
                 return false;
             }
         }
