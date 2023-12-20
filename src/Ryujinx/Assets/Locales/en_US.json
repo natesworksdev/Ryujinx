@@ -783,7 +783,9 @@
   "MultiplayerModeLdnMitm": "ldn_mitm",
   "SettingsTabDebug": "Debug",
   "SettingsTabDebugTitle": "Debug (WARNING: For developer use only)",
-  "SettingsTabDebugEnableGDBStub": "Enable GDB Stub",
+  "EnableGDBStub": "Enable GDB Stub",
   "GDBStubToggleTooltip": "Enables the GDB stub which makes it possible to debug the running application. For development use only!",
-  "GDBStubPort": "GDB stub port:"
+  "GDBStubPort": "GDB stub port:",
+  "DebuggerSuspendOnStart": "Suspend application on start",
+  "DebuggerSuspendOnStartTooltip": "Suspends the application before executing the first instruction, allowing for debugging from the earliest point."
 }

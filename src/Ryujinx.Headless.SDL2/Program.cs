@@ -573,7 +573,8 @@ namespace Ryujinx.Headless.SDL2
                 options.MultiplayerLanInterfaceId,
                 Common.Configuration.Multiplayer.MultiplayerMode.Disabled,
                 options.EnableGdbStub,
-                options.GdbStubPort);
+                options.GdbStubPort,
+                options.DebuggerSuspendOnStart);
 
             return new Switch(configuration);
         }

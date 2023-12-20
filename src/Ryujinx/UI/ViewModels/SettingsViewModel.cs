@@ -56,6 +56,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _multiplayerModeIndex;
         private bool _enableGDBStub;
         private ushort _gdbStubPort;
+        private bool _debuggerSuspendOnStart;
 
         public int ResolutionScale
         {
@@ -278,6 +279,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _gdbStubPort = value;
                 ConfigurationState.Instance.Debug.GdbStubPort.Value = _gdbStubPort;
+            }
+        }
+
+        public bool DebuggerSuspendOnStart
+        {
+            get => _debuggerSuspendOnStart;
+            set
+            {
+                _debuggerSuspendOnStart = value;
+                ConfigurationState.Instance.Debug.DebuggerSuspendOnStart.Value = _debuggerSuspendOnStart;
             }
         }
 

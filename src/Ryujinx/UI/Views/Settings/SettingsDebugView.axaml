@@ -30,7 +30,7 @@
                     HorizontalAlignment="Stretch"
                     Orientation="Vertical">
                     <CheckBox IsChecked="{Binding EnableGdbStub}">
-                        <TextBlock Text="{locale:Locale SettingsTabDebugEnableGDBStub}"
+                        <TextBlock Text="{locale:Locale EnableGDBStub}"
                                    ToolTip.Tip="{locale:Locale GDBStubToggleTooltip}" />
                     </CheckBox>
                 </StackPanel>
@@ -47,6 +47,13 @@
                                   SpinButtonPlacementMode="Inline"
                                   Minimum="1024"
                                   Maximum="65535" />
+                </StackPanel>
+                <StackPanel
+                    Orientation="Horizontal">
+                    <CheckBox IsChecked="{Binding DebuggerSuspendOnStart}">
+                        <TextBlock Text="{locale:Locale DebuggerSuspendOnStart}"
+                                   ToolTip.Tip="{locale:Locale DebuggerSuspendOnStartTooltip}" />
+                    </CheckBox>
                 </StackPanel>
             </StackPanel>
         </Border>

@@ -397,6 +397,11 @@ namespace Ryujinx.UI.Common.Configuration
         public ushort GdbStubPort { get; set; }
 
         /// <summary>
+        /// Which TCP port should the GDB stub listen on
+        /// </summary>
+        public ushort DebuggerSuspendOnStart { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

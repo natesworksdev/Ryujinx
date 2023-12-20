@@ -21,6 +21,7 @@ namespace Ryujinx.HLE.Debugger
         internal Switch Device { get; private set; }
 
         public ushort GdbStubPort { get; private set; }
+        public bool SuspendOnStart { get; private set; }
 
         private TcpListener ListenerSocket;
         private Socket ClientSocket = null;
@@ -34,10 +35,11 @@ namespace Ryujinx.HLE.Debugger
         private ulong? cThread;
         private ulong? gThread;
 
-        public Debugger(Switch device, ushort port)
+        public Debugger(Switch device, ushort port, bool suspendOnStart)
         {
             Device = device;
             GdbStubPort = port;
+            SuspendOnStart = suspendOnStart;
 
             ARMeilleure.Optimizations.EnableDebugging = true;
 

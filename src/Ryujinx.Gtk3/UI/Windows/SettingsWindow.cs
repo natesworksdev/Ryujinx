@@ -118,6 +118,7 @@ namespace Ryujinx.UI.Windows
         [GUI] ToggleButton _configureController8;
         [GUI] ToggleButton _configureControllerH;
         [GUI] ToggleButton _gdbStubToggle;
+        [GUI] ToggleButton _suspendOnStartToggle;
         [GUI] Adjustment _gdbStubPortSpinAdjustment;
 #pragma warning restore CS0649, IDE0044
 
@@ -320,6 +321,11 @@ namespace Ryujinx.UI.Windows
             if (ConfigurationState.Instance.Debug.EnableGdbStub)
             {
                 _gdbStubToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Debug.DebuggerSuspendOnStart)
+            {
+                _suspendOnStartToggle.Click();
             }
 
             // Custom EntryCompletion Columns. If added to glade, need to override more signals
@@ -668,6 +674,7 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value = (int)_scalingFilterLevel.Value;
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value = _multiLanSelect.ActiveId;
             ConfigurationState.Instance.Debug.EnableGdbStub.Value = _gdbStubToggle.Active;
+            ConfigurationState.Instance.Debug.DebuggerSuspendOnStart.Value = _suspendOnStartToggle.Active;
             ConfigurationState.Instance.Debug.GdbStubPort.Value = (ushort)_gdbStubPortSpinAdjustment.Value;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;

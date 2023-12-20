@@ -179,6 +179,11 @@ namespace Ryujinx.HLE
         /// </summary>
         public ushort GdbStubPort { get; internal set; }
 
+        /// <summary>
+        /// Suspend execution when starting an application
+        /// </summary>
+        public bool DebuggerSuspendOnStart { get; internal set; }
+        
         public HLEConfiguration(VirtualFileSystem virtualFileSystem,
                                 LibHacHorizonManager libHacHorizonManager,
                                 ContentManager contentManager,
@@ -206,7 +211,8 @@ namespace Ryujinx.HLE
                                 string multiplayerLanInterfaceId,
                                 MultiplayerMode multiplayerMode,
                                 bool enableGdbStub,
-                                ushort gdbStubPort)
+                                ushort gdbStubPort,
+                                bool debuggerSuspendOnStart)
         {
             VirtualFileSystem = virtualFileSystem;
             LibHacHorizonManager = libHacHorizonManager;
@@ -236,6 +242,7 @@ namespace Ryujinx.HLE
             MultiplayerMode = multiplayerMode;
             EnableGdbStub = enableGdbStub;
             GdbStubPort = gdbStubPort;
+            DebuggerSuspendOnStart = debuggerSuspendOnStart;
         }
     }
 }

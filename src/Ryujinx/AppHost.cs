@@ -871,7 +871,8 @@ namespace Ryujinx.Ava
                                                  ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
                                                  ConfigurationState.Instance.Multiplayer.Mode,
                                                  ConfigurationState.Instance.Debug.EnableGdbStub.Value,
-                                                 ConfigurationState.Instance.Debug.GdbStubPort.Value);
+                                                 ConfigurationState.Instance.Debug.GdbStubPort.Value,
+                                                 ConfigurationState.Instance.Debug.DebuggerSuspendOnStart.Value);
 
             Device = new Switch(configuration);
         }

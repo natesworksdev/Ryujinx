@@ -592,12 +592,19 @@ namespace Ryujinx.UI.Common.Configuration
             /// </summary>
             public ReactiveObject<ushort> GdbStubPort { get; private set; }
 
+            /// <summary>
+            /// Suspend execution when starting an application
+            /// </summary>
+            public ReactiveObject<bool> DebuggerSuspendOnStart { get; private set; }
+
             public DebugSection()
             {
                 EnableGdbStub = new ReactiveObject<bool>();
                 EnableGdbStub.Event += static (sender, e) => LogValueChange(e, nameof(EnableGdbStub));
                 GdbStubPort = new ReactiveObject<ushort>();
                 GdbStubPort.Event += static (sender, e) => LogValueChange(e, nameof(GdbStubPort));
+                DebuggerSuspendOnStart = new ReactiveObject<bool>();
+                DebuggerSuspendOnStart.Event += static (sender, e) => LogValueChange(e, nameof(DebuggerSuspendOnStart));
             }
         }
 
