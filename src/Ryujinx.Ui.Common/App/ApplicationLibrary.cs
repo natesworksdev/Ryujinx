@@ -930,7 +930,7 @@ namespace Ryujinx.Ui.App.Common
 
                     if (!string.IsNullOrWhiteSpace(updatePath) && !File.Exists(updatePath))
                     {
-                        Logger.Warning?.Print(LogClass.Loader, $"Update file \"{updatePath}\" for titleId: {titleId} was not found! Game saves can become corrupted!");
+                        Logger.Warning?.Print(LogClass.Loader, $"Update file \"{updatePath}\" for ApplicationId: {titleId} was not found! Game saves can become corrupted!");
                     }
 
                     if (File.Exists(updatePath))
