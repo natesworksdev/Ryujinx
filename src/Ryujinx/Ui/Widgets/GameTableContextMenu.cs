@@ -10,6 +10,7 @@ using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
@@ -76,6 +77,8 @@ namespace Ryujinx.Ui.Widgets
             _extractRomFsMenuItem.Sensitive = hasNca;
             _extractExeFsMenuItem.Sensitive = hasNca;
             _extractLogoMenuItem.Sensitive = hasNca;
+
+            _createShortcutMenuItem.Sensitive = !ReleaseInformation.IsFlatHubBuild();
 
             PopupAtPointer(null);
         }
@@ -208,7 +211,7 @@ namespace Ryujinx.Ui.Widgets
                         (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".pfs0") ||
                         (System.IO.Path.GetExtension(_titleFilePath).ToLower() == ".xci"))
                     {
-                        PartitionFileSystem pfs;
+                        IFileSystem pfs;
 
                         if (System.IO.Path.GetExtension(_titleFilePath) == ".xci")
                         {
@@ -218,7 +221,9 @@ namespace Ryujinx.Ui.Widgets
                         }
                         else
                         {
-                            pfs = new PartitionFileSystem(file.AsStorage());
+                            var pfsTemp = new PartitionFileSystem();
+                            pfsTemp.Initialize(file.AsStorage()).ThrowIfFailure();
+                            pfs = pfsTemp;
                         }
 
                         foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
@@ -628,6 +633,12 @@ namespace Ryujinx.Ui.Widgets
                     }
                 }
             }
+        }
+
+        private void CreateShortcut_Clicked(object sender, EventArgs args)
+        {
+            byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language);
+            ShortcutHelper.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
         }
     }
 }

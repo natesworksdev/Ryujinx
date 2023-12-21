@@ -97,7 +97,8 @@ namespace Ryujinx.Ui.Windows
             {
                 using FileStream file = new(path, FileMode.Open, FileAccess.Read);
 
-                PartitionFileSystem nsp = new(file.AsStorage());
+                PartitionFileSystem nsp = new();
+                nsp.Initialize(file.AsStorage()).ThrowIfFailure();
 
                 try
                 {

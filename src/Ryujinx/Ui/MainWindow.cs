@@ -959,7 +959,7 @@ namespace Ryujinx.Ui
 
                 ApplicationLibrary.LoadAndSaveMetaData(_emulationContext.Processes.ActiveApplication.ProgramIdText, appMetadata =>
                 {
-                    appMetadata.LastPlayed = DateTime.UtcNow;
+                    appMetadata.UpdatePreGame();
                 });
             }
         }
@@ -1131,13 +1131,7 @@ namespace Ryujinx.Ui
             {
                 ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
                 {
-                    if (appMetadata.LastPlayed.HasValue)
-                    {
-                        double sessionTimePlayed = DateTime.UtcNow.Subtract(appMetadata.LastPlayed.Value).TotalSeconds;
-                        appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
-                    }
-
-                    appMetadata.LastPlayed = DateTime.UtcNow;
+                    appMetadata.UpdatePostGame();
                 });
             }
         }
@@ -1153,6 +1147,14 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
             Graphics.Gpu.GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             Graphics.Gpu.GraphicsConfig.EnableMacroHLE = ConfigurationState.Instance.Graphics.EnableMacroHLE;
+        }
+
+        public void UpdateInternetAccess()
+        {
+            if (_gameLoaded)
+            {
+                _emulationContext.Configuration.EnableInternetAccess = ConfigurationState.Instance.System.EnableInternetAccess.Value;
+            }
         }
 
         public static void SaveConfig()
@@ -1203,10 +1205,10 @@ namespace Ryujinx.Ui
                     $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
                     args.AppData.Developer,
                     args.AppData.Version,
-                    args.AppData.TimePlayed,
+                    args.AppData.TimePlayedString,
                     args.AppData.LastPlayedString,
                     args.AppData.FileExtension,
-                    args.AppData.FileSize,
+                    args.AppData.FileSizeString,
                     args.AppData.Path,
                     args.AppData.ControlHolder);
             });

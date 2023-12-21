@@ -25,7 +25,7 @@ env:
 jobs:
   tag:
     name: Create tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Get version info
         id: version_info
@@ -59,7 +59,7 @@ jobs:
 
           - os: windows-latest
             OS_NAME: Windows x64
-            DOTNET_RUNTIME_IDENTIFIER: win10-x64
+            DOTNET_RUNTIME_IDENTIFIER: win-x64
             RELEASE_ZIP_OS_NAME: win_x64
     steps:
       - uses: actions/checkout@v4
@@ -156,11 +156,11 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Setup LLVM 14
+      - name: Setup LLVM 15
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 14
+          sudo ./llvm.sh 15
 
       - name: Install rcodesign
         run: |

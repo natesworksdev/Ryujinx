@@ -152,6 +152,32 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Linear textures are presumed to be used for readback initially.
                 _flushBalance = FlushBalanceThreshold + FlushBalanceIncrement;
             }
+
+            foreach (RegionHandle handle in handles)
+            {
+                handle.RegisterDirtyEvent(DirtyAction);
+            }
+        }
+
+        /// <summary>
+        /// The action to perform when a memory tracking handle is flipped to dirty.
+        /// This notifies overlapping textures that the memory needs to be synchronized.
+        /// </summary>
+        private void DirtyAction()
+        {
+            // Notify all textures that belong to this handle.
+
+            _group.Storage.SignalGroupDirty();
+
+            lock (Overlaps)
+            {
+                foreach (Texture overlap in Overlaps)
+                {
+                    overlap.SignalGroupDirty();
+                }
+            }
+
+            DeferredCopy = null;
         }
 
         /// <summary>
@@ -449,7 +475,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void DeferCopy(TextureGroupHandle copyFrom)
         {
             Modified = false;
-
             DeferredCopy = copyFrom;
 
             _group.Storage.SignalGroupDirty();
@@ -506,7 +531,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     existing.Other.Handle.CreateCopyDependency(this);
 
-                    if (copyToOther)
+                    if (copyToOther && Modified)
                     {
                         existing.Other.Handle.DeferCopy(this);
                     }
@@ -550,10 +575,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (fromHandle != null)
                 {
                     // Only copy if the copy texture is still modified.
-                    // It will be set as unmodified if new data is written from CPU, as the data previously in the texture will flush.
+                    // DeferredCopy will be set to null if new data is written from CPU (see the DirtyAction method).
                     // It will also set as unmodified if a copy is deferred to it.
 
-                    shouldCopy = fromHandle.Modified;
+                    shouldCopy = true;
 
                     if (fromHandle._bindCount == 0)
                     {
