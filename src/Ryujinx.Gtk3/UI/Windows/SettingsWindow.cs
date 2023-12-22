@@ -674,8 +674,8 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value = (int)_scalingFilterLevel.Value;
             ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value = _multiLanSelect.ActiveId;
             ConfigurationState.Instance.Debug.EnableGdbStub.Value = _gdbStubToggle.Active;
-            ConfigurationState.Instance.Debug.DebuggerSuspendOnStart.Value = _suspendOnStartToggle.Active;
             ConfigurationState.Instance.Debug.GdbStubPort.Value = (ushort)_gdbStubPortSpinAdjustment.Value;
+            ConfigurationState.Instance.Debug.DebuggerSuspendOnStart.Value = _suspendOnStartToggle.Active;
 
             _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 

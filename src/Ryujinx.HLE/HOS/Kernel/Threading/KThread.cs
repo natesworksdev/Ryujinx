@@ -205,6 +205,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
 
             Context.TpidrroEl0 = (long)_tlsAddress;
+            Context.DebugPc = _entrypoint;
 
             ThreadUid = KernelContext.NewThreadUid();
             Context.ThreadUid = ThreadUid;

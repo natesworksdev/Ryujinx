@@ -93,6 +93,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public HleProcessDebugger Debugger { get; private set; }
         public IDebuggableProcess DebugInterface { get; private set; }
+        protected int debugState = (int)DebugState.Running;
 
         public KProcess(KernelContext context, bool allowCodeMemoryForJit = false) : base(context)
         {
@@ -685,6 +686,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 SetState(newState);
 
+                if (KernelContext.Device.Configuration.DebuggerSuspendOnStart && IsApplication)
+                {
+                    mainThread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                    debugState = (int)DebugState.Stopped;
+                }
+
                 result = mainThread.Start();
 
                 if (result != Result.Success)
@@ -1197,7 +1204,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             private readonly KProcess _parent;
             private readonly KernelContext _kernelContext;
             private KThread steppingThread;
-            private int _debugState = (int)DebugState.Running;
 
             public DebuggerInterface(KProcess p)
             {
@@ -1208,7 +1214,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             public void DebugStop()
             {
-                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping,
+                if (Interlocked.CompareExchange(ref _parent.debugState, (int)DebugState.Stopping,
                         (int)DebugState.Running) != (int)DebugState.Running)
                 {
                     return;
@@ -1225,13 +1231,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     }
                 }
 
-                _debugState = (int)DebugState.Stopped; 
+                _parent.debugState = (int)DebugState.Stopped; 
                 _kernelContext.CriticalSection.Leave();
             }
 
             public void DebugContinue()
             {
-                if (Interlocked.CompareExchange(ref _debugState, (int)DebugState.Running,
+                if (Interlocked.CompareExchange(ref _parent.debugState, (int)DebugState.Running,
                         (int)DebugState.Stopped) != (int)DebugState.Stopped)
                 {
                     return;
@@ -1250,7 +1256,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             public bool DebugStep(KThread target)
             {
-                if (_debugState != (int)DebugState.Stopped)
+                if (_parent.debugState != (int)DebugState.Stopped)
                 {
                     return false;
                 }
@@ -1299,7 +1305,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             public DebugState GetDebugState()
             {
-                return (DebugState)_debugState;
+                return (DebugState)_parent.debugState;
             }
 
             public ulong[] GetThreadUids()
