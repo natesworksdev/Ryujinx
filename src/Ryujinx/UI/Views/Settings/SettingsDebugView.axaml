@@ -49,7 +49,9 @@
                                   Maximum="65535" />
                 </StackPanel>
                 <StackPanel
-                    Orientation="Horizontal">
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical">
                     <CheckBox IsChecked="{Binding DebuggerSuspendOnStart}">
                         <TextBlock Text="{locale:Locale DebuggerSuspendOnStart}"
                                    ToolTip.Tip="{locale:Locale DebuggerSuspendOnStartTooltip}" />
