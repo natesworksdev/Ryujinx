@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Memory;
+using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
