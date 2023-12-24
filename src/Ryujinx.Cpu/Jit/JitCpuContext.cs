@@ -1,4 +1,4 @@
-using ARMeilleure.Memory;
+﻿using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
@@ -56,6 +56,10 @@ namespace Ryujinx.Cpu.Jit
         public void PrepareCodeRange(ulong address, ulong size)
         {
             _translator.PrepareCodeRange(address, size);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
