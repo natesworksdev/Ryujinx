@@ -8,6 +8,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Models.Amiibo;
 using System;
 using System.Collections.Generic;
