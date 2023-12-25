@@ -76,13 +76,13 @@ namespace Ryujinx.Ui.Windows
         {
             try
             {
-                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(json);
+                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(json, _serializerContext.AmiiboJson);
 
                 return true;
             }
             catch
             {
-                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DEFAULT_JSON);
+                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
 
                 return false;
             }
@@ -92,7 +92,7 @@ namespace Ryujinx.Ui.Windows
         {
             bool localIsValid = false;
             bool remoteIsValid = false;
-            AmiiboJson amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DEFAULT_JSON);
+            AmiiboJson amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
 
             try
             {
@@ -126,10 +126,7 @@ namespace Ryujinx.Ui.Windows
         {
             AmiiboJson amiiboJson = await GetMostRecentAmiiboListOrDefaultJson();
 
-            _amiiboList = amiiboJson
-                .Amiibo
-                .OrderBy(amiibo => amiibo.AmiiboSeries)
-                .ToList();
+            _amiiboList = amiiboJson.Amiibo.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
             if (LastScannedAmiiboShowAll)
             {
