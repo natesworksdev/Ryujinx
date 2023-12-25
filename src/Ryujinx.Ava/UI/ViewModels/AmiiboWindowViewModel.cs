@@ -8,6 +8,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Ui.Common.Models.Amiibo;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -186,27 +187,27 @@ namespace Ryujinx.Ava.UI.ViewModels
             _httpClient.Dispose();
         }
 
-        private bool TryGetAmiiboJson(string json, out Amiibo.AmiiboJson amiiboJson)
+        private bool TryGetAmiiboJson(string json, out AmiiboJson amiiboJson)
         {
             try
             {
-                amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(json);
+                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(json, _serializerContext.AmiiboJson);
 
                 return true;
             }
             catch
             {
-                amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(DefaultJson);
+                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
 
                 return false;
             }
         }
 
-        private async Task<Amiibo.AmiiboJson> GetMostRecentAmiiboListOrDefaultJson()
+        private async Task<AmiiboJson> GetMostRecentAmiiboListOrDefaultJson()
         {
             bool localIsValid = false;
             bool remoteIsValid = false;
-            Amiibo.AmiiboJson amiiboJson = JsonHelper.Deserialize<Amiibo.AmiiboJson>(DefaultJson);
+            AmiiboJson amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
 
             try
             {
@@ -238,12 +239,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task LoadContentAsync()
         {
-            Amiibo.AmiiboJson amiiboJson = await GetMostRecentAmiiboListOrDefaultJson();
+            AmiiboJson amiiboJson = await GetMostRecentAmiiboListOrDefaultJson();
 
-            _amiiboList = amiiboJson
-                .Amiibo
-                .OrderBy(amiibo => amiibo.AmiiboSeries)
-                .ToList();
+            _amiiboList = amiiboJson.Amiibo.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
             ParseAmiiboData();
         }
