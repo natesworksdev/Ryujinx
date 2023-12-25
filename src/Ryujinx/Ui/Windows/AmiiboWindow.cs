@@ -105,7 +105,7 @@ namespace Ryujinx.Ui.Windows
             }
             catch
             {
-                if ( !(localIsValid || remoteIsValid) )
+                if (!(localIsValid || remoteIsValid))
                 {
                     // Neither local or remote files are valid JSON, close window.
                     ShowInfoDialog();
