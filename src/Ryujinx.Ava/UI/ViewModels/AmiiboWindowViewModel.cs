@@ -387,15 +387,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task<bool> NeedsUpdate(DateTime oldLastModified)
         {
-           HttpResponseMessage response =
-               await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
+            HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
 
-           if (response.IsSuccessStatusCode)
-           {
+            if (response.IsSuccessStatusCode)
+            {
                 return response.Content.Headers.LastModified != oldLastModified;
-           }
+            }
 
-           return false;
+            return false;
         }
 
         private async Task<string> DownloadAmiiboJson()
