@@ -21,37 +21,10 @@ namespace Ryujinx.Ava.UI.Applet
         private const string JoyConLeftResource = "Ryujinx.Ui.Common/Resources/Icon_Controller_JoyConLeft.svg";
         private const string JoyConRightResource = "Ryujinx.Ui.Common/Resources/Icon_Controller_JoyConRight.svg";
 
-        public static SvgImage ProControllerImage
-        {
-            get
-            {
-                return GetResource(ProControllerResource);
-            }
-        }
-
-        public static SvgImage JoyconPairImage
-        {
-            get
-            {
-                return GetResource(JoyConPairResource);
-            }
-        }
-
-        public static SvgImage JoyconLeftImage
-        {
-            get
-            {
-                return GetResource(JoyConLeftResource);
-            }
-        }
-
-        public static SvgImage JoyconRightImage
-        {
-            get
-            {
-                return GetResource(JoyConRightResource);
-            }
-        }
+        public static SvgImage ProControllerImage => GetResource(ProControllerResource);
+        public static SvgImage JoyconPairImage => GetResource(JoyConPairResource);
+        public static SvgImage JoyconLeftImage => GetResource(JoyConLeftResource);
+        public static SvgImage JoyconRightImage => GetResource(JoyConRightResource);
 
         public string PlayerCount { get; set; } = "";
         public bool SupportsProController { get; set; }
