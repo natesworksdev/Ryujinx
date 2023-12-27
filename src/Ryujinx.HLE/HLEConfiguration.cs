@@ -183,7 +183,7 @@ namespace Ryujinx.HLE
         /// Suspend execution when starting an application
         /// </summary>
         public bool DebuggerSuspendOnStart { get; internal set; }
-        
+
         public HLEConfiguration(VirtualFileSystem virtualFileSystem,
                                 LibHacHorizonManager libHacHorizonManager,
                                 ContentManager contentManager,

@@ -160,7 +160,7 @@ namespace ARMeilleure.State
         {
             _stepCallback.Invoke(this);
         }
-        
+
         public void RequestDebugStep()
         {
             Interlocked.Exchange(ref ShouldStep, 1);

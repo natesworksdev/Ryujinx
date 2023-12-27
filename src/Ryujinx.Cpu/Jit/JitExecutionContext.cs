@@ -107,7 +107,7 @@ namespace Ryujinx.Cpu.Jit
         {
             _exceptionCallbacks.StepCallback?.Invoke(this);
         }
-        
+
         private void SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
         {
             _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);

@@ -49,6 +49,7 @@ namespace Ryujinx.HLE.Debugger
 
         private IDebuggableProcess DebugProcess => Device.System.DebugGetApplicationProcess();
         private KThread[] GetThreads() => DebugProcess.GetThreadUids().Select(x => DebugProcess.GetThread(x)).ToArray();
+        private bool IsProcessAarch32 => DebugProcess.GetThread(gThread.Value).Context.IsAarch32;
         private KernelContext KernelContext => Device.System.KernelContext;
 
         const int GdbRegisterCount64 = 68;
@@ -57,7 +58,7 @@ namespace Ryujinx.HLE.Debugger
         All of FPCR's bits are reserved in FPCR and vice versa,
         see ARM's documentation. */
         private const uint FpcrMask = 0xfc1fffff;
-        
+
         private string GdbReadRegister64(IExecutionContext state, int gdbRegId)
         {
             switch (gdbRegId)
@@ -328,7 +329,7 @@ namespace Ryujinx.HLE.Debugger
 
                     if (ss.ConsumeRemaining("HostInfo"))
                     {
-                        if (IsProcessAarch32())
+                        if (IsProcessAarch32)
                         {
                             Reply(
                                 $"triple:{ToHex("arm-unknown-linux-android")};endian:little;ptrsize:4;hostname:{ToHex("Ryujinx")};");
@@ -343,7 +344,7 @@ namespace Ryujinx.HLE.Debugger
 
                     if (ss.ConsumeRemaining("ProcessInfo"))
                     {
-                        if (IsProcessAarch32())
+                        if (IsProcessAarch32)
                         {
                             Reply(
                                 $"pid:1;cputype:12;cpusubtype:0;triple:{ToHex("arm-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:4;");
@@ -402,7 +403,7 @@ namespace Ryujinx.HLE.Debugger
 
                         if (feature == "target.xml")
                         {
-                            feature = IsProcessAarch32() ? "target32.xml" : "target64.xml";
+                            feature = IsProcessAarch32 ? "target32.xml" : "target64.xml";
                         }
 
                         string data;
@@ -492,7 +493,7 @@ namespace Ryujinx.HLE.Debugger
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
             string registers = "";
-            if (IsProcessAarch32())
+            if (IsProcessAarch32)
             {
                 for (int i = 0; i < GdbRegisterCount32; i++)
                 {
@@ -519,7 +520,7 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
-            if (IsProcessAarch32())
+            if (IsProcessAarch32)
             {
                 for (int i = 0; i < GdbRegisterCount32; i++)
                 {
@@ -625,7 +626,7 @@ namespace Ryujinx.HLE.Debugger
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
             string result;
-            if (IsProcessAarch32())
+            if (IsProcessAarch32)
             {
                 result = GdbReadRegister32(ctx, gdbRegId);
                 if (result != null)
@@ -660,7 +661,7 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = DebugProcess.GetThread(gThread.Value).Context;
-            if (IsProcessAarch32())
+            if (IsProcessAarch32)
             {
                 if (GdbWriteRegister32(ctx, gdbRegId, ss) && ss.IsEmpty())
                 {
@@ -815,11 +816,6 @@ namespace Ryujinx.HLE.Debugger
                 ClientSocket.Close();
                 ClientSocket = null;
             }
-        }
-
-        private bool IsProcessAarch32()
-        {
-            return DebugProcess.GetThread(gThread.Value).Context.IsAarch32;
         }
 
         private byte CalculateChecksum(string cmd)
