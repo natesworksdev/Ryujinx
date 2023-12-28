@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.Debugger
+namespace Ryujinx.HLE.Debugger
 {
     public enum DebugState
     {
