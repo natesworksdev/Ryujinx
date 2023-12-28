@@ -1,4 +1,4 @@
-﻿using IExecutionContext = Ryujinx.Cpu.IExecutionContext;
+using IExecutionContext = Ryujinx.Cpu.IExecutionContext;
 
 namespace Ryujinx.HLE.Debugger
 {
