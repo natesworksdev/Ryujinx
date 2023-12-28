@@ -145,8 +145,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         KernelStack = Mapped | 0x13,
         CodeReadOnly = ForceReadWritableByDebugSyscalls | Mapped | IsPoolAllocated | LinearMapped | 0x14,
         CodeWritable = Mapped | IsPoolAllocated | LinearMapped | 0x15,
-        UserMask = 0xff,
-        Mask = 0xffffffff,
+        UserMask = 0xFF,
+        Mask = 0xFFFFFFFF,
 
         PermissionChangeAllowed = 1 << 8,
         ForceReadWritableByDebugSyscalls = 1 << 9,
