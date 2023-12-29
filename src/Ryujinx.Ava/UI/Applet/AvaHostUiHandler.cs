@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.UI.Applet
 
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                var response = await ControllerAppletDialog.ShowControllerAppletDialog(args, _parent);
+                var response = await ControllerAppletDialog.ShowControllerAppletDialog(_parent, args);
                 if (response == UserResult.Ok)
                 {
                     okPressed = true;
