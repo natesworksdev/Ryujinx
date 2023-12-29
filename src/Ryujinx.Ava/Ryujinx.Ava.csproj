@@ -132,6 +132,10 @@
     <None Remove="Assets\Locales\zh_TW.json" />
     <None Remove="Assets\Styles\Styles.xaml" />
     <None Remove="Assets\Styles\Themes.xaml" />
+    <None Remove="Assets\Icons\Controller_JoyConLeft.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConPair.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConRight.svg" />
+    <None Remove="Assets\Icons\Controller_ProCon.svg" />
   </ItemGroup>
 
   <ItemGroup>

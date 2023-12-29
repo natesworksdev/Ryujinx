@@ -32,10 +32,6 @@
     <EmbeddedResource Include="Resources\Controller_JoyConPair.svg" />
     <EmbeddedResource Include="Resources\Controller_JoyConRight.svg" />
     <EmbeddedResource Include="Resources\Controller_ProCon.svg" />
-    <EmbeddedResource Include="Resources\Icon_Controller_JoyConLeft.svg" />
-    <EmbeddedResource Include="Resources\Icon_Controller_JoyConPair.svg" />
-    <EmbeddedResource Include="Resources\Icon_Controller_JoyConRight.svg" />
-    <EmbeddedResource Include="Resources\Icon_Controller_ProCon.svg" />
     <EmbeddedResource Include="Resources\Icon_NCA.png" />
     <EmbeddedResource Include="Resources\Icon_NRO.png" />
     <EmbeddedResource Include="Resources\Icon_NSO.png" />
