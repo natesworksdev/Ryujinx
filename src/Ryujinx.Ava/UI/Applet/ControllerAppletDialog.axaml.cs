@@ -122,6 +122,7 @@ namespace Ryujinx.Ava.UI.Applet
                 _mainWindow.SettingsWindow.NavPanel.SelectedItem = _mainWindow.SettingsWindow.NavPanel.MenuItems.ElementAt(1);
 
                 await _mainWindow.SettingsWindow.ShowDialog(_mainWindow);
+                _mainWindow.SettingsWindow.Focus();
             });
         }
 
