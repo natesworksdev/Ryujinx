@@ -125,9 +125,6 @@ ClientBin/
 packages/*
 *.config
 
-# Include nuget.config
-!nuget.config
-
 # RIA/Silverlight projects
 Generated_Code/
 
@@ -170,6 +167,3 @@ launchSettings.json
 
 # NetCore Publishing Profiles
 PublishProfiles/
-
-# Glade backup files
-*.glade~
