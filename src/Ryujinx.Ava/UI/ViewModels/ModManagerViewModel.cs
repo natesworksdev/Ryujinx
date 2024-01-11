@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             Mods.Clear();
             SelectedMods.Clear();
 
-            string modsBasePath = ModLoader.GetModsBasePath();
+            string modsBasePath = ModLoader.GetSdModsBasePath();
 
             var modCache = new ModLoader.ModCache();
             ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(modsBasePath, "contents")), titleId);
@@ -187,7 +187,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private void AddMod(DirectoryInfo directory)
         {
             var directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
-            var destinationDir = ModLoader.GetTitleDir(ModLoader.GetModsBasePath(), _titleId.ToString("x16"));
+            var destinationDir = ModLoader.GetTitleDir(ModLoader.GetSdModsBasePath(), _titleId.ToString("x16"));
 
             foreach (var dir in directories)
             {

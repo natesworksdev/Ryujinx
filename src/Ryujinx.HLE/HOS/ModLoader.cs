@@ -143,6 +143,7 @@ namespace Ryujinx.HLE.HOS
         private static bool StrEquals(string s1, string s2) => string.Equals(s1, s2, StringComparison.OrdinalIgnoreCase);
 
         public static string GetModsBasePath() => EnsureBaseDirStructure(AppDataManager.GetModsPath());
+        public static string GetSdModsBasePath() => EnsureBaseDirStructure(AppDataManager.GetSdModsPath());
 
         private static string EnsureBaseDirStructure(string modsBasePath)
         {
@@ -443,7 +444,7 @@ namespace Ryujinx.HLE.HOS
         }
 
         // Assumes searchDirPaths don't overlap
-        private static void CollectMods(Dictionary<ulong, ModCache> modCaches, PatchCache patches)
+        private static void CollectMods(Dictionary<ulong, ModCache> modCaches, PatchCache patches, params string[] searchDirPaths)
         {
             static bool IsPatchesDir(string name) => StrEquals(AmsNsoPatchDir, name) ||
                                                      StrEquals(AmsNroPatchDir, name) ||
@@ -472,25 +473,28 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            var searchDir = new DirectoryInfo(GetModsBasePath());
-            if (!searchDir.Exists)
+            foreach (var path in searchDirPaths)
             {
-                Logger.Warning?.Print(LogClass.ModLoader, $"Mod Search Dir '{searchDir.FullName}' doesn't exist");
-                return;
-            }
-
-            if (!TryQuery(searchDir, patches, modCaches))
-            {
-                foreach (var subdir in searchDir.EnumerateDirectories())
+                var searchDir = new DirectoryInfo(path);
+                if (!searchDir.Exists)
                 {
-                    TryQuery(subdir, patches, modCaches);
+                    Logger.Warning?.Print(LogClass.ModLoader, $"Mod Search Dir '{searchDir.FullName}' doesn't exist");
+                    return;
+                }
+
+                if (!TryQuery(searchDir, patches, modCaches))
+                {
+                    foreach (var subdir in searchDir.EnumerateDirectories())
+                    {
+                        TryQuery(subdir, patches, modCaches);
+                    }
                 }
             }
 
             patches.Initialized = true;
         }
 
-        public void CollectMods(IEnumerable<ulong> titles)
+        public void CollectMods(IEnumerable<ulong> titles, params string[] searchDirPaths)
         {
             Clear();
 
@@ -499,7 +503,7 @@ namespace Ryujinx.HLE.HOS
                 _appMods[titleId] = new ModCache();
             }
 
-            CollectMods(_appMods, _patches);
+            CollectMods(_appMods, _patches, searchDirPaths);
         }
 
         internal IStorage ApplyRomFsMods(ulong titleId, IStorage baseStorage)
