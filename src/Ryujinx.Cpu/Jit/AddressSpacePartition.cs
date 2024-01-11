@@ -35,7 +35,7 @@ namespace Ryujinx.Cpu.Jit
             Private,
         }
 
-        private class Mapping : IntrusiveRedBlackTreeNode<Mapping>, IComparable<Mapping>
+        private class Mapping : IntrusiveRedBlackTreeNode<Mapping>, IComparable<Mapping>, IComparable<ulong>
         {
             public ulong Address { get; private set; }
             public ulong Size { get; private set; }
@@ -87,9 +87,25 @@ namespace Ryujinx.Cpu.Jit
                     return 1;
                 }
             }
+
+            public int CompareTo(ulong address)
+            {
+                if (address < Address)
+                {
+                    return -1;
+                }
+                else if (address <= EndAddress - 1UL)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
         }
 
-        private class PrivateMapping : IntrusiveRedBlackTreeNode<PrivateMapping>, IComparable<PrivateMapping>
+        private class PrivateMapping : IntrusiveRedBlackTreeNode<PrivateMapping>, IComparable<PrivateMapping>, IComparable<ulong>
         {
             public ulong Address { get; private set; }
             public ulong Size { get; private set; }
@@ -158,13 +174,30 @@ namespace Ryujinx.Cpu.Jit
                     return 1;
                 }
             }
+
+            public int CompareTo(ulong address)
+            {
+                if (address < Address)
+                {
+                    return -1;
+                }
+                else if (address <= EndAddress - 1UL)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
         }
 
         private readonly MemoryBlock _backingMemory;
         private readonly AddressSpacePartitionMultiAllocation _baseMemory;
         private readonly PrivateMemoryAllocator _privateMemoryAllocator;
-        private readonly IntrusiveRedBlackTree<Mapping> _mappingTree;
-        private readonly IntrusiveRedBlackTree<PrivateMapping> _privateTree;
+
+        private readonly AddressIntrusiveRedBlackTree<Mapping> _mappingTree;
+        private readonly AddressIntrusiveRedBlackTree<PrivateMapping> _privateTree;
 
         private readonly ReaderWriterLockSlim _treeLock;
 
@@ -186,8 +219,8 @@ namespace Ryujinx.Cpu.Jit
         public AddressSpacePartition(AddressSpacePartitionAllocation baseMemory, MemoryBlock backingMemory, ulong address, ulong size)
         {
             _privateMemoryAllocator = new PrivateMemoryAllocator(DefaultBlockAlignment, MemoryAllocationFlags.Mirrorable);
-            _mappingTree = new IntrusiveRedBlackTree<Mapping>();
-            _privateTree = new IntrusiveRedBlackTree<PrivateMapping>();
+            _mappingTree = new AddressIntrusiveRedBlackTree<Mapping>();
+            _privateTree = new AddressIntrusiveRedBlackTree<PrivateMapping>();
             _treeLock = new ReaderWriterLockSlim();
 
             _mappingTree.Add(new Mapping(address, size, MappingType.None));
@@ -212,7 +245,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                Mapping map = _mappingTree.GetNode(new Mapping(Address, Size, MappingType.None));
+                Mapping map = _mappingTree.GetNode(Address);
 
                 return map != null && map.Address == Address && map.Size == Size && map.Type == MappingType.None;
             }
@@ -425,7 +458,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                PrivateMapping map = _privateTree.GetNode(new PrivateMapping(Address, 1UL, default));
+                PrivateMapping map = _privateTree.GetNode(Address);
 
                 if (map != null && map.PrivateAllocation.IsValid)
                 {
@@ -448,7 +481,7 @@ namespace Ryujinx.Cpu.Jit
             {
                 ulong pageAddress = EndAddress - _hostPageSize;
 
-                PrivateMapping map = _privateTree.GetNode(new PrivateMapping(pageAddress, 1UL, default));
+                PrivateMapping map = _privateTree.GetNode(pageAddress);
 
                 if (map != null && map.PrivateAllocation.IsValid)
                 {
@@ -469,7 +502,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
+                PrivateMapping map = _privateTree.GetNode(va);
 
                 if (map != null && map.PrivateAllocation.IsValid)
                 {
@@ -490,7 +523,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                Mapping map = _mappingTree.GetNode(new Mapping(va, 1UL, MappingType.None));
+                Mapping map = _mappingTree.GetNode(va);
 
                 Update(map, va, pa, size, type);
             }
@@ -584,7 +617,7 @@ namespace Ryujinx.Cpu.Jit
             ulong vaAligned = BitUtils.AlignDown(va, alignment);
             ulong endAddressAligned = BitUtils.AlignUp(endAddress, alignment);
 
-            PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
+            PrivateMapping map = _privateTree.GetNode(va);
 
             for (; map != null; map = map.Successor)
             {
@@ -628,7 +661,7 @@ namespace Ryujinx.Cpu.Jit
                 return;
             }
 
-            PrivateMapping map = _privateTree.GetNode(new PrivateMapping(vaAligned, 1UL, default));
+            PrivateMapping map = _privateTree.GetNode(vaAligned);
 
             for (; map != null; map = map.Successor)
             {
@@ -688,7 +721,7 @@ namespace Ryujinx.Cpu.Jit
             // Map all existing private allocations.
             // This is necessary to ensure mirrors that are lazily created have the same mappings as the main one.
 
-            PrivateMapping map = _privateTree.GetNode(new PrivateMapping(Address, 1UL, default));
+            PrivateMapping map = _privateTree.GetNode(Address);
 
             for (; map != null; map = map.Successor)
             {
@@ -705,7 +738,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, 1UL, default));
+                PrivateMapping map = _privateTree.GetNode(va);
 
                 nextVa = map.EndAddress;
 
@@ -733,7 +766,7 @@ namespace Ryujinx.Cpu.Jit
 
             try
             {
-                PrivateMapping map = _privateTree.GetNode(new PrivateMapping(va, size, default));
+                PrivateMapping map = _privateTree.GetNode(va);
 
                 if (map != null && map.PrivateAllocation.IsValid)
                 {
