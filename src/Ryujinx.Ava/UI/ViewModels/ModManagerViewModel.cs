@@ -96,37 +96,40 @@ namespace Ryujinx.Ava.UI.ViewModels
             Mods.Clear();
             SelectedMods.Clear();
 
-            string modsBasePath = ModLoader.GetSdModsBasePath();
+            string[] modsBasePaths = [ModLoader.GetSdModsBasePath(), ModLoader.GetModsBasePath()];
 
-            var modCache = new ModLoader.ModCache();
-            ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(modsBasePath, "contents")), titleId);
-
-            foreach (var mod in modCache.RomfsDirs)
+            foreach (var path in modsBasePaths)
             {
-                var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
-                if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
+                var modCache = new ModLoader.ModCache();
+                ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(path, "contents")), titleId);
+
+                foreach (var mod in modCache.RomfsDirs)
                 {
-                    Mods.Add(modModel);
+                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
+                    if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
+                    {
+                        Mods.Add(modModel);
+                    }
                 }
-            }
 
-            foreach (var mod in modCache.RomfsContainers)
-            {
-                Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
-            }
-
-            foreach (var mod in modCache.ExefsDirs)
-            {
-                var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
-                if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
+                foreach (var mod in modCache.RomfsContainers)
                 {
-                    Mods.Add(modModel);
+                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
                 }
-            }
 
-            foreach (var mod in modCache.ExefsContainers)
-            {
-                Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
+                foreach (var mod in modCache.ExefsDirs)
+                {
+                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
+                    if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
+                    {
+                        Mods.Add(modModel);
+                    }
+                }
+
+                foreach (var mod in modCache.ExefsContainers)
+                {
+                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
+                }
             }
 
             Sort();
