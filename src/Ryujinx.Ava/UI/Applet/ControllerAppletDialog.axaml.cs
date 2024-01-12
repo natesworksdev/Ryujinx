@@ -115,15 +115,19 @@ namespace Ryujinx.Ava.UI.Applet
 
         public void OpenSettingsWindow()
         {
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            if (_mainWindow.SettingsWindow == null)
             {
-                _mainWindow.SettingsWindow = new SettingsWindow(_mainWindow.VirtualFileSystem, _mainWindow.ContentManager);
-                _mainWindow.SettingsWindow.NavPanel.Content = _mainWindow.SettingsWindow.InputPage;
-                _mainWindow.SettingsWindow.NavPanel.SelectedItem = _mainWindow.SettingsWindow.NavPanel.MenuItems.ElementAt(1);
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    _mainWindow.SettingsWindow = new SettingsWindow(_mainWindow.VirtualFileSystem, _mainWindow.ContentManager);
+                    _mainWindow.SettingsWindow.NavPanel.Content = _mainWindow.SettingsWindow.InputPage;
+                    _mainWindow.SettingsWindow.NavPanel.SelectedItem = _mainWindow.SettingsWindow.NavPanel.MenuItems.ElementAt(1);
 
-                await _mainWindow.SettingsWindow.ShowDialog(_mainWindow);
-                _mainWindow.SettingsWindow.Focus();
-            });
+                    await ContentDialogHelper.ShowWindowAsync(_mainWindow.SettingsWindow, _mainWindow);
+                    _mainWindow.SettingsWindow = null;
+                    this.Close();
+                });
+            }
         }
 
         public void Close()
