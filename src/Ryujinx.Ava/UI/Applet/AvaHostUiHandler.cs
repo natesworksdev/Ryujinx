@@ -85,6 +85,8 @@ namespace Ryujinx.Ava.UI.Applet
 
                            await _parent.SettingsWindow.ShowDialog(window);
 
+                           _parent.SettingsWindow = null;
+
                            opened = false;
                        });
 
