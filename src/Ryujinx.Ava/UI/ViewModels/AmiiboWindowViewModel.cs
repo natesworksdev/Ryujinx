@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -196,8 +197,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 return true;
             }
-            catch
+            catch (JsonException exception)
             {
+                Logger.Error?.Print(LogClass.Application, $"Unable to deserialize amiibo data: {exception}");
                 amiiboJson = JsonHelper.Deserialize(DefaultJson, _serializerContext.AmiiboJson);
 
                 return false;
@@ -219,16 +221,20 @@ namespace Ryujinx.Ava.UI.ViewModels
                     remoteIsValid = TryGetAmiiboJson(await DownloadAmiiboJson(), out amiiboJson);
                 }
             }
-            catch
+            catch (Exception exception)
             {
                 if (!(localIsValid || remoteIsValid))
                 {
+                    Logger.Error?.Print(LogClass.Application, $"Couldn't get valid amiibo data: {exception}");
+
                     // Neither local or remote files are valid JSON, close window.
                     ShowInfoDialog();
                     Close();
                 }
                 else if (!remoteIsValid)
                 {
+                    Logger.Warning?.Print(LogClass.Application, $"Couldn't update amiibo data: {exception}");
+
                     // Only the local file is valid, the local one should be used
                     // but the user should be warned.
                     ShowInfoDialog();
