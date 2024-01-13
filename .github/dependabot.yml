@@ -37,7 +37,7 @@ updates:
           - "SixLabors*"
       NUnit:
         patterns:
-          - "NUnit"
+          - "NUnit*"
       Ryujinx:
         patterns:
           - "Ryujinx*"
