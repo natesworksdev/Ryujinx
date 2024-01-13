@@ -107,9 +107,16 @@ namespace Ryujinx.Ui.Windows
 
             try
             {
-                if (File.Exists(_amiiboJsonPath))
+                try
                 {
-                    localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                    if (File.Exists(_amiiboJsonPath))
+                    {
+                        localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Logger.Warning?.Print(LogClass.Application, $"Unable to read data from '{_amiiboJsonPath}': {exception}");
                 }
 
                 if (!localIsValid || await NeedsUpdate(amiiboJson.LastUpdated))
@@ -241,9 +248,16 @@ namespace Ryujinx.Ui.Windows
                 {
                     string amiiboJsonString = await response.Content.ReadAsStringAsync();
 
-                    using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                    try
                     {
-                        dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                        using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                        {
+                            dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Logger.Warning?.Print(LogClass.Application, $"Couldn't write amiibo data to file '{_amiiboJsonPath}: {exception}'");
                     }
 
                     return amiiboJsonString;
