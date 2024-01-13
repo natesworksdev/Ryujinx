@@ -191,6 +191,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private static bool TryGetAmiiboJson(string json, out AmiiboJson amiiboJson)
         {
+            if (string.IsNullOrEmpty(json))
+            {
+                amiiboJson = JsonHelper.Deserialize(DefaultJson, _serializerContext.AmiiboJson);
+
+                return false;
+            }
+
             try
             {
                 amiiboJson = JsonHelper.Deserialize(json, _serializerContext.AmiiboJson);
@@ -214,7 +221,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             try
             {
-                localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                if (File.Exists(_amiiboJsonPath))
+                {
+                    localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                }
 
                 if (!localIsValid || await NeedsUpdate(amiiboJson.LastUpdated))
                 {
@@ -394,11 +404,18 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task<bool> NeedsUpdate(DateTime oldLastModified)
         {
-            HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return response.Content.Headers.LastModified != oldLastModified;
+                HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return response.Content.Headers.LastModified != oldLastModified;
+                }
+            }
+            catch (HttpRequestException exception)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Unable to check for amiibo data updates: {exception}");
             }
 
             return false;
@@ -406,21 +423,28 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task<string> DownloadAmiiboJson()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                string amiiboJsonString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
 
-                using (FileStream amiiboJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                if (response.IsSuccessStatusCode)
                 {
-                    amiiboJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    string amiiboJsonString = await response.Content.ReadAsStringAsync();
+
+                    using (FileStream amiiboJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                    {
+                        amiiboJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    }
+
+                    return amiiboJsonString;
                 }
 
-                return amiiboJsonString;
+                Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data. Response status code: {response.StatusCode}");
             }
-
-            Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data. Response status code: {response.StatusCode}");
+            catch (HttpRequestException exception)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to request amiibo data: {exception}");
+            }
 
             await ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogAmiiboApiTitle],
                 LocaleManager.Instance[LocaleKeys.DialogAmiiboApiFailFetchMessage],
@@ -428,9 +452,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 "",
                 LocaleManager.Instance[LocaleKeys.RyujinxInfo]);
 
-            Close();
-
-            return DefaultJson;
+            return null;
         }
 
         private void Close()

@@ -77,6 +77,13 @@ namespace Ryujinx.Ui.Windows
 
         private static bool TryGetAmiiboJson(string json, out AmiiboJson amiiboJson)
         {
+            if (string.IsNullOrEmpty(json))
+            {
+                amiiboJson = JsonHelper.Deserialize(DefaultJson, _serializerContext.AmiiboJson);
+
+                return false;
+            }
+
             try
             {
                 amiiboJson = JsonHelper.Deserialize(json, _serializerContext.AmiiboJson);
@@ -96,11 +103,14 @@ namespace Ryujinx.Ui.Windows
         {
             bool localIsValid = false;
             bool remoteIsValid = false;
-            AmiiboJson amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
+            AmiiboJson amiiboJson = new();
 
             try
             {
-                localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                if (File.Exists(_amiiboJsonPath))
+                {
+                    localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
+                }
 
                 if (!localIsValid || await NeedsUpdate(amiiboJson.LastUpdated))
                 {
@@ -204,11 +214,18 @@ namespace Ryujinx.Ui.Windows
 
         private async Task<bool> NeedsUpdate(DateTime oldLastModified)
         {
-            HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return response.Content.Headers.LastModified != oldLastModified;
+                HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return response.Content.Headers.LastModified != oldLastModified;
+                }
+            }
+            catch (HttpRequestException exception)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Unable to check for amiibo data updates: {exception}");
             }
 
             return false;
@@ -216,29 +233,32 @@ namespace Ryujinx.Ui.Windows
 
         private async Task<string> DownloadAmiiboJson()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                string amiiboJsonString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
 
-                using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                if (response.IsSuccessStatusCode)
                 {
-                    dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    string amiiboJsonString = await response.Content.ReadAsStringAsync();
+
+                    using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                    {
+                        dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    }
+
+                    return amiiboJsonString;
                 }
 
-                return amiiboJsonString;
-            }
-            else
-            {
                 Logger.Error?.Print(LogClass.Application, $"Failed to download amiibo data. Response status code: {response.StatusCode}");
-
-                GtkDialog.CreateInfoDialog($"Amiibo API", "An error occured while fetching information from the API.");
-
-                Close();
+            }
+            catch (HttpRequestException exception)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to request amiibo data: {exception}");
             }
 
-            return DefaultJson;
+            GtkDialog.CreateInfoDialog("Amiibo API", "An error occured while fetching information from the API.");
+
+            return null;
         }
 
         private async Task UpdateAmiiboPreview(string imageUrl)
