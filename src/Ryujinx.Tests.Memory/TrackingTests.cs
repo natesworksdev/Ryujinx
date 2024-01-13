@@ -66,7 +66,7 @@ namespace Ryujinx.Tests.Memory
             bool dirtyAfterUnrelatedReadWrite = handle.Dirty;
             Assert.That(dirtyAfterUnrelatedReadWrite, Is.False); // Not dirtied, as the write was to an unrelated address.
 
-            Assert.That(readTrackingTriggered, Is.Not.Null); // Hasn't been triggered yet
+            Assert.That(readTrackingTriggered, Is.Null); // Hasn't been triggered yet
 
             _tracking.VirtualMemoryEvent(0, 4, false);
 
@@ -127,7 +127,7 @@ namespace Ryujinx.Tests.Memory
             {
                 // No handles are dirty.
                 Assert.That(allHandle.Dirty, Is.False);
-                Assert.That(readTrackingTriggeredAll, Is.Not.Null);
+                Assert.That(readTrackingTriggeredAll, Is.Null);
                 for (int j = 0; j < 16; j++)
                 {
                     Assert.That(containedHandles[j].Dirty, Is.False);
