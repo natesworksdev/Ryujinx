@@ -14,7 +14,7 @@
     <PackageVersion Include="Concentus" Version="1.1.7" />
     <PackageVersion Include="DiscordRichPresence" Version="1.2.1.24" />
     <PackageVersion Include="DynamicData" Version="7.14.2" />
-    <PackageVersion Include="FluentAvaloniaUI" Version="2.0.4" />
+    <PackageVersion Include="FluentAvaloniaUI" Version="2.0.5" />
     <PackageVersion Include="GtkSharp.Dependencies" Version="1.1.1" />
     <PackageVersion Include="GtkSharp.Dependencies.osx" Version="0.0.5" />
     <PackageVersion Include="jp2masa.Avalonia.Flexbox" Version="0.3.0-beta.4" />
