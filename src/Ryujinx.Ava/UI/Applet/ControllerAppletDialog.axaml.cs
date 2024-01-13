@@ -132,7 +132,7 @@ namespace Ryujinx.Ava.UI.Applet
 
         public void Close()
         {
-            ((ContentDialog)Parent).Hide();
+            ((ContentDialog)Parent)?.Hide();
         }
     }
 }
