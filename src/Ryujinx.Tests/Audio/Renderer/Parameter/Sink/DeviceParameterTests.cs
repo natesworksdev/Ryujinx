@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Parameter.Sink
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x11C, Unsafe.SizeOf<DeviceParameter>());
+            Assert.That(0x11C, Is.EqualTo(Unsafe.SizeOf<DeviceParameter>()));
         }
     }
 }

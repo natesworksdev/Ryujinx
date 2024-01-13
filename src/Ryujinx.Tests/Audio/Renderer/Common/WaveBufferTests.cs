@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Common
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x30, Unsafe.SizeOf<WaveBuffer>());
+            Assert.That(0x30, Is.EqualTo(Unsafe.SizeOf<WaveBuffer>()));
         }
     }
 }

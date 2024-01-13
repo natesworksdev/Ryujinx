@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x20, Unsafe.SizeOf<SplitterState>());
+            Assert.That(0x20, Is.EqualTo(Unsafe.SizeOf<SplitterState>()));
         }
     }
 }

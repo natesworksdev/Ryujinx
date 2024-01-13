@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0xC, Unsafe.SizeOf<BiquadFilterParameter>());
+            Assert.That(0xC, Is.EqualTo(Unsafe.SizeOf<BiquadFilterParameter>()));
         }
     }
 }

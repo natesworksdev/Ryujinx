@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(Unsafe.SizeOf<MemoryPoolState>(), 0x20);
+            Assert.That(Unsafe.SizeOf<MemoryPoolState>(), Is.EqualTo(0x20));
         }
 
         [Test]
@@ -21,12 +21,12 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
 
             memoryPool.DspAddress = 0x2000000;
 
-            Assert.IsTrue(memoryPool.Contains(0x1000000, 0x10));
-            Assert.IsTrue(memoryPool.Contains(0x1000FE0, 0x10));
-            Assert.IsTrue(memoryPool.Contains(0x1000FFF, 0x1));
-            Assert.IsFalse(memoryPool.Contains(0x1000FFF, 0x2));
-            Assert.IsFalse(memoryPool.Contains(0x1001000, 0x10));
-            Assert.IsFalse(memoryPool.Contains(0x2000000, 0x10));
+            Assert.That(memoryPool.Contains(0x1000000, 0x10), Is.True);
+            Assert.That(memoryPool.Contains(0x1000FE0, 0x10), Is.True);
+            Assert.That(memoryPool.Contains(0x1000FFF, 0x1), Is.True);
+            Assert.That(memoryPool.Contains(0x1000FFF, 0x2), Is.False);
+            Assert.That(memoryPool.Contains(0x1001000, 0x10), Is.False);
+            Assert.That(memoryPool.Contains(0x2000000, 0x10), Is.False);
         }
 
         [Test]
@@ -38,11 +38,11 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
 
             memoryPool.DspAddress = 0x2000000;
 
-            Assert.AreEqual(0x2000FE0, memoryPool.Translate(0x1000FE0, 0x10));
-            Assert.AreEqual(0x2000FFF, memoryPool.Translate(0x1000FFF, 0x1));
-            Assert.AreEqual(0x0, memoryPool.Translate(0x1000FFF, 0x2));
-            Assert.AreEqual(0x0, memoryPool.Translate(0x1001000, 0x10));
-            Assert.AreEqual(0x0, memoryPool.Translate(0x2000000, 0x10));
+            Assert.That(0x2000FE0, Is.EqualTo(memoryPool.Translate(0x1000FE0, 0x10)));
+            Assert.That(0x2000FFF, Is.EqualTo(memoryPool.Translate(0x1000FFF, 0x1)));
+            Assert.That(0x0, Is.EqualTo(memoryPool.Translate(0x1000FFF, 0x2)));
+            Assert.That(0x0, Is.EqualTo(memoryPool.Translate(0x1001000, 0x10)));
+            Assert.That(0x0, Is.EqualTo(memoryPool.Translate(0x2000000, 0x10)));
         }
 
         [Test]
@@ -52,11 +52,11 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
 
             memoryPool.SetCpuAddress(0x1000000, 0x1000);
 
-            Assert.IsFalse(memoryPool.IsMapped());
+            Assert.That(memoryPool.IsMapped(), Is.False);
 
             memoryPool.DspAddress = 0x2000000;
 
-            Assert.IsTrue(memoryPool.IsMapped());
+            Assert.That(memoryPool.IsMapped(), Is.True);
         }
     }
 }

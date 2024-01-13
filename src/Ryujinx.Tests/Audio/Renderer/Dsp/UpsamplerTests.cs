@@ -51,7 +51,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Dsp
 
             sumDifference /= expectedOutput.Length;
             // Expect the output to be 98% similar to the expected resampled sine wave
-            Assert.IsTrue(sumDifference < 0.02f);
+            Assert.That(sumDifference < 0.02f, Is.True);
         }
     }
 }
