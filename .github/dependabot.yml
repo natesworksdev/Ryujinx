@@ -38,6 +38,3 @@ updates:
       NUnit:
         patterns:
           - "NUnit*"
-      Ryujinx:
-        patterns:
-          - "Ryujinx*"
