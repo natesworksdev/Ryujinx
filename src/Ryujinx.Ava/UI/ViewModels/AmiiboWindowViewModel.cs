@@ -188,17 +188,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             _httpClient.Dispose();
         }
 
-        private bool TryGetAmiiboJson(string json, out AmiiboJson amiiboJson)
+        private static bool TryGetAmiiboJson(string json, out AmiiboJson amiiboJson)
         {
             try
             {
-                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(json, _serializerContext.AmiiboJson);
+                amiiboJson = JsonHelper.Deserialize(json, _serializerContext.AmiiboJson);
 
                 return true;
             }
             catch
             {
-                amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
+                amiiboJson = JsonHelper.Deserialize(DefaultJson, _serializerContext.AmiiboJson);
 
                 return false;
             }
@@ -208,11 +208,11 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             bool localIsValid = false;
             bool remoteIsValid = false;
-            AmiiboJson amiiboJson = JsonHelper.Deserialize<AmiiboJson>(DefaultJson, _serializerContext.AmiiboJson);
+            AmiiboJson amiiboJson = new();
 
             try
             {
-                localIsValid = TryGetAmiiboJson(File.ReadAllText(_amiiboJsonPath), out amiiboJson);
+                localIsValid = TryGetAmiiboJson(await File.ReadAllTextAsync(_amiiboJsonPath), out amiiboJson);
 
                 if (!localIsValid || await NeedsUpdate(amiiboJson.LastUpdated))
                 {
