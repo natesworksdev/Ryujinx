@@ -1,4 +1,4 @@
-using ARMeilleure.Signal;
+﻿using ARMeilleure.Signal;
 using Ryujinx.Common;
 using Ryujinx.Memory;
 using System;
@@ -56,7 +56,6 @@ namespace Ryujinx.Cpu.Signal
     {
         private static readonly IntPtr _handlerConfig;
         private static IntPtr _signalHandlerPtr;
-        private static IntPtr _signalHandlerHandle;
 
         private static MemoryBlock _codeBlock;
 
@@ -115,7 +114,7 @@ namespace Ryujinx.Cpu.Signal
                         _signalHandlerPtr = customSignalHandlerFactory(IntPtr.Zero, _signalHandlerPtr);
                     }
 
-                    _signalHandlerHandle = WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+                    WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
                 }
 
                 _initialized = true;
