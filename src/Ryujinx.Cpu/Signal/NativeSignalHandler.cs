@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Signal;
+using ARMeilleure.Signal;
 using Ryujinx.Common;
 using Ryujinx.Memory;
 using System;
