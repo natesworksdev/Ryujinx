@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Gpu
         private long _modifiedSequence;
         private readonly ulong _firstTimestamp;
 
-        private ManualResetEvent _gpuReadyEvent;
+        private readonly ManualResetEvent _gpuReadyEvent;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
