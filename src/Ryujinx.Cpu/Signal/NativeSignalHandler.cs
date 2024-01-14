@@ -52,7 +52,7 @@ namespace Ryujinx.Cpu.Signal
         public SignalHandlerRangeArray Ranges;
     }
 
-    public static class NativeSignalHandler
+    static class NativeSignalHandler
     {
         private static readonly IntPtr _handlerConfig;
         private static IntPtr _signalHandlerPtr;
