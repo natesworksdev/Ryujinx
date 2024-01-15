@@ -1126,7 +1126,17 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
             Operand destination64 = new(destination.Kind, OperandType.I64, destination.Value);
             Operand basePointer = new(regAlloc.FixedPageTableRegister, RegisterType.Integer, OperandType.I64);
 
-            asm.Add(destination64, basePointer, guestAddress);
+            if (mmType == MemoryManagerType.HostMapped || mmType == MemoryManagerType.HostMappedUnsafe)
+            {
+                // We don't need to mask the address for the safe mode, since it is already naturally limited to 32-bit
+                // and can never reach out of the guest address space.
+
+                asm.Add(destination64, basePointer, guestAddress);
+            }
+            else
+            {
+                throw new NotImplementedException(mmType.ToString());
+            }
         }
 
         public static void WriteAddShiftOffset(in Assembler asm, Operand rd, Operand rn, Operand offset, bool add, ArmShiftType shiftType, int shift)

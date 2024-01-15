@@ -512,7 +512,14 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
         {
             Operand basePointer = new(regAlloc.FixedPageTableRegister, RegisterType.Integer, OperandType.I64);
 
-            asm.Add(destination, basePointer, guestAddress);
+            if (mmType == MemoryManagerType.HostMapped || mmType == MemoryManagerType.HostMappedUnsafe)
+            {
+                asm.Add(destination, basePointer, guestAddress);
+            }
+            else
+            {
+                throw new NotImplementedException(mmType.ToString());
+            }
         }
 
         private static void WriteAddConstant(ref Assembler asm, Operand rd, Operand rn, int value)

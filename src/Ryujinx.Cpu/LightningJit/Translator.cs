@@ -138,7 +138,7 @@ namespace Ryujinx.Cpu.LightningJit
             }
         }
 
-        internal TranslatedFunction Translate(ulong address, ExecutionMode mode)
+        private TranslatedFunction Translate(ulong address, ExecutionMode mode)
         {
             CompiledFunction func = Compile(address, mode);
             IntPtr funcPointer = JitCache.Map(func.Code);
@@ -146,7 +146,7 @@ namespace Ryujinx.Cpu.LightningJit
             return new TranslatedFunction(funcPointer, (ulong)func.GuestCodeLength);
         }
 
-        internal CompiledFunction Compile(ulong address, ExecutionMode mode)
+        private CompiledFunction Compile(ulong address, ExecutionMode mode)
         {
             return AarchCompiler.Compile(CpuPresets.CortexA57, Memory, address, FunctionTable, Stubs.DispatchStub, mode, RuntimeInformation.ProcessArchitecture);
         }
