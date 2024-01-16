@@ -145,5 +145,78 @@ public class MyClass
 
             await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
         }
+
+        [Fact]
+        public async Task LogWithIdentifierAndMethodCall_NoDiagnostic()
+        {
+            string text = _loggerText + @"
+public class MyClass
+{
+    public void MyMethod6()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (InvalidOperationException abc)
+        {
+            Ryujinx.Common.Logging.Logger.Info?.Print(Ryujinx.Common.Logging.LogClass.Application, $""test: {abc.ToString()}"");
+            Console.WriteLine(""Test"");
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task LogWithMethodCallOnIdentifier_NoDiagnostic()
+        {
+            string text = _loggerText + @"
+public class MyClass
+{
+    public void MyMethod7()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (IndexOutOfRangeException mistake1)
+        {
+            string test = ""another test""; 
+            Ryujinx.Common.Logging.Logger.Info?.Print(Ryujinx.Common.Logging.LogClass.Application, $""test: {string.Concat(mistake1, test)}"");
+            Console.WriteLine(""Test"");
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task LogWithPropertyOfException_NoDiagnostic()
+        {
+            string text = _loggerText + @"
+public class MyClass
+{
+    public void MyMethod8()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (ArgumentOutOfRangeException oob)
+        {
+            Ryujinx.Common.Logging.Logger.Info?.Print(Ryujinx.Common.Logging.LogClass.Application, $""test: {oob.Message}"");
+            Console.WriteLine(""Test"");
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
     }
 }
