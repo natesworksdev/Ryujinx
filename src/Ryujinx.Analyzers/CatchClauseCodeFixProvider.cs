@@ -78,12 +78,12 @@ namespace Ryujinx.Analyzers
             if (catchClauseSyntax.Declaration == null)
             {
                 // System.Exception exception
-                 catchDeclaration =
-                    SyntaxFactory.CatchDeclaration(
-                        SyntaxFactory.QualifiedName(
-                            SyntaxFactory.IdentifierName("System"), SyntaxFactory.IdentifierName("Exception")),
-                        SyntaxFactory.Identifier("exception")
-                    );
+                catchDeclaration =
+                   SyntaxFactory.CatchDeclaration(
+                       SyntaxFactory.QualifiedName(
+                           SyntaxFactory.IdentifierName("System"), SyntaxFactory.IdentifierName("Exception")),
+                       SyntaxFactory.Identifier("exception")
+                   );
             }
             else
             {

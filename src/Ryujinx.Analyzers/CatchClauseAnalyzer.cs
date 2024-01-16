@@ -9,29 +9,29 @@ namespace Ryujinx.Analyzers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class CatchClauseAnalyzer : DiagnosticAnalyzer
     {
-        public const string LoggerIdentifier = "Logger";
-        public const string LogClassIdentifier = "LogClass";
+        private const string LoggerIdentifier = "Logger";
+        private const string LogClassIdentifier = "LogClass";
 
         public const string DiagnosticId = "RYU0001";
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.RYU0001Title),
+        private static readonly LocalizableString _title = new LocalizableResourceString(nameof(Resources.RYU0001Title),
             Resources.ResourceManager, typeof(Resources));
 
-        private static readonly LocalizableString MessageFormat =
+        private static readonly LocalizableString _messageFormat =
             new LocalizableResourceString(nameof(Resources.RYU0001MessageFormat), Resources.ResourceManager,
                 typeof(Resources));
 
-        private static readonly LocalizableString Description =
+        private static readonly LocalizableString _description =
             new LocalizableResourceString(nameof(Resources.RYU0001Description), Resources.ResourceManager,
                 typeof(Resources));
 
         private const string Category = "Maintainability";
 
-        private static readonly DiagnosticDescriptor Rule = new(DiagnosticId, Title, MessageFormat, Category,
-            DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+        private static readonly DiagnosticDescriptor _rule = new(DiagnosticId, _title, _messageFormat, Category,
+            DiagnosticSeverity.Warning, isEnabledByDefault: true, description: _description);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-            ImmutableArray.Create(Rule);
+            ImmutableArray.Create(_rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -171,7 +171,7 @@ namespace Ryujinx.Analyzers
             // Find catch clauses without declaration.
             if (catchDeclaration == null)
             {
-                var diagnostic = Diagnostic.Create(Rule,
+                var diagnostic = Diagnostic.Create(_rule,
                     // The highlighted area in the analyzed source code. Keep it as specific as possible.
                     catchClauseSyntax.GetLocation(),
                     // The value is passed to 'MessageFormat' argument of your 'Rule'.
@@ -182,7 +182,7 @@ namespace Ryujinx.Analyzers
             // Find catch declarations without an identifier
             else if (string.IsNullOrWhiteSpace(catchDeclaration.Identifier.Text))
             {
-                var diagnostic = Diagnostic.Create(Rule,
+                var diagnostic = Diagnostic.Create(_rule,
                     // The highlighted area in the analyzed source code. Keep it as specific as possible.
                     catchClauseSyntax.GetLocation(),
                     // The value is passed to 'MessageFormat' argument of your 'Rule'.
@@ -214,11 +214,11 @@ namespace Ryujinx.Analyzers
                         }
                     }
                 }
-                
+
                 // Create a diagnostic report if the exception was not logged
                 if (!exceptionLogged)
                 {
-                    var diagnostic = Diagnostic.Create(Rule,
+                    var diagnostic = Diagnostic.Create(_rule,
                         // The highlighted area in the analyzed source code. Keep it as specific as possible.
                         catchClauseSyntax.GetLocation(),
                         // The value is passed to 'MessageFormat' argument of your 'Rule'.

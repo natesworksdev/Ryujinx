@@ -19,7 +19,7 @@ namespace Ryujinx.Tests.Analyzers
         [Fact]
         public async Task CatchWithoutDeclaration_WarningDiagnostic()
         {
-            const string text = @"
+            const string Text = @"
 using System;
 
 public class MyClass
@@ -41,13 +41,13 @@ public class MyClass
             var expected = Verifier.Diagnostic()
                 .WithSpan(12, 9, 15, 10)
                 .WithArguments("Exception");
-            await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(Text, expected).ConfigureAwait(false);
         }
 
         [Fact]
         public async Task CatchWithoutIdentifier_WarningDiagnostic()
         {
-            const string text = @"
+            const string Text = @"
 using System;
 
 public class MyClass
@@ -69,7 +69,7 @@ public class MyClass
             var expected = Verifier.Diagnostic()
                 .WithSpan(12, 9, 15, 10)
                 .WithArguments("NullReferenceException");
-            await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(Text, expected).ConfigureAwait(false);
         }
 
         [Fact]
