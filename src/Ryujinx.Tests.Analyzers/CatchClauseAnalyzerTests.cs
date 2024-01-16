@@ -218,5 +218,35 @@ public class MyClass
 
             await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
         }
+
+        [Fact]
+        public async Task LogWithIdentifierInSubBlock_NoDiagnostic()
+        {
+            string text = _loggerText + @"
+public class MyClass
+{
+    public void MyMethod9()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (Exception ex)
+        {
+            string testString = ""first time?"";
+            
+            if (1 == 1)
+            {
+                Ryujinx.Common.Logging.Logger.Info?.Print(Ryujinx.Common.Logging.LogClass.Application, $""test: {testString} Error: {ex.Message}"");    
+            }
+            
+            Console.WriteLine(""Test"");
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
     }
 }

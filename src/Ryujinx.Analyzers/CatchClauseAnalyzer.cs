@@ -146,9 +146,9 @@ namespace Ryujinx.Analyzers
                 bool exceptionLogged = false;
 
                 // Iterate through all expression statements
-                foreach (var statement in catchClauseSyntax.Block.Statements)
+                foreach (var blockNode in catchClauseSyntax.Block.DescendantNodes())
                 {
-                    if (statement is not ExpressionStatementSyntax expressionStatement)
+                    if (blockNode is not ExpressionStatementSyntax expressionStatement)
                     {
                         continue;
                     }
