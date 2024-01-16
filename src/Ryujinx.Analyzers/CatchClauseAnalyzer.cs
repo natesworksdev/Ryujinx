@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Ryujinx.Analyzers
 {
@@ -98,63 +99,11 @@ namespace Ryujinx.Analyzers
             return false;
         }
 
-        private static bool ContainsIdentifier(ArgumentSyntax argument, string identifierText)
+        private static bool ContainsIdentifier(ExpressionSyntax expression, string identifierText)
         {
-            foreach (var argChild in argument.ChildNodes())
-            {
-                switch (argChild)
-                {
-                    case IdentifierNameSyntax identifierName when identifierName.ToString() == identifierText:
-                        return true;
-                    case InterpolatedStringExpressionSyntax interpolatedStringExpression:
-                        {
-                            foreach (var interpolatedStringChild in interpolatedStringExpression.ChildNodes())
-                            {
-                                if (interpolatedStringChild is not InterpolationSyntax interpolation)
-                                {
-                                    continue;
-                                }
-
-                                foreach (var interpolationChild in interpolation.ChildNodes())
-                                {
-                                    if (interpolationChild is not IdentifierNameSyntax interpolationIdentifier)
-                                    {
-                                        continue;
-                                    }
-
-                                    if (interpolationIdentifier.ToString() == identifierText)
-                                    {
-                                        return true;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                }
-            }
-
-            return false;
-        }
-
-        private static bool InvocationContainsIdentifier(ExpressionSyntax expression, string identifierText)
-        {
-            foreach (var expressionChild in expression.ChildNodes())
-            {
-                if (expressionChild is not InvocationExpressionSyntax invocationExpression)
-                {
-                    continue;
-                }
-
-                foreach (var argument in invocationExpression.ArgumentList.Arguments)
-                {
-                    if (ContainsIdentifier(argument, identifierText))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return expression.DescendantNodes().Any(
+                x => x is IdentifierNameSyntax identifierName
+                     && identifierName.ToString() == identifierText);
         }
 
         /// <summary>
@@ -208,7 +157,7 @@ namespace Ryujinx.Analyzers
                     if (EndsWithExpressionText(expressionStatement.Expression, LoggerIdentifier) && ContainsInvocationArgText(expressionStatement.Expression, LogClassIdentifier))
                     {
                         // Find catchDeclarationIdentifier in Logger invocation
-                        if (InvocationContainsIdentifier(expressionStatement.Expression, catchDeclarationIdentifier.Text))
+                        if (ContainsIdentifier(expressionStatement.Expression, catchDeclarationIdentifier.Text))
                         {
                             exceptionLogged = true;
                         }
