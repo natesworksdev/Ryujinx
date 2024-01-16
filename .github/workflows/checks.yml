@@ -36,6 +36,9 @@ jobs:
 
       - run: dotnet restore
 
+      - name: Build Ryujinx.Analyzers
+        run: dotnet build src/Ryujinx.Analyzers
+
       - name: Print dotnet format version
         run: dotnet format --version
 
