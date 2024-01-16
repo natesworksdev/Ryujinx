@@ -5,10 +5,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:window="clr-namespace:Ryujinx.Ava.UI.Windows"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     Width="500"
-    Height="500"
-    x:DataType="window:CheatWindow"
+    Height="380"
+    x:DataType="viewModels:CheatWindowViewModel"
     mc:Ignorable="d"
     Focusable="True">
     <Grid Name="CheatGrid" Margin="15">
@@ -88,15 +88,14 @@
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Save}"
-                    IsVisible="{Binding !NoCheatsFound}">
+                    Click="SaveAndClose">
                     <TextBlock Text="{locale:Locale SettingsButtonSave}" />
                 </Button>
                 <Button
                     Name="CancelButton"
                     MinWidth="90"
                     Margin="5"
-                    Command="{Binding Close}">
+                    Click="Close">
                     <TextBlock Text="{locale:Locale InputDialogCancel}" />
                 </Button>
             </DockPanel>

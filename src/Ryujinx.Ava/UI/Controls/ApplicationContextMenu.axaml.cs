@@ -120,7 +120,7 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 await CheatWindow.Show(
                     viewModel.VirtualFileSystem,
-                    viewModel.SelectedApplication.TitleId,
+                    ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber),
                     viewModel.SelectedApplication.TitleName,
                     viewModel.SelectedApplication.Path);
             }
