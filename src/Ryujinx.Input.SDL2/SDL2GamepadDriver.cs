@@ -138,7 +138,6 @@ namespace Ryujinx.Input.SDL2
                     OnGamepadDisconnected?.Invoke(id);
                 }
 
-
                 lock (_lock)
                 {
                     _gamepadsIds.Clear();
