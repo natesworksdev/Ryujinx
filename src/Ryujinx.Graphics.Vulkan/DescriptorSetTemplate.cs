@@ -73,8 +73,6 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else
                     {
-                        // NOTE: Current non-templated path skips these if null, we just send an empty handle.
-
                         entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.UniformTexelBuffer,
@@ -104,8 +102,6 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else
                     {
-                        // NOTE: Current non-templated path skips these if null, we just send an empty handle.
-
                         entries[seg] = new DescriptorUpdateTemplateEntry()
                         {
                             DescriptorType = DescriptorType.StorageTexelBuffer,

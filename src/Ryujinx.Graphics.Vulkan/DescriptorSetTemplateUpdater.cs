@@ -2,16 +2,35 @@ using Ryujinx.Common;
 using Silk.NET.Vulkan;
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
+    ref struct DescriptorSetTemplateWriter
+    {
+        private Span<byte> _data;
+
+        public DescriptorSetTemplateWriter(Span<byte> data)
+        {
+            _data = data;
+        }
+
+        public void Push<T>(ReadOnlySpan<T> values) where T : unmanaged
+        {
+            Span<T> target = MemoryMarshal.Cast<byte, T>(_data);
+
+            values.CopyTo(target);
+
+            _data = _data[(Unsafe.SizeOf<T>() * values.Length)..];
+        }
+    }
+
     unsafe class DescriptorSetTemplateUpdater : IDisposable
     {
         private const int SizeGranularity = 512;
 
         private DescriptorSetTemplate _activeTemplate;
         private NativeArray<byte> _data;
-        private byte* _dataPtr;
 
         private void EnsureSize(int size)
         {
@@ -24,25 +43,13 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void Begin(DescriptorSetTemplate template)
+        public DescriptorSetTemplateWriter Begin(DescriptorSetTemplate template)
         {
             _activeTemplate = template;
 
-            if (template != null)
-            {
-                EnsureSize(template.Size);
+            EnsureSize(template.Size);
 
-                _dataPtr = _data.Pointer;
-            }
-        }
-
-        public void Push<T>(ReadOnlySpan<T> values) where T : unmanaged
-        {
-            for (int i = 0; i < values.Length; i++)
-            {
-                *((T*)_dataPtr) = values[i];
-                _dataPtr += Unsafe.SizeOf<T>();
-            }
+            return new DescriptorSetTemplateWriter(new Span<byte>(_data.Pointer, template.Size));
         }
 
         public void Commit(VulkanRenderer gd, Device device, DescriptorSet set)

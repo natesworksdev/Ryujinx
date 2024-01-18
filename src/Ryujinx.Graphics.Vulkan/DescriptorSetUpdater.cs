@@ -517,13 +517,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             DescriptorSetTemplate template = program.Templates[setIndex];
 
-            bool templated = template != null;
-            var tu = _templateUpdater;
-
-            if (templated)
-            {
-                tu.Begin(template);
-            }
+            DescriptorSetTemplateWriter tu = _templateUpdater.Begin(template);
 
             foreach (ResourceBindingSegment segment in bindingSegments)
             {
@@ -548,14 +542,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
 
-                    if (templated)
-                    {
-                        tu.Push(uniformBuffers.Slice(binding, count));
-                    }
-                    else
-                    {
-                        dsc.UpdateBuffers(0, binding, uniformBuffers.Slice(binding, count), DescriptorType.UniformBuffer);
-                    }
+                    tu.Push(uniformBuffers.Slice(binding, count));
                 }
                 else if (setIndex == PipelineBase.StorageSetIndex)
                 {
@@ -581,14 +568,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     ReadOnlySpan<DescriptorBufferInfo> storageBuffers = _storageBuffers;
 
-                    if (templated)
-                    {
-                        tu.Push(storageBuffers.Slice(binding, count));
-                    }
-                    else
-                    {
-                        dsc.UpdateBuffers(0, binding, storageBuffers.Slice(binding, count), DescriptorType.StorageBuffer);
-                    }
+                    tu.Push(storageBuffers.Slice(binding, count));
                 }
                 else if (setIndex == PipelineBase.TextureSetIndex)
                 {
@@ -614,14 +594,7 @@ namespace Ryujinx.Graphics.Vulkan
                             }
                         }
 
-                        if (templated)
-                        {
-                            tu.Push<DescriptorImageInfo>(textures[..count]);
-                        }
-                        else
-                        {
-                            dsc.UpdateImages(0, binding, textures[..count], DescriptorType.CombinedImageSampler);
-                        }
+                        tu.Push<DescriptorImageInfo>(textures[..count]);
                     }
                     else
                     {
@@ -632,14 +605,7 @@ namespace Ryujinx.Graphics.Vulkan
                             bufferTextures[i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs, false) ?? default;
                         }
 
-                        if (templated)
-                        {
-                            tu.Push<BufferView>(bufferTextures[..count]);
-                        }
-                        else
-                        {
-                            dsc.UpdateBufferImages(0, binding, bufferTextures[..count], DescriptorType.UniformTexelBuffer);
-                        }
+                        tu.Push<BufferView>(bufferTextures[..count]);
                     }
                 }
                 else if (setIndex == PipelineBase.ImageSetIndex)
@@ -653,14 +619,7 @@ namespace Ryujinx.Graphics.Vulkan
                             images[i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
                         }
 
-                        if (templated)
-                        {
-                            tu.Push<DescriptorImageInfo>(images[..count]);
-                        }
-                        else
-                        {
-                            dsc.UpdateImages(0, binding, images[..count], DescriptorType.StorageImage);
-                        }
+                        tu.Push<DescriptorImageInfo>(images[..count]);
                     }
                     else
                     {
@@ -671,24 +630,13 @@ namespace Ryujinx.Graphics.Vulkan
                             bufferImages[i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i], true) ?? default;
                         }
 
-                        if (templated)
-                        {
-                            tu.Push<BufferView>(bufferImages[..count]);
-                        }
-                        else
-                        {
-                            dsc.UpdateBufferImages(0, binding, bufferImages[..count], DescriptorType.StorageTexelBuffer);
-                        }
+                        tu.Push<BufferView>(bufferImages[..count]);
                     }
                 }
             }
 
             var sets = dsc.GetSets();
-
-            if (templated)
-            {
-                _templateUpdater.Commit(_gd, _device, sets[0]);
-            }
+            _templateUpdater.Commit(_gd, _device, sets[0]);
 
             _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
         }

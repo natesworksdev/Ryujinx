@@ -247,16 +247,13 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var templates = new DescriptorSetTemplate[BindingSegments.Length];
 
-            if (VulkanConfiguration.UseDescriptorUpdateTemplates)
+            for (int setIndex = 0; setIndex < BindingSegments.Length; setIndex++)
             {
-                for (int setIndex = 0; setIndex < BindingSegments.Length; setIndex++)
-                {
-                    ResourceBindingSegment[] segments = BindingSegments[setIndex];
+                ResourceBindingSegment[] segments = BindingSegments[setIndex];
 
-                    if (segments != null && segments.Length > 0)
-                    {
-                        templates[setIndex] = new DescriptorSetTemplate(_gd, _device, segments, _plce, IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics, setIndex);
-                    }
+                if (segments != null && segments.Length > 0)
+                {
+                    templates[setIndex] = new DescriptorSetTemplate(_gd, _device, segments, _plce, IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics, setIndex);
                 }
             }
 
