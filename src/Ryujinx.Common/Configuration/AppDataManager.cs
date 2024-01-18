@@ -70,8 +70,7 @@ namespace Ryujinx.Common.Configuration
                 // Make sure we're actually running within an app bundle.
                 if (bundlePath.EndsWith(".app"))
                 {
-                    string bundleParentPath = Path.GetFullPath(Path.Combine(bundlePath, ".."));
-                    portablePath = Path.Combine(bundleParentPath, DefaultPortableDir);
+                    portablePath = Path.GetFullPath(Path.Combine(bundlePath, "..", DefaultPortableDir));
                 }
             }
 
