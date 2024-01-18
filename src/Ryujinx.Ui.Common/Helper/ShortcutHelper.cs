@@ -69,7 +69,7 @@ namespace Ryujinx.Ui.Common.Helper
             using StreamWriter scriptFile = new(scriptPath);
 
             scriptFile.WriteLine("#!/bin/sh");
-            scriptFile.WriteLine($"{basePath} {GetArgsString(appFilePath)}");
+            scriptFile.WriteLine($"$ARCHPREFERENCE=arm64,x86_64 arch {basePath} {GetArgsString(appFilePath)}");
 
             // Set execute permission
             FileInfo fileInfo = new(scriptPath);
