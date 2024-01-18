@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDeviceFeatures = api.GetPhysicalDeviceFeature(PhysicalDevice);
 
             PhysicalDeviceProperties physicalDeviceProperties = default;
-            PhysicalDeviceVulkan12Properties physicalDeviceVulkan12Properties = new()
+            PhysicalDeviceVulkan12Properties physicalDeviceVulkan12Properties = new() // We need this to retrive driver-related details.
             {
                 SType = StructureType.PhysicalDeviceVulkan12Properties
             };
