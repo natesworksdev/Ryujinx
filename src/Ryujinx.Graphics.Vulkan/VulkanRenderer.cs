@@ -692,8 +692,7 @@ namespace Ryujinx.Graphics.Vulkan
         private unsafe void PrintGpuInformation()
         {
             var properties = _physicalDevice.PhysicalDeviceProperties;
-
-            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
+            var propertiesVk12 = _physicalDevice.PhysicalDeviceVulkan12Properties;
 
             Vendor = VendorUtils.FromId(properties.VendorID);
 
@@ -706,7 +705,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Vendor == Vendor.Broadcom ||
                 Vendor == Vendor.ImgTec;
 
-            GpuVendor = vendorName;
+            GpuVendor = Marshal.PtrToStringAnsi((IntPtr)propertiesVk12.DriverName);
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 

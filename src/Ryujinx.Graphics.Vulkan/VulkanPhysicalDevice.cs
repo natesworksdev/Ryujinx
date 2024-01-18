@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly PhysicalDevice PhysicalDevice;
         public readonly PhysicalDeviceFeatures PhysicalDeviceFeatures;
         public readonly PhysicalDeviceProperties PhysicalDeviceProperties;
+        public readonly PhysicalDeviceVulkan12Properties PhysicalDeviceVulkan12Properties;
         public readonly PhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
         public readonly QueueFamilyProperties[] QueueFamilyProperties;
         public readonly string DeviceName;
@@ -24,8 +25,27 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDevice = physicalDevice;
             PhysicalDeviceFeatures = api.GetPhysicalDeviceFeature(PhysicalDevice);
 
-            api.GetPhysicalDeviceProperties(PhysicalDevice, out var physicalDeviceProperties);
+            PhysicalDeviceProperties physicalDeviceProperties = default;
+            PhysicalDeviceVulkan12Properties physicalDeviceVulkan12Properties = new()
+            {
+                SType = StructureType.PhysicalDeviceVulkan12Properties
+            };
+
+            unsafe
+            {
+                PhysicalDeviceProperties2 properties2 = new()
+                {
+                    SType = StructureType.PhysicalDeviceProperties2,
+                    PNext = &physicalDeviceVulkan12Properties
+                };
+
+                api.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
+
+                physicalDeviceProperties = properties2.Properties;
+            }
+
             PhysicalDeviceProperties = physicalDeviceProperties;
+            PhysicalDeviceVulkan12Properties = physicalDeviceVulkan12Properties;
 
             api.GetPhysicalDeviceMemoryProperties(PhysicalDevice, out PhysicalDeviceMemoryProperties);
 
