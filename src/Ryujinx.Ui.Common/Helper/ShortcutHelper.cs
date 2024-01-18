@@ -79,7 +79,6 @@ namespace Ryujinx.Ui.Common.Helper
                                    arch -$launch_arch {basePath} {GetArgsString(appFilePath)}
                                    """;
             scriptFile.Write(launchScript);
-            scriptFile.WriteLine($"$ARCHPREFERENCE=arm64,x86_64 arch {basePath} {GetArgsString(appFilePath)}");
 
             // Set execute permission
             FileInfo fileInfo = new(scriptPath);
