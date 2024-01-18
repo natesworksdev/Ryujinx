@@ -84,6 +84,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsTBDR { get; private set; }
         internal bool IsSharedMemory { get; private set; }
         public string GpuVendor { get; private set; }
+        public string GpuDriver { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
 
@@ -636,7 +637,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public HardwareInfo GetHardwareInfo()
         {
-            return new HardwareInfo(GpuVendor, GpuRenderer);
+            return new HardwareInfo(GpuVendor, GpuRenderer, GpuDriver);
         }
 
         /// <summary>
@@ -694,6 +695,8 @@ namespace Ryujinx.Graphics.Vulkan
             var properties = _physicalDevice.PhysicalDeviceProperties;
             var propertiesVk12 = _physicalDevice.PhysicalDeviceVulkan12Properties;
 
+            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
+
             Vendor = VendorUtils.FromId(properties.VendorID);
 
             IsAmdWindows = Vendor == Vendor.Amd && OperatingSystem.IsWindows();
@@ -705,7 +708,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Vendor == Vendor.Broadcom ||
                 Vendor == Vendor.ImgTec;
 
-            GpuVendor = Marshal.PtrToStringAnsi((IntPtr)propertiesVk12.DriverName);
+            GpuVendor = vendorName;
+            GpuDriver = Marshal.PtrToStringAnsi((IntPtr)propertiesVk12.DriverName);
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
