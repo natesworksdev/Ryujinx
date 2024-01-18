@@ -1,4 +1,3 @@
-﻿using ARMeilleure.Translation;
 using Gdk;
 using Gtk;
 using Ryujinx.Common;
@@ -11,6 +10,7 @@ using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -449,7 +449,6 @@ namespace Ryujinx.Ui
             {
                 Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
-                Translator.IsReadyForTranslation.Set();
 
                 Renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
 
@@ -525,12 +524,7 @@ namespace Ryujinx.Ui
 
                 var activeProcess = Device.Processes.ActiveApplication;
 
-                string titleNameSection = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
-                string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
-                string titleIdSection = $" ({activeProcess.ProgramIdText.ToUpper()})";
-                string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
-
-                parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                parent.Title = TitleHelper.ActiveApplicationTitle(activeProcess, Program.Version);
             });
 
             Thread renderLoopThread = new(Render)

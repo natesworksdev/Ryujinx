@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using LibHac.Ncm;
@@ -121,6 +121,8 @@ namespace Ryujinx.Ava.UI.Views.Main
             Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
 
             await Window.SettingsWindow.ShowDialog(Window);
+
+            Window.SettingsWindow = null;
 
             ViewModel.LoadConfigurableHotKeys();
         }

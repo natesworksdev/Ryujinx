@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace ARMeilleure.Signal
+namespace Ryujinx.Cpu.Signal
 {
     static partial class UnixSignalHandlerRegistration
     {
