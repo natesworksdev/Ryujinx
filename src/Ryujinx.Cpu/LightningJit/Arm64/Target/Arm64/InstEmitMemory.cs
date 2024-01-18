@@ -224,7 +224,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
             Assembler asm = new(writer);
 
-            bool canFoldOffset = CanFoldOffset(asBits, mmType, imm);
+            bool canFoldOffset = CanFoldOffset(mmType, imm);
             if (canFoldOffset)
             {
                 imm = 0;
@@ -542,7 +542,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             }
         }
 
-        private static bool CanFoldOffset(int asBits, MemoryManagerType mmType, int offset)
+        private static bool CanFoldOffset(MemoryManagerType mmType, int offset)
         {
             return mmType == MemoryManagerType.HostMappedUnsafe;
         }

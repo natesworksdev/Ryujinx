@@ -415,7 +415,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm32
 
         private static bool IsRtWrite(InstName name, uint encoding)
         {
-            // Some instruction can move GPR to FP/SIMD or FP/SIMD to GPR depending on the encoding.
+            // Some instructions can move GPR to FP/SIMD or FP/SIMD to GPR depending on the encoding.
             // Detect those cases so that we can tell if we're actually doing a register write.
 
             switch (name)

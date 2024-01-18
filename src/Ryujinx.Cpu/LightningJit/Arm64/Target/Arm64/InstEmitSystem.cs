@@ -385,8 +385,8 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
             // We only support up to 7 arguments right now.
             // ABI defines the first 8 integer arguments to be passed on registers X0-X7.
-            // We need at least one regiser to put the function address on, so that reduces the amount of
-            // register we can use for that by one.
+            // We need at least one register to put the function address on, so that reduces the number of
+            // registers we can use for that by one.
 
             Debug.Assert(callArgs.Length < 8);
 
