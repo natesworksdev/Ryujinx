@@ -68,7 +68,17 @@ namespace Ryujinx.Ui.Common.Helper
             string scriptPath = Path.Combine(scriptFolderPath, ScriptName);
             using StreamWriter scriptFile = new(scriptPath);
 
-            scriptFile.WriteLine("#!/bin/sh");
+            string launchScript = $"""
+                                   #!/bin/sh
+                                   launch_arch="$(uname -m)"
+                                   if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]
+                                   then
+                                     launch_arch="arm64"
+                                   fi
+
+                                   arch -$launch_arch {basePath} {GetArgsString(appFilePath)}
+                                   """;
+            scriptFile.Write(launchScript);
             scriptFile.WriteLine($"$ARCHPREFERENCE=arm64,x86_64 arch {basePath} {GetArgsString(appFilePath)}");
 
             // Set execute permission
