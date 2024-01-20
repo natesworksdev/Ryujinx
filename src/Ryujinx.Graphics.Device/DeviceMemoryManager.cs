@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Device
 
                 GetSpan(va, size).CopyTo(memory.Span);
 
-                return new WritableRegion(this, va, memory);
+                return new WritableRegion(this, va, memory, tracked: true);
             }
         }
 
