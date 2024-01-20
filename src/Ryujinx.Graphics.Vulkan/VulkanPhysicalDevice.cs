@@ -14,7 +14,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly PhysicalDevice PhysicalDevice;
         public readonly PhysicalDeviceFeatures PhysicalDeviceFeatures;
         public readonly PhysicalDeviceProperties PhysicalDeviceProperties;
-        public readonly PhysicalDeviceVulkan12Properties PhysicalDeviceVulkan12Properties;
         public readonly PhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
         public readonly QueueFamilyProperties[] QueueFamilyProperties;
         public readonly string DeviceName;
@@ -25,27 +24,9 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDevice = physicalDevice;
             PhysicalDeviceFeatures = api.GetPhysicalDeviceFeature(PhysicalDevice);
 
-            PhysicalDeviceProperties physicalDeviceProperties = default;
-            PhysicalDeviceVulkan12Properties physicalDeviceVulkan12Properties = new() // We need this to retrive driver-related details.
-            {
-                SType = StructureType.PhysicalDeviceVulkan12Properties
-            };
-
-            unsafe
-            {
-                PhysicalDeviceProperties2 properties2 = new()
-                {
-                    SType = StructureType.PhysicalDeviceProperties2,
-                    PNext = &physicalDeviceVulkan12Properties
-                };
-
-                api.GetPhysicalDeviceProperties2(physicalDevice, &properties2);
-
-                physicalDeviceProperties = properties2.Properties;
-            }
+            api.GetPhysicalDeviceProperties(PhysicalDevice, out var physicalDeviceProperties);
 
             PhysicalDeviceProperties = physicalDeviceProperties;
-            PhysicalDeviceVulkan12Properties = physicalDeviceVulkan12Properties;
 
             api.GetPhysicalDeviceMemoryProperties(PhysicalDevice, out PhysicalDeviceMemoryProperties);
 
@@ -77,6 +58,34 @@ namespace Ryujinx.Graphics.Vulkan
         public string Id => $"0x{PhysicalDeviceProperties.VendorID:X}_0x{PhysicalDeviceProperties.DeviceID:X}";
 
         public bool IsDeviceExtensionPresent(string extension) => DeviceExtensions.Contains(extension);
+
+        public unsafe bool TryGetPhysicalDeviceDriverPropertiesKHR(Vk api, out PhysicalDeviceDriverPropertiesKHR res)
+        {
+            if (!IsDeviceExtensionPresent("VK_KHR_driver_properties"))
+            {
+                res = default;
+                return false;
+            }
+
+            PhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = new()
+            {
+                SType = StructureType.PhysicalDeviceDriverPropertiesKhr
+            };
+
+            unsafe
+            {
+                PhysicalDeviceProperties2 physicalDeviceProperties2 = new()
+                {
+                    SType = StructureType.PhysicalDeviceProperties2,
+                    PNext = &physicalDeviceDriverProperties
+                };
+
+                api.GetPhysicalDeviceProperties2(PhysicalDevice, &physicalDeviceProperties2);
+            }
+
+            res = physicalDeviceDriverProperties;
+            return true;
+        }
 
         public DeviceInfo ToDeviceInfo()
         {
