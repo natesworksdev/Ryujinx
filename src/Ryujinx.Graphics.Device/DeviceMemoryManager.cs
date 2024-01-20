@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Device
         {
             if (IsContiguous(va, size))
             {
-                return _physical.GetWritableRegion(Translate(va), size);
+                return _physical.GetWritableRegion(Translate(va), size, tracked: true);
             }
             else
             {
