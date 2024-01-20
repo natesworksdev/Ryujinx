@@ -71,16 +71,13 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceDriverPropertiesKhr
             };
 
-            unsafe
+            PhysicalDeviceProperties2 physicalDeviceProperties2 = new()
             {
-                PhysicalDeviceProperties2 physicalDeviceProperties2 = new()
-                {
-                    SType = StructureType.PhysicalDeviceProperties2,
-                    PNext = &physicalDeviceDriverProperties
-                };
+                SType = StructureType.PhysicalDeviceProperties2,
+                PNext = &physicalDeviceDriverProperties
+            };
 
-                api.GetPhysicalDeviceProperties2(PhysicalDevice, &physicalDeviceProperties2);
-            }
+            api.GetPhysicalDeviceProperties2(PhysicalDevice, &physicalDeviceProperties2);
 
             res = physicalDeviceDriverProperties;
             return true;
