@@ -1,14 +1,14 @@
-using Ryujinx.Graphics.Gpu.Memory;
+using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Nvdec.Image;
 
 namespace Ryujinx.Graphics.Nvdec
 {
     readonly struct ResourceManager
     {
-        public MemoryManager Gmm { get; }
+        public DeviceMemoryManager Gmm { get; }
         public SurfaceCache Cache { get; }
 
-        public ResourceManager(MemoryManager gmm, SurfaceCache cache)
+        public ResourceManager(DeviceMemoryManager gmm, SurfaceCache cache)
         {
             Gmm = gmm;
             Cache = cache;

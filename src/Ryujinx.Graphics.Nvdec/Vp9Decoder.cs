@@ -1,5 +1,5 @@
 using Ryujinx.Common;
-using Ryujinx.Graphics.Gpu.Memory;
+using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Nvdec.Image;
 using Ryujinx.Graphics.Nvdec.Types.Vp9;
 using Ryujinx.Graphics.Nvdec.Vp9;
@@ -70,17 +70,17 @@ namespace Ryujinx.Graphics.Nvdec
             rm.Cache.Put(currentSurface);
         }
 
-        private static ReadOnlySpan<Vp9MvRef> GetMvsInput(MemoryManager gmm, FrameSize size, uint offset)
+        private static ReadOnlySpan<Vp9MvRef> GetMvsInput(DeviceMemoryManager mm, FrameSize size, uint offset)
         {
             int miCols = BitUtils.DivRoundUp(size.Width, 8);
             int miRows = BitUtils.DivRoundUp(size.Height, 8);
 
-            return MemoryMarshal.Cast<byte, Vp9MvRef>(gmm.DeviceGetSpan(offset, miRows * miCols * 16));
+            return MemoryMarshal.Cast<byte, Vp9MvRef>(mm.DeviceGetSpan(offset, miRows * miCols * 16));
         }
 
-        private static void WriteBackwardUpdates(MemoryManager gmm, uint offset, ref Vp9BackwardUpdates counts)
+        private static void WriteBackwardUpdates(DeviceMemoryManager mm, uint offset, ref Vp9BackwardUpdates counts)
         {
-            using var backwardUpdatesRegion = gmm.GetWritableRegion(ExtendOffset(offset), Unsafe.SizeOf<BackwardUpdates>());
+            using var backwardUpdatesRegion = mm.GetWritableRegion(ExtendOffset(offset), Unsafe.SizeOf<BackwardUpdates>());
 
             ref var backwardUpdates = ref MemoryMarshal.Cast<byte, BackwardUpdates>(backwardUpdatesRegion.Memory.Span)[0];
 
