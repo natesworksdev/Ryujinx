@@ -25,7 +25,6 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDeviceFeatures = api.GetPhysicalDeviceFeature(PhysicalDevice);
 
             api.GetPhysicalDeviceProperties(PhysicalDevice, out var physicalDeviceProperties);
-
             PhysicalDeviceProperties = physicalDeviceProperties;
 
             api.GetPhysicalDeviceMemoryProperties(PhysicalDevice, out PhysicalDeviceMemoryProperties);
