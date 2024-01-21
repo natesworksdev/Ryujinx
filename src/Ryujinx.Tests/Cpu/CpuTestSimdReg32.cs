@@ -2,6 +2,7 @@
 
 using ARMeilleure.State;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -907,6 +908,31 @@ namespace Ryujinx.Tests.Cpu
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
             CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Vrecps(
+            [Values(0u, 2u, 4u)] uint rd,
+            [Values(2u)] uint rn,
+            [Values(4u)] uint rm,
+            [ValueSource(nameof(_2S_F_))] ulong a0,
+            [ValueSource(nameof(_2S_F_))] ulong a1,
+            [ValueSource(nameof(_2S_F_))] ulong b0,
+            [ValueSource(nameof(_2S_F_))] ulong b1,
+            [Values(0u, 0x40u)] uint Q)
+        {
+            uint opcode = 0xf2000f10u | Q; // VRECPS.F32 D0, D0, D0
+
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+
+            V128 v1 = MakeVectorE0E1(a0, a1);
+            V128 v2 = MakeVectorE0E1(b0, b1);
+
+            SingleOpcode(opcode, v0: v1, v1: v1, v2: v2, v3: v2);
+
+            CompareAgainstUnicorn(Fpsr.None, FpSkips.IfUnderflow, FpTolerances.UpToOneUlpsS);
         }
 #endif
     }
