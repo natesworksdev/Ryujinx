@@ -4842,7 +4842,7 @@ namespace ARMeilleure.Instructions
             return context.AddIntrinsic(Intrinsic.X86Blendvps, value, oValue, isNaNInf);
         }
 
-        private static Operand EmitSse41RecipStepSelectOpF(
+        public static Operand EmitSse41RecipStepSelectOpF(
             ArmEmitterContext context,
             Operand n,
             Operand m,
@@ -4880,9 +4880,9 @@ namespace ARMeilleure.Instructions
             Operand nInf = context.AddIntrinsic(cmpOp, n, expMask);
             Operand mInf = context.AddIntrinsic(cmpOp, m, expMask);
 
-            Operand nmZero = context.AddIntrinsic(Intrinsic.X86Por, nZero, mZero);
-            Operand nmInf = context.AddIntrinsic(Intrinsic.X86Por, nInf, mInf);
-            Operand nmZeroInf = context.AddIntrinsic(Intrinsic.X86Pand, nmZero, nmInf);
+            Operand nZeromInf = context.AddIntrinsic(Intrinsic.X86Pand, nZero, mInf);
+            Operand mZeronInf = context.AddIntrinsic(Intrinsic.X86Pand, mZero, nInf);
+            Operand nmZeroInf = context.AddIntrinsic(Intrinsic.X86Por, nZeromInf, mZeronInf);
 
             return context.AddIntrinsic(blendOp, res, mask, nmZeroInf);
         }
