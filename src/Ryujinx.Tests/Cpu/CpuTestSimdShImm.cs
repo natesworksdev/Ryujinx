@@ -933,7 +933,7 @@ namespace Ryujinx.Tests.Cpu
 
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
             opcodes |= (immHb << 16);
-            opcodes |= ((q & 1) << 30);
+            opcodes |= (((q | (immHb >> 6)) & 1) << 30);
 
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, a * q);
