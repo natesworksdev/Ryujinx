@@ -1369,30 +1369,29 @@ namespace ARMeilleure.Instructions
             {
                 InstEmitSimdHelper32Arm64.EmitVectorBinaryOpF32(context, Intrinsic.Arm64FrecpsV);
             }
-            else if (Optimizations.FastFP && Optimizations.UseSse2)
+            else if (Optimizations.FastFP && Optimizations.UseSse41)
             {
                 OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-                bool single = (op.Size & 1) == 0;
 
                 // (2 - (n*m))
                 EmitVectorBinaryOpSimd32(context, (n, m) =>
                 {
-                    if (single)
+                    Operand mask = X86GetAllElements(context, 2f);
+                    Operand res;
+
+                    if (Optimizations.UseFma)
                     {
-                        Operand maskTwo = X86GetAllElements(context, 2f);
-
-                        Operand res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
-
-                        return context.AddIntrinsic(Intrinsic.X86Subps, maskTwo, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Vfnmadd231ps, mask, n, m);
                     }
                     else
                     {
-                        Operand maskTwo = X86GetAllElements(context, 2d);
-
-                        Operand res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, m);
-
-                        return context.AddIntrinsic(Intrinsic.X86Subpd, maskTwo, res);
+                        res = context.AddIntrinsic(Intrinsic.X86Mulps, n, m);
+                        res = context.AddIntrinsic(Intrinsic.X86Subps, mask, res);
                     }
+
+                    res = InstEmit.EmitSse41RecipStepSelectOpF(context, n, m, res, mask, scalar: false, 0);
+                    res = EmitSse41ForceToDefaultNaN(context, res, 0);
+                    return res;
                 });
             }
             else
@@ -1696,6 +1695,21 @@ namespace ARMeilleure.Instructions
             else
             {
                 EmitVectorBinaryOpSimd32(context, genericEmit);
+            }
+        }
+
+        private static Operand EmitSse41ForceToDefaultNaN(ArmEmitterContext context, Operand n, int sizeF)
+        {
+            Operand nan = sizeF == 0 ? X86GetAllElements(context, 0x7fc00000) : X86GetAllElements(context, 0x7ff8000000000000L);
+            if (sizeF == 0)
+            {
+                Operand mask = context.AddIntrinsic(Intrinsic.X86Cmpps, n, n, Const((int)CmpCondition.UnorderedQ));
+                return context.AddIntrinsic(Intrinsic.X86Blendvps, n, nan, mask);
+            }
+            else
+            {
+                Operand mask = context.AddIntrinsic(Intrinsic.X86Cmppd, n, n, Const((int)CmpCondition.UnorderedQ));
+                return context.AddIntrinsic(Intrinsic.X86Blendvpd, n, nan, mask);
             }
         }
     }
