@@ -54,6 +54,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
             var plistFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.plist");
+            var shortcutScript = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-launch-script.sh");
             // Macos .App folder
             string contentFolderPath = Path.Combine("/Applications", cleanedAppName + ".app", "Contents");
             string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");
@@ -68,17 +69,7 @@ namespace Ryujinx.Ui.Common.Helper
             string scriptPath = Path.Combine(scriptFolderPath, ScriptName);
             using StreamWriter scriptFile = new(scriptPath);
 
-            string launchScript = $"""
-                                   #!/bin/sh
-                                   launch_arch="$(uname -m)"
-                                   if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]
-                                   then
-                                     launch_arch="arm64"
-                                   fi
-
-                                   arch -$launch_arch {basePath} {GetArgsString(appFilePath)}
-                                   """;
-            scriptFile.Write(launchScript);
+            scriptFile.Write(shortcutScript, basePath, GetArgsString(appFilePath));
 
             // Set execute permission
             FileInfo fileInfo = new(scriptPath);
