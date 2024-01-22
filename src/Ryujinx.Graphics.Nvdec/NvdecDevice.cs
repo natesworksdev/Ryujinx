@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Nvdec
         private readonly ConcurrentDictionary<long, NvdecDecoderContext> _contexts;
         private NvdecDecoderContext _currentContext;
 
-        public NvdecDevice(DeviceMemoryManager gmm)
+        public NvdecDevice(DeviceMemoryManager mm)
         {
-            _rm = new ResourceManager(gmm, new SurfaceCache(gmm));
+            _rm = new ResourceManager(mm, new SurfaceCache(mm));
             _state = new DeviceState<NvdecRegisters>(new Dictionary<string, RwCallback>
             {
                 { nameof(NvdecRegisters.Execute), new RwCallback(Execute, null) },

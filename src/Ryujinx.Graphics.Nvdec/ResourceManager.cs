@@ -5,12 +5,12 @@ namespace Ryujinx.Graphics.Nvdec
 {
     readonly struct ResourceManager
     {
-        public DeviceMemoryManager Gmm { get; }
+        public DeviceMemoryManager MemoryManager { get; }
         public SurfaceCache Cache { get; }
 
-        public ResourceManager(DeviceMemoryManager gmm, SurfaceCache cache)
+        public ResourceManager(DeviceMemoryManager mm, SurfaceCache cache)
         {
-            Gmm = gmm;
+            MemoryManager = mm;
             Cache = cache;
         }
     }
