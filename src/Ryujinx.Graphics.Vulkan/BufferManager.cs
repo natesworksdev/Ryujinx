@@ -266,21 +266,27 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
-        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, int alignment = -1)
+        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, out BufferHolder holder, int alignment = -1)
         {
             StagingBufferReserved? result = StagingBuffer.TryReserveData(cbs, size, alignment);
 
             if (result.HasValue)
             {
+                holder = result.Value.Buffer;
                 return new ScopedTemporaryBuffer(this, StagingBuffer.Handle, result.Value.Offset, result.Value.Size, true);
             }
             else
             {
                 // Create a temporary buffer.
-                BufferHandle handle = CreateWithHandle(gd, size);
+                BufferHandle handle = CreateWithHandle(gd, size, out holder);
 
                 return new ScopedTemporaryBuffer(this, handle, 0, size, false);
             }
+        }
+
+        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, int alignment = -1)
+        {
+            return ReserveOrCreate(gd, cbs, size, out _, alignment);
         }
 
         public unsafe MemoryRequirements GetHostImportedUsageRequirements(VulkanRenderer gd)

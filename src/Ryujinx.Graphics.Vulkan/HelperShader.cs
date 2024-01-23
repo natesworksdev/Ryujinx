@@ -1600,10 +1600,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             pattern.OffsetIndex.CopyTo(shaderParams[..pattern.OffsetIndex.Length]);
 
-            var patternBufferHandle = gd.BufferManager.CreateWithHandle(gd, ParamsBufferSize, out var patternBuffer);
+            using var patternScoped = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize, out var patternBuffer);
             var patternBufferAuto = patternBuffer.GetBuffer();
 
-            gd.BufferManager.SetData<int>(patternBufferHandle, 0, shaderParams);
+            gd.BufferManager.SetData<int>(patternScoped.Handle, patternScoped.Offset, shaderParams);
 
             _pipeline.SetCommandBuffer(cbs);
 
@@ -1619,7 +1619,8 @@ namespace Ryujinx.Graphics.Vulkan
                 indirectDataSize);
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(0, drawCountBufferAligned) });
-            _pipeline.SetStorageBuffers(1, new[] { srcIndirectBuffer.GetBuffer(), dstIndirectBuffer.GetBuffer(), patternBuffer.GetBuffer() });
+            _pipeline.SetStorageBuffers(1, new[] { srcIndirectBuffer.GetBuffer(), dstIndirectBuffer.GetBuffer() });
+            _pipeline.SetStorageBuffers(stackalloc[] { new BufferAssignment(3, patternScoped.Range) });
 
             _pipeline.SetProgram(_programConvertIndirectData);
             _pipeline.DispatchCompute(1, 1, 1);
@@ -1627,12 +1628,12 @@ namespace Ryujinx.Graphics.Vulkan
             BufferHolder.InsertBufferBarrier(
                 gd,
                 cbs.CommandBuffer,
-                patternBufferAuto.Get(cbs, ParamsIndirectDispatchOffset, ParamsIndirectDispatchSize).Value,
+                patternBufferAuto.Get(cbs, patternScoped.Offset + ParamsIndirectDispatchOffset, ParamsIndirectDispatchSize).Value,
                 AccessFlags.ShaderWriteBit,
                 AccessFlags.IndirectCommandReadBit,
                 PipelineStageFlags.ComputeShaderBit,
                 PipelineStageFlags.DrawIndirectBit,
-                ParamsIndirectDispatchOffset,
+                patternScoped.Offset + ParamsIndirectDispatchOffset,
                 ParamsIndirectDispatchSize);
 
             BufferHolder.InsertBufferBarrier(
@@ -1646,11 +1647,11 @@ namespace Ryujinx.Graphics.Vulkan
                 0,
                 convertedCount * outputIndexSize);
 
-            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(0, new BufferRange(patternBufferHandle, 0, ParamsBufferSize)) });
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(0, new BufferRange(patternScoped.Handle, patternScoped.Offset, ParamsBufferSize)) });
             _pipeline.SetStorageBuffers(1, new[] { srcIndexBuffer.GetBuffer(), dstIndexBuffer.GetBuffer() });
 
             _pipeline.SetProgram(_programConvertIndexBuffer);
-            _pipeline.DispatchComputeIndirect(patternBufferAuto, ParamsIndirectDispatchOffset);
+            _pipeline.DispatchComputeIndirect(patternBufferAuto, patternScoped.Offset + ParamsIndirectDispatchOffset);
 
             BufferHolder.InsertBufferBarrier(
                 gd,
@@ -1662,8 +1663,6 @@ namespace Ryujinx.Graphics.Vulkan
                 PipelineStageFlags.AllCommandsBit,
                 0,
                 convertedCount * outputIndexSize);
-
-            gd.BufferManager.Delete(patternBufferHandle);
 
             _pipeline.Finish(gd, cbs);
         }
