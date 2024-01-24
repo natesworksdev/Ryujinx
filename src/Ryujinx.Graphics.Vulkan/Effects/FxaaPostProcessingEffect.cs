@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             int rangeSize = resolutionBuffer.Length * sizeof(float);
             using var buffer = _renderer.BufferManager.ReserveOrCreate(_renderer, cbs, rangeSize);
 
-            _renderer.BufferManager.SetData(buffer.Handle, buffer.Offset, resolutionBuffer);
+            buffer.Holder.SetDataUnchecked(buffer.Offset, resolutionBuffer);
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, buffer.Range) });
 

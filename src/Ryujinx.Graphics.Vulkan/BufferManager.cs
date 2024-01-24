@@ -15,15 +15,17 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly bool _isReserved;
 
         public readonly BufferRange Range;
+        public readonly BufferHolder Holder;
 
         public BufferHandle Handle => Range.Handle;
         public int Offset => Range.Offset;
 
-        public ScopedTemporaryBuffer(BufferManager bufferManager, BufferHandle handle, int offset, int size, bool isReserved)
+        public ScopedTemporaryBuffer(BufferManager bufferManager, BufferHolder holder, BufferHandle handle, int offset, int size, bool isReserved)
         {
             _bufferManager = bufferManager;
 
             Range = new BufferRange(handle, offset, size);
+            Holder = holder;
 
             _isReserved = isReserved;
         }
@@ -266,27 +268,21 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
-        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, out BufferHolder holder)
+        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size)
         {
             StagingBufferReserved? result = StagingBuffer.TryReserveData(cbs, size);
 
             if (result.HasValue)
             {
-                holder = result.Value.Buffer;
-                return new ScopedTemporaryBuffer(this, StagingBuffer.Handle, result.Value.Offset, result.Value.Size, true);
+                return new ScopedTemporaryBuffer(this, result.Value.Buffer, StagingBuffer.Handle, result.Value.Offset, result.Value.Size, true);
             }
             else
             {
                 // Create a temporary buffer.
-                BufferHandle handle = CreateWithHandle(gd, size, out holder);
+                BufferHandle handle = CreateWithHandle(gd, size, out BufferHolder holder);
 
-                return new ScopedTemporaryBuffer(this, handle, 0, size, false);
+                return new ScopedTemporaryBuffer(this, holder, handle, 0, size, false);
             }
-        }
-
-        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size)
-        {
-            return ReserveOrCreate(gd, cbs, size, out _);
         }
 
         public unsafe MemoryRequirements GetHostImportedUsageRequirements(VulkanRenderer gd)

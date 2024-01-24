@@ -432,7 +432,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, RegionBufferSize);
 
-            gd.BufferManager.SetData<float>(buffer.Handle, buffer.Offset, region);
+            buffer.Holder.SetDataUnchecked<float>(buffer.Offset, region);
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(1, buffer.Range) });
 
@@ -527,7 +527,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, RegionBufferSize);
 
-            gd.BufferManager.SetData<float>(buffer.Handle, buffer.Offset, region);
+            buffer.Holder.SetDataUnchecked<float>(buffer.Offset, region);
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(1, buffer.Range) });
 
@@ -679,7 +679,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ClearColorBufferSize);
 
-            gd.BufferManager.SetData(buffer.Handle, buffer.Offset, clearColor);
+            buffer.Holder.SetDataUnchecked(buffer.Offset, clearColor);
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(1, buffer.Range) });
 
@@ -741,7 +741,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ClearColorBufferSize);
 
-            gd.BufferManager.SetData<float>(buffer.Handle, buffer.Offset, stackalloc float[] { depthValue });
+            buffer.Holder.SetDataUnchecked<float>(buffer.Offset, stackalloc float[] { depthValue });
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(1, buffer.Range) });
 
@@ -872,7 +872,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
 
-                gd.BufferManager.SetData<int>(buffer.Handle, buffer.Offset, shaderParams);
+                buffer.Holder.SetDataUnchecked<int>(buffer.Offset, shaderParams);
 
                 _pipeline.SetCommandBuffer(cbs);
 
@@ -1026,7 +1026,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
 
-            gd.BufferManager.SetData<int>(buffer.Handle, buffer.Offset, shaderParams);
+            buffer.Holder.SetDataUnchecked<int>(buffer.Offset, shaderParams);
 
             TextureView.InsertImageBarrier(
                 gd.Api,
@@ -1118,7 +1118,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
 
-            gd.BufferManager.SetData<int>(buffer.Handle, buffer.Offset, shaderParams);
+            buffer.Holder.SetDataUnchecked<int>(buffer.Offset, shaderParams);
 
             TextureView.InsertImageBarrier(
                 gd.Api,
@@ -1249,7 +1249,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
 
-            gd.BufferManager.SetData<int>(buffer.Handle, buffer.Offset, shaderParams);
+            buffer.Holder.SetDataUnchecked<int>(buffer.Offset, shaderParams);
 
             TextureView.InsertImageBarrier(
                 gd.Api,
@@ -1600,10 +1600,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             pattern.OffsetIndex.CopyTo(shaderParams[..pattern.OffsetIndex.Length]);
 
-            using var patternScoped = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize, out var patternBuffer);
+            using var patternScoped = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
+            var patternBuffer = patternScoped.Holder;
             var patternBufferAuto = patternBuffer.GetBuffer();
 
-            gd.BufferManager.SetData<int>(patternScoped.Handle, patternScoped.Offset, shaderParams);
+            patternBuffer.SetDataUnchecked<int>(patternScoped.Offset, shaderParams);
 
             _pipeline.SetCommandBuffer(cbs);
 
@@ -1711,7 +1712,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var buffer = gd.BufferManager.ReserveOrCreate(gd, cbs, ParamsBufferSize);
 
-            gd.BufferManager.SetData<int>(buffer.Handle, buffer.Offset, shaderParams);
+            buffer.Holder.SetDataUnchecked<int>(buffer.Offset, shaderParams);
 
             _pipeline.SetCommandBuffer(cbs);
 
