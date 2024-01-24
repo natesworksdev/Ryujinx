@@ -1015,7 +1015,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             const int ParamsBufferSize = 4;
 
-            Span<int> shaderParams = stackalloc int[sizeof(int)];
+            Span<int> shaderParams = stackalloc int[ParamsBufferSize / sizeof(int)];
 
             int srcBpp = src.Info.BytesPerPixel;
             int dstBpp = dst.Info.BytesPerPixel;
