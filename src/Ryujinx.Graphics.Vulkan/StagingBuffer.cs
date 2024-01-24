@@ -203,18 +203,13 @@ namespace Ryujinx.Graphics.Vulkan
         /// </summary>
         /// <param name="cbs">Command buffer to reserve the data on</param>
         /// <param name="size">The minimum size the reserved data requires</param>
-        /// <param name="alignment">The required alignment for the buffer offset. -1 uses the most permissive alignment</param>
+        /// <param name="alignment">The required alignment for the buffer offset</param>
         /// <returns>The reserved range of the staging buffer</returns>
-        public unsafe StagingBufferReserved? TryReserveData(CommandBufferScoped cbs, int size, int alignment = -1)
+        public unsafe StagingBufferReserved? TryReserveData(CommandBufferScoped cbs, int size, int alignment)
         {
             if (size > BufferSize)
             {
                 return null;
-            }
-
-            if (alignment == -1)
-            {
-                alignment = _resourceAlignment;
             }
 
             // Temporary reserved data cannot be fragmented.
@@ -231,6 +226,18 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return ReserveDataImpl(cbs, size, alignment);
+        }
+
+        /// <summary>
+        /// Reserve a range on the staging buffer for the current command buffer and upload data to it.
+        /// Uses the most permissive byte alignment.
+        /// </summary>
+        /// <param name="cbs">Command buffer to reserve the data on</param>
+        /// <param name="size">The minimum size the reserved data requires</param>
+        /// <returns>The reserved range of the staging buffer</returns>
+        public unsafe StagingBufferReserved? TryReserveData(CommandBufferScoped cbs, int size)
+        {
+            return TryReserveData(cbs, size, _resourceAlignment);
         }
 
         private bool WaitFreeCompleted(CommandBufferPool cbp)

@@ -266,9 +266,9 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
-        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, out BufferHolder holder, int alignment = -1)
+        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, out BufferHolder holder)
         {
-            StagingBufferReserved? result = StagingBuffer.TryReserveData(cbs, size, alignment);
+            StagingBufferReserved? result = StagingBuffer.TryReserveData(cbs, size);
 
             if (result.HasValue)
             {
@@ -284,9 +284,9 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size, int alignment = -1)
+        public ScopedTemporaryBuffer ReserveOrCreate(VulkanRenderer gd, CommandBufferScoped cbs, int size)
         {
-            return ReserveOrCreate(gd, cbs, size, out _, alignment);
+            return ReserveOrCreate(gd, cbs, size, out _);
         }
 
         public unsafe MemoryRequirements GetHostImportedUsageRequirements(VulkanRenderer gd)
