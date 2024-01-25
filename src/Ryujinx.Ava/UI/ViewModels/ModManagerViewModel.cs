@@ -201,7 +201,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadModErrorMessage, "Director", dirToCreate));
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadErrorMessage, "Directory", dirToCreate));
                     });
 
                     return;
