@@ -100,7 +100,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           pushd publish_gtk
-          7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
+          7z a ../release_output/gtk-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
 
           pushd publish_sdl2_headless
@@ -108,7 +108,7 @@ jobs:
           popd
 
           pushd publish_ava
-          7z a ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
+          7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip publish
           popd
         shell: bash
 
@@ -117,7 +117,7 @@ jobs:
         run: |
           pushd publish_gtk
           chmod +x publish/Ryujinx.sh publish/Ryujinx
-          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          tar -czvf ../release_output/gtk-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
 
           pushd publish_sdl2_headless
@@ -127,7 +127,7 @@ jobs:
 
           pushd publish_ava
           chmod +x publish/Ryujinx.sh publish/Ryujinx.Ava
-          tar -czvf ../release_output/test-ava-ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
+          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz publish
           popd
         shell: bash
 

@@ -81,7 +81,7 @@ jobs:
       - name: Upload Ryujinx artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
+          name: gtk-ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
           path: publish
         if: github.event_name == 'pull_request' && matrix.os != 'macOS-latest'
 
@@ -95,7 +95,7 @@ jobs:
       - name: Upload Ryujinx.Ava artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ava-ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
+          name: ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
           path: publish_ava
         if: github.event_name == 'pull_request' && matrix.os != 'macOS-latest'
 
@@ -146,8 +146,8 @@ jobs:
       - name: Upload Ryujinx.Ava artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ava-ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-macos_universal
           path: "publish_ava/*.tar.gz"
+          name: ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}+${{ steps.git_short_hash.outputs.result }}-macos_universal
         if: github.event_name == 'pull_request'
 
       - name: Upload Ryujinx.Headless.SDL2 artifact

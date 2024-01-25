@@ -103,7 +103,7 @@ namespace Ryujinx.Modules
 
                 foreach (var asset in fetched.Assets)
                 {
-                    if (asset.Name.StartsWith("test-ava-ryujinx") && asset.Name.EndsWith(_platformExt))
+                    if (asset.Name.StartsWith("ryujinx") && asset.Name.EndsWith(_platformExt))
                     {
                         _buildUrl = asset.BrowserDownloadUrl;
 
@@ -308,7 +308,7 @@ namespace Ryujinx.Modules
                         // Fallback if the executable could not be found.
                         if (!Path.Exists(Path.Combine(executableDirectory, ryuName)))
                         {
-                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
+                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
                         }
 
                         ProcessStartInfo processStart = new(ryuName)
