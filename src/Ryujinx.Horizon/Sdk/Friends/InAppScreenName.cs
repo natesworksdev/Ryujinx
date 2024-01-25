@@ -17,7 +17,7 @@ namespace Ryujinx.Horizon.Sdk.Friends
             int length = Name.AsSpan().IndexOf((byte)0);
             if (length < 0)
             {
-                length = 33;
+                length = 64;
             }
 
             return Encoding.UTF8.GetString(Name.AsSpan()[..length]);
