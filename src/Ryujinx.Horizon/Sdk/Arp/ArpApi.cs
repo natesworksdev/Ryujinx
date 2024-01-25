@@ -18,12 +18,18 @@ namespace Ryujinx.Horizon.Sdk.Arp
 
         public ArpApi(HeapAllocator allocator)
         {
-            using var smApi = new SmApi();
-
             _allocator = allocator;
+        }
 
-            smApi.Initialize();
-            smApi.GetServiceHandle(out _sessionHandle, ServiceName.Encode(ArpRName)).AbortOnFailure();
+        private void InitializeArpRService()
+        {
+            if (_sessionHandle == 0)
+            {
+                using var smApi = new SmApi();
+
+                smApi.Initialize();
+                smApi.GetServiceHandle(out _sessionHandle, ServiceName.Encode(ArpRName)).AbortOnFailure();
+            }
         }
 
         public Result GetApplicationInstanceId(out ulong applicationInstanceId, ulong applicationPid)
@@ -32,6 +38,8 @@ namespace Ryujinx.Horizon.Sdk.Arp
             SpanWriter writer = new(data);
 
             writer.Write(applicationPid);
+
+            InitializeArpRService();
 
             Result result = ServiceUtil.SendRequest(out CmifResponse response, _sessionHandle, 3, sendPid: false, data);
             if (result.IsFailure)
@@ -57,6 +65,8 @@ namespace Ryujinx.Horizon.Sdk.Arp
 
             writer.Write(applicationInstanceId);
 
+            InitializeArpRService();
+
             Result result = ServiceUtil.SendRequest(out CmifResponse response, _sessionHandle, 0, sendPid: false, data);
             if (result.IsFailure)
             {
@@ -81,6 +91,8 @@ namespace Ryujinx.Horizon.Sdk.Arp
 
             ulong bufferSize = (ulong)Unsafe.SizeOf<ApplicationControlProperty>();
             ulong bufferAddress = _allocator.Allocate(bufferSize);
+
+            InitializeArpRService();
 
             Result result = ServiceUtil.SendRequest(
                 out CmifResponse response,
