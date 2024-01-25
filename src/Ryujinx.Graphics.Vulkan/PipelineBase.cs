@@ -30,6 +30,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly PipelineCache PipelineCache;
 
         public readonly AutoFlushCounter AutoFlush;
+        public readonly Action EndRenderPassDelegate;
 
         protected PipelineDynamicState DynamicState;
         private PipelineState _newState;
@@ -92,6 +93,7 @@ namespace Ryujinx.Graphics.Vulkan
             Device = device;
 
             AutoFlush = new AutoFlushCounter(gd);
+            EndRenderPassDelegate = EndRenderPass;
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo
             {
@@ -100,7 +102,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out PipelineCache).ThrowOnError();
 
-            _descriptorSetUpdater = new DescriptorSetUpdater(gd, this);
+            _descriptorSetUpdater = new DescriptorSetUpdater(gd, device, this);
             _vertexBufferUpdater = new VertexBufferUpdater(gd);
 
             _transformFeedbackBuffers = new BufferState[Constants.MaxTransformFeedbackBuffers];

@@ -1,4 +1,3 @@
-using ARMeilleure.Translation;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -916,7 +915,6 @@ namespace Ryujinx.Ava
             {
                 Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
-                Translator.IsReadyForTranslation.Set();
 
                 _renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
 
@@ -1088,10 +1086,11 @@ namespace Ryujinx.Ava
                         case KeyboardHotkeyState.ToggleMute:
                             if (Device.IsAudioMuted())
                             {
-                                Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                                Device.SetVolume(_viewModel.VolumeBeforeMute);
                             }
                             else
                             {
+                                _viewModel.VolumeBeforeMute = Device.GetVolume();
                                 Device.SetVolume(0);
                             }
 
