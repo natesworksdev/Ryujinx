@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Memory;
+using Ryujinx.Common.Memory;
 using Ryujinx.Horizon.Sdk.Arp.Detail;
 using System;
 using System.Runtime.CompilerServices;

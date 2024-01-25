@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Horizon.Arp
+namespace Ryujinx.Horizon.Arp
 {
     class ArpMain : IService
     {

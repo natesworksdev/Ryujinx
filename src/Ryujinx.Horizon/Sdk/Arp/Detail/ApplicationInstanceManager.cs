@@ -1,4 +1,4 @@
-﻿using Ryujinx.Horizon.Sdk.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 using System.Threading;
 

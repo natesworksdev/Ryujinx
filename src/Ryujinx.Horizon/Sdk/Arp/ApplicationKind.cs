@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Horizon.Sdk.Arp
+namespace Ryujinx.Horizon.Sdk.Arp
 {
     public enum ApplicationKind : byte
     {

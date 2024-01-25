@@ -1,4 +1,4 @@
-﻿using Ryujinx.Horizon.Sdk.Ncm;
+using Ryujinx.Horizon.Sdk.Ncm;
 
 namespace Ryujinx.Horizon.Sdk.Arp
 {

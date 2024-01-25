@@ -1,4 +1,4 @@
-﻿using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Ns;
 
 namespace Ryujinx.Horizon.Sdk.Arp
