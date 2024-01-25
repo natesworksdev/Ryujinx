@@ -233,7 +233,6 @@ namespace Ryujinx.Horizon.Prepo.Ipc
 
             Logger.Info?.Print(LogClass.ServicePrepo, builder.ToString());
 
-
             return Result.Success;
         }
     }

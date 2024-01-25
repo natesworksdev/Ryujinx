@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 using Ryujinx.Horizon.Prepo.Types;
-=======
-﻿using Ryujinx.Horizon.Prepo.Types;
 using Ryujinx.Horizon.Sdk.Arp;
->>>>>>> 7e259965 (ArpApi in PrepoIpcServer and remove LmApi)
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using Ryujinx.Horizon.Sdk.Sm;
 
