@@ -24,7 +24,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private AvaloniaList<ModModel> _selectedMods = new();
 
         private string _search;
-        private readonly ulong _titleId;
+        private readonly ulong _applicationId;
         private readonly IStorageProvider _storageProvider;
 
         private static readonly ModMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
@@ -77,21 +77,21 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.ModWindowHeading], Mods.Count);
         }
 
-        public ModManagerViewModel(ulong titleId)
+        public ModManagerViewModel(ulong applicationId)
         {
-            _titleId = titleId;
+            _applicationId = applicationId;
 
-            _modJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "mods.json");
+            _modJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationId.ToString("x16"), "mods.json");
 
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 _storageProvider = desktop.MainWindow.StorageProvider;
             }
 
-            LoadMods(titleId);
+            LoadMods(applicationId);
         }
 
-        private void LoadMods(ulong titleId)
+        private void LoadMods(ulong applicationId)
         {
             Mods.Clear();
             SelectedMods.Clear();
@@ -101,8 +101,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             foreach (var path in modsBasePaths)
             {
                 var modCache = new ModLoader.ModCache();
-
-                ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(path, "contents")), titleId);
+                ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(path, "contents")), applicationId);
 
                 foreach (var mod in modCache.RomfsDirs)
                 {
@@ -191,7 +190,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private void AddMod(DirectoryInfo directory)
         {
             var directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
-            var destinationDir = ModLoader.GetTitleDir(ModLoader.GetSdModsBasePath(), _titleId.ToString("x16"));
+            var destinationDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
 
             foreach (var dir in directories)
             {
@@ -218,7 +217,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 File.Copy(file, file.Replace(directory.Parent.ToString(), destinationDir), true);
             }
 
-            LoadMods(_titleId);
+            LoadMods(_applicationId);
         }
 
         public async void Add()
@@ -226,7 +225,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             var result = await _storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectModDialogTitle],
-                AllowMultiple = true,
+                AllowMultiple = true
             });
 
             foreach (var folder in result)
