@@ -1,4 +1,5 @@
 using Ryujinx.Horizon.Bcat;
+using Ryujinx.Horizon.Friends;
 using Ryujinx.Horizon.Hshl;
 using Ryujinx.Horizon.Ins;
 using Ryujinx.Horizon.Lbl;
@@ -33,6 +34,7 @@ namespace Ryujinx.Horizon
             }
 
             RegisterService<BcatMain>();
+            RegisterService<FriendsMain>();
             RegisterService<HshlMain>();
             RegisterService<InsMain>();
             RegisterService<LblMain>();
