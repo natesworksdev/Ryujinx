@@ -1,4 +1,3 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Account;
 using Ryujinx.Horizon.Sdk.OsTypes;
@@ -60,20 +59,20 @@ namespace Ryujinx.Horizon.Sdk.Friends.Detail.Ipc
         }
 
         [CmifCommand(2)]
-        public Result Pop(out SizedNotificationInfo info)
+        public Result Pop(out SizedNotificationInfo sizedNotificationInfo)
         {
             lock (_lock)
             {
                 if (_notifications.Count >= 1)
                 {
-                    info = _notifications.First.Value;
+                    sizedNotificationInfo = _notifications.First.Value;
                     _notifications.RemoveFirst();
 
-                    if (info.Type == NotificationEventType.FriendListUpdate)
+                    if (sizedNotificationInfo.Type == NotificationEventType.FriendListUpdate)
                     {
                         _hasFriendListUpdate = false;
                     }
-                    else if (info.Type == NotificationEventType.NewFriendRequest)
+                    else if (sizedNotificationInfo.Type == NotificationEventType.NewFriendRequest)
                     {
                         _hasNewFriendRequest = false;
                     }
@@ -82,7 +81,7 @@ namespace Ryujinx.Horizon.Sdk.Friends.Detail.Ipc
                 }
             }
 
-            info = default;
+            sizedNotificationInfo = default;
 
             return FriendResult.NotificationQueueEmpty;
         }

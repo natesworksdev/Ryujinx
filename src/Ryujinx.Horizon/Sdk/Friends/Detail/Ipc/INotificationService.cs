@@ -7,6 +7,6 @@ namespace Ryujinx.Horizon.Sdk.Friends.Detail.Ipc
     {
         Result GetEvent(out int eventHandle);
         Result Clear();
-        Result Pop(out SizedNotificationInfo info);
+        Result Pop(out SizedNotificationInfo sizedNotificationInfo);
     }
 }

@@ -5,12 +5,12 @@ namespace Ryujinx.Horizon.Friends
 {
     class FriendsIpcServer
     {
-        private const int MaxSessionsCount = 32;
+        private const int MaxSessionsCount = 8;
         private const int TotalMaxSessionsCount = MaxSessionsCount * 5;
 
-        private const int PointerBufferSize = 0x800; // TODO: Figure out the correct values.
-        private const int MaxDomains = 64; // TODO: Figure out the correct values.
-        private const int MaxDomainObjects = 16; // TODO: Figure out the correct values.
+        private const int PointerBufferSize = 0xA00;
+        private const int MaxDomains = 64;
+        private const int MaxDomainObjects = 16;
         private const int MaxPortsCount = 5;
 
         private static readonly ManagerOptions _managerOptions = new(PointerBufferSize, MaxDomains, MaxDomainObjects, false);
