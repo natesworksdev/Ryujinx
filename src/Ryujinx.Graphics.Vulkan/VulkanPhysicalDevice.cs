@@ -63,6 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (!IsDeviceExtensionPresent("VK_KHR_driver_properties"))
             {
                 res = default;
+
                 return false;
             }
 
@@ -80,6 +81,7 @@ namespace Ryujinx.Graphics.Vulkan
             api.GetPhysicalDeviceProperties2(PhysicalDevice, &physicalDeviceProperties2);
 
             res = physicalDeviceDriverProperties;
+
             return true;
         }
 
