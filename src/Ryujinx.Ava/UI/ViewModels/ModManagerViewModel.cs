@@ -101,6 +101,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             foreach (var path in modsBasePaths)
             {
                 var modCache = new ModLoader.ModCache();
+
                 ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(path, "contents")), applicationId);
 
                 foreach (var mod in modCache.RomfsDirs)
@@ -225,7 +226,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             var result = await _storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectModDialogTitle],
-                AllowMultiple = true
+                AllowMultiple = true,
             });
 
             foreach (var folder in result)
