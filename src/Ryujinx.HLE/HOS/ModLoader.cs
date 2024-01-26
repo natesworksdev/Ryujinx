@@ -284,13 +284,16 @@ namespace Ryujinx.HLE.HOS
             string modJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationId.ToString("x16"), "mods.json");
             ModMetadata modMetadata = new();
 
-            try
+            if (File.Exists(modJsonPath))
             {
-                modMetadata = JsonHelper.DeserializeFromFile(modJsonPath, _serializerContext.ModMetadata);
-            }
-            catch
-            {
-                Logger.Warning?.Print(LogClass.ModLoader, $"Failed to deserialize mod data for {applicationId} at {modJsonPath}");
+                try
+                {
+                    modMetadata = JsonHelper.DeserializeFromFile(modJsonPath, _serializerContext.ModMetadata);
+                }
+                catch
+                {
+                    Logger.Warning?.Print(LogClass.ModLoader, $"Failed to deserialize mod data for {applicationId:X16} at {modJsonPath}");
+                }
             }
 
             var fsFile = new FileInfo(Path.Combine(applicationDir.FullName, RomfsContainer));
