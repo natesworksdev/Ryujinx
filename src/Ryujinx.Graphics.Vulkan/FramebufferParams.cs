@@ -250,14 +250,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void InsertClearBarrier(CommandBufferScoped cbs, int index)
         {
-            if (_colorsCanonical != null)
-            {
-                _colorsCanonical[index]?.Storage?.InsertReadToWriteBarrier(
-                   cbs,
-                   AccessFlags.ColorAttachmentWriteBit,
-                   PipelineStageFlags.ColorAttachmentOutputBit,
-                   insideRenderPass: true);
-            }
+            _colorsCanonical?[index]?.Storage?.InsertReadToWriteBarrier(
+               cbs,
+               AccessFlags.ColorAttachmentWriteBit,
+               PipelineStageFlags.ColorAttachmentOutputBit,
+               insideRenderPass: true);
         }
 
         public void InsertClearBarrierDS(CommandBufferScoped cbs)
@@ -277,7 +274,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_depthStencil != null)
             {
-                result[result.Length - 1] = _depthStencil;
+                result[^1] = _depthStencil;
             }
 
             return result;

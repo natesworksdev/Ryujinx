@@ -1487,10 +1487,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (!hasFramebuffer || FramebufferParams.AttachmentsCount == 0)
             {
                 // Use the null framebuffer.
-                if (_nullRenderPass == null)
-                {
-                    _nullRenderPass = new RenderPassHolder(Gd, Device, new RenderPassCacheKey(), FramebufferParams);
-                }
+                _nullRenderPass ??= new RenderPassHolder(Gd, Device, new RenderPassCacheKey(), FramebufferParams);
 
                 _renderPass = _nullRenderPass.GetRenderPass();
                 _framebuffer = _nullRenderPass.GetFramebuffer(Gd, Cbs, FramebufferParams);
