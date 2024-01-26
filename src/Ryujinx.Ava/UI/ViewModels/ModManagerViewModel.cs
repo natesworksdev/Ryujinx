@@ -193,6 +193,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             var directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
             var destinationDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
 
+            if (directories.Length == 0)
+            {
+                // Not a valid mod directory
+                // TODO: More robust checking for valid mod folders
+                return;
+            }
+
             foreach (var dir in directories)
             {
                 string dirToCreate = dir.Replace(directory.Parent.ToString(), destinationDir);
@@ -202,7 +209,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadFileErrorMessage, LocaleKeys.DialogModAlreadyExistsMessage, dirToCreate));
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
+                            LocaleKeys.DialogLoadFileErrorMessage,
+                            LocaleManager.Instance[LocaleKeys.DialogModAlreadyExistsMessage],
+                            dirToCreate));
                     });
 
                     return;
