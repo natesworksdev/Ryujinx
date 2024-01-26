@@ -337,7 +337,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport && !(IsMoltenVk && Vendor == Vendor.Amd), // Workaround for AMD on MoltenVK issue
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
-                supportsPushDescriptors,
+                supportsPushDescriptors && !IsMoltenVk,
                 propertiesPushDescriptor.MaxPushDescriptors,
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyListRestart,
                 featuresPrimitiveTopologyListRestart.PrimitiveTopologyPatchListRestart,
