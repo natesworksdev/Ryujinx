@@ -163,10 +163,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         /// <summary>
         /// Create a texture view for an existing swapchain image view.
-        /// Does not set info or storage, so only appropriate for swapchain use.
+        /// Does not set storage, so only appropriate for swapchain use.
         /// </summary>
-        /// <remarks>Do not use this for normal textures, and make sure uses do not try to read storage or info.</remarks>
-        public TextureView(VulkanRenderer gd, Device device, DisposableImageView view)
+        /// <remarks>Do not use this for normal textures, and make sure uses do not try to read storage.</remarks>
+        public TextureView(VulkanRenderer gd, Device device, DisposableImageView view, TextureCreateInfo info, VkFormat format)
         {
             _gd = gd;
             _device = device;
@@ -174,6 +174,9 @@ namespace Ryujinx.Graphics.Vulkan
             _imageView = new Auto<DisposableImageView>(view);
             _imageViewDraw = _imageView;
             _imageViewIdentity = _imageView;
+            _info = info;
+
+            VkFormat = format;
 
             Valid = true;
         }

@@ -143,6 +143,23 @@ namespace Ryujinx.Graphics.Vulkan
                 Clipped = true,
             };
 
+            var textureCreateInfo = new TextureCreateInfo(
+                _width,
+                _height,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                FormatTable.GetFormat(surfaceFormat.Format),
+                DepthStencilMode.Depth,
+                Target.Texture2D,
+                SwizzleComponent.Red,
+                SwizzleComponent.Green,
+                SwizzleComponent.Blue,
+                SwizzleComponent.Alpha);
+
             _gd.SwapchainApi.CreateSwapchain(_device, swapchainCreateInfo, null, out _swapchain).ThrowOnError();
 
             _gd.SwapchainApi.GetSwapchainImages(_device, _swapchain, &imageCount, null);
@@ -158,7 +175,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < _swapchainImageViews.Length; i++)
             {
-                _swapchainImageViews[i] = CreateSwapchainImageView(_swapchainImages[i], surfaceFormat.Format);
+                _swapchainImageViews[i] = CreateSwapchainImageView(_swapchainImages[i], surfaceFormat.Format, textureCreateInfo);
             }
 
             var semaphoreCreateInfo = new SemaphoreCreateInfo
@@ -181,7 +198,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private unsafe TextureView CreateSwapchainImageView(Image swapchainImage, VkFormat format)
+        private unsafe TextureView CreateSwapchainImageView(Image swapchainImage, VkFormat format, TextureCreateInfo info)
         {
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.R,
@@ -205,7 +222,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
 
-            return new TextureView(_gd, _device, new DisposableImageView(_gd.Api, _device, imageView));
+            return new TextureView(_gd, _device, new DisposableImageView(_gd.Api, _device, imageView), info, format);
         }
 
         private static SurfaceFormatKHR ChooseSwapSurfaceFormat(SurfaceFormatKHR[] availableFormats, bool colorSpacePassthroughEnabled)
