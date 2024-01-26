@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Sdk.Friends.Detail
         public Uid UserId;
         public NetworkServiceAccountId NetworkUserId;
         public Nickname Nickname;
-        public UserPresenceImpl presence;
+        public UserPresenceImpl Presence;
         public bool IsFavourite;
         public bool IsNew;
         public Array6<byte> Unknown;
