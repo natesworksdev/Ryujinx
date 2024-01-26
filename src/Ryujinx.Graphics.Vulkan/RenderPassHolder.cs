@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Vulkan
             _key = key;
         }
 
-        public Auto<DisposableFramebuffer> GetFramebuffer(VulkanRenderer gd, CommandBufferScoped cbs, FramebufferParams fb) //int width, int height, int layers
+        public Auto<DisposableFramebuffer> GetFramebuffer(VulkanRenderer gd, CommandBufferScoped cbs, FramebufferParams fb)
         {
             var key = new FramebufferCacheKey(fb.Width, fb.Height, fb.Layers);
 

@@ -1494,7 +1494,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                (_renderPass, _framebuffer) = FramebufferParams.GetFramebuffer(Gd, Device, Cbs);
+                (_renderPass, _framebuffer) = FramebufferParams.GetPassAndFramebuffer(Gd, Device, Cbs);
             }
         }
 

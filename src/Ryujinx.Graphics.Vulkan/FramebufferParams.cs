@@ -304,12 +304,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetFramebuffer(
+        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetPassAndFramebuffer(
             VulkanRenderer gd,
             Device device,
             CommandBufferScoped cbs)
         {
-            return _baseAttachment.GetFramebuffer(gd, device, cbs, this);
+            return _baseAttachment.GetPassAndFramebuffer(gd, device, cbs, this);
         }
 
         public TextureView GetColorView(int index)

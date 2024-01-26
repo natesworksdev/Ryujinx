@@ -959,13 +959,12 @@ namespace Ryujinx.Graphics.Vulkan
             throw new NotImplementedException();
         }
 
-        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetFramebuffer(
+        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetPassAndFramebuffer(
             VulkanRenderer gd,
             Device device,
             CommandBufferScoped cbs,
             FramebufferParams fb)
         {
-            // Searches for render pass matching params colors and ds
             var key = fb.GetRenderPassCacheKey();
 
             if (_renderPasses == null || !_renderPasses.TryGetValue(ref key, out RenderPassHolder rpHolder))
