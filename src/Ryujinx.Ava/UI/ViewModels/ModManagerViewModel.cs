@@ -8,6 +8,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using System.IO;
@@ -181,6 +182,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Delete(ModModel model)
         {
+            Logger.Info?.Print(LogClass.Application, $"Deleting mod at \"{model.Path}\"");
             Directory.Delete(model.Path, true);
 
             Mods.Remove(model);
@@ -193,10 +195,20 @@ namespace Ryujinx.Ava.UI.ViewModels
             var directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
             var destinationDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
 
+            // TODO: More robust checking for valid mod folders
+            var isDirectoryValid = true;
+
             if (directories.Length == 0)
             {
-                // Not a valid mod directory
-                // TODO: More robust checking for valid mod folders
+                isDirectoryValid = false;
+            }
+
+            if (!isDirectoryValid)
+            {
+                Dispatcher.UIThread.Post(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogModInvalidMessage]);
+                });
                 return;
             }
 
@@ -249,7 +261,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             foreach (var mod in Mods)
             {
-                Directory.Delete(mod.Path, true);
+                Delete(mod);
             }
 
             Mods.Clear();
