@@ -1,9 +1,9 @@
-using System.Runtime.InteropServices;
+using System;
 
 namespace Ryujinx.Horizon.Sdk.Settings.System
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x4, Pack = 0x4)]
-    struct AppletLaunchFlag
+    [Flags]
+    enum AppletLaunchFlag : uint
     {
     }
 }

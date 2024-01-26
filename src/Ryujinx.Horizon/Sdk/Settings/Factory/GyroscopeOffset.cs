@@ -5,5 +5,8 @@ namespace Ryujinx.Horizon.Sdk.Settings.Factory
     [StructLayout(LayoutKind.Sequential, Size = 0x6, Pack = 0x2)]
     struct GyroscopeOffset
     {
+        public ushort X;
+        public ushort Y;
+        public ushort Z;
     }
 }

@@ -1,9 +1,10 @@
-using System.Runtime.InteropServices;
+using System;
 
 namespace Ryujinx.Horizon.Sdk.Settings.System
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x4, Pack = 0x4)]
-    struct ServiceDiscoveryControlSettings
+    [Flags]
+    enum ServiceDiscoveryControlSettings : uint
     {
+        IsChangeEnvironmentIdentifierDisabled = 1 << 0,
     }
 }
