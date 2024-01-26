@@ -11,6 +11,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -182,8 +183,30 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Delete(ModModel model)
         {
+            var modsDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
+            var parentDir = String.Empty;
+
+            foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
+                {
+                    parentDir = dir;
+                }
+            }
+
+            if (parentDir == String.Empty)
+            {
+                Dispatcher.UIThread.Post(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
+                        LocaleKeys.DialogModDeleteNoParentMessage,
+                        parentDir));
+                });
+                return;
+            }
+
             Logger.Info?.Print(LogClass.Application, $"Deleting mod at \"{model.Path}\"");
-            Directory.Delete(model.Path, true);
+            Directory.Delete(parentDir, true);
 
             Mods.Remove(model);
             OnPropertyChanged(nameof(ModCount));
