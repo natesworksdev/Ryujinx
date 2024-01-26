@@ -16,17 +16,19 @@ namespace Ryujinx.Graphics.Vulkan
 
         public override int GetHashCode()
         {
-            int hc = _depthStencil?.GetHashCode() ?? 0;
+            HashCode hc = new();
+
+            hc.Add(_depthStencil);
 
             if (_colors != null)
             {
                 foreach (var color in _colors)
                 {
-                    hc = HashCode.Combine(hc, color?.GetHashCode() ?? 0);
+                    hc.Add(color);
                 }
             }
 
-            return hc;
+            return hc.ToHashCode();
         }
 
         public bool Equals(ref RenderPassCacheKey other)
