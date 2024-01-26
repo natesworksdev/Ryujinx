@@ -10,6 +10,7 @@ using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -170,7 +171,7 @@ namespace Ryujinx.Ui.Windows
         {
             using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
 
-            Image avatarImage = Image.Load(data, new PngDecoder());
+            Image avatarImage = Image.Load(new DecoderOptions(), data);
 
             avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
                 (byte)(_backgroundColor.Red * 255),
