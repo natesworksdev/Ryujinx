@@ -150,12 +150,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // Commit()
         public ResultCode Commit(ServiceCtx context)
         {
-            Result result = _fileSystem.Get.Commit();
-            ResultCode resultCode = (ResultCode)result.Value;
-
-            if (result.IsFailure() && resultCode == ResultCode.PathAlreadyInUse)
+            ResultCode resultCode = (ResultCode)_fileSystem.Get.Commit().Value;
+            if (resultCode == ResultCode.PathAlreadyInUse)
             {
-                Logger.Warning?.Print(LogClass.ServiceFs, "The filesystem is already in use by another process.");
+                Logger.Warning?.Print(LogClass.ServiceFs, "The file system is already in use by another process.");
             }
 
             return resultCode;
