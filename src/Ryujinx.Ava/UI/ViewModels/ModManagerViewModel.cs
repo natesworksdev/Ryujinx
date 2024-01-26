@@ -215,7 +215,24 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void AddMod(DirectoryInfo directory)
         {
-            var directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
+            string[] directories;
+
+            try
+            {
+                directories = Directory.GetDirectories(directory.ToString(), "*", SearchOption.AllDirectories);
+            }
+            catch (Exception exception)
+            {
+                Dispatcher.UIThread.Post(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
+                        LocaleKeys.DialogLoadFileErrorMessage,
+                        exception.ToString(),
+                        directory));
+                });
+                return;
+            }
+
             var destinationDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
 
             // TODO: More robust checking for valid mod folders
