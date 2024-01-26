@@ -205,7 +205,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
 
-            // TODO: pass create info?
             return new TextureView(_gd, _device, new DisposableImageView(_gd.Api, _device, imageView));
         }
 
