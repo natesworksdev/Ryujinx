@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
             public Entry[] Entries;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Span<Entry> AsSpan()
+            public readonly Span<Entry> AsSpan()
             {
                 return Entries == null ? Span<Entry>.Empty : Entries.AsSpan(0, Length);
             }
