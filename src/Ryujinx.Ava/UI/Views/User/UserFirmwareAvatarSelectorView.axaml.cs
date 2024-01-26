@@ -7,6 +7,7 @@ using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -71,7 +72,7 @@ namespace Ryujinx.Ava.UI.Views.User
             if (ViewModel.SelectedImage != null)
             {
                 MemoryStream streamJpg = new();
-                Image avatarImage = Image.Load(ViewModel.SelectedImage, new PngDecoder());
+                Image avatarImage = Image.Load(new DecoderOptions(), ViewModel.SelectedImage);
 
                 avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
                     ViewModel.BackgroundColor.R,
