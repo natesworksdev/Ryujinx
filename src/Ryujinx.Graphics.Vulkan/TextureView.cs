@@ -968,9 +968,7 @@ namespace Ryujinx.Graphics.Vulkan
             // Searches for render pass matching params colors and ds
             var key = fb.GetRenderPassCacheKey();
 
-            RenderPassHolder rpHolder;
-
-            if (_renderPasses == null || !_renderPasses.TryGetValue(ref key, out rpHolder))
+            if (_renderPasses == null || !_renderPasses.TryGetValue(ref key, out RenderPassHolder rpHolder))
             {
                 rpHolder = new RenderPassHolder(gd, device, key, fb);
             }

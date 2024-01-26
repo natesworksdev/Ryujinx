@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    internal struct RenderPassCacheKey : IRefEquatable<RenderPassCacheKey>
+    internal readonly struct RenderPassCacheKey : IRefEquatable<RenderPassCacheKey>
     {
-        private TextureView _depthStencil;
-        private TextureView[] _colors;
+        private readonly TextureView _depthStencil;
+        private readonly TextureView[] _colors;
 
         public RenderPassCacheKey(TextureView depthStencil, TextureView[] colors)
         {
@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
         public override int GetHashCode()
         {
             int hc = _depthStencil?.GetHashCode() ?? 0;
-            
+
             if (_colors != null)
             {
                 foreach (var color in _colors)
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool colorsNull = _colors == null;
             bool otherNull = other._colors == null;
             return other._depthStencil == _depthStencil &&
-                colorsNull == otherNull && 
+                colorsNull == otherNull &&
                 (colorsNull || other._colors.SequenceEqual(_colors));
         }
     }

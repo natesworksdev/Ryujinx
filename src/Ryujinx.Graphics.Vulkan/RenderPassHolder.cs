@@ -1,11 +1,11 @@
-﻿using Silk.NET.Vulkan;
+using Silk.NET.Vulkan;
 using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
     internal class RenderPassHolder
     {
-        private struct FramebufferCacheKey : IRefEquatable<FramebufferCacheKey>
+        private readonly struct FramebufferCacheKey : IRefEquatable<FramebufferCacheKey>
         {
             private readonly uint _width;
             private readonly uint _height;
@@ -145,9 +145,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var key = new FramebufferCacheKey(fb.Width, fb.Height, fb.Layers);
 
-            Auto<DisposableFramebuffer> result;
-
-            if (!_framebuffers.TryGetValue(ref key, out result))
+            if (!_framebuffers.TryGetValue(ref key, out Auto<DisposableFramebuffer> result))
             {
                 result = fb.Create(gd.Api, cbs, _renderPass);
 
