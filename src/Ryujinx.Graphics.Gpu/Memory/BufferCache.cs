@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         /// <summary>
         /// Performs address translation of the GPU virtual address, and creates
-        /// new buffers, if needed, for the specified range.
+        /// new physical and virtual buffers, if needed, for the specified range.
         /// </summary>
         /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
@@ -148,6 +148,50 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             CreateBuffer(range);
+
+            return range;
+        }
+
+        /// <summary>
+        /// Performs address translation of the GPU virtual address, and creates
+        /// new physical buffers, if needed, for the specified range.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
+        /// <returns>Physical ranges of the buffer, after address translation</returns>
+        public MultiRange TranslateAndCreateMultiBuffersPhysicalOnly(MemoryManager memoryManager, ulong gpuVa, ulong size)
+        {
+            if (gpuVa == 0)
+            {
+                return new MultiRange(MemoryManager.PteUnmapped, size);
+            }
+
+            // Fast path not taken for non-contiguous ranges,
+            // since multi-range buffers are not coalesced, so a buffer that covers
+            // the entire cached range might not actually exist.
+            if (memoryManager.VirtualBufferCache.TryGetOrAddRange(gpuVa, size, out MultiRange range) &&
+                range.Count == 1)
+            {
+                return range;
+            }
+
+            for (int i = 0; i < range.Count; i++)
+            {
+                MemoryRange subRange = range.GetSubRange(i);
+
+                if (subRange.Address != MemoryManager.PteUnmapped)
+                {
+                    if (range.Count > 1)
+                    {
+                        CreateBuffer(subRange.Address, subRange.Size, SparseBufferAlignmentSize);
+                    }
+                    else
+                    {
+                        CreateBuffer(subRange.Address, subRange.Size);
+                    }
+                }
+            }
 
             return range;
         }
@@ -685,8 +729,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the copy</param>
         public void CopyBuffer(MemoryManager memoryManager, ulong srcVa, ulong dstVa, ulong size)
         {
-            MultiRange srcRange = TranslateAndCreateMultiBuffers(memoryManager, srcVa, size);
-            MultiRange dstRange = TranslateAndCreateMultiBuffers(memoryManager, dstVa, size);
+            MultiRange srcRange = TranslateAndCreateMultiBuffersPhysicalOnly(memoryManager, srcVa, size);
+            MultiRange dstRange = TranslateAndCreateMultiBuffersPhysicalOnly(memoryManager, dstVa, size);
 
             if (srcRange.Count == 1 && dstRange.Count == 1)
             {
@@ -782,7 +826,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="value">Value to be written into the buffer</param>
         public void ClearBuffer(MemoryManager memoryManager, ulong gpuVa, ulong size, uint value)
         {
-            MultiRange range = TranslateAndCreateMultiBuffers(memoryManager, gpuVa, size);
+            MultiRange range = TranslateAndCreateMultiBuffersPhysicalOnly(memoryManager, gpuVa, size);
 
             for (int index = 0; index < range.Count; index++)
             {
