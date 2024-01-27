@@ -243,6 +243,23 @@ namespace Ryujinx.Graphics.Vulkan
             return new Auto<DisposableFramebuffer>(new DisposableFramebuffer(api, _device, framebuffer), null, _attachments);
         }
 
+        public void UpdateModifications()
+        {
+            if (_colors != null)
+            {
+                for (int index = 0; index < _colors.Length; index++)
+                {
+                    _colors[index].Storage.SetModification(
+                        AccessFlags.ColorAttachmentWriteBit,
+                        PipelineStageFlags.ColorAttachmentOutputBit);
+                }
+            }
+
+            _depthStencil?.Storage.SetModification(
+                AccessFlags.DepthStencilAttachmentWriteBit,
+                PipelineStageFlags.LateFragmentTestsBit);
+        }
+
         public void InsertClearBarrier(CommandBufferScoped cbs, int index)
         {
             _colorsCanonical?[index]?.Storage?.InsertReadToWriteBarrier(
