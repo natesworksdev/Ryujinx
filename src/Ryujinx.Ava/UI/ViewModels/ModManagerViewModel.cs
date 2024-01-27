@@ -194,6 +194,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
                 {
                     parentDir = dir;
+                    break;
                 }
             }
 
