@@ -158,7 +158,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var binding = uniformUsage[i].Binding;
 
-                if (reserved.Contains(binding) || binding >= gd.Capabilities.MaxPushDescriptors + reserved.Length)
+                if (reserved.Contains(binding) ||
+                    binding >= Constants.MaxPushDescriptorBinding ||
+                    binding >= gd.Capabilities.MaxPushDescriptors + reserved.Length)
                 {
                     return false;
                 }
