@@ -427,26 +427,26 @@ namespace Ryujinx.Headless.SDL2
 
             if (!option.DisableFileLog)
             {
-                string logBasePath = AppDomain.CurrentDomain.BaseDirectory;
+                FileStream logFile = FileLogTarget.PrepareLogFile(AppDomain.CurrentDomain.BaseDirectory);
 
-                if (ReleaseInformation.IsValid)
+                if (logFile == null)
                 {
-                    string oldLogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-                    string newLogPath = Path.Combine(AppDataManager.BaseDirPath, "Logs");
+                    logFile = FileLogTarget.PrepareLogFile(AppDataManager.BaseDirPath);
 
-                    if (Directory.Exists(oldLogPath) && !Directory.Exists(newLogPath))
+                    if (logFile == null)
                     {
-                        FileSystemUtils.MoveDirectory(oldLogPath, newLogPath);
+                        Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the application directory or the Ryujinx directory is writable.");
                     }
-
-                    logBasePath = AppDataManager.BaseDirPath;
                 }
 
-                Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(logBasePath, "file"),
-                    1000,
-                    AsyncLogTargetOverflowAction.Block
-                ));
+                if (logFile != null)
+                {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                        new FileLogTarget("file", logFile),
+                        1000,
+                        AsyncLogTargetOverflowAction.Block
+                    ));
+                }
             }
 
             // Setup graphics configuration
