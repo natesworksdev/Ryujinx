@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Fast path not taken for non-contiguous ranges,
             // since multi-range buffers are not coalesced, so a buffer that covers
             // the entire cached range might not actually exist.
-            if (memoryManager.VirtualBufferCache.TryGetOrAddRange(gpuVa, size, out MultiRange range) &&
+            if (memoryManager.VirtualRangeCache.TryGetOrAddRange(gpuVa, size, out MultiRange range) &&
                 range.Count == 1)
             {
                 return range;
@@ -170,7 +170,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Fast path not taken for non-contiguous ranges,
             // since multi-range buffers are not coalesced, so a buffer that covers
             // the entire cached range might not actually exist.
-            if (memoryManager.VirtualBufferCache.TryGetOrAddRange(gpuVa, size, out MultiRange range) &&
+            if (memoryManager.VirtualRangeCache.TryGetOrAddRange(gpuVa, size, out MultiRange range) &&
                 range.Count == 1)
             {
                 return range;

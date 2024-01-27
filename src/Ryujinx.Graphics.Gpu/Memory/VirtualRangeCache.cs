@@ -6,9 +6,9 @@ using System.Threading;
 namespace Ryujinx.Graphics.Gpu.Memory
 {
     /// <summary>
-    /// Virtual buffer cache.
+    /// Virtual range cache.
     /// </summary>
-    class VirtualBufferCache
+    class VirtualRangeCache
     {
         private readonly MemoryManager _memoryManager;
 
@@ -68,10 +68,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _hasDeferredUnmaps;
 
         /// <summary>
-        /// Creates a new instance of the virtual buffer cache.
+        /// Creates a new instance of the virtual range cache.
         /// </summary>
-        /// <param name="memoryManager">Memory manager that the virtual buffer cache belongs to</param>
-        public VirtualBufferCache(MemoryManager memoryManager)
+        /// <param name="memoryManager">Memory manager that the virtual range cache belongs to</param>
+        public VirtualRangeCache(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
             _virtualRanges = new RangeList<VirtualRange>();
