@@ -578,6 +578,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        // VRINTR (floating-point).
+        public static void Vrintr_S(ArmEmitterContext context)
+        {
+            Vrintx_S(context);
+        }
+
         // VRINTZ (floating-point).
         public static void Vrint_Z(ArmEmitterContext context)
         {
