@@ -184,33 +184,43 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Delete(ModModel model)
         {
-            var parentDir = String.Empty;
-
+            var isSubdir = true;
+            var pathToDelete = model.Path;
             var basePath = model.InSd ? ModLoader.GetSdModsBasePath() : ModLoader.GetModsBasePath();
             var modsDir = ModLoader.GetApplicationDir(basePath, _applicationId.ToString("x16"));
 
-            foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
+            if (new DirectoryInfo(model.Path).Parent?.FullName == basePath)
             {
-                if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
+                isSubdir = false;
+            }
+
+            if (isSubdir)
+            {
+                var parentDir = String.Empty;
+
+                foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
                 {
-                    parentDir = dir;
-                    break;
+                    if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
+                    {
+                        parentDir = dir;
+                        break;
+                    }
+                }
+
+                if (parentDir == String.Empty)
+                {
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
+                            LocaleKeys.DialogModDeleteNoParentMessage,
+                            model.Path));
+                    });
+                    return;
                 }
             }
 
-            if (parentDir == String.Empty)
-            {
-                Dispatcher.UIThread.Post(async () =>
-                {
-                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
-                        LocaleKeys.DialogModDeleteNoParentMessage,
-                        model.Path));
-                });
-                return;
-            }
-
-            Logger.Info?.Print(LogClass.Application, $"Deleting mod at \"{model.Path}\"");
-            Directory.Delete(parentDir, true);
+            Logger.Info?.Print(LogClass.Application, $"Deleting mod at \"{pathToDelete}\"");
+            Directory.Delete(pathToDelete, true);
 
             Mods.Remove(model);
             OnPropertyChanged(nameof(ModCount));
