@@ -6,14 +6,14 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
-    public class ILazyFile : LibHac.Fs.Fsa.IFile
+    class LazyFile : LibHac.Fs.Fsa.IFile
     {
         private readonly LibHac.Fs.Fsa.IFileSystem _fs;
         private readonly string _filePath;
         private readonly UniqueRef<LibHac.Fs.Fsa.IFile> _fileReference = new();
         private readonly FileInfo _fileInfo;
 
-        public ILazyFile(string filePath, string prefix, LibHac.Fs.Fsa.IFileSystem fs)
+        public LazyFile(string filePath, string prefix, LibHac.Fs.Fsa.IFileSystem fs)
         {
             _fs = fs;
             _filePath = filePath;
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             size = _fileInfo.Length;
 
-            return new Result(0);
+            return Result.Success;
         }
 
         protected override Result DoOperateRange(Span<byte> outBuffer, OperationId operationId, long offset, long size, ReadOnlySpan<byte> inBuffer)

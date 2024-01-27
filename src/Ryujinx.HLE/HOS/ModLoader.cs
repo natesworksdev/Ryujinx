@@ -18,7 +18,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using ILazyFile = Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy.ILazyFile;
+using LazyFile = Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy.LazyFile;
 using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
@@ -569,7 +569,7 @@ namespace Ryujinx.HLE.HOS
                                     .Where(f => f.Type == DirectoryEntryType.File)
                                     .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
-                var file = new ILazyFile(entry.FullPath, rootPath, fs);
+                var file = new LazyFile(entry.FullPath, rootPath, fs);
 
                 if (fileSet.Add(entry.FullPath))
                 {
