@@ -19,12 +19,18 @@ namespace Ryujinx.Horizon.Sdk.Settings.System
         High,
     }
 
+    struct NotificationTime
+    {
+        public uint Hour;
+        public uint Minute;
+    }
+
     [StructLayout(LayoutKind.Sequential, Size = 0x18, Pack = 0x4)]
     struct NotificationSettings
     {
         public NotificationFlag Flag;
         public NotificationVolume Volume;
-        public ulong HeadTime;
-        public ulong TailTime;
+        public NotificationTime HeadTime;
+        public NotificationTime TailTime;
     }
 }

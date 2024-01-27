@@ -45,6 +45,16 @@ namespace Ryujinx.Horizon.Sdk.Settings
             return _languageCodes.AsSpan().Contains(str);
         }
 
+        public LanguageCode(Language language)
+        {
+            if ((uint)language >= _languageCodes.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(language));
+            }
+
+            Value = new LanguageCode(_languageCodes[(int)language]).Value;
+        }
+
         public LanguageCode(string strCode)
         {
             Encoding.ASCII.GetBytes(strCode, Value.AsSpan());
