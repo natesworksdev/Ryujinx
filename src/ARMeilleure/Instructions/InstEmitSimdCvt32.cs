@@ -581,7 +581,17 @@ namespace ARMeilleure.Instructions
         // VRINTR (floating-point).
         public static void Vrintr_S(ArmEmitterContext context)
         {
-            Vrintx_S(context);
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitScalarUnaryOpF32(context, Intrinsic.Arm64FrintiS);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return EmitRoundByRMode(context, op1);
+                });
+            }
         }
 
         // VRINTZ (floating-point).
