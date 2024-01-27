@@ -102,13 +102,14 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach (var path in modsBasePaths)
             {
+                var inSd = path == ModLoader.GetSdModsBasePath();
                 var modCache = new ModLoader.ModCache();
 
                 ModLoader.QueryContentsDir(modCache, new DirectoryInfo(Path.Combine(path, "contents")), applicationId);
 
                 foreach (var mod in modCache.RomfsDirs)
                 {
-                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
+                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled, inSd);
                     if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
                     {
                         Mods.Add(modModel);
@@ -117,12 +118,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 foreach (var mod in modCache.RomfsContainers)
                 {
-                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
+                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled, inSd));
                 }
 
                 foreach (var mod in modCache.ExefsDirs)
                 {
-                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled);
+                    var modModel = new ModModel(mod.Path.Parent.FullName, mod.Name, mod.Enabled, inSd);
                     if (Mods.All(x => x.Path != mod.Path.Parent.FullName))
                     {
                         Mods.Add(modModel);
@@ -131,7 +132,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 foreach (var mod in modCache.ExefsContainers)
                 {
-                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled));
+                    Mods.Add(new ModModel(mod.Path.FullName, mod.Name, mod.Enabled, inSd));
                 }
             }
 
@@ -185,26 +186,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var parentDir = String.Empty;
 
-            var modsDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
+            var basePath = model.InSd ? ModLoader.GetSdModsBasePath() : ModLoader.GetModsBasePath();
+            var modsDir = ModLoader.GetApplicationDir(basePath, _applicationId.ToString("x16"));
 
             foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
             {
                 if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
                 {
                     parentDir = dir;
-                }
-            }
-
-            if (parentDir == String.Empty)
-            {
-                modsDir = ModLoader.GetApplicationDir(ModLoader.GetModsBasePath(), _applicationId.ToString("x16"));
-
-                foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
-                {
-                    if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
-                    {
-                        parentDir = dir;
-                    }
                 }
             }
 
