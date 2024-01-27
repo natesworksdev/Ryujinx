@@ -875,6 +875,7 @@ namespace ARMeilleure.Decoders
             SetVfp("<<<<11100x10xxxxxxxx101xx1x0xxxx", InstName.Vnmul,  InstEmit32.Vnmul_S,  OpCode32SimdRegS.Create,        OpCode32SimdRegS.CreateT32);
             SetVfp("111111101x1110xxxxxx101x01x0xxxx", InstName.Vrint,  InstEmit32.Vrint_RM, OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
             SetVfp("<<<<11101x110110xxxx101x11x0xxxx", InstName.Vrint,  InstEmit32.Vrint_Z,  OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
+            SetVfp("<<<<11101x110110xxxx101x01x0xxxx", InstName.Vrintr, InstEmit32.Vrintr_S, OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
             SetVfp("<<<<11101x110111xxxx101x01x0xxxx", InstName.Vrintx, InstEmit32.Vrintx_S, OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
             SetVfp("<<<<11101x110001xxxx101x11x0xxxx", InstName.Vsqrt,  InstEmit32.Vsqrt_S,  OpCode32SimdS.Create,           OpCode32SimdS.CreateT32);
             SetVfp("111111100xxxxxxxxxxx101xx0x0xxxx", InstName.Vsel,   InstEmit32.Vsel,     OpCode32SimdSel.Create,         OpCode32SimdSel.CreateT32);
@@ -1019,7 +1020,6 @@ namespace ARMeilleure.Decoders
             SetAsimd("111100111x111010xxxx01101xx0xxxx", InstName.Vrintm,      InstEmit32.Vrintm_V,     OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32);
             SetAsimd("111100111x111010xxxx01000xx0xxxx", InstName.Vrintn,      InstEmit32.Vrintn_V,     OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32);
             SetAsimd("111100111x111010xxxx01111xx0xxxx", InstName.Vrintp,      InstEmit32.Vrintp_V,     OpCode32SimdCmpZ.Create,        OpCode32SimdCmpZ.CreateT32);
-            SetAsimd("<<<<11101x110110xxxx101x01x0xxxx", InstName.Vrintr,      InstEmit32.Vrintr_S,     OpCode32SimdS.Create,           OpCode32SimdCmpZ.CreateT32);
             SetAsimd("1111001x1x>>>xxxxxxx0010>xx1xxxx", InstName.Vrshr,       InstEmit32.Vrshr,        OpCode32SimdShImm.Create,       OpCode32SimdShImm.CreateT32);
             SetAsimd("111100101x>>>xxxxxxx100001x1xxx0", InstName.Vrshrn,      InstEmit32.Vrshrn,       OpCode32SimdShImmNarrow.Create, OpCode32SimdShImmNarrow.CreateT32);
             SetAsimd("111100111x111011xxxx010x1xx0xxxx", InstName.Vrsqrte,     InstEmit32.Vrsqrte,      OpCode32SimdSqrte.Create,       OpCode32SimdSqrte.CreateT32);

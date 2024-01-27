@@ -521,7 +521,7 @@ namespace Ryujinx.Tests.Cpu
                            [ValueSource(nameof(_1D_F_))] ulong s2,
                            [Values(RMode.Rn, RMode.Rm, RMode.Rp)] RMode rMode)
         {
-            uint opcode = 0xEB60A40;
+            uint opcode = 0xEEB60A40;
 
             V128 v0, v1, v2;
 
