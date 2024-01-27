@@ -189,7 +189,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             var basePath = model.InSd ? ModLoader.GetSdModsBasePath() : ModLoader.GetModsBasePath();
             var modsDir = ModLoader.GetApplicationDir(basePath, _applicationId.ToString("x16"));
 
-            if (new DirectoryInfo(model.Path).Parent?.FullName == basePath)
+            if (new DirectoryInfo(model.Path).Parent?.FullName == modsDir)
             {
                 isSubdir = false;
             }
