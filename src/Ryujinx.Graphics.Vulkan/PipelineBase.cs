@@ -1585,8 +1585,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (!RenderPassActive)
             {
-                FramebufferParams.InsertLoadOpBarriers(Cbs);
-
                 var renderArea = new Rect2D(null, new Extent2D(FramebufferParams.Width, FramebufferParams.Height));
                 var clearValue = new ClearValue();
 
