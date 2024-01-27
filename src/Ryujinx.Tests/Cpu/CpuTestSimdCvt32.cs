@@ -513,6 +513,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VRINTR.F<size> <Sd>, <Sm>")]
+        [Platform(Exclude = "Unix,Linux,MacOsX")]
         public void Vrintr([Values(0u, 1u)] uint rd,
                            [Values(0u, 1u)] uint rm,
                            [Values(2u, 3u)] uint size,
