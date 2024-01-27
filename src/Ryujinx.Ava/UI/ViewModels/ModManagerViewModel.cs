@@ -183,8 +183,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Delete(ModModel model)
         {
-            var modsDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
             var parentDir = String.Empty;
+
+            var modsDir = ModLoader.GetApplicationDir(ModLoader.GetSdModsBasePath(), _applicationId.ToString("x16"));
 
             foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
             {
@@ -196,11 +197,24 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (parentDir == String.Empty)
             {
+                modsDir = ModLoader.GetApplicationDir(ModLoader.GetModsBasePath(), _applicationId.ToString("x16"));
+
+                foreach (var dir in Directory.GetDirectories(modsDir, "*", SearchOption.TopDirectoryOnly))
+                {
+                    if (Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Contains(model.Path))
+                    {
+                        parentDir = dir;
+                    }
+                }
+            }
+
+            if (parentDir == String.Empty)
+            {
                 Dispatcher.UIThread.Post(async () =>
                 {
                     await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(
                         LocaleKeys.DialogModDeleteNoParentMessage,
-                        parentDir));
+                        model.Path));
                 });
                 return;
             }
