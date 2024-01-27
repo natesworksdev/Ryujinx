@@ -622,7 +622,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitVectorPairwiseOpI32(ArmEmitterContext context, Func2I emit, bool signed)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
 
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
