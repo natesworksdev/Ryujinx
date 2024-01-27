@@ -529,14 +529,14 @@ namespace Ryujinx.Tests.Cpu
             if (size == 2)
             {
                 opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
-                opcode |= ((rd & 0x1e) >> 11) | ((rm & 0x1) << 22);
+                opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
                 v0 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s0), (uint)BitConverter.SingleToInt32Bits(s0));
                 v1 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s1), (uint)BitConverter.SingleToInt32Bits(s0));
                 v2 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s2), (uint)BitConverter.SingleToInt32Bits(s1));
             }
             else
             {
-                opcode |= ((rm & 0xf) << 0) | ((rd & 0x10) << 1);
+                opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
                 opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
                 v0 = MakeVectorE0E1((uint)BitConverter.DoubleToInt64Bits(s0), (uint)BitConverter.DoubleToInt64Bits(s0));
                 v1 = MakeVectorE0E1((uint)BitConverter.DoubleToInt64Bits(s1), (uint)BitConverter.DoubleToInt64Bits(s0));
