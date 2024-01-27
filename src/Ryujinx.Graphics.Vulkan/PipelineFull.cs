@@ -71,7 +71,6 @@ namespace Ryujinx.Graphics.Vulkan
                     componentMask,
                     (int)FramebufferParams.Width,
                     (int)FramebufferParams.Height,
-                    FramebufferParams.AttachmentFormats[index],
                     FramebufferParams.GetAttachmentComponentType(index),
                     ClearScissor);
             }

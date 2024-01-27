@@ -30,15 +30,10 @@ namespace Ryujinx.Graphics.Vulkan
         public bool HasDepthStencil { get; }
         public int ColorAttachmentsCount => AttachmentsCount - (HasDepthStencil ? 1 : 0);
 
-        public FramebufferParams(
-            Device device,
-            TextureView view,
-            uint width,
-            uint height,
-            uint samples,
-            bool isDepthStencil,
-            VkFormat format)
+        public FramebufferParams(Device device, TextureView view, uint width, uint height)
         {
+            bool isDepthStencil = view.Info.Format.IsDepthOrStencil();
+
             _device = device;
             _attachments = new[] { view.GetImageViewForAttachment() };
             _validColorAttachments = isDepthStencil ? 0u : 1u;
@@ -58,8 +53,8 @@ namespace Ryujinx.Graphics.Vulkan
             Height = height;
             Layers = 1;
 
-            AttachmentSamples = new[] { samples };
-            AttachmentFormats = new[] { format };
+            AttachmentSamples = new[] { (uint)view.Info.Samples };
+            AttachmentFormats = new[] { view.VkFormat };
             AttachmentIndices = isDepthStencil ? Array.Empty<int>() : new[] { 0 };
 
             AttachmentsCount = 1;
