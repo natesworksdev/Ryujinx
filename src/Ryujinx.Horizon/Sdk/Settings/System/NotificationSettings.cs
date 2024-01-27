@@ -21,8 +21,10 @@ namespace Ryujinx.Horizon.Sdk.Settings.System
 
     struct NotificationTime
     {
+#pragma warning disable CS0649 // Field is never assigned to
         public uint Hour;
         public uint Minute;
+#pragma warning restore CS0649
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 0x18, Pack = 0x4)]

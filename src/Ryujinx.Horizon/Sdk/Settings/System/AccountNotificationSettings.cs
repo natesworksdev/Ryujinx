@@ -1,5 +1,4 @@
 using Ryujinx.Horizon.Sdk.Account;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Horizon.Sdk.Settings.System
 {
