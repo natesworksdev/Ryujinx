@@ -661,5 +661,19 @@
   "AboutChangelogButtonTooltipMessage": "Click to open the changelog for this version in your default browser.",
   "SettingsTabNetworkMultiplayer": "Multiplayer",
   "MultiplayerMode": "Mode:",
-  "MultiplayerModeTooltip": "Change multiplayer mode"
+  "MultiplayerModeTooltip": "Change multiplayer mode",
+  "SaveManagerChooseBackupFolderTitle": "Choose Backup Folder",
+  "SaveManagerConfirmRestoreTitle": "Confirm Restore",
+  "SaveManagerChooseRestoreZipTitle": "Choose Backup Save Zip",
+  "SaveManagerChooseRestoreZipPrimaryMessage": "This action is irreversible. The save data in the backup will overwrite your local save files.",
+  "SaveManagerChooseRestoreZipSecondaryMessage": "Consider using the backup option before you continue.",
+  "NotificationBackupTitle": "Ryujinx - Save Manager",
+  "ExportUserSaveBackup": "Backup Saves",
+  "SaveManagerBackupComplete": "Backup Complete",
+  "SaveManagerBackupFailed": "Backup Failed",
+  "ImportUserSaveBackup": "Restore Saves",
+  "SaveMangerRestoreUserConfirm": "Overwrite",
+  "SaveMangerRestoreUserCancel": "Cancel",
+  "SaveManagerRestoreComplete": "Restore Complete",
+  "SaveManagerRestoreFailed": "Restore Failed"
 }
