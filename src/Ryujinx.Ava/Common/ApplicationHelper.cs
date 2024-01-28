@@ -15,8 +15,8 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Common.Logging;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.App.Common;
@@ -24,9 +24,9 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
-using System.Threading;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
@@ -146,7 +146,7 @@ namespace Ryujinx.Ava.Common
                     Directory.CreateDirectory(attemptPath);
                 }
 
-            return attemptPath;
+                return attemptPath;
             }
         }
 
