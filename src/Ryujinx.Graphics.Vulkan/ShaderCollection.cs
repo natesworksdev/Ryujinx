@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (reserved.Contains(binding) ||
                     binding >= Constants.MaxPushDescriptorBinding ||
-                    binding >= gd.Capabilities.MaxPushDescriptors + reserved.Length)
+                    binding >= gd.Capabilities.MaxPushDescriptors + reserved.Count(id => id < binding))
                 {
                     return false;
                 }
