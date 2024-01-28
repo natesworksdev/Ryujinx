@@ -418,13 +418,13 @@ namespace Ryujinx.Graphics.Vulkan
             _initialized = true;
         }
 
-        public int[] GetPushDescriptorReservedBindings(bool isOgl)
+        internal int[] GetPushDescriptorReservedBindings(bool isOgl)
         {
             // The first call of this method determines what push descriptor layout is used for all shaders on this renderer.
-            // This is chosen to minimize shaders that can't fit on 32 entry push descriptor sets.
+            // This is chosen to minimize shaders that can't fit their uniforms on the device's max number of push descriptors.
             if (_pdReservedBindings == null)
             {
-                if (Capabilities.MaxPushDescriptors == 32)
+                if (Capabilities.MaxPushDescriptors <= Constants.MaxUniformBuffersPerStage * 2)
                 {
                     _pdReservedBindings = isOgl ? _pdReservedBindingsOgl : _pdReservedBindingsNvn;
                 }

@@ -20,7 +20,13 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly DescriptorUpdateTemplate Template;
         public readonly int Size;
 
-        public unsafe DescriptorSetTemplate(VulkanRenderer gd, Device device, ResourceBindingSegment[] segments, PipelineLayoutCacheEntry plce, PipelineBindPoint pbp, int setIndex)
+        public unsafe DescriptorSetTemplate(
+            VulkanRenderer gd,
+            Device device,
+            ResourceBindingSegment[] segments,
+            PipelineLayoutCacheEntry plce,
+            PipelineBindPoint pbp,
+            int setIndex)
         {
             _gd = gd;
             _device = device;
@@ -144,7 +150,14 @@ namespace Ryujinx.Graphics.Vulkan
             Template = result;
         }
 
-        public unsafe DescriptorSetTemplate(VulkanRenderer gd, Device device, ResourceDescriptorCollection descriptors, long updateMask, PipelineLayoutCacheEntry plce, PipelineBindPoint pbp, int setIndex)
+        public unsafe DescriptorSetTemplate(
+            VulkanRenderer gd,
+            Device device,
+            ResourceDescriptorCollection descriptors,
+            long updateMask,
+            PipelineLayoutCacheEntry plce,
+            PipelineBindPoint pbp,
+            int setIndex)
         {
             _gd = gd;
             _device = device;
@@ -156,7 +169,7 @@ namespace Ryujinx.Graphics.Vulkan
             int entry = 0;
             nuint structureOffset = 0;
 
-            void addBinding(int binding, int count)
+            void AddBinding(int binding, int count)
             {
                 entries[entry++] = new DescriptorUpdateTemplateEntry()
                 {
@@ -183,7 +196,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         if (bindingCount > 0 && (RenderdocPushCountBug || startBinding + bindingCount != binding))
                         {
-                            addBinding(startBinding, bindingCount);
+                            AddBinding(startBinding, bindingCount);
 
                             bindingCount = 0;
                         }
@@ -200,7 +213,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (bindingCount > 0)
             {
-                addBinding(startBinding, bindingCount);
+                AddBinding(startBinding, bindingCount);
             }
 
             Size = (int)structureOffset;
