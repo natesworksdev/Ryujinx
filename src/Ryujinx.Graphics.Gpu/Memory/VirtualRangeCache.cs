@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
                 else
                 {
-                    found = true;
+                    found = overlap0.Range.Count == 1 || IsSparseAligned(overlap0.Range);
                     range = overlap0.Range.Slice(gpuVa - overlap0.Address, size);
                 }
             }
