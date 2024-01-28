@@ -738,12 +738,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 // Clamp range to the specified range.
                 ulong copySrcOffset = Math.Max(srcOffset, innerOffset);
-                copySize = Math.Min(innerEndOffset, srcOffset + copySize) - copySrcOffset;
-                dstOffset += copySrcOffset - srcOffset;
-                srcOffset = copySrcOffset;
+                ulong copySrcEndOffset = Math.Min(innerEndOffset, srcOffset + copySize);
 
-                if (copySize != 0)
+                if (copySrcEndOffset > copySrcOffset)
                 {
+                    copySize = copySrcEndOffset - copySrcOffset;
+                    dstOffset += copySrcOffset - srcOffset;
+                    srcOffset = copySrcOffset;
+
                     _context.Renderer.Pipeline.CopyBuffer(Handle, virtualBuffer.Handle, (int)srcOffset, (int)dstOffset, (int)copySize);
                 }
             }
