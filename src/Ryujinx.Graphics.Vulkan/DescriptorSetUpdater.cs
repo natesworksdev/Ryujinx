@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetProgram(CommandBufferScoped cbs, ShaderCollection program)
+        public void SetProgram(CommandBufferScoped cbs, ShaderCollection program, bool isBound)
         {
             if (!program.HasSameLayout(_program))
             {
@@ -245,7 +245,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 AdvancePdSequence();
 
-                if (_gd.IsNvidiaPreTuring && !program.UsePushDescriptors && _program?.UsePushDescriptors == true)
+                if (_gd.IsNvidiaPreTuring && !program.UsePushDescriptors && _program?.UsePushDescriptors == true && isBound)
                 {
                     // On older nvidia GPUs, we need to clear out the active push descriptor bindings when switching
                     // to normal descriptors. Keeping them bound can prevent buffers from binding properly in future.
@@ -757,8 +757,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 int binding = segment.Binding;
                 int count = segment.Count;
-
-                ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
 
                 for (int i = 0; i < count; i++)
                 {
