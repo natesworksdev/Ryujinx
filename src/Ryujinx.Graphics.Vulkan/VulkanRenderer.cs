@@ -84,6 +84,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdWindows { get; private set; }
         internal bool IsIntelWindows { get; private set; }
         internal bool IsAmdGcn { get; private set; }
+        internal bool IsNvidiaPreTuring { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
         internal bool IsSharedMemory { get; private set; }
@@ -752,6 +753,20 @@ namespace Ryujinx.Graphics.Vulkan
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
             IsAmdGcn = !IsMoltenVk && Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
+
+            if (Vendor == Vendor.Nvidia)
+            {
+                var match = VendorUtils.NvidiaConsumerClassRegex().Match(GpuRenderer);
+
+                if (match != null && int.TryParse(match.Groups[2].Value, out int gpuNumber))
+                {
+                    IsNvidiaPreTuring = gpuNumber < 2000;
+                }
+                else if (GpuDriver.Contains("TITAN") && !GpuDriver.Contains("RTX"))
+                {
+                    IsNvidiaPreTuring = true;
+                }
+            }
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }

@@ -245,7 +245,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 AdvancePdSequence();
 
-                if (_gd.Vendor == Vendor.Nvidia && !program.UsePushDescriptors && _program?.UsePushDescriptors == true)
+                if (_gd.IsNvidiaPreTuring && !program.UsePushDescriptors && _program?.UsePushDescriptors == true)
                 {
                     // On older nvidia GPUs, we need to clear out the active push descriptor bindings when switching
                     // to normal descriptors. Keeping them bound can prevent buffers from binding properly in future.
