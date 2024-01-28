@@ -237,13 +237,20 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetProgram(ShaderCollection program)
+        public void SetProgram(CommandBufferScoped cbs, ShaderCollection program)
         {
             if (!program.HasSameLayout(_program))
             {
                 // When the pipeline layout changes, push descriptor bindings are invalidated.
 
                 AdvancePdSequence();
+
+                if (_gd.Vendor == Vendor.Nvidia && !program.UsePushDescriptors && _program?.UsePushDescriptors == true)
+                {
+                    // On older nvidia GPUs, we need to clear out the active push descriptor bindings when switching
+                    // to normal descriptors. Keeping them bound can prevent buffers from binding properly in future.
+                    ClearAndBindUniformBufferPd(cbs);
+                }
             }
 
             _program = program;
@@ -729,6 +736,37 @@ namespace Ryujinx.Graphics.Vulkan
 
                         writer.Push(MemoryMarshal.CreateReadOnlySpan(ref _uniformBuffers[index], 1));
                     }
+                }
+            }
+
+            if (updatedBindings > 0)
+            {
+                DescriptorSetTemplate template = _program.GetPushDescriptorTemplate(updatedBindings);
+                _templateUpdater.CommitPushDescriptor(_gd, cbs, template, _program.PipelineLayout);
+            }
+        }
+
+        private void ClearAndBindUniformBufferPd(CommandBufferScoped cbs)
+        {
+            var bindingSegments = _program.BindingSegments[PipelineBase.UniformSetIndex];
+
+            long updatedBindings = 0;
+            DescriptorSetTemplateWriter writer = _templateUpdater.Begin(32 * Unsafe.SizeOf<DescriptorBufferInfo>());
+
+            foreach (ResourceBindingSegment segment in bindingSegments)
+            {
+                int binding = segment.Binding;
+                int count = segment.Count;
+
+                ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
+
+                for (int i = 0; i < count; i++)
+                {
+                    int index = binding + i;
+                    updatedBindings |= 1L << index;
+
+                    var bufferInfo = new DescriptorBufferInfo();
+                    writer.Push(MemoryMarshal.CreateReadOnlySpan(ref bufferInfo, 1));
                 }
             }
 
