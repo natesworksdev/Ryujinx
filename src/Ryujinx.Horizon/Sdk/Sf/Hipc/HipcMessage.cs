@@ -181,6 +181,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
             }
 
             Span<uint> dataWords = Span<uint>.Empty;
+            Span<uint> dataWordsUnpadded = Span<uint>.Empty;
 
             if (meta.DataWordsCount != 0)
             {
@@ -189,6 +190,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 int padding = (dataOffsetAligned - dataOffset) / sizeof(uint);
 
                 dataWords = MemoryMarshal.Cast<byte, uint>(data)[padding..meta.DataWordsCount];
+                dataWordsUnpadded = MemoryMarshal.Cast<byte, uint>(data)[..meta.DataWordsCount];
 
                 data = data[(meta.DataWordsCount * sizeof(uint))..];
             }
@@ -209,6 +211,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
                 ReceiveBuffers = receiveBuffers,
                 ExchangeBuffers = exchangeBuffers,
                 DataWords = dataWords,
+                DataWordsUnpadded = dataWordsUnpadded,
                 ReceiveList = receiveList,
                 CopyHandles = copyHandles,
                 MoveHandles = moveHandles,
