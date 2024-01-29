@@ -56,7 +56,7 @@ namespace Ryujinx.Ui.Common.Helper
             var plistFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.plist");
             var shortcutScript = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-launch-script.sh");
             // Macos .App folder
-            string contentFolderPath = Path.Combine("/Applications", cleanedAppName + ".app", "Contents");
+            string contentFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), cleanedAppName + ".app", "Contents");
             string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");
 
             if (!Directory.Exists(scriptFolderPath))
