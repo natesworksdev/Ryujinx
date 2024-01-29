@@ -513,7 +513,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VRINTR.F<size> <Sd>, <Sm>")]
-        [Platform(Exclude = "Unix")] // Instruction isn't testable due to Unicorn.
+        [Platform(Exclude = "Linux,MacOsX")] // Instruction isn't testable due to Unicorn.
         public void Vrintr([Values(0u, 1u)] uint rd,
                            [Values(0u, 1u)] uint rm,
                            [Values(2u, 3u)] uint size,
