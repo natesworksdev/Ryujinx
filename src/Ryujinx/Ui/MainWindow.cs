@@ -132,6 +132,7 @@ namespace Ryujinx.Ui
         [GUI] ScrolledWindow _gameTableWindow;
         [GUI] Label _gpuName;
         [GUI] Label _progressLabel;
+        [GUI] Label _progressStatusLabel;
         [GUI] Label _firmwareVersionLabel;
         [GUI] Gtk.ProgressBar _progressBar;
         [GUI] Box _viewBox;
@@ -716,6 +717,34 @@ namespace Ryujinx.Ui
                 _loadingStatusBar.Fraction = total > 0 ? (double)current / total : 0;
                 _loadingStatusBar.Visible = visible;
                 _loadingStatusLabel.Visible = visible;
+            });
+        }
+
+        public void StartProgress(string action)
+        {
+            Application.Invoke(delegate
+            {
+                _progressStatusLabel.Text = action;
+                _progressStatusLabel.Visible = true;
+                _progressBar.Fraction = 0;
+            });
+        }
+
+        public void UpdateProgress(double percentage)
+        {
+            Application.Invoke(delegate
+            {
+                _progressBar.Fraction = percentage;
+            });
+        }
+
+        public void EndProgress()
+        {
+            Application.Invoke(delegate
+            {
+                _progressStatusLabel.Text = String.Empty;
+                _progressStatusLabel.Visible = false;
+                _progressBar.Fraction = 1.0;
             });
         }
 

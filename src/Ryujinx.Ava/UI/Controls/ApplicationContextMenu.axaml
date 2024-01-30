@@ -17,6 +17,11 @@
 		Header="{locale:Locale GameListContextMenuCreateShortcut}"
         IsEnabled="{Binding CreateShortcutEnabled}"
 		ToolTip.Tip="{OnPlatform Default={locale:Locale GameListContextMenuCreateShortcutToolTip}, macOS={locale:Locale GameListContextMenuCreateShortcutToolTipMacOS}}" />
+	<MenuItem
+		Click="TrimXCI_Click"
+		Header="{locale:Locale GameListContextMenuTrimXCI}"
+        IsEnabled="{Binding TrimXCIEnabled}"
+		ToolTip.Tip="{locale:Locale GameListContextMenuTrimXCIToolTip}" />
     <Separator />
     <MenuItem
         Click="OpenUserSaveDirectory_Click"

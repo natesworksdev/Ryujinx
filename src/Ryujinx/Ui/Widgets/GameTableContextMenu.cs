@@ -79,6 +79,7 @@ namespace Ryujinx.Ui.Widgets
             _extractLogoMenuItem.Sensitive = hasNca;
 
             _createShortcutMenuItem.Sensitive = !ReleaseInformation.IsFlatHubBuild;
+            _trimXCIMenuItem.Sensitive = Ryujinx.Common.Utilities.XCIFileTrimmer.CanTrim(_titleFilePath, new XCIFileTrimmerLog(_parent));
 
             PopupAtPointer(null);
         }
@@ -639,6 +640,89 @@ namespace Ryujinx.Ui.Widgets
         {
             byte[] appIcon = new ApplicationLibrary(_virtualFileSystem).GetApplicationIcon(_titleFilePath, ConfigurationState.Instance.System.Language);
             ShortcutHelper.CreateAppShortcut(_titleFilePath, _titleName, _titleIdText, appIcon);
+        }
+
+        private void ProcessTrimResult(String filename, Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome operationOutcome)
+        {
+            string notifyUser = null;
+
+            switch (operationOutcome)
+            {
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.NoTrimNecessary:
+                    notifyUser = "XCI File does not need to be trimmed. Check logs for further details";
+                    break;
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.ReadOnlyFileCannotFix:
+                    notifyUser = "XCI File is Read Only and could not be made writable. Check logs for further details";
+                    break;
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.FreeSpaceCheckFailed:
+                    notifyUser = "XCI File has data in the free space area, it is not safe to trim";
+                    break;
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.InvalidXCIFile:
+                    notifyUser = "XCI File contains invalid data. Check logs for further details";
+                    break;
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.FileIOWriteError:
+                    notifyUser = "XCI File could not be opened for writing. Check logs for further details";
+                    break;
+                case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.FileSizeChanged:
+                    notifyUser = "XCI File has changed in size since it was scanned. Please check the file is not being written to and try again.";
+                    break;
+            }
+
+            if (notifyUser != null)
+            {
+                GtkDialog.CreateWarningDialog("Trimming of the XCI file failed", notifyUser);
+            }
+        }
+
+        private void TrimXCI_Clicked(object sender, EventArgs args)
+        {
+            if (_titleFilePath == null)
+            {
+                return;
+            }
+
+            var trimmer = new Ryujinx.Common.Utilities.XCIFileTrimmer(_titleFilePath, new XCIFileTrimmerLog(_parent));
+
+            if (trimmer.CanBeTrimmed)
+            {
+                var savings = (double)trimmer.DiskSpaceSavingsB / 1024.0 / 1024.0;
+                var currentFileSize = (double)trimmer.FileSizeB / 1024.0 / 1024.0;
+                var cartDataSize = (double)trimmer.DataSizeB / 1024.0 / 1024.0;
+
+                using MessageDialog confirmationDialog = GtkDialog.CreateConfirmationDialog(
+                    $"This function will first check the empty space and then trim the XCI File to save disk space. Continue?",
+                    $"Current File Size: {currentFileSize:n} MB\n" +
+                    $"Game Data Size: {cartDataSize:n} MB\n" +
+                    $"Disk Space Savings: {savings:n} MB\n"
+                );
+
+                if (confirmationDialog.Run() == (int)ResponseType.Yes)
+                {
+                    Thread xciFileTrimmerThread = new(() =>
+                    {
+                        _parent.StartProgress($"Trimming file '{_titleFilePath}");
+
+                        try
+                        {
+                            var oeprationOutcome = trimmer.Trim();
+
+                            Gtk.Application.Invoke(delegate
+                            {
+                                ProcessTrimResult(_titleFilePath, oeprationOutcome);
+                            });
+                        }
+                        finally
+                        {
+                            _parent.EndProgress();
+                        }
+                    })
+                    {
+                        Name = "GUI.XCIFileTrimmerThread",
+                        IsBackground = true,
+                    };
+                    xciFileTrimmerThread.Start();
+                }
+            }
         }
     }
 }
