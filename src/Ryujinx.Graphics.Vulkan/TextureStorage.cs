@@ -456,7 +456,7 @@ namespace Ryujinx.Graphics.Vulkan
                 // This would result in a validation error, but is
                 // required on MoltenVK as the generic barrier results in
                 // severe texture flickering in some scenarios.
-                if (_gd.IsMoltenVk)
+                if (_gd.IsMoltenVk || !insideRenderPass)
                 {
                     ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
                     TextureView.InsertImageBarrier(
@@ -489,43 +489,25 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void InsertWriteToReadBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
+        public void QueueWriteToReadBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
         {
             _lastReadAccess |= dstAccessFlags;
             _lastReadStage |= dstStageFlags;
 
             if (_lastModificationAccess != AccessFlags.None)
             {
-                // This would result in a validation error, but is
-                // required on MoltenVK as the generic barrier results in
-                // severe texture flickering in some scenarios.
-                if (_gd.IsMoltenVk)
-                {
-                    ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
-                    TextureView.InsertImageBarrier(
-                        _gd.Api,
-                        cbs.CommandBuffer,
-                        _imageAuto.Get(cbs).Value,
-                        _lastModificationAccess,
-                        dstAccessFlags,
-                        _lastModificationStage,
-                        dstStageFlags,
-                        aspectFlags,
-                        0,
-                        0,
-                        _info.GetLayers(),
-                        _info.Levels);
-                }
-                else
-                {
-                    TextureView.InsertMemoryBarrier(
-                        _gd.Api,
-                        cbs.CommandBuffer,
-                        _lastModificationAccess,
-                        dstAccessFlags,
-                        _lastModificationStage,
-                        dstStageFlags);
-                }
+                ImageAspectFlags aspectFlags = Info.Format.ConvertAspectFlags();
+                ImageMemoryBarrier barrier = TextureView.GetImageBarrier(
+                    _imageAuto.Get(cbs).Value,
+                    _lastModificationAccess,
+                    dstAccessFlags,
+                    aspectFlags,
+                    0,
+                    0,
+                    _info.GetLayers(),
+                    _info.Levels);
+
+                _gd.Barriers.QueueBarrier(barrier, _lastModificationStage, dstStageFlags);
 
                 _lastModificationAccess = AccessFlags.None;
             }

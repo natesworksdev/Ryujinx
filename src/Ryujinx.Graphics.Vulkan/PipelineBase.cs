@@ -248,13 +248,14 @@ namespace Ryujinx.Graphics.Vulkan
                 CreateRenderPass();
             }
 
+            FramebufferParams.InsertClearBarrier(Cbs, index, RenderPassActive);
+            Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
+
             BeginRenderPass();
 
             var clearValue = new ClearValue(new ClearColorValue(color.Red, color.Green, color.Blue, color.Alpha));
             var attachment = new ClearAttachment(ImageAspectFlags.ColorBit, (uint)index, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
-
-            FramebufferParams.InsertClearBarrier(Cbs, index);
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
@@ -286,12 +287,13 @@ namespace Ryujinx.Graphics.Vulkan
                 CreateRenderPass();
             }
 
+            FramebufferParams.InsertClearBarrierDS(Cbs, RenderPassActive);
+            Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
+
             BeginRenderPass();
 
             var attachment = new ClearAttachment(flags, 0, clearValue);
             var clearRect = FramebufferParams.GetClearRect(ClearScissor, layer, layerCount);
-
-            FramebufferParams.InsertClearBarrierDS(Cbs);
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
@@ -1066,7 +1068,6 @@ namespace Ryujinx.Graphics.Vulkan
         private void SetRenderTargetsInternal(ITexture[] colors, ITexture depthStencil, bool filterWriteMasked)
         {
             CreateFramebuffer(colors, depthStencil, filterWriteMasked);
-            FramebufferParams?.UpdateModifications();
             CreateRenderPass();
             SignalStateChange();
             SignalAttachmentChange();
@@ -1522,6 +1523,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Pbp = PipelineBindPoint.Compute;
             }
 
+            Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
+
             _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Compute);
         }
 
@@ -1577,6 +1580,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Pbp = PipelineBindPoint.Graphics;
             }
 
+            Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
+
             _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Graphics);
 
             return true;
@@ -1630,6 +1635,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (!RenderPassActive)
             {
+                FramebufferParams.InsertLoadOpBarriers(Gd, Cbs);
+
                 var renderArea = new Rect2D(null, new Extent2D(FramebufferParams.Width, FramebufferParams.Height));
                 var clearValue = new ClearValue();
 
