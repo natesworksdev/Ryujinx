@@ -52,12 +52,12 @@ jobs:
       - name: Change config filename
         run: sed -r --in-place 's/\%\%RYUJINX_CONFIG_FILE_NAME\%\%/PRConfig\.json/g;' src/Ryujinx.Common/ReleaseInformation.cs
         shell: bash
-        if: github.event_name == 'pull_request' && matrix.os != 'macOS-latest'
+        if: github.event_name == 'pull_request' && matrix.os != 'macOS-14'
 
       - name: Change config filename for macOS
         run: sed -r -i '' 's/\%\%RYUJINX_CONFIG_FILE_NAME\%\%/PRConfig\.json/g;' src/Ryujinx.Common/ReleaseInformation.cs
         shell: bash
-        if: github.event_name == 'pull_request' && matrix.os == 'macOS-latest'
+        if: github.event_name == 'pull_request' && matrix.os == 'macOS-14'
 
       - name: Build
         run: dotnet build -c "${{ matrix.configuration }}" -p:Version="${{ env.RYUJINX_BASE_VERSION }}" -p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" -p:ExtraDefineConstants=DISABLE_UPDATER
