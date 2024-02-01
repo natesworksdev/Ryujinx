@@ -84,22 +84,16 @@ namespace Ryujinx.Ui.Common.Configuration
         {
             if (e.NewValue)
             {
-                string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+                string logDir = AppDataManager.LogsDirPath;
                 FileStream logFile = FileLogTarget.PrepareLogFile(logDir);
 
                 if (logFile == null)
                 {
-                    logDir = Path.Combine(AppDataManager.BaseDirPath, "Logs");
-                    logFile = FileLogTarget.PrepareLogFile(logDir);
+                    Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the Logs directory, Application Data, or the Ryujinx directory is writable.");
+                    LogDirectoryPath = null;
+                    Logger.RemoveTarget("file");
 
-                    if (logFile == null)
-                    {
-                        Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the application directory or the Ryujinx directory is writable.");
-                        LogDirectoryPath = null;
-                        Logger.RemoveTarget("file");
-
-                        return;
-                    }
+                    return;
                 }
 
                 LogDirectoryPath = logDir;
