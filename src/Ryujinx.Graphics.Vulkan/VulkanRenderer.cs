@@ -918,6 +918,7 @@ namespace Ryujinx.Graphics.Vulkan
             BufferManager.Dispose();
             DescriptorSetManager.Dispose();
             PipelineLayoutCache.Dispose();
+            Barriers.Dispose();
 
             MemoryAllocator.Dispose();
 
