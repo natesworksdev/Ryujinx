@@ -258,7 +258,12 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty = DirtyFlags.All;
         }
 
-        public void SetImage(int binding, ITexture image, Format imageFormat)
+        public void SetImage(
+            CommandBufferScoped cbs,
+            ShaderStage stage,
+            int binding,
+            ITexture image,
+            Format imageFormat)
         {
             if (image is TextureBuffer imageBuffer)
             {
@@ -267,6 +272,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else if (image is TextureView view)
             {
+                view.Storage.QueueWriteToReadBarrier(cbs, AccessFlags.ShaderReadBit, stage.ConvertToPipelineStageFlags());
+
                 _imageRefs[binding] = view.GetView(imageFormat).GetIdentityImageView();
             }
             else

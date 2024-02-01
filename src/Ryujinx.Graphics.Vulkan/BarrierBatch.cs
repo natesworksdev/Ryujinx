@@ -24,8 +24,6 @@ namespace Ryujinx.Graphics.Vulkan
             _gd = gd;
         }
 
-        // New api:
-
         private readonly record struct StageFlags : IEquatable<StageFlags>
         {
             public readonly PipelineStageFlags Source;
@@ -150,8 +148,16 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (firstMatch != -1)
                     {
-                        int deleteCount = list.Count - firstMatch;
-                        list.RemoveRange(firstMatch, deleteCount);
+                        if (firstMatch == 0)
+                        {
+                            list.Clear();
+                        }
+                        else
+                        {
+                            int deleteCount = list.Count - firstMatch;
+
+                            list.RemoveRange(firstMatch, deleteCount);
+                        }
                     }
                 }
 
