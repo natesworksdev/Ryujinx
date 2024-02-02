@@ -306,6 +306,7 @@ namespace Ryujinx.HLE.HOS.Services
         private void DestroySession(int serverSessionHandle)
         {
             _context.Syscall.CloseHandle(serverSessionHandle);
+
             if (RemoveSessionObj(serverSessionHandle, out var session))
             {
                 (session as IDisposable)?.Dispose();
@@ -373,7 +374,7 @@ namespace Ryujinx.HLE.HOS.Services
                 response.RawData = _responseDataStream.ToArray();
             }
             else if (request.Type == IpcMessageType.CmifControl ||
-                        request.Type == IpcMessageType.CmifControlWithContext)
+                     request.Type == IpcMessageType.CmifControlWithContext)
             {
 #pragma warning disable IDE0059 // Remove unnecessary value assignment
                 uint magic = (uint)_requestDataReader.ReadUInt64();
