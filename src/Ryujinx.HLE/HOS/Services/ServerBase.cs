@@ -287,6 +287,10 @@ namespace Ryujinx.HLE.HOS.Services
                             _wakeEvent.WritableEvent.Clear();
                         }
                     }
+                    else if (rc == KernelResult.PortRemoteClosed && signaledIndex >= 0)
+                    {
+                        DestroySession(handles[signaledIndex]);
+                    }
 
                     _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
                     _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
@@ -297,6 +301,15 @@ namespace Ryujinx.HLE.HOS.Services
             }
 
             Dispose();
+        }
+
+        private void DestroySession(int serverSessionHandle)
+        {
+            _context.Syscall.CloseHandle(serverSessionHandle);
+            if (RemoveSessionObj(serverSessionHandle, out var session))
+            {
+                (session as IDisposable)?.Dispose();
+            }
         }
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
@@ -412,11 +425,7 @@ namespace Ryujinx.HLE.HOS.Services
             }
             else if (request.Type == IpcMessageType.CmifCloseSession || request.Type == IpcMessageType.TipcCloseSession)
             {
-                _context.Syscall.CloseHandle(serverSessionHandle);
-                if (RemoveSessionObj(serverSessionHandle, out var session))
-                {
-                    (session as IDisposable)?.Dispose();
-                }
+                DestroySession(serverSessionHandle);
                 shouldReply = false;
             }
             // If the type is past 0xF, we are using TIPC
