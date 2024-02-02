@@ -83,9 +83,9 @@ namespace Ryujinx.Cpu.LightningJit.Arm32
             RegisterAllocator.MarkGprAsUsed(RegisterUtils.LrRegister);
         }
 
-        public void AddPendingIndirectBranch(InstName name, uint targetRegister)
+        public void AddPendingIndirectBranch(InstName name, uint targetRegister, uint rnRegister)
         {
-            _pendingBranches.Add(new(BranchType.IndirectBranch, targetRegister, 0u, name, CodeWriter.InstructionPointer));
+            _pendingBranches.Add(new(BranchType.IndirectBranch, targetRegister, rnRegister, name, CodeWriter.InstructionPointer));
 
             RegisterAllocator.MarkGprAsUsed((int)targetRegister);
         }

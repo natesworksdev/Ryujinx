@@ -67,7 +67,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
 
             InstEmitCommon.SetThumbFlag(context, rmOperand);
 
-            context.AddPendingIndirectBranch(InstName.Bx, rm);
+            context.AddPendingIndirectBranch(InstName.Bx, rm, 0u);
 
             context.Arm64Assembler.B(0);
         }

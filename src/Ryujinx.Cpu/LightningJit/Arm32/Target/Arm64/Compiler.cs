@@ -297,7 +297,14 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
 
                     InstEmitCommon.SetThumbFlag(cgContext, regAlloc.RemapGprRegister(RegisterUtils.PcRegister));
 
-                    cgContext.AddPendingIndirectBranch(block.Instructions[^1].Name, RegisterUtils.PcRegister);
+                    uint rnRegister = 0u;
+
+                    if (block.Instructions[^1].Name == InstName.LdrI)
+                    {
+                        rnRegister = (uint)RegisterUtils.ExtractRn(block.Instructions[^1].Encoding);
+                    }
+
+                    cgContext.AddPendingIndirectBranch(block.Instructions[^1].Name, RegisterUtils.PcRegister, rnRegister);
 
                     asm.B(0);
                 }
@@ -441,7 +448,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
                     RewriteCallInstructionWithTarget(context, pendingBranch.TargetAddress, pendingBranch.NextAddress, pendingBranch.WriterPointer);
                     break;
                 case BranchType.IndirectBranch:
-                    RewriteIndirectBranchInstructionWithTarget(context, pendingBranch.Name, pendingBranch.TargetAddress, pendingBranch.WriterPointer);
+                    RewriteIndirectBranchInstructionWithTarget(context, pendingBranch.Name, pendingBranch.TargetAddress, pendingBranch.NextAddress, pendingBranch.WriterPointer);
                     break;
                 case BranchType.TableBranchByte:
                 case BranchType.TableBranchHalfword:
@@ -579,7 +586,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
             asm.B((branchIndex + 1 - writer.InstructionPointer) * 4);
         }
 
-        private static void RewriteIndirectBranchInstructionWithTarget(in Context context, InstName name, uint targetRegister, int branchIndex)
+        private static void RewriteIndirectBranchInstructionWithTarget(in Context context, InstName name, uint targetRegister, uint rnRegister, int branchIndex)
         {
             CodeWriter writer = context.Writer;
             Assembler asm = new(writer);
@@ -593,10 +600,12 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
             context.StoreToContext();
 
             if ((name == InstName.Bx && targetRegister == RegisterUtils.LrRegister) ||
+                (name == InstName.LdrI && rnRegister >= 12 && rnRegister < RegisterUtils.PcRegister) ||
                 name == InstName.Ldm ||
                 name == InstName.Ldmda ||
                 name == InstName.Ldmdb ||
-                name == InstName.Ldmib)
+                name == InstName.Ldmib ||
+                name == InstName.Pop)
             {
                 // Arm32 does not have a return instruction, instead returns are implemented
                 // either using BX LR (for leaf functions), or POP { ... PC }.
