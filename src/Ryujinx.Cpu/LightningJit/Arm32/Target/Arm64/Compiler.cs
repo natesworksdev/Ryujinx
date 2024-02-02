@@ -607,7 +607,8 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
                 name == InstName.Ldm ||
                 name == InstName.Ldmda ||
                 name == InstName.Ldmdb ||
-                name == InstName.Ldmib)
+                name == InstName.Ldmib ||
+                name == InstName.Pop)
             {
                 // Arm32 does not have a return instruction, instead returns are implemented
                 // either using BX LR (for leaf functions), or POP { ... PC }.
