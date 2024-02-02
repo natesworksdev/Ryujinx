@@ -305,12 +305,23 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
                 ForceConditionalEnd(cgContext, ref lastCondition, lastConditionIp);
             }
 
+            int reservedStackSize = 0;
+
+            if (multiBlock.HasHostCall)
+            {
+                reservedStackSize = CalculateStackSizeForCallSpill(regAlloc.UsedGprsMask, regAlloc.UsedFpSimdMask, UsablePStateMask);
+            }
+            else if (multiBlock.HasHostCallSkipContext)
+            {
+                reservedStackSize = 2 * sizeof(ulong); // Context and page table pointers.
+            }
+
             RegisterSaveRestore rsr = new(
                 regAlloc.UsedGprsMask & AbiConstants.GprCalleeSavedRegsMask,
                 regAlloc.UsedFpSimdMask & AbiConstants.FpSimdCalleeSavedRegsMask,
                 OperandType.FP64,
-                multiBlock.HasHostCall,
-                multiBlock.HasHostCall ? CalculateStackSizeForCallSpill(regAlloc.UsedGprsMask, regAlloc.UsedFpSimdMask, UsablePStateMask) : 0);
+                multiBlock.HasHostCall || multiBlock.HasHostCallSkipContext,
+                reservedStackSize);
 
             TailMerger tailMerger = new();
 
@@ -711,7 +722,14 @@ namespace Ryujinx.Cpu.LightningJit.Arm32.Target.Arm64
             switch (type)
             {
                 case BranchType.SyncPoint:
-                    InstEmitSystem.WriteSyncPoint(context.Writer, context.RegisterAllocator, context.TailMerger, context.GetReservedStackOffset());
+                    InstEmitSystem.WriteSyncPoint(
+                        context.Writer,
+                        ref asm,
+                        context.RegisterAllocator,
+                        context.TailMerger,
+                        context.GetReservedStackOffset(),
+                        context.StoreToContext,
+                        context.LoadFromContext);
                     break;
                 case BranchType.SoftwareInterrupt:
                     context.StoreToContext();
