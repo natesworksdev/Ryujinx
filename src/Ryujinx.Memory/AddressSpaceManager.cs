@@ -1,5 +1,7 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -149,6 +151,57 @@ namespace Ryujinx.Memory
         }
 
         /// <inheritdoc/>
+        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        {
+            if (size == 0)
+            {
+                return ReadOnlySequence<byte>.Empty;
+            }
+
+            if (IsContiguousAndMapped(va, size))
+            {
+                return new ReadOnlySequence<byte>(GetHostMemoryContiguous(va, size));
+            }
+            else
+            {
+                AssertValidAddressAndSize(va, (ulong)size);
+
+                int offset = 0, segmentSize;
+
+                BytesReadOnlySequenceSegment first = null, last = null;
+
+                if ((va & PageMask) != 0)
+                {
+                    segmentSize = Math.Min(size, PageSize - (int)(va & PageMask));
+
+                    var memory = GetHostMemoryContiguous(va, segmentSize);
+
+                    first = last = new BytesReadOnlySequenceSegment(memory);
+
+                    offset += segmentSize;
+                }
+
+                for (; offset < size; offset += segmentSize)
+                {
+                    segmentSize = Math.Min(size - offset, PageSize);
+
+                    var memory = GetHostMemoryContiguous(va + (ulong)offset, segmentSize);
+
+                    if (first == null)
+                    {
+                        first = last = new BytesReadOnlySequenceSegment(memory);
+                    }
+                    else
+                    {
+                        last = last.Append(memory);
+                    }
+                }
+
+                return new ReadOnlySequence<byte>(first, 0, last, (int)(size - last.RunningIndex));
+            }
+        }
+
+        /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
@@ -180,15 +233,15 @@ namespace Ryujinx.Memory
 
             if (IsContiguousAndMapped(va, size))
             {
-                return new WritableRegion(null, va, new NativeMemoryManager<byte>((byte*)GetHostAddress(va), size).Memory);
+                return new WritableRegion(null, va, GetHostMemoryContiguous(va, size));
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Rent(size);
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                GetSpan(va, size).CopyTo(memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory);
+                return new WritableRegion(this, va, memoryOwner);
             }
         }
 
@@ -374,6 +427,11 @@ namespace Ryujinx.Memory
             }
 
             return true;
+        }
+
+        private unsafe Memory<byte> GetHostMemoryContiguous(ulong va, int size)
+        {
+            return new NativeMemoryManager<byte>((byte*)GetHostAddress(va), size).Memory;
         }
 
         private unsafe Span<byte> GetHostSpanContiguous(ulong va, int size)

@@ -1,8 +1,10 @@
 using ARMeilleure.Memory;
+using Ryujinx.Common.Memory;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -312,6 +314,76 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
+        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        {
+            if (size == 0)
+            {
+                return ReadOnlySequence<byte>.Empty;
+            }
+
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, false);
+            }
+
+            if (IsContiguousAndMapped(va, size))
+            {
+                return new ReadOnlySequence<byte>(_backingMemory.GetMemory(GetPhysicalAddressInternal(va), size));
+            }
+            else
+            {
+                BytesReadOnlySequenceSegment first = null, last = null;
+
+                try
+                {
+                    AssertValidAddressAndSize(va, (ulong)size);
+
+                    int offset = 0, segmentSize;
+
+                    if ((va & PageMask) != 0)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va);
+
+                        segmentSize = Math.Min(size, PageSize - (int)(va & PageMask));
+
+                        var memory = _backingMemory.GetMemory(pa, segmentSize);
+
+                        first = last = new BytesReadOnlySequenceSegment(memory);
+
+                        offset += segmentSize;
+                    }
+
+                    for (; offset < size; offset += segmentSize)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+
+                        segmentSize = Math.Min(size - offset, PageSize);
+
+                        var memory = _backingMemory.GetMemory(pa, segmentSize);
+
+                        if (first == null)
+                        {
+                            first = last = new BytesReadOnlySequenceSegment(memory);
+                        }
+                        else
+                        {
+                            last = last.Append(memory);
+                        }
+                    }
+                }
+                catch (InvalidMemoryRegionException)
+                {
+                    if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                    {
+                        throw;
+                    }
+                }
+
+                return new ReadOnlySequence<byte>(first, 0, last, (int)(size - last.RunningIndex));
+            }
+        }
+
+        /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
@@ -357,11 +429,11 @@ namespace Ryujinx.Cpu.Jit
             }
             else
             {
-                Memory<byte> memory = new byte[size];
+                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Rent(size);
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                GetSpan(va, size).CopyTo(memoryOwner.Memory.Span);
 
-                return new WritableRegion(this, va, memory, tracked);
+                return new WritableRegion(this, va, memoryOwner, tracked);
             }
         }
 
