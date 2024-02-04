@@ -2,10 +2,11 @@ using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Parameter;
 using Ryujinx.Audio.Renderer.Utils;
 using Ryujinx.Common;
+using Ryujinx.Common.Extensions;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Renderer.Server.Splitter
 {
@@ -25,7 +26,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         private Memory<SplitterDestination> _splitterDestinations;
 
         /// <summary>
-        /// If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, ref SplitterInParameter, ReadOnlySpan{byte})"/>.
+        /// If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext,in SplitterInParameter,ref SequenceReader{byte})"/>.
         /// </summary>
         public bool IsBugFixed { get; private set; }
 
@@ -110,7 +111,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         /// <param name="splitters">The <see cref="SplitterState"/> storage.</param>
         /// <param name="splitterDestinations">The <see cref="SplitterDestination"/> storage.</param>
-        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, ref SplitterInParameter, ReadOnlySpan{byte})"/>.</param>
+        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext,in SplitterInParameter,ref SequenceReader{byte})"/>.</param>
         private void Setup(Memory<SplitterState> splitters, Memory<SplitterDestination> splitterDestinations, bool isBugFixed)
         {
             _splitters = splitters;
@@ -148,11 +149,13 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         /// <param name="inputHeader">The splitter header.</param>
         /// <param name="input">The raw data after the splitter header.</param>
-        private void UpdateState(scoped ref SplitterInParameterHeader inputHeader, ref ReadOnlySpan<byte> input)
+        private void UpdateState(in SplitterInParameterHeader inputHeader, ref SequenceReader<byte> input)
         {
             for (int i = 0; i < inputHeader.SplitterCount; i++)
             {
-                SplitterInParameter parameter = MemoryMarshal.Read<SplitterInParameter>(input);
+                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation. 
+                ref readonly SplitterInParameter parameter = ref input.GetRefOrRefToCopy<SplitterInParameter>(out _);
+                input.Rewind(Unsafe.SizeOf<SplitterInParameter>());
 
                 Debug.Assert(parameter.IsMagicValid());
 
@@ -162,10 +165,22 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                     {
                         ref SplitterState splitter = ref GetState(parameter.Id);
 
-                        splitter.Update(this, ref parameter, input[Unsafe.SizeOf<SplitterInParameter>()..]);
+                        input.Advance(Unsafe.SizeOf<SplitterInParameter>());
+                        splitter.Update(this, in parameter, ref input);
                     }
 
-                    input = input[(0x1C + parameter.DestinationCount * 4)..];
+                    // NOTE: this historically has been advancing 0xC (12) bytes without explanation. It was hard
+                    // to discern as it was combined with the sizeof(SplitterInParameter) (16), == 0x1C (28).
+
+                    // NOTE: this historically was also advancing by parameter.DestinationCount * 4, but that was
+                    // to account for the reading done by splitter.Update(). Now we pass in `ref input`, so the 
+                    // reads performed by splitter.Update() are automatically accounted for.
+
+                    input.Advance(0xC);
+                }
+                else
+                {
+                    break;
                 }
             }
         }
@@ -175,11 +190,13 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         /// <param name="inputHeader">The splitter header.</param>
         /// <param name="input">The raw data after the splitter header.</param>
-        private void UpdateData(scoped ref SplitterInParameterHeader inputHeader, ref ReadOnlySpan<byte> input)
+        private void UpdateData(in SplitterInParameterHeader inputHeader, ref SequenceReader<byte> input)
         {
             for (int i = 0; i < inputHeader.SplitterDestinationCount; i++)
             {
-                SplitterDestinationInParameter parameter = MemoryMarshal.Read<SplitterDestinationInParameter>(input);
+                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.                
+                ref readonly SplitterDestinationInParameter parameter = ref input.GetRefOrRefToCopy<SplitterDestinationInParameter>(out _);
+                input.Rewind(Unsafe.SizeOf<SplitterDestinationInParameter>());
 
                 Debug.Assert(parameter.IsMagicValid());
 
@@ -192,7 +209,11 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                         destination.Update(parameter);
                     }
 
-                    input = input[Unsafe.SizeOf<SplitterDestinationInParameter>()..];
+                    input.Advance(Unsafe.SizeOf<SplitterDestinationInParameter>());
+                }
+                else
+                {
+                    break;
                 }
             }
         }
@@ -201,36 +222,33 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// Update splitter from user parameters.
         /// </summary>
         /// <param name="input">The input raw user data.</param>
-        /// <param name="consumedSize">The total consumed size.</param>
         /// <returns>Return true if the update was successful.</returns>
-        public bool Update(ReadOnlySpan<byte> input, out int consumedSize)
+        public bool Update(ref SequenceReader<byte> input)
         {
             if (_splitterDestinations.IsEmpty || _splitters.IsEmpty)
             {
-                consumedSize = 0;
-
                 return true;
             }
 
-            int originalSize = input.Length;
-
-            SplitterInParameterHeader header = SpanIOHelper.Read<SplitterInParameterHeader>(ref input);
+            ref readonly SplitterInParameterHeader header = ref input.GetRefOrRefToCopy<SplitterInParameterHeader>(out _);
 
             if (header.IsMagicValid())
             {
                 ClearAllNewConnectionFlag();
 
-                UpdateState(ref header, ref input);
-                UpdateData(ref header, ref input);
+                UpdateState(in header, ref input);
+                UpdateData(in header, ref input);
 
-                consumedSize = BitUtils.AlignUp(originalSize - input.Length, 0x10);
+                input.SetConsumed(BitUtils.AlignUp(input.Consumed, 0x10));
 
                 return true;
             }
+            else
+            {
+                input.Rewind(Unsafe.SizeOf<SplitterInParameterHeader>());
 
-            consumedSize = 0;
-
-            return false;
+                return false;
+            }
         }
 
         /// <summary>

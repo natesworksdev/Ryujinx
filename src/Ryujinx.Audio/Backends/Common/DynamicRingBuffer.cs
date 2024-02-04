@@ -41,7 +41,7 @@ namespace Ryujinx.Audio.Backends.Common
             {
                 return;
             }
-            
+
             lock (_lock)
             {
                 if (size > _size)
@@ -79,7 +79,7 @@ namespace Ryujinx.Audio.Backends.Common
             }
 
             _bufferOwner.Dispose();
-            
+
             _bufferOwner = newBufferOwner;
             _buffer = newBuffer;
             _headOffset = 0;
@@ -130,7 +130,7 @@ namespace Ryujinx.Audio.Backends.Common
             {
                 return 0;
             }
-            
+
             lock (_lock)
             {
                 if (count > _size)
