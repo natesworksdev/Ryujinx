@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
         private HashSet<MultiRangeBuffer> _virtualDependencies;
-        private ReaderWriterLockSlim _virtualDependenciesLock;
+        private readonly ReaderWriterLockSlim _virtualDependenciesLock;
 
         private int _sequenceNumber;
 
