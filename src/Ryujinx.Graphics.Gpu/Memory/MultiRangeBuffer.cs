@@ -212,6 +212,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Gets data from the specified region of the buffer, and places it on <paramref name="output"/>.
+        /// </summary>
+        /// <param name="output">Span to put the data into</param>
+        /// <param name="offset">Offset of the buffer to get the data from</param>
+        /// <param name="size">Size of the data in bytes</param>
         public void GetData(Span<byte> output, int offset, int size)
         {
             using PinnedSpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, size);
