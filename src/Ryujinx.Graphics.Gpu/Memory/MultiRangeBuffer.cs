@@ -181,7 +181,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 MemoryRange subRange = range.GetSubRange(i);
 
-                _modifiedRanges.Add(new(subRange.Address, subRange.Size, 0, null));
+                _modifiedRanges.SignalModified(subRange.Address, subRange.Size);
             }
 
             ModificationSequenceNumber = modifiedSequenceNumber;

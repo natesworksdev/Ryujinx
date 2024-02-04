@@ -546,7 +546,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void CopyTo(Buffer destination, int dstOffset)
         {
             CopyFromDependantVirtualBuffers();
-
             _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
         }
 
