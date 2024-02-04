@@ -24,7 +24,7 @@ namespace Ryujinx.Common.Logging
         public readonly struct Log
         {
             private static readonly string _homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            private static readonly string _homeDirRedacted = Path.Combine(new DirectoryInfo(_homeDir).Parent.FullName, "[redacted]");
+            private static readonly string _homeDirRedacted = Path.Combine(Directory.GetParent(_homeDir).FullName, "[redacted]");
 
             internal readonly LogLevel Level;
 
