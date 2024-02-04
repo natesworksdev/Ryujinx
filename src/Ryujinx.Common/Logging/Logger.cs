@@ -23,8 +23,8 @@ namespace Ryujinx.Common.Logging
 
         public readonly struct Log
         {
-            internal static readonly string HomeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            internal static readonly string HomeDirRedacted = Path.Combine(new DirectoryInfo(HomeDir).Parent.FullName, "[redacted]");
+            private static readonly string _homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            private static readonly string _homeDirRedacted = Path.Combine(new DirectoryInfo(_homeDir).Parent.FullName, "[redacted]");
 
             internal readonly LogLevel Level;
 
@@ -106,7 +106,7 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static string FormatMessage(LogClass logClass, string caller, string message)
             {
-                message = message.Replace(HomeDir, HomeDirRedacted);
+                message = message.Replace(_homeDir, _homeDirRedacted);
                 return $"{logClass} {caller}: {message}";
             }
         }
