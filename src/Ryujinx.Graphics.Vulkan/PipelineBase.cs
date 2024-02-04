@@ -248,7 +248,6 @@ namespace Ryujinx.Graphics.Vulkan
                 CreateRenderPass();
             }
 
-            FramebufferParams.InsertClearBarrier(Cbs, index, RenderPassActive);
             Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
 
             BeginRenderPass();
@@ -287,7 +286,6 @@ namespace Ryujinx.Graphics.Vulkan
                 CreateRenderPass();
             }
 
-            FramebufferParams.InsertClearBarrierDS(Cbs, RenderPassActive);
             Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
 
             BeginRenderPass();

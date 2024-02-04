@@ -243,24 +243,6 @@ namespace Ryujinx.Graphics.Vulkan
             return new Auto<DisposableFramebuffer>(new DisposableFramebuffer(api, _device, framebuffer), null, _attachments);
         }
 
-        public void InsertClearBarrier(CommandBufferScoped cbs, int index, bool insideRenderPass)
-        {
-            _colorsCanonical?[index]?.Storage?.InsertReadToWriteBarrier(
-               cbs,
-               AccessFlags.ColorAttachmentWriteBit,
-               PipelineStageFlags.ColorAttachmentOutputBit,
-               insideRenderPass);
-        }
-
-        public void InsertClearBarrierDS(CommandBufferScoped cbs, bool insideRenderPass)
-        {
-            _depthStencil?.Storage?.InsertReadToWriteBarrier(
-                cbs,
-                AccessFlags.DepthStencilAttachmentWriteBit,
-                PipelineStageFlags.LateFragmentTestsBit,
-                insideRenderPass);
-        }
-
         public TextureView[] GetAttachmentViews()
         {
             var result = new TextureView[_attachments.Length];
@@ -287,15 +269,13 @@ namespace Ryujinx.Graphics.Vulkan
                 foreach (var color in _colors)
                 {
                     // If Clear or DontCare were used, this would need to be write bit.
-                    color.Storage?.QueueWriteToReadBarrier(cbs, AccessFlags.ColorAttachmentReadBit, PipelineStageFlags.ColorAttachmentOutputBit);
-                    color.Storage?.SetModification(AccessFlags.ColorAttachmentWriteBit, PipelineStageFlags.ColorAttachmentOutputBit);
+                    color.Storage?.QueueLoadOpBarrier(cbs, false);
                 }
             }
 
             if (_depthStencil != null)
             {
-                _depthStencil.Storage?.QueueWriteToReadBarrier(cbs, AccessFlags.DepthStencilAttachmentReadBit, PipelineStageFlags.EarlyFragmentTestsBit);
-                _depthStencil.Storage?.SetModification(AccessFlags.DepthStencilAttachmentWriteBit, PipelineStageFlags.LateFragmentTestsBit);
+                _depthStencil.Storage?.QueueLoadOpBarrier(cbs, false);
             }
 
             gd.Barriers.Flush(cbs.CommandBuffer, false, null);

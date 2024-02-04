@@ -195,9 +195,17 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (hasBarrier)
                 {
+                    PipelineStageFlags srcStageFlags = flags.Source;
+
+                    if (insideRenderPass)
+                    {
+                        // Inside a render pass, barrier stages can only be from rasterization.
+                        srcStageFlags &= ~PipelineStageFlags.ComputeShaderBit;
+                    }
+
                     _gd.Api.CmdPipelineBarrier(
                         cb,
-                        flags.Source,
+                        srcStageFlags,
                         flags.Dest,
                         0,
                         (uint)memoryCount,
