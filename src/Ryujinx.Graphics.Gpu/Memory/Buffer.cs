@@ -589,8 +589,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context.Renderer.BackgroundContextAction(() =>
             {
-                CopyFromDependantVirtualBuffers();
-
                 var ranges = _modifiedRanges;
 
                 if (ranges != null)
