@@ -5,6 +5,7 @@ using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -66,6 +67,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
         private HashSet<MultiRangeBuffer> _virtualDependencies;
+        private ReaderWriterLockSlim _virtualDependenciesLock;
 
         private int _sequenceNumber;
 
@@ -154,6 +156,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _externalFlushDelegate = new RegionSignal(ExternalFlush);
             _loadDelegate = new Action<ulong, ulong>(LoadRegion);
             _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
+
+            _virtualDependenciesLock = new ReaderWriterLockSlim();
         }
 
         /// <summary>
@@ -214,6 +218,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Copies modified data on all virtual buffers back to this buffer,
+        /// then performs guest to host memory synchronization of the buffer data.
+        /// </summary>
+        /// <remarks>
+        /// This causes the buffer data to be overwritten if a write was detected from the CPU,
+        /// since the last call to this method.
+        /// </remarks>
+        /// <param name="address">Start address of the range to synchronize</param>
+        /// <param name="size">Size in bytes of the range to synchronize</param>
+        public void SynchronizeMemoryWithVirtualCopyBack(ulong address, ulong size)
+        {
+            CopyFromDependantVirtualBuffers();
+            SynchronizeMemory(address, size);
+        }
+
+        /// <summary>
         /// Performs guest to host memory synchronization of the buffer data.
         /// </summary>
         /// <remarks>
@@ -222,14 +242,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </remarks>
         /// <param name="address">Start address of the range to synchronize</param>
         /// <param name="size">Size in bytes of the range to synchronize</param>
-        /// <param name="copyBackVirtual">Whether virtual buffers that uses this buffer as backing memory should have its data copied back if modified</param>
-        public void SynchronizeMemory(ulong address, ulong size, bool copyBackVirtual = true)
+        public void SynchronizeMemory(ulong address, ulong size)
         {
-            if (copyBackVirtual)
-            {
-                CopyFromDependantVirtualBuffers();
-            }
-
             if (_useGranular)
             {
                 _memoryTrackingGranular.QueryModified(address, size, _modifiedDelegate, _context.SequenceNumber);
@@ -549,7 +563,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             using PinnedSpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
 
             // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
-            _physicalMemory.WriteUntracked(address, data.Get());
+            _physicalMemory.WriteUntracked(address, CopyFromDependantVirtualBuffers(data.Get(), address, size));
         }
 
         /// <summary>
@@ -638,7 +652,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="virtualBuffer">Dependant virtual buffer</param>
         public void AddVirtualDependency(MultiRangeBuffer virtualBuffer)
         {
-            (_virtualDependencies ??= new()).Add(virtualBuffer);
+            _virtualDependenciesLock.EnterWriteLock();
+
+            try
+            {
+                (_virtualDependencies ??= new()).Add(virtualBuffer);
+            }
+            finally
+            {
+                _virtualDependenciesLock.ExitWriteLock();
+            }
         }
 
         /// <summary>
@@ -647,14 +670,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="virtualBuffer">Dependant virtual buffer</param>
         public void RemoveVirtualDependency(MultiRangeBuffer virtualBuffer)
         {
-            if (_virtualDependencies != null)
-            {
-                _virtualDependencies.Remove(virtualBuffer);
+            _virtualDependenciesLock.EnterWriteLock();
 
-                if (_virtualDependencies.Count == 0)
+            try
+            {
+                if (_virtualDependencies != null)
                 {
-                    _virtualDependencies = null;
+                    _virtualDependencies.Remove(virtualBuffer);
+
+                    if (_virtualDependencies.Count == 0)
+                    {
+                        _virtualDependencies = null;
+                    }
                 }
+            }
+            finally
+            {
+                _virtualDependenciesLock.ExitWriteLock();
             }
         }
 
@@ -689,9 +721,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (_virtualDependencies != null)
             {
-                foreach (var virtualBuffer in _virtualDependencies)
+                foreach (var virtualBuffer in _virtualDependencies.OrderBy(x => x.ModificationSequenceNumber))
                 {
-                    virtualBuffer.ConsumeModifiedRegion(this, (address, size) =>
+                    virtualBuffer.ConsumeModifiedRegion(this, (mAddress, mSize) =>
                     {
                         // Get offset inside both this and the virtual buffer.
                         // Note that sometimes there is no right answer for the virtual offset,
@@ -699,13 +731,67 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         // We just assume it does not happen in practice as it can only be implemented correctly
                         // when the host has support for proper sparse mapping.
 
-                        int physicalOffset = (int)(address - Address);
-                        int virtualOffset = virtualBuffer.Range.FindOffset(new(address, size));
+                        ulong mEndAddress = mAddress + mSize;
+                        mAddress = Math.Max(mAddress, Address);
+                        mSize = Math.Min(mEndAddress, EndAddress) - mAddress;
 
-                        _context.Renderer.Pipeline.CopyBuffer(virtualBuffer.Handle, Handle, virtualOffset, physicalOffset, (int)size);
+                        int physicalOffset = (int)(mAddress - Address);
+                        int virtualOffset = virtualBuffer.Range.FindOffset(new(mAddress, mSize));
+
+                        _context.Renderer.Pipeline.CopyBuffer(virtualBuffer.Handle, Handle, virtualOffset, physicalOffset, (int)mSize);
                     });
                 }
             }
+        }
+
+        /// <summary>
+        /// Copies all overlapping modified ranges from all virtual buffers back into this buffer, and returns an updated span with the data.
+        /// </summary>
+        /// <param name="dataSpan">Span where the unmodified data will be taken from for the output</param>
+        /// <param name="address">Address of the region to copy</param>
+        /// <param name="size">Size of the region to copy in bytes</param>
+        /// <returns>A span with <paramref name="dataSpan"/>, and the data for all modified ranges if any</returns>
+        private ReadOnlySpan<byte> CopyFromDependantVirtualBuffers(ReadOnlySpan<byte> dataSpan, ulong address, ulong size)
+        {
+            _virtualDependenciesLock.EnterReadLock();
+
+            try
+            {
+                if (_virtualDependencies != null)
+                {
+                    byte[] storage = dataSpan.ToArray();
+
+                    foreach (var virtualBuffer in _virtualDependencies.OrderBy(x => x.ModificationSequenceNumber))
+                    {
+                        virtualBuffer.ConsumeModifiedRegion(address, size, (mAddress, mSize) =>
+                        {
+                            // Get offset inside both this and the virtual buffer.
+                            // Note that sometimes there is no right answer for the virtual offset,
+                            // as the same physical range might be mapped multiple times inside a virtual buffer.
+                            // We just assume it does not happen in practice as it can only be implemented correctly
+                            // when the host has support for proper sparse mapping.
+
+                            ulong mEndAddress = mAddress + mSize;
+                            mAddress = Math.Max(mAddress, address);
+                            mSize = Math.Min(mEndAddress, address + size) - mAddress;
+
+                            int physicalOffset = (int)(mAddress - Address);
+                            int virtualOffset = virtualBuffer.Range.FindOffset(new(mAddress, mSize));
+
+                            _context.Renderer.Pipeline.CopyBuffer(virtualBuffer.Handle, Handle, virtualOffset, physicalOffset, (int)size);
+                            virtualBuffer.GetData(storage.AsSpan().Slice((int)(mAddress - address), (int)mSize), virtualOffset, (int)mSize);
+                        });
+                    }
+
+                    dataSpan = storage;
+                }
+            }
+            finally
+            {
+                _virtualDependenciesLock.ExitReadLock();
+            }
+
+            return dataSpan;
         }
 
         /// <summary>

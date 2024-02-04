@@ -46,6 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly Dictionary<ulong, BufferCacheEntry> _dirtyCache;
         private readonly Dictionary<ulong, BufferCacheEntry> _modifiedCache;
         private bool _pruneCaches;
+        private int _virtualModifiedSequenceNumber;
 
         public event Action NotifyBuffersModified;
 
@@ -670,7 +671,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 buffer.DecrementReferenceCount();
             }
 
-            newBuffer.SynchronizeMemory(address, size, copyBackVirtual: false);
+            newBuffer.SynchronizeMemory(address, size);
 
             // Existing buffers were modified, we need to rebind everything.
             NotifyBuffersModified?.Invoke();
@@ -896,7 +897,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 Buffer subBuffer = _buffers.FindFirstOverlap(subRange.Address, subRange.Size);
 
-                subBuffer.SynchronizeMemory(subRange.Address, subRange.Size, copyBackVirtual: false);
+                subBuffer.SynchronizeMemory(subRange.Address, subRange.Size);
 
                 if (write)
                 {
@@ -921,7 +922,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (write && buffer != null && !_context.Capabilities.SupportsSparseBuffer)
             {
-                buffer.AddModifiedRegion(range);
+                buffer.AddModifiedRegion(range, ++_virtualModifiedSequenceNumber);
             }
 
             return buffer;
@@ -943,7 +944,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 buffer = _buffers.FindFirstOverlap(address, size);
 
-                buffer.SynchronizeMemory(address, size);
+                buffer.SynchronizeMemoryWithVirtualCopyBack(address, size);
 
                 if (write)
                 {
@@ -967,7 +968,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (range.Count == 1)
             {
                 MemoryRange subRange = range.GetSubRange(0);
-                SynchronizeBufferRange(subRange.Address, subRange.Size);
+                SynchronizeBufferRange(subRange.Address, subRange.Size, copyBackVirtual: true);
             }
             else
             {
@@ -985,13 +986,20 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
         /// <param name="copyBackVirtual">Whether virtual buffers that uses this buffer as backing memory should have its data copied back if modified</param>
-        private void SynchronizeBufferRange(ulong address, ulong size, bool copyBackVirtual = true)
+        private void SynchronizeBufferRange(ulong address, ulong size, bool copyBackVirtual)
         {
             if (size != 0)
             {
                 Buffer buffer = _buffers.FindFirstOverlap(address, size);
 
-                buffer.SynchronizeMemory(address, size, copyBackVirtual);
+                if (copyBackVirtual)
+                {
+                    buffer.SynchronizeMemoryWithVirtualCopyBack(address, size);
+                }
+                else
+                {
+                    buffer.SynchronizeMemory(address, size);
+                }
             }
         }
 

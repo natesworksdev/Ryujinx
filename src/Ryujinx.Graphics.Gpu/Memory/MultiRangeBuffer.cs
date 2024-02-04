@@ -23,6 +23,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public MultiRange Range { get; }
 
         /// <summary>
+        /// Ever increasing counter value indicating when the buffer was modified relative to other buffers.
+        /// </summary>
+        public int ModificationSequenceNumber { get; private set; }
+
+        /// <summary>
         /// Physical buffer dependency entry.
         /// </summary>
         private readonly struct PhysicalDependency
@@ -167,7 +172,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// This is only required when the host does not support sparse buffers, otherwise only physical buffers need to track modification.
         /// </remarks>
         /// <param name="range">Modified range</param>
-        public void AddModifiedRegion(MultiRange range)
+        /// <param name="modifiedSequenceNumber">ModificationSequenceNumber</param>
+        public void AddModifiedRegion(MultiRange range, int modifiedSequenceNumber)
         {
             _modifiedRanges ??= new(_context, null, null);
 
@@ -177,6 +183,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 _modifiedRanges.Add(new(subRange.Address, subRange.Size, 0, null));
             }
+
+            ModificationSequenceNumber = modifiedSequenceNumber;
         }
 
         /// <summary>
@@ -186,11 +194,28 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="rangeAction">Action to perform for modified ranges</param>
         public void ConsumeModifiedRegion(Buffer buffer, Action<ulong, ulong> rangeAction)
         {
+            ConsumeModifiedRegion(buffer.Address, buffer.Size, rangeAction);
+        }
+
+        /// <summary>
+        /// Calls the specified <paramref name="rangeAction"/> for all modified ranges that overlaps with <paramref name="address"/> and <paramref name="size"/>.
+        /// </summary>
+        /// <param name="address">Address of the region to consume</param>
+        /// <param name="size">Size of the region to consume</param>
+        /// <param name="rangeAction">Action to perform for modified ranges</param>
+        public void ConsumeModifiedRegion(ulong address, ulong size, Action<ulong, ulong> rangeAction)
+        {
             if (_modifiedRanges != null)
             {
-                _modifiedRanges.GetRanges(buffer.Address, buffer.Size, rangeAction);
-                _modifiedRanges.Clear(buffer.Address, buffer.Size);
+                _modifiedRanges.GetRanges(address, size, rangeAction);
+                _modifiedRanges.Clear(address, size);
             }
+        }
+
+        public void GetData(Span<byte> output, int offset, int size)
+        {
+            using PinnedSpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, size);
+            data.Get().CopyTo(output);
         }
 
         /// <summary>
