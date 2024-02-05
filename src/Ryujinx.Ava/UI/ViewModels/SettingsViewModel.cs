@@ -164,7 +164,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
         public bool IsVulkanSelected => GraphicsBackendIndex == 0;
-        public bool IsSpirVSelected => ShadingLangugeIndex == 0;
+
         public bool IsOGSpirVAvialble => true;
         public bool UseHypervisor { get; set; }
 
@@ -200,7 +200,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
-                OnPropertyChanged(nameof(IsOpenGLSelected));
+                NoGLSLVulkan();
+                OnPropertyChanged(nameof(ShadingLangugeIndex));
             }
         }
 
@@ -211,12 +212,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _shadinglanguageBackendIndex = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(IsOpenGLSelected));
             }
         }
-
-
-        public bool IsOpenGLSelected => !IsVulkanSelected;
 
         public int ScalingFilter
         {
@@ -334,6 +331,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
         }
 
+        public async Task NoGLSLVulkan()
+        {
+            if (IsVulkanSelected & ShadingLangugeIndex == 1 || IsVulkanSelected & _shadinglanguageBackendIndex == 1)
+            {
+                _shadinglanguageBackendIndex = 0;
+                ShadingLangugeIndex = 0;
+            }
+        }
+
+
         private async Task LoadAvailableGpus()
         {
             AvailableGpus.Clear();
@@ -407,6 +414,15 @@ namespace Ryujinx.Ava.UI.ViewModels
             NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceIndex)));
+        }
+
+        private async Task NoGLSLVUlkan()
+        {
+            if (_graphicsBackendIndex == 0)
+            {
+                _shadinglanguageBackendIndex = 0;
+            }
+
         }
 
         public void ValidateAndSetTimeZone(string location)

@@ -64,11 +64,12 @@
                         <ComboBox Width="350"
                                   HorizontalContentAlignment="Left"
                                   ToolTip.Tip="{locale:Locale ShadingLanguageTooltip}"
-                                  SelectedIndex="{Binding ShadingLangugeIndex}">
+                                  SelectedIndex="{Binding ShadingLangugeIndex}"
+                                  AutoScrollToSelectedItem="True">
                             <ComboBoxItem IsEnabled="{Binding IsOGSpirVAvialble}">
                                 <TextBlock Text="SPIR-V" />
                             </ComboBoxItem>
-                            <ComboBoxItem IsEnabled="{Binding IsOpenGLSelected}">
+                            <ComboBoxItem IsEnabled="{Binding !IsVulkanSelected}">
                                 <TextBlock Text="GLSL" />
                             </ComboBoxItem>
                             </ComboBox>
