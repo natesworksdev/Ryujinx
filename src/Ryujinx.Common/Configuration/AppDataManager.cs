@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using System;
 using System.IO;
 
@@ -6,8 +7,8 @@ namespace Ryujinx.Common.Configuration
 {
     public static class AppDataManager
     {
-        public const string DefaultBaseDir = "Ryujinx";
-        public const string DefaultPortableDir = "portable";
+        private const string DefaultBaseDir = "Ryujinx";
+        private const string DefaultPortableDir = "portable";
 
         // The following 3 are always part of Base Directory
         private const string GamesDir = "games";
@@ -63,6 +64,17 @@ namespace Ryujinx.Common.Configuration
             string userProfilePath = Path.Combine(appDataPath, DefaultBaseDir);
             string portablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultPortableDir);
 
+            // On macOS, check for a portable directory next to the app bundle as well.
+            if (OperatingSystem.IsMacOS() && !Directory.Exists(portablePath))
+            {
+                string bundlePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", ".."));
+                // Make sure we're actually running within an app bundle.
+                if (bundlePath.EndsWith(".app"))
+                {
+                    portablePath = Path.GetFullPath(Path.Combine(bundlePath, "..", DefaultPortableDir));
+                }
+            }
+
             if (Directory.Exists(portablePath))
             {
                 BaseDirPath = portablePath;
@@ -98,8 +110,7 @@ namespace Ryujinx.Common.Configuration
                 string oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
                 if (Path.Exists(oldConfigPath) && !IsPathSymlink(oldConfigPath) && !Path.Exists(BaseDirPath))
                 {
-                    CopyDirectory(oldConfigPath, BaseDirPath);
-                    Directory.Delete(oldConfigPath, true);
+                    FileSystemUtils.MoveDirectory(oldConfigPath, BaseDirPath);
                     Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
                 }
             }
@@ -116,39 +127,11 @@ namespace Ryujinx.Common.Configuration
         }
 
         // Check if existing old baseDirPath is a symlink, to prevent possible errors.
-        // Should be removed, when the existance of the old directory isn't checked anymore.
+        // Should be removed, when the existence of the old directory isn't checked anymore.
         private static bool IsPathSymlink(string path)
         {
             FileAttributes attributes = File.GetAttributes(path);
             return (attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-        }
-
-        private static void CopyDirectory(string sourceDir, string destinationDir)
-        {
-            var dir = new DirectoryInfo(sourceDir);
-
-            if (!dir.Exists)
-            {
-                throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
-            }
-
-            DirectoryInfo[] subDirs = dir.GetDirectories();
-            Directory.CreateDirectory(destinationDir);
-
-            foreach (FileInfo file in dir.GetFiles())
-            {
-                if (file.Name == ".DS_Store")
-                {
-                    continue;
-                }
-
-                file.CopyTo(Path.Combine(destinationDir, file.Name));
-            }
-
-            foreach (DirectoryInfo subDir in subDirs)
-            {
-                CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name));
-            }
         }
 
         public static string GetModsPath() => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;

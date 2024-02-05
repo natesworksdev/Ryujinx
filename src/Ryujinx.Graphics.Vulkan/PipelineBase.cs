@@ -1,4 +1,4 @@
-﻿using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
@@ -30,10 +30,12 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly PipelineCache PipelineCache;
 
         public readonly AutoFlushCounter AutoFlush;
+        public readonly Action EndRenderPassDelegate;
 
         protected PipelineDynamicState DynamicState;
         private PipelineState _newState;
-        private bool _stateDirty;
+        private bool _graphicsStateDirty;
+        private bool _computeStateDirty;
         private PrimitiveTopology _topology;
 
         private ulong _currentPipelineHandle;
@@ -53,6 +55,7 @@ namespace Ryujinx.Graphics.Vulkan
         protected FramebufferParams FramebufferParams;
         private Auto<DisposableFramebuffer> _framebuffer;
         private Auto<DisposableRenderPass> _renderPass;
+        private RenderPassHolder _nullRenderPass;
         private int _writtenAttachmentCount;
 
         private bool _framebufferUsingColorWriteMask;
@@ -92,6 +95,7 @@ namespace Ryujinx.Graphics.Vulkan
             Device = device;
 
             AutoFlush = new AutoFlushCounter(gd);
+            EndRenderPassDelegate = EndRenderPass;
 
             var pipelineCacheCreateInfo = new PipelineCacheCreateInfo
             {
@@ -100,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out PipelineCache).ThrowOnError();
 
-            _descriptorSetUpdater = new DescriptorSetUpdater(gd, this);
+            _descriptorSetUpdater = new DescriptorSetUpdater(gd, device, this);
             _vertexBufferUpdater = new VertexBufferUpdater(gd);
 
             _transformFeedbackBuffers = new BufferState[Constants.MaxTransformFeedbackBuffers];
@@ -351,7 +355,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             EndRenderPass();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Compute);
+            RecreateComputePipelineIfNeeded();
 
             Gd.Api.CmdDispatch(CommandBuffer, (uint)groupsX, (uint)groupsY, (uint)groupsZ);
         }
@@ -364,19 +368,23 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             EndRenderPass();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Compute);
+            RecreateComputePipelineIfNeeded();
 
             Gd.Api.CmdDispatchIndirect(CommandBuffer, indirectBuffer.Get(Cbs, indirectBufferOffset, 12).Value, (ulong)indirectBufferOffset);
         }
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked || vertexCount == 0)
+            if (vertexCount == 0)
             {
                 return;
             }
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -435,13 +443,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked || indexCount == 0)
+            if (indexCount == 0)
             {
                 return;
             }
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -474,17 +487,17 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexedIndirect(BufferRange indirectBuffer)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             var buffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -520,11 +533,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             var countBuffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, parameterBuffer.Handle, parameterBuffer.Offset, parameterBuffer.Size, false)
                 .Get(Cbs, parameterBuffer.Offset, parameterBuffer.Size).Value;
@@ -534,7 +542,12 @@ namespace Ryujinx.Graphics.Vulkan
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
 
             UpdateIndexBufferPattern();
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             DrawCount++;
 
@@ -612,18 +625,17 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndirect(BufferRange indirectBuffer)
         {
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             // TODO: Support quads and other unsupported topologies.
 
             var buffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size, false).Value;
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
@@ -639,11 +651,6 @@ namespace Ryujinx.Graphics.Vulkan
                 throw new NotSupportedException();
             }
 
-            if (!_program.IsLinked)
-            {
-                return;
-            }
-
             var buffer = Gd.BufferManager
                 .GetBuffer(CommandBuffer, indirectBuffer.Handle, indirectBuffer.Offset, indirectBuffer.Size, false)
                 .Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size, false).Value;
@@ -654,7 +661,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             // TODO: Support quads and other unsupported topologies.
 
-            RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            if (!RecreateGraphicsPipelineIfNeeded())
+            {
+                return;
+            }
+
             BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
@@ -1478,106 +1489,43 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected unsafe void CreateRenderPass()
         {
-            const int MaxAttachments = Constants.MaxRenderTargets + 1;
-
-            AttachmentDescription[] attachmentDescs = null;
-
-            var subpass = new SubpassDescription
-            {
-                PipelineBindPoint = PipelineBindPoint.Graphics,
-            };
-
-            AttachmentReference* attachmentReferences = stackalloc AttachmentReference[MaxAttachments];
-
             var hasFramebuffer = FramebufferParams != null;
-
-            if (hasFramebuffer && FramebufferParams.AttachmentsCount != 0)
-            {
-                attachmentDescs = new AttachmentDescription[FramebufferParams.AttachmentsCount];
-
-                for (int i = 0; i < FramebufferParams.AttachmentsCount; i++)
-                {
-                    attachmentDescs[i] = new AttachmentDescription(
-                        0,
-                        FramebufferParams.AttachmentFormats[i],
-                        TextureStorage.ConvertToSampleCountFlags(Gd.Capabilities.SupportedSampleCounts, FramebufferParams.AttachmentSamples[i]),
-                        AttachmentLoadOp.Load,
-                        AttachmentStoreOp.Store,
-                        AttachmentLoadOp.Load,
-                        AttachmentStoreOp.Store,
-                        ImageLayout.General,
-                        ImageLayout.General);
-                }
-
-                int colorAttachmentsCount = FramebufferParams.ColorAttachmentsCount;
-
-                if (colorAttachmentsCount > MaxAttachments - 1)
-                {
-                    colorAttachmentsCount = MaxAttachments - 1;
-                }
-
-                if (colorAttachmentsCount != 0)
-                {
-                    int maxAttachmentIndex = FramebufferParams.MaxColorAttachmentIndex;
-                    subpass.ColorAttachmentCount = (uint)maxAttachmentIndex + 1;
-                    subpass.PColorAttachments = &attachmentReferences[0];
-
-                    // Fill with VK_ATTACHMENT_UNUSED to cover any gaps.
-                    for (int i = 0; i <= maxAttachmentIndex; i++)
-                    {
-                        subpass.PColorAttachments[i] = new AttachmentReference(Vk.AttachmentUnused, ImageLayout.Undefined);
-                    }
-
-                    for (int i = 0; i < colorAttachmentsCount; i++)
-                    {
-                        int bindIndex = FramebufferParams.AttachmentIndices[i];
-
-                        subpass.PColorAttachments[bindIndex] = new AttachmentReference((uint)i, ImageLayout.General);
-                    }
-                }
-
-                if (FramebufferParams.HasDepthStencil)
-                {
-                    uint dsIndex = (uint)FramebufferParams.AttachmentsCount - 1;
-
-                    subpass.PDepthStencilAttachment = &attachmentReferences[MaxAttachments - 1];
-                    *subpass.PDepthStencilAttachment = new AttachmentReference(dsIndex, ImageLayout.General);
-                }
-            }
-
-            var subpassDependency = PipelineConverter.CreateSubpassDependency();
-
-            fixed (AttachmentDescription* pAttachmentDescs = attachmentDescs)
-            {
-                var renderPassCreateInfo = new RenderPassCreateInfo
-                {
-                    SType = StructureType.RenderPassCreateInfo,
-                    PAttachments = pAttachmentDescs,
-                    AttachmentCount = attachmentDescs != null ? (uint)attachmentDescs.Length : 0,
-                    PSubpasses = &subpass,
-                    SubpassCount = 1,
-                    PDependencies = &subpassDependency,
-                    DependencyCount = 1,
-                };
-
-                Gd.Api.CreateRenderPass(Device, renderPassCreateInfo, null, out var renderPass).ThrowOnError();
-
-                _renderPass?.Dispose();
-                _renderPass = new Auto<DisposableRenderPass>(new DisposableRenderPass(Gd.Api, Device, renderPass));
-            }
 
             EndRenderPass();
 
-            _framebuffer?.Dispose();
-            _framebuffer = hasFramebuffer ? FramebufferParams.Create(Gd.Api, Cbs, _renderPass) : null;
+            if (!hasFramebuffer || FramebufferParams.AttachmentsCount == 0)
+            {
+                // Use the null framebuffer.
+                _nullRenderPass ??= new RenderPassHolder(Gd, Device, new RenderPassCacheKey(), FramebufferParams);
+
+                _renderPass = _nullRenderPass.GetRenderPass();
+                _framebuffer = _nullRenderPass.GetFramebuffer(Gd, Cbs, FramebufferParams);
+            }
+            else
+            {
+                (_renderPass, _framebuffer) = FramebufferParams.GetPassAndFramebuffer(Gd, Device, Cbs);
+            }
         }
 
         protected void SignalStateChange()
         {
-            _stateDirty = true;
+            _graphicsStateDirty = true;
+            _computeStateDirty = true;
         }
 
-        private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
+        private void RecreateComputePipelineIfNeeded()
+        {
+            if (_computeStateDirty || Pbp != PipelineBindPoint.Compute)
+            {
+                CreatePipeline(PipelineBindPoint.Compute);
+                _computeStateDirty = false;
+                Pbp = PipelineBindPoint.Compute;
+            }
+
+            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Compute);
+        }
+
+        private bool RecreateGraphicsPipelineIfNeeded()
         {
             if (AutoFlush.ShouldFlushDraw(DrawCount))
             {
@@ -1618,17 +1566,23 @@ namespace Ryujinx.Graphics.Vulkan
                 _vertexBufferUpdater.Commit(Cbs);
             }
 
-            if (_stateDirty || Pbp != pbp)
+            if (_graphicsStateDirty || Pbp != PipelineBindPoint.Graphics)
             {
-                CreatePipeline(pbp);
-                _stateDirty = false;
-                Pbp = pbp;
+                if (!CreatePipeline(PipelineBindPoint.Graphics))
+                {
+                    return false;
+                }
+
+                _graphicsStateDirty = false;
+                Pbp = PipelineBindPoint.Graphics;
             }
 
-            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, pbp);
+            _descriptorSetUpdater.UpdateAndBindDescriptorSets(Cbs, PipelineBindPoint.Graphics);
+
+            return true;
         }
 
-        private void CreatePipeline(PipelineBindPoint pbp)
+        private bool CreatePipeline(PipelineBindPoint pbp)
         {
             // We can only create a pipeline if the have the shader stages set.
             if (_newState.Stages != null)
@@ -1638,9 +1592,24 @@ namespace Ryujinx.Graphics.Vulkan
                     CreateRenderPass();
                 }
 
+                if (!_program.IsLinked)
+                {
+                    // Background compile failed, we likely can't create the pipeline because the shader is broken
+                    // or the driver failed to compile it.
+
+                    return false;
+                }
+
                 var pipeline = pbp == PipelineBindPoint.Compute
                     ? _newState.CreateComputePipeline(Gd, Device, _program, PipelineCache)
                     : _newState.CreateGraphicsPipeline(Gd, Device, _program, PipelineCache, _renderPass.Get(Cbs).Value);
+
+                if (pipeline == null)
+                {
+                    // Host failed to create the pipeline, likely due to driver bugs.
+
+                    return false;
+                }
 
                 ulong pipelineHandle = pipeline.GetUnsafe().Value.Handle;
 
@@ -1653,6 +1622,8 @@ namespace Ryujinx.Graphics.Vulkan
                     Gd.Api.CmdBindPipeline(CommandBuffer, pbp, Pipeline.Get(Cbs).Value);
                 }
             }
+
+            return true;
         }
 
         private unsafe void BeginRenderPass()
@@ -1724,8 +1695,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
-                _renderPass?.Dispose();
-                _framebuffer?.Dispose();
+                _nullRenderPass?.Dispose();
                 _newState.Dispose();
                 _descriptorSetUpdater.Dispose();
                 _vertexBufferUpdater.Dispose();

@@ -1,4 +1,4 @@
-﻿namespace ARMeilleure.Memory
+namespace ARMeilleure.Memory
 {
     /// <summary>
     /// Indicates the type of a memory manager and the method it uses for memory mapping
@@ -31,7 +31,7 @@
         HostMappedUnsafe,
     }
 
-    static class MemoryManagerTypeExtensions
+    public static class MemoryManagerTypeExtensions
     {
         public static bool IsHostMapped(this MemoryManagerType type)
         {

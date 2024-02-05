@@ -1,9 +1,10 @@
-﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -46,7 +47,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _lastAccessIsWrite;
 
-        private readonly BufferAllocationType _baseType;
+        private BufferAllocationType _baseType;
         private BufferAllocationType _currentType;
         private bool _swapQueued;
 
@@ -109,6 +110,22 @@ namespace Ryujinx.Graphics.Vulkan
             _flushLock = new ReaderWriterLockSlim();
         }
 
+        public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, int size, Auto<MemoryAllocation>[] storageAllocations)
+        {
+            _gd = gd;
+            _device = device;
+            _waitable = new MultiFenceHolder(size);
+            _buffer = new Auto<DisposableBuffer>(new DisposableBuffer(gd.Api, device, buffer), _waitable, storageAllocations);
+            _bufferHandle = buffer.Handle;
+            Size = size;
+
+            _baseType = BufferAllocationType.Sparse;
+            _currentType = BufferAllocationType.Sparse;
+            DesiredType = BufferAllocationType.Sparse;
+
+            _flushLock = new ReaderWriterLockSlim();
+        }
+
         public bool TryBackingSwap(ref CommandBufferScoped? cbs)
         {
             if (_swapQueued && DesiredType != _currentType)
@@ -122,7 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var currentBuffer = _buffer;
                     IntPtr currentMap = _map;
 
-                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, DesiredType, false, _currentType);
+                    (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) = _gd.BufferManager.CreateBacking(_gd, Size, DesiredType, false, false, _currentType);
 
                     if (buffer.Handle != 0)
                     {
@@ -253,6 +270,14 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public void Pin()
+        {
+            if (_baseType == BufferAllocationType.Auto)
+            {
+                _baseType = _currentType;
+            }
+        }
+
         public unsafe Auto<DisposableBufferView> CreateView(VkFormat format, int offset, int size, Action invalidateView)
         {
             var bufferViewCreateInfo = new BufferViewCreateInfo
@@ -360,7 +385,7 @@ namespace Ryujinx.Graphics.Vulkan
             var baseData = new Span<byte>((void*)(_map + offset), size);
             var modData = _pendingData.AsSpan(offset, size);
 
-            StagingBufferReserved? newMirror = _gd.BufferManager.StagingBuffer.TryReserveData(cbs, size, (int)_gd.Capabilities.MinResourceAlignment);
+            StagingBufferReserved? newMirror = _gd.BufferManager.StagingBuffer.TryReserveData(cbs, size);
 
             if (newMirror != null)
             {
@@ -496,7 +521,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (_gd.PipelineInternal.CurrentCommandBuffer.CommandBuffer.Handle == cbs.CommandBuffer.Handle)
                     {
-                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, _gd.PipelineInternal.EndRenderPass, false);
+                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, _gd.PipelineInternal.EndRenderPassDelegate, false);
                     }
                     else
                     {
@@ -504,6 +529,16 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
             }
+        }
+
+        public Auto<MemoryAllocation> GetAllocation()
+        {
+            return _allocationAuto;
+        }
+
+        public (DeviceMemory, ulong) GetDeviceMemoryAndOffset()
+        {
+            return (_allocation.Memory, _allocation.Offset);
         }
 
         public void SignalWrite(int offset, int size)
@@ -804,6 +839,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public unsafe void SetDataUnchecked<T>(int offset, ReadOnlySpan<T> data) where T : unmanaged
+        {
+            SetDataUnchecked(offset, MemoryMarshal.AsBytes(data));
+        }
+
         public void SetDataInline(CommandBufferScoped cbs, Action endRenderPass, int dstOffset, ReadOnlySpan<byte> data)
         {
             if (!TryPushData(cbs, endRenderPass, dstOffset, data))
@@ -1072,7 +1112,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _allocationAuto.Dispose();
+                _allocationAuto?.Dispose();
             }
 
             _flushLock.EnterWriteLock();

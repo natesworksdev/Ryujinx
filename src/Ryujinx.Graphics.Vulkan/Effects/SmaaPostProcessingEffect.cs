@@ -215,11 +215,10 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             ReadOnlySpan<float> resolutionBuffer = stackalloc float[] { view.Width, view.Height };
             int rangeSize = resolutionBuffer.Length * sizeof(float);
-            var bufferHandle = _renderer.BufferManager.CreateWithHandle(_renderer, rangeSize);
+            using var buffer = _renderer.BufferManager.ReserveOrCreate(_renderer, cbs, rangeSize);
 
-            _renderer.BufferManager.SetData(bufferHandle, 0, resolutionBuffer);
-            var bufferRanges = new BufferRange(bufferHandle, 0, rangeSize);
-            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, bufferRanges) });
+            buffer.Holder.SetDataUnchecked(buffer.Offset, resolutionBuffer);
+            _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, buffer.Range) });
             _pipeline.SetImage(0, _edgeOutputTexture, FormatTable.ConvertRgba8SrgbToUnorm(view.Info.Format));
             _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
             _pipeline.ComputeBarrier();
@@ -245,8 +244,6 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _pipeline.Finish();
 
-            _renderer.BufferManager.Delete(bufferHandle);
-
             return _outputTexture;
         }
 
@@ -260,7 +257,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             scissors[0] = new Rectangle<int>(0, 0, texture.Width, texture.Height);
 
-            _pipeline.SetRenderTarget(texture.GetImageViewForAttachment(), (uint)texture.Width, (uint)texture.Height, false, texture.VkFormat);
+            _pipeline.SetRenderTarget(texture, (uint)texture.Width, (uint)texture.Height);
             _pipeline.SetRenderTargetColorMasks(colorMasks);
             _pipeline.SetScissors(scissors);
             _pipeline.ClearRenderTargetColor(0, 0, 1, new ColorF(0f, 0f, 0f, 1f));

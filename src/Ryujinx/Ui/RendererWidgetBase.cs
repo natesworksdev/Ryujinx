@@ -1,4 +1,3 @@
-﻿using ARMeilleure.Translation;
 using Gdk;
 using Gtk;
 using Ryujinx.Common;
@@ -11,6 +10,7 @@ using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -77,7 +77,7 @@ namespace Ryujinx.Ui
         private readonly IKeyboard _keyboardInterface;
         private readonly GraphicsDebugLevel _glLogLevel;
         private string _gpuBackendName;
-        private string _gpuVendorName;
+        private string _gpuDriverName;
         private bool _isMouseInClient;
 
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
@@ -141,9 +141,9 @@ namespace Ryujinx.Ui
 
         protected abstract string GetGpuBackendName();
 
-        private string GetGpuVendorName()
+        private string GetGpuDriverName()
         {
-            return Renderer.GetHardwareInfo().GpuVendor;
+            return Renderer.GetHardwareInfo().GpuDriver;
         }
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<HideCursorMode> state)
@@ -443,13 +443,12 @@ namespace Ryujinx.Ui
             Renderer.Window.SetScalingFilterLevel(ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value);
 
             _gpuBackendName = GetGpuBackendName();
-            _gpuVendorName = GetGpuVendorName();
+            _gpuDriverName = GetGpuDriverName();
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
                 Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
-                Translator.IsReadyForTranslation.Set();
 
                 Renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
 
@@ -495,7 +494,7 @@ namespace Ryujinx.Ui
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                            $"GPU: {_gpuVendorName}"));
+                            $"GPU: {_gpuDriverName}"));
 
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }
@@ -525,12 +524,7 @@ namespace Ryujinx.Ui
 
                 var activeProcess = Device.Processes.ActiveApplication;
 
-                string titleNameSection = string.IsNullOrWhiteSpace(activeProcess.Name) ? string.Empty : $" {activeProcess.Name}";
-                string titleVersionSection = string.IsNullOrWhiteSpace(activeProcess.DisplayVersion) ? string.Empty : $" v{activeProcess.DisplayVersion}";
-                string titleIdSection = $" ({activeProcess.ProgramIdText.ToUpper()})";
-                string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
-
-                parent.Title = $"Ryujinx {Program.Version} -{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+                parent.Title = TitleHelper.ActiveApplicationTitle(activeProcess, Program.Version);
             });
 
             Thread renderLoopThread = new(Render)

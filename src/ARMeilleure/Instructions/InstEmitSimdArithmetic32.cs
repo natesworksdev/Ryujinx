@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Decoders;
+using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
@@ -1113,6 +1113,13 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
             }
+        }
+
+        public static void Vpadal(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            EmitVectorPairwiseTernaryLongOpI32(context, (op1, op2, op3) => context.Add(context.Add(op1, op2), op3), op.Opc != 1);
         }
 
         public static void Vpaddl(ArmEmitterContext context)

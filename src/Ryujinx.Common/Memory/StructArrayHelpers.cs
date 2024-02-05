@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
@@ -738,6 +738,17 @@ namespace Ryujinx.Common.Memory
         T _e0;
         Array63<T> _other;
         public readonly int Length => 64;
+        public ref T this[int index] => ref AsSpan()[index];
+
+        [Pure]
+        public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref _e0, Length);
+    }
+
+    public struct Array65<T> : IArray<T> where T : unmanaged
+    {
+        T _e0;
+        Array64<T> _other;
+        public readonly int Length => 65;
         public ref T this[int index] => ref AsSpan()[index];
 
         [Pure]

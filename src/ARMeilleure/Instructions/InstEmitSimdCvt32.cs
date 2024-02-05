@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Decoders;
+using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
@@ -575,6 +575,22 @@ namespace ARMeilleure.Instructions
             else
             {
                 EmitVectorUnaryOpF32(context, (m) => EmitUnaryMathCall(context, nameof(Math.Ceiling), m));
+            }
+        }
+
+        // VRINTR (floating-point).
+        public static void Vrintr_S(ArmEmitterContext context)
+        {
+            if (Optimizations.UseAdvSimd)
+            {
+                InstEmitSimdHelper32Arm64.EmitScalarUnaryOpF32(context, Intrinsic.Arm64FrintiS);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return EmitRoundByRMode(context, op1);
+                });
             }
         }
 

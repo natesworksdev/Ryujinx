@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Memory;
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -1626,12 +1626,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Let's avoid flushing textures that are unlikely to be read from CPU to improve performance
             // on those platforms.
             if (!_physicalMemory.Supports4KBPages && !Storage.Info.IsLinear && !_context.IsGpuThread())
-            {
-                return;
-            }
-
-            // If size is zero, we have nothing to flush.
-            if (size == 0)
             {
                 return;
             }

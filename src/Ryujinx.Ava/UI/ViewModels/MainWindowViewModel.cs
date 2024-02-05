@@ -90,6 +90,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _pauseKey = "F5";
         private string _screenshotKey = "F8";
         private float _volume;
+        private float _volumeBeforeMute;
         private string _backendText;
 
         private bool _canUpdate = true;
@@ -356,7 +357,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool OpenBcatSaveDirectoryEnabled => !SelectedApplication.ControlHolder.ByteSpan.IsZeros() && SelectedApplication.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
 
-        public bool CreateShortcutEnabled => !ReleaseInformation.IsFlatHubBuild();
+        public bool CreateShortcutEnabled => !ReleaseInformation.IsFlatHubBuild;
 
         public string LoadHeading
         {
@@ -550,6 +551,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged(nameof(VolumeStatusText));
                 OnPropertyChanged(nameof(VolumeMuted));
+                OnPropertyChanged();
+            }
+        }
+
+        public float VolumeBeforeMute
+        {
+            get => _volumeBeforeMute;
+            set
+            {
+                _volumeBeforeMute = value;
+
                 OnPropertyChanged();
             }
         }
@@ -1338,7 +1350,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void OpenLogsFolder()
         {
-            string logPath = Path.Combine(ReleaseInformation.GetBaseApplicationDirectory(), "Logs");
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+
+            if (LoggerModule.LogDirectoryPath != null)
+            {
+                logPath = LoggerModule.LogDirectoryPath;
+            }
 
             new DirectoryInfo(logPath).Create();
 

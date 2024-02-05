@@ -8,7 +8,7 @@ on:
       - '!.github/**'
       - '!*.yml'
       - '!*.config'
-      - '!README.md'
+      - '!*.md'
       - '.github/workflows/*.yml'
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
 
@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload report
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dotnet-format
           path: ./*-report.json

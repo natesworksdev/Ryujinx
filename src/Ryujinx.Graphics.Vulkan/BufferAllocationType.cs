@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Graphics.Vulkan
+namespace Ryujinx.Graphics.Vulkan
 {
     internal enum BufferAllocationType
     {
@@ -8,5 +8,6 @@
         HostMapped,
         DeviceLocal,
         DeviceLocalMapped,
+        Sparse,
     }
 }
