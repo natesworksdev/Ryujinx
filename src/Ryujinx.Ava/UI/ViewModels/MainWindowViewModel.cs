@@ -1352,9 +1352,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
 
-            if (LoggerModule.LogDirectoryPath != null)
+            if (AppDataManager.LogsDirPath != null)
             {
-                logPath = LoggerModule.LogDirectoryPath;
+                logPath = AppDataManager.LogsDirPath;
             }
 
             new DirectoryInfo(logPath).Create();

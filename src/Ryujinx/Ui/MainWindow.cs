@@ -1378,9 +1378,9 @@ namespace Ryujinx.Ui
         {
             string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
 
-            if (LoggerModule.LogDirectoryPath != null)
+            if (AppDataManager.LogsDirPath != null)
             {
-                logPath = LoggerModule.LogDirectoryPath;
+                logPath = AppDataManager.LogsDirPath;
             }
 
             new DirectoryInfo(logPath).Create();

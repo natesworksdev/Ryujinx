@@ -9,7 +9,6 @@ namespace Ryujinx.Ui.Common.Configuration
 {
     public static class LoggerModule
     {
-        public static string LogDirectoryPath { get; private set; }
 
         public static void Initialize()
         {
@@ -90,13 +89,10 @@ namespace Ryujinx.Ui.Common.Configuration
                 if (logFile == null)
                 {
                     Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the Logs directory, Application Data, or the Ryujinx directory is writable.");
-                    LogDirectoryPath = null;
                     Logger.RemoveTarget("file");
 
                     return;
                 }
-
-                LogDirectoryPath = logDir;
 
                 Logger.AddTarget(new AsyncLogTargetWrapper(
                     new FileLogTarget("file", logFile),
