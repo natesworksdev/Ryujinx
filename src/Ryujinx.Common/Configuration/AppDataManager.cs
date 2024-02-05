@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using System;
 using System.IO;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.Configuration
 {
@@ -97,7 +98,7 @@ namespace Ryujinx.Common.Configuration
 
             if (IsPathSymlink(BaseDirPath))
             {
-                Logger.Error?.Print(LogClass.Application, $"Application data directory is a symlink. This may be unintended.");
+                Logger.Warning?.Print(LogClass.Application, $"Application data directory is a symlink. This may be unintended.");
             }
 
             SetupBasePaths();
@@ -236,58 +237,56 @@ namespace Ryujinx.Common.Configuration
             return (attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
         }
 
+        [SupportedOSPlatform("macos")]
         public static void FixMacOSConfigurationFolders()
         {
-            if (OperatingSystem.IsMacOS())
+            string oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".config", DefaultBaseDir);
+            if (Path.Exists(oldConfigPath) && !IsPathSymlink(oldConfigPath) && !Path.Exists(BaseDirPath))
             {
-                string oldConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".config", DefaultBaseDir);
-                if (Path.Exists(oldConfigPath) && !IsPathSymlink(oldConfigPath) && !Path.Exists(BaseDirPath))
+                FileSystemUtils.MoveDirectory(oldConfigPath, BaseDirPath);
+                Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
+            }
+
+            string correctApplicationDataDirectoryPath =
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
+            if (IsPathSymlink(correctApplicationDataDirectoryPath))
+            {
+                //copy the files somewhere temporarily
+                string tempPath = Path.Combine(Path.GetTempPath(), DefaultBaseDir);
+                try
                 {
-                    FileSystemUtils.MoveDirectory(oldConfigPath, BaseDirPath);
-                    Directory.CreateSymbolicLink(oldConfigPath, BaseDirPath);
+                    FileSystemUtils.CopyDirectory(correctApplicationDataDirectoryPath, tempPath, true);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Error?.Print(LogClass.Application,
+                        $"Critical error copying Ryujinx application data into the temp folder. Please manually move your application data to the correct folder. {exception}");
+                    return;
                 }
 
-                string correctApplicationDataDirectoryPath =
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
-                if (IsPathSymlink(correctApplicationDataDirectoryPath))
+                //delete the symlink
+                try
                 {
-                    //copy the files somewhere temporarily
-                    string tempPath = Path.Combine(Path.GetTempPath(), DefaultBaseDir);
-                    try
-                    {
-                        FileSystemUtils.CopyDirectory(correctApplicationDataDirectoryPath, tempPath, true);
-                    }
-                    catch
-                    {
-                        Logger.Error?.Print(LogClass.Application,
-                            $"Critical error copying Ryujinx application data into the temp folder. Please manually move your application data to the correct folder.");
-                        return;
-                    }
+                    //This will fail if this is an actual directory, so there is no way we can actually delete user data here.
+                    File.Delete(correctApplicationDataDirectoryPath);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Error?.Print(LogClass.Application,
+                        $"Critical error deleting the Ryujinx application data folder symlink. Please manually move your application data to the correct location. {exception}");
+                    return;
+                }
 
-                    //delete the symlink
-                    try
-                    {
-                        //This will fail if this is an actual directory, so there is no way we can actually delete user data here.
-                        File.Delete(correctApplicationDataDirectoryPath);
-                    }
-                    catch
-                    {
-                        Logger.Error?.Print(LogClass.Application,
-                            $"Critical error deleting the Ryujinx application data folder symlink. Please manually move your application data to the correct location.");
-                        return;
-                    }
-
-                    //put the files back
-                    try
-                    {
-                        FileSystemUtils.CopyDirectory(tempPath, correctApplicationDataDirectoryPath, true);
-                    }
-                    catch
-                    {
-                        Logger.Error?.Print(LogClass.Application,
-                            $"Critical error copying Ryujinx application data into the correct location. Please manually move your application data to the correct folder.");
-                    }
+                //put the files back
+                try
+                {
+                    FileSystemUtils.CopyDirectory(tempPath, correctApplicationDataDirectoryPath, true);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Error?.Print(LogClass.Application,
+                        $"Critical error copying Ryujinx application data into the correct location. Please manually move your application data to the correct folder. {exception}");
                 }
             }
         }
