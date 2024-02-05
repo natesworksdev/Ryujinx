@@ -561,7 +561,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_diskCacheHostStorage.CacheEnabled)
             {
-                byte[] binaryCode = (_context.Capabilities.Api == TargetApi.Vulkan || (GraphicsConfig.EnableOGLSpirV == ShadingLanguage.SPIRV)) ? ShaderBinarySerializer.Pack(sources) : null;
+                byte[] binaryCode = (_context.Capabilities.Api == TargetApi.Vulkan || (GraphicsConfig.ShadingLanguage == ShadingLanguage.SPIRV)) ? ShaderBinarySerializer.Pack(sources) : null;
                 ProgramToSave programToSave = new(program, hostProgram, binaryCode);
 
                 _programsToSaveQueue.Enqueue(programToSave);
@@ -832,7 +832,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Translation options</returns>
         private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
         {
-            TargetLanguage lang = (GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan) || ((GraphicsConfig.EnableOGLSpirV == ShadingLanguage.SPIRV) && _isSpirVCapable)
+            TargetLanguage lang = (GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan) || ((GraphicsConfig.ShadingLanguage == ShadingLanguage.SPIRV) && _isSpirVCapable)
                 ? TargetLanguage.Spirv
                 : TargetLanguage.Glsl;
 

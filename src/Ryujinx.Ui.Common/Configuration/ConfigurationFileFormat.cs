@@ -178,11 +178,6 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool EnableShaderCache { get; set; }
 
         /// <summary>
-        /// Enables or disables Spir-V Shaders on OpenGL
-        /// </summary>
-        public bool EnableOGLSpirV { get; set; }
-
-        /// <summary>
         /// Enables or disables texture recompression
         /// </summary>
         public bool EnableTextureRecompression { get; set; }

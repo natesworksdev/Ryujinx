@@ -58,7 +58,6 @@ namespace Ryujinx.Ui.Windows
         [GUI] RadioButton _hideCursorAlways;
         [GUI] CheckButton _vSyncToggle;
         [GUI] CheckButton _shaderCacheToggle;
-        [GUI] CheckButton _enableOGLSpirV;
         [GUI] CheckButton _textureRecompressionToggle;
         [GUI] CheckButton _macroHLEToggle;
         [GUI] CheckButton _ptcToggle;
@@ -253,11 +252,6 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.Graphics.EnableShaderCache)
             {
                 _shaderCacheToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.Graphics.EnableOGLSpirV)
-            {
-                _enableOGLSpirV.Click();
             }
 
             if (ConfigurationState.Instance.Graphics.EnableTextureRecompression)
@@ -638,7 +632,6 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.HideCursor.Value = hideCursor;
             ConfigurationState.Instance.Graphics.EnableVsync.Value = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value = _shaderCacheToggle.Active;
-            ConfigurationState.Instance.Graphics.EnableOGLSpirV.Value = _enableOGLSpirV.Active;
             ConfigurationState.Instance.Graphics.EnableTextureRecompression.Value = _textureRecompressionToggle.Active;
             ConfigurationState.Instance.Graphics.EnableMacroHLE.Value = _macroHLEToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value = _ptcToggle.Active;

@@ -61,9 +61,9 @@ namespace Ryujinx.Graphics.Gpu
         public static bool EnableShaderCache;
 
         /// <summary>
-        /// Enables or disables Spir-V on OpenGL.
+        /// Select Shading Language to use.
         /// </summary>
-        public static ShadingLanguage EnableOGLSpirV = ShadingLanguage.SPIRV;
+        public static ShadingLanguage ShadingLanguage = ShadingLanguage.SPIRV;
 
         /// <summary>
         /// Enables or disables shader SPIR-V compilation.

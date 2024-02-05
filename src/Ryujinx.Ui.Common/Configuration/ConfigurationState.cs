@@ -478,11 +478,6 @@ namespace Ryujinx.Ui.Common.Configuration
             public ReactiveObject<bool> EnableShaderCache { get; private set; }
 
             /// <summary>
-            /// Enables or disables Spir-V Shaders on OpenGL
-            /// </summary>
-            public ReactiveObject<bool> EnableOGLSpirV { get; private set; }
-
-            /// <summary>
             /// Enables or disables texture recompression
             /// </summary>
             public ReactiveObject<bool> EnableTextureRecompression { get; private set; }
@@ -544,8 +539,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableVsync.Event += static (sender, e) => LogValueChange(e, nameof(EnableVsync));
                 EnableShaderCache = new ReactiveObject<bool>();
                 EnableShaderCache.Event += static (sender, e) => LogValueChange(e, nameof(EnableShaderCache));
-                EnableOGLSpirV = new ReactiveObject<bool>();
-                EnableOGLSpirV.Event += static (sender, e) => LogValueChange(e, nameof(EnableOGLSpirV));
                 EnableTextureRecompression = new ReactiveObject<bool>();
                 EnableTextureRecompression.Event += static (sender, e) => LogValueChange(e, nameof(EnableTextureRecompression));
                 GraphicsBackend = new ReactiveObject<GraphicsBackend>();
@@ -695,7 +688,6 @@ namespace Ryujinx.Ui.Common.Configuration
                 HideCursor = HideCursor,
                 EnableVsync = Graphics.EnableVsync,
                 EnableShaderCache = Graphics.EnableShaderCache,
-                EnableOGLSpirV = Graphics.EnableOGLSpirV,
                 EnableTextureRecompression = Graphics.EnableTextureRecompression,
                 EnableMacroHLE = Graphics.EnableMacroHLE,
                 EnableColorSpacePassthrough = Graphics.EnableColorSpacePassthrough,
@@ -805,7 +797,6 @@ namespace Ryujinx.Ui.Common.Configuration
             HideCursor.Value = HideCursorMode.OnIdle;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
-            Graphics.EnableOGLSpirV.Value = false;
             Graphics.EnableTextureRecompression.Value = false;
             Graphics.EnableMacroHLE.Value = true;
             Graphics.EnableColorSpacePassthrough.Value = false;
@@ -1491,7 +1482,6 @@ namespace Ryujinx.Ui.Common.Configuration
             HideCursor.Value = configurationFileFormat.HideCursor;
             Graphics.EnableVsync.Value = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value = configurationFileFormat.EnableShaderCache;
-            Graphics.EnableOGLSpirV.Value = configurationFileFormat.EnableOGLSpirV;
             Graphics.EnableTextureRecompression.Value = configurationFileFormat.EnableTextureRecompression;
             Graphics.EnableMacroHLE.Value = configurationFileFormat.EnableMacroHLE;
             Graphics.EnableColorSpacePassthrough.Value = configurationFileFormat.EnableColorSpacePassthrough;
