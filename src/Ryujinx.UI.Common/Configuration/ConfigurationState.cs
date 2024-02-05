@@ -1438,6 +1438,8 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     AppDataManager.FixMacOSConfigurationFolders();
                 }
+
+                configurationFileUpdated = true;
             }
 
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;

@@ -261,7 +261,18 @@ namespace Ryujinx.Common.Configuration
                 catch (Exception exception)
                 {
                     Logger.Error?.Print(LogClass.Application,
-                        $"Critical error copying Ryujinx application data into the temp folder. Please manually move your application data to the correct folder. {exception}");
+                        $"Critical error copying Ryujinx application data into the temp folder. {exception}");
+                    try
+                    {
+                        FileSystemInfo resolvedDirectoryInfo =
+                            Directory.ResolveLinkTarget(correctApplicationDataDirectoryPath, true);
+                        string resolvedPath = resolvedDirectoryInfo.FullName;
+                        Logger.Error?.Print(LogClass.Application, $"Please manually move your Ryujinx data from {resolvedPath} to {correctApplicationDataDirectoryPath}, and remove the symlink.");
+                    }
+                    catch (Exception symlinkException)
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Unable to resolve the symlink for Ryujinx application data: {symlinkException}. Follow the symlink at {correctApplicationDataDirectoryPath} and move your data back to the Application Support folder.");
+                    }
                     return;
                 }
 
@@ -274,7 +285,18 @@ namespace Ryujinx.Common.Configuration
                 catch (Exception exception)
                 {
                     Logger.Error?.Print(LogClass.Application,
-                        $"Critical error deleting the Ryujinx application data folder symlink. Please manually move your application data to the correct location. {exception}");
+                        $"Critical error deleting the Ryujinx application data folder symlink at {correctApplicationDataDirectoryPath}. {exception}");
+                    try
+                    {
+                        FileSystemInfo resolvedDirectoryInfo =
+                            Directory.ResolveLinkTarget(correctApplicationDataDirectoryPath, true);
+                        string resolvedPath = resolvedDirectoryInfo.FullName;
+                        Logger.Error?.Print(LogClass.Application, $"Please manually move your Ryujinx data from {resolvedPath} to {correctApplicationDataDirectoryPath}, and remove the symlink.");
+                    }
+                    catch (Exception symlinkException)
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Unable to resolve the symlink for Ryujinx application data: {symlinkException}. Follow the symlink at {correctApplicationDataDirectoryPath} and move your data back to the Application Support folder.");
+                    }
                     return;
                 }
 
@@ -286,7 +308,7 @@ namespace Ryujinx.Common.Configuration
                 catch (Exception exception)
                 {
                     Logger.Error?.Print(LogClass.Application,
-                        $"Critical error copying Ryujinx application data into the correct location. Please manually move your application data to the correct folder. {exception}");
+                        $"Critical error copying Ryujinx application data into the correct location. {exception}. Please manually move your application data from {tempPath} to {correctApplicationDataDirectoryPath}.");
                 }
             }
         }
