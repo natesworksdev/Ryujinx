@@ -978,6 +978,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             _descriptorSetUpdater.SetProgram(Cbs, internalProgram, _currentPipelineHandle != 0);
 
+            // Stale barriers may have been activated by switching program. Emit any that are relevant.
+            _descriptorSetUpdater.InsertBindingBarriers(Cbs);
+
             _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.StagesCount = (uint)stages.Length;
 
