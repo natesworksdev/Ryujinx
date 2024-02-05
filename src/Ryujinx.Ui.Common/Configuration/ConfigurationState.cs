@@ -501,7 +501,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Graphics backend
             /// </summary>
             public ReactiveObject<GraphicsBackend> GraphicsBackend { get; private set; }
-            
+
             /// <summary>
             /// Graphics backend
             /// </summary>
@@ -1572,7 +1572,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
             return GraphicsBackend.OpenGl;
         }
-        
+
         private static ShadingLanguage DefaultShadingLanguge()
         {
             // Any system running macOS or returning any amount of valid Vulkan devices should default to Vulkan.

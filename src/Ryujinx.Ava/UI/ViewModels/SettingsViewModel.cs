@@ -203,7 +203,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsOpenGLSelected));
             }
         }
-        
+
         public int ShadingLangugeIndex
         {
             get => _shadinglanguageBackendIndex;
@@ -250,7 +250,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         internal AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
-        //public ObservableCollection<ComboBoxItem> ShadingLanguage { get; set; }
 
         public AvaloniaList<string> NetworkInterfaceList
         {
@@ -308,7 +307,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             GameDirectories = new AvaloniaList<string>();
             TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
-            //ShadingLanguage = new ObservableCollection<ComboBoxItem>();
             _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
 
