@@ -435,12 +435,6 @@ namespace Ryujinx.Headless.SDL2
                     logFile = FileLogTarget.PrepareLogFile(logDir);
                 }
 
-                if (logFile == null)
-                {
-                    Logger.Error?.Print(LogClass.Application,
-                        "No writable log directory available. Make sure either the Logs directory, Application Data, or the Ryujinx directory is writable.");
-                }
-
                 if (logFile != null)
                 {
                     Logger.AddTarget(new AsyncLogTargetWrapper(
@@ -448,6 +442,10 @@ namespace Ryujinx.Headless.SDL2
                         1000,
                         AsyncLogTargetOverflowAction.Block
                     ));
+                }
+                else
+                {
+                    Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the Logs directory, Application Data, or the Ryujinx directory is writable.");
                 }
             }
 

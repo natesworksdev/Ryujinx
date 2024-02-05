@@ -26,7 +26,7 @@ namespace Ryujinx.Common.Logging.Targets
             DirectoryInfo logDir;
             try
             {
-                logDir = new(path);
+                logDir = new DirectoryInfo(path);
             }
             catch (ArgumentException exception)
             {
@@ -34,6 +34,7 @@ namespace Ryujinx.Common.Logging.Targets
 
                 return null;
             }
+
             try
             {
                 logDir.Create();
