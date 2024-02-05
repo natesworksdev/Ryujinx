@@ -200,8 +200,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
-                NoGLSLVulkan();
-                OnPropertyChanged(nameof(ShadingLangugeIndex));
+                Task.Run(NoGlslVulkan);
             }
         }
 
@@ -331,13 +330,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
         }
 
-        public async Task NoGLSLVulkan()
+        private async Task NoGlslVulkan()
         {
             if (IsVulkanSelected & ShadingLangugeIndex == 1 || IsVulkanSelected & _shadinglanguageBackendIndex == 1)
             {
                 _shadinglanguageBackendIndex = 0;
                 ShadingLangugeIndex = 0;
             }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                OnPropertyChanged(nameof(ShadingLangugeIndex));
+            });
         }
 
 
@@ -414,15 +418,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceIndex)));
-        }
-
-        private async Task NoGLSLVUlkan()
-        {
-            if (_graphicsBackendIndex == 0)
-            {
-                _shadinglanguageBackendIndex = 0;
-            }
-
         }
 
         public void ValidateAndSetTimeZone(string location)
