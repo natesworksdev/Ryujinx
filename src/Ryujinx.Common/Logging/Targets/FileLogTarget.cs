@@ -23,7 +23,17 @@ namespace Ryujinx.Common.Logging.Targets
         public static FileStream PrepareLogFile(string path)
         {
             // Ensure directory is present
-            DirectoryInfo logDir = new(path);
+            DirectoryInfo logDir;
+            try
+            {
+                logDir = new(path);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Logging directory path was invalid: {exception}");
+
+                return null;
+            }
             try
             {
                 logDir.Create();
