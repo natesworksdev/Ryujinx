@@ -273,7 +273,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            _depthStencil?.Storage?.QueueLoadOpBarrier(cbs, false);
+            _depthStencil?.Storage?.QueueLoadOpBarrier(cbs, true);
 
             gd.Barriers.Flush(cbs.CommandBuffer, false, null);
         }
