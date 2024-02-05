@@ -48,6 +48,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
+        private int _shadinglanguageBackendIndex;
         private string _customThemePath;
         private int _scalingFilter;
         private int _scalingFilterLevel;
@@ -144,7 +145,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IgnoreMissingServices { get; set; }
         public bool ExpandDramSize { get; set; }
         public bool EnableShaderCache { get; set; }
-        public bool EnableOGLSpirV { get; set; }
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
         public bool EnableColorSpacePassthrough { get; set; }
@@ -166,6 +166,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
         public bool IsVulkanSelected => GraphicsBackendIndex == 0;
+        public bool IsSpirVSelected => ShadingLangugeIndex == 0;
+        public bool IsOGSpirVAvialble => true;
         public bool UseHypervisor { get; set; }
 
         public string TimeZone { get; set; }
@@ -217,6 +219,18 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsOpenGLSelected));
             }
         }
+        
+        public int ShadingLangugeIndex
+        {
+            get => _shadinglanguageBackendIndex;
+            set
+            {
+                _shadinglanguageBackendIndex = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsOpenGLSelected));
+            }
+        }
+
 
         public bool IsOpenGLSelected => !IsVulkanSelected;
 
@@ -252,6 +266,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         internal AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
+        //public ObservableCollection<ComboBoxItem> ShadingLanguage { get; set; }
 
         public AvaloniaList<string> NetworkInterfaceList
         {
@@ -309,6 +324,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             GameDirectories = new AvaloniaList<string>();
             TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
+            //ShadingLanguage = new ObservableCollection<ComboBoxItem>();
             _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
 
@@ -346,6 +362,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 IsVulkanAvailable = false;
                 GraphicsBackendIndex = 1;
+                ShadingLangugeIndex = 1;
             }
             else
             {
@@ -465,9 +482,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Graphics
             GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
+            ShadingLangugeIndex = (int)config.Graphics.ShadingLanguage.Value;
             // Physical devices are queried asynchronously hence the prefered index config value is loaded in LoadAvailableGpus().
             EnableShaderCache = config.Graphics.EnableShaderCache;
-            EnableOGLSpirV = config.Graphics.EnableOGLSpirV;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
             EnableMacroHLE = config.Graphics.EnableMacroHLE;
             EnableColorSpacePassthrough = config.Graphics.EnableColorSpacePassthrough;
@@ -555,9 +572,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Graphics
             config.Graphics.GraphicsBackend.Value = (GraphicsBackend)GraphicsBackendIndex;
+            config.Graphics.ShadingLanguage.Value = (ShadingLanguage)ShadingLangugeIndex;
             config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
-            config.Graphics.EnableOGLSpirV.Value = EnableOGLSpirV;
             config.Graphics.EnableTextureRecompression.Value = EnableTextureRecompression;
             config.Graphics.EnableMacroHLE.Value = EnableMacroHLE;
             config.Graphics.EnableColorSpacePassthrough.Value = EnableColorSpacePassthrough;

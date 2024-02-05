@@ -501,6 +501,11 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Graphics backend
             /// </summary>
             public ReactiveObject<GraphicsBackend> GraphicsBackend { get; private set; }
+            
+            /// <summary>
+            /// Graphics backend
+            /// </summary>
+            public ReactiveObject<ShadingLanguage> ShadingLanguage { get; private set; }
 
             /// <summary>
             /// Applies anti-aliasing to the renderer.
@@ -545,6 +550,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 EnableTextureRecompression.Event += static (sender, e) => LogValueChange(e, nameof(EnableTextureRecompression));
                 GraphicsBackend = new ReactiveObject<GraphicsBackend>();
                 GraphicsBackend.Event += static (sender, e) => LogValueChange(e, nameof(GraphicsBackend));
+                ShadingLanguage = new ReactiveObject<ShadingLanguage>();
+                ShadingLanguage.Event += static (sender, e) => LogValueChange(e, nameof(ShadingLanguage));
                 PreferredGpu = new ReactiveObject<string>();
                 PreferredGpu.Event += static (sender, e) => LogValueChange(e, nameof(PreferredGpu));
                 EnableMacroHLE = new ReactiveObject<bool>();
@@ -757,6 +764,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 InputConfig = Hid.InputConfig,
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,
+                ShadingLanguge = Graphics.ShadingLanguage,
                 MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId,
                 MultiplayerMode = Multiplayer.Mode,
             };
@@ -773,6 +781,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.MaxAnisotropy.Value = -1.0f;
             Graphics.AspectRatio.Value = AspectRatio.Fixed16x9;
             Graphics.GraphicsBackend.Value = DefaultGraphicsBackend();
+            Graphics.ShadingLanguage.Value = DefaultShadingLanguge();
             Graphics.PreferredGpu.Value = "";
             Graphics.ShadersDumpPath.Value = "";
             Logger.EnableDebug.Value = false;
@@ -1443,7 +1452,7 @@ namespace Ryujinx.Ui.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 49.");
 
-                configurationFileFormat.EnableOGLSpirV = false;
+                configurationFileFormat.ShadingLanguge = ShadingLanguage.SPIRV;
 
                 configurationFileUpdated = true;
             }
@@ -1457,6 +1466,7 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.BackendThreading.Value = configurationFileFormat.BackendThreading;
             Graphics.GraphicsBackend.Value = configurationFileFormat.GraphicsBackend;
             Graphics.PreferredGpu.Value = configurationFileFormat.PreferredGpu;
+            Graphics.ShadingLanguage.Value = configurationFileFormat.ShadingLanguge;
             Graphics.AntiAliasing.Value = configurationFileFormat.AntiAliasing;
             Graphics.ScalingFilter.Value = configurationFileFormat.ScalingFilter;
             Graphics.ScalingFilterLevel.Value = configurationFileFormat.ScalingFilterLevel;
@@ -1561,6 +1571,18 @@ namespace Ryujinx.Ui.Common.Configuration
             }
 
             return GraphicsBackend.OpenGl;
+        }
+        
+        private static ShadingLanguage DefaultShadingLanguge()
+        {
+            // Any system running macOS or returning any amount of valid Vulkan devices should default to Vulkan.
+            // Checks for if the Vulkan version and featureset is compatible should be performed within VulkanRenderer.
+            if (DefaultGraphicsBackend() == GraphicsBackend.Vulkan)
+            {
+                return ShadingLanguage.SPIRV;
+            }
+
+            return ShadingLanguage.GLSL;
         }
 
         private static void LogValueChange<T>(ReactiveEventArgs<T> eventArgs, string valueName)

@@ -1,3 +1,4 @@
+using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
@@ -396,7 +397,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
                             IProgram hostProgram;
 
-                            if (context.Capabilities.Api == TargetApi.Vulkan || GraphicsConfig.EnableOGLSpirV)
+                            if (context.Capabilities.Api == TargetApi.Vulkan || (GraphicsConfig.EnableOGLSpirV == ShadingLanguage.SPIRV))
                             {
                                 ShaderSource[] shaderSources = ShaderBinarySerializer.Unpack(shaders, hostCode);
 

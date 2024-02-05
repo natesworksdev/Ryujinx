@@ -1,3 +1,5 @@
+using Ryujinx.Common.Configuration;
+
 namespace Ryujinx.Graphics.Gpu
 {
 #pragma warning disable CA2211 // Non-constant fields should not be visible
@@ -61,7 +63,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Enables or disables Spir-V on OpenGL.
         /// </summary>
-        public static bool EnableOGLSpirV = false;
+        public static ShadingLanguage EnableOGLSpirV = ShadingLanguage.SPIRV;
 
         /// <summary>
         /// Enables or disables shader SPIR-V compilation.

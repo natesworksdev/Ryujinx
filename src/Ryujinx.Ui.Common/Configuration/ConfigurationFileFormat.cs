@@ -382,6 +382,11 @@ namespace Ryujinx.Ui.Common.Configuration
         public bool UseHypervisor { get; set; }
 
         /// <summary>
+        /// Shading Languge
+        /// </summary>
+        public ShadingLanguage ShadingLanguge { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

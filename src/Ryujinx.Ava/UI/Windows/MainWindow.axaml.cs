@@ -424,7 +424,7 @@ namespace Ryujinx.Ava.UI.Windows
             GraphicsConfig.MaxAnisotropy              = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath            = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache          = ConfigurationState.Instance.Graphics.EnableShaderCache;
-            GraphicsConfig.EnableOGLSpirV             = ConfigurationState.Instance.Graphics.EnableOGLSpirV;
+            GraphicsConfig.EnableOGLSpirV             = ConfigurationState.Instance.Graphics.ShadingLanguage;
             GraphicsConfig.EnableTextureRecompression = ConfigurationState.Instance.Graphics.EnableTextureRecompression;
             GraphicsConfig.EnableMacroHLE             = ConfigurationState.Instance.Graphics.EnableMacroHLE;
 #pragma warning restore IDE0055

@@ -56,6 +56,23 @@
                                 SelectedIndex="{Binding PreferredGpuIndex}"
                                 ItemsSource="{Binding AvailableGpus}"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   ToolTip.Tip="{locale:Locale ShadingLanguageTooltip}"
+                                   Text="{locale:Locale SettingsTabGraphicsShadingLanguge}"
+                                   Width="250" />
+                        <ComboBox Width="350"
+                                  HorizontalContentAlignment="Left"
+                                  ToolTip.Tip="{locale:Locale ShadingLanguageTooltip}"
+                                  SelectedIndex="{Binding ShadingLangugeIndex}">
+                            <ComboBoxItem IsEnabled="{Binding IsOGSpirVAvialble}">
+                                <TextBlock Text="SPIR-V" />
+                            </ComboBoxItem>
+                            <ComboBoxItem IsEnabled="{Binding IsOpenGLSelected}">
+                                <TextBlock Text="GLSL" />
+                            </ComboBoxItem>
+                            </ComboBox>
+                    </StackPanel>
                 </StackPanel>
                 <Separator Height="1" />
                 <TextBlock Classes="h1" Text="{locale:Locale SettingsTabGraphicsFeatures}" />
@@ -64,10 +81,6 @@
                         <CheckBox IsChecked="{Binding EnableShaderCache}"
                             ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
                             <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding EnableOGLSpirV}" IsVisible="{Binding IsOpenGLSelected}"
-                                  ToolTip.Tip="{locale:Locale OGLSpirVTooltip}">
-                            <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableOGLSpirV}" />
                         </CheckBox>
                         <CheckBox IsChecked="{Binding EnableTextureRecompression}"
                             ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
