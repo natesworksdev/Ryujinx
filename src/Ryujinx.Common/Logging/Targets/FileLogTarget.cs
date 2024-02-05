@@ -28,9 +28,9 @@ namespace Ryujinx.Common.Logging.Targets
             {
                 logDir = new(path);
             }
-            catch (Exception exception)
+            catch (ArgumentException exception)
             {
-                Logger.Warning?.Print(LogClass.Application, $"Logging directory path was invalid: {exception}");
+                Logger.Warning?.Print(LogClass.Application, $"Logging directory path ({path}) was invalid: {exception}");
 
                 return null;
             }

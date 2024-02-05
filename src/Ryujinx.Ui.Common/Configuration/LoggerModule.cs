@@ -84,7 +84,12 @@ namespace Ryujinx.Ui.Common.Configuration
             if (e.NewValue)
             {
                 string logDir = AppDataManager.LogsDirPath;
-                FileStream logFile = FileLogTarget.PrepareLogFile(logDir);
+                FileStream logFile = null;
+
+                if (!string.IsNullOrEmpty(logDir))
+                {
+                    logFile = FileLogTarget.PrepareLogFile(logDir);
+                }
 
                 if (logFile == null)
                 {

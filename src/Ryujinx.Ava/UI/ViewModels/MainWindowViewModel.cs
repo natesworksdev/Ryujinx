@@ -1350,16 +1350,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void OpenLogsFolder()
         {
-            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-
-            if (AppDataManager.LogsDirPath != null)
+            string logPath = AppDataManager.LogsDirPath;
+            if (!string.IsNullOrEmpty(logPath))
             {
-                logPath = AppDataManager.LogsDirPath;
+                new DirectoryInfo(logPath).Create();
+
+                OpenHelper.OpenFolder(logPath);
             }
-
-            new DirectoryInfo(logPath).Create();
-
-            OpenHelper.OpenFolder(logPath);
         }
 
         public void ToggleDockMode()
