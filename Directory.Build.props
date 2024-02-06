@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <DefaultNetTargetFramework Condition="'$(DefaultNetTargetFramework)' == ''">net8.0</DefaultNetTargetFramework>
+    <DefaultNetStandardTargetFramework Condition="'$(DefaultNetStandardTargetFramework)' == ''">netstandard2.0</DefaultNetStandardTargetFramework>
+  </PropertyGroup>
+</Project>
