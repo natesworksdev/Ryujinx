@@ -1,4 +1,5 @@
 using Ryujinx.Horizon.Arp;
+using Ryujinx.Horizon.Audio;
 using Ryujinx.Horizon.Bcat;
 using Ryujinx.Horizon.Friends;
 using Ryujinx.Horizon.Hshl;
@@ -39,6 +40,7 @@ namespace Ryujinx.Horizon
             }
 
             RegisterService<ArpMain>();
+            RegisterService<AudioMain>();
             RegisterService<BcatMain>();
             RegisterService<FriendsMain>();
             RegisterService<HshlMain>();
