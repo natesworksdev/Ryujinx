@@ -107,6 +107,7 @@ namespace Ryujinx.Common.Logging
             private static string FormatMessage(LogClass logClass, string caller, string message)
             {
                 message = message.Replace(_homeDir, _homeDirRedacted);
+
                 return $"{logClass} {caller}: {message}";
             }
         }
