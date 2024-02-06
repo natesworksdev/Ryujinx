@@ -1379,8 +1379,6 @@ namespace Ryujinx.Ui
             string logPath = AppDataManager.LogsDirPath;
             if (!string.IsNullOrEmpty(logPath))
             {
-                new DirectoryInfo(logPath).Create();
-
                 OpenHelper.OpenFolder(logPath);
             }
         }

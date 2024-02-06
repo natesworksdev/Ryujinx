@@ -19,6 +19,14 @@ namespace Ryujinx.Ui.Common.Helper
 
         public static void OpenFolder(string path)
         {
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (Exception exception)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to create directory at '{path}' when opening logs folder: {exception}");
+            }
             if (Directory.Exists(path))
             {
                 Process.Start(new ProcessStartInfo

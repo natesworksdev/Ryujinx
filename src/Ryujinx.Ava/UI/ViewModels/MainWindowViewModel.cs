@@ -1353,8 +1353,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             string logPath = AppDataManager.LogsDirPath;
             if (!string.IsNullOrEmpty(logPath))
             {
-                new DirectoryInfo(logPath).Create();
-
                 OpenHelper.OpenFolder(logPath);
             }
         }

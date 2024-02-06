@@ -9,7 +9,6 @@ namespace Ryujinx.Ui.Common.Configuration
 {
     public static class LoggerModule
     {
-
         public static void Initialize()
         {
             ConfigurationState.Instance.Logger.EnableDebug.Event += ReloadEnableDebug;
