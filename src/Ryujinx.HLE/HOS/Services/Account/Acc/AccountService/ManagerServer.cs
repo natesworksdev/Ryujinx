@@ -27,6 +27,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             _userId = userId;
         }
 
+        private byte[] CachedTokenData;
+        private DateTime CachedTokenExpiry;
+
         private static string GenerateIdToken()
         {
             using RSA provider = RSA.Create(2048);
@@ -144,7 +147,13 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             }
             */
 
-            byte[] tokenData = Encoding.ASCII.GetBytes(GenerateIdToken());
+            if (CachedTokenData == null || DateTime.UtcNow > CachedTokenExpiry)
+            {
+                CachedTokenExpiry = DateTime.UtcNow + TimeSpan.FromHours(3);
+                CachedTokenData = Encoding.ASCII.GetBytes(GenerateIdToken());
+            }
+
+            byte[] tokenData = CachedTokenData;
 
             context.Memory.Write(bufferPosition, tokenData);
             context.ResponseData.Write(tokenData.Length);
