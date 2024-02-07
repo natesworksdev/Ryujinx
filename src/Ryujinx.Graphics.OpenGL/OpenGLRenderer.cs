@@ -6,6 +6,8 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
+using System.Runtime.InteropServices;
+using Ryujinx.Graphics.Gpu;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -134,6 +136,8 @@ namespace Ryujinx.Graphics.OpenGL
             bool intelWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows;
             bool intelUnix = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelUnix;
             bool amdWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows;
+            bool spirVWindows = GraphicsConfig.ShadingLanguage == ShadingLanguage.SPIRV &&
+                                RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             return new Capabilities(
                 api: TargetApi.OpenGL,
@@ -159,7 +163,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShader: true,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
-                supportsTransformFeedback: true,
+                supportsTransformFeedback: !spirVWindows,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsLayerVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
