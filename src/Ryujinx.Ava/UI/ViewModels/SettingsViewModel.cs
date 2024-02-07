@@ -218,14 +218,14 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool? IsSpirVAvailable
         {
             get => _isSpirVAvailable;
             set
             {
-                    _isSpirVAvailable = value;
-                    OnPropertyChanged();
+                _isSpirVAvailable = value;
+                OnPropertyChanged();
             }
         }
 
@@ -345,7 +345,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(IsSDL2Enabled));
             });
         }
-        
+
         private async Task ShadingLanguageAvailable()
         {
             if (GraphicsBackendIndex != 0)
