@@ -1350,7 +1350,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void OpenLogsFolder()
         {
-            string logPath = AppDataManager.LogsDirPath;
+            string logPath = AppDataManager.GetOrCreateLogsDir();
             if (!string.IsNullOrEmpty(logPath))
             {
                 OpenHelper.OpenFolder(logPath);

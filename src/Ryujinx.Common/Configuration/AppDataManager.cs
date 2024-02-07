@@ -112,6 +112,17 @@ namespace Ryujinx.Common.Configuration
             SetupBasePaths();
         }
 
+        public static string GetOrCreateLogsDir()
+        {
+            if (Directory.Exists(LogsDirPath))
+            {
+                return LogsDirPath;
+            }
+            Logger.Notice.Print(LogClass.Application, "Logging directory not found; attempting to create new logging directory.");
+            LogsDirPath = SetUpLogsDir();
+            return LogsDirPath;
+        }
+
         private static string SetUpLogsDir()
         {
             string logDir = "";

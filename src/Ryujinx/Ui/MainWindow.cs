@@ -1376,7 +1376,7 @@ namespace Ryujinx.Ui
 
         private void OpenLogsFolder_Pressed(object sender, EventArgs args)
         {
-            string logPath = AppDataManager.LogsDirPath;
+            string logPath = AppDataManager.GetOrCreateLogsDir();
             if (!string.IsNullOrEmpty(logPath))
             {
                 OpenHelper.OpenFolder(logPath);
