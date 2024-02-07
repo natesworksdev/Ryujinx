@@ -27,6 +27,9 @@ namespace Ryujinx.Ui.Windows
 {
     public class SettingsWindow : Window
     {
+        
+
+
         private readonly MainWindow _parent;
         private readonly ListStore _gameDirsBoxStore;
         private readonly ListStore _gameDirsBoxStore1;
@@ -37,6 +40,12 @@ namespace Ryujinx.Ui.Windows
         private long _systemTimeOffset;
         private float _previousVolumeLevel;
         private bool _directoryChanged = false;
+
+        private enum IncludeorExclude { Include, Exclude }
+
+
+        private IncludeorExclude _includeorexlude = IncludeorExclude.Include;
+
 
 #pragma warning disable CS0649, IDE0044 // Field is never assigned to, Add readonly modifier
         [GUI] CheckButton _traceLogToggle;
@@ -766,12 +775,14 @@ namespace Ryujinx.Ui.Windows
         {
             Console.WriteLine("here");
             _include_exclude_dir.Label = "exclude";
+            _includeorexlude = IncludeorExclude.Exclude;
         }
 
         private void onRowActivated1(object sender, ButtonReleaseEventArgs args)
         {
             Console.WriteLine("here");
             _include_exclude_dir.Label = "include";
+            _includeorexlude = IncludeorExclude.Include;
         }
 
 
@@ -822,6 +833,31 @@ namespace Ryujinx.Ui.Windows
             _addGameDirBox.Buffer.Text = "";
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
+        }
+
+        private void Include_exclude_Pressed(object sender,EventArgs args)
+        {
+            if (_includeorexlude==IncludeorExclude.Exclude)
+            {
+
+                TreeSelection selection = _gameDirsBox.Selection;
+
+                if (selection.GetSelected(out TreeIter treeIter))
+                {
+                    var model = _gameDirsBox.Model;
+                    Console.WriteLine(model.GetValue(treeIter,0));
+
+
+                }
+
+            ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
+
+            }
+            else if (_includeorexlude == IncludeorExclude.Include)
+            {
+
+            }
+
         }
 
         private void RemoveDir_Pressed(object sender, EventArgs args)

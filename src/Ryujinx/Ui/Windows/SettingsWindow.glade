@@ -429,6 +429,7 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="tooltip-text" translatable="yes"> Add a game tyu directory to the list</property>
+                                          <signal name="toggled" handler="Include_exclude_Pressed" swapped="no"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
