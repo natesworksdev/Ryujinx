@@ -2,6 +2,57 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAssistant">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Introduction page</property>
+      </object>
+      <packing>
+        <property name="page-type">intro</property>
+        <property name="has-padding">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Content page</property>
+      </object>
+      <packing>
+        <property name="has-padding">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">Confirmation page</property>
+      </object>
+      <packing>
+        <property name="page-type">confirm</property>
+        <property name="has-padding">False</property>
+      </packing>
+    </child>
+    <child internal-child="action_area">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <property name="halign">end</property>
+        <property name="margin-left">6</property>
+        <property name="margin-right">6</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <property name="spacing">6</property>
+      </object>
+      <packing>
+        <property name="has-padding">False</property>
+      </packing>
+    </child>
+  </object>
   <object class="GtkAdjustment" id="_fsLogSpinAdjustment">
     <property name="upper">3</property>
     <property name="step-increment">1</property>
@@ -328,7 +379,6 @@
                                         <property name="can-focus">True</property>
                                         <property name="headers-visible">False</property>
                                         <property name="headers-clickable">False</property>
-                                          <signal name="button-release-event" handler="onRowActivated" />
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -372,7 +422,6 @@
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="headers-visible">False</property>
-                                          <signal name="button-release-event" handler="onRowActivated1" />
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -422,7 +471,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkToggleButton" id="_include_exclude_dir">
+                                      <object class="GtkToggleButton" id="include_exclude_dir">
                                         <property name="label" translatable="yes">Include</property>
                                         <property name="width-request">80</property>
                                         <property name="visible">True</property>

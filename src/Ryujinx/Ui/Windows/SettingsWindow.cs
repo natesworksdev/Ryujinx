@@ -29,6 +29,7 @@ namespace Ryujinx.Ui.Windows
     {
         private readonly MainWindow _parent;
         private readonly ListStore _gameDirsBoxStore;
+        private readonly ListStore _gameDirsBoxStore1;
         private readonly ListStore _audioBackendStore;
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string> _validTzRegions;
@@ -95,6 +96,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _browseThemePath;
         [GUI] Label _custThemePathLabel;
         [GUI] TreeView _gameDirsBox;
+        [GUI] TreeView _gameDirsBox1;
+        [GUI] ToggleButton _include_exclude_dir;
         [GUI] Entry _addGameDirBox;
         [GUI] ComboBoxText _galThreading;
         [GUI] Entry _graphicsShadersDumpPath;
@@ -384,6 +387,19 @@ namespace Ryujinx.Ui.Windows
                 _gameDirsBoxStore.AppendValues(gameDir);
             }
 
+
+            _gameDirsBox1.AppendColumn("", new CellRendererText(), "text", 0);
+            _gameDirsBoxStore1 = new ListStore(typeof(string));
+            _gameDirsBox1.Model = _gameDirsBoxStore1;
+
+            foreach (string gameDir1 in ConfigurationState.Instance.Ui.ExcludeGameDirs.Value)
+            {
+                _gameDirsBoxStore1.AppendValues(gameDir1);
+            }
+
+
+
+
             if (_custThemeToggle.Active == false)
             {
                 _custThemePath.Sensitive = false;
@@ -571,7 +587,29 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
 
                 _directoryChanged = false;
+
+
+
+
+
+
+
+                List<string> ExcludegameDirs = new();
+
+                _gameDirsBoxStore1.GetIterFirst(out TreeIter treeIter1);
+
+                for (int j = 0; j < _gameDirsBoxStore1.IterNChildren(); j++)
+                {
+                    gameDirs.Add((string)_gameDirsBoxStore1.GetValue(treeIter1, 0));
+
+                    _gameDirsBoxStore1.IterNext(ref treeIter1);
+                }
+
+                ConfigurationState.Instance.Ui.ExcludeGameDirs.Value = ExcludegameDirs;
+
+                _directoryChanged = false;
             }
+
 
             HideCursorMode hideCursor = HideCursorMode.Never;
 
@@ -722,6 +760,22 @@ namespace Ryujinx.Ui.Windows
                 UpdateSystemTimeSpinners();
             }
         }
+
+
+        private void onRowActivated(object sender, ButtonReleaseEventArgs args)
+        {
+            Console.WriteLine("here");
+            _include_exclude_dir.Label = "exclude";
+        }
+
+        private void onRowActivated1(object sender, ButtonReleaseEventArgs args)
+        {
+            Console.WriteLine("here");
+            _include_exclude_dir.Label = "include";
+        }
+
+
+
 
         private void AddDir_Pressed(object sender, EventArgs args)
         {
