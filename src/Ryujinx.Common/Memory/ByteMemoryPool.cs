@@ -78,7 +78,7 @@ namespace Ryujinx.Common.Memory
 
             return buffer;
         }
-        
+
         /// <summary>
         /// Copies <paramref name="buffer"/> into a newly rented byte memory buffer.
         /// </summary>

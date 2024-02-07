@@ -123,7 +123,7 @@ namespace Ryujinx.Memory
                 writableRegion.Memory.Span.Fill(value);
             }
         }
-        
+
         /// <summary>
         /// Gets a read-only sequence of read-only memory blocks from CPU mapped memory.
         /// </summary>
