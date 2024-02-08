@@ -609,7 +609,7 @@ namespace Ryujinx.Ui.Windows
 
                 for (int j = 0; j < _gameDirsBoxStore1.IterNChildren(); j++)
                 {
-                    gameDirs.Add((string)_gameDirsBoxStore1.GetValue(treeIter1, 0));
+                    ExcludegameDirs.Add((string)_gameDirsBoxStore1.GetValue(treeIter1, 0));
 
                     _gameDirsBoxStore1.IterNext(ref treeIter1);
                 }
@@ -776,6 +776,7 @@ namespace Ryujinx.Ui.Windows
             Console.WriteLine("here");
             _include_exclude_dir.Label = "exclude";
             _includeorexlude = IncludeorExclude.Exclude;
+            _gameDirsBox1.Selection.UnselectAll();
         }
 
         private void onRowActivated1(object sender, ButtonReleaseEventArgs args)
@@ -783,6 +784,7 @@ namespace Ryujinx.Ui.Windows
             Console.WriteLine("here");
             _include_exclude_dir.Label = "include";
             _includeorexlude = IncludeorExclude.Include;
+            _gameDirsBox.Selection.UnselectAll();
         }
 
 
@@ -845,9 +847,11 @@ namespace Ryujinx.Ui.Windows
                 if (selection.GetSelected(out TreeIter treeIter))
                 {
                     var model = _gameDirsBox.Model;
+                    _gameDirsBoxStore1.AppendValues(model.GetValue(treeIter, 0));
                     Console.WriteLine(model.GetValue(treeIter,0));
+                    _directoryChanged = true;
 
-
+                    _gameDirsBoxStore.Remove(ref treeIter);
                 }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
