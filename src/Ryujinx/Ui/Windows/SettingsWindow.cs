@@ -859,23 +859,58 @@ namespace Ryujinx.Ui.Windows
             }
             else if (_includeorexlude == IncludeorExclude.Include)
             {
+                TreeSelection selection = _gameDirsBox1.Selection;
 
+                if (selection.GetSelected(out TreeIter treeIter1))
+                {
+                    var model = _gameDirsBox1.Model;
+                    _gameDirsBoxStore.AppendValues(model.GetValue(treeIter1, 0));
+                    Console.WriteLine(model.GetValue(treeIter1, 0));
+                    _directoryChanged = true;
+
+                    _gameDirsBoxStore1.Remove(ref treeIter1);
+                }
+
+            ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
             }
 
         }
 
         private void RemoveDir_Pressed(object sender, EventArgs args)
         {
-            TreeSelection selection = _gameDirsBox.Selection;
 
-            if (selection.GetSelected(out TreeIter treeIter))
+            if (_includeorexlude == IncludeorExclude.Exclude)
             {
-                _gameDirsBoxStore.Remove(ref treeIter);
 
-                _directoryChanged = true;
-            }
+                TreeSelection selection = _gameDirsBox.Selection;
+
+                if (selection.GetSelected(out TreeIter treeIter))
+                {
+                    _gameDirsBoxStore.Remove(ref treeIter);
+
+                    _directoryChanged = true;
+                }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
+            }
+            else if (_includeorexlude == IncludeorExclude.Include)
+            {
+                TreeSelection selection = _gameDirsBox1.Selection;
+
+                
+
+                if (selection.GetSelected(out TreeIter treeIter))
+                {
+                    _gameDirsBoxStore1.Remove(ref treeIter);
+
+                    _directoryChanged = true;
+                }
+
+            ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
+            }
+
+
+
         }
 
         private void CustThemeToggle_Activated(object sender, EventArgs args)
