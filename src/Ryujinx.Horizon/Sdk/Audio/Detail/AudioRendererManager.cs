@@ -43,7 +43,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
                 (uint)processHandle,
                 1f));
 
-            renderer = result.IsSuccess ? new AudioRenderer(renderSystem) : null;
+            renderer = result.IsSuccess ? new AudioRenderer(renderSystem, workBufferHandle, processHandle) : null;
 
             return result;
         }

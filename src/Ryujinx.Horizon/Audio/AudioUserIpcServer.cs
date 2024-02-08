@@ -30,8 +30,10 @@ namespace Ryujinx.Horizon.Audio
             _managers = new AudioManagers(HorizonStatic.Options.AudioDeviceDriver, HorizonStatic.Options.TickSource);
 
             AudioRendererManager audioRendererManager = new(_managers.AudioRendererManager, _managers.AudioDeviceSessionRegistry);
+            AudioOutManager audioOutManager = new(_managers.AudioOutputManager);
 
             _serverManager.RegisterObjectForServer(audioRendererManager, ServiceName.Encode("audren:u"), MaxSessionsCount);
+            _serverManager.RegisterObjectForServer(audioOutManager, ServiceName.Encode("audout:u"), MaxSessionsCount);
         }
 
         public void ServiceRequests()

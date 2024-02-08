@@ -13,10 +13,14 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
     partial class AudioRenderer : IAudioRenderer, IDisposable
     {
         private readonly AudioRenderSystem _renderSystem;
+        private int _workBufferHandle;
+        private int _processHandle;
 
-        public AudioRenderer(AudioRenderSystem renderSystem)
+        public AudioRenderer(AudioRenderSystem renderSystem, int workBufferHandle, int processHandle)
         {
             _renderSystem = renderSystem;
+            _workBufferHandle = workBufferHandle;
+            _processHandle = processHandle;
         }
 
         [CmifCommand(0)]
@@ -159,6 +163,20 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
             if (disposing)
             {
                 _renderSystem.Dispose();
+
+                if (_workBufferHandle != 0)
+                {
+                    HorizonStatic.Syscall.CloseHandle(_workBufferHandle);
+
+                    _workBufferHandle = 0;
+                }
+
+                if (_processHandle != 0)
+                {
+                    HorizonStatic.Syscall.CloseHandle(_processHandle);
+
+                    _processHandle = 0;
+                }
             }
         }
 
