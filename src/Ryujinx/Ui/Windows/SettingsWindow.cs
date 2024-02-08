@@ -773,7 +773,7 @@ namespace Ryujinx.Ui.Windows
 
         private void onRowActivated(object sender, ButtonReleaseEventArgs args)
         {
-            Console.WriteLine("here");
+          
             _include_exclude_dir.Label = "exclude";
             _includeorexlude = IncludeorExclude.Exclude;
             _gameDirsBoxExcluded.Selection.UnselectAll();
@@ -781,7 +781,7 @@ namespace Ryujinx.Ui.Windows
 
         private void onRowActivated1(object sender, ButtonReleaseEventArgs args)
         {
-            Console.WriteLine("here");
+           
             _include_exclude_dir.Label = "include";
             _includeorexlude = IncludeorExclude.Include;
             _gameDirsBoxIncluded.Selection.UnselectAll();
@@ -848,7 +848,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     var model = _gameDirsBoxIncluded.Model;
                     _gameDirsBoxStoreExcluded.AppendValues(model.GetValue(treeIter, 0));
-                    Console.WriteLine(model.GetValue(treeIter,0));
+                    
                     _directoryChanged = true;
 
                     _gameDirsBoxStoreIncluded.Remove(ref treeIter);
@@ -865,7 +865,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     var model = _gameDirsBoxExcluded.Model;
                     _gameDirsBoxStoreIncluded.AppendValues(model.GetValue(treeIter1, 0));
-                    Console.WriteLine(model.GetValue(treeIter1, 0));
+                    
                     _directoryChanged = true;
 
                     _gameDirsBoxStoreExcluded.Remove(ref treeIter1);
