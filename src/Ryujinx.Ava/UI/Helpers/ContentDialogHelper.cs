@@ -336,6 +336,11 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
                 {
+                    if (_contentDialogOverlayWindow is null)
+                    {
+                        return;
+                    }
+
                     _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
                 }
 
@@ -388,6 +393,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 _contentDialogOverlayWindow.Content = null;
                 _contentDialogOverlayWindow.Close();
+                _contentDialogOverlayWindow = null;
             }
 
             return result;
