@@ -40,7 +40,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
 
         [CmifCommand(1)]
         public Result OpenAudioOut(
-            out AudioOutputConfiguration outputConfiguration,
+            out AudioOutputConfiguration outputConfig,
             out IAudioOut audioOut,
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<DeviceName> outName,
             AudioInputConfiguration parameter,
@@ -53,7 +53,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
 
             ResultCode rc = _impl.OpenAudioOut(
                 out string outputDeviceName,
-                out outputConfiguration,
+                out outputConfig,
                 out AudioOutputSystem outSystem,
                 clientMemoryManager,
                 name.Length > 0 ? name[0].ToString() : string.Empty,
