@@ -33,11 +33,10 @@
             SelectionChanged="GameList_SelectionChanged">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <flex:FlexPanel
+                    <WrapPanel
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Stretch"
-                        AlignContent="FlexStart"
-                        JustifyContent="FlexStart" />
+                        VerticalAlignment="Top"
+                        Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.Styles>
