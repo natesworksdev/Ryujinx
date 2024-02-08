@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public const int RenderTargetStateIndex = 27;
 
         // Vertex buffers larger than this size will be clamped to the mapped size.
-        private const ulong VertexBufferSizeToMappedSizeThreshold = 256 * 1024 * 1024; // 128 MB
+        private const ulong VertexBufferSizeToMappedSizeThreshold = 256 * 1024 * 1024; // 256 MB
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
