@@ -84,13 +84,13 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
             out AudioOutputConfiguration outputConfig,
             out IAudioOut audioOut,
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<DeviceName> outName,
-            AudioInputConfiguration inputConfig,
+            AudioInputConfiguration parameter,
             AppletResourceUserId appletResourceId,
             [CopyHandle] int processHandle,
             [Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] ReadOnlySpan<DeviceName> name,
             [ClientProcessId] ulong pid)
         {
-            return OpenAudioOut(out outputConfig, out audioOut, outName, inputConfig, appletResourceId, processHandle, name, pid);
+            return OpenAudioOut(out outputConfig, out audioOut, outName, parameter, appletResourceId, processHandle, name, pid);
         }
     }
 }

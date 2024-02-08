@@ -18,7 +18,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         Result GetReleasedAudioOutBuffersAuto(out uint count, Span<ulong> bufferTags);
         Result GetAudioOutBufferCount(out uint bufferCount);
         Result GetAudioOutPlayedSampleCount(out ulong sampleCount);
-        Result FlushAudioOutBuffers(out bool flushed);
+        Result FlushAudioOutBuffers(out bool pending);
         Result SetAudioOutVolume(float volume);
         Result GetAudioOutVolume(out float volume);
     }

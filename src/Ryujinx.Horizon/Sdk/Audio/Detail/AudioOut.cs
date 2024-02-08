@@ -65,15 +65,15 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         }
 
         [CmifCommand(5)]
-        public Result GetReleasedAudioOutBuffers(out uint count, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<ulong> tags)
+        public Result GetReleasedAudioOutBuffers(out uint count, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<ulong> bufferTags)
         {
-            return new Result((int)_impl.GetReleasedBuffer(tags, out count));
+            return new Result((int)_impl.GetReleasedBuffer(bufferTags, out count));
         }
 
         [CmifCommand(6)]
-        public Result ContainsAudioOutBuffer(out bool contains, ulong tag)
+        public Result ContainsAudioOutBuffer(out bool contains, ulong bufferTag)
         {
-            contains = _impl.ContainsBuffer(tag);
+            contains = _impl.ContainsBuffer(bufferTag);
 
             return Result.Success;
         }
@@ -85,9 +85,9 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         }
 
         [CmifCommand(8)] // 3.0.0+
-        public Result GetReleasedAudioOutBuffersAuto(out uint count, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<ulong> tags)
+        public Result GetReleasedAudioOutBuffersAuto(out uint count, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<ulong> bufferTags)
         {
-            return GetReleasedAudioOutBuffers(out count, tags);
+            return GetReleasedAudioOutBuffers(out count, bufferTags);
         }
 
         [CmifCommand(9)] // 4.0.0+
@@ -107,9 +107,9 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         }
 
         [CmifCommand(11)] // 4.0.0+
-        public Result FlushAudioOutBuffers(out bool flushed)
+        public Result FlushAudioOutBuffers(out bool pending)
         {
-            flushed = _impl.FlushBuffers();
+            pending = _impl.FlushBuffers();
 
             return Result.Success;
         }
