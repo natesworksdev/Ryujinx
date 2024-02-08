@@ -297,6 +297,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">start</property>
+                                <property name="margin-start">9</property>
                                 <property name="margin-bottom">5</property>
                                 <property name="label" translatable="yes">Included Game Directories</property>
                                 <attributes>
@@ -306,6 +307,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">True</property>
+                                <property name="padding">1</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
@@ -323,12 +325,12 @@
                                     <property name="margin-bottom">10</property>
                                     <property name="shadow-type">in</property>
                                     <child>
-                                      <object class="GtkTreeView" id="_gameDirsBox">
+                                      <object class="GtkTreeView" id="_gameDirsBoxIncluded">
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="headers-visible">False</property>
                                         <property name="headers-clickable">False</property>
-                                          <signal name="button-release-event" handler="onRowActivated" />
+                                        <signal name="button-release-event" handler="onRowActivated" swapped="no"/>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -368,11 +370,11 @@
                                     <property name="margin-bottom">10</property>
                                     <property name="shadow-type">in</property>
                                     <child>
-                                      <object class="GtkTreeView" id="_gameDirsBox1">
+                                      <object class="GtkTreeView" id="_gameDirsBoxExcluded">
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="headers-visible">False</property>
-                                          <signal name="button-release-event" handler="onRowActivated1" />
+                                        <signal name="button-release-event" handler="onRowActivated1" swapped="no"/>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -429,7 +431,7 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="tooltip-text" translatable="yes"> Add a game tyu directory to the list</property>
-                                          <signal name="toggled" handler="Include_exclude_Pressed" swapped="no"/>
+                                        <signal name="toggled" handler="Include_exclude_Pressed" swapped="no"/>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>

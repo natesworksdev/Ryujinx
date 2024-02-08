@@ -31,8 +31,8 @@ namespace Ryujinx.Ui.Windows
 
 
         private readonly MainWindow _parent;
-        private readonly ListStore _gameDirsBoxStore;
-        private readonly ListStore _gameDirsBoxStore1;
+        private readonly ListStore _gameDirsBoxStoreIncluded;
+        private readonly ListStore _gameDirsBoxStoreExcluded;
         private readonly ListStore _audioBackendStore;
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string> _validTzRegions;
@@ -104,8 +104,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] Entry _custThemePath;
         [GUI] ToggleButton _browseThemePath;
         [GUI] Label _custThemePathLabel;
-        [GUI] TreeView _gameDirsBox;
-        [GUI] TreeView _gameDirsBox1;
+        [GUI] TreeView _gameDirsBoxIncluded;
+        [GUI] TreeView _gameDirsBoxExcluded;
         [GUI] ToggleButton _include_exclude_dir;
         [GUI] Entry _addGameDirBox;
         [GUI] ComboBoxText _galThreading;
@@ -387,23 +387,23 @@ namespace Ryujinx.Ui.Windows
             _fsLogSpinAdjustment.Value = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
             _systemTimeOffset = ConfigurationState.Instance.System.SystemTimeOffset;
 
-            _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
-            _gameDirsBoxStore = new ListStore(typeof(string));
-            _gameDirsBox.Model = _gameDirsBoxStore;
+            _gameDirsBoxIncluded.AppendColumn("", new CellRendererText(), "text", 0);
+            _gameDirsBoxStoreIncluded = new ListStore(typeof(string));
+            _gameDirsBoxIncluded.Model = _gameDirsBoxStoreIncluded;
 
             foreach (string gameDir in ConfigurationState.Instance.Ui.GameDirs.Value)
             {
-                _gameDirsBoxStore.AppendValues(gameDir);
+                _gameDirsBoxStoreIncluded.AppendValues(gameDir);
             }
 
 
-            _gameDirsBox1.AppendColumn("", new CellRendererText(), "text", 0);
-            _gameDirsBoxStore1 = new ListStore(typeof(string));
-            _gameDirsBox1.Model = _gameDirsBoxStore1;
+            _gameDirsBoxExcluded.AppendColumn("", new CellRendererText(), "text", 0);
+            _gameDirsBoxStoreExcluded = new ListStore(typeof(string));
+            _gameDirsBoxExcluded.Model = _gameDirsBoxStoreExcluded;
 
-            foreach (string gameDir1 in ConfigurationState.Instance.Ui.ExcludeGameDirs.Value)
+            foreach (string gameDirExcluded in ConfigurationState.Instance.Ui.ExcludeGameDirs.Value)
             {
-                _gameDirsBoxStore1.AppendValues(gameDir1);
+                _gameDirsBoxStoreExcluded.AppendValues(gameDirExcluded);
             }
 
 
@@ -584,13 +584,13 @@ namespace Ryujinx.Ui.Windows
             {
                 List<string> gameDirs = new();
 
-                _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
+                _gameDirsBoxStoreIncluded.GetIterFirst(out TreeIter treeIter);
 
-                for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+                for (int i = 0; i < _gameDirsBoxStoreIncluded.IterNChildren(); i++)
                 {
-                    gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
+                    gameDirs.Add((string)_gameDirsBoxStoreIncluded.GetValue(treeIter, 0));
 
-                    _gameDirsBoxStore.IterNext(ref treeIter);
+                    _gameDirsBoxStoreIncluded.IterNext(ref treeIter);
                 }
 
                 ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
@@ -605,13 +605,13 @@ namespace Ryujinx.Ui.Windows
 
                 List<string> ExcludegameDirs = new();
 
-                _gameDirsBoxStore1.GetIterFirst(out TreeIter treeIter1);
+                _gameDirsBoxStoreExcluded.GetIterFirst(out TreeIter treeIter1);
 
-                for (int j = 0; j < _gameDirsBoxStore1.IterNChildren(); j++)
+                for (int j = 0; j < _gameDirsBoxStoreExcluded.IterNChildren(); j++)
                 {
-                    ExcludegameDirs.Add((string)_gameDirsBoxStore1.GetValue(treeIter1, 0));
+                    ExcludegameDirs.Add((string)_gameDirsBoxStoreExcluded.GetValue(treeIter1, 0));
 
-                    _gameDirsBoxStore1.IterNext(ref treeIter1);
+                    _gameDirsBoxStoreExcluded.IterNext(ref treeIter1);
                 }
 
                 ConfigurationState.Instance.Ui.ExcludeGameDirs.Value = ExcludegameDirs;
@@ -776,7 +776,7 @@ namespace Ryujinx.Ui.Windows
             Console.WriteLine("here");
             _include_exclude_dir.Label = "exclude";
             _includeorexlude = IncludeorExclude.Exclude;
-            _gameDirsBox1.Selection.UnselectAll();
+            _gameDirsBoxExcluded.Selection.UnselectAll();
         }
 
         private void onRowActivated1(object sender, ButtonReleaseEventArgs args)
@@ -784,7 +784,7 @@ namespace Ryujinx.Ui.Windows
             Console.WriteLine("here");
             _include_exclude_dir.Label = "include";
             _includeorexlude = IncludeorExclude.Include;
-            _gameDirsBox.Selection.UnselectAll();
+            _gameDirsBoxIncluded.Selection.UnselectAll();
         }
 
 
@@ -794,7 +794,7 @@ namespace Ryujinx.Ui.Windows
         {
             if (Directory.Exists(_addGameDirBox.Buffer.Text))
             {
-                _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text);
+                _gameDirsBoxStoreIncluded.AppendValues(_addGameDirBox.Buffer.Text);
                 _directoryChanged = true;
             }
             else
@@ -809,20 +809,20 @@ namespace Ryujinx.Ui.Windows
                     _directoryChanged = false;
                     foreach (string directory in fileChooser.Filenames)
                     {
-                        if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
+                        if (_gameDirsBoxStoreIncluded.GetIterFirst(out TreeIter treeIter))
                         {
                             do
                             {
-                                if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
+                                if (directory.Equals((string)_gameDirsBoxStoreIncluded.GetValue(treeIter, 0)))
                                 {
                                     break;
                                 }
-                            } while (_gameDirsBoxStore.IterNext(ref treeIter));
+                            } while (_gameDirsBoxStoreIncluded.IterNext(ref treeIter));
                         }
 
                         if (!_directoryChanged)
                         {
-                            _gameDirsBoxStore.AppendValues(directory);
+                            _gameDirsBoxStoreIncluded.AppendValues(directory);
                         }
                     }
 
@@ -842,16 +842,16 @@ namespace Ryujinx.Ui.Windows
             if (_includeorexlude==IncludeorExclude.Exclude)
             {
 
-                TreeSelection selection = _gameDirsBox.Selection;
+                TreeSelection selection = _gameDirsBoxIncluded.Selection;
 
                 if (selection.GetSelected(out TreeIter treeIter))
                 {
-                    var model = _gameDirsBox.Model;
-                    _gameDirsBoxStore1.AppendValues(model.GetValue(treeIter, 0));
+                    var model = _gameDirsBoxIncluded.Model;
+                    _gameDirsBoxStoreExcluded.AppendValues(model.GetValue(treeIter, 0));
                     Console.WriteLine(model.GetValue(treeIter,0));
                     _directoryChanged = true;
 
-                    _gameDirsBoxStore.Remove(ref treeIter);
+                    _gameDirsBoxStoreIncluded.Remove(ref treeIter);
                 }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
@@ -859,16 +859,16 @@ namespace Ryujinx.Ui.Windows
             }
             else if (_includeorexlude == IncludeorExclude.Include)
             {
-                TreeSelection selection = _gameDirsBox1.Selection;
+                TreeSelection selection = _gameDirsBoxExcluded.Selection;
 
                 if (selection.GetSelected(out TreeIter treeIter1))
                 {
-                    var model = _gameDirsBox1.Model;
-                    _gameDirsBoxStore.AppendValues(model.GetValue(treeIter1, 0));
+                    var model = _gameDirsBoxExcluded.Model;
+                    _gameDirsBoxStoreIncluded.AppendValues(model.GetValue(treeIter1, 0));
                     Console.WriteLine(model.GetValue(treeIter1, 0));
                     _directoryChanged = true;
 
-                    _gameDirsBoxStore1.Remove(ref treeIter1);
+                    _gameDirsBoxStoreExcluded.Remove(ref treeIter1);
                 }
 
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
@@ -882,11 +882,11 @@ namespace Ryujinx.Ui.Windows
             if (_includeorexlude == IncludeorExclude.Exclude)
             {
 
-                TreeSelection selection = _gameDirsBox.Selection;
+                TreeSelection selection = _gameDirsBoxIncluded.Selection;
 
                 if (selection.GetSelected(out TreeIter treeIter))
                 {
-                    _gameDirsBoxStore.Remove(ref treeIter);
+                    _gameDirsBoxStoreIncluded.Remove(ref treeIter);
 
                     _directoryChanged = true;
                 }
@@ -895,13 +895,13 @@ namespace Ryujinx.Ui.Windows
             }
             else if (_includeorexlude == IncludeorExclude.Include)
             {
-                TreeSelection selection = _gameDirsBox1.Selection;
+                TreeSelection selection = _gameDirsBoxExcluded.Selection;
 
                 
 
                 if (selection.GetSelected(out TreeIter treeIter))
                 {
-                    _gameDirsBoxStore1.Remove(ref treeIter);
+                    _gameDirsBoxStoreExcluded.Remove(ref treeIter);
 
                     _directoryChanged = true;
                 }
