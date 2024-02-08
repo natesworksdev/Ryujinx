@@ -62,14 +62,14 @@
                             FontSize="28"
                             FontWeight="Bold"
                             Text="Ryujinx"
-                            TextAlignment="Left"
+                            TextAlignment="Start"
                             Width="110"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
                         <TextBlock
                             FontSize="11"
                             Text="(REE-YOU-JINX)"
-                            TextAlignment="Left"
+                            TextAlignment="Start"
                             Width="110"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
