@@ -324,15 +324,6 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void SetVolume(float volume)
-        {
-        }
-
-        public float GetVolume()
-        {
-            return 1f;
-        }
-
         public void ReturnFocus()
         {
             AppletState.SetFocus(true);

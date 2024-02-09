@@ -58,9 +58,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
                 clientMemoryManager,
                 name.Length > 0 ? name[0].ToString() : string.Empty,
                 SampleFormat.PcmInt16,
-                ref parameter,
-                appletResourceId.Id,
-                (uint)processHandle);
+                ref parameter);
 
             if (rc == ResultCode.Success && outName.Length > 0)
             {

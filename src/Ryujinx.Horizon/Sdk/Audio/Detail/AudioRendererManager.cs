@@ -40,8 +40,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
                 appletResourceId.Id,
                 workBufferAddress,
                 workBufferSize,
-                (uint)processHandle,
-                1f));
+                (uint)processHandle));
 
             renderer = result.IsSuccess ? new AudioRenderer(renderSystem, workBufferHandle, processHandle) : null;
 
