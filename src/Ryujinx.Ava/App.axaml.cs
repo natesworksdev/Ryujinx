@@ -46,6 +46,10 @@ namespace Ryujinx.Ava
                 ConfigurationState.Instance.UI.CustomThemePath.Event += ThemeChanged_Event;
                 ConfigurationState.Instance.UI.EnableCustomTheme.Event += CustomThemeChanged_Event;
             }
+            else
+            {
+                ConfigurationState.Initialize();
+            }
         }
 
         private void CustomThemeChanged_Event(object sender, ReactiveEventArgs<bool> e)
