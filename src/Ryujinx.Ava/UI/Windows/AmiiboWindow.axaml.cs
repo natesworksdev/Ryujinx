@@ -29,10 +29,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
 
-            if (Program.PreviewerDetached)
-            {
-                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.Amiibo];
-            }
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.Amiibo];
         }
 
         public bool IsScanned { get; set; }

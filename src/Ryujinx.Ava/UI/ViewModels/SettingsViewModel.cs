@@ -277,10 +277,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            if (Program.PreviewerDetached)
-            {
-                Task.Run(LoadTimeZones);
-            }
+            Task.Run(LoadTimeZones);
         }
 
         public SettingsViewModel()
@@ -294,11 +291,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             Task.Run(CheckSoundBackends);
             Task.Run(PopulateNetworkInterfaces);
 
-            if (Program.PreviewerDetached)
-            {
-                Task.Run(LoadAvailableGpus);
-                LoadCurrentConfiguration();
-            }
+            Task.Run(LoadAvailableGpus);
+            LoadCurrentConfiguration();
         }
 
         public async Task CheckSoundBackends()

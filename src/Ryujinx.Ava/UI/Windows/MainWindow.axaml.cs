@@ -78,13 +78,10 @@ namespace Ryujinx.Ava.UI.Windows
             Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
 
-            if (Program.PreviewerDetached)
-            {
-                InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
+            InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
 
-                this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
-                this.ScalingChanged += OnScalingChanged;
-            }
+            this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
+            this.ScalingChanged += OnScalingChanged;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
