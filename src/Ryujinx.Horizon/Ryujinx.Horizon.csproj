@@ -17,4 +17,9 @@
     <PackageReference Include="LibHac" />
   </ItemGroup>
 
+  <!-- Due to Concentus. -->
+  <PropertyGroup>
+    <NoWarn>NU1605</NoWarn>
+  </PropertyGroup>
+
 </Project>
