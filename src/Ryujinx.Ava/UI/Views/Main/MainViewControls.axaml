@@ -8,7 +8,7 @@
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    mc:Ignorable="d" d:DesignWidth="1000"
     x:Class="Ryujinx.Ava.UI.Views.Main.MainViewControls"
     x:DataType="viewModels:MainWindowViewModel">
     <Design.DataContext>
