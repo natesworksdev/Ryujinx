@@ -895,6 +895,11 @@ namespace Ryujinx.Ui
             }
             else
             {
+                if (!CheckGameUpdatesPresent())
+                {
+                    return;
+                }
+
                 PerformanceCheck();
 
                 Logger.RestartTime();
@@ -954,6 +959,35 @@ namespace Ryujinx.Ui
                     appMetadata.UpdatePreGame();
                 });
             }
+        }
+
+        private bool CheckGameUpdatesPresent()
+        {
+            bool gameUpdateStatusCheck = true;
+
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
+            string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+
+            (Nca patchNca, _) = ApplicationLibrary.GetGameUpdateData(_virtualFileSystem, titleId, 0, out string updatePath);
+
+            if (!string.IsNullOrWhiteSpace(updatePath) && patchNca is null)
+            {
+                MessageDialog updateMissingWarningDialog = new(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                {
+                    Title = "Ryujinx - Warning",
+                    Text = "Update file for this title was not found!",
+                    SecondaryText = "Game saves may be incompatible with this version or become corrupted. Do you wish to load the application anyway?",
+                };
+
+                if (updateMissingWarningDialog.Run() == (int)ResponseType.No)
+                {
+                    gameUpdateStatusCheck = false;
+                }
+
+                updateMissingWarningDialog.Dispose();
+            }
+
+            return gameUpdateStatusCheck;
         }
 
         private RendererWidgetBase CreateRendererWidget()

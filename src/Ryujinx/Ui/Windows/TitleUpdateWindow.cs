@@ -86,6 +86,13 @@ namespace Ryujinx.Ui.Windows
 
         private void AddUpdate(string path)
         {
+            if (!File.Exists(path))
+            {
+                GtkDialog.CreateErrorDialog($"Update file \"{path}\" was not found! Current game saves can become corrupted!");
+
+                return;
+            }
+
             if (File.Exists(path))
             {
                 using FileStream file = new(path, FileMode.Open, FileAccess.Read);
