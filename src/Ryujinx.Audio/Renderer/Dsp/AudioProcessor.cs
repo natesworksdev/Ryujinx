@@ -269,6 +269,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             if (disposing)
             {
                 _event.Dispose();
+                _mailbox.Dispose();
             }
         }
     }
