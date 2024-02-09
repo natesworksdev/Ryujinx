@@ -38,18 +38,17 @@ namespace Ryujinx.Ava
 
             base.OnFrameworkInitializationCompleted();
 
-            if (Program.PreviewerDetached)
-            {
-                ApplyConfiguredTheme();
 
-                ConfigurationState.Instance.UI.BaseStyle.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.UI.CustomThemePath.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.UI.EnableCustomTheme.Event += CustomThemeChanged_Event;
-            }
-            else
+            if (!Program.PreviewerDetached)
             {
                 ConfigurationState.Initialize();
             }
+
+            ApplyConfiguredTheme();
+
+            ConfigurationState.Instance.Ui.BaseStyle.Event += ThemeChanged_Event;
+            ConfigurationState.Instance.Ui.CustomThemePath.Event += ThemeChanged_Event;
+            ConfigurationState.Instance.Ui.EnableCustomTheme.Event += CustomThemeChanged_Event;
         }
 
         private void CustomThemeChanged_Event(object sender, ReactiveEventArgs<bool> e)
@@ -92,13 +91,13 @@ namespace Ryujinx.Ava
         {
             try
             {
-                string baseStyle = ConfigurationState.Instance.UI.BaseStyle;
+                string baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
 
                 if (string.IsNullOrWhiteSpace(baseStyle))
                 {
-                    ConfigurationState.Instance.UI.BaseStyle.Value = "Dark";
+                    ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
 
-                    baseStyle = ConfigurationState.Instance.UI.BaseStyle;
+                    baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
                 }
 
                 RequestedThemeVariant = baseStyle switch
