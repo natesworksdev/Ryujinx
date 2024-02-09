@@ -25,6 +25,7 @@ namespace Ryujinx.Ui.Widgets
         private MenuItem _openPtcDirMenuItem;
         private MenuItem _openShaderCacheDirMenuItem;
         private MenuItem _createShortcutMenuItem;
+        private MenuItem _trimXCIMenuItem;
 
         private void InitializeComponent()
         {
@@ -198,6 +199,15 @@ namespace Ryujinx.Ui.Widgets
             };
             _createShortcutMenuItem.Activated += CreateShortcut_Clicked;
 
+            //
+            // _trimXCIMenuItem
+            //
+            _trimXCIMenuItem = new MenuItem("Check and Trim XCI File")
+            {
+                TooltipText = "Check and Trim XCI File to Save Disk Space."
+            };
+            _trimXCIMenuItem.Activated += TrimXCI_Clicked;
+
             ShowComponent();
         }
 
@@ -213,6 +223,7 @@ namespace Ryujinx.Ui.Widgets
             _manageSubMenu.Append(_openShaderCacheDirMenuItem);
 
             Add(_createShortcutMenuItem);
+            Add(_trimXCIMenuItem);
             Add(new SeparatorMenuItem());
             Add(_openSaveUserDirMenuItem);
             Add(_openSaveDeviceDirMenuItem);

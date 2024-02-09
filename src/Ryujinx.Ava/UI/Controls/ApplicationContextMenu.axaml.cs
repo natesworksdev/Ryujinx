@@ -341,5 +341,15 @@ namespace Ryujinx.Ava.UI.Controls
                 await viewModel.LoadApplication(viewModel.SelectedApplication.Path);
             }
         }
+
+        public async void TrimXCI_Click(object sender, RoutedEventArgs args)
+        {
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel?.SelectedApplication != null)
+            {
+                await viewModel.TrimXCIFile(viewModel.SelectedApplication.Path);
+            }
+        }
     }
 }
