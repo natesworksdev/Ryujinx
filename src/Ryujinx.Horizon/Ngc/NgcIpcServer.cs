@@ -45,6 +45,7 @@ namespace Ryujinx.Horizon.Ngc
         {
             _serverManager.Dispose();
             _profanityFilter.Dispose();
+            _sm.Dispose();
         }
     }
 }

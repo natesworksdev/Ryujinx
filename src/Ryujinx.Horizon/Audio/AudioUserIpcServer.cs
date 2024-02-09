@@ -54,6 +54,7 @@ namespace Ryujinx.Horizon.Audio
         {
             _serverManager.Dispose();
             _managers.Dispose();
+            _sm.Dispose();
         }
     }
 }
