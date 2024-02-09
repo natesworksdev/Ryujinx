@@ -401,10 +401,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowConfirmExit = config.ShowConfirmExit;
             HideCursor = (int)config.HideCursor.Value;
 
-            GameDirectories.Clear();
-            GameDirectories.AddRange(config.UI.GameDirs.Value);
+            if (Program.PreviewerDetached)
+            {
+                GameDirectories.Clear();
+                GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            }
 
-            BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
+            BaseStyleIndex = config.Ui.BaseStyle == "Light" ? 0 : 1;
 
             // Input
             EnableDockedMode = config.System.EnableDockedMode;
@@ -488,10 +491,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (_directoryChanged)
             {
                 List<string> gameDirs = new(GameDirectories);
-                config.UI.GameDirs.Value = gameDirs;
+                config.Ui.GameDirs.Value = gameDirs;
             }
 
-            config.UI.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;
