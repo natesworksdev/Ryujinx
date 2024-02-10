@@ -25,7 +25,7 @@ using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Headless.SDL2
 {
-    abstract partial class WindowBase : IHostUiHandler, IDisposable
+    abstract partial class WindowBase : IHostUIHandler, IDisposable
     {
         protected const int DefaultWidth = 1280;
         protected const int DefaultHeight = 720;
@@ -53,7 +53,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected IntPtr WindowHandle { get; set; }
 
-        public IHostUiTheme HostUiTheme { get; }
+        public IHostUITheme HostUiTheme { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
         public int DisplayId { get; set; }

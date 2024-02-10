@@ -138,7 +138,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             InputManager inputManager,
             UserChannelPersistence userChannelPersistence,
             LibHacHorizonManager libHacHorizonManager,
-            IHostUiHandler uiHandler,
+            IHostUIHandler uiHandler,
             Action<bool> showLoading,
             Action<bool> switchToGameControl,
             Action<Control> setMainContent,
@@ -919,7 +919,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public RendererHost RendererHostControl { get; private set; }
         public bool IsClosing { get; set; }
         public LibHacHorizonManager LibHacHorizonManager { get; internal set; }
-        public IHostUiHandler UiHandler { get; internal set; }
+        public IHostUIHandler UiHandler { get; internal set; }
         public bool IsSortedByFavorite => SortMode == ApplicationSort.Favorite;
         public bool IsSortedByTitle => SortMode == ApplicationSort.Title;
         public bool IsSortedByDeveloper => SortMode == ApplicationSort.Developer;

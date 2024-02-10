@@ -92,14 +92,14 @@ namespace Ryujinx.HLE.HOS.Applets
                     _keyboardBackgroundInitialize = MemoryMarshal.Read<SoftwareKeyboardInitialize>(keyboardConfig);
                     _backgroundState = InlineKeyboardState.Uninitialized;
 
-                    if (_device.UiHandler == null)
+                    if (_device.UIHandler == null)
                     {
                         Logger.Error?.Print(LogClass.ServiceAm, "GUI Handler is not set, software keyboard applet will not work properly");
                     }
                     else
                     {
                         // Create a text handler that converts keyboard strokes to strings.
-                        _dynamicTextInputHandler = _device.UiHandler.CreateDynamicTextInputHandler();
+                        _dynamicTextInputHandler = _device.UIHandler.CreateDynamicTextInputHandler();
                         _dynamicTextInputHandler.TextChangedEvent += HandleTextChangedEvent;
                         _dynamicTextInputHandler.KeyPressedEvent += HandleKeyPressedEvent;
 
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         _npads.NpadButtonDownEvent += HandleNpadButtonDownEvent;
                         _npads.NpadButtonUpEvent += HandleNpadButtonUpEvent;
 
-                        _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UiHandler.HostUiTheme);
+                        _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UIHandler.HostUiTheme);
                     }
 
                     return ResultCode.Success;
@@ -199,7 +199,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 _keyboardForegroundConfig.StringLengthMax = 100;
             }
 
-            if (_device.UiHandler == null)
+            if (_device.UIHandler == null)
             {
                 Logger.Warning?.Print(LogClass.Application, "GUI Handler is not set. Falling back to default");
 
@@ -222,7 +222,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     InitialText = initialText,
                 };
 
-                _lastResult = _device.UiHandler.DisplayInputDialog(args, out _textValue) ? KeyboardResult.Accept : KeyboardResult.Cancel;
+                _lastResult = _device.UIHandler.DisplayInputDialog(args, out _textValue) ? KeyboardResult.Accept : KeyboardResult.Cancel;
                 _textValue ??= initialText ?? DefaultInputText;
             }
 

@@ -8,11 +8,11 @@ using System.Threading;
 
 namespace Ryujinx.UI.Applet
 {
-    internal class GtkHostUiHandler : IHostUiHandler
+    internal class GtkHostUiHandler : IHostUIHandler
     {
         private readonly Window _parent;
 
-        public IHostUiTheme HostUiTheme { get; }
+        public IHostUITheme HostUiTheme { get; }
 
         public GtkHostUiHandler(Window parent)
         {

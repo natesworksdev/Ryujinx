@@ -120,7 +120,7 @@ namespace Ryujinx.UI
             }
             catch (ContextException e)
             {
-                Logger.Warning?.Print(LogClass.Ui, $"Failed to bind OpenGL context: {e}");
+                Logger.Warning?.Print(LogClass.UI, $"Failed to bind OpenGL context: {e}");
             }
 
             Device?.DisposeGpu();
@@ -133,7 +133,7 @@ namespace Ryujinx.UI
             }
             catch (ContextException e)
             {
-                Logger.Warning?.Print(LogClass.Ui, $"Failed to unbind OpenGL context: {e}");
+                Logger.Warning?.Print(LogClass.UI, $"Failed to unbind OpenGL context: {e}");
             }
 
             _openGLContext?.Dispose();

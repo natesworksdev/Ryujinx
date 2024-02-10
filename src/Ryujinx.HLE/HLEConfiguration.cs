@@ -63,7 +63,7 @@ namespace Ryujinx.HLE
         /// The handler for various UI related operations needed outside of HLE.
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
-        internal readonly IHostUiHandler HostUiHandler;
+        internal readonly IHostUIHandler HostUIHandler;
 
         /// <summary>
         /// Control the memory configuration used by the emulation context.
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE
                                 IRenderer gpuRenderer,
                                 IHardwareDeviceDriver audioDeviceDriver,
                                 MemoryConfiguration memoryConfiguration,
-                                IHostUiHandler hostUiHandler,
+                                IHostUIHandler hostUIHandler,
                                 SystemLanguage systemLanguage,
                                 RegionCode region,
                                 bool enableVsync,
@@ -204,7 +204,7 @@ namespace Ryujinx.HLE
             GpuRenderer = gpuRenderer;
             AudioDeviceDriver = audioDeviceDriver;
             MemoryConfiguration = memoryConfiguration;
-            HostUiHandler = hostUiHandler;
+            HostUIHandler = hostUIHandler;
             SystemLanguage = systemLanguage;
             Region = region;
             EnableVsync = enableVsync;

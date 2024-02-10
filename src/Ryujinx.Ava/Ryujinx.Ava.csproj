@@ -103,7 +103,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Ui\**\*.xaml">
+    <AvaloniaResource Include="UI\**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Fonts\SegoeFluentIcons.ttf" />

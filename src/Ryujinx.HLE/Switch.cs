@@ -25,7 +25,7 @@ namespace Ryujinx.HLE
         public PerformanceStatistics Statistics { get; }
         public Hid Hid { get; }
         public TamperMachine TamperMachine { get; }
-        public IHostUiHandler UiHandler { get; }
+        public IHostUIHandler UIHandler { get; }
 
         public bool EnableDeviceVsync { get; set; } = true;
 
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE
 
             Configuration = configuration;
             FileSystem = Configuration.VirtualFileSystem;
-            UiHandler = Configuration.HostUiHandler;
+            UIHandler = Configuration.HostUIHandler;
 
             MemoryAllocationFlags memoryAllocationFlags = configuration.MemoryManagerMode == MemoryManagerMode.SoftwarePageTable
                 ? MemoryAllocationFlags.Reserve

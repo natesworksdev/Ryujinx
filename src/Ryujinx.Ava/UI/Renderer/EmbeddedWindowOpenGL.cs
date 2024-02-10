@@ -75,7 +75,7 @@ namespace Ryujinx.Ava.UI.Renderer
                     throw;
                 }
 
-                Logger.Warning?.Print(LogClass.Ui, $"Failed to {(!unbind ? "bind" : "unbind")} OpenGL context: {e}");
+                Logger.Warning?.Print(LogClass.UI, $"Failed to {(!unbind ? "bind" : "unbind")} OpenGL context: {e}");
             }
         }
 

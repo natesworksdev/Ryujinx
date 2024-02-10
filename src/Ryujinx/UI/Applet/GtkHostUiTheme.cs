@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.UI.Applet
 {
-    internal class GtkHostUiTheme : IHostUiTheme
+    internal class GtkHostUiTheme : IHostUITheme
     {
         private const int RenderSurfaceWidth = 32;
         private const int RenderSurfaceHeight = 32;

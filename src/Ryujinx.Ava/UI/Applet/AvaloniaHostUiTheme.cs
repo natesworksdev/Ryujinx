@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Ava.UI.Applet
 {
-    class AvaloniaHostUiTheme : IHostUiTheme
+    class AvaloniaHostUiTheme : IHostUITheme
     {
         public AvaloniaHostUiTheme(MainWindow parent)
         {

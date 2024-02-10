@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private readonly TimedAction _textBoxBlinkTimedAction = new();
         private readonly TimedAction _renderAction = new();
 
-        public SoftwareKeyboardRenderer(IHostUiTheme uiTheme)
+        public SoftwareKeyboardRenderer(IHostUITheme uiTheme)
         {
             _renderer = new SoftwareKeyboardRendererBase(uiTheme);
 

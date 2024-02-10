@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationPr
 
 namespace Ryujinx.HLE.Ui
 {
-    public interface IHostUiHandler
+    public interface IHostUIHandler
     {
         /// <summary>
         /// Displays an Input Dialog box to the user and blocks until text is entered.
@@ -46,6 +46,6 @@ namespace Ryujinx.HLE.Ui
         /// <summary>
         /// Gets fonts and colors used by the host.
         /// </summary>
-        IHostUiTheme HostUiTheme { get; }
+        IHostUITheme HostUiTheme { get; }
     }
 }

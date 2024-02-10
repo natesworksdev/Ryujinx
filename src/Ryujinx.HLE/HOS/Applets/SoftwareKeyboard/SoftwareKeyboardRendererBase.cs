@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private Point _logoPosition;
         private float _messagePositionY;
 
-        public SoftwareKeyboardRendererBase(IHostUiTheme uiTheme)
+        public SoftwareKeyboardRendererBase(IHostUITheme uiTheme)
         {
             int ryujinxLogoSize = 32;
 

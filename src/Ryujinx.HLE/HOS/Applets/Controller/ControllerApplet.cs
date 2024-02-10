@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     IsDocked = _system.State.DockedMode,
                 };
 
-                if (!_system.Device.UiHandler.DisplayMessageDialog(uiArgs))
+                if (!_system.Device.UIHandler.DisplayMessageDialog(uiArgs))
                 {
                     break;
                 }

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.Ui
 {
-    public interface IHostUiTheme
+    public interface IHostUITheme
     {
         string FontFamily { get; }
 
