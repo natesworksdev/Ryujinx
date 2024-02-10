@@ -7,7 +7,7 @@ using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.UI.Common.Configuration.System;
-using Ryujinx.UI.Common.Configuration.Ui;
+using Ryujinx.UI.Common.Configuration.UI;
 using Ryujinx.UI.Common.Helper;
 using System;
 using System.Collections.Generic;

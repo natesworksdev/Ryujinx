@@ -4,7 +4,7 @@ using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.UI.Common.Configuration.System;
-using Ryujinx.UI.Common.Configuration.Ui;
+using Ryujinx.UI.Common.Configuration.UI;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 
