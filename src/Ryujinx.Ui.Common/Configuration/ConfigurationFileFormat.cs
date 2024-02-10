@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Multiplayer;
@@ -15,7 +16,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 48;
+        public const int CurrentVersion = 49;
 
         /// <summary>
         /// Version of the configuration file format
@@ -251,6 +252,12 @@ namespace Ryujinx.Ui.Common.Configuration
         /// A list of directories containing games to be used to load games into the games list
         /// </summary>
         public List<string> GameDirs { get; set; }
+
+        /// <summary>
+        /// A list of directories to be hidden in the games List
+        /// </summary>
+        /// 
+        public List<string> ExcludeGameDirs { get;  set; }
 
         /// <summary>
         /// A list of file types to be hidden in the games List

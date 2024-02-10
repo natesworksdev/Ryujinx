@@ -293,6 +293,25 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="margin-start">9</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="label" translatable="yes">Included Game Directories</property>
+                                <attributes>
+                                  <attribute name="weight" value="medium"/>
+                                </attributes>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="padding">1</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
@@ -306,11 +325,12 @@
                                     <property name="margin-bottom">10</property>
                                     <property name="shadow-type">in</property>
                                     <child>
-                                      <object class="GtkTreeView" id="_gameDirsBox">
+                                      <object class="GtkTreeView" id="_gameDirsBoxIncluded">
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="headers-visible">False</property>
                                         <property name="headers-clickable">False</property>
+                                        <signal name="button-release-event" handler="onRowActivated" swapped="no"/>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -324,6 +344,50 @@
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
                                     <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-bottom">5</property>
+                                    <property name="label" translatable="yes">Excluded Game Directories</property>
+                                    <attributes>
+                                      <attribute name="weight" value="medium"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="margin-bottom">10</property>
+                                    <property name="shadow-type">in</property>
+                                    <child>
+                                      <object class="GtkTreeView" id="_gameDirsBoxExcluded">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="headers-visible">False</property>
+                                        <signal name="button-release-event" handler="onRowActivated1" swapped="no"/>
+                                        <child internal-child="selection">
+                                          <object class="GtkTreeSelection"/>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <style>
+                                      <class name="GameDir"/>
+                                    </style>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -360,6 +424,22 @@
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkToggleButton" id="_include_exclude_dir">
+                                        <property name="label" translatable="yes">Include</property>
+                                        <property name="width-request">80</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="tooltip-text" translatable="yes"> Add a game tyu directory to the list</property>
+                                        <signal name="toggled" handler="Include_exclude_Pressed" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                    <child>
                                       <object class="GtkToggleButton" id="_removeDir">
                                         <property name="label" translatable="yes">Remove</property>
                                         <property name="width-request">80</property>
@@ -380,14 +460,14 @@
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="position">1</property>
+                                    <property name="position">3</property>
                                   </packing>
                                 </child>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
                                 <property name="fill">True</property>
-                                <property name="position">1</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>

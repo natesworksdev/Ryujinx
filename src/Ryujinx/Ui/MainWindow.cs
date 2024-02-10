@@ -732,7 +732,9 @@ namespace Ryujinx.Ui
 
             Thread applicationLibraryThread = new(() =>
             {
-                _applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                _applicationLibrary.LoadApplicationsExcludeDirs(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.Ui.ExcludeGameDirs, ConfigurationState.Instance.System.Language);
+               
+               
 
                 _updatingGameTable = false;
             })
