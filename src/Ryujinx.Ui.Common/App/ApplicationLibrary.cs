@@ -550,7 +550,7 @@ namespace Ryujinx.Ui.App.Common
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
                         {
                             var dir = Path.GetDirectoryName(file);
-                            Console.WriteLine(dir);
+                            
                             return(!ignoreDirSet.Contains(dir)&&(
                             (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.Ui.ShownFileTypes.NSP.Value) ||
                             (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.Ui.ShownFileTypes.PFS0.Value) ||
