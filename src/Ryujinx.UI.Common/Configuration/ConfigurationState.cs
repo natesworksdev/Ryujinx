@@ -20,7 +20,7 @@ namespace Ryujinx.UI.Common.Configuration
         /// <summary>
         /// UI configuration section
         /// </summary>
-        public class UiSection
+        public class UISection
         {
             public class Columns
             {
@@ -186,7 +186,7 @@ namespace Ryujinx.UI.Common.Configuration
             /// </summary>
             public ReactiveObject<bool> IsAscendingOrder { get; private set; }
 
-            public UiSection()
+            public UISection()
             {
                 GuiColumns = new Columns();
                 ColumnSort = new ColumnSortSettings();
@@ -582,9 +582,9 @@ namespace Ryujinx.UI.Common.Configuration
         public static ConfigurationState Instance { get; private set; }
 
         /// <summary>
-        /// The Ui section
+        /// The UI section
         /// </summary>
-        public UiSection Ui { get; private set; }
+        public UISection UI { get; private set; }
 
         /// <summary>
         /// The Logger section
@@ -633,7 +633,7 @@ namespace Ryujinx.UI.Common.Configuration
 
         private ConfigurationState()
         {
-            Ui = new UiSection();
+            UI = new UISection();
             Logger = new LoggerSection();
             System = new SystemSection();
             Graphics = new GraphicsSection();
@@ -696,51 +696,51 @@ namespace Ryujinx.UI.Common.Configuration
                 UseHypervisor = System.UseHypervisor,
                 GuiColumns = new GuiColumns
                 {
-                    FavColumn = Ui.GuiColumns.FavColumn,
-                    IconColumn = Ui.GuiColumns.IconColumn,
-                    AppColumn = Ui.GuiColumns.AppColumn,
-                    DevColumn = Ui.GuiColumns.DevColumn,
-                    VersionColumn = Ui.GuiColumns.VersionColumn,
-                    TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
-                    LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
-                    FileExtColumn = Ui.GuiColumns.FileExtColumn,
-                    FileSizeColumn = Ui.GuiColumns.FileSizeColumn,
-                    PathColumn = Ui.GuiColumns.PathColumn,
+                    FavColumn = UI.GuiColumns.FavColumn,
+                    IconColumn = UI.GuiColumns.IconColumn,
+                    AppColumn = UI.GuiColumns.AppColumn,
+                    DevColumn = UI.GuiColumns.DevColumn,
+                    VersionColumn = UI.GuiColumns.VersionColumn,
+                    TimePlayedColumn = UI.GuiColumns.TimePlayedColumn,
+                    LastPlayedColumn = UI.GuiColumns.LastPlayedColumn,
+                    FileExtColumn = UI.GuiColumns.FileExtColumn,
+                    FileSizeColumn = UI.GuiColumns.FileSizeColumn,
+                    PathColumn = UI.GuiColumns.PathColumn,
                 },
                 ColumnSort = new ColumnSort
                 {
-                    SortColumnId = Ui.ColumnSort.SortColumnId,
-                    SortAscending = Ui.ColumnSort.SortAscending,
+                    SortColumnId = UI.ColumnSort.SortColumnId,
+                    SortAscending = UI.ColumnSort.SortAscending,
                 },
-                GameDirs = Ui.GameDirs,
+                GameDirs = UI.GameDirs,
                 ShownFileTypes = new ShownFileTypes
                 {
-                    NSP = Ui.ShownFileTypes.NSP,
-                    PFS0 = Ui.ShownFileTypes.PFS0,
-                    XCI = Ui.ShownFileTypes.XCI,
-                    NCA = Ui.ShownFileTypes.NCA,
-                    NRO = Ui.ShownFileTypes.NRO,
-                    NSO = Ui.ShownFileTypes.NSO,
+                    NSP = UI.ShownFileTypes.NSP,
+                    PFS0 = UI.ShownFileTypes.PFS0,
+                    XCI = UI.ShownFileTypes.XCI,
+                    NCA = UI.ShownFileTypes.NCA,
+                    NRO = UI.ShownFileTypes.NRO,
+                    NSO = UI.ShownFileTypes.NSO,
                 },
                 WindowStartup = new WindowStartup
                 {
-                    WindowSizeWidth = Ui.WindowStartup.WindowSizeWidth,
-                    WindowSizeHeight = Ui.WindowStartup.WindowSizeHeight,
-                    WindowPositionX = Ui.WindowStartup.WindowPositionX,
-                    WindowPositionY = Ui.WindowStartup.WindowPositionY,
-                    WindowMaximized = Ui.WindowStartup.WindowMaximized,
+                    WindowSizeWidth = UI.WindowStartup.WindowSizeWidth,
+                    WindowSizeHeight = UI.WindowStartup.WindowSizeHeight,
+                    WindowPositionX = UI.WindowStartup.WindowPositionX,
+                    WindowPositionY = UI.WindowStartup.WindowPositionY,
+                    WindowMaximized = UI.WindowStartup.WindowMaximized,
                 },
-                LanguageCode = Ui.LanguageCode,
-                EnableCustomTheme = Ui.EnableCustomTheme,
-                CustomThemePath = Ui.CustomThemePath,
-                BaseStyle = Ui.BaseStyle,
-                GameListViewMode = Ui.GameListViewMode,
-                ShowNames = Ui.ShowNames,
-                GridSize = Ui.GridSize,
-                ApplicationSort = Ui.ApplicationSort,
-                IsAscendingOrder = Ui.IsAscendingOrder,
-                StartFullscreen = Ui.StartFullscreen,
-                ShowConsole = Ui.ShowConsole,
+                LanguageCode = UI.LanguageCode,
+                EnableCustomTheme = UI.EnableCustomTheme,
+                CustomThemePath = UI.CustomThemePath,
+                BaseStyle = UI.BaseStyle,
+                GameListViewMode = UI.GameListViewMode,
+                ShowNames = UI.ShowNames,
+                GridSize = UI.GridSize,
+                ApplicationSort = UI.ApplicationSort,
+                IsAscendingOrder = UI.IsAscendingOrder,
+                StartFullscreen = UI.StartFullscreen,
+                ShowConsole = UI.ShowConsole,
                 EnableKeyboard = Hid.EnableKeyboard,
                 EnableMouse = Hid.EnableMouse,
                 Hotkeys = Hid.Hotkeys,
@@ -806,41 +806,41 @@ namespace Ryujinx.UI.Common.Configuration
             System.UseHypervisor.Value = true;
             Multiplayer.LanInterfaceId.Value = "0";
             Multiplayer.Mode.Value = MultiplayerMode.Disabled;
-            Ui.GuiColumns.FavColumn.Value = true;
-            Ui.GuiColumns.IconColumn.Value = true;
-            Ui.GuiColumns.AppColumn.Value = true;
-            Ui.GuiColumns.DevColumn.Value = true;
-            Ui.GuiColumns.VersionColumn.Value = true;
-            Ui.GuiColumns.TimePlayedColumn.Value = true;
-            Ui.GuiColumns.LastPlayedColumn.Value = true;
-            Ui.GuiColumns.FileExtColumn.Value = true;
-            Ui.GuiColumns.FileSizeColumn.Value = true;
-            Ui.GuiColumns.PathColumn.Value = true;
-            Ui.ColumnSort.SortColumnId.Value = 0;
-            Ui.ColumnSort.SortAscending.Value = false;
-            Ui.GameDirs.Value = new List<string>();
-            Ui.ShownFileTypes.NSP.Value = true;
-            Ui.ShownFileTypes.PFS0.Value = true;
-            Ui.ShownFileTypes.XCI.Value = true;
-            Ui.ShownFileTypes.NCA.Value = true;
-            Ui.ShownFileTypes.NRO.Value = true;
-            Ui.ShownFileTypes.NSO.Value = true;
-            Ui.EnableCustomTheme.Value = true;
-            Ui.LanguageCode.Value = "en_US";
-            Ui.CustomThemePath.Value = "";
-            Ui.BaseStyle.Value = "Dark";
-            Ui.GameListViewMode.Value = 0;
-            Ui.ShowNames.Value = true;
-            Ui.GridSize.Value = 2;
-            Ui.ApplicationSort.Value = 0;
-            Ui.IsAscendingOrder.Value = true;
-            Ui.StartFullscreen.Value = false;
-            Ui.ShowConsole.Value = true;
-            Ui.WindowStartup.WindowSizeWidth.Value = 1280;
-            Ui.WindowStartup.WindowSizeHeight.Value = 760;
-            Ui.WindowStartup.WindowPositionX.Value = 0;
-            Ui.WindowStartup.WindowPositionY.Value = 0;
-            Ui.WindowStartup.WindowMaximized.Value = false;
+            UI.GuiColumns.FavColumn.Value = true;
+            UI.GuiColumns.IconColumn.Value = true;
+            UI.GuiColumns.AppColumn.Value = true;
+            UI.GuiColumns.DevColumn.Value = true;
+            UI.GuiColumns.VersionColumn.Value = true;
+            UI.GuiColumns.TimePlayedColumn.Value = true;
+            UI.GuiColumns.LastPlayedColumn.Value = true;
+            UI.GuiColumns.FileExtColumn.Value = true;
+            UI.GuiColumns.FileSizeColumn.Value = true;
+            UI.GuiColumns.PathColumn.Value = true;
+            UI.ColumnSort.SortColumnId.Value = 0;
+            UI.ColumnSort.SortAscending.Value = false;
+            UI.GameDirs.Value = new List<string>();
+            UI.ShownFileTypes.NSP.Value = true;
+            UI.ShownFileTypes.PFS0.Value = true;
+            UI.ShownFileTypes.XCI.Value = true;
+            UI.ShownFileTypes.NCA.Value = true;
+            UI.ShownFileTypes.NRO.Value = true;
+            UI.ShownFileTypes.NSO.Value = true;
+            UI.EnableCustomTheme.Value = true;
+            UI.LanguageCode.Value = "en_US";
+            UI.CustomThemePath.Value = "";
+            UI.BaseStyle.Value = "Dark";
+            UI.GameListViewMode.Value = 0;
+            UI.ShowNames.Value = true;
+            UI.GridSize.Value = 2;
+            UI.ApplicationSort.Value = 0;
+            UI.IsAscendingOrder.Value = true;
+            UI.StartFullscreen.Value = false;
+            UI.ShowConsole.Value = true;
+            UI.WindowStartup.WindowSizeWidth.Value = 1280;
+            UI.WindowStartup.WindowSizeHeight.Value = 760;
+            UI.WindowStartup.WindowPositionX.Value = 0;
+            UI.WindowStartup.WindowPositionY.Value = 0;
+            UI.WindowStartup.WindowMaximized.Value = false;
             Hid.EnableKeyboard.Value = false;
             Hid.EnableMouse.Value = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1476,41 +1476,41 @@ namespace Ryujinx.UI.Common.Configuration
             System.ExpandRam.Value = configurationFileFormat.ExpandRam;
             System.IgnoreMissingServices.Value = configurationFileFormat.IgnoreMissingServices;
             System.UseHypervisor.Value = configurationFileFormat.UseHypervisor;
-            Ui.GuiColumns.FavColumn.Value = configurationFileFormat.GuiColumns.FavColumn;
-            Ui.GuiColumns.IconColumn.Value = configurationFileFormat.GuiColumns.IconColumn;
-            Ui.GuiColumns.AppColumn.Value = configurationFileFormat.GuiColumns.AppColumn;
-            Ui.GuiColumns.DevColumn.Value = configurationFileFormat.GuiColumns.DevColumn;
-            Ui.GuiColumns.VersionColumn.Value = configurationFileFormat.GuiColumns.VersionColumn;
-            Ui.GuiColumns.TimePlayedColumn.Value = configurationFileFormat.GuiColumns.TimePlayedColumn;
-            Ui.GuiColumns.LastPlayedColumn.Value = configurationFileFormat.GuiColumns.LastPlayedColumn;
-            Ui.GuiColumns.FileExtColumn.Value = configurationFileFormat.GuiColumns.FileExtColumn;
-            Ui.GuiColumns.FileSizeColumn.Value = configurationFileFormat.GuiColumns.FileSizeColumn;
-            Ui.GuiColumns.PathColumn.Value = configurationFileFormat.GuiColumns.PathColumn;
-            Ui.ColumnSort.SortColumnId.Value = configurationFileFormat.ColumnSort.SortColumnId;
-            Ui.ColumnSort.SortAscending.Value = configurationFileFormat.ColumnSort.SortAscending;
-            Ui.GameDirs.Value = configurationFileFormat.GameDirs;
-            Ui.ShownFileTypes.NSP.Value = configurationFileFormat.ShownFileTypes.NSP;
-            Ui.ShownFileTypes.PFS0.Value = configurationFileFormat.ShownFileTypes.PFS0;
-            Ui.ShownFileTypes.XCI.Value = configurationFileFormat.ShownFileTypes.XCI;
-            Ui.ShownFileTypes.NCA.Value = configurationFileFormat.ShownFileTypes.NCA;
-            Ui.ShownFileTypes.NRO.Value = configurationFileFormat.ShownFileTypes.NRO;
-            Ui.ShownFileTypes.NSO.Value = configurationFileFormat.ShownFileTypes.NSO;
-            Ui.EnableCustomTheme.Value = configurationFileFormat.EnableCustomTheme;
-            Ui.LanguageCode.Value = configurationFileFormat.LanguageCode;
-            Ui.CustomThemePath.Value = configurationFileFormat.CustomThemePath;
-            Ui.BaseStyle.Value = configurationFileFormat.BaseStyle;
-            Ui.GameListViewMode.Value = configurationFileFormat.GameListViewMode;
-            Ui.ShowNames.Value = configurationFileFormat.ShowNames;
-            Ui.IsAscendingOrder.Value = configurationFileFormat.IsAscendingOrder;
-            Ui.GridSize.Value = configurationFileFormat.GridSize;
-            Ui.ApplicationSort.Value = configurationFileFormat.ApplicationSort;
-            Ui.StartFullscreen.Value = configurationFileFormat.StartFullscreen;
-            Ui.ShowConsole.Value = configurationFileFormat.ShowConsole;
-            Ui.WindowStartup.WindowSizeWidth.Value = configurationFileFormat.WindowStartup.WindowSizeWidth;
-            Ui.WindowStartup.WindowSizeHeight.Value = configurationFileFormat.WindowStartup.WindowSizeHeight;
-            Ui.WindowStartup.WindowPositionX.Value = configurationFileFormat.WindowStartup.WindowPositionX;
-            Ui.WindowStartup.WindowPositionY.Value = configurationFileFormat.WindowStartup.WindowPositionY;
-            Ui.WindowStartup.WindowMaximized.Value = configurationFileFormat.WindowStartup.WindowMaximized;
+            UI.GuiColumns.FavColumn.Value = configurationFileFormat.GuiColumns.FavColumn;
+            UI.GuiColumns.IconColumn.Value = configurationFileFormat.GuiColumns.IconColumn;
+            UI.GuiColumns.AppColumn.Value = configurationFileFormat.GuiColumns.AppColumn;
+            UI.GuiColumns.DevColumn.Value = configurationFileFormat.GuiColumns.DevColumn;
+            UI.GuiColumns.VersionColumn.Value = configurationFileFormat.GuiColumns.VersionColumn;
+            UI.GuiColumns.TimePlayedColumn.Value = configurationFileFormat.GuiColumns.TimePlayedColumn;
+            UI.GuiColumns.LastPlayedColumn.Value = configurationFileFormat.GuiColumns.LastPlayedColumn;
+            UI.GuiColumns.FileExtColumn.Value = configurationFileFormat.GuiColumns.FileExtColumn;
+            UI.GuiColumns.FileSizeColumn.Value = configurationFileFormat.GuiColumns.FileSizeColumn;
+            UI.GuiColumns.PathColumn.Value = configurationFileFormat.GuiColumns.PathColumn;
+            UI.ColumnSort.SortColumnId.Value = configurationFileFormat.ColumnSort.SortColumnId;
+            UI.ColumnSort.SortAscending.Value = configurationFileFormat.ColumnSort.SortAscending;
+            UI.GameDirs.Value = configurationFileFormat.GameDirs;
+            UI.ShownFileTypes.NSP.Value = configurationFileFormat.ShownFileTypes.NSP;
+            UI.ShownFileTypes.PFS0.Value = configurationFileFormat.ShownFileTypes.PFS0;
+            UI.ShownFileTypes.XCI.Value = configurationFileFormat.ShownFileTypes.XCI;
+            UI.ShownFileTypes.NCA.Value = configurationFileFormat.ShownFileTypes.NCA;
+            UI.ShownFileTypes.NRO.Value = configurationFileFormat.ShownFileTypes.NRO;
+            UI.ShownFileTypes.NSO.Value = configurationFileFormat.ShownFileTypes.NSO;
+            UI.EnableCustomTheme.Value = configurationFileFormat.EnableCustomTheme;
+            UI.LanguageCode.Value = configurationFileFormat.LanguageCode;
+            UI.CustomThemePath.Value = configurationFileFormat.CustomThemePath;
+            UI.BaseStyle.Value = configurationFileFormat.BaseStyle;
+            UI.GameListViewMode.Value = configurationFileFormat.GameListViewMode;
+            UI.ShowNames.Value = configurationFileFormat.ShowNames;
+            UI.IsAscendingOrder.Value = configurationFileFormat.IsAscendingOrder;
+            UI.GridSize.Value = configurationFileFormat.GridSize;
+            UI.ApplicationSort.Value = configurationFileFormat.ApplicationSort;
+            UI.StartFullscreen.Value = configurationFileFormat.StartFullscreen;
+            UI.ShowConsole.Value = configurationFileFormat.ShowConsole;
+            UI.WindowStartup.WindowSizeWidth.Value = configurationFileFormat.WindowStartup.WindowSizeWidth;
+            UI.WindowStartup.WindowSizeHeight.Value = configurationFileFormat.WindowStartup.WindowSizeHeight;
+            UI.WindowStartup.WindowPositionX.Value = configurationFileFormat.WindowStartup.WindowPositionX;
+            UI.WindowStartup.WindowPositionY.Value = configurationFileFormat.WindowStartup.WindowPositionY;
+            UI.WindowStartup.WindowMaximized.Value = configurationFileFormat.WindowStartup.WindowMaximized;
             Hid.EnableKeyboard.Value = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value = configurationFileFormat.Hotkeys;

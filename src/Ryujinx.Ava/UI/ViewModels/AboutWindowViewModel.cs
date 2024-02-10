@@ -87,7 +87,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             Version = Program.Version;
 
-            if (ConfigurationState.Instance.Ui.BaseStyle.Value == "Light")
+            if (ConfigurationState.Instance.UI.BaseStyle.Value == "Light")
             {
                 GithubLogo = new Bitmap(AssetLoader.Open(new Uri("resm:Ryujinx.UI.Common.Resources.Logo_GitHub_Light.png?assembly=Ryujinx.UI.Common")));
                 DiscordLogo = new Bitmap(AssetLoader.Open(new Uri("resm:Ryujinx.UI.Common.Resources.Logo_Discord_Light.png?assembly=Ryujinx.UI.Common")));

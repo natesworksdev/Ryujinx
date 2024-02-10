@@ -38,9 +38,9 @@ namespace Ryujinx.Ava.Common.Locale
             // If the view is loaded with the UI Previewer detached, then override it with the saved one or default.
             if (Program.PreviewerDetached)
             {
-                if (!string.IsNullOrEmpty(ConfigurationState.Instance.Ui.LanguageCode.Value))
+                if (!string.IsNullOrEmpty(ConfigurationState.Instance.UI.LanguageCode.Value))
                 {
-                    localeLanguageCode = ConfigurationState.Instance.Ui.LanguageCode.Value;
+                    localeLanguageCode = ConfigurationState.Instance.UI.LanguageCode.Value;
                 }
                 else
                 {

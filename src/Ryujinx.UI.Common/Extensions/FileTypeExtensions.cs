@@ -1,5 +1,5 @@
 using System;
-using static Ryujinx.UI.Common.Configuration.ConfigurationState.UiSection;
+using static Ryujinx.UI.Common.Configuration.ConfigurationState.UISection;
 
 namespace Ryujinx.UI.Common
 {

@@ -311,7 +311,7 @@ namespace Ryujinx.UI.Windows
                 _directMouseAccess.Click();
             }
 
-            if (ConfigurationState.Instance.Ui.EnableCustomTheme)
+            if (ConfigurationState.Instance.UI.EnableCustomTheme)
             {
                 _custThemeToggle.Click();
             }
@@ -366,7 +366,7 @@ namespace Ryujinx.UI.Windows
             _multiLanSelect.SetActiveId(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
             _multiModeSelect.SetActiveId(ConfigurationState.Instance.Multiplayer.Mode.Value.ToString());
 
-            _custThemePath.Buffer.Text = ConfigurationState.Instance.Ui.CustomThemePath;
+            _custThemePath.Buffer.Text = ConfigurationState.Instance.UI.CustomThemePath;
             _resScaleText.Buffer.Text = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
             _scalingFilterLevel.Value = ConfigurationState.Instance.Graphics.ScalingFilterLevel.Value;
             _resScaleText.Visible = _resScaleCombo.ActiveId == "-1";
@@ -379,7 +379,7 @@ namespace Ryujinx.UI.Windows
             _gameDirsBoxStore = new ListStore(typeof(string));
             _gameDirsBox.Model = _gameDirsBoxStore;
 
-            foreach (string gameDir in ConfigurationState.Instance.Ui.GameDirs.Value)
+            foreach (string gameDir in ConfigurationState.Instance.UI.GameDirs.Value)
             {
                 _gameDirsBoxStore.AppendValues(gameDir);
             }
@@ -568,7 +568,7 @@ namespace Ryujinx.UI.Windows
                     _gameDirsBoxStore.IterNext(ref treeIter);
                 }
 
-                ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
+                ConfigurationState.Instance.UI.GameDirs.Value = gameDirs;
 
                 _directoryChanged = false;
             }
@@ -640,11 +640,11 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.System.IgnoreMissingServices.Value = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Hid.EnableMouse.Value = _directMouseAccess.Active;
-            ConfigurationState.Instance.Ui.EnableCustomTheme.Value = _custThemeToggle.Active;
+            ConfigurationState.Instance.UI.EnableCustomTheme.Value = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value = Enum.Parse<Common.Configuration.System.Region>(_systemRegionSelect.ActiveId);
             ConfigurationState.Instance.System.SystemTimeOffset.Value = _systemTimeOffset;
-            ConfigurationState.Instance.Ui.CustomThemePath.Value = _custThemePath.Buffer.Text;
+            ConfigurationState.Instance.UI.CustomThemePath.Value = _custThemePath.Buffer.Text;
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value = (int)_fsLogSpinAdjustment.Value;
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);

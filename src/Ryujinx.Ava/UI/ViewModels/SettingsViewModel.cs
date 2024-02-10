@@ -408,9 +408,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             HideCursor = (int)config.HideCursor.Value;
 
             GameDirectories.Clear();
-            GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            GameDirectories.AddRange(config.UI.GameDirs.Value);
 
-            BaseStyleIndex = config.Ui.BaseStyle == "Light" ? 0 : 1;
+            BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
 
             // Input
             EnableDockedMode = config.System.EnableDockedMode;
@@ -494,10 +494,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (_directoryChanged)
             {
                 List<string> gameDirs = new(GameDirectories);
-                config.Ui.GameDirs.Value = gameDirs;
+                config.UI.GameDirs.Value = gameDirs;
             }
 
-            config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            config.UI.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;

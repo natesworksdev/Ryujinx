@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 checkBoxes.Add(new CheckBox
                 {
                     Content = $".{fileName}",
-                    IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.Ui.ShownFileTypes),
+                    IsChecked = ((FileTypes)item).GetConfigValue(ConfigurationState.Instance.UI.ShownFileTypes),
                     Command = MiniCommand.Create(() => Window.ToggleFileType(fileName)),
                 });
             }
