@@ -1,6 +1,6 @@
 using Avalonia.Media;
 using Ryujinx.Ava.UI.Windows;
-using Ryujinx.HLE.Ui;
+using Ryujinx.HLE.UI;
 using System;
 
 namespace Ryujinx.Ava.UI.Applet

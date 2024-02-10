@@ -1,7 +1,7 @@
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using System;
 
-namespace Ryujinx.HLE.Ui
+namespace Ryujinx.HLE.UI
 {
     /// <summary>
     /// Information about the indirect layer that is being drawn to.

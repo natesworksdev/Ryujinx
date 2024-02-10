@@ -8,7 +8,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
-using Ryujinx.HLE.Ui;
+using Ryujinx.HLE.UI;
 using System;
 using System.Threading;
 

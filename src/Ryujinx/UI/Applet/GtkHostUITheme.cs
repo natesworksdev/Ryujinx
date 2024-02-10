@@ -1,5 +1,5 @@
 using Gtk;
-using Ryujinx.HLE.Ui;
+using Ryujinx.HLE.UI;
 using System.Diagnostics;
 
 namespace Ryujinx.UI.Applet

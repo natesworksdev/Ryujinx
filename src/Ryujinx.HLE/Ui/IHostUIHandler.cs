@@ -1,7 +1,7 @@
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 
-namespace Ryujinx.HLE.Ui
+namespace Ryujinx.HLE.UI
 {
     public interface IHostUIHandler
     {
