@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
         private PipelineState _newState;
         private bool _graphicsStateDirty;
         private bool _computeStateDirty;
+        private bool _bindingBarriersDirty;
         private PrimitiveTopology _topology;
 
         private ulong _currentPipelineHandle;
@@ -977,9 +978,7 @@ namespace Ryujinx.Graphics.Vulkan
             _program = internalProgram;
 
             _descriptorSetUpdater.SetProgram(Cbs, internalProgram, _currentPipelineHandle != 0);
-
-            // Stale barriers may have been activated by switching program. Emit any that are relevant.
-            _descriptorSetUpdater.InsertBindingBarriers(Cbs);
+            _bindingBarriersDirty = true;
 
             _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.StagesCount = (uint)stages.Length;
@@ -1522,6 +1521,14 @@ namespace Ryujinx.Graphics.Vulkan
                 CreatePipeline(PipelineBindPoint.Compute);
                 _computeStateDirty = false;
                 Pbp = PipelineBindPoint.Compute;
+
+                if (_bindingBarriersDirty)
+                {
+                    // Stale barriers may have been activated by switching program. Emit any that are relevant.
+                    _descriptorSetUpdater.InsertBindingBarriers(Cbs);
+
+                    _bindingBarriersDirty = false;
+                }
             }
 
             Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
@@ -1579,6 +1586,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _graphicsStateDirty = false;
                 Pbp = PipelineBindPoint.Graphics;
+
+                if (_bindingBarriersDirty)
+                {
+                    // Stale barriers may have been activated by switching program. Emit any that are relevant.
+                    _descriptorSetUpdater.InsertBindingBarriers(Cbs);
+
+                    _bindingBarriersDirty = false;
+                }
             }
 
             Gd.Barriers.Flush(Cbs.CommandBuffer, RenderPassActive, EndRenderPassDelegate);
