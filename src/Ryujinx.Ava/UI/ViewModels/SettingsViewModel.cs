@@ -352,6 +352,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 if (!_isSpirVAvailableCache.HasValue)
                 {
+                    GL.LoadBindings(null);
                     _isSpirVAvailableCache = GL.GetString(StringName.Extensions).Contains("GL_ARB_gl_spirv");
                     IsSpirVAvailable = _isSpirVAvailableCache.Value;
                 }
