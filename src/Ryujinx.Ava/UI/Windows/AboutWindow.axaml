@@ -53,7 +53,7 @@
                         Height="80"
                         Source="resm:Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.Ui.Common"
                         HorizontalAlignment="Center"
-                        IsHitTestVisible="True"/>
+                        IsHitTestVisible="True" />
                     <WrapPanel
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
@@ -65,14 +65,14 @@
                             TextAlignment="Start"
                             Width="110"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                            VerticalAlignment="Center" />
                         <TextBlock
                             FontSize="11"
                             Text="(REE-YOU-JINX)"
                             TextAlignment="Start"
                             Width="110"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                            VerticalAlignment="Center" />
                     </WrapPanel></StackPanel>
                 </Grid>
                 <TextBlock
