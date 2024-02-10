@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.UI
 {
     public class StatusUpdatedEventArgs : EventArgs
     {

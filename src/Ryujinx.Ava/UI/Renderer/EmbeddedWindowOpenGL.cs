@@ -3,7 +3,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 using SPB.Graphics;
 using SPB.Graphics.Exceptions;
 using SPB.Graphics.OpenGL;

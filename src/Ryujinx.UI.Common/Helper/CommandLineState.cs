@@ -1,7 +1,7 @@
 using Ryujinx.Common.Logging;
 using System.Collections.Generic;
 
-namespace Ryujinx.Ui.Common.Helper
+namespace Ryujinx.UI.Common.Helper
 {
     public static class CommandLineState
     {

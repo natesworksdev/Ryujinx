@@ -9,8 +9,8 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using Ryujinx.Input.GTK3;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +22,7 @@ using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInpu
 using GUI = Gtk.Builder.ObjectAttribute;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public class ControllerWindow : Window
     {
@@ -117,7 +117,7 @@ namespace Ryujinx.Ui.Windows
 
         private static readonly InputConfigJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+        public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.UI.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetRawOwnedObject("_controllerWin"))
         {
@@ -127,7 +127,7 @@ namespace Ryujinx.Ui.Windows
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
             _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
 
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
 
             builder.Autoconnect(this);
 
@@ -377,10 +377,10 @@ namespace Ryujinx.Ui.Windows
             {
                 _controllerImage.Pixbuf = _controllerType.ActiveId switch
                 {
-                    "ProController" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Controller_ProCon.svg", 400, 400),
-                    "JoyconLeft" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Controller_JoyConLeft.svg", 400, 500),
-                    "JoyconRight" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Controller_JoyConRight.svg", 400, 500),
-                    _ => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Controller_JoyConPair.svg", 400, 500),
+                    "ProController" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Controller_ProCon.svg", 400, 400),
+                    "JoyconLeft" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Controller_JoyConLeft.svg", 400, 500),
+                    "JoyconRight" => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Controller_JoyConRight.svg", 400, 500),
+                    _ => new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Controller_JoyConPair.svg", 400, 500),
                 };
             }
         }

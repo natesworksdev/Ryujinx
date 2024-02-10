@@ -1,6 +1,6 @@
 using Ryujinx.Common.Utilities;
 
-namespace Ryujinx.Ui.Common.Configuration
+namespace Ryujinx.UI.Common.Configuration
 {
     internal static class ConfigurationFileFormatSettings
     {

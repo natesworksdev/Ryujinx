@@ -1,10 +1,10 @@
 using Gtk;
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Ryujinx.Ui.Widgets
+namespace Ryujinx.UI.Widgets
 {
     internal class GtkDialog : MessageDialog
     {
@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Widgets
             : base(null, DialogFlags.Modal, messageType, buttonsType, null)
         {
             Title = title;
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
             Text = mainText;
             SecondaryText = secondaryText;
             WindowPosition = WindowPosition.Center;

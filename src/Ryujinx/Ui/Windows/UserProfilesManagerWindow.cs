@@ -2,8 +2,8 @@ using Gtk;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Widgets;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System;
@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public partial class UserProfilesManagerWindow : Window
     {
@@ -32,7 +32,7 @@ namespace Ryujinx.Ui.Windows
 
         public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage User Profiles")
         {
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
 
             InitializeComponent();
 

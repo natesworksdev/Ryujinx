@@ -1,14 +1,14 @@
 using Gtk;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
-using Ryujinx.Ui.App.Common;
+using Ryujinx.UI.App.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public class CheatWindow : Window
     {
@@ -22,7 +22,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] Button _saveButton;
 #pragma warning restore CS0649, IDE0044
 
-        public CheatWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string titlePath) : this(new Builder("Ryujinx.Ui.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName, titlePath) { }
+        public CheatWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string titlePath) : this(new Builder("Ryujinx.UI.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName, titlePath) { }
 
         private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, ulong titleId, string titleName, string titlePath) : base(builder.GetRawOwnedObject("_cheatWindow"))
         {

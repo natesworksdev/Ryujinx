@@ -1,7 +1,7 @@
 ﻿using Gtk;
 using System;
 
-namespace Ryujinx.Ui.Widgets
+namespace Ryujinx.UI.Widgets
 {
     public partial class GameTableContextMenu : Menu
     {

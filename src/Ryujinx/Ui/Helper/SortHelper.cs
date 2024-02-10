@@ -1,8 +1,8 @@
 using Gtk;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common.Helper;
 using System;
 
-namespace Ryujinx.Ui.Helper
+namespace Ryujinx.UI.Helper
 {
     static class SortHelper
     {

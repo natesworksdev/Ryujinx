@@ -15,8 +15,8 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Configuration.System;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,7 +29,7 @@ using System.Threading;
 using Path = System.IO.Path;
 using TimeSpan = System.TimeSpan;
 
-namespace Ryujinx.Ui.App.Common
+namespace Ryujinx.UI.App.Common
 {
     public class ApplicationLibrary
     {
@@ -53,11 +53,11 @@ namespace Ryujinx.Ui.App.Common
         {
             _virtualFileSystem = virtualFileSystem;
 
-            _nspIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NSP.png");
-            _xciIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_XCI.png");
-            _ncaIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NCA.png");
-            _nroIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NRO.png");
-            _nsoIcon = GetResourceBytes("Ryujinx.Ui.Common.Resources.Icon_NSO.png");
+            _nspIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NSP.png");
+            _xciIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_XCI.png");
+            _ncaIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NCA.png");
+            _nroIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NRO.png");
+            _nsoIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NSO.png");
         }
 
         private static byte[] GetResourceBytes(string resourceName)

@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using System;
 using System.Linq;
 
-namespace Ryujinx.Ui.Applet
+namespace Ryujinx.UI.Applet
 {
     public class SwkbdAppletDialog : MessageDialog
     {

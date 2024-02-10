@@ -1,8 +1,8 @@
 using Gtk;
-using Ryujinx.Ui.Common;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common;
+using Ryujinx.UI.Common.Helper;
 
-namespace Ryujinx.Ui.Widgets
+namespace Ryujinx.UI.Widgets
 {
     internal class UserErrorDialog : MessageDialog
     {

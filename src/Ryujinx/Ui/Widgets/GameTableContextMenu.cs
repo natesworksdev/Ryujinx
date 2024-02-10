@@ -16,10 +16,10 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
-using Ryujinx.Ui.Windows;
+using Ryujinx.UI.App.Common;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Windows;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 
-namespace Ryujinx.Ui.Widgets
+namespace Ryujinx.UI.Widgets
 {
     public partial class GameTableContextMenu : Menu
     {
@@ -189,7 +189,7 @@ namespace Ryujinx.Ui.Widgets
                         _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Cancel, null)
                         {
                             Title = "Ryujinx - NCA Section Extractor",
-                            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
+                            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png"),
                             SecondaryText = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(_titleFilePath)}...",
                             WindowPosition = WindowPosition.Center,
                         };
@@ -320,7 +320,7 @@ namespace Ryujinx.Ui.Widgets
                                     MessageDialog dialog = new(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
                                     {
                                         Title = "Ryujinx - NCA Section Extractor",
-                                        Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
+                                        Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png"),
                                         SecondaryText = "Extraction completed successfully.",
                                         WindowPosition = WindowPosition.Center,
                                     };

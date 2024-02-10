@@ -1,4 +1,4 @@
-namespace Ryujinx.Ui.Common
+namespace Ryujinx.UI.Common
 {
     /// <summary>
     /// Represent a common error that could be reported to the user by the emulator.

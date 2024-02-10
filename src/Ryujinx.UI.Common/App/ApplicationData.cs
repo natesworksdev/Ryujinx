@@ -9,11 +9,11 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.IO;
 
-namespace Ryujinx.Ui.App.Common
+namespace Ryujinx.UI.App.Common
 {
     public class ApplicationData
     {

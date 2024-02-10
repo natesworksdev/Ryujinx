@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
 
-namespace Ryujinx.Ui.Common.Helper
+namespace Ryujinx.UI.Common.Helper
 {
     public static class ShortcutHelper
     {
@@ -34,7 +34,7 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutLinux(string applicationFilePath, byte[] iconData, string iconPath, string desktopPath, string cleanedAppName)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.sh");
-            var desktopFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.desktop");
+            var desktopFile = EmbeddedResources.ReadAllText("Ryujinx.UI.Common/shortcut-template.desktop");
             iconPath += ".png";
 
             var image = Image.Load<Rgba32>(iconData);
@@ -48,8 +48,8 @@ namespace Ryujinx.Ui.Common.Helper
         private static void CreateShortcutMacos(string appFilePath, byte[] iconData, string desktopPath, string cleanedAppName)
         {
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
-            var plistFile = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-template.plist");
-            var shortcutScript = EmbeddedResources.ReadAllText("Ryujinx.Ui.Common/shortcut-launch-script.sh");
+            var plistFile = EmbeddedResources.ReadAllText("Ryujinx.UI.Common/shortcut-template.plist");
+            var shortcutScript = EmbeddedResources.ReadAllText("Ryujinx.UI.Common/shortcut-launch-script.sh");
             // Macos .App folder
             string contentFolderPath = Path.Combine("/Applications", cleanedAppName + ".app", "Contents");
             string scriptFolderPath = Path.Combine(contentFolderPath, "MacOS");

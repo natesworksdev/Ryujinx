@@ -9,10 +9,10 @@ using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Configuration.System;
-using Ryujinx.Ui.Helper;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Configuration.System;
+using Ryujinx.UI.Helper;
+using Ryujinx.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public class SettingsWindow : Window
     {
@@ -120,11 +120,11 @@ namespace Ryujinx.Ui.Windows
 
 #pragma warning restore CS0649, IDE0044
 
-        public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this(parent, new Builder("Ryujinx.Ui.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
+        public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this(parent, new Builder("Ryujinx.UI.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
 
         private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, ContentManager contentManager) : base(builder.GetRawOwnedObject("_settingsWin"))
         {
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
 
             _parent = parent;
 

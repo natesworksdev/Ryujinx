@@ -9,9 +9,9 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Widgets;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -26,7 +26,7 @@ using Key = Ryujinx.Input.Key;
 using ScalingFilter = Ryujinx.Graphics.GAL.ScalingFilter;
 using Switch = Ryujinx.HLE.Switch;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.UI
 {
     public abstract class RendererWidgetBase : DrawingArea
     {

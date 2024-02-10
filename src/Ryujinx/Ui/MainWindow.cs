@@ -26,14 +26,14 @@ using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
-using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Applet;
-using Ryujinx.Ui.Common;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
-using Ryujinx.Ui.Helper;
-using Ryujinx.Ui.Widgets;
-using Ryujinx.Ui.Windows;
+using Ryujinx.UI.App.Common;
+using Ryujinx.UI.Applet;
+using Ryujinx.UI.Common;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Helper;
+using Ryujinx.UI.Widgets;
+using Ryujinx.UI.Windows;
 using Silk.NET.Vulkan;
 using SPB.Graphics.Vulkan;
 using System;
@@ -45,7 +45,7 @@ using System.Threading.Tasks;
 using GUI = Gtk.Builder.ObjectAttribute;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.UI
 {
     public class MainWindow : Window
     {
@@ -143,7 +143,7 @@ namespace Ryujinx.Ui
 
 #pragma warning restore CS0649, IDE0044, CS0169, IDE0051
 
-        public MainWindow() : this(new Builder("Ryujinx.Ui.MainWindow.glade")) { }
+        public MainWindow() : this(new Builder("Ryujinx.UI.MainWindow.glade")) { }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("_mainWin"))
         {
@@ -154,7 +154,7 @@ namespace Ryujinx.Ui
 
             SetWindowSizePosition();
 
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.

@@ -1,10 +1,10 @@
 using Gtk;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 using System;
 using System.Reflection;
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.Ui.Widgets
+namespace Ryujinx.UI.Widgets
 {
     public class ProfileDialog : Dialog
     {
@@ -15,12 +15,12 @@ namespace Ryujinx.Ui.Widgets
         [GUI] Label _errorMessage;
 #pragma warning restore CS0649, IDE0044
 
-        public ProfileDialog() : this(new Builder("Ryujinx.Ui.Widgets.ProfileDialog.glade")) { }
+        public ProfileDialog() : this(new Builder("Ryujinx.UI.Widgets.ProfileDialog.glade")) { }
 
         private ProfileDialog(Builder builder) : base(builder.GetRawOwnedObject("_profileDialog"))
         {
             builder.Autoconnect(this);
-            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
         }
 
         private void OkToggle_Activated(object sender, EventArgs args)

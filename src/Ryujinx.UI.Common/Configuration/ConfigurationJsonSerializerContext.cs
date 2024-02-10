@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Ryujinx.Ui.Common.Configuration
+namespace Ryujinx.UI.Common.Configuration
 {
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ConfigurationFileFormat))]

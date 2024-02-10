@@ -3,7 +3,7 @@ using Ryujinx.HLE.FileSystem;
 using System;
 using System.IO;
 
-namespace Ryujinx.Ui.Common.Helper
+namespace Ryujinx.UI.Common.Helper
 {
     /// <summary>
     /// Ensure installation validity

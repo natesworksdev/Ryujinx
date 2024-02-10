@@ -8,8 +8,8 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.Diagnostics;
 

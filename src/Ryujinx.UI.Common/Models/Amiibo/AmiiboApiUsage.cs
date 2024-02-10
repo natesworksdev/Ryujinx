@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Ryujinx.Ui.Common.Models.Amiibo
+namespace Ryujinx.UI.Common.Models.Amiibo
 {
     public class AmiiboApiUsage
     {

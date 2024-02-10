@@ -6,14 +6,14 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
-using Ryujinx.Ui.Common.Configuration.System;
-using Ryujinx.Ui.Common.Configuration.Ui;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common.Configuration.System;
+using Ryujinx.UI.Common.Configuration.Ui;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 
-namespace Ryujinx.Ui.Common.Configuration
+namespace Ryujinx.UI.Common.Configuration
 {
     public class ConfigurationState
     {

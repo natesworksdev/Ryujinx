@@ -1,8 +1,8 @@
 using DiscordRPC;
 using Ryujinx.Common;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 
-namespace Ryujinx.Ui.Common
+namespace Ryujinx.UI.Common
 {
     public static class DiscordIntegrationModule
     {

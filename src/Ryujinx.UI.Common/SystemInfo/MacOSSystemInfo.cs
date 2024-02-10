@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 
-namespace Ryujinx.Ui.Common.SystemInfo
+namespace Ryujinx.UI.Common.SystemInfo
 {
     [SupportedOSPlatform("macos")]
     partial class MacOSSystemInfo : SystemInfo

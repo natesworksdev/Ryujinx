@@ -2,7 +2,7 @@ using Gtk;
 using Ryujinx.HLE.Ui;
 using System.Diagnostics;
 
-namespace Ryujinx.Ui.Applet
+namespace Ryujinx.UI.Applet
 {
     internal class GtkHostUiTheme : IHostUiTheme
     {

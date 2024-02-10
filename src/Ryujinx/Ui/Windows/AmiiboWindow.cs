@@ -4,9 +4,9 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Models.Amiibo;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Models.Amiibo;
+using Ryujinx.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +18,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Window = Gtk.Window;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public partial class AmiiboWindow : Window
     {
@@ -52,7 +52,7 @@ namespace Ryujinx.Ui.Windows
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
         {
-            Icon = new Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
 
             InitializeComponent();
 
@@ -66,7 +66,7 @@ namespace Ryujinx.Ui.Windows
             _amiiboJsonPath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
             _amiiboList = new List<AmiiboApi>();
 
-            _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.Ui.Common/Resources/Logo_Amiibo.png");
+            _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.UI.Common/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Pixbuf(_amiiboLogoBytes);
 
             _scanButton.Sensitive = false;

@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
 
-namespace Ryujinx.Ui.Common.SystemInfo
+namespace Ryujinx.UI.Common.SystemInfo
 {
     [SupportedOSPlatform("linux")]
     class LinuxSystemInfo : SystemInfo

@@ -1,10 +1,10 @@
 using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 using System.IO;
 
-namespace Ryujinx.Ui.Helper
+namespace Ryujinx.UI.Helper
 {
     static class ThemeHelper
     {

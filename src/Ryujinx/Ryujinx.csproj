@@ -45,7 +45,7 @@
     <ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Vulkan\Ryujinx.Graphics.Vulkan.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
-    <ProjectReference Include="..\Ryujinx.Ui.Common\Ryujinx.Ui.Common.csproj" />
+    <ProjectReference Include="..\Ryujinx.UI.Common\Ryujinx.UI.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

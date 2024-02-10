@@ -1,7 +1,7 @@
 using Gdk;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Input.HLE;
-using Ryujinx.Ui.Helper;
+using Ryujinx.UI.Helper;
 using SPB.Graphics.Vulkan;
 using SPB.Platform.Metal;
 using SPB.Platform.Win32;
@@ -10,7 +10,7 @@ using SPB.Windowing;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.UI
 {
     public partial class VulkanRenderer : RendererWidgetBase
     {

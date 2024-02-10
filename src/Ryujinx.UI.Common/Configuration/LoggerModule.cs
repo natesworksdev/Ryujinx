@@ -5,7 +5,7 @@ using Ryujinx.Common.Logging.Targets;
 using System;
 using System.IO;
 
-namespace Ryujinx.Ui.Common.Configuration
+namespace Ryujinx.UI.Common.Configuration
 {
     public static class LoggerModule
     {
