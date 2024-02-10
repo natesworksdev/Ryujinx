@@ -465,7 +465,7 @@ namespace Ryujinx.Headless.SDL2
             Exit();
         }
 
-        public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
+        public bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText)
         {
             // SDL2 doesn't support input dialogs
             userText = "Ryujinx";
@@ -480,7 +480,7 @@ namespace Ryujinx.Headless.SDL2
             return true;
         }
 
-        public bool DisplayMessageDialog(ControllerAppletUiArgs args)
+        public bool DisplayMessageDialog(ControllerAppletUIArgs args)
         {
             string playerCount = args.PlayerCountMin == args.PlayerCountMax ? $"exactly {args.PlayerCountMin}" : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
 

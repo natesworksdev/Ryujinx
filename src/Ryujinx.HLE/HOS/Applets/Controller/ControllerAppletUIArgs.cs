@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    public struct ControllerAppletUiArgs
+    public struct ControllerAppletUIArgs
     {
         public int PlayerCountMin;
         public int PlayerCountMax;

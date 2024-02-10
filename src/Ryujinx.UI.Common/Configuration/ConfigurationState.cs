@@ -848,7 +848,7 @@ namespace Ryujinx.UI.Common.Configuration
                 ToggleVsync = Key.F1,
                 ToggleMute = Key.F2,
                 Screenshot = Key.F8,
-                ShowUi = Key.F4,
+                ShowUI = Key.F4,
                 Pause = Key.F5,
                 ResScaleUp = Key.Unbound,
                 ResScaleDown = Key.Unbound,
@@ -1185,7 +1185,7 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     ToggleVsync = Key.F1,
                     Screenshot = Key.F8,
-                    ShowUi = Key.F4,
+                    ShowUI = Key.F4,
                 };
 
                 configurationFileUpdated = true;
@@ -1228,7 +1228,7 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
-                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = Key.F5,
                 };
 
@@ -1243,7 +1243,7 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
-                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = Key.F2,
                 };
@@ -1317,7 +1317,7 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
-                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
                     ResScaleUp = Key.Unbound,
@@ -1344,7 +1344,7 @@ namespace Ryujinx.UI.Common.Configuration
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
-                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
                     ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,

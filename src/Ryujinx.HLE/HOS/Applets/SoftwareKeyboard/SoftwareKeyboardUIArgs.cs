@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    public struct SoftwareKeyboardUiArgs
+    public struct SoftwareKeyboardUIArgs
     {
         public KeyboardMode KeyboardMode;
         public string HeaderText;

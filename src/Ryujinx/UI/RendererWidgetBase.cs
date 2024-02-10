@@ -659,8 +659,8 @@ namespace Ryujinx.UI
                     Renderer.Screenshot();
                 }
 
-                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi) &&
-                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi))
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ShowUI) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ShowUI))
                 {
                     (Toplevel as MainWindow).ToggleExtraWidgets(true);
                 }
@@ -739,7 +739,7 @@ namespace Ryujinx.UI
             None = 0,
             ToggleVSync = 1 << 0,
             Screenshot = 1 << 1,
-            ShowUi = 1 << 2,
+            ShowUI = 1 << 2,
             Pause = 1 << 3,
             ToggleMute = 1 << 4,
             ResScaleUp = 1 << 5,
@@ -762,9 +762,9 @@ namespace Ryujinx.UI
                 state |= KeyboardHotkeyState.Screenshot;
             }
 
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI))
             {
-                state |= KeyboardHotkeyState.ShowUi;
+                state |= KeyboardHotkeyState.ShowUI;
             }
 
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))

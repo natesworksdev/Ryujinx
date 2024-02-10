@@ -21,7 +21,7 @@ namespace Ryujinx.UI.Applet
             HostUITheme = new GtkHostUITheme(parent);
         }
 
-        public bool DisplayMessageDialog(ControllerAppletUiArgs args)
+        public bool DisplayMessageDialog(ControllerAppletUIArgs args)
         {
             string playerCount = args.PlayerCountMin == args.PlayerCountMax ? $"exactly {args.PlayerCountMin}" : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
 
@@ -81,7 +81,7 @@ namespace Ryujinx.UI.Applet
             return okPressed;
         }
 
-        public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
+        public bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText)
         {
             ManualResetEvent dialogCloseEvent = new(false);
 

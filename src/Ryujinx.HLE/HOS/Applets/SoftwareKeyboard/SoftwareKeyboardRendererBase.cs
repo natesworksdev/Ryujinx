@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             });
         }
 
-        public void DrawMutableElements(SoftwareKeyboardUiState state)
+        public void DrawMutableElements(SoftwareKeyboardUIState state)
         {
             if (_surface == null)
             {
@@ -322,7 +322,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
-        private void DrawTextBox(IImageProcessingContext context, SoftwareKeyboardUiState state)
+        private void DrawTextBox(IImageProcessingContext context, SoftwareKeyboardUIState state)
         {
             var inputTextRectangle = MeasureString(state.InputText, _inputTextFont);
 

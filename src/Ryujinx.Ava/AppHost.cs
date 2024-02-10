@@ -1070,7 +1070,7 @@ namespace Ryujinx.Ava
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;
                             break;
-                        case KeyboardHotkeyState.ShowUi:
+                        case KeyboardHotkeyState.ShowUI:
                             _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
                         case KeyboardHotkeyState.Pause:
@@ -1160,9 +1160,9 @@ namespace Ryujinx.Ava
             {
                 state = KeyboardHotkeyState.Screenshot;
             }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI))
             {
-                state = KeyboardHotkeyState.ShowUi;
+                state = KeyboardHotkeyState.ShowUI;
             }
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
             {

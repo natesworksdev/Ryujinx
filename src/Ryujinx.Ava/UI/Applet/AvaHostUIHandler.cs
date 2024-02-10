@@ -27,7 +27,7 @@ namespace Ryujinx.Ava.UI.Applet
             HostUITheme = new AvaloniaHostUITheme(parent);
         }
 
-        public bool DisplayMessageDialog(ControllerAppletUiArgs args)
+        public bool DisplayMessageDialog(ControllerAppletUIArgs args)
         {
             ManualResetEvent dialogCloseEvent = new(false);
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Ava.UI.Applet
             return okPressed;
         }
 
-        public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
+        public bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText)
         {
             ManualResetEvent dialogCloseEvent = new(false);
 

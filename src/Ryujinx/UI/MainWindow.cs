@@ -99,7 +99,7 @@ namespace Ryujinx.UI
         [GUI] MenuItem _simulateWakeUpMessage;
         [GUI] MenuItem _scanAmiibo;
         [GUI] MenuItem _takeScreenshot;
-        [GUI] MenuItem _hideUi;
+        [GUI] MenuItem _hideUI;
         [GUI] MenuItem _fullScreen;
         [GUI] CheckMenuItem _startFullScreen;
         [GUI] CheckMenuItem _showConsole;
@@ -316,7 +316,7 @@ namespace Ryujinx.UI
             _gameTable.SearchColumn = 2;
             _gameTable.SearchEqualFunc = (model, col, key, iter) => !((string)model.GetValue(iter, col)).Contains(key, StringComparison.InvariantCultureIgnoreCase);
 
-            _hideUi.Label = _hideUi.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
+            _hideUI.Label = _hideUI.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI.ToString());
 
             UpdateColumns();
             UpdateGameTable();
@@ -679,7 +679,7 @@ namespace Ryujinx.UI
             return new SurfaceKHR((ulong)((VulkanRenderer)RendererWidget).CreateWindowSurface(instance.Handle));
         }
 
-        private void SetupProgressUiHandlers()
+        private void SetupProgressUIHandlers()
         {
             if (_emulationContext.Processes.ActiveApplication.DiskCacheLoadState != null)
             {
@@ -924,7 +924,7 @@ namespace Ryujinx.UI
                     return;
                 }
 
-                SetupProgressUiHandlers();
+                SetupProgressUIHandlers();
 
                 _currentEmulatedGamePath = path;
 
@@ -1702,7 +1702,7 @@ namespace Ryujinx.UI
             settingsWindow.Show();
         }
 
-        private void HideUi_Pressed(object sender, EventArgs args)
+        private void HideUI_Pressed(object sender, EventArgs args)
         {
             ToggleExtraWidgets(false);
         }

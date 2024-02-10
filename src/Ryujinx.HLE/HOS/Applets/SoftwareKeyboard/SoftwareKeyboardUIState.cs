@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// <summary>
     /// TODO
     /// </summary>
-    internal class SoftwareKeyboardUiState
+    internal class SoftwareKeyboardUIState
     {
         public string InputText = "";
         public int CursorBegin = 0;

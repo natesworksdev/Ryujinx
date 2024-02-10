@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Applets
             PlayerIndex primaryIndex;
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
-                ControllerAppletUiArgs uiArgs = new()
+                ControllerAppletUIArgs uiArgs = new()
                 {
                     PlayerCountMin = playerMin,
                     PlayerCountMax = playerMax,

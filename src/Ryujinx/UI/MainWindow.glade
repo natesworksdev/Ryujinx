@@ -437,12 +437,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="_hideUi">
+                      <object class="GtkMenuItem" id="_hideUI">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Hide UI (SHOWUIKEY to show)</property>
                         <property name="use-underline">True</property>
-                        <signal name="activate" handler="HideUi_Pressed" swapped="no"/>
+                        <signal name="activate" handler="HideUI_Pressed" swapped="no"/>
                       </object>
                     </child>
                     <child>

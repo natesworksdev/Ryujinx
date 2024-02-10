@@ -1245,7 +1245,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI, out var showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey);
             }
