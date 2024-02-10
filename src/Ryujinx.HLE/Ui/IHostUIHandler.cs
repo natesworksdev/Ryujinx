@@ -46,6 +46,6 @@ namespace Ryujinx.HLE.Ui
         /// <summary>
         /// Gets fonts and colors used by the host.
         /// </summary>
-        IHostUITheme HostUiTheme { get; }
+        IHostUITheme HostUITheme { get; }
     }
 }

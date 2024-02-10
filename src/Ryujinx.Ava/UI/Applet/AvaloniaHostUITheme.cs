@@ -5,9 +5,9 @@ using System;
 
 namespace Ryujinx.Ava.UI.Applet
 {
-    class AvaloniaHostUiTheme : IHostUITheme
+    class AvaloniaHostUITheme : IHostUITheme
     {
-        public AvaloniaHostUiTheme(MainWindow parent)
+        public AvaloniaHostUITheme(MainWindow parent)
         {
             FontFamily = OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000) ? "Segoe UI Variable" : parent.FontFamily.Name;
             DefaultBackgroundColor = BrushToThemeColor(parent.Background);

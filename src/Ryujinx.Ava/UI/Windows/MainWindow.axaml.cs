@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.UI.Windows
         private static bool _deferLoad;
         private static string _launchPath;
         private static bool _startFullscreen;
-        internal readonly AvaHostUiHandler UiHandler;
+        internal readonly AvaHostUIHandler UiHandler;
 
         public VirtualFileSystem VirtualFileSystem { get; private set; }
         public ContentManager ContentManager { get; private set; }
@@ -69,7 +69,7 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
             Load();
 
-            UiHandler = new AvaHostUiHandler(this);
+            UiHandler = new AvaHostUIHandler(this);
 
             ViewModel.Title = $"Ryujinx {Program.Version}";
 

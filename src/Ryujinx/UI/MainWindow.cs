@@ -61,7 +61,7 @@ namespace Ryujinx.UI
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
         private readonly ApplicationLibrary _applicationLibrary;
-        private readonly GtkHostUiHandler _uiHandler;
+        private readonly GtkHostUIHandler _uiHandler;
         private readonly AutoResetEvent _deviceExitStatus;
         private readonly ListStore _tableStore;
 
@@ -182,7 +182,7 @@ namespace Ryujinx.UI
 
             // Instantiate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
-            _uiHandler = new GtkHostUiHandler(this);
+            _uiHandler = new GtkHostUIHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
 
             WindowStateEvent += WindowStateEvent_Changed;

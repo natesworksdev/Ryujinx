@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.UI.Applet
 {
-    internal class GtkHostUiTheme : IHostUITheme
+    internal class GtkHostUITheme : IHostUITheme
     {
         private const int RenderSurfaceWidth = 32;
         private const int RenderSurfaceHeight = 32;
@@ -17,7 +17,7 @@ namespace Ryujinx.UI.Applet
         public ThemeColor SelectionBackgroundColor { get; }
         public ThemeColor SelectionForegroundColor { get; }
 
-        public GtkHostUiTheme(Window parent)
+        public GtkHostUITheme(Window parent)
         {
             Entry entry = new();
             entry.SetStateFlags(StateFlags.Selected, true);

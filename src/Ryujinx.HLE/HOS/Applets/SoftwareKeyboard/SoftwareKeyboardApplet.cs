@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         _npads.NpadButtonDownEvent += HandleNpadButtonDownEvent;
                         _npads.NpadButtonUpEvent += HandleNpadButtonUpEvent;
 
-                        _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UIHandler.HostUiTheme);
+                        _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UIHandler.HostUITheme);
                     }
 
                     return ResultCode.Success;

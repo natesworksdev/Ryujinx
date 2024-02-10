@@ -14,17 +14,17 @@ using System.Threading;
 
 namespace Ryujinx.Ava.UI.Applet
 {
-    internal class AvaHostUiHandler : IHostUIHandler
+    internal class AvaHostUIHandler : IHostUIHandler
     {
         private readonly MainWindow _parent;
 
-        public IHostUITheme HostUiTheme { get; }
+        public IHostUITheme HostUITheme { get; }
 
-        public AvaHostUiHandler(MainWindow parent)
+        public AvaHostUIHandler(MainWindow parent)
         {
             _parent = parent;
 
-            HostUiTheme = new AvaloniaHostUiTheme(parent);
+            HostUITheme = new AvaloniaHostUITheme(parent);
         }
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)

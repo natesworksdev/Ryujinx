@@ -53,7 +53,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected IntPtr WindowHandle { get; set; }
 
-        public IHostUITheme HostUiTheme { get; }
+        public IHostUITheme HostUITheme { get; }
         public int Width { get; private set; }
         public int Height { get; private set; }
         public int DisplayId { get; set; }
@@ -106,7 +106,7 @@ namespace Ryujinx.Headless.SDL2
             _gpuDoneEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
-            HostUiTheme = new HeadlessHostUiTheme();
+            HostUITheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();
         }
