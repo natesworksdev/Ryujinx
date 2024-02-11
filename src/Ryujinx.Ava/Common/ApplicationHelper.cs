@@ -15,6 +15,7 @@ using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -23,6 +24,8 @@ using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ApplicationId = LibHac.Ncm.ApplicationId;
@@ -111,6 +114,11 @@ namespace Ryujinx.Ava.Common
 
         public static void OpenSaveDir(ulong saveDataId)
         {
+            OpenHelper.OpenFolder(FindValidSaveDir(saveDataId));
+        }
+
+        public static string FindValidSaveDir(ulong saveDataId)
+        {
             string saveRootPath = Path.Combine(VirtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}");
 
             if (!Directory.Exists(saveRootPath))
@@ -119,24 +127,26 @@ namespace Ryujinx.Ava.Common
                 Directory.CreateDirectory(saveRootPath);
             }
 
-            string committedPath = Path.Combine(saveRootPath, "0");
+            // commited expected to be at /0, otherwise working is /1
+            string attemptPath = Path.Combine(saveRootPath, "0");
             string workingPath = Path.Combine(saveRootPath, "1");
 
             // If the committed directory exists, that path will be loaded the next time the savedata is mounted
-            if (Directory.Exists(committedPath))
+            if (Directory.Exists(attemptPath))
             {
-                OpenHelper.OpenFolder(committedPath);
+                return attemptPath;
             }
             else
             {
                 // If the working directory exists and the committed directory doesn't,
                 // the working directory will be loaded the next time the savedata is mounted
-                if (!Directory.Exists(workingPath))
+                attemptPath = Path.Combine(saveRootPath, "1");
+                if (!Directory.Exists(attemptPath))
                 {
-                    Directory.CreateDirectory(workingPath);
+                    Directory.CreateDirectory(attemptPath);
                 }
 
-                OpenHelper.OpenFolder(workingPath);
+                return attemptPath;
             }
         }
 

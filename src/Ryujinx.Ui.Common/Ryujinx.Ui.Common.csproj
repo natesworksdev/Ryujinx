@@ -21,6 +21,7 @@
     <None Remove="Resources\Logo_Patreon.png" />
     <None Remove="Resources\Logo_Ryujinx.png" />
     <None Remove="Resources\Logo_Twitter.png" />
+    <None Remove="SaveManager\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +64,10 @@
     <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
     <ProjectReference Include="..\Ryujinx.HLE\Ryujinx.HLE.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Vulkan\Ryujinx.Graphics.Vulkan.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SaveManager\" />
   </ItemGroup>
 
 </Project>
