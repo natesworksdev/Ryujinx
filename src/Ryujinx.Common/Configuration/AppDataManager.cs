@@ -120,6 +120,7 @@ namespace Ryujinx.Common.Configuration
             }
             Logger.Notice.Print(LogClass.Application, "Logging directory not found; attempting to create new logging directory.");
             LogsDirPath = SetUpLogsDir();
+
             return LogsDirPath;
         }
 
@@ -137,6 +138,7 @@ namespace Ryujinx.Common.Configuration
                 catch
                 {
                     Logger.Warning?.Print(LogClass.Application, $"Logging directory could not be created '{logDir}'");
+
                     return null;
                 }
             }
@@ -144,7 +146,7 @@ namespace Ryujinx.Common.Configuration
             {
                 if (OperatingSystem.IsMacOS())
                 {
-                    // Should evaluate to ~/Library/Logs/Ryujinx/
+                    // NOTE: Should evaluate to "~/Library/Logs/Ryujinx/".
                     logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Logs", DefaultBaseDir);
                     try
                     {
@@ -158,7 +160,7 @@ namespace Ryujinx.Common.Configuration
 
                     if (string.IsNullOrEmpty(logDir))
                     {
-                        // Should evaluate to ~/Library/Application Support/Ryujinx/Logs
+                        // NOTE: Should evaluate to "~/Library/Application Support/Ryujinx/Logs".
                         logDir = Path.Combine(BaseDirPath, "Logs");
 
                         try
@@ -168,13 +170,14 @@ namespace Ryujinx.Common.Configuration
                         catch
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Logging directory could not be created '{logDir}'");
+
                             return null;
                         }
                     }
                 }
                 else if (OperatingSystem.IsWindows())
                 {
-                    // Should evaluate to a 'Logs' directory in whatever directory Ryujinx was launched from.
+                    // NOTE: Should evaluate to a "Logs" directory in whatever directory Ryujinx was launched from.
                     logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
                     try
                     {
@@ -188,7 +191,7 @@ namespace Ryujinx.Common.Configuration
 
                     if (string.IsNullOrEmpty(logDir))
                     {
-                        // Should evaluate to C:\Users\user\AppData\Roaming\Ryujinx\Logs
+                        // NOTE: Should evaluate to "C:\Users\user\AppData\Roaming\Ryujinx\Logs".
                         logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir, "Logs");
 
                         try
@@ -198,13 +201,14 @@ namespace Ryujinx.Common.Configuration
                         catch
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Logging directory could not be created '{logDir}'");
+
                             return null;
                         }
                     }
                 }
                 else if (OperatingSystem.IsLinux())
                 {
-                    // Should evaluate to ~/.config/Ryujinx/Logs
+                    // NOTE: Should evaluate to "~/.config/Ryujinx/Logs".
                     logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir, "Logs");
 
                     try
@@ -214,6 +218,7 @@ namespace Ryujinx.Common.Configuration
                     catch
                     {
                         Logger.Warning?.Print(LogClass.Application, $"Logging directory could not be created '{logDir}'");
+
                         return null;
                     }
                 }
