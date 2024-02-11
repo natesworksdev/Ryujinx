@@ -42,7 +42,17 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
                 workBufferSize,
                 (uint)processHandle));
 
-            renderer = result.IsSuccess ? new AudioRenderer(renderSystem, workBufferHandle, processHandle) : null;
+            if (result.IsSuccess)
+            {
+                renderer = new AudioRenderer(renderSystem, workBufferHandle, processHandle);
+            }
+            else
+            {
+                renderer = null;
+
+                HorizonStatic.Syscall.CloseHandle(workBufferHandle);
+                HorizonStatic.Syscall.CloseHandle(processHandle);
+            }
 
             return result;
         }
@@ -80,15 +90,35 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         public Result OpenAudioRendererForManualExecution(
             out IAudioRenderer renderer,
             AudioRendererParameterInternal parameter,
-            ulong arg2,
-            int arg3,
-            ulong arg4,
+            ulong workBufferAddress,
+            [CopyHandle] int processHandle,
+            ulong workBufferSize,
             AppletResourceUserId appletResourceId,
             [ClientProcessId] ulong pid)
         {
-            renderer = default;
+            var clientMemoryManager = HorizonStatic.Syscall.GetMemoryManagerByProcessHandle(processHandle);
 
-            return Result.Success;
+            Result result = new Result((int)_impl.OpenAudioRenderer(
+                out var renderSystem,
+                clientMemoryManager,
+                ref parameter.Configuration,
+                appletResourceId.Id,
+                workBufferAddress,
+                workBufferSize,
+                (uint)processHandle));
+
+            if (result.IsSuccess)
+            {
+                renderer = new AudioRenderer(renderSystem, 0, processHandle);
+            }
+            else
+            {
+                renderer = null;
+
+                HorizonStatic.Syscall.CloseHandle(processHandle);
+            }
+
+            return result;
         }
 
         [CmifCommand(4)] // 4.0.0+

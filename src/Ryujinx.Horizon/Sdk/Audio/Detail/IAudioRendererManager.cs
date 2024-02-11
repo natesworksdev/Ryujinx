@@ -19,9 +19,9 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         Result OpenAudioRendererForManualExecution(
             out IAudioRenderer renderer,
             AudioRendererParameterInternal parameter,
-            ulong arg2,
-            int arg3,
-            ulong arg4,
+            ulong workBufferAddress,
+            int processHandle,
+            ulong workBufferSize,
             AppletResourceUserId appletUserId,
             ulong pid);
         Result GetAudioDeviceServiceWithRevisionInfo(out IAudioDevice audioDevice, AppletResourceUserId appletUserId, uint revision);
