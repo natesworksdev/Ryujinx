@@ -349,21 +349,6 @@ namespace Ryujinx.Audio.Renderer.Server
             return result;
         }
 
-        public float GetVolume()
-        {
-            if (Processor != null)
-            {
-                return Processor.GetVolume();
-            }
-
-            return 0f;
-        }
-
-        public void SetVolume(float volume)
-        {
-            Processor?.SetVolume(volume);
-        }
-
         public void Dispose()
         {
             GC.SuppressFinalize(this);

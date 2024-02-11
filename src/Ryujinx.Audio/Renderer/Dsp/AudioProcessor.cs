@@ -229,33 +229,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
             _mailbox.SendResponse(MailboxMessage.Stop);
         }
 
-        public float GetVolume()
-        {
-            if (OutputDevices != null)
-            {
-                foreach (IHardwareDevice outputDevice in OutputDevices)
-                {
-                    if (outputDevice != null)
-                    {
-                        return outputDevice.GetVolume();
-                    }
-                }
-            }
-
-            return 0f;
-        }
-
-        public void SetVolume(float volume)
-        {
-            if (OutputDevices != null)
-            {
-                foreach (IHardwareDevice outputDevice in OutputDevices)
-                {
-                    outputDevice?.SetVolume(volume);
-                }
-            }
-        }
-
         public void Dispose()
         {
             GC.SuppressFinalize(this);

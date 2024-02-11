@@ -24,7 +24,6 @@ namespace Ryujinx.Horizon.Audio
             AudioOutputManager = new AudioOutputManager();
             AudioInputManager = new AudioInputManager();
             AudioRendererManager = new AudioRendererManager(tickSource);
-            AudioRendererManager.SetVolume(1f);
             AudioDeviceSessionRegistry = new VirtualDeviceSessionRegistry(audioDeviceDriver);
 
             IWritableEvent[] audioOutputRegisterBufferEvents = new IWritableEvent[Constants.AudioOutSessionCountMax];
