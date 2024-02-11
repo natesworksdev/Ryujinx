@@ -118,6 +118,7 @@ namespace Ryujinx.Common.Configuration
             {
                 return LogsDirPath;
             }
+
             Logger.Notice.Print(LogClass.Application, "Logging directory not found; attempting to create new logging directory.");
             LogsDirPath = SetUpLogsDir();
 
