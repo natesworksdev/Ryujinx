@@ -35,7 +35,6 @@ namespace Ryujinx.Horizon.Audio
             }
 
             AudioOutputManager.Initialize(audioDeviceDriver, audioOutputRegisterBufferEvents);
-            AudioOutputManager.SetVolume(1f);
 
             IWritableEvent[] audioInputRegisterBufferEvents = new IWritableEvent[Constants.AudioInSessionCountMax];
 
