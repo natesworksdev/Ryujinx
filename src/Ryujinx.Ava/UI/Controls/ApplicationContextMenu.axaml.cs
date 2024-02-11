@@ -11,8 +11,8 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.HOS;
-using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.App.Common;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -133,7 +133,7 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 string modsBasePath = ModLoader.GetModsBasePath();
-                string titleModsPath = ModLoader.GetTitleDir(modsBasePath, viewModel.SelectedApplication.TitleId);
+                string titleModsPath = ModLoader.GetApplicationDir(modsBasePath, viewModel.SelectedApplication.TitleId);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }
@@ -146,9 +146,19 @@ namespace Ryujinx.Ava.UI.Controls
             if (viewModel?.SelectedApplication != null)
             {
                 string sdModsBasePath = ModLoader.GetSdModsBasePath();
-                string titleModsPath = ModLoader.GetTitleDir(sdModsBasePath, viewModel.SelectedApplication.TitleId);
+                string titleModsPath = ModLoader.GetApplicationDir(sdModsBasePath, viewModel.SelectedApplication.TitleId);
 
                 OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public async void OpenModManager_Click(object sender, RoutedEventArgs args)
+        {
+            var viewModel = (sender as MenuItem)?.DataContext as MainWindowViewModel;
+
+            if (viewModel?.SelectedApplication != null)
+            {
+                await ModManagerWindow.Show(ulong.Parse(viewModel.SelectedApplication.TitleId, NumberStyles.HexNumber), viewModel.SelectedApplication.TitleName);
             }
         }
 

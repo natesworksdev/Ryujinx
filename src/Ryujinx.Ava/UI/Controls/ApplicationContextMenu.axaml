@@ -16,7 +16,7 @@
 		Click="CreateApplicationShortcut_Click"
 		Header="{locale:Locale GameListContextMenuCreateShortcut}"
         IsEnabled="{Binding CreateShortcutEnabled}"
-		ToolTip.Tip="{locale:Locale GameListContextMenuCreateShortcutToolTip}" />
+		ToolTip.Tip="{OnPlatform Default={locale:Locale GameListContextMenuCreateShortcutToolTip}, macOS={locale:Locale GameListContextMenuCreateShortcutToolTipMacOS}}" />
     <Separator />
     <MenuItem
         Click="OpenUserSaveDirectory_Click"
@@ -46,6 +46,11 @@
         Click="OpenCheatManager_Click"
         Header="{locale:Locale GameListContextMenuManageCheat}"
         ToolTip.Tip="{locale:Locale GameListContextMenuManageCheatToolTip}" />
+    <MenuItem
+        Click="OpenModManager_Click"
+        Header="{locale:Locale GameListContextMenuManageMod}"
+        ToolTip.Tip="{locale:Locale GameListContextMenuManageModToolTip}" />
+    <Separator />
     <MenuItem
         Click="OpenModsDirectory_Click"
         Header="{locale:Locale GameListContextMenuOpenModsDirectory}"

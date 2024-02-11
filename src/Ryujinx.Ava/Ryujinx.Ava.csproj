@@ -43,14 +43,13 @@
     <PackageReference Include="Avalonia.Markup.Xaml.Loader" />
     <PackageReference Include="Avalonia.Svg" />
     <PackageReference Include="Avalonia.Svg.Skia" />
-    <PackageReference Include="jp2masa.Avalonia.Flexbox" />
     <PackageReference Include="DynamicData" />
     <PackageReference Include="FluentAvaloniaUI" />
 
     <PackageReference Include="OpenTK.Core" />
-    <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64' AND '$(RuntimeIdentifier)' != 'osx-arm64'" />
+    <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'linux-arm64' AND '$(RuntimeIdentifier)' != 'osx-x64' AND '$(RuntimeIdentifier)' != 'osx-arm64'" />
     <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" />
-    <PackageReference Include="Ryujinx.Graphics.Vulkan.Dependencies.MoltenVK" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'win-x64'" />
+    <PackageReference Include="Ryujinx.Graphics.Vulkan.Dependencies.MoltenVK" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'linux-arm64' AND '$(RuntimeIdentifier)' != 'win-x64'" />
     <PackageReference Include="Silk.NET.Vulkan" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" />
     <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" />
@@ -74,12 +73,12 @@
     <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
-    <ProjectReference Include="..\Ryujinx.Ui.Common\Ryujinx.Ui.Common.csproj" />
-    <ProjectReference Include="..\Ryujinx.Ui.LocaleGenerator\Ryujinx.Ui.LocaleGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Ryujinx.UI.Common\Ryujinx.UI.Common.csproj" />
+    <ProjectReference Include="..\Ryujinx.UI.LocaleGenerator\Ryujinx.UI.LocaleGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\distribution\windows\alsoft.ini" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'">
+    <Content Include="..\..\distribution\windows\alsoft.ini" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'linux-arm64' AND '$(RuntimeIdentifier)' != 'osx-x64'">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>alsoft.ini</TargetPath>
     </Content>
@@ -93,7 +92,7 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64'">
     <Content Include="..\..\distribution\linux\Ryujinx.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -104,7 +103,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Ui\**\*.xaml">
+    <AvaloniaResource Include="UI\**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Fonts\SegoeFluentIcons.ttf" />

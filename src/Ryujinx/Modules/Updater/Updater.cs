@@ -5,9 +5,9 @@ using ICSharpCode.SharpZipLib.Zip;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
-using Ryujinx.Ui;
-using Ryujinx.Ui.Common.Models.Github;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI;
+using Ryujinx.UI.Common.Models.Github;
+using Ryujinx.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -532,7 +532,7 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid())
+            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
             {
                 if (showWarnings)
                 {
@@ -546,7 +546,7 @@ namespace Ryujinx.Modules
 #else
             if (showWarnings)
             {
-                if (ReleaseInformation.IsFlatHubBuild())
+                if (ReleaseInformation.IsFlatHubBuild)
                 {
                     GtkDialog.CreateWarningDialog("Updater Disabled!", "Please update Ryujinx via FlatHub.");
                 }

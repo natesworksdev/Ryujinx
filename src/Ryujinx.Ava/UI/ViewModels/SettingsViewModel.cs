@@ -16,8 +16,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Configuration.System;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -48,7 +48,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
-        private string _customThemePath;
         private int _scalingFilter;
         private int _scalingFilterLevel;
 
@@ -160,7 +159,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsOpenAlEnabled { get; set; }
         public bool IsSoundIoEnabled { get; set; }
         public bool IsSDL2Enabled { get; set; }
-        public bool EnableCustomTheme { get; set; }
         public bool IsCustomResolutionScaleActive => _resolutionScale == 4;
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
@@ -169,20 +167,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public string TimeZone { get; set; }
         public string ShaderDumpPath { get; set; }
-
-        public string CustomThemePath
-        {
-            get
-            {
-                return _customThemePath;
-            }
-            set
-            {
-                _customThemePath = value;
-
-                OnPropertyChanged();
-            }
-        }
 
         public int Language { get; set; }
         public int Region { get; set; }
@@ -424,11 +408,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             HideCursor = (int)config.HideCursor.Value;
 
             GameDirectories.Clear();
-            GameDirectories.AddRange(config.Ui.GameDirs.Value);
+            GameDirectories.AddRange(config.UI.GameDirs.Value);
 
-            EnableCustomTheme = config.Ui.EnableCustomTheme;
-            CustomThemePath = config.Ui.CustomThemePath;
-            BaseStyleIndex = config.Ui.BaseStyle == "Light" ? 0 : 1;
+            BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
 
             // Input
             EnableDockedMode = config.System.EnableDockedMode;
@@ -512,12 +494,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (_directoryChanged)
             {
                 List<string> gameDirs = new(GameDirectories);
-                config.Ui.GameDirs.Value = gameDirs;
+                config.UI.GameDirs.Value = gameDirs;
             }
 
-            config.Ui.EnableCustomTheme.Value = EnableCustomTheme;
-            config.Ui.CustomThemePath.Value = CustomThemePath;
-            config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            config.UI.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;

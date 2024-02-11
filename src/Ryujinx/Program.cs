@@ -6,12 +6,12 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
-using Ryujinx.Ui;
-using Ryujinx.Ui.Common;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
-using Ryujinx.Ui.Common.SystemInfo;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI;
+using Ryujinx.UI.Common;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Common.SystemInfo;
+using Ryujinx.UI.Widgets;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
 using System.Collections.Generic;
@@ -71,7 +71,7 @@ namespace Ryujinx
 
         static void Main(string[] args)
         {
-            Version = ReleaseInformation.GetVersion();
+            Version = ReleaseInformation.Version;
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
@@ -167,8 +167,8 @@ namespace Ryujinx
                 Quality = 100,
             });
 
-            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
-            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "Config.json");
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.ConfigName);
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.ConfigName);
 
             // Now load the configuration as the other subsystems are now registered
             ConfigurationPath = File.Exists(localConfigurationPath)

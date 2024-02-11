@@ -17,7 +17,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.App.Common;
+using Ryujinx.UI.App.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -192,7 +192,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadNcaErrorMessage, ex.Message, path)));
+                    Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadFileErrorMessage, ex.Message, path)));
                 }
             }
         }

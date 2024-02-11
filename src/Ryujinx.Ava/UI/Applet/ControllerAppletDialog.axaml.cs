@@ -9,6 +9,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Hid;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,7 +36,7 @@ namespace Ryujinx.Ava.UI.Applet
 
         private readonly MainWindow _mainWindow;
 
-        public ControllerAppletDialog(MainWindow mainWindow, ControllerAppletUiArgs args)
+        public ControllerAppletDialog(MainWindow mainWindow, ControllerAppletUIArgs args)
         {
             if (args.PlayerCountMin == args.PlayerCountMax)
             {
@@ -68,7 +69,7 @@ namespace Ryujinx.Ava.UI.Applet
             InitializeComponent();
         }
 
-        public static async Task<UserResult> ShowControllerAppletDialog(MainWindow window, ControllerAppletUiArgs args)
+        public static async Task<UserResult> ShowControllerAppletDialog(MainWindow window, ControllerAppletUIArgs args)
         {
             ContentDialog contentDialog = new();
             UserResult result = UserResult.Cancel;
@@ -103,7 +104,7 @@ namespace Ryujinx.Ava.UI.Applet
 
             if (!string.IsNullOrWhiteSpace(path))
             {
-                SvgSource source = new();
+                SvgSource source = new(default(Uri));
 
                 source.Load(EmbeddedResources.GetStream(path));
 

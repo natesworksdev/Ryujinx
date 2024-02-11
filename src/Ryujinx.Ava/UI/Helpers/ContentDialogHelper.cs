@@ -336,6 +336,11 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
                 {
+                    if (_contentDialogOverlayWindow is null)
+                    {
+                        return;
+                    }
+
                     _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
                 }
 
@@ -378,7 +383,7 @@ namespace Ryujinx.Ava.UI.Helpers
                 {
                     result = ContentDialogResult.None;
 
-                    Logger.Warning?.Print(LogClass.Ui, "Content dialog overlay failed to populate. Default value has been returned.");
+                    Logger.Warning?.Print(LogClass.UI, "Content dialog overlay failed to populate. Default value has been returned.");
                 }
 
                 return result;
@@ -388,6 +393,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 _contentDialogOverlayWindow.Content = null;
                 _contentDialogOverlayWindow.Close();
+                _contentDialogOverlayWindow = null;
             }
 
             return result;

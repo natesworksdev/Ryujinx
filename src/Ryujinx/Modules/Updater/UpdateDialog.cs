@@ -1,9 +1,10 @@
 using Gdk;
 using Gtk;
 using Ryujinx.Common;
-using Ryujinx.Ui;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.Common.Configuration;
+using Ryujinx.UI;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -33,7 +34,7 @@ namespace Ryujinx.Modules
             _mainWindow = mainWindow;
             _buildUrl = buildUrl;
 
-            Icon = new Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
+            Icon = new Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Ryujinx.png");
             MainText.Text = "Do you want to update Ryujinx to the latest version?";
             SecondaryText.Text = $"{Program.Version} -> {newVersion}";
 
@@ -52,7 +53,7 @@ namespace Ryujinx.Modules
                 ProcessStartInfo processStart = new(ryuName)
                 {
                     UseShellExecute = true,
-                    WorkingDirectory = ReleaseInformation.GetBaseApplicationDirectory(),
+                    WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
                 };
 
                 foreach (string argument in CommandLineState.Arguments)

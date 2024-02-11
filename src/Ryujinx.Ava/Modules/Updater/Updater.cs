@@ -10,8 +10,8 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
-using Ryujinx.Ui.Common.Helper;
-using Ryujinx.Ui.Common.Models.Github;
+using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Common.Models.Github;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -665,7 +665,7 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid())
+            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
             {
                 if (showWarnings)
                 {
@@ -683,7 +683,7 @@ namespace Ryujinx.Modules
 #else
             if (showWarnings)
             {
-                if (ReleaseInformation.IsFlatHubBuild())
+                if (ReleaseInformation.IsFlatHubBuild)
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
                         ContentDialogHelper.CreateWarningDialog(
