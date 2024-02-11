@@ -45,6 +45,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsViewportIndexVertexTessellation;
         public readonly bool SupportsViewportMask;
         public readonly bool SupportsViewportSwizzle;
+        public readonly bool SupportsSpirV;
         public readonly bool SupportsIndirectParameters;
         public readonly bool SupportsDepthClipControl;
 
@@ -101,6 +102,7 @@ namespace Ryujinx.Graphics.GAL
             bool supportsViewportIndexVertexTessellation,
             bool supportsViewportMask,
             bool supportsViewportSwizzle,
+            bool supportsSpirV,
             bool supportsIndirectParameters,
             bool supportsDepthClipControl,
             uint maximumUniformBuffersPerStage,
@@ -153,6 +155,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsViewportIndexVertexTessellation = supportsViewportIndexVertexTessellation;
             SupportsViewportMask = supportsViewportMask;
             SupportsViewportSwizzle = supportsViewportSwizzle;
+            SupportsSpirV = supportsSpirV;
             SupportsIndirectParameters = supportsIndirectParameters;
             SupportsDepthClipControl = supportsDepthClipControl;
             MaximumUniformBuffersPerStage = maximumUniformBuffersPerStage;

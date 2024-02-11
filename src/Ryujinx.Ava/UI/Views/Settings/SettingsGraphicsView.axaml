@@ -56,6 +56,24 @@
                                 SelectedIndex="{Binding PreferredGpuIndex}"
                                 ItemsSource="{Binding AvailableGpus}"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   ToolTip.Tip="{locale:Locale ShadingLanguageTooltip}"
+                                   Text="{locale:Locale SettingsTabGraphicsShadingLanguge}"
+                                   Width="250" />
+                        <ComboBox Width="350"
+                                  HorizontalContentAlignment="Left"
+                                  ToolTip.Tip="{locale:Locale ShadingLanguageTooltip}"
+                                  SelectedIndex="{Binding ShadingLanguageIndex}"
+                                  AutoScrollToSelectedItem="True">
+                            <ComboBoxItem IsEnabled="{Binding IsSpirVAvailable}">
+                                <TextBlock Text="SPIR-V" />
+                            </ComboBoxItem>
+                            <ComboBoxItem IsEnabled="{Binding !IsVulkanSelected}">
+                                <TextBlock Text="GLSL" />
+                            </ComboBoxItem>
+                            </ComboBox>
+                    </StackPanel>
                 </StackPanel>
                 <Separator Height="1" />
                 <TextBlock Classes="h1" Text="{locale:Locale SettingsTabGraphicsFeatures}" />

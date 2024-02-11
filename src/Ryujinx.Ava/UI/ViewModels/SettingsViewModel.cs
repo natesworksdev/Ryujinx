@@ -2,6 +2,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;
+using OpenTK.Graphics.OpenGL;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
@@ -25,6 +26,8 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
+using ScalingFilter = Ryujinx.Common.Configuration.ScalingFilter;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
 namespace Ryujinx.Ava.UI.ViewModels
@@ -48,8 +51,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly List<string> _gpuIds = new();
         private KeyboardHotkeys _keyboardHotkeys;
         private int _graphicsBackendIndex;
+        private int _shadinglanguageBackendIndex;
         private int _scalingFilter;
         private int _scalingFilterLevel;
+        private bool? _isSpirVAvailableCache;
 
         public event Action CloseWindow;
         public event Action SaveSettingsEvent;
@@ -163,6 +168,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
 
         public bool IsVulkanSelected => GraphicsBackendIndex == 0;
+
+        private bool? _isSpirVAvailable;
         public bool UseHypervisor { get; set; }
 
         public string TimeZone { get; set; }
@@ -197,8 +204,31 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _graphicsBackendIndex = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsVulkanSelected));
+                Task.Run(ShadingLanguageAvailable);
+                OnPropertyChanged(nameof(IsSpirVAvailable));
             }
         }
+
+        public int ShadingLanguageIndex
+        {
+            get => _shadinglanguageBackendIndex;
+            set
+            {
+                _shadinglanguageBackendIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool? IsSpirVAvailable
+        {
+            get => _isSpirVAvailable;
+            set
+            {
+                _isSpirVAvailable = value;
+                OnPropertyChanged();
+            }
+        }
+
         public int ScalingFilter
         {
             get => _scalingFilter;
@@ -291,6 +321,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
 
+            Task.Run(ShadingLanguageAvailable);
             Task.Run(CheckSoundBackends);
             Task.Run(PopulateNetworkInterfaces);
 
@@ -315,6 +346,44 @@ namespace Ryujinx.Ava.UI.ViewModels
             });
         }
 
+        private async Task ShadingLanguageAvailable()
+        {
+            if (GraphicsBackendIndex != 0)
+            {
+                if (!_isSpirVAvailableCache.HasValue)
+                {
+                    GL.LoadBindings(null);
+                    _isSpirVAvailableCache = GL.GetString(StringName.Extensions).Contains("GL_ARB_gl_spirv");
+                    IsSpirVAvailable = _isSpirVAvailableCache.Value;
+                }
+                else
+                {
+                    IsSpirVAvailable = _isSpirVAvailableCache.Value;
+                }
+            }
+            else
+            {
+                IsSpirVAvailable = true;
+            }
+
+            if (!IsSpirVAvailable.Value)
+            {
+                _shadinglanguageBackendIndex = 1;
+                ShadingLanguageIndex = 1;
+            }
+            else if (ShadingLanguageIndex == 1 || _shadinglanguageBackendIndex == 1)
+            {
+                _shadinglanguageBackendIndex = 0;
+                ShadingLanguageIndex = 0;
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                OnPropertyChanged(nameof(ShadingLanguageIndex));
+                OnPropertyChanged(nameof(IsSpirVAvailable));
+            });
+        }
+
         private async Task LoadAvailableGpus()
         {
             AvailableGpus.Clear();
@@ -325,6 +394,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 IsVulkanAvailable = false;
                 GraphicsBackendIndex = 1;
+                ShadingLanguageIndex = 1;
             }
             else
             {
@@ -442,6 +512,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Graphics
             GraphicsBackendIndex = (int)config.Graphics.GraphicsBackend.Value;
+            ShadingLanguageIndex = (int)config.Graphics.ShadingLanguage.Value;
             // Physical devices are queried asynchronously hence the prefered index config value is loaded in LoadAvailableGpus().
             EnableShaderCache = config.Graphics.EnableShaderCache;
             EnableTextureRecompression = config.Graphics.EnableTextureRecompression;
@@ -529,6 +600,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // Graphics
             config.Graphics.GraphicsBackend.Value = (GraphicsBackend)GraphicsBackendIndex;
+            config.Graphics.ShadingLanguage.Value = (ShadingLanguage)ShadingLanguageIndex;
             config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
             config.Graphics.EnableTextureRecompression.Value = EnableTextureRecompression;

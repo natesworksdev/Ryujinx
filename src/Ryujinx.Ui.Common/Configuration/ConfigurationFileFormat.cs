@@ -15,7 +15,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 48;
+        public const int CurrentVersion = 49;
 
         /// <summary>
         /// Version of the configuration file format
@@ -375,6 +375,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Uses Hypervisor over JIT if available
         /// </summary>
         public bool UseHypervisor { get; set; }
+
+        /// <summary>
+        /// Shading Languge
+        /// </summary>
+        public ShadingLanguage ShadingLanguge { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk

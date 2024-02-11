@@ -103,6 +103,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText _antiAliasing;
         [GUI] ComboBoxText _scalingFilter;
         [GUI] ComboBoxText _graphicsBackend;
+        [GUI] ComboBoxText _shadingLanguage;
         [GUI] ComboBoxText _preferredGpu;
         [GUI] ComboBoxText _resScaleCombo;
         [GUI] Entry _resScaleText;
@@ -356,6 +357,7 @@ namespace Ryujinx.Ui.Windows
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
             _graphicsBackend.SetActiveId(((int)ConfigurationState.Instance.Graphics.GraphicsBackend.Value).ToString());
+            _shadingLanguage.SetActiveId(((int)ConfigurationState.Instance.Graphics.ShadingLanguage.Value).ToString());
             _antiAliasing.SetActiveId(((int)ConfigurationState.Instance.Graphics.AntiAliasing.Value).ToString());
             _scalingFilter.SetActiveId(((int)ConfigurationState.Instance.Graphics.ScalingFilter.Value).ToString());
 
@@ -651,6 +653,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.AspectRatio.Value = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.BackendThreading.Value = backendThreading;
             ConfigurationState.Instance.Graphics.GraphicsBackend.Value = Enum.Parse<GraphicsBackend>(_graphicsBackend.ActiveId);
+            ConfigurationState.Instance.Graphics.ShadingLanguage.Value = Enum.Parse<ShadingLanguage>(_shadingLanguage.ActiveId);
             ConfigurationState.Instance.Graphics.PreferredGpu.Value = _preferredGpu.ActiveId;
             ConfigurationState.Instance.Graphics.ResScale.Value = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value = resScaleCustom;

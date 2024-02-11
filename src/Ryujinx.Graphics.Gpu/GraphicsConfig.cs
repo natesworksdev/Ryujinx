@@ -1,3 +1,5 @@
+using Ryujinx.Common.Configuration;
+
 namespace Ryujinx.Graphics.Gpu
 {
 #pragma warning disable CA2211 // Non-constant fields should not be visible
@@ -57,6 +59,11 @@ namespace Ryujinx.Graphics.Gpu
         /// Enables or disables the shader cache.
         /// </summary>
         public static bool EnableShaderCache;
+
+        /// <summary>
+        /// Select Shading Language to use.
+        /// </summary>
+        public static ShadingLanguage ShadingLanguage = ShadingLanguage.SPIRV;
 
         /// <summary>
         /// Enables or disables shader SPIR-V compilation.

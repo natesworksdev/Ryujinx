@@ -2,10 +2,12 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -134,6 +136,8 @@ namespace Ryujinx.Graphics.OpenGL
             bool intelWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows;
             bool intelUnix = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelUnix;
             bool amdWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows;
+            bool spirVWindows = GraphicsConfig.ShadingLanguage == ShadingLanguage.SPIRV &&
+                                RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             return new Capabilities(
                 api: TargetApi.OpenGL,
@@ -159,7 +163,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShader: true,
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
-                supportsTransformFeedback: true,
+                supportsTransformFeedback: !spirVWindows,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsLayerVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
@@ -175,6 +179,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsViewportIndexVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
                 supportsViewportMask: HwCapabilities.SupportsViewportArray2,
                 supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
+                supportsSpirV: HwCapabilities.SupportsSpirV,
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
                 supportsDepthClipControl: true,
                 maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?
