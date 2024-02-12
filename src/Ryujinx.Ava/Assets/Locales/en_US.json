@@ -646,7 +646,7 @@
   "Recover": "Recover",
   "UserProfilesRecoverHeading": "Saves were found for the following accounts",
   "UserProfilesRecoverEmptyList": "No profiles to recover",
-  "GraphicsAATooltip": "Applies anti-aliasing to the game render.\n\nFXAA will blur most of the image, while SMAA will attempt to find jagged edges and smooth them out.\n\nNot recommended to use in conjunction with the FSR scaling filter.\n\nThis option can be changed while a game is running by clicking \"Apply\" below; you can simply move the settings window aside and experiment until you find your preferred look for a game.\n\nLeave on NONE if unsure",
+  "GraphicsAATooltip": "Applies anti-aliasing to the game render.\n\nFXAA will blur most of the image, while SMAA will attempt to find jagged edges and smooth them out.\n\nNot recommended to use in conjunction with the FSR scaling filter.\n\nThis option can be changed while a game is running by clicking \"Apply\" below; you can simply move the settings window aside and experiment until you find your preferred look for a game.\n\nLeave on NONE if unsure.",
   "GraphicsAALabel": "Anti-Aliasing:",
   "GraphicsScalingFilterLabel": "Scaling Filter:",
   "GraphicsScalingFilterTooltip": "Choose the scaling filter that will be applied when using resolution scale.\n\nBilinear works well for 3D games and is a safe default option.\n\nNearest is recommended for pixel art games.\n\nFSR 1.0 is merely a sharpening filter, not recommended for use with FXAA or SMAA.\n\nThis option can be changed while a game is running by clicking \"Apply\" below; you can simply move the settings window aside and experiment until you find your preferred look for a game.\n\nLeave on BILINEAR if unsure.",
