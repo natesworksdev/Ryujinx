@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         public bool Disposed { get; private set; }
         public bool Invalid { get; set; }
 
-        public ulong DrawIndex { get; }
+        public ulong DrawIndex { get; private set; }
 
         private readonly CounterQueue _queue;
         private readonly BufferedQuery _counter;
@@ -40,10 +40,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _counter.Begin();
         }
 
-        internal void Clear()
+        internal void Clear(ulong drawIndex)
         {
             _counter.Reset();
             ClearCounter = true;
+            DrawIndex = drawIndex;
         }
 
         internal void Complete(bool withResult, double divisor)

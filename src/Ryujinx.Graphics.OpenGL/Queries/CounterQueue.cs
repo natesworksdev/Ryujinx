@@ -13,6 +13,8 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         public CounterType Type { get; }
         public bool Disposed { get; private set; }
 
+        private readonly Counters _parent;
+
         private readonly Queue<CounterQueueEvent> _events = new();
         private CounterQueueEvent _current;
 
@@ -28,8 +30,9 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private readonly Thread _consumerThread;
 
-        internal CounterQueue(CounterType type)
+        internal CounterQueue(Counters parent, CounterType type)
         {
+            _parent = parent;
             Type = type;
 
             QueryTarget glType = GetTarget(Type);
@@ -37,7 +40,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _queryPool = new Queue<BufferedQuery>(QueryPoolInitialSize);
             for (int i = 0; i < QueryPoolInitialSize; i++)
             {
-                _queryPool.Enqueue(new BufferedQuery(glType));
+                _queryPool.Enqueue(new BufferedQuery(parent, glType));
             }
 
             _current = new CounterQueueEvent(this, glType, 0);
@@ -90,7 +93,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 }
                 else
                 {
-                    return new BufferedQuery(GetTarget(Type));
+                    return new BufferedQuery(_parent, GetTarget(Type));
                 }
             }
         }
@@ -134,11 +137,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             return result;
         }
 
-        public void QueueReset()
+        public void QueueReset(ulong lastDrawIndex)
         {
             lock (_lock)
             {
-                _current.Clear();
+                _current.Clear(lastDrawIndex);
             }
         }
 

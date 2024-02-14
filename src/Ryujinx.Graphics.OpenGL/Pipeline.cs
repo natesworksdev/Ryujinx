@@ -12,6 +12,8 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private const int SavedImages = 2;
 
+        private readonly Counters _counters;
+
         private readonly DrawTextureEmulation _drawTexture;
 
         internal ulong DrawCount { get; private set; }
@@ -68,8 +70,10 @@ namespace Ryujinx.Graphics.OpenGL
 
         private ColorF _blendConstant;
 
-        internal Pipeline()
+        internal Pipeline(Counters counters)
         {
+            _counters = counters;
+
             _drawTexture = new DrawTextureEmulation();
             _rasterizerDiscard = false;
             _clipOrigin = ClipOrigin.LowerLeft;
@@ -1154,10 +1158,14 @@ namespace Ryujinx.Graphics.OpenGL
 
                 RestoreComponentMask(index, force: false);
             }
+
+            _counters.CopyPending();
         }
 
         public void SetRenderTargets(ITexture[] colors, ITexture depthStencil)
         {
+            _counters.CopyPending();
+
             EnsureFramebuffer();
 
             for (int index = 0; index < colors.Length; index++)
@@ -1504,6 +1512,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PreDraw(int vertexCount)
         {
+            _counters.PreDraw();
             _vertexArray.PreDraw(vertexCount);
             PreDraw();
         }
@@ -1649,12 +1658,14 @@ namespace Ryujinx.Graphics.OpenGL
 
             // The GPU will flush the queries to CPU and evaluate the condition there instead.
 
+            _counters.CopyPending(false);
             GL.Flush(); // The thread will be stalled manually flushing the counter, so flush GL commands now.
             return false;
         }
 
         public bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual)
         {
+            _counters.CopyPending(false);
             GL.Flush(); // The GPU thread will be stalled manually flushing the counter, so flush GL commands now.
             return false; // We don't currently have a way to compare two counters for conditional rendering.
         }
