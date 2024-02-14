@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         private readonly CounterQueue _queue;
         private readonly BufferedQuery _counter;
 
-        private bool _hostAccessReserved = false;
+        private int _hostAccessReserved = 0;
         private int _refCount = 1; // Starts with a reference from the counter queue.
 
         private readonly object _lock = new();
@@ -115,8 +115,9 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public bool ReserveForHostAccess()
         {
-            if (_hostAccessReserved)
+            if (_hostAccessReserved > 0)
             {
+                Interlocked.Increment(ref _hostAccessReserved);
                 return true;
             }
 
@@ -132,14 +133,14 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 return false;
             }
 
-            _hostAccessReserved = true;
+            _hostAccessReserved = Interlocked.Increment(ref _hostAccessReserved);
 
             return true;
         }
 
         public void ReleaseHostAccess()
         {
-            _hostAccessReserved = false;
+            Interlocked.Decrement(ref _hostAccessReserved);
 
             DecrementRefCount();
         }
