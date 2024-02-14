@@ -1,4 +1,3 @@
-using Ryujinx.Common.Memory;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
