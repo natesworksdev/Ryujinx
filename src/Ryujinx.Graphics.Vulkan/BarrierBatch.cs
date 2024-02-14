@@ -146,18 +146,15 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                     }
 
-                    if (firstMatch != -1)
+                    if (firstMatch == 0)
                     {
-                        if (firstMatch == 0)
-                        {
-                            list.Clear();
-                        }
-                        else
-                        {
-                            int deleteCount = list.Count - firstMatch;
+                        list.Clear();
+                    }
+                    else if (firstMatch != -1)
+                    {
+                        int deleteCount = list.Count - firstMatch;
 
-                            list.RemoveRange(firstMatch, deleteCount);
-                        }
+                        list.RemoveRange(firstMatch, deleteCount);
                     }
                 }
 
