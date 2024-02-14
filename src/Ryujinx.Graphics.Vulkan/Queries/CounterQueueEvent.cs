@@ -121,13 +121,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         public bool ReserveForHostAccess()
         {
-            if (_hostAccessReserved > 0)
-            {
-                Interlocked.Increment(ref _hostAccessReserved);
-                return true;
-            }
-
-            if (IsValueAvailable())
+            if (_hostAccessReserved == 0 && IsValueAvailable())
             {
                 return false;
             }
