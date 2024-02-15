@@ -68,7 +68,8 @@ namespace Ryujinx.Modules
             }
             else if (OperatingSystem.IsLinux())
             {
-                _platformExt = "linux_x64.tar.gz";
+                var arch = RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "arm64" : "x64";
+                _platformExt = $"linux_{arch}.tar.gz";
             }
 
             Version newVersion;
