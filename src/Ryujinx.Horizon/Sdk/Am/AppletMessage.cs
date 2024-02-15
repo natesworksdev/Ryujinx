@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Am
 {
-    public enum AppletMessage : byte
+    public enum AppletMessage
     {
         None = 0,
         ChangeIntoForeground = 1,
