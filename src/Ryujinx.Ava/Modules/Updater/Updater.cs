@@ -637,20 +637,6 @@ namespace Ryujinx.Modules
         public static bool CanUpdate(bool showWarnings)
         {
 #if !DISABLE_UPDATER
-            if (RuntimeInformation.OSArchitecture != Architecture.X64 && !OperatingSystem.IsMacOS())
-            {
-                if (showWarnings)
-                {
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                        ContentDialogHelper.CreateWarningDialog(
-                            LocaleManager.Instance[LocaleKeys.DialogUpdaterArchNotSupportedMessage],
-                            LocaleManager.Instance[LocaleKeys.DialogUpdaterArchNotSupportedSubMessage])
-                    );
-                }
-
-                return false;
-            }
-
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 if (showWarnings)

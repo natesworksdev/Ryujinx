@@ -512,16 +512,6 @@ namespace Ryujinx.Modules
         public static bool CanUpdate(bool showWarnings)
         {
 #if !DISABLE_UPDATER
-            if (RuntimeInformation.OSArchitecture != Architecture.X64)
-            {
-                if (showWarnings)
-                {
-                    GtkDialog.CreateWarningDialog("You are not running a supported system architecture!", "(Only x64 systems are supported!)");
-                }
-
-                return false;
-            }
-
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 if (showWarnings)
