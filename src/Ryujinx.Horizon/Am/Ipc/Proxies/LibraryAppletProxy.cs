@@ -81,9 +81,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(22)]
-        public Result GetHomeMenuFunctions()
+        public Result GetHomeMenuFunctions(out IHomeMenuFunctions homeMenuFunctions)
         {
-            throw new System.NotImplementedException();
+            homeMenuFunctions = new HomeMenuFunctions();
+
+            return Result.Success;
         }
 
         [CmifCommand(23)]

@@ -65,21 +65,27 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(20)]
-        public Result GetHomeMenuFunctions()
+        public Result GetHomeMenuFunctions(out IHomeMenuFunctions homeMenuFunctions)
         {
-            throw new System.NotImplementedException();
+            homeMenuFunctions = new HomeMenuFunctions();
+
+            return Result.Success;
         }
 
         [CmifCommand(21)]
-        public Result GetGlobalStateController()
+        public Result GetGlobalStateController(out IGlobalStateController globalStateController)
         {
-            throw new System.NotImplementedException();
+            globalStateController = new GlobalStateController();
+
+            return Result.Success;
         }
 
         [CmifCommand(22)]
-        public Result GetApplicationCreator()
+        public Result GetApplicationCreator(out IApplicationCreator applicationCreator)
         {
-            throw new System.NotImplementedException();
+            applicationCreator = new ApplicationCreator();
+
+            return Result.Success;
         }
 
         [CmifCommand(23)]
