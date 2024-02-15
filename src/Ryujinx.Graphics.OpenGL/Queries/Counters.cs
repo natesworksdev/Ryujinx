@@ -66,9 +66,10 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         {
             if (_queuedCopies.Count > 0)
             {
+                int i = 0;
                 foreach (BufferedQuery query in _queuedCopies)
                 {
-                    query.CopyQueryResult();
+                    query.CopyQueryResult(_queuedCopies.Count == ++i);
                 }
 
                 _queuedCopies.Clear();

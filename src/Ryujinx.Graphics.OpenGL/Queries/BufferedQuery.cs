@@ -49,11 +49,15 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             GL.BeginQuery(_type, Query);
         }
 
-        public unsafe void CopyQueryResult()
+        public unsafe void CopyQueryResult(bool withBarrier)
         {
             GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
             GL.GetQueryObject(Query, GetQueryObjectParam.QueryResult, (long*)0);
-            GL.MemoryBarrier(MemoryBarrierFlags.QueryBufferBarrierBit | MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+
+            if (withBarrier)
+            {
+                GL.MemoryBarrier(MemoryBarrierFlags.QueryBufferBarrierBit | MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+            }
         }
 
         public void End(bool withResult)
@@ -64,7 +68,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             {
                 if (!_parent.QueueCopy(this))
                 {
-                    CopyQueryResult();
+                    CopyQueryResult(true);
                 }
             }
             else
