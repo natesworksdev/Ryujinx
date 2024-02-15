@@ -87,9 +87,11 @@ namespace Ryujinx.Horizon.Am.Ipc.Proxies
         }
 
         [CmifCommand(23)]
-        public Result GetGlobalStateController()
+        public Result GetGlobalStateController(out IGlobalStateController globalStateController)
         {
-            throw new System.NotImplementedException();
+            globalStateController = new GlobalStateController();
+
+            return Result.Success;
         }
 
         [CmifCommand(1000)]

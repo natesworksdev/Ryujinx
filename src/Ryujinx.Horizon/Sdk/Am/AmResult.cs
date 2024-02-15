@@ -23,5 +23,6 @@ namespace Ryujinx.Horizon.Sdk.Am
         public static Result StackPoolExhausted => new(Moduleld, 712);
         public static Result DebugModeNotEnabled => new(Moduleld, 974);
         public static Result DevFunctionNotEnabled => new(Moduleld, 980);
+        public static Result Stubbed => new(Moduleld, 999);
     }
 }

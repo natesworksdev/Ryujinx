@@ -1,4 +1,3 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Storage;
 using Ryujinx.Horizon.Sdk.Sf;

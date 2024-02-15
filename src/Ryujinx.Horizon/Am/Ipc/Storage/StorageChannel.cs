@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Am.Ipc.Storage
 {
+    // Might not be used outside of debug software
     partial class StorageChannel : IStorageChannel
     {
         private readonly Stack<IStorage> _storages;
