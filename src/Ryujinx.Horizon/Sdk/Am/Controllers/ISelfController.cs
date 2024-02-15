@@ -1,8 +1,9 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
-    public interface ISelfController
+    interface ISelfController : IServiceObject
     {
         Result Exit();
         Result LockExit();

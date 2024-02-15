@@ -1,9 +1,10 @@
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
+using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.Sdk.Am.Proxies
 {
-    public interface IApplicationProxy
+    interface IApplicationProxy : IServiceObject
     {
         Result GetCommonStateGetter(out ICommonStateGetter commonStateGetter);
         Result GetSelfController(out ISelfController selfController);

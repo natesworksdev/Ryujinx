@@ -1,8 +1,9 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
-    public interface IAudioController
+    interface IAudioController : IServiceObject
     {
         Result SetExpectedMasterVolume(float mainAppletVolume, float libraryAppletVolume);
         Result GetMainAppletExpectedMasterVolume(out float mainAppletVolume);

@@ -1,8 +1,9 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
-    public interface IAppletCommonFunctions
+    interface IAppletCommonFunctions : IServiceObject
     {
         Result SetTerminateResult();
         Result ReadThemeStorage();

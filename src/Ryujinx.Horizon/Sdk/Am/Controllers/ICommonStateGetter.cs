@@ -1,8 +1,9 @@
 using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Sdk.Sf;
 
 namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
-    public interface ICommonStateGetter
+    interface ICommonStateGetter : IServiceObject
     {
         Result GetEventHandle();
         Result ReceiveMessage();
