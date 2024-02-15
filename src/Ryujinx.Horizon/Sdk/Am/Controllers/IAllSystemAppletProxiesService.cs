@@ -12,8 +12,8 @@ namespace Ryujinx.Horizon.Sdk.Am.Controllers
         Result OpenLibraryAppletProxy(out ILibraryAppletProxy libraryAppletProxy, ulong unknown1, int unknown2, ReadOnlySpan<byte> appletAttribute, ulong pid);
         Result OpenOverlayAppletProxy(out IOverlayAppletProxy overlayAppletProxy, ulong unknown1, int unknown2, ulong pid);
         Result OpenSystemApplicationProxy(out IApplicationProxy applicationProxy, ulong unknown1, int unknown2, ulong pid);
-        Result CreateSelfLibraryAppletCreatorForDevelop();
-        Result GetSystemAppletControllerForDebug();
-        Result GetDebugFunctions();
+        Result CreateSelfLibraryAppletCreatorForDevelop(out ILibraryAppletCreator libraryAppletCreator, ulong unknown, ulong pid);
+        Result GetSystemAppletControllerForDebug(out ISystemAppletControllerForDebug systemAppletControllerForDebug);
+        Result GetDebugFunctions(out IDebugFunctions debugFunctions);
     }
 }

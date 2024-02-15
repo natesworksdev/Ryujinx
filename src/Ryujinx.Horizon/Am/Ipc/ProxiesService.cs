@@ -1,4 +1,4 @@
-using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Am.Ipc.Controllers;
 using Ryujinx.Horizon.Am.Ipc.Proxies;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Controllers;
@@ -52,25 +52,25 @@ namespace Ryujinx.Horizon.Am.Ipc
         }
 
         [CmifCommand(400)]
-        public Result CreateSelfLibraryAppletCreatorForDevelop()
+        public Result CreateSelfLibraryAppletCreatorForDevelop(out ILibraryAppletCreator libraryAppletCreator, ulong unknown, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            libraryAppletCreator = new LibraryAppletCreator();
 
             return Result.Success;
         }
 
         [CmifCommand(410)]
-        public Result GetSystemAppletControllerForDebug()
+        public Result GetSystemAppletControllerForDebug(out ISystemAppletControllerForDebug systemAppletControllerForDebug)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            systemAppletControllerForDebug = new SystemAppletControllerForDebug();
 
             return Result.Success;
         }
 
         [CmifCommand(1000)]
-        public Result GetDebugFunctions()
+        public Result GetDebugFunctions(out IDebugFunctions debugFunctions)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            debugFunctions = new DebugFunctions();
 
             return Result.Success;
         }

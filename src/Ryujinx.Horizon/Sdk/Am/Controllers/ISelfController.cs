@@ -9,10 +9,10 @@ namespace Ryujinx.Horizon.Sdk.Am.Controllers
         Result UnlockExit();
         Result EnterFatalSection();
         Result LeaveFatalSection();
-        Result GetLibraryAppletLaunchableEvent();
-        Result SetScreenShotPermission();
-        Result SetOperationModeChangedNotification();
-        Result SetPerformanceModeChangedNotification();
+        Result GetLibraryAppletLaunchableEvent(out int arg0);
+        Result SetScreenShotPermission(int arg0);
+        Result SetOperationModeChangedNotification(bool arg0);
+        Result SetPerformanceModeChangedNotification(bool arg0);
         Result SetFocusHandlingMode();
         Result SetRestartMessageEnabled();
         Result SetScreenShotAppletIdentityInfo();

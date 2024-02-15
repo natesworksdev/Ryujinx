@@ -48,15 +48,16 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         }
 
         [CmifCommand(9)]
-        public Result GetLibraryAppletLaunchableEvent()
+        public Result GetLibraryAppletLaunchableEvent(out int arg0)
         {
+            arg0 = 0;
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return Result.Success;
         }
 
         [CmifCommand(10)]
-        public Result SetScreenShotPermission()
+        public Result SetScreenShotPermission(int arg0)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -64,7 +65,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         }
 
         [CmifCommand(11)]
-        public Result SetOperationModeChangedNotification()
+        public Result SetOperationModeChangedNotification(bool arg0)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -72,7 +73,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Controllers
         }
 
         [CmifCommand(12)]
-        public Result SetPerformanceModeChangedNotification()
+        public Result SetPerformanceModeChangedNotification(bool arg0)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
