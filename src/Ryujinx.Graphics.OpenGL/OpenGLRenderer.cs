@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool.Tick();
         }
 
-        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, float divisor, bool hostReserved)
+        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, float divisor, int hostReserved)
         {
             return _counters.QueueReport(type, resultHandler, divisor, _pipeline.DrawCount, hostReserved);
         }

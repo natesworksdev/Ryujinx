@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 return false;
             }
 
-            _hostAccessReserved = Interlocked.Increment(ref _hostAccessReserved);
+            Interlocked.Increment(ref _hostAccessReserved);
 
             return true;
         }
