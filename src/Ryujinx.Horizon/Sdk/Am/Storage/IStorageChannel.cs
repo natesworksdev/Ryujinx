@@ -5,10 +5,10 @@ namespace Ryujinx.Horizon.Sdk.Am.Storage
 {
     interface IStorageChannel : IServiceObject
     {
-        Result Push(IStorage arg0);
-        Result Unpop(IStorage arg0);
-        Result Pop(out IStorage arg0);
-        Result GetPopEventHandle(out int arg0);
+        Result Push(IStorage storage);
+        Result Unpop(IStorage storage);
+        Result Pop(out IStorage storage);
+        Result GetPopEventHandle(out int handle);
         Result Clear();
     }
 }
