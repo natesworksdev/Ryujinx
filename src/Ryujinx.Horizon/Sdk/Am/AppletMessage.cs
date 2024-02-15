@@ -19,7 +19,7 @@ namespace Ryujinx.Horizon.Sdk.Am
         SleepRequiredByHighTemperature = 27,
         SleepRequiredByLowBattery = 28,
         AutoPowerDown = 29,
-        OperationModeChanged  = 30,
+        OperationModeChanged = 30,
         PerformanceModeChanged = 31,
         DetectReceivingCecSystemStandby = 32,
         SdCardRemoved = 33,

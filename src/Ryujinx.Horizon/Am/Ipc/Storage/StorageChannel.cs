@@ -8,7 +8,12 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
 {
     partial class StorageChannel : IStorageChannel
     {
-        private Stack<IStorage> _storages;
+        private readonly Stack<IStorage> _storages;
+
+        public StorageChannel()
+        {
+            _storages = new Stack<IStorage>();
+        }
 
         [CmifCommand(0)]
         public Result Push(IStorage storage)
