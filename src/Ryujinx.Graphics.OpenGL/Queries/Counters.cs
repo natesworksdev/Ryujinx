@@ -82,9 +82,18 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public bool QueueCopy(BufferedQuery query)
         {
-            _queuedCopies.Add(query);
+            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Nvidia)
+            {
+                // NVIDIA seems to make up a rule where query results can't be copied to buffers
+                // when unrelated query objects are in use.
+                return false;
+            }
+            else
+            {
+                _queuedCopies.Add(query);
 
-            return true;
+                return true;
+            }
         }
 
         public void Dispose()
