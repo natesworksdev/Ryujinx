@@ -2,15 +2,18 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Storage;
 using Ryujinx.Horizon.Sdk.Sf;
+using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Am.Ipc.Storage
 {
     partial class StorageChannel : IStorageChannel
     {
+        private Stack<IStorage> _storages;
+
         [CmifCommand(0)]
         public Result Push(IStorage storage)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            _storages.Push(storage);
 
             return Result.Success;
         }
@@ -26,8 +29,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         [CmifCommand(2)]
         public Result Pop(out IStorage storage)
         {
-            storage = new Storage();
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            storage = _storages.Pop();
 
             return Result.Success;
         }
@@ -44,7 +46,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         [CmifCommand(4)]
         public Result Clear()
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            _storages.Clear();
 
             return Result.Success;
         }

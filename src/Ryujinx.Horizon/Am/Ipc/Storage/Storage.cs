@@ -7,11 +7,19 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
 {
     partial class Storage : IStorage
     {
+        public bool IsReadOnly { get; private set; }
+        public byte[] Data { get; private set; }
+
+        public Storage(byte[] data, bool isReadOnly = false)
+        {
+            IsReadOnly = isReadOnly;
+            Data = data;
+        }
+
         [CmifCommand(0)]
         public Result Open(out IStorageAccessor storageAccessor)
         {
-            storageAccessor = new StorageAccessor();
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            storageAccessor = new StorageAccessor(this);
 
             return Result.Success;
         }
@@ -19,17 +27,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         [CmifCommand(1)]
         public Result OpenTransferStorage(out ITransferStorageAccessor transferStorageAccessor)
         {
-            transferStorageAccessor = new TransferStorageAccessor();
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
-
-            return Result.Success;
-        }
-
-        // TODO: Get CMD No.
-        public Result GetAndInvalidate(out IStorage storage)
-        {
-            storage = new Storage();
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            transferStorageAccessor = new TransferStorageAccessor(this);
 
             return Result.Success;
         }

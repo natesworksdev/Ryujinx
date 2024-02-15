@@ -7,6 +7,5 @@ namespace Ryujinx.Horizon.Sdk.Am.Storage
     {
         Result Open(out IStorageAccessor storageAccessor);
         Result OpenTransferStorage(out ITransferStorageAccessor transferStorageAccessor);
-        Result GetAndInvalidate(out IStorage storage);
     }
 }

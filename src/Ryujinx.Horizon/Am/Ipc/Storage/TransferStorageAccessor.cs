@@ -7,11 +7,17 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
 {
     partial class TransferStorageAccessor : ITransferStorageAccessor
     {
+        private readonly Storage _storage;
+
+        public TransferStorageAccessor(Storage storage)
+        {
+            _storage = storage;
+        }
+
         [CmifCommand(0)]
         public Result GetSize(out long size)
         {
-            size = 0;
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            size = _storage.Data.Length;
 
             return Result.Success;
         }
