@@ -5,8 +5,8 @@ namespace Ryujinx.Horizon.Sdk.Am.Storage
 {
     interface IStorage : IServiceObject
     {
-        Result Open(out IStorageAccessor arg0);
-        Result OpenTransferStorage(out ITransferStorageAccessor arg0);
-        Result GetAndInvalidate(out IStorage arg0);
+        Result Open(out IStorageAccessor storageAccessor);
+        Result OpenTransferStorage(out ITransferStorageAccessor transferStorageAccessor);
+        Result GetAndInvalidate(out IStorage storage);
     }
 }
