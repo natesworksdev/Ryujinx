@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am.Storage;
 using Ryujinx.Horizon.Sdk.Sf;
+using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
 
 namespace Ryujinx.Horizon.Am.Ipc.Storage
@@ -18,7 +19,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         }
 
         [CmifCommand(10)]
-        public Result Write(long arg0, ReadOnlySpan<byte> span)
+        public Result Write(long offset, [Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] ReadOnlySpan<byte> span)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -26,7 +27,7 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         }
 
         [CmifCommand(11)]
-        public Result Read(long arg0, ReadOnlySpan<byte> span)
+        public Result Read(long offset, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<byte> span)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 

@@ -17,10 +17,10 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
         }
 
         [CmifCommand(1)]
-        public Result GetHandle(out int arg0, out ulong arg1)
+        public Result GetHandle([CopyHandle] out int handle, out ulong size)
         {
-            arg0 = 0;
-            arg1 = 0;
+            handle = 0;
+            size = 0;
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return Result.Success;
