@@ -15,6 +15,12 @@ namespace Ryujinx.Horizon.Am.Ipc.Storage
             Data = data;
         }
 
+        // TODO: Something for this...
+        public Storage(IStorage handle)
+        {
+
+        }
+
         [CmifCommand(0)]
         public Result Open(out IStorageAccessor storageAccessor)
         {
