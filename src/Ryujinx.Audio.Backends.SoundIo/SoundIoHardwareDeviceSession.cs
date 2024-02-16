@@ -70,9 +70,9 @@ namespace Ryujinx.Audio.Backends.SoundIo
             _outputStream.SetVolume(_driver.Volume * volume);
         }
 
-        public void UpdateVolume(float newVolume)
+        public void UpdateMasterVolume(float newVolume)
         {
-            _outputStream.SetVolume(_driver.Volume * newVolume);
+            _outputStream.SetVolume(newVolume * _volume);
         }
 
         public override void Start()

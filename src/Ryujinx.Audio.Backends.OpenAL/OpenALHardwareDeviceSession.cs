@@ -28,8 +28,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
             _targetFormat = GetALFormat();
             _isActive = false;
             _playedSampleCount = 0;
-            _volume = 1f;
-            UpdateVolume(1f);
+            SetVolume(1f);
         }
 
         private ALFormat GetALFormat()
@@ -89,7 +88,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
         {
             _volume = volume;
 
-            UpdateVolume(volume);
+            UpdateMasterVolume(_driver.Volume);
         }
 
         public override float GetVolume()
@@ -97,11 +96,11 @@ namespace Ryujinx.Audio.Backends.OpenAL
             return _volume;
         }
 
-        public void UpdateVolume(float newVolume)
+        public void UpdateMasterVolume(float newVolume)
         {
             lock (_lock)
             {
-                AL.Source(_sourceId, ALSourcef.Gain, _driver.Volume * newVolume);
+                AL.Source(_sourceId, ALSourcef.Gain, newVolume * _volume);
             }
         }
 

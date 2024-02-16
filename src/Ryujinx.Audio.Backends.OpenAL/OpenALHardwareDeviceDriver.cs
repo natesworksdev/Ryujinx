@@ -34,7 +34,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
                 foreach (OpenALHardwareDeviceSession session in _sessions.Keys)
                 {
-                    session.UpdateVolume(value);
+                    session.UpdateMasterVolume(value);
                 }
             }
         }

@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
                 foreach (SoundIoHardwareDeviceSession session in _sessions.Keys)
                 {
-                    session.UpdateVolume(value);
+                    session.UpdateMasterVolume(value);
                 }
             }
         }
