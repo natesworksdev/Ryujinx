@@ -1822,8 +1822,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [CommandCmif(1004)]
-        // SetTouchScreenResolution(int width, int height)
+        [CommandCmif(1004)] // 17.0.0+
+        // SetTouchScreenResolution(int width, int height, nn::applet::AppletResourceUserId)
         public ResultCode SetTouchScreenResolution(ServiceCtx context)
         {
             int width = context.RequestData.ReadInt32();
