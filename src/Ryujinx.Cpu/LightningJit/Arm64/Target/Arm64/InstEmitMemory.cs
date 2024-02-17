@@ -13,7 +13,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
         public static void RewriteSysInstruction(int asBits, MemoryManagerType mmType, CodeWriter writer, RegisterAllocator regAlloc, uint encoding)
         {
-            // TODO: Handle IC instruciton, it should invalidate the JIT cache.
+            // TODO: Handle IC instruction, it should invalidate the JIT cache.
 
             if (InstEmitSystem.IsCacheInstForbidden(encoding))
             {
