@@ -220,9 +220,8 @@ namespace Ryujinx.Cpu
             lock (_treeLock)
             {
                 ulong alignment = MemoryBlock.GetPageSize();
-                bool isAligned = ((va | pa | size) & (alignment - 1)) == 0;
 
-                if (flags.HasFlag(MemoryMapFlags.Private) && !isAligned)
+                if (flags.HasFlag(MemoryMapFlags.Private))
                 {
                     Update(va, pa, size, MappingType.Private);
                 }
