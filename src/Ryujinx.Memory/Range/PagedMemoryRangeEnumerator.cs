@@ -22,14 +22,14 @@ namespace Ryujinx.Memory.Range
             _offset = 0;
         }
 
-        public MemoryRange Current => _current!.Value;
+        public readonly MemoryRange Current => _current!.Value;
 
-        internal bool HasCurrent => _current.HasValue;
+        internal readonly bool HasCurrent => _current.HasValue;
 
         /// <summary>
         /// Returning this through a GetEnumerator() call allows it to be used directly in a foreach loop.
         /// </summary>
-        public PagedMemoryRangeEnumerator GetEnumerator() => this;
+        public readonly PagedMemoryRangeEnumerator GetEnumerator() => this;
 
         public bool MoveNext()
         {

@@ -12,12 +12,12 @@ namespace Ryujinx.Memory.Range
             _enumerator = new PagedMemoryRangeEnumerator(startAddress, size, pageSize, mapAddress);
         }
 
-        public MemoryRange Current => _current!.Value;
+        public readonly MemoryRange Current => _current!.Value;
 
         /// <summary>
         /// Returning this through a GetEnumerator() call allows it to be used directly in a foreach loop.
         /// </summary>
-        public PagedMemoryRangeCoalescingEnumerator GetEnumerator() => this;
+        public readonly PagedMemoryRangeCoalescingEnumerator GetEnumerator() => this;
 
         public bool MoveNext()
         {
