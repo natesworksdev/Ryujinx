@@ -5,15 +5,15 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 {
     interface IHardwareOpusDecoderManager : IServiceObject
     {
-        Result OpenHardwareOpusDecoder(out IHardwareOpusDecoder arg0, HardwareOpusDecoderParameterInternal arg1, int arg2, int arg3);
-        Result GetWorkBufferSize(out int arg0, HardwareOpusDecoderParameterInternal arg1);
-        Result OpenHardwareOpusDecoderForMultiStream(out IHardwareOpusDecoder arg0, in HardwareOpusMultiStreamDecoderParameterInternal arg1, int arg2, int arg3);
-        Result GetWorkBufferSizeForMultiStream(out int arg0, HardwareOpusMultiStreamDecoderParameterInternal arg1);
-        Result OpenHardwareOpusDecoderEx(out IHardwareOpusDecoder arg0, HardwareOpusDecoderParameterInternalEx arg1, int arg2, int arg3);
-        Result GetWorkBufferSizeEx(out int arg0, HardwareOpusDecoderParameterInternalEx arg1);
-        Result OpenHardwareOpusDecoderForMultiStreamEx(out IHardwareOpusDecoder arg0, in HardwareOpusMultiStreamDecoderParameterInternalEx arg1, int arg2, int arg3);
-        Result GetWorkBufferSizeForMultiStreamEx(out int arg0, HardwareOpusMultiStreamDecoderParameterInternalEx arg1);
-        Result GetWorkBufferSizeExEx(out int arg0, HardwareOpusDecoderParameterInternalEx arg1);
-        Result GetWorkBufferSizeForMultiStreamExEx(out int arg0, HardwareOpusMultiStreamDecoderParameterInternalEx arg1);
+        Result OpenHardwareOpusDecoder(out IHardwareOpusDecoder decoder, HardwareOpusDecoderParameterInternal parameter, int workBufferHandle, int workBufferSize);
+        Result GetWorkBufferSize(out int size, HardwareOpusDecoderParameterInternal parameter);
+        Result OpenHardwareOpusDecoderForMultiStream(out IHardwareOpusDecoder decoder, in HardwareOpusMultiStreamDecoderParameterInternal parameter, int workBufferHandle, int workBufferSize);
+        Result GetWorkBufferSizeForMultiStream(out int size, HardwareOpusMultiStreamDecoderParameterInternal parameter);
+        Result OpenHardwareOpusDecoderEx(out IHardwareOpusDecoder decoder, HardwareOpusDecoderParameterInternalEx parameter, int workBufferHandle, int workBufferSize);
+        Result GetWorkBufferSizeEx(out int size, HardwareOpusDecoderParameterInternalEx parameter);
+        Result OpenHardwareOpusDecoderForMultiStreamEx(out IHardwareOpusDecoder decoder, in HardwareOpusMultiStreamDecoderParameterInternalEx parameter, int workBufferHandle, int workBufferSize);
+        Result GetWorkBufferSizeForMultiStreamEx(out int size, HardwareOpusMultiStreamDecoderParameterInternalEx parameter);
+        Result GetWorkBufferSizeExEx(out int size, HardwareOpusDecoderParameterInternalEx parameter);
+        Result GetWorkBufferSizeForMultiStreamExEx(out int size, HardwareOpusMultiStreamDecoderParameterInternalEx parameter);
     }
 }

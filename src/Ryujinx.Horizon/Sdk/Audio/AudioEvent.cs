@@ -40,6 +40,7 @@ namespace Ryujinx.Horizon.Sdk.Audio
                 Os.DestroySystemEvent(ref _systemEvent);
             }
         }
+
         public void Dispose()
         {
             Dispose(disposing: true);

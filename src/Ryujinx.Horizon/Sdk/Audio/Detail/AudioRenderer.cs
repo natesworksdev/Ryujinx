@@ -35,7 +35,6 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         public Result GetSampleCount(out int sampleCount)
         {
             sampleCount = (int)_renderSystem.GetSampleCount();
-            ;
 
             return Result.Success;
         }
@@ -44,7 +43,6 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         public Result GetMixBufferCount(out int mixBufferCount)
         {
             mixBufferCount = (int)_renderSystem.GetMixBufferCount();
-            ;
 
             return Result.Success;
         }
