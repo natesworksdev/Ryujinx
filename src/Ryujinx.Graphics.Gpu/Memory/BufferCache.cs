@@ -3,6 +3,7 @@ using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -944,7 +945,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 buffer = _buffers.FindFirstOverlap(address, size);
 
-                buffer.SynchronizeMemoryWithVirtualCopyBack(address, size);
+                buffer.CopyFromDependantVirtualBuffers();
+                buffer.SynchronizeMemory(address, size);
 
                 if (write)
                 {
@@ -986,6 +988,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
         /// <param name="copyBackVirtual">Whether virtual buffers that uses this buffer as backing memory should have its data copied back if modified</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SynchronizeBufferRange(ulong address, ulong size, bool copyBackVirtual)
         {
             if (size != 0)
@@ -994,12 +997,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (copyBackVirtual)
                 {
-                    buffer.SynchronizeMemoryWithVirtualCopyBack(address, size);
+                    buffer.CopyFromDependantVirtualBuffers();
                 }
-                else
-                {
-                    buffer.SynchronizeMemory(address, size);
-                }
+
+                buffer.SynchronizeMemory(address, size);
             }
         }
 

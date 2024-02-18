@@ -5,6 +5,7 @@ using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -218,22 +219,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Copies modified data on all virtual buffers back to this buffer,
-        /// then performs guest to host memory synchronization of the buffer data.
-        /// </summary>
-        /// <remarks>
-        /// This causes the buffer data to be overwritten if a write was detected from the CPU,
-        /// since the last call to this method.
-        /// </remarks>
-        /// <param name="address">Start address of the range to synchronize</param>
-        /// <param name="size">Size in bytes of the range to synchronize</param>
-        public void SynchronizeMemoryWithVirtualCopyBack(ulong address, ulong size)
-        {
-            CopyFromDependantVirtualBuffers();
-            SynchronizeMemory(address, size);
-        }
-
-        /// <summary>
         /// Performs guest to host memory synchronization of the buffer data.
         /// </summary>
         /// <remarks>
@@ -242,6 +227,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </remarks>
         /// <param name="address">Start address of the range to synchronize</param>
         /// <param name="size">Size in bytes of the range to synchronize</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SynchronizeMemory(ulong address, ulong size)
         {
             if (_useGranular)
@@ -714,30 +700,41 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Copies all modified ranges from all virtual buffers back into this buffer.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyFromDependantVirtualBuffers()
         {
             if (_virtualDependencies != null)
             {
-                foreach (var virtualBuffer in _virtualDependencies.OrderBy(x => x.ModificationSequenceNumber))
+                CopyFromDependantVirtualBuffersImpl();
+            }
+        }
+
+        /// <summary>
+        /// Copies all modified ranges from all virtual buffers back into this buffer.
+        /// </summary>
+        /// 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void CopyFromDependantVirtualBuffersImpl()
+        {
+            foreach (var virtualBuffer in _virtualDependencies.OrderBy(x => x.ModificationSequenceNumber))
+            {
+                virtualBuffer.ConsumeModifiedRegion(this, (mAddress, mSize) =>
                 {
-                    virtualBuffer.ConsumeModifiedRegion(this, (mAddress, mSize) =>
-                    {
-                        // Get offset inside both this and the virtual buffer.
-                        // Note that sometimes there is no right answer for the virtual offset,
-                        // as the same physical range might be mapped multiple times inside a virtual buffer.
-                        // We just assume it does not happen in practice as it can only be implemented correctly
-                        // when the host has support for proper sparse mapping.
+                    // Get offset inside both this and the virtual buffer.
+                    // Note that sometimes there is no right answer for the virtual offset,
+                    // as the same physical range might be mapped multiple times inside a virtual buffer.
+                    // We just assume it does not happen in practice as it can only be implemented correctly
+                    // when the host has support for proper sparse mapping.
 
-                        ulong mEndAddress = mAddress + mSize;
-                        mAddress = Math.Max(mAddress, Address);
-                        mSize = Math.Min(mEndAddress, EndAddress) - mAddress;
+                    ulong mEndAddress = mAddress + mSize;
+                    mAddress = Math.Max(mAddress, Address);
+                    mSize = Math.Min(mEndAddress, EndAddress) - mAddress;
 
-                        int physicalOffset = (int)(mAddress - Address);
-                        int virtualOffset = virtualBuffer.Range.FindOffset(new(mAddress, mSize));
+                    int physicalOffset = (int)(mAddress - Address);
+                    int virtualOffset = virtualBuffer.Range.FindOffset(new(mAddress, mSize));
 
-                        _context.Renderer.Pipeline.CopyBuffer(virtualBuffer.Handle, Handle, virtualOffset, physicalOffset, (int)mSize);
-                    });
-                }
+                    _context.Renderer.Pipeline.CopyBuffer(virtualBuffer.Handle, Handle, virtualOffset, physicalOffset, (int)mSize);
+                });
             }
         }
 
