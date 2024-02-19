@@ -7,7 +7,7 @@ using System;
 
 namespace Ryujinx.Horizon.Sdk.Audio.Detail
 {
-    partial class FinalOutputRecorder : IFinalOutputRecorder
+    partial class FinalOutputRecorder : IFinalOutputRecorder, IDisposable
     {
         private int _processHandle;
         private SystemEventType _event;
