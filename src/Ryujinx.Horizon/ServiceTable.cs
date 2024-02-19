@@ -44,6 +44,7 @@ namespace Ryujinx.Horizon
             RegisterService<BcatMain>();
             RegisterService<FriendsMain>();
             RegisterService<HshlMain>();
+            RegisterService<HwopusMain>(); // TODO: Merge with audio once we can start multiple threads.
             RegisterService<InsMain>();
             RegisterService<LblMain>();
             RegisterService<LmMain>();

@@ -25,7 +25,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
                 return new()
                 {
                     Length = BinaryPrimitives.ReadUInt32BigEndian(data),
-                    FinalRange = BinaryPrimitives.ReadUInt32BigEndian(data[sizeof(uint)..])
+                    FinalRange = BinaryPrimitives.ReadUInt32BigEndian(data[sizeof(uint)..]),
                 };
             }
         }
