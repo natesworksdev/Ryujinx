@@ -712,7 +712,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Copies all modified ranges from all virtual buffers back into this buffer.
         /// </summary>
-        /// 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void CopyFromDependantVirtualBuffersImpl()
         {
