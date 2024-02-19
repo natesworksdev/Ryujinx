@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Memory.Range
 {
@@ -12,7 +13,11 @@ namespace Ryujinx.Memory.Range
             _enumerator = new PagedMemoryRangeEnumerator(startAddress, size, pageSize, mapAddress);
         }
 
-        public readonly MemoryRange Current => _current!.Value;
+        public readonly MemoryRange Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current!.Value;
+        }
 
         /// <summary>
         /// Returning this through a GetEnumerator() call allows it to be used directly in a foreach loop.

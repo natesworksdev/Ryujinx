@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Memory.Range
 {
@@ -22,9 +23,17 @@ namespace Ryujinx.Memory.Range
             _offset = 0;
         }
 
-        public readonly MemoryRange Current => _current!.Value;
+        public readonly MemoryRange Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current!.Value;
+        }
 
-        internal readonly bool HasCurrent => _current.HasValue;
+        internal readonly bool HasCurrent
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _current.HasValue;
+        }
 
         /// <summary>
         /// Returning this through a GetEnumerator() call allows it to be used directly in a foreach loop.
@@ -59,6 +68,7 @@ namespace Ryujinx.Memory.Range
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetCurrent(ulong address, int size)
         {
             _current = new MemoryRange(address, (ulong)size);
