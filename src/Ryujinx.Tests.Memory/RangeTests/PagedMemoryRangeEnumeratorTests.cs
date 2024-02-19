@@ -18,7 +18,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(3, results.Count);
@@ -45,7 +47,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(2, results.Count);
@@ -70,7 +74,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(4, results.Count);
@@ -103,7 +109,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(4, results.Count);

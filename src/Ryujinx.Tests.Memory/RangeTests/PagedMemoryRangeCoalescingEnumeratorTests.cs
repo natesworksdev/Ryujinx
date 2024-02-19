@@ -18,7 +18,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(1, results.Count);
@@ -39,7 +41,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(1, results.Count);
@@ -60,7 +64,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(1, results.Count);
@@ -81,7 +87,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(1, results.Count);
@@ -97,11 +105,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             const int StartAddress = 0;
             const int Size = 14;
             const int PageSize = 4;
-            var memoryMap = new Dictionary<ulong, ulong>(){
-                { 0ul, 0ul },
-                { 4ul, 4ul },
-                { 8ul, 20ul },
-                { 12ul, 24ul },
+            var memoryMap = new Dictionary<ulong, ulong>()
+            {
+                { 0ul, 0ul }, { 4ul, 4ul }, { 8ul, 20ul }, { 12ul, 24ul },
             };
             ulong MemoryMapLookup(ulong a) => memoryMap.TryGetValue(a, out var value) ? value : a;
             var enumerator = new PagedMemoryRangeCoalescingEnumerator(StartAddress, Size, PageSize, MemoryMapLookup);
@@ -109,7 +115,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(2, results.Count);
@@ -128,11 +136,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             const int StartAddress = 0;
             const int Size = 14;
             const int PageSize = 4;
-            var memoryMap = new Dictionary<ulong, ulong>(){
-                { 0ul, 0ul },
-                { 4ul, 10ul },
-                { 8ul, 20ul },
-                { 12ul, 30ul },
+            var memoryMap = new Dictionary<ulong, ulong>()
+            {
+                { 0ul, 0ul }, { 4ul, 10ul }, { 8ul, 20ul }, { 12ul, 30ul },
             };
             ulong MemoryMapLookup(ulong a) => memoryMap.TryGetValue(a, out var value) ? value : a;
             var enumerator = new PagedMemoryRangeCoalescingEnumerator(StartAddress, Size, PageSize, MemoryMapLookup);
@@ -140,7 +146,9 @@ namespace Ryujinx.Tests.Memory.RangeTests
             // Act
             var results = new List<MemoryRange>();
             foreach (var memoryRange in enumerator)
+            {
                 results.Add(memoryRange);
+            }
 
             // Assert
             Assert.AreEqual(4, results.Count);
