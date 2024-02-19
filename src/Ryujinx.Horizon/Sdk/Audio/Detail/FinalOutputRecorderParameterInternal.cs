@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Horizon.Sdk.Audio.Detail
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x10, Pack = 0x4)]
-    struct FinalOutputRecorderParameterInternal
+    readonly struct FinalOutputRecorderParameterInternal
     {
         public readonly uint SampleRate;
         public readonly uint ChannelCount;
