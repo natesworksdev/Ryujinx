@@ -15,7 +15,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
             AppletResourceUserId appletResourceId)
         {
             recorder = new FinalOutputRecorder(processHandle);
-            outParameter = default;
+            outParameter = new(parameter.SampleRate, 2, 0);
 
             return Result.Success;
         }
