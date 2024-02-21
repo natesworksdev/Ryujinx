@@ -49,7 +49,9 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
         }
 
         [CmifCommand(3)] // 3.0.0+
-        public Result GetWorkBufferSizeForMultiStream(out int size, HardwareOpusMultiStreamDecoderParameterInternal parameter)
+        public Result GetWorkBufferSizeForMultiStream(
+            out int size,
+            [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x110)] in HardwareOpusMultiStreamDecoderParameterInternal parameter)
         {
             int opusDecoderSize = GetOpusMultistreamDecoderSize(parameter.NumberOfStreams, parameter.NumberOfStereoStreams);
 
@@ -103,7 +105,9 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
         }
 
         [CmifCommand(7)] // 12.0.0+
-        public Result GetWorkBufferSizeForMultiStreamEx(out int size, HardwareOpusMultiStreamDecoderParameterInternalEx parameter)
+        public Result GetWorkBufferSizeForMultiStreamEx(
+            out int size,
+            [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x118)] in HardwareOpusMultiStreamDecoderParameterInternalEx parameter)
         {
             int opusDecoderSize = GetOpusMultistreamDecoderSize(parameter.NumberOfStreams, parameter.NumberOfStereoStreams);
 
@@ -126,7 +130,9 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
         }
 
         [CmifCommand(9)] // 16.0.0+
-        public Result GetWorkBufferSizeForMultiStreamExEx(out int size, HardwareOpusMultiStreamDecoderParameterInternalEx parameter)
+        public Result GetWorkBufferSizeForMultiStreamExEx(
+            out int size,
+            [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x118)] in HardwareOpusMultiStreamDecoderParameterInternalEx parameter)
         {
             // NOTE: GetWorkBufferSizeForMultiStreamEx uses hardcoded values to compute the returned size.
             //       GetWorkBufferSizeForMultiStreamExEx fixes that by using dynamic values.
