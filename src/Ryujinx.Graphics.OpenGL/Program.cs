@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.LinkProgram(Handle);
 
-            FragmentOutputMap = fragmentOutputMap;
+            FragmentOutputMap = HasFragmentShader ? fragmentOutputMap : 0;
         }
 
         public Program(ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             HasFragmentShader = hasFragmentShader;
-            FragmentOutputMap = fragmentOutputMap;
+            FragmentOutputMap = HasFragmentShader ? fragmentOutputMap : 0;
         }
 
         public void Bind()
