@@ -415,7 +415,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScale", true, inArgumentsCount, 0);
         }
 
-        private static Function GenerateTexelFetchScaleBindlessFunction()
+        private Function GenerateTexelFetchScaleBindlessFunction()
         {
             EmitterContext context = new();
 
@@ -431,11 +431,38 @@ namespace Ryujinx.Graphics.Shader.Translation
             context.Return(input);
             context.MarkLabel(lblScaleNotOne);
 
+            int inArgumentsCount;
+
+            if (_stage == ShaderStage.Fragment)
+            {
+                Operand scaleIsLessThanZero = context.FPCompareLess(scale, ConstF(0f));
+                Operand lblScaleGreaterOrEqualZero = Label();
+
+                context.BranchIfFalse(lblScaleGreaterOrEqualZero, scaleIsLessThanZero);
+
+                Operand negScale = context.FPNegate(scale);
+                Operand inputScaled = context.FPMultiply(context.IConvertS32ToFP32(input), negScale);
+                Operand fragCoordX = context.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(0));
+                Operand fragCoordY = context.Load(StorageKind.Input, IoVariable.FragmentCoord, null, Const(1));
+                Operand fragCoord = context.ConditionalSelect(Argument(2), fragCoordY, fragCoordX);
+                Operand inputBias = context.FPModulo(fragCoord, negScale);
+                Operand inputWithBias = context.FPAdd(inputScaled, inputBias);
+
+                context.Return(context.FP32ConvertToS32(inputWithBias));
+                context.MarkLabel(lblScaleGreaterOrEqualZero);
+
+                inArgumentsCount = 3;
+            }
+            else
+            {
+                inArgumentsCount = 2;
+            }
+
             Operand inputScaled2 = context.FPMultiply(context.IConvertS32ToFP32(input), scale);
 
             context.Return(context.FP32ConvertToS32(inputScaled2));
 
-            return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScaleBindless", true, 2, 0);
+            return new Function(ControlFlowGraph.Create(context.GetOperations()).Blocks, "TexelFetchScaleBindless", true, inArgumentsCount, 0);
         }
 
         private Function GenerateTextureSizeUnscaleFunction()
@@ -505,6 +532,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand id = context.BitwiseAnd(nvHandle, Const(0xfffff));
             Operand tableIndex = context.ShiftRightU32(id, Const(8));
             Operand scaleIndex = context.Load(StorageKind.ConstantBuffer, bindlessTableBinding, Const(0), tableIndex, Const(0));
+            scaleIndex = context.BitwiseOr(scaleIndex, context.BitwiseAnd(id, Const(0xff)));
             Operand scale = context.Load(StorageKind.StorageBuffer, bindlessScalesBinding, Const(0), scaleIndex);
 
             return scale;
