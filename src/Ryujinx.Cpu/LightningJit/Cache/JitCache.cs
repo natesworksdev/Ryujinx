@@ -122,7 +122,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
             int regionStart = offset & ~_pageMask;
             int regionEnd = (endOffs + _pageMask) & ~_pageMask;
 
-            _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+            _jitRegion.Block.MapAsRw((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
 
         private static void ReprotectAsExecutable(int offset, int size)
