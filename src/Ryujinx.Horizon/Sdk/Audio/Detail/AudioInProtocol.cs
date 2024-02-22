@@ -6,16 +6,18 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
     [StructLayout(LayoutKind.Sequential, Size = 0x8, Pack = 0x1)]
     struct AudioInProtocol
     {
-        public Array8<byte> Value;
+        public AudioInProtocolName Name;
+        public Array7<byte> Padding;
 
-        public AudioInProtocol(bool value)
+        public AudioInProtocol(AudioInProtocolName name)
         {
-            Value[0] = value ? (byte)1 : (byte)0;
+            Name = name;
+            Padding = new();
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return (Value[0] != 0).ToString();
+            return Name.ToString();
         }
     }
 }
