@@ -126,7 +126,8 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             int opusDecoderSize = GetOpusMultistreamDecoderSize(parameter.NumberOfStreams, parameter.NumberOfStereoStreams);
 
             int streamSize = BitUtils.AlignUp(parameter.NumberOfStreams * 1500, 64);
-            int frameSize = BitUtils.AlignUp(parameter.ChannelsCount * 1920 / (48000 / parameter.SampleRate), 64);
+            int sampleRateRatio = parameter.SampleRate != 0 ? 48000 / parameter.SampleRate : 0;
+            int frameSize = BitUtils.AlignUp(sampleRateRatio != 0 ? parameter.ChannelsCount * 1920 / sampleRateRatio : 0, 64);
             size = opusDecoderSize + streamSize + frameSize;
 
             return Result.Success;
@@ -246,7 +247,8 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             int opusDecoderSize = fromDsp ? GetDspOpusDecoderSize(parameter.ChannelsCount) : GetOpusDecoderSize(parameter.ChannelsCount);
 
             int frameSizeMono48KHz = parameter.Flags.HasFlag(OpusDecoderFlags.LargeFrameSize) ? 5760 : 1920;
-            int frameSize = BitUtils.AlignUp(parameter.ChannelsCount * frameSizeMono48KHz / (48000 / parameter.SampleRate), 64);
+            int sampleRateRatio = parameter.SampleRate != 0 ? 48000 / parameter.SampleRate : 0;
+            int frameSize = BitUtils.AlignUp(sampleRateRatio != 0 ? parameter.ChannelsCount * frameSizeMono48KHz / sampleRateRatio : 0, 64);
             size = opusDecoderSize + 1536 + frameSize;
 
             return Result.Success;
@@ -277,7 +279,6 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             int frameSizeMono48KHz = parameter.Flags.HasFlag(OpusDecoderFlags.LargeFrameSize) ? 5760 : 1920;
             int streamSize = BitUtils.AlignUp(parameter.NumberOfStreams * 1500, 64);
-
             int sampleRateRatio = parameter.SampleRate != 0 ? 48000 / parameter.SampleRate : 0;
             int frameSize = BitUtils.AlignUp(sampleRateRatio != 0 ? parameter.ChannelsCount * frameSizeMono48KHz / sampleRateRatio : 0, 64);
             size = opusDecoderSize + streamSize + frameSize;
