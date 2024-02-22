@@ -242,11 +242,11 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             if (result == OpusError.OPUS_INVALID_PACKET)
             {
-                return CodecResult.OpusInvalidInput;
+                return CodecResult.OpusInvalidPacket;
             }
             else if (result == OpusError.OPUS_BAD_ARG)
             {
-                return CodecResult.OpusInvalidInput;
+                return CodecResult.OpusBadArg;
             }
 
             return Result.Success;
@@ -269,7 +269,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             if (streamSize < Unsafe.SizeOf<OpusPacketHeader>())
             {
-                return CodecResult.OpusInvalidInput;
+                return CodecResult.InvalidLength;
             }
 
             OpusPacketHeader header = OpusPacketHeader.FromSpan(input);
@@ -278,7 +278,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             if (totalSize > streamSize)
             {
-                return CodecResult.OpusInvalidInput;
+                return CodecResult.InvalidLength;
             }
 
             byte[] opusData = input.Slice(headerSize, (int)header.Length).ToArray();
@@ -289,7 +289,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             {
                 if ((uint)numSamples * (uint)decoder.ChannelsCount * sizeof(short) > outputSize)
                 {
-                    return CodecResult.OpusInvalidInput;
+                    return CodecResult.InvalidLength;
                 }
 
                 outPcmData = new short[numSamples * decoder.ChannelsCount];
@@ -307,7 +307,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
                 catch (OpusException)
                 {
                     // TODO: As OpusException doesn't return the exact error code, this is inaccurate in some cases...
-                    return CodecResult.OpusInvalidInput;
+                    return CodecResult.InvalidLength;
                 }
             }
 
