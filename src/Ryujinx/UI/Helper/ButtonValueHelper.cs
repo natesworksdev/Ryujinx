@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
-namespace Ryujinx.Ui.Helper
+namespace Ryujinx.UI.Helper
 {
     public static class ButtonValueHelper
     {

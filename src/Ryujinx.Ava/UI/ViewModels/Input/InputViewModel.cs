@@ -19,7 +19,7 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Input;
-using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.UI.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -181,7 +181,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                 if (!string.IsNullOrWhiteSpace(_controllerImage))
                 {
-                    SvgSource source = new();
+                    SvgSource source = new(default(Uri));
 
                     source.Load(EmbeddedResources.GetStream(_controllerImage));
 

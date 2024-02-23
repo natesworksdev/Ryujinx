@@ -9,9 +9,9 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using Ryujinx.Input.GTK3;
-using Ryujinx.Ui.Common.Configuration;
-using Ryujinx.Ui.Helper;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Helper;
+using Ryujinx.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,7 +23,7 @@ using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInpu
 using GUI = Gtk.Builder.ObjectAttribute;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
 
-namespace Ryujinx.Ui.Windows
+namespace Ryujinx.UI.Windows
 {
     public class ControllerWindow : Window
     {
