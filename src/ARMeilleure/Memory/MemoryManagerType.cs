@@ -19,6 +19,18 @@ namespace ARMeilleure.Memory
         SoftwarePageTable,
 
         /// <summary>
+        /// High level implementation using a software flat page table for address translation
+        /// with no support for handling invalid or non-contiguous memory access.
+        /// </summary>
+        HostTracked,
+
+        /// <summary>
+        /// High level implementation using a software flat page table for address translation
+        /// without masking the address and no support for handling invalid or non-contiguous memory access.
+        /// </summary>
+        HostTrackedUnsafe,
+
+        /// <summary>
         /// High level implementation with mappings managed by the host OS, effectively using hardware
         /// page tables. No address translation is performed in software and the memory is just accessed directly.
         /// </summary>
@@ -36,6 +48,16 @@ namespace ARMeilleure.Memory
         public static bool IsHostMapped(this MemoryManagerType type)
         {
             return type == MemoryManagerType.HostMapped || type == MemoryManagerType.HostMappedUnsafe;
+        }
+
+        public static bool IsHostTracked(this MemoryManagerType type)
+        {
+            return type == MemoryManagerType.HostTracked || type == MemoryManagerType.HostTrackedUnsafe;
+        }
+
+        public static bool IsHostMappedOrTracked(this MemoryManagerType type)
+        {
+            return type.IsHostMapped() || type.IsHostTracked();
         }
     }
 }

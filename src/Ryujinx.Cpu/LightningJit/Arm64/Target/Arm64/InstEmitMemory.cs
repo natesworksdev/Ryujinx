@@ -522,7 +522,25 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
         {
             Operand basePointer = new(regAlloc.FixedPageTableRegister, RegisterType.Integer, OperandType.I64);
 
-            if (mmType == MemoryManagerType.HostMapped || mmType == MemoryManagerType.HostMappedUnsafe)
+            if (mmType.IsHostTracked())
+            {
+                int tempRegister = regAlloc.AllocateTempGprRegister();
+
+                Operand pte = new(tempRegister, RegisterType.Integer, OperandType.I64);
+
+                asm.Lsr(pte, guestAddress, new Operand(OperandKind.Constant, OperandType.I32, 12));
+
+                if (mmType == MemoryManagerType.HostTracked)
+                {
+                    asm.And(pte, pte, new Operand(OperandKind.Constant, OperandType.I64, ulong.MaxValue >> (64 - (asBits - 12))));
+                }
+
+                asm.LdrRr(pte, basePointer, pte, ArmExtensionType.Uxtx, true);
+                asm.Add(destination, pte, guestAddress);
+
+                regAlloc.FreeTempGprRegister(tempRegister);
+            }
+            else if (mmType.IsHostMapped())
             {
                 if (mmType == MemoryManagerType.HostMapped)
                 {
