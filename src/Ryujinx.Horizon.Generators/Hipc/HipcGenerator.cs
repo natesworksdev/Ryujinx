@@ -719,7 +719,9 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
         private static string GenerateSpanCast(string targetType, string input)
         {
-            return $"MemoryMarshal.Cast<byte, {targetType}>({input})";
+            return targetType == "byte"
+                ? input
+                : $"MemoryMarshal.Cast<byte, {targetType}>({input})";
         }
 
         private static bool HasAttribute(Compilation compilation, ParameterSyntax parameterSyntax, string fullAttributeName)
