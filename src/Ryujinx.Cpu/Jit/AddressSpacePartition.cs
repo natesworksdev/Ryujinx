@@ -349,7 +349,8 @@ namespace Ryujinx.Cpu.Jit
                     {
                         _baseMemory.Reprotect(Size, _hostPageSize, _lastPageProtection, false);
 
-                        ptPtr = _baseMemory.GetPointer(Size, _hostPageSize);;
+                        ptPtr = _baseMemory.GetPointer(Size, _hostPageSize);
+                        ;
                     }
 
                     updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
