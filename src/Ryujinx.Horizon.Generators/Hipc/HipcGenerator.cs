@@ -74,6 +74,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
                 generator.AppendLine("using Ryujinx.Horizon.Sdk.Sf.Cmif;");
                 generator.AppendLine("using Ryujinx.Horizon.Sdk.Sf.Hipc;");
                 generator.AppendLine("using System;");
+                generator.AppendLine("using System.Collections.Frozen;");
                 generator.AppendLine("using System.Collections.Generic;");
                 generator.AppendLine("using System.Runtime.CompilerServices;");
                 generator.AppendLine("using System.Runtime.InteropServices;");
@@ -171,7 +172,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
                 }
             }
 
-            generator.LeaveScope(";");
+            generator.LeaveScope(".ToFrozenDictionary();");
             generator.LeaveScope();
         }
 
