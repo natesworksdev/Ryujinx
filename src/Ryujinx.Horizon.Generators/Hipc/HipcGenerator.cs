@@ -119,7 +119,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
             foreach (var method in commandInterface.CommandImplementations)
             {
-                foreach (var commandId in GetAttributeAguments(compilation, method, TypeCommandAttribute, 0))
+                foreach (var commandId in GetAttributeArguments(compilation, method, TypeCommandAttribute, 0))
                 {
                     string[] args = new string[method.ParameterList.Parameters.Count];
 
@@ -140,8 +140,8 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
                             if (argType == CommandArgType.Buffer)
                             {
-                                string bufferFlags = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 0);
-                                string bufferFixedSize = GetFirstAttributeAgument(compilation, parameter, TypeBufferAttribute, 1);
+                                string bufferFlags = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 0);
+                                string bufferFixedSize = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 1);
 
                                 if (bufferFixedSize != null)
                                 {
@@ -175,7 +175,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
             generator.LeaveScope();
         }
 
-        private static IEnumerable<string> GetAttributeAguments(Compilation compilation, SyntaxNode syntaxNode, string attributeName, int argIndex)
+        private static IEnumerable<string> GetAttributeArguments(Compilation compilation, SyntaxNode syntaxNode, string attributeName, int argIndex)
         {
             ISymbol symbol = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetDeclaredSymbol(syntaxNode);
 
@@ -188,9 +188,9 @@ namespace Ryujinx.Horizon.Generators.Hipc
             }
         }
 
-        private static string GetFirstAttributeAgument(Compilation compilation, SyntaxNode syntaxNode, string attributeName, int argIndex)
+        private static string GetFirstAttributeArgument(Compilation compilation, SyntaxNode syntaxNode, string attributeName, int argIndex)
         {
-            return GetAttributeAguments(compilation, syntaxNode, attributeName, argIndex).FirstOrDefault();
+            return GetAttributeArguments(compilation, syntaxNode, attributeName, argIndex).FirstOrDefault();
         }
 
         private static void GenerateMethod(CodeGenerator generator, Compilation compilation, MethodDeclarationSyntax method)
