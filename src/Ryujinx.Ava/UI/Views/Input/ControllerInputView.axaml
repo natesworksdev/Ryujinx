@@ -28,6 +28,10 @@
             <Setter Property="Height" Value="27" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
+        <Style Selector="ToggleButton > TextBlock">
+            <Setter Property="TextTrimming" Value="None" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </UserControl.Styles>
     <StackPanel
         HorizontalAlignment="Stretch"
