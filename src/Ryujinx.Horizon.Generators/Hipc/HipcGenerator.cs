@@ -233,7 +233,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
                 if (buffersCount != 0)
                 {
-                    generator.AppendLine($"bool[] {IsBufferMapAliasVariableName} = new bool[{method.ParameterList.Parameters.Count}];");
+                    generator.AppendLine($"Span<bool> {IsBufferMapAliasVariableName} = stackalloc bool[{method.ParameterList.Parameters.Count}];");
                     generator.AppendLine();
 
                     generator.AppendLine($"{ResultVariableName} = processor.ProcessBuffers(ref context, {IsBufferMapAliasVariableName}, runtimeMetadata);");
