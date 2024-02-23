@@ -116,63 +116,72 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private static void GenerateMethodTable(CodeGenerator generator, Compilation compilation, CommandInterface commandInterface)
         {
             generator.EnterScope($"public IReadOnlyDictionary<int, CommandHandler> GetCommandHandlers()");
-            generator.EnterScope($"return new Dictionary<int, CommandHandler>()");
 
-            foreach (var method in commandInterface.CommandImplementations)
+            if (commandInterface.CommandImplementations.Count == 0)
             {
-                foreach (var commandId in GetAttributeArguments(compilation, method, TypeCommandAttribute, 0))
+                generator.AppendLine("return FrozenDictionary<int, CommandHandler>.Empty;");
+            }
+            else
+            {
+                generator.EnterScope($"return FrozenDictionary.ToFrozenDictionary(new []");
+
+                foreach (var method in commandInterface.CommandImplementations)
                 {
-                    string[] args = new string[method.ParameterList.Parameters.Count];
-
-                    if (args.Length == 0)
+                    foreach (var commandId in GetAttributeArguments(compilation, method, TypeCommandAttribute, 0))
                     {
-                        generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, Array.Empty<CommandArg>()) }},");
-                    }
-                    else
-                    {
-                        int index = 0;
+                        string[] args = new string[method.ParameterList.Parameters.Count];
 
-                        foreach (var parameter in method.ParameterList.Parameters)
+                        if (args.Length == 0)
                         {
-                            string canonicalTypeName = GetCanonicalTypeNameWithGenericArguments(compilation, parameter.Type);
-                            CommandArgType argType = GetCommandArgType(compilation, parameter);
+                            generator.AppendLine($"KeyValuePair.Create({commandId}, new CommandHandler({method.Identifier.Text}, Array.Empty<CommandArg>())),");
+                        }
+                        else
+                        {
+                            int index = 0;
 
-                            string arg;
-
-                            if (argType == CommandArgType.Buffer)
+                            foreach (var parameter in method.ParameterList.Parameters)
                             {
-                                string bufferFlags = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 0);
-                                string bufferFixedSize = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 1);
+                                string canonicalTypeName = GetCanonicalTypeNameWithGenericArguments(compilation, parameter.Type);
+                                CommandArgType argType = GetCommandArgType(compilation, parameter);
 
-                                if (bufferFixedSize != null)
+                                string arg;
+
+                                if (argType == CommandArgType.Buffer)
                                 {
-                                    arg = $"new CommandArg({bufferFlags} | HipcBufferFlags.FixedSize, {bufferFixedSize})";
+                                    string bufferFlags = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 0);
+                                    string bufferFixedSize = GetFirstAttributeArgument(compilation, parameter, TypeBufferAttribute, 1);
+
+                                    if (bufferFixedSize != null)
+                                    {
+                                        arg = $"new CommandArg({bufferFlags} | HipcBufferFlags.FixedSize, {bufferFixedSize})";
+                                    }
+                                    else
+                                    {
+                                        arg = $"new CommandArg({bufferFlags})";
+                                    }
+                                }
+                                else if (argType == CommandArgType.InArgument || argType == CommandArgType.OutArgument)
+                                {
+                                    string alignment = GetTypeAlignmentExpression(compilation, parameter.Type);
+
+                                    arg = $"new CommandArg(CommandArgType.{argType}, Unsafe.SizeOf<{canonicalTypeName}>(), {alignment})";
                                 }
                                 else
                                 {
-                                    arg = $"new CommandArg({bufferFlags})";
+                                    arg = $"new CommandArg(CommandArgType.{argType})";
                                 }
-                            }
-                            else if (argType == CommandArgType.InArgument || argType == CommandArgType.OutArgument)
-                            {
-                                string alignment = GetTypeAlignmentExpression(compilation, parameter.Type);
 
-                                arg = $"new CommandArg(CommandArgType.{argType}, Unsafe.SizeOf<{canonicalTypeName}>(), {alignment})";
-                            }
-                            else
-                            {
-                                arg = $"new CommandArg(CommandArgType.{argType})";
+                                args[index++] = arg;
                             }
 
-                            args[index++] = arg;
+                            generator.AppendLine($"KeyValuePair.Create({commandId}, new CommandHandler({method.Identifier.Text}, {string.Join(", ", args)})),");
                         }
-
-                        generator.AppendLine($"{{ {commandId}, new CommandHandler({method.Identifier.Text}, {string.Join(", ", args)}) }},");
                     }
                 }
+
+                generator.LeaveScope(");");
             }
 
-            generator.LeaveScope(".ToFrozenDictionary();");
             generator.LeaveScope();
         }
 
