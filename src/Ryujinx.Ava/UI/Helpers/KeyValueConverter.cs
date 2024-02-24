@@ -17,12 +17,12 @@ namespace Ryujinx.Ava.UI.Helpers
             { Key.Unknown, LocaleKeys.KeyUnknown },
             { Key.ShiftLeft, LocaleKeys.KeyShiftLeft },
             { Key.ShiftRight, LocaleKeys.KeyShiftRight },
-            { Key.ControlLeft, LocaleKeys.KeyControlLeft },
-            { Key.ControlRight, LocaleKeys.KeyControlRight },
-            { Key.AltLeft, OperatingSystem.IsMacOS() ? LocaleKeys.KeyOptLeft : LocaleKeys.KeyAltLeft },
-            { Key.AltRight, OperatingSystem.IsMacOS() ? LocaleKeys.KeyOptRight : LocaleKeys.KeyAltRight },
-            { Key.WinLeft, OperatingSystem.IsMacOS() ? LocaleKeys.KeyCmdLeft : LocaleKeys.KeyWinLeft },
-            { Key.WinRight, OperatingSystem.IsMacOS() ? LocaleKeys.KeyCmdRight : LocaleKeys.KeyWinRight },
+            { Key.ControlLeft, LocaleKeys.KeySideLeft },
+            { Key.ControlRight, LocaleKeys.KeySideRight },
+            { Key.AltLeft, LocaleKeys.KeySideLeft },
+            { Key.AltRight, LocaleKeys.KeySideRight },
+            { Key.WinLeft, LocaleKeys.KeySideLeft },
+            { Key.WinRight, LocaleKeys.KeySideRight },
             { Key.Up, LocaleKeys.KeyUp },
             { Key.Down, LocaleKeys.KeyDown },
             { Key.Left, LocaleKeys.KeyLeft },
@@ -128,7 +128,25 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 if (_keysMap.TryGetValue(key, out LocaleKeys localeKey))
                 {
-                    keyString = LocaleManager.Instance[localeKey];
+                    var symbol = "";
+
+                    switch (key)
+                    {
+                        case Key.ControlLeft:
+                        case Key.ControlRight:
+                            symbol = OperatingSystem.IsMacOS() ? "⌃ " : "Ctrl ";
+                            break;
+                        case Key.WinLeft:
+                        case Key.WinRight:
+                            symbol = OperatingSystem.IsMacOS() ? "⌘ " : "⊞ ";
+                            break;
+                        case Key.AltLeft:
+                        case Key.AltRight:
+                            symbol = OperatingSystem.IsMacOS() ? "⌥ " : "Alt ";
+                            break;
+                    }
+
+                    keyString = symbol + LocaleManager.Instance[localeKey];
                 }
                 else
                 {
