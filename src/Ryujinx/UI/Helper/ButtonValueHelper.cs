@@ -123,9 +123,9 @@ namespace Ryujinx.UI.Helper
 
             if (buttonValue.Type == ButtonValueType.Key)
             {
-                var key = buttonValue.AsKey();
+                var key = buttonValue.AsHidType<Key>();
 
-                if (!_keysMap.TryGetValue(buttonValue.AsKey(), out keyString))
+                if (!_keysMap.TryGetValue(buttonValue.AsHidType<Key>(), out keyString))
                 {
                     keyString = key.ToString();
                 }
@@ -133,9 +133,9 @@ namespace Ryujinx.UI.Helper
 
             if (buttonValue.Type == ButtonValueType.GamepadButtonInputId)
             {
-                var gamepadButton = buttonValue.AsGamepadButtonInputId();
+                var gamepadButton = buttonValue.AsHidType<GamepadInputId>();
 
-                if (!_gamepadInputIdMap.TryGetValue(buttonValue.AsGamepadButtonInputId(), out keyString))
+                if (!_gamepadInputIdMap.TryGetValue(buttonValue.AsHidType<GamepadInputId>(), out keyString))
                 {
                     keyString = gamepadButton.ToString();
                 }
@@ -143,9 +143,9 @@ namespace Ryujinx.UI.Helper
 
             if (buttonValue.Type == ButtonValueType.StickId)
             {
-                var stickInput = buttonValue.AsGamepadStickId();
+                var stickInput = buttonValue.AsHidType<StickInputId>();
 
-                if (!_stickInputIdMap.TryGetValue(buttonValue.AsGamepadStickId(), out keyString))
+                if (!_stickInputIdMap.TryGetValue(buttonValue.AsHidType<StickInputId>(), out keyString))
                 {
                     keyString = stickInput.ToString();
                 }

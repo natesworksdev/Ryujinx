@@ -8,6 +8,7 @@ using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
+using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ava.UI.Views.Settings
 {
@@ -81,31 +82,31 @@ namespace Ryujinx.Ava.UI.Views.Settings
                                 switch (button.Name)
                                 {
                                     case "ToggleVsync":
-                                        viewModel.KeyboardHotkeys.ToggleVsync = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.ToggleVsync = buttonValue.AsHidType<Key>();
                                         break;
                                     case "Screenshot":
-                                        viewModel.KeyboardHotkeys.Screenshot = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.Screenshot = buttonValue.AsHidType<Key>();
                                         break;
                                     case "ShowUI":
-                                        viewModel.KeyboardHotkeys.ShowUI = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.ShowUI = buttonValue.AsHidType<Key>();
                                         break;
                                     case "Pause":
-                                        viewModel.KeyboardHotkeys.Pause = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.Pause = buttonValue.AsHidType<Key>();
                                         break;
                                     case "ToggleMute":
-                                        viewModel.KeyboardHotkeys.ToggleMute = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.ToggleMute = buttonValue.AsHidType<Key>();
                                         break;
                                     case "ResScaleUp":
-                                        viewModel.KeyboardHotkeys.ResScaleUp = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.ResScaleUp = buttonValue.AsHidType<Key>();
                                         break;
                                     case "ResScaleDown":
-                                        viewModel.KeyboardHotkeys.ResScaleDown = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.ResScaleDown = buttonValue.AsHidType<Key>();
                                         break;
                                     case "VolumeUp":
-                                        viewModel.KeyboardHotkeys.VolumeUp = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.VolumeUp = buttonValue.AsHidType<Key>();
                                         break;
                                     case "VolumeDown":
-                                        viewModel.KeyboardHotkeys.VolumeDown = buttonValue.AsKey();
+                                        viewModel.KeyboardHotkeys.VolumeDown = buttonValue.AsHidType<Key>();
                                         break;
                                 }
                             }

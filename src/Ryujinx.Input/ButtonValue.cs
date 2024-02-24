@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System;
 
 namespace Ryujinx.Input
 {
@@ -27,22 +27,9 @@ namespace Ryujinx.Input
             _rawValue = (uint)stick;
         }
 
-        public Common.Configuration.Hid.Key AsKey()
+        public T AsHidType<T>() where T : Enum
         {
-            Debug.Assert(Type == ButtonValueType.Key);
-            return (Common.Configuration.Hid.Key)_rawValue;
-        }
-
-        public Common.Configuration.Hid.Controller.GamepadInputId AsGamepadButtonInputId()
-        {
-            Debug.Assert(Type == ButtonValueType.GamepadButtonInputId);
-            return (Common.Configuration.Hid.Controller.GamepadInputId)_rawValue;
-        }
-
-        public Common.Configuration.Hid.Controller.StickInputId AsGamepadStickId()
-        {
-            Debug.Assert(Type == ButtonValueType.StickId);
-            return (Common.Configuration.Hid.Controller.StickInputId)_rawValue;
+            return (T)Enum.ToObject(typeof(T), _rawValue);
         }
     }
 }
