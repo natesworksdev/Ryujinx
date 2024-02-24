@@ -17,7 +17,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _screenshot;
-        public Key Screenshot {
+        public Key Screenshot
+        {
             get => _screenshot;
             set
             {
@@ -27,7 +28,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _showUI;
-        public Key ShowUI {
+        public Key ShowUI
+        {
             get => _showUI;
             set
             {
@@ -37,7 +39,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _pause;
-        public Key Pause {
+        public Key Pause
+        {
             get => _pause;
             set
             {
@@ -47,7 +50,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _toggleMute;
-        public Key ToggleMute {
+        public Key ToggleMute
+        {
             get => _toggleMute;
             set
             {
@@ -57,7 +61,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _resScaleUp;
-        public Key ResScaleUp {
+        public Key ResScaleUp
+        {
             get => _resScaleUp;
             set
             {
@@ -67,7 +72,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _resScaleDown;
-        public Key ResScaleDown {
+        public Key ResScaleDown
+        {
             get => _resScaleDown;
             set
             {
@@ -77,7 +83,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _volumeUp;
-        public Key VolumeUp {
+        public Key VolumeUp
+        {
             get => _volumeUp;
             set
             {
@@ -87,7 +94,8 @@ namespace Ryujinx.Ava.UI.Models.Input
         }
 
         private Key _volumeDown;
-        public Key VolumeDown {
+        public Key VolumeDown
+        {
             get => _volumeDown;
             set
             {
