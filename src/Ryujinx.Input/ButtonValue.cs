@@ -2,8 +2,6 @@ using System;
 
 namespace Ryujinx.Input
 {
-    public enum ButtonValueType { Key, GamepadButtonInputId, StickId }
-
     public readonly struct ButtonValue
     {
         public readonly ButtonValueType Type;
