@@ -1131,5 +1131,23 @@ namespace Ryujinx.Cpu.LightningJit.Arm64
 
             return false;
         }
+
+        public static bool IsRmwMemory(this InstName name)
+        {
+            switch (name)
+            {
+                case InstName.Ld1AdvsimdSnglAsNoPostIndex:
+                case InstName.Ld1AdvsimdSnglAsPostIndex:
+                case InstName.Ld2AdvsimdSnglAsNoPostIndex:
+                case InstName.Ld2AdvsimdSnglAsPostIndex:
+                case InstName.Ld3AdvsimdSnglAsNoPostIndex:
+                case InstName.Ld3AdvsimdSnglAsPostIndex:
+                case InstName.Ld4AdvsimdSnglAsNoPostIndex:
+                case InstName.Ld4AdvsimdSnglAsPostIndex:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
