@@ -52,7 +52,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
                     bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
 
-                    if (_currentAssigner == null && (bool)button.IsChecked)
+                    if (_currentAssigner == null)
                     {
                         _currentAssigner = new ButtonKeyAssigner(button);
 
@@ -149,8 +149,6 @@ namespace Ryujinx.Ava.UI.Views.Input
                     {
                         if (_currentAssigner != null)
                         {
-                            ToggleButton oldButton = _currentAssigner.ToggledButton;
-
                             _currentAssigner.Cancel();
                             _currentAssigner = null;
                             button.IsChecked = false;

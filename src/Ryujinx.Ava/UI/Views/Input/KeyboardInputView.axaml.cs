@@ -49,9 +49,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                         return;
                     }
 
-                    bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
-
-                    if (_currentAssigner == null && (bool)button.IsChecked)
+                    if (_currentAssigner == null)
                     {
                         _currentAssigner = new ButtonKeyAssigner(button);
 
@@ -60,7 +58,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                         PointerPressed += MouseClick;
 
                         IKeyboard keyboard = (IKeyboard)(DataContext as KeyboardInputViewModel).parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
-                        IButtonAssigner assigner = CreateButtonAssigner(isStick);
+                        IButtonAssigner assigner = CreateButtonAssigner();
 
                         _currentAssigner.ButtonAssigned += (sender, e) =>
                         {
@@ -166,8 +164,6 @@ namespace Ryujinx.Ava.UI.Views.Input
                     {
                         if (_currentAssigner != null)
                         {
-                            ToggleButton oldButton = _currentAssigner.ToggledButton;
-
                             _currentAssigner.Cancel();
                             _currentAssigner = null;
                             button.IsChecked = false;
@@ -191,7 +187,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             PointerPressed -= MouseClick;
         }
 
-        private IButtonAssigner CreateButtonAssigner(bool forStick)
+        private IButtonAssigner CreateButtonAssigner()
         {
             IButtonAssigner assigner;
 
