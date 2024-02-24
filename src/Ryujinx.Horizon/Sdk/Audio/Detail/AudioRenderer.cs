@@ -59,7 +59,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         public Result RequestUpdate(
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> output,
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> performanceOutput,
-            [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> input)
+            [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySequence<byte> input)
         {
             using IMemoryOwner<byte> outputOwner = ByteMemoryPool.Rent(output.Length);
             using IMemoryOwner<byte> performanceOutputOwner = ByteMemoryPool.Rent(performanceOutput.Length);
@@ -70,7 +70,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
             using MemoryHandle outputHandle = outputMemory.Pin();
             using MemoryHandle performanceOutputHandle = performanceOutputMemory.Pin();
 
-            Result result = new Result((int)_renderSystem.Update(outputMemory, performanceOutputMemory, input.ToArray()));
+            Result result = new Result((int)_renderSystem.Update(outputMemory, performanceOutputMemory, input));
 
             outputMemory.Span.CopyTo(output);
             performanceOutputMemory.Span.CopyTo(performanceOutput);
@@ -129,7 +129,7 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         public Result RequestUpdateAuto(
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<byte> output,
             [Buffer(HipcBufferFlags.Out | HipcBufferFlags.AutoSelect)] Span<byte> performanceOutput,
-            [Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] ReadOnlySpan<byte> input)
+            [Buffer(HipcBufferFlags.In | HipcBufferFlags.AutoSelect)] ReadOnlySequence<byte> input)
         {
             return RequestUpdate(output, performanceOutput, input);
         }
