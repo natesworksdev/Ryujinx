@@ -23,8 +23,10 @@ EXTRA_ARGS=$8
 if [ "$VERSION" == "1.1.0" ];
 then
   RELEASE_TAR_FILE_NAME=ryujinx-$CONFIGURATION-$VERSION+$SOURCE_REVISION_ID-macos_universal.app.tar
+  AVA_COMPAT_RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$CONFIGURATION-$VERSION+$SOURCE_REVISION_ID-macos_universal.app.tar
 else
   RELEASE_TAR_FILE_NAME=ryujinx-$VERSION-macos_universal.app.tar
+  AVA_COMPAT_RELEASE_TAR_FILE_NAME=test-ava-ryujinx-$VERSION-macos_universal.app.tar
 fi
 
 ARM64_APP_BUNDLE="$TEMP_DIRECTORY/output_arm64/Ryujinx.app"
@@ -108,6 +110,14 @@ tar --exclude "Ryujinx.app/Contents/MacOS/Ryujinx" -cvf "$RELEASE_TAR_FILE_NAME"
 python3 "$BASE_DIR/distribution/misc/add_tar_exec.py" "$RELEASE_TAR_FILE_NAME" "Ryujinx.app/Contents/MacOS/Ryujinx" "Ryujinx.app/Contents/MacOS/Ryujinx"
 gzip -9 < "$RELEASE_TAR_FILE_NAME" > "$RELEASE_TAR_FILE_NAME.gz"
 rm "$RELEASE_TAR_FILE_NAME"
+popd
+
+echo "Creating Ava compat archive"
+pushd "$OUTPUT_DIRECTORY"
+tar --exclude "Ryujinx.app/Contents/MacOS/Ryujinx" -cvf "$AVA_COMPAT_RELEASE_TAR_FILE_NAME" Ryujinx.app 1> /dev/null
+python3 "$BASE_DIR/distribution/misc/add_tar_exec.py" "$AVA_COMPAT_RELEASE_TAR_FILE_NAME" "Ryujinx.app/Contents/MacOS/Ryujinx" "Ryujinx.app/Contents/MacOS/Ryujinx"
+gzip -9 < "$AVA_COMPAT_RELEASE_TAR_FILE_NAME" > "$AVA_COMPAT_RELEASE_TAR_FILE_NAME.gz"
+rm "$AVA_COMPAT_RELEASE_TAR_FILE_NAME"
 popd
 
 echo "Done"
