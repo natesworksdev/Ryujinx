@@ -17,6 +17,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private const string ResponseVariableName = "response";
         private const string OutRawDataVariableName = "outRawData";
 
+        private const string TypeSystemBuffersReadOnlySequence = "System.Buffers.ReadOnlySequence";
         private const string TypeSystemReadOnlySpan = "System.ReadOnlySpan";
         private const string TypeSystemSpan = "System.Span";
         private const string TypeStructLayoutAttribute = "System.Runtime.InteropServices.StructLayoutAttribute";
@@ -329,7 +330,11 @@ namespace Ryujinx.Horizon.Generators.Hipc
                             value = $"{InObjectsVariableName}[{inObjectIndex++}]";
                             break;
                         case CommandArgType.Buffer:
-                            if (IsReadOnlySpan(compilation, parameter))
+                            if (IsReadOnlySequence(compilation, parameter))
+                            {
+                                value = $"CommandSerialization.GetReadOnlySequence(processor.GetBufferRange({index}))";
+                            }
+                            else if (IsReadOnlySpan(compilation, parameter))
                             {
                                 string spanGenericTypeName = GetCanonicalTypeNameOfGenericArgument(compilation, parameter.Type, 0);
                                 value = GenerateSpanCast(spanGenericTypeName, $"CommandSerialization.GetReadOnlySpan(processor.GetBufferRange({index}))");
@@ -637,7 +642,8 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
         private static bool IsValidTypeForBuffer(Compilation compilation, ParameterSyntax parameter)
         {
-            return IsReadOnlySpan(compilation, parameter) ||
+            return IsReadOnlySequence(compilation, parameter) ||
+                   IsReadOnlySpan(compilation, parameter) ||
                    IsSpan(compilation, parameter) ||
                    IsUnmanagedType(compilation, parameter.Type);
         }
@@ -647,6 +653,11 @@ namespace Ryujinx.Horizon.Generators.Hipc
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
 
             return typeInfo.Type.IsUnmanagedType;
+        }
+
+        private static bool IsReadOnlySequence(Compilation compilation, ParameterSyntax parameter)
+        {
+            return GetCanonicalTypeName(compilation, parameter.Type) == TypeSystemBuffersReadOnlySequence;
         }
 
         private static bool IsReadOnlySpan(Compilation compilation, ParameterSyntax parameter)
