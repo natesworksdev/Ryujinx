@@ -762,25 +762,28 @@ namespace Ryujinx.Cpu.Jit
 
         public bool HasPrivateAllocation(ulong va, ulong size, ulong startVa, ulong startSize, ref PrivateRange range)
         {
+            ulong endVa = va + size;
+
             _treeLock.EnterReadLock();
 
             try
             {
-                PrivateMapping map = _privateTree.GetNode(va);
-
-                if (map != null && map.PrivateAllocation.IsValid)
+                for (PrivateMapping map = _privateTree.GetNode(va); map != null && map.Address < endVa; map = map.Successor)
                 {
-                    if (map.Address <= startVa && map.EndAddress >= startVa + startSize)
+                    if (map.PrivateAllocation.IsValid)
                     {
-                        ulong startOffset = startVa - map.Address;
+                        if (map.Address <= startVa && map.EndAddress >= startVa + startSize)
+                        {
+                            ulong startOffset = startVa - map.Address;
 
-                        range = new(
-                            map.PrivateAllocation.Memory,
-                            map.PrivateAllocation.Offset + startOffset,
-                            Math.Min(map.PrivateAllocation.Size - startOffset, startSize));
+                            range = new(
+                                map.PrivateAllocation.Memory,
+                                map.PrivateAllocation.Offset + startOffset,
+                                Math.Min(map.PrivateAllocation.Size - startOffset, startSize));
+                        }
+
+                        return true;
                     }
-
-                    return true;
                 }
             }
             finally
