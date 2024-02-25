@@ -17,6 +17,8 @@
     WindowStartupLocation="CenterOwner"
     x:DataType="viewModels:SettingsViewModel"
     mc:Ignorable="d"
+    d:DesignHeight="800"
+    d:DesignWidth="1000"
     Focusable="True">
     <Design.DataContext>
         <viewModels:SettingsViewModel />

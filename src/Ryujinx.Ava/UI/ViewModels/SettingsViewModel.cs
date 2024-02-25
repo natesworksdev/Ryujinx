@@ -277,10 +277,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            if (Program.PreviewerDetached)
-            {
-                Task.Run(LoadTimeZones);
-            }
+            Task.Run(LoadTimeZones);
         }
 
         public SettingsViewModel()
@@ -294,11 +291,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             Task.Run(CheckSoundBackends);
             Task.Run(PopulateNetworkInterfaces);
 
-            if (Program.PreviewerDetached)
-            {
-                Task.Run(LoadAvailableGpus);
-                LoadCurrentConfiguration();
-            }
+            Task.Run(LoadAvailableGpus);
+            LoadCurrentConfiguration();
         }
 
         public async Task CheckSoundBackends()
@@ -407,8 +401,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowConfirmExit = config.ShowConfirmExit;
             HideCursor = (int)config.HideCursor.Value;
 
-            GameDirectories.Clear();
-            GameDirectories.AddRange(config.UI.GameDirs.Value);
+            if (Program.PreviewerDetached)
+            {
+                GameDirectories.Clear();
+                GameDirectories.AddRange(config.UI.GameDirs.Value);
+            }
 
             BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
 

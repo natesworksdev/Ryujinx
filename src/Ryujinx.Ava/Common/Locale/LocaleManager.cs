@@ -5,7 +5,6 @@ using Ryujinx.UI.Common.Configuration;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace Ryujinx.Ava.Common.Locale
 {
@@ -32,21 +31,8 @@ namespace Ryujinx.Ava.Common.Locale
 
         public void Load()
         {
-            // Load the system Language Code.
-            string localeLanguageCode = CultureInfo.CurrentCulture.Name.Replace('-', '_');
-
-            // If the view is loaded with the UI Previewer detached, then override it with the saved one or default.
-            if (Program.PreviewerDetached)
-            {
-                if (!string.IsNullOrEmpty(ConfigurationState.Instance.UI.LanguageCode.Value))
-                {
-                    localeLanguageCode = ConfigurationState.Instance.UI.LanguageCode.Value;
-                }
-                else
-                {
-                    localeLanguageCode = DefaultLanguageCode;
-                }
-            }
+            string localeLanguageCode = string.IsNullOrEmpty(ConfigurationState.Instance.UI.LanguageCode.Value) ?
+                DefaultLanguageCode : ConfigurationState.Instance.UI.LanguageCode.Value;
 
             // Load en_US as default, if the target language translation is incomplete.
             LoadDefaultLanguage();

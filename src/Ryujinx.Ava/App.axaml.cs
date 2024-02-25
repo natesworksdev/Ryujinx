@@ -38,14 +38,17 @@ namespace Ryujinx.Ava
 
             base.OnFrameworkInitializationCompleted();
 
-            if (Program.PreviewerDetached)
-            {
-                ApplyConfiguredTheme();
 
-                ConfigurationState.Instance.UI.BaseStyle.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.UI.CustomThemePath.Event += ThemeChanged_Event;
-                ConfigurationState.Instance.UI.EnableCustomTheme.Event += CustomThemeChanged_Event;
+            if (!Program.PreviewerDetached)
+            {
+                ConfigurationState.Initialize();
             }
+
+            ApplyConfiguredTheme();
+
+            ConfigurationState.Instance.UI.BaseStyle.Event += ThemeChanged_Event;
+            ConfigurationState.Instance.UI.CustomThemePath.Event += ThemeChanged_Event;
+            ConfigurationState.Instance.UI.EnableCustomTheme.Event += CustomThemeChanged_Event;
         }
 
         private void CustomThemeChanged_Event(object sender, ReactiveEventArgs<bool> e)
