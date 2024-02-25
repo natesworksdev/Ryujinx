@@ -1132,7 +1132,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64
             return false;
         }
 
-        public static bool IsRmwMemory(this InstName name)
+        public static bool IsPartialRegisterUpdateMemory(this InstName name)
         {
             switch (name)
             {
