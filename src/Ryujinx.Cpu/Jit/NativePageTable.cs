@@ -182,7 +182,7 @@ namespace Ryujinx.Cpu.Jit
             if (address < _nativePageTable.Size - _hostPageSize)
             {
                 // Some prefetch instructions do not cause faults with invalid addresses.
-                // Retry if we are hiting a case where the page table is unmapped, the next
+                // Retry if we are hitting a case where the page table is unmapped, the next
                 // run will execute the actual instruction.
                 // The address loaded from the page table will be invalid, and it should hit the else case
                 // if the instruction faults on unmapped or protected memory.

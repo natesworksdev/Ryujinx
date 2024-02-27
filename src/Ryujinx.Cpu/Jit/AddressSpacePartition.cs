@@ -325,9 +325,9 @@ namespace Ryujinx.Cpu.Jit
                 LateMap();
             }
 
-            updatePtCallback(va, _baseMemory.GetPointerForProtection(va - Address, size, protection), size);
+            ulong lastPageAddress = EndAddress - GuestPageSize;
 
-            if (va + size > EndAddress - GuestPageSize)
+            if (va + size > lastPageAddress)
             {
                 // Protections at the last page also applies to the bridge, if we have one.
                 // (This is because last page access is always done on the bridge, not on our base mapping,
@@ -337,11 +337,15 @@ namespace Ryujinx.Cpu.Jit
                 {
                     IntPtr ptPtr = _baseMemory.GetPointerForProtection(Size, _hostPageSize, protection);
 
-                    updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
+                    updatePtCallback(lastPageAddress, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
                 }
 
                 _lastPageProtection = protection;
+
+                size = lastPageAddress - va;
             }
+
+            updatePtCallback(va, _baseMemory.GetPointerForProtection(va - Address, size, protection), size);
         }
 
         public IntPtr GetPointer(ulong va, ulong size)
@@ -349,9 +353,9 @@ namespace Ryujinx.Cpu.Jit
             Debug.Assert(va >= Address);
             Debug.Assert(va + size <= EndAddress);
 
-            if (va >= EndAddress - _hostPageSize && _hasBridgeAtEnd)
+            if (va >= EndAddress - GuestPageSize && _hasBridgeAtEnd)
             {
-                return _baseMemory.GetPointer(Size + va - (EndAddress - _hostPageSize), size);
+                return _baseMemory.GetPointer(Size + (_hostPageSize - GuestPageSize), size);
             }
 
             return _baseMemory.GetPointer(va - Address, size);
@@ -383,7 +387,6 @@ namespace Ryujinx.Cpu.Jit
                         _baseMemory.Reprotect(Size, _hostPageSize, _lastPageProtection, false);
 
                         ptPtr = _baseMemory.GetPointer(Size, _hostPageSize);
-                        ;
                     }
 
                     updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
@@ -554,7 +557,7 @@ namespace Ryujinx.Cpu.Jit
                 switch (type)
                 {
                     case MappingType.None:
-                        ulong alignment = MemoryBlock.GetPageSize();
+                        ulong alignment = _hostPageSize;
 
                         bool unmappedBefore = map.Predecessor == null ||
                             (map.Predecessor.Type == MappingType.None && map.Predecessor.Address <= BitUtils.AlignDown(va, alignment));
@@ -611,7 +614,7 @@ namespace Ryujinx.Cpu.Jit
         {
             ulong endAddress = va + size;
 
-            ulong alignment = MemoryBlock.GetPageSize();
+            ulong alignment = _hostPageSize;
 
             // Expand the range outwards based on page size to ensure that at least the requested region is mapped.
             ulong vaAligned = BitUtils.AlignDown(va, alignment);
@@ -635,7 +638,7 @@ namespace Ryujinx.Cpu.Jit
                         map = newMap;
                     }
 
-                    map.Map(_baseMemory, Address, _privateMemoryAllocator.Allocate(map.Size, MemoryBlock.GetPageSize()));
+                    map.Map(_baseMemory, Address, _privateMemoryAllocator.Allocate(map.Size, _hostPageSize));
                 }
 
                 if (map.EndAddress >= endAddressAligned)
@@ -649,7 +652,7 @@ namespace Ryujinx.Cpu.Jit
         {
             ulong endAddress = va + size;
 
-            ulong alignment = MemoryBlock.GetPageSize();
+            ulong alignment = _hostPageSize;
 
             // If the adjacent mappings are unmapped, expand the range outwards,
             // otherwise shrink it inwards. We must ensure we won't unmap pages that might still be in use.
