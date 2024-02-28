@@ -6,7 +6,7 @@ namespace Ryujinx.Input.Assigner
     public class KeyboardKeyAssigner : IButtonAssigner
     {
         private readonly IKeyboard _keyboard;
-
+        private ButtonValue? _pressedKey;
         private KeyboardStateSnapshot _keyboardState;
 
         public KeyboardKeyAssigner(IKeyboard keyboard)
@@ -14,16 +14,26 @@ namespace Ryujinx.Input.Assigner
             _keyboard = keyboard;
         }
 
-        public void Initialize() { }
+        public void Initialize()
+        {
+            _pressedKey = null;
+        }
 
         public void ReadInput()
         {
-            _keyboardState = _keyboard.GetKeyboardStateSnapshot();
+            var newKeyboardState = _keyboard.GetKeyboardStateSnapshot();
+
+            if (_keyboardState != null)
+            {
+                DetectPressedKeys(_keyboardState, newKeyboardState);
+            }
+
+            _keyboardState = newKeyboardState;
         }
 
         public bool HasAnyButtonPressed()
         {
-            return GetPressedButton() is not null;
+            return _pressedKey != null;
         }
 
         public bool ShouldCancel()
@@ -33,18 +43,19 @@ namespace Ryujinx.Input.Assigner
 
         public ButtonValue? GetPressedButton()
         {
-            ButtonValue? keyPressed = null;
+            return !ShouldCancel() && HasAnyButtonPressed() ? _pressedKey : null;
+        }
 
+        public void DetectPressedKeys(KeyboardStateSnapshot oldState, KeyboardStateSnapshot newState)
+        {
             for (Key key = Key.Unknown; key < Key.Count; key++)
             {
-                if (_keyboardState.IsPressed(key))
+                if (oldState.IsPressed(key) && !newState.IsPressed(key))
                 {
-                    keyPressed = new(key);
+                    _pressedKey = new(key);
                     break;
                 }
             }
-
-            return !ShouldCancel() ? keyPressed : null;
         }
     }
 }
