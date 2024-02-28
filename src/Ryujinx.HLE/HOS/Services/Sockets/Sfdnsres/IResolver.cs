@@ -244,6 +244,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return GetAddrInfoRequestImpl(context, outputBufferPosition, outputBufferSize, true, optionsBufferPosition, optionsBufferSize);
         }
 
+        [CommandCmif(13)]
+        public ResultCode GetNameInfoRequestWithOptions(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres);
+
+            return ResultCode.Success;
+        }
+
         [CommandCmif(14)] // 5.0.0+
         // ResolverSetOptionRequest(buffer<unknown, 5, 0>, u64 unknown, u64 pid_placeholder, pid) -> (i32 ret, u32 bsd_errno)
         public ResultCode ResolverSetOptionRequest(ServiceCtx context)
