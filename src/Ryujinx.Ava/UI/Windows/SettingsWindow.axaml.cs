@@ -26,15 +26,6 @@ namespace Ryujinx.Ava.UI.Windows
             Load();
         }
 
-        public SettingsWindow()
-        {
-            ViewModel = new SettingsViewModel();
-            DataContext = ViewModel;
-
-            InitializeComponent();
-            Load();
-        }
-
         public void SaveSettings()
         {
             InputPage.ControllerSettings?.SaveCurrentProfile();

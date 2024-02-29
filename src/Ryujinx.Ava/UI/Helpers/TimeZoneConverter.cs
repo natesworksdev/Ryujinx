@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.UI.Helpers
             }
 
             var timeZone = (TimeZone)value;
-            return string.Format("{0}  {1}   {2}", timeZone.UtcDifference, timeZone.Location, timeZone.Abbreviation);
+            return timeZone.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
