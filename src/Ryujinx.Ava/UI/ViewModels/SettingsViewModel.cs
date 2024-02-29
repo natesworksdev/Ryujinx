@@ -273,23 +273,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
-            if (Program.PreviewerDetached)
-            {
-                Task.Run(LoadTimeZones);
-            }
-        }
-
-        public SettingsViewModel()
-        {
             GameDirectories = new AvaloniaList<string>();
             TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
-            _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
+
+            LoadTimeZones();
 
             Task.Run(CheckSoundBackends);
             Task.Run(PopulateNetworkInterfaces);
@@ -346,7 +339,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
         }
 
-        public async Task LoadTimeZones()
+        public void LoadTimeZones()
         {
             _timeZoneContentManager = new TimeZoneContentManager();
 
@@ -359,15 +352,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 string abbr2 = abbr.StartsWith('+') || abbr.StartsWith('-') ? string.Empty : abbr;
 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
-
-                    _validTzRegions.Add(location);
-                });
+                TimeZones.Add(new TimeZone($"UTC{hours:+0#;-0#;+00}:{minutes:D2}", location, abbr2));
             }
 
-            Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(TimeZone)));
         }
 
         private async Task PopulateNetworkInterfaces()
