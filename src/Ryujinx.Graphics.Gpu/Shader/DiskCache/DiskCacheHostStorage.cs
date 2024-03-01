@@ -171,6 +171,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             public bool UsesRtLayer;
 
             /// <summary>
+            /// Indicates that the fragment shader always discards the fragment, not producing any output for the bound render targets.
+            /// </summary>
+            public bool HasUnconditionalDiscard;
+
+            /// <summary>
             /// Bit mask with the clip distances written on the vertex stage.
             /// </summary>
             public byte ClipDistancesWritten;
@@ -806,6 +811,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 dataInfo.UsesInstanceId,
                 dataInfo.UsesDrawParameters,
                 dataInfo.UsesRtLayer,
+                dataInfo.HasUnconditionalDiscard,
                 dataInfo.ClipDistancesWritten,
                 dataInfo.FragmentOutputMap);
         }
@@ -836,6 +842,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 UsesInstanceId = info.UsesInstanceId,
                 UsesDrawParameters = info.UsesDrawParameters,
                 UsesRtLayer = info.UsesRtLayer,
+                HasUnconditionalDiscard = info.HasUnconditionalDiscard,
                 ClipDistancesWritten = info.ClipDistancesWritten,
                 FragmentOutputMap = info.FragmentOutputMap,
             };
