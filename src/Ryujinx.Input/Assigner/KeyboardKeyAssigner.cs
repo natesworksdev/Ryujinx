@@ -6,7 +6,7 @@ namespace Ryujinx.Input.Assigner
     public class KeyboardKeyAssigner : IButtonAssigner
     {
         private readonly IKeyboard _keyboard;
-
+        private ButtonValue? _pressedKey;
         private KeyboardStateSnapshot _keyboardState;
 
         public KeyboardKeyAssigner(IKeyboard keyboard)
@@ -14,37 +14,48 @@ namespace Ryujinx.Input.Assigner
             _keyboard = keyboard;
         }
 
-        public void Initialize() { }
+        public void Initialize()
+        {
+            _pressedKey = null;
+        }
 
         public void ReadInput()
         {
-            _keyboardState = _keyboard.GetKeyboardStateSnapshot();
+            var newKeyboardState = _keyboard.GetKeyboardStateSnapshot();
+
+            if (_keyboardState != null)
+            {
+                DetectPressedKeys(_keyboardState, newKeyboardState);
+            }
+
+            _keyboardState = newKeyboardState;
         }
 
         public bool HasAnyButtonPressed()
         {
-            return GetPressedButton().Length != 0;
+            return _pressedKey != null;
         }
 
         public bool ShouldCancel()
         {
-            return _keyboardState.IsPressed(Key.Escape);
+            return _keyboardState?.IsPressed(Key.Escape) == true;
         }
 
-        public string GetPressedButton()
+        public ButtonValue? GetPressedButton()
         {
-            string keyPressed = "";
+            return !ShouldCancel() && HasAnyButtonPressed() ? _pressedKey : null;
+        }
 
+        public void DetectPressedKeys(KeyboardStateSnapshot oldState, KeyboardStateSnapshot newState)
+        {
             for (Key key = Key.Unknown; key < Key.Count; key++)
             {
-                if (_keyboardState.IsPressed(key))
+                if (oldState.IsPressed(key) && !newState.IsPressed(key))
                 {
-                    keyPressed = key.ToString();
+                    _pressedKey = new(key);
                     break;
                 }
             }
-
-            return !ShouldCancel() ? keyPressed : "";
         }
     }
 }
