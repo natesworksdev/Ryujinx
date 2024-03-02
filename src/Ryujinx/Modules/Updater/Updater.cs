@@ -309,7 +309,7 @@ namespace Ryujinx.Modules
                         // Fallback if the executable could not be found.
                         if (!Path.Exists(Path.Combine(executableDirectory, ryuName)))
                         {
-                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
+                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
                         }
 
                         ProcessStartInfo processStart = new(ryuName)
