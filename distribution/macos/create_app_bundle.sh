@@ -14,8 +14,7 @@ mkdir "$APP_BUNDLE_DIRECTORY/Contents/Frameworks"
 mkdir "$APP_BUNDLE_DIRECTORY/Contents/MacOS"
 mkdir "$APP_BUNDLE_DIRECTORY/Contents/Resources"
 
-# Copy executables first
-cp "$PUBLISH_DIRECTORY/Ryujinx.Ava" "$APP_BUNDLE_DIRECTORY/Contents/MacOS/Ryujinx"
+# Ensure executable can be executed
 chmod u+x "$APP_BUNDLE_DIRECTORY/Contents/MacOS/Ryujinx"
 
 # Then all libraries
