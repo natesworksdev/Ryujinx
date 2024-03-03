@@ -341,7 +341,7 @@
   "DialogThemeRestartMessage": "佈景主題設定已儲存。需要重新啟動才能套用主題。",
   "DialogThemeRestartSubMessage": "您要重新啟動嗎",
   "DialogFirmwareInstallEmbeddedMessage": "您想安裝遊戲內建的韌體嗎? (韌體 {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "未找到已安裝的韌體，但 Ryujinx 可以從現有的遊戲安裝韌體{0}.\\n模擬器現在可以執行。",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "未找到已安裝的韌體，但 Ryujinx 可以從現有的遊戲安裝韌體{0}.\n模擬器現在可以執行。",
   "DialogFirmwareNoFirmwareInstalledMessage": "未安裝韌體",
   "DialogFirmwareInstalledMessage": "已安裝韌體{0}",
   "DialogInstallFileTypesSuccessMessage": "成功安裝檔案類型!",
