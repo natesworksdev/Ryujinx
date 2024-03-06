@@ -86,7 +86,7 @@ namespace Ryujinx.UI.Windows
                     string parentPath = currentCheatFile.Replace(titleModsPath, "");
 
                     buildId = System.IO.Path.GetFileNameWithoutExtension(currentCheatFile).ToUpper();
-                    parentIter = ((TreeStore)_cheatTreeView.Model).AppendValues(false, buildId, parentPath, "");
+                    parentIter = ((TreeStore)_cheatTreeView.Model).AppendValues(false, titleName, parentPath, "");
                 }
 
                 string cleanName = cheat.Name[1..^7];
