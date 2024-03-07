@@ -71,7 +71,7 @@ namespace Ryujinx.Ava.UI.Views.User
             if (ViewModel.SelectedImage != null)
             {
                 MemoryStream streamJpg = new();
-                Image avatarImage = Image.Load(ViewModel.SelectedImage, new PngDecoder());
+                Image avatarImage = Image.Load(ViewModel.SelectedImage);
 
                 avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
                     ViewModel.BackgroundColor.R,
