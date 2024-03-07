@@ -408,6 +408,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             ShowConfirmExit = config.ShowConfirmExit;
             HideCursor = (int)config.HideCursor.Value;
             CursorHideIdleTime = config.CursorHideIdleTime.Value;
+<<<<<<< HEAD
+=======
+            
+
+>>>>>>> 5239ec712d5915a211a083d39764736dd02040e5
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
