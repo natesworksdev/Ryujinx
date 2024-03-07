@@ -634,7 +634,7 @@ namespace Ryujinx.UI.Common.Configuration
         /// <summary>
         /// Amount of seconds needed by the mouse to be spent idle to hide the cursor.
         /// </summary>
-        public ReactiveObject<int> CursorHideIdleTime {get; private set; }
+        public ReactiveObject<int> CursorHideIdleTime { get; private set; }
 
         private ConfigurationState()
         {
@@ -1450,7 +1450,7 @@ namespace Ryujinx.UI.Common.Configuration
                 configurationFileUpdated = true;
             }
 
-            if(configurationFileFormat.Version < 50)
+            if (configurationFileFormat.Version < 50)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 50.");
 
@@ -1545,7 +1545,7 @@ namespace Ryujinx.UI.Common.Configuration
             Hid.EnableMouse.Value = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value = configurationFileFormat.InputConfig;
-            
+
             if (Hid.InputConfig.Value == null)
             {
                 Hid.InputConfig.Value = new List<InputConfig>();

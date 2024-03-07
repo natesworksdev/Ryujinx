@@ -56,7 +56,6 @@ namespace Ryujinx.UI.Windows
         [GUI] RadioButton _hideCursorNever;
         [GUI] RadioButton _hideCursorOnIdle;
         [GUI] RadioButton _hideCursorAlways;
-        [GUI] Entry _cursorHideIdleTime;
         [GUI] CheckButton _vSyncToggle;
         [GUI] CheckButton _shaderCacheToggle;
         [GUI] CheckButton _textureRecompressionToggle;
@@ -233,7 +232,6 @@ namespace Ryujinx.UI.Windows
 
             switch (ConfigurationState.Instance.HideCursor.Value)
             {
-                
                 case HideCursorMode.Never:
                     _hideCursorNever.Click();
                     break;
@@ -243,7 +241,6 @@ namespace Ryujinx.UI.Windows
                 case HideCursorMode.Always:
                     _hideCursorAlways.Click();
                     break;
-                
             }
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
@@ -643,7 +640,6 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.System.IgnoreMissingServices.Value = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Hid.EnableMouse.Value = _directMouseAccess.Active;
-            ConfigurationState.Instance.CursorHideIdleTime.Value = int.Parse(_cursorHideIdleTime.Text);
             ConfigurationState.Instance.UI.EnableCustomTheme.Value = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value = Enum.Parse<Common.Configuration.System.Region>(_systemRegionSelect.ActiveId);

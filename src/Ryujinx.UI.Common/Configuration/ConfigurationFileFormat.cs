@@ -168,9 +168,9 @@ namespace Ryujinx.UI.Common.Configuration
         public HideCursorMode HideCursor { get; set; }
 
         /// <summary>
-        /// Amount of seconds needed by the mouse to be spent idle for cursor to hide.
+        /// Amount of seconds needed to be spent idle to hide cursor
         /// </summary>
-         public int CursorHideIdleTime { get; set; }
+        public int CursorHideIdleTime { get; set; }
 
         /// <summary>
         /// Enables or disables Vertical Sync
