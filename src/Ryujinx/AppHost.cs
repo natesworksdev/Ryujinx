@@ -124,7 +124,6 @@ namespace Ryujinx.Ava
         public bool ScreenshotRequested { get; set; }
 
         public AppHost(
-            
             RendererHost renderer,
             InputManager inputManager,
             string applicationPath,
