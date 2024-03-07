@@ -423,6 +423,7 @@ namespace Ryujinx.UI.Common.Configuration
             /// </summary>
             public ReactiveObject<List<InputConfig>> InputConfig { get; private set; }
 
+
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
@@ -1545,7 +1546,7 @@ namespace Ryujinx.UI.Common.Configuration
             Hid.EnableMouse.Value = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value = configurationFileFormat.InputConfig;
-            
+
             if (Hid.InputConfig.Value == null)
             {
                 Hid.InputConfig.Value = new List<InputConfig>();
