@@ -96,6 +96,7 @@
   "SettingsTabGeneralHideCursorNever": "Never",
   "SettingsTabGeneralHideCursorOnIdle": "On Idle",
   "SettingsTabGeneralHideCursorAlways": "Always",
+  "SettingsTabGeneralCursorHideIdleTime": "CursorHideIdleTime",
   "SettingsTabGeneralGameDirectories": "Game Directories",
   "SettingsTabGeneralAdd": "Add",
   "SettingsTabGeneralRemove": "Remove",

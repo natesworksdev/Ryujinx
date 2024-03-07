@@ -168,6 +168,11 @@ namespace Ryujinx.UI.Common.Configuration
         public HideCursorMode HideCursor { get; set; }
 
         /// <summary>
+        /// A time limit when the cursor will hide, if the [HideCursorMode] is [On Idle].
+        /// </summary>
+        public int CursorHideIdleTime { get; set; }
+
+        /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; set; }

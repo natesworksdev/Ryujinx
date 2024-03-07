@@ -65,7 +65,7 @@ namespace Ryujinx.Ava
 {
     internal class AppHost
     {
-        private const int CursorHideIdleTime = 5; // Hide Cursor seconds.
+        private readonly int CursorHideIdleTime; // Hide Cursor seconds.
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
         private const int TargetFps = 60;
         private const float VolumeDelta = 0.05f;
@@ -143,6 +143,8 @@ namespace Ryujinx.Ava
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
             _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
             _topLevel = topLevel;
+
+            CursorHideIdleTime = ConfigurationState.Instance.CursorHideIdleTime;
 
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_topLevel, renderer));
 
