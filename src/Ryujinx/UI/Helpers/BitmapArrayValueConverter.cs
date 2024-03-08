@@ -2,10 +2,10 @@ using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using System.Runtime.Caching;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Caching;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
@@ -13,9 +13,9 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         public static readonly BitmapArrayValueConverter Instance = new();
 
-        private MemoryCache cache = MemoryCache.Default;
-        private CacheItemPolicy policy = new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromSeconds(60) };
-        private int MaxCacheSize = 24;
+        private readonly MemoryCache cache = MemoryCache.Default;
+        private readonly CacheItemPolicy policy = new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromSeconds(60) };
+        private readonly int MaxCacheSize = 24;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -27,7 +27,7 @@ namespace Ryujinx.Ava.UI.Helpers
             if (value is byte[] buffer && targetType == typeof(IImage))
             {
                 var retrieved = cache.Contains(buffer.AsSpan().ToString());
-                
+
                 if (retrieved == false)
                 {
                     MemoryStream mem = new(buffer);
