@@ -58,6 +58,7 @@
 
     <!--NOTE: DO NOT REMOVE, THIS IS REQUIRED AS A RESULT OF A TRIMMING ISSUE IN AVALONIA -->
     <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="System.Runtime.Caching" />
   </ItemGroup>
 
   <ItemGroup>
