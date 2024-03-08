@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using System.Runtime.Caching;
 using System;
 using System.Globalization;
 using System.IO;
@@ -9,7 +11,11 @@ namespace Ryujinx.Ava.UI.Helpers
 {
     internal class BitmapArrayValueConverter : IValueConverter
     {
-        public static BitmapArrayValueConverter Instance = new();
+        public static readonly BitmapArrayValueConverter Instance = new();
+
+        private MemoryCache cache = MemoryCache.Default;
+        private CacheItemPolicy policy = new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromSeconds(60) };
+        private int MaxCacheSize = 24;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -20,9 +26,24 @@ namespace Ryujinx.Ava.UI.Helpers
 
             if (value is byte[] buffer && targetType == typeof(IImage))
             {
-                MemoryStream mem = new(buffer);
+                var retrieved = cache.Contains(buffer.AsSpan().ToString());
+                
+                if (retrieved == false)
+                {
+                    MemoryStream mem = new(buffer);
+                    var bitmap = new Bitmap(mem).CreateScaledBitmap(new PixelSize(256, 256));
+                    cache.Add(buffer.AsSpan().ToString(), bitmap, policy);
+                    return bitmap;
+                }
+                else
+                {
+                    return cache.Get(buffer.AsSpan().ToString());
+                }
+            }
 
-                return new Bitmap(mem);
+            if (cache.GetCount() >= MaxCacheSize)
+            {
+                cache.Trim(50);
             }
 
             throw new NotSupportedException();
