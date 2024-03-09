@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Runtime.Caching;
 
 namespace Ryujinx.Ava.UI.Helpers
@@ -26,18 +27,19 @@ namespace Ryujinx.Ava.UI.Helpers
 
             if (value is byte[] buffer && targetType == typeof(IImage))
             {
-                var retrieved = cache.Contains(buffer.AsSpan().ToString());
+                var bufferhash = BufferHash(buffer);
+                var retrieved = cache.Contains(bufferhash);
 
                 if (retrieved == false)
                 {
                     MemoryStream mem = new(buffer);
                     var bitmap = new Bitmap(mem).CreateScaledBitmap(new PixelSize(256, 256));
-                    cache.Add(buffer.AsSpan().ToString(), bitmap, policy);
+                    cache.Add(bufferhash, bitmap, policy);
                     return bitmap;
                 }
                 else
                 {
-                    return cache.Get(buffer.AsSpan().ToString());
+                    return cache.Get(bufferhash);
                 }
             }
 
@@ -52,6 +54,11 @@ namespace Ryujinx.Ava.UI.Helpers
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
+        }
+        private static string BufferHash(byte[] input)
+        {
+            var hashBytes = Crc32.HashToUInt32(input);
+            return hashBytes.ToString();
         }
     }
 }
