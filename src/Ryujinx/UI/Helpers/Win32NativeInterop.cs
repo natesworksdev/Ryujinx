@@ -8,6 +8,8 @@ namespace Ryujinx.Ava.UI.Helpers
     [SupportedOSPlatform("windows")]
     internal partial class Win32NativeInterop
     {
+        internal const int GWLP_WNDPROC = -4;
+
         [Flags]
         public enum ClassStyles : uint
         {
@@ -45,6 +47,7 @@ namespace Ryujinx.Ava.UI.Helpers
             Xbuttondblclk = 0x020D,
             Mousehwheel = 0x020E,
             Mouselast = 0x020E,
+            NcHitTest = 0x0084,
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]
@@ -121,5 +124,11 @@ namespace Ryujinx.Ava.UI.Helpers
            IntPtr hMenu,
            IntPtr hInstance,
            IntPtr lpParam);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial IntPtr SetWindowLongPtrW(IntPtr hWnd, int nIndex, IntPtr value);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial IntPtr SetWindowLongW(IntPtr hWnd, int nIndex, int value);
     }
 }
