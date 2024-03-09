@@ -31,22 +31,6 @@ namespace Ryujinx.Ava.UI.Helpers
         [SuppressMessage("Design", "CA1069: Enums values should not be duplicated")]
         public enum WindowsMessages : uint
         {
-            Mousemove = 0x0200,
-            Lbuttondown = 0x0201,
-            Lbuttonup = 0x0202,
-            Lbuttondblclk = 0x0203,
-            Rbuttondown = 0x0204,
-            Rbuttonup = 0x0205,
-            Rbuttondblclk = 0x0206,
-            Mbuttondown = 0x0207,
-            Mbuttonup = 0x0208,
-            Mbuttondblclk = 0x0209,
-            Mousewheel = 0x020A,
-            Xbuttondown = 0x020B,
-            Xbuttonup = 0x020C,
-            Xbuttondblclk = 0x020D,
-            Mousehwheel = 0x020E,
-            Mouselast = 0x020E,
             NcHitTest = 0x0084,
         }
 
