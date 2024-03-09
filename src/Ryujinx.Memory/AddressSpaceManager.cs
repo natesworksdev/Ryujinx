@@ -24,6 +24,8 @@ namespace Ryujinx.Memory
         private readonly MemoryBlock _backingMemory;
         private readonly PageTable<nuint> _pageTable;
 
+        protected override ulong AddressSpaceSize { get; }
+
         /// <summary>
         /// Creates a new instance of the memory manager.
         /// </summary>
@@ -400,8 +402,6 @@ namespace Ryujinx.Memory
         {
             // Only the ARM Memory Manager has tracking for now.
         }
-
-        protected override ulong AddressSpaceSize { get; }
 
         protected override unsafe Span<byte> GetPhysicalAddressSpan(nuint pa, int size)
             => new((void*)pa, size);

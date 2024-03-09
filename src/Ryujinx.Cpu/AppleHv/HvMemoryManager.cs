@@ -56,6 +56,8 @@ namespace Ryujinx.Cpu.AppleHv
 
         public event Action<ulong, ulong> UnmapEvent;
 
+        protected override ulong AddressSpaceSize { get; }
+
         /// <summary>
         /// Creates a new instance of the Hypervisor memory manager.
         /// </summary>
@@ -861,8 +863,6 @@ namespace Ryujinx.Cpu.AppleHv
         {
             _addressSpace.Dispose();
         }
-
-        protected override ulong AddressSpaceSize { get; }
 
         protected override Span<byte> GetPhysicalAddressSpan(ulong pa, int size)
             => _backingMemory.GetSpan(pa, size);
