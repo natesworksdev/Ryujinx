@@ -35,8 +35,11 @@ namespace Ryujinx.Horizon.Irs
         public Result GetIrsensorSharedMemoryHandle([CopyHandle] out int arg0, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
             // NOTE: Shared memory should use the appletResourceUserId.
+            // TODO: Update when HorizonStatic has support for CreateSharedMemory
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            arg0 = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id });
 
             return Result.Success;
         }
@@ -84,11 +87,24 @@ namespace Ryujinx.Horizon.Irs
         }
 
         [CmifCommand(309)]
-        public Result GetImageTransferProcessorState(AppletResourceUserId appletResourceUserId, out ImageTransferProcessorState arg1, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg2, IrCameraHandle irCameraHandle, [ClientProcessId] ulong pid)
+        public Result GetImageTransferProcessorState(AppletResourceUserId appletResourceUserId, out ImageTransferProcessorState imageTransferProcessorState, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> imageTransferBuffer, IrCameraHandle irCameraHandle, [ClientProcessId] ulong pid)
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            // TODO: Uses the buffer to copy the JoyCon IR data (by using a JoyCon driver) and update the following struct.
+            imageTransferProcessorState = new ImageTransferProcessorState
+            {
+                SamplingNumber = 0,
+                AmbientNoiseLevel = 0
+            };
+
+            if (imageTransferBuffer.Length == 0)
+            {
+                // InvalidBufferSize
+                return new Result(207);
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType });
 
             return Result.Success;
         }
@@ -98,7 +114,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, config.RequiredMcuVersion });
 
             return Result.Success;
         }
@@ -106,7 +122,21 @@ namespace Ryujinx.Horizon.Irs
         [CmifCommand(311)]
         public Result GetNpadIrCameraHandle(out IrCameraHandle irCameraHandle, NpadIdType npadIdType)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            if (npadIdType > NpadIdType.Player8 &&
+                npadIdType != NpadIdType.Unknown &&
+                npadIdType != NpadIdType.Handheld)
+            {
+                // NpadIdOutOfRange
+                irCameraHandle = new IrCameraHandle();
+                return new Result(709);
+            }
+
+            irCameraHandle = new IrCameraHandle
+            {
+                PlayerNumber = (byte)npadIdType
+            };
+
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { npadIdType });
 
             return Result.Success;
         }
@@ -116,7 +146,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, config.RequiredMcuVersion });
 
             return Result.Success;
         }
@@ -126,7 +156,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType });
 
             return Result.Success;
         }
@@ -136,7 +166,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, mcuVersion.MajorVersion, mcuVersion.MinorVersion });
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, mcuVersion });
 
             return Result.Success;
         }
@@ -146,7 +176,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, functionLevel.IrSensorFunctionLevel });
 
             return Result.Success;
         }
@@ -156,7 +186,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, config.ExposureTime, arg3, arg4 });
 
             return Result.Success;
         }
@@ -166,7 +196,7 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, config.RequiredMcuVersion });
 
             return Result.Success;
         }
@@ -176,15 +206,15 @@ namespace Ryujinx.Horizon.Irs
         {
             CheckCameraHandle(irCameraHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType });
 
             return Result.Success;
         }
 
         [CmifCommand(319)]
-        public Result ActivateIrsensorWithFunctionLevel(AppletResourceUserId appletResourceUserId, PackedFunctionLevel arg1, [ClientProcessId] ulong pid)
+        public Result ActivateIrsensorWithFunctionLevel(AppletResourceUserId appletResourceUserId, PackedFunctionLevel functionLevel, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs);
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId.Id, functionLevel.IrSensorFunctionLevel });
 
             return Result.Success;
         }

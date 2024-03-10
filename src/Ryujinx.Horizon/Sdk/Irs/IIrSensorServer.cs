@@ -15,7 +15,7 @@ namespace Ryujinx.Horizon.Sdk.Irs
         Result RunMomentProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedMomentProcessorConfig config, ulong pid);
         Result RunClusteringProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedClusteringProcessorConfig config, ulong pid);
         Result RunImageTransferProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedImageTransferProcessorConfig config, int arg3, ulong arg4, ulong pid);
-        Result GetImageTransferProcessorState(AppletResourceUserId appletResourceUserId, out ImageTransferProcessorState arg1, Span<byte> arg2, IrCameraHandle irCameraHandle, ulong pid);
+        Result GetImageTransferProcessorState(AppletResourceUserId appletResourceUserId, out ImageTransferProcessorState imageTransferProcessorState, Span<byte> imageTransferBuffer, IrCameraHandle irCameraHandle, ulong pid);
         Result RunTeraPluginProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedTeraPluginProcessorConfig config, ulong pid);
         Result GetNpadIrCameraHandle(out IrCameraHandle irCameraHandle, NpadIdType npadIdType);
         Result RunPointingProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedPointingProcessorConfig config, ulong pid);
@@ -25,6 +25,6 @@ namespace Ryujinx.Horizon.Sdk.Irs
         Result RunImageTransferExProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedImageTransferProcessorExConfig config, int arg3, ulong arg4, ulong pid);
         Result RunIrLedProcessor(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, PackedIrLedProcessorConfig config, ulong pid);
         Result StopImageProcessorAsync(AppletResourceUserId appletResourceUserId, IrCameraHandle irCameraHandle, ulong pid);
-        Result ActivateIrsensorWithFunctionLevel(AppletResourceUserId appletResourceUserId, PackedFunctionLevel arg1, ulong pid);
+        Result ActivateIrsensorWithFunctionLevel(AppletResourceUserId appletResourceUserId, PackedFunctionLevel functionLevel, ulong pid);
     }
 }
