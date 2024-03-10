@@ -15,32 +15,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
         public IIrSensorServer(ServiceCtx context) { }
 
-        [CommandCmif(302)]
-        // ActivateIrsensor(nn::applet::AppletResourceUserId, pid)
-        public ResultCode ActivateIrsensor(ServiceCtx context)
-        {
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-
-            // NOTE: This seems to initialize the shared memory for irs service.
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(303)]
-        // DeactivateIrsensor(nn::applet::AppletResourceUserId, pid)
-        public ResultCode DeactivateIrsensor(ServiceCtx context)
-        {
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-
-            // NOTE: This seems to deinitialize the shared memory for irs service.
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId });
-
-            return ResultCode.Success;
-        }
-
         [CommandCmif(304)]
         // GetIrsensorSharedMemoryHandle(nn::applet::AppletResourceUserId, pid) -> handle<copy>
         public ResultCode GetIrsensorSharedMemoryHandle(ServiceCtx context)
@@ -57,67 +31,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_irsensorSharedMemoryHandle);
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(305)]
-        // StopImageProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId)
-        public ResultCode StopImageProcessor(ServiceCtx context)
-        {
-            IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-
-            CheckCameraHandle(irCameraHandle);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(306)]
-        // RunMomentProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedMomentProcessorConfig)
-        public ResultCode RunMomentProcessor(ServiceCtx context)
-        {
-            IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-            var packedMomentProcessorConfig = context.RequestData.ReadStruct<PackedMomentProcessorConfig>();
-
-            CheckCameraHandle(irCameraHandle);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, packedMomentProcessorConfig.ExposureTime });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(307)]
-        // RunClusteringProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedClusteringProcessorConfig)
-        public ResultCode RunClusteringProcessor(ServiceCtx context)
-        {
-            IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-            var packedClusteringProcessorConfig = context.RequestData.ReadStruct<PackedClusteringProcessorConfig>();
-
-            CheckCameraHandle(irCameraHandle);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, packedClusteringProcessorConfig.ExposureTime });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(308)]
-        // RunImageTransferProcessor(pid, nn::irsensor::IrCameraHandle, nn::applet::AppletResourceUserId, PackedImageTransferProcessorConfig, u64 TransferMemorySize, TransferMemoryHandle)
-        public ResultCode RunImageTransferProcessor(ServiceCtx context)
-        {
-            IrCameraHandle irCameraHandle = context.RequestData.ReadStruct<IrCameraHandle>();
-            ulong appletResourceUserId = context.RequestData.ReadUInt64();
-            var packedImageTransferProcessorConfig = context.RequestData.ReadStruct<PackedImageTransferProcessorConfig>();
-
-            CheckCameraHandle(irCameraHandle);
-
-            // TODO: Handle the Transfer Memory.
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle.PlayerNumber, irCameraHandle.DeviceType, packedImageTransferProcessorConfig.ExposureTime });
 
             return ResultCode.Success;
         }
@@ -185,20 +98,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
             // NOTE: If the irCameraHandle pointer is null this error is returned, Doesn't occur in our case.
             //       return ResultCode.HandlePointerIsNull;
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(314)] // 3.0.0+
-        // CheckFirmwareVersion(nn::irsensor::IrCameraHandle, nn::irsensor::PackedMcuVersion, nn::applet::AppletResourceUserId, pid)
-        public ResultCode CheckFirmwareVersion(ServiceCtx context)
-        {
-            int irCameraHandle = context.RequestData.ReadInt32();
-            short packedMcuVersionMajor = context.RequestData.ReadInt16();
-            short packedMcuVersionMinor = context.RequestData.ReadInt16();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle, packedMcuVersionMajor, packedMcuVersionMinor });
 
             return ResultCode.Success;
         }

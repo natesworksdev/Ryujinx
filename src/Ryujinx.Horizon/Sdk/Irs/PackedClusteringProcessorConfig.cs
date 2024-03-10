@@ -1,9 +1,9 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Horizon.Sdk.Irsensor
+namespace Ryujinx.Horizon.Sdk.Irs
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x20)]
-    struct PackedMomentProcessorConfig
+    [StructLayout(LayoutKind.Sequential, Size = 0x28)]
+    struct PackedClusteringProcessorConfig
     {
         public long ExposureTime;
         public byte LightTarget;
@@ -16,8 +16,10 @@ namespace Ryujinx.Horizon.Sdk.Irsensor
         public ushort WindowOfInterestWidth;
         public ushort WindowOfInterestHeight;
         public PackedMcuVersion RequiredMcuVersion;
-        public byte Preprocess;
-        public byte PreprocessIntensityThreshold;
+        public uint ObjectPixelCountMin;
+        public uint ObjectPixelCountMax;
+        public byte ObjectIntensityMin;
+        public byte IsExternalLightFilterEnabled;
         public ushort Reserved3;
     }
 }
