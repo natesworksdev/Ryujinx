@@ -523,6 +523,7 @@
   "SettingsTabNetworkConnection": "Network Connection",
   "SettingsTabCpuCache": "CPU Cache",
   "SettingsTabCpuMemory": "CPU Mode",
+  "SettingsTabCpuHacks": "Hacks",
   "DialogUpdaterFlatpakNotSupportedMessage": "Please update Ryujinx via FlatHub.",
   "UpdaterDisabledWarningTitle": "Updater Disabled!",
   "ControllerSettingsRotate90": "Rotate 90° Clockwise",

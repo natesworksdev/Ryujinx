@@ -11,7 +11,6 @@ using Ryujinx.Ava.UI.Applet;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -410,10 +409,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         public static void UpdateTurboConfig(long turboMultiplier)
         {
-            MainWindow.MainWindowViewModel.AppHost.Device.Configuration.TurboMultiplier = turboMultiplier;
-            if (MainWindow.MainWindowViewModel.AppHost.Device.TurboMode)
+            if (MainWindow.MainWindowViewModel.IsGameRunning)
             {
-                TickSource.s_tickMultiplier = turboMultiplier;
+                MainWindow.MainWindowViewModel.AppHost.Device.Configuration.TurboMultiplier = turboMultiplier;
+                if (MainWindow.MainWindowViewModel.AppHost.Device.TurboMode)
+                {
+                    MainWindow.MainWindowViewModel.AppHost.Device.SetTickSourceMultiplier(turboMultiplier);
+                }
             }
         }
 
