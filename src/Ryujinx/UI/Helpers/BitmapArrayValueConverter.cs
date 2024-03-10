@@ -2,11 +2,10 @@ using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Globalization;
 using System.IO;
-using System.IO.Hashing;
-using System.Runtime.Caching;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
@@ -14,8 +13,7 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         public static readonly BitmapArrayValueConverter Instance = new();
 
-        private readonly MemoryCache cache = MemoryCache.Default;
-        private readonly CacheItemPolicy policy = new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromSeconds(60) };
+        private MemoryCache cache;
         private readonly int MaxCacheSize = 24;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -25,27 +23,29 @@ namespace Ryujinx.Ava.UI.Helpers
                 return null;
             }
 
+            cache = new MemoryCache(new MemoryCacheOptions());
+            var options = new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromSeconds(10), Size = 1 };
+
             if (value is byte[] buffer && targetType == typeof(IImage))
             {
-                var bufferhash = BufferHash(buffer);
-                var retrieved = cache.Contains(bufferhash);
+                cache.TryGetValue(buffer, out bool result);
 
-                if (retrieved == false)
+                if (result == false)
                 {
                     MemoryStream mem = new(buffer);
                     var bitmap = new Bitmap(mem).CreateScaledBitmap(new PixelSize(256, 256));
-                    cache.Add(bufferhash, bitmap, policy);
+                    cache.Set(buffer, bitmap, options);
                     return bitmap;
                 }
                 else
                 {
-                    return cache.Get(bufferhash);
+                    return cache.Get(buffer);
                 }
             }
 
-            if (cache.GetCount() >= MaxCacheSize)
+            if (cache.Count >= MaxCacheSize)
             {
-                cache.Trim(50);
+                cache.Compact(50);
             }
 
             throw new NotSupportedException();
@@ -54,11 +54,6 @@ namespace Ryujinx.Ava.UI.Helpers
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
-        }
-        private static string BufferHash(byte[] input)
-        {
-            var hashBytes = Crc32.HashToUInt32(input);
-            return hashBytes.ToString();
         }
     }
 }

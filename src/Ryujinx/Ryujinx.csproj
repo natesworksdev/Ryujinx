@@ -44,6 +44,7 @@
     <PackageReference Include="Avalonia.Svg.Skia" />
     <PackageReference Include="DynamicData" />
     <PackageReference Include="FluentAvaloniaUI" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
 
     <PackageReference Include="OpenTK.Core" />
     <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'linux-arm64' AND '$(RuntimeIdentifier)' != 'osx-x64' AND '$(RuntimeIdentifier)' != 'osx-arm64'" />
@@ -58,7 +59,6 @@
 
     <!--NOTE: DO NOT REMOVE, THIS IS REQUIRED AS A RESULT OF A TRIMMING ISSUE IN AVALONIA -->
     <PackageReference Include="System.Drawing.Common" />
-    <PackageReference Include="System.Runtime.Caching" />
   </ItemGroup>
 
   <ItemGroup>
