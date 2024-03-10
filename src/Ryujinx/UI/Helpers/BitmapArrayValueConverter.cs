@@ -32,7 +32,11 @@ namespace Ryujinx.Ava.UI.Helpers
                 if (result == null)
                 {
                     using MemoryStream mem = new(buffer);
-                    var bitmap = new Bitmap(mem).CreateScaledBitmap(new PixelSize(256, 256));
+                    var bitmap = new Bitmap(mem);
+                    if (bitmap.Size.Width > 256)
+                    {
+                        bitmap = bitmap.CreateScaledBitmap(new PixelSize(256, 256));
+                    }
                     cache.Set(hash, bitmap, options);
                     return bitmap;
                 }
