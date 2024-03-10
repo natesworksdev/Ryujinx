@@ -863,7 +863,7 @@ namespace Ryujinx.UI.Common.Configuration
                 ResScaleDown = Key.Unbound,
                 VolumeUp = Key.Unbound,
                 VolumeDown = Key.Unbound,
-                ToggleTurbo = Key.F3,
+                ToggleTurbo = Key.Unbound,
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -1460,7 +1460,7 @@ namespace Ryujinx.UI.Common.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleTurbo = Key.F3,
+                    ToggleTurbo = Key.Unbound,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = configurationFileFormat.Hotkeys.Pause,
