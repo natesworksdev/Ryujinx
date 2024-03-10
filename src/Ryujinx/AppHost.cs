@@ -23,6 +23,7 @@ using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Cpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
@@ -795,7 +796,8 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.System.AudioVolume,
                                                      ConfigurationState.Instance.System.UseHypervisor,
                                                      ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                                                     ConfigurationState.Instance.Multiplayer.Mode);
+                                                     ConfigurationState.Instance.Multiplayer.Mode,
+                                                     ConfigurationState.Instance.System.TurboMultiplier);
 
             Device = new Switch(configuration);
         }
@@ -980,7 +982,8 @@ namespace Ryujinx.Ava
                 ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)"
+                            + (Device.TurboMode ? $" Turbo ({Device.Configuration.TurboMultiplier}%)" : ""),
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
         }
@@ -1065,6 +1068,12 @@ namespace Ryujinx.Ava
 
                 if (currentHotkeyState != _prevHotkeyState)
                 {
+                    if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo) != Device.TurboMode)
+                    {
+                        Device.TurboMode = !Device.TurboMode;
+                        long turboMultiplier = Device.TurboMode ? Device.Configuration.TurboMultiplier : 100;
+                        TickSource.s_tickMultiplier = turboMultiplier;
+                    }
                     switch (currentHotkeyState)
                     {
                         case KeyboardHotkeyState.ToggleVSync:
@@ -1076,6 +1085,8 @@ namespace Ryujinx.Ava
                             break;
                         case KeyboardHotkeyState.ShowUI:
                             _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
+                            break;
+                        case KeyboardHotkeyState.ToggleTurbo:
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)
@@ -1191,6 +1202,10 @@ namespace Ryujinx.Ava
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo))
+            {
+                state = KeyboardHotkeyState.ToggleTurbo;
             }
 
             return state;

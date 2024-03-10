@@ -28,6 +28,7 @@ namespace Ryujinx.HLE
         public IHostUIHandler UIHandler { get; }
 
         public bool EnableDeviceVsync { get; set; } = true;
+        public bool TurboMode { get; set; } = false;
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
 

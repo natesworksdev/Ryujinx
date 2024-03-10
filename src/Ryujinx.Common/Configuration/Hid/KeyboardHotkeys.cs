@@ -13,5 +13,6 @@ namespace Ryujinx.Common.Configuration.Hid
         public Key ResScaleDown { get; set; }
         public Key VolumeUp { get; set; }
         public Key VolumeDown { get; set; }
+        public Key ToggleTurbo { get; set; }
     }
 }
