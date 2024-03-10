@@ -1,5 +1,4 @@
-using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
-using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.TouchScreen;
+using Ryujinx.Horizon.Sdk.Hid;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
