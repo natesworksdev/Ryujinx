@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 
 namespace Ryujinx.Ava.UI.Helpers
 {
@@ -13,8 +14,8 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         public static readonly BitmapArrayValueConverter Instance = new();
 
-        private MemoryCache cache;
-        private readonly int MaxCacheSize = 24;
+        private readonly MemoryCache cache = new MemoryCache(new MemoryCacheOptions() { SizeLimit = 24, CompactionPercentage = 0.25 });
+        private readonly MemoryCacheEntryOptions options = new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromSeconds(10), Size = 1, AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60) };
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -23,29 +24,22 @@ namespace Ryujinx.Ava.UI.Helpers
                 return null;
             }
 
-            cache = new MemoryCache(new MemoryCacheOptions());
-            var options = new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromSeconds(10), Size = 1 };
-
             if (value is byte[] buffer && targetType == typeof(IImage))
             {
-                cache.TryGetValue(buffer, out bool result);
+                var hash = XxHash3.Hash(buffer, 1);
+                cache.TryGetValue(hash, out Bitmap result);
 
-                if (result == false)
+                if (result == null)
                 {
-                    MemoryStream mem = new(buffer);
+                    using MemoryStream mem = new(buffer);
                     var bitmap = new Bitmap(mem).CreateScaledBitmap(new PixelSize(256, 256));
-                    cache.Set(buffer, bitmap, options);
+                    cache.Set(hash, bitmap, options);
                     return bitmap;
                 }
                 else
                 {
-                    return cache.Get(buffer);
+                    return result;
                 }
-            }
-
-            if (cache.Count >= MaxCacheSize)
-            {
-                cache.Compact(50);
             }
 
             throw new NotSupportedException();
