@@ -1,6 +1,6 @@
 using Ryujinx.Common.Configuration.Hid;
 
-namespace Ryujinx.HLE.UI
+namespace Ryujinx.Horizon.UI
 {
     public delegate bool KeyPressedHandler(Key key);
 }

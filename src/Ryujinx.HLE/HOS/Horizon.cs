@@ -28,7 +28,7 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Processes;
 using Ryujinx.Horizon;
-using Ryujinx.Horizon.Sdk.Am.Types;
+using Ryujinx.Horizon.Sdk.Am;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -25,7 +25,7 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.HLE.UI;
+using Ryujinx.Horizon.UI;
 using Ryujinx.Input.HLE;
 using Ryujinx.Modules;
 using Ryujinx.UI.App.Common;

@@ -1,5 +1,4 @@
 using Ryujinx.Horizon.Sdk.Am;
-using Ryujinx.Horizon.Sdk.Am.Types;
 using System;
 using System.Collections.Generic;
 

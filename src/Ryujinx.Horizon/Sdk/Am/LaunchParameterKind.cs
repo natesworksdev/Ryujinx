@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types
+namespace Ryujinx.Horizon.Sdk.Am
 {
     public enum LaunchParameterKind : uint
     {

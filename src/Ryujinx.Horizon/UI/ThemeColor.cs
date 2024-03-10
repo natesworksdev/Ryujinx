@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.UI
+namespace Ryujinx.Horizon.UI
 {
     public readonly struct ThemeColor
     {

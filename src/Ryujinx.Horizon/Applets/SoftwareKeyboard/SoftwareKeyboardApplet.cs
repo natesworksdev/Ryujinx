@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Am;
+using Ryujinx.Horizon.UI.Input;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
@@ -107,7 +108,7 @@ namespace Ryujinx.Horizon.Applets.SoftwareKeyboard
                         _keyboardRenderer = new SoftwareKeyboardRenderer(_device.UIHandler.HostUITheme);
                     }
 
-                    return ResultCode.Success;
+                    return Result.Success;
                 }
                 else
                 {
@@ -494,7 +495,7 @@ namespace Ryujinx.Horizon.Applets.SoftwareKeyboard
 
             _npads.Update(true);
 
-            NpadButton buttons = _npads.GetCurrentButtonsOfAllNpads();
+            NpadReader buttons = _npads.GetCurrentButtonsOfAllNpads();
 
             // Block the input if the current accept key is pressed so the applet won't be instantly closed.
             _canAcceptController = (buttons & NpadButton.A) == 0;

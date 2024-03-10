@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Sdk.Am.Types
+namespace Ryujinx.Horizon.Sdk.Am
 {
     public enum FocusState
     {

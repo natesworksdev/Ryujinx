@@ -6,10 +6,10 @@ using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.HLE;
-using Ryujinx.HLE.UI;
 using Ryujinx.Horizon.Applets.Controller;
 using Ryujinx.Horizon.Applets.SoftwareKeyboard;
-using Ryujinx.Horizon.Sdk.Am.Types;
+using Ryujinx.Horizon.Sdk.Am;
+using Ryujinx.Horizon.UI;
 using System;
 using System.Threading;
 

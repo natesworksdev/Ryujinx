@@ -1,8 +1,8 @@
 using Ryujinx.Horizon.Applets.Controller;
 using Ryujinx.Horizon.Applets.SoftwareKeyboard;
-using Ryujinx.Horizon.Sdk.Am.Types;
+using Ryujinx.Horizon.Sdk.Am;
 
-namespace Ryujinx.HLE.UI
+namespace Ryujinx.Horizon.UI
 {
     public interface IHostUIHandler
     {

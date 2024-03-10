@@ -1,5 +1,5 @@
 using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.Horizon.Sdk.Am.Types;
+using Ryujinx.Horizon.Sdk.Am;
 using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.SystemState

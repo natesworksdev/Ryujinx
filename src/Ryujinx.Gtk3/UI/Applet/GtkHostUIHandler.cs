@@ -1,8 +1,8 @@
 using Gtk;
-using Ryujinx.HLE.UI;
 using Ryujinx.Horizon.Applets.Controller;
 using Ryujinx.Horizon.Applets.SoftwareKeyboard;
-using Ryujinx.Horizon.Sdk.Am.Types;
+using Ryujinx.Horizon.Sdk.Am;
+using Ryujinx.Horizon.UI;
 using Ryujinx.UI.Widgets;
 using System;
 using System.Threading;
