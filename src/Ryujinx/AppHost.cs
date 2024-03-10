@@ -1072,7 +1072,7 @@ namespace Ryujinx.Ava
                     {
                         Device.TurboMode = !Device.TurboMode;
                         long turboMultiplier = Device.TurboMode ? Device.Configuration.TurboMultiplier : 100;
-                        TickSource.s_tickMultiplier = turboMultiplier;
+                        Device.SetTickSourceMultiplier(turboMultiplier);
                     }
                     switch (currentHotkeyState)
                     {

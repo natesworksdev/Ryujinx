@@ -126,6 +126,11 @@ namespace Ryujinx.HLE
             return AudioDeviceDriver.Volume;
         }
 
+        public void SetTickSourceMultiplier(long tickMultiplier)
+        {
+            System.TickSource.TickMultiplier = tickMultiplier;
+        }
+
         public void EnableCheats()
         {
             ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);

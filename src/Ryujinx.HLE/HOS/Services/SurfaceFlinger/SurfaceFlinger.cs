@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _ticksPerFrame = (Stopwatch.Frequency / TargetFps * 100) / TickSource.s_tickMultiplier;
+                _ticksPerFrame = (Stopwatch.Frequency / TargetFps * 100) / (_device.System?.TickSource?.TickMultiplier ?? 100);
             }
         }
 

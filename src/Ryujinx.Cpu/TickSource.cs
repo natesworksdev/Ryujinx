@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu
         /// <inheritdoc/>
         public ulong Counter => (ulong)(ElapsedSeconds * Frequency);
 
-        public static long s_tickMultiplier = 100;
+        public long TickMultiplier { get; set; } = 100;
         private static long AcumElapsedTicks = 0;
         private static long LastElapsedTicks = 0;
         private long Elapsedticks
@@ -23,7 +23,7 @@ namespace Ryujinx.Cpu
             get
             {
                 long elapsedTicks = _tickCounter.ElapsedTicks;
-                AcumElapsedTicks += (elapsedTicks - LastElapsedTicks) * s_tickMultiplier / 100;
+                AcumElapsedTicks += (elapsedTicks - LastElapsedTicks) * TickMultiplier / 100;
                 LastElapsedTicks = elapsedTicks;
                 return AcumElapsedTicks;
             }
