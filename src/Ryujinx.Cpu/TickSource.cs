@@ -22,9 +22,9 @@ namespace Ryujinx.Cpu
         {
             get
             {
-                long ElapsedTicks = _tickCounter.ElapsedTicks;
-                AcumElapsedTicks += (ElapsedTicks - LastElapsedTicks) * s_tickMultiplier / 100;
-                LastElapsedTicks = ElapsedTicks;
+                long elapsedTicks = _tickCounter.ElapsedTicks;
+                AcumElapsedTicks += (elapsedTicks - LastElapsedTicks) * s_tickMultiplier / 100;
+                LastElapsedTicks = elapsedTicks;
                 return AcumElapsedTicks;
             }
         }
