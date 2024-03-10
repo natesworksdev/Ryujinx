@@ -1,5 +1,5 @@
 using Gtk;
-using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
+using Ryujinx.Horizon.Applets.SoftwareKeyboard;
 using System;
 using System.Linq;
 

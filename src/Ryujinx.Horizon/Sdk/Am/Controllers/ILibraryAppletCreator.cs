@@ -6,11 +6,11 @@ namespace Ryujinx.Horizon.Sdk.Am.Controllers
 {
     interface ILibraryAppletCreator : IServiceObject
     {
-        Result CreateLibraryApplet(out ILibraryAppletAccessor arg0, uint arg1, uint arg2);
+        Result CreateLibraryApplet(out ILibraryAppletAccessor libraryAppletAccessor, uint appletId, uint libraryAppletMode);
         Result TerminateAllLibraryApplets();
         Result AreAnyLibraryAppletsLeft(out bool arg0);
-        Result CreateStorage(out IStorage arg0, long arg1);
-        Result CreateTransferMemoryStorage(out IStorage arg0, int arg1, long arg2, bool arg3);
-        Result CreateHandleStorage(out IStorage arg0, int arg1, long arg2);
+        Result CreateStorage(out IStorage storage, long size);
+        Result CreateTransferMemoryStorage(out IStorage storage, int handle, long size, bool writeable);
+        Result CreateHandleStorage(out IStorage storage, int handle, long size);
     }
 }
