@@ -18,7 +18,7 @@ namespace Ryujinx.UI.Common
             {
                 Assets = new Assets
                 {
-                    LargeImageKey = "ryujinx",
+                    LargeImageKey = $"https://avatars.githubusercontent.com/u/39036280?s=274&v=4",
                     LargeImageText = Description,
                 },
                 Details = "Main Menu",
@@ -68,7 +68,7 @@ namespace Ryujinx.UI.Common
                 {
                     LargeImageKey = "game",
                     LargeImageText = titleName,
-                    SmallImageKey = "ryujinx",
+                    SmallImageKey = $"https://avatars.githubusercontent.com/u/39036280?s=274&v=4",
                     SmallImageText = Description,
                 },
                 Details = $"Playing {titleName}",
