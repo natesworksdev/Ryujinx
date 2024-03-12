@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Multiplayer;
@@ -161,6 +162,11 @@ namespace Ryujinx.UI.Common.Configuration
         /// Show "Confirm Exit" Dialog
         /// </summary>
         public bool ShowConfirmExit { get; set; }
+
+        /// <summary>
+        /// Close Ryujinx on Emulator Stop
+        /// </summary>
+        public bool CloseOnEmulatorStop { get; set; }
 
         /// <summary>
         /// Whether to hide cursor on idle, always or never

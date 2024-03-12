@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Gtk;
 using LibHac.Common;
 using LibHac.Common.Keys;
@@ -1442,7 +1443,19 @@ namespace Ryujinx.UI
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
             UpdateMenuItem.Sensitive = true;
-            RendererWidget?.Exit();
+
+            Logger.Warning?.Print(LogClass.Emulation, "afgadfgasgfgsjhfgdsjfgds" + ConfigurationState.Instance.CloseOnEmulatorStop.Value);
+            //Shutdown if "Close Ryujinx on Emulator Stop" is enabled
+            if (ConfigurationState.Instance.CloseOnEmulatorStop.Value)
+            {
+                Logger.Warning?.Print(LogClass.Emulation, "Shut Ryujinx down" + ConfigurationState.Instance.CloseOnEmulatorStop.Value);
+                UserControl.CloseWindow();
+            }
+            else
+            {
+                Logger.Warning?.Print(LogClass.Emulation, "Don't shut Ryujinx down" + ConfigurationState.Instance.CloseOnEmulatorStop.Value);
+                RendererWidget?.Exit();
+            }
         }
 
         private void PauseEmulation_Pressed(object sender, EventArgs args)
@@ -1451,7 +1464,7 @@ namespace Ryujinx.UI
             _resumeEmulation.Sensitive = true;
             _emulationContext.System.TogglePauseEmulation(true);
             Title = TitleHelper.ActiveApplicationTitle(_emulationContext.Processes.ActiveApplication, Program.Version, "Paused");
-            Logger.Info?.Print(LogClass.Emulation, "Emulation was paused");
+            Logger.Info?.Print(LogClass.Emulation, "Emulation was dinkleberry");
         }
 
         private void ResumeEmulation_Pressed(object sender, EventArgs args)
