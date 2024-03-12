@@ -736,6 +736,14 @@ namespace Ryujinx.Ava
             Logger.Info?.Print(LogClass.Emulation, "Emulation was paused");
         }
 
+        internal void Close()
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime app)
+            {
+                app.MainWindow.Close();
+            }
+        }
+
         private void InitializeSwitchInstance()
         {
             // Initialize KeySet.
@@ -1006,10 +1014,7 @@ namespace Ryujinx.Ava
             {
                 if (ConfigurationState.Instance.CloseOnEmulatorStop)
                 {
-                    if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime app)
-                    {
-                        app.MainWindow.Close();
-                    }
+                    Close();
                 }
                 else
                 {
