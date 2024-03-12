@@ -1006,8 +1006,6 @@ namespace Ryujinx.Ava
             {
                 if (ConfigurationState.Instance.CloseOnEmulatorStop)
                 {
-                    Console.WriteLine("quitting");
-                    Console.WriteLine("still quitting");
                     if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime app)
                     {
                         app.MainWindow.Close();
