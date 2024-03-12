@@ -356,6 +356,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                     context.AddGlobalVariable(perVertexInputVariable);
                     context.Inputs.Add(new IoDefinition(StorageKind.Input, IoVariable.Position), perVertexInputVariable);
+
+                    if (context.Definitions.Stage == ShaderStage.Geometry &&
+                        context.Definitions.GpPassthrough &&
+                        context.HostCapabilities.SupportsGeometryShaderPassthrough)
+                    {
+                        context.MemberDecorate(perVertexInputStructType, 0, Decoration.PassthroughNV);
+                        context.MemberDecorate(perVertexInputStructType, 1, Decoration.PassthroughNV);
+                        context.MemberDecorate(perVertexInputStructType, 2, Decoration.PassthroughNV);
+                        context.MemberDecorate(perVertexInputStructType, 3, Decoration.PassthroughNV);
+                    }
                 }
 
                 var perVertexOutputStructType = CreatePerVertexStructType(context);
@@ -421,16 +431,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.MemberDecorate(perVertexStructType, 1, Decoration.BuiltIn, (LiteralInteger)BuiltIn.PointSize);
             context.MemberDecorate(perVertexStructType, 2, Decoration.BuiltIn, (LiteralInteger)BuiltIn.ClipDistance);
             context.MemberDecorate(perVertexStructType, 3, Decoration.BuiltIn, (LiteralInteger)BuiltIn.CullDistance);
-
-            if (context.Definitions.Stage == ShaderStage.Geometry &&
-                context.Definitions.GpPassthrough &&
-                context.HostCapabilities.SupportsGeometryShaderPassthrough)
-            {
-                context.MemberDecorate(perVertexStructType, 0, Decoration.PassthroughNV);
-                context.MemberDecorate(perVertexStructType, 1, Decoration.PassthroughNV);
-                context.MemberDecorate(perVertexStructType, 2, Decoration.PassthroughNV);
-                context.MemberDecorate(perVertexStructType, 3, Decoration.PassthroughNV);
-            }
 
             return perVertexStructType;
         }
