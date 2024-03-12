@@ -1004,16 +1004,16 @@ namespace Ryujinx.Ava
 
             if (shouldExit)
             {
-                //if (ConfigurationState.Instance.CloseOnEmulatorStop)
-                //{
-                   // Console.WriteLine("quitting");
-                    //Console.WriteLine("still quitting");
-                //}
-                //else
-                //{
+                if (ConfigurationState.Instance.CloseOnEmulatorStop)
+                {
+                    Console.WriteLine("quitting");
+                    Console.WriteLine("still quitting");
+                }
+                else
+                {
                     Stop();
-                //}
-                
+                }
+
             }
         }
 
