@@ -422,8 +422,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.MemberDecorate(perVertexStructType, 2, Decoration.BuiltIn, (LiteralInteger)BuiltIn.ClipDistance);
             context.MemberDecorate(perVertexStructType, 3, Decoration.BuiltIn, (LiteralInteger)BuiltIn.CullDistance);
 
-            if (context.Definitions.Stage == ShaderStage.Geometry 
-                && context.Definitions.GpPassthrough 
+            if (context.Definitions.Stage == ShaderStage.Geometry
+                && context.Definitions.GpPassthrough
                 && context.HostCapabilities.SupportsGeometryShaderPassthrough)
             {
                 context.MemberDecorate(perVertexStructType, 0, Decoration.PassthroughNV);
