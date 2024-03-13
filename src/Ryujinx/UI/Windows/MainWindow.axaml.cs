@@ -23,6 +23,7 @@ using Ryujinx.UI.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -542,7 +543,16 @@ namespace Ryujinx.Ava.UI.Windows
 
             Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                if (ViewModel.IsInFolder)
+                {
+                    List<string> SearchPaths = new();
+                    SearchPaths.Add(ViewModel.PathHistory.Peek());
+                    ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
+                }
+                else
+                {
+                    ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                }
 
                 _isLoading = false;
             })

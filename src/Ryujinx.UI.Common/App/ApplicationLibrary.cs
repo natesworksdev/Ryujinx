@@ -191,26 +191,7 @@ namespace Ryujinx.UI.App.Common
                         return;
                     }
 
-                    var fileInfo = new FileInfo(applicationPath);
-
-                    if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                    {
-                        Console.WriteLine($"Found directory 2: {fileInfo.Name}");
-                        ApplicationData folder = new()
-                        {
-                            TitleName = fileInfo.Name,
-                            FileExtension = "Folder",
-                            Developer = "null",
-                            Path = applicationPath,
-                            Icon = _nsoIcon,
-                        };
-                        OnApplicationAdded(new ApplicationAddedEventArgs
-                        {
-                            AppData = folder,
-                        });
-                    }
-
-                    long fileSize = fileInfo.Length;
+                    long fileSize = new FileInfo(applicationPath).Length;
                     string titleName = "Unknown";
                     string titleId = "0000000000000000";
                     string developer = "Unknown";
