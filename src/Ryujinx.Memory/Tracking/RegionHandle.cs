@@ -190,7 +190,7 @@ namespace Ryujinx.Memory.Tracking
             {
                 (guestAddress, guestSize) = (address, size);
             }
-            
+
             return tracking.GetVirtualRegionsForHandle(guestAddress, guestSize, true);
         }
 
