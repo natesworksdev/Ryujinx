@@ -54,6 +54,11 @@ namespace Ryujinx.Cpu
             return (int)(vaSpan / PageSize);
         }
 
+        /// <summary>
+        /// Checks if the page at a given CPU virtual address is mapped.
+        /// </summary>
+        /// <param name="va">Virtual address to check</param>
+        /// <returns>True if the address is mapped, false otherwise</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool IsMapped(ulong va)
         {
@@ -79,6 +84,12 @@ namespace Ryujinx.Cpu
             pageEndIndex = (int)((pageEnd - 1) >> PageToPteShift);
         }
 
+        /// <summary>
+        /// Checks if a memory range is mapped.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range in bytes</param>
+        /// <returns>True if the entire range is mapped, false otherwise</returns>
         public readonly bool IsRangeMapped(ulong va, ulong size)
         {
             int pages = GetPagesCount(va, size, out _);
@@ -120,7 +131,12 @@ namespace Ryujinx.Cpu
             return true;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Reprotect a region of virtual memory for tracking.
+        /// </summary>
+        /// <param name="va">Virtual address base</param>
+        /// <param name="size">Size of the region to protect</param>
+        /// <param name="protection">Memory protection to set</param>
         public readonly void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
         {
             // Protection is inverted on software pages, since the default value is 0.
@@ -199,7 +215,15 @@ namespace Ryujinx.Cpu
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Alerts the memory tracking that a given region has been read from or written to.
+        /// This should be called before read/write is performed.
+        /// </summary>
+        /// <param name="tracking">Memory tracking structure to call when pages are protected</param>
+        /// <param name="va">Virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <param name="write">True if the region was written, false if read</param>
+        /// <param name="exemptId">Optional ID of the handles that should not be signalled</param>
         /// <remarks>
         /// This function also validates that the given range is both valid and mapped, and will throw if it is not.
         /// </remarks>
