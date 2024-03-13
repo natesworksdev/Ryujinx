@@ -19,6 +19,19 @@
         Height="35"
         HorizontalAlignment="Stretch">
         <Button
+            Width="80"
+            MinWidth="80"
+            Margin="5,2,0,2"
+            VerticalAlignment="Stretch"
+            Command="{Binding NavigateBack}">
+            <ui:FontIcon
+                Margin="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+                Glyph="{helpers:GlyphValueConverter Back}" />
+        </Button>
+        <Button
             Width="40"
             MinWidth="40"
             Margin="5,2,0,2"

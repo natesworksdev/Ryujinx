@@ -13,6 +13,7 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             { Glyph.List, char.ConvertFromUtf32((int)Symbol.List) },
             { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll) },
+            { Glyph.Back, char.ConvertFromUtf32((int)Symbol.Back) },
             { Glyph.Chip, char.ConvertFromUtf32(59748) },
         };
 

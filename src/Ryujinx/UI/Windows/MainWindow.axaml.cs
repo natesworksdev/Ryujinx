@@ -137,6 +137,11 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (args.Application != null)
             {
+                if (args.Application.FileExtension == "Folder")
+                {
+                    ViewModel.OpenFolder(args.Application.Path);
+                    return;
+                }
                 ViewModel.SelectedIcon = args.Application.Icon;
 
                 string path = new FileInfo(args.Application.Path).FullName;

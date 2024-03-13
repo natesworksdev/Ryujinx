@@ -4,6 +4,7 @@ namespace Ryujinx.Ava.UI.Helpers
     {
         List,
         Grid,
+        Back,
         Chip,
     }
 }

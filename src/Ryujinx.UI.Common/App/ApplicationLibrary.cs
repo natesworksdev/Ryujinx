@@ -41,6 +41,7 @@ namespace Ryujinx.UI.App.Common
         private readonly byte[] _ncaIcon;
         private readonly byte[] _nroIcon;
         private readonly byte[] _nsoIcon;
+        private readonly byte[] _folderIcon;
 
         private readonly VirtualFileSystem _virtualFileSystem;
         private Language _desiredTitleLanguage;
@@ -58,6 +59,7 @@ namespace Ryujinx.UI.App.Common
             _ncaIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NCA.png");
             _nroIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NRO.png");
             _nsoIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NSO.png");
+            _folderIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_Folder.png");
         }
 
         private static byte[] GetResourceBytes(string resourceName)
@@ -113,7 +115,31 @@ namespace Ryujinx.UI.App.Common
 
                     try
                     {
-                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
+                        IEnumerable<string> folders = Directory.EnumerateDirectories(appDir, "*", SearchOption.TopDirectoryOnly);
+                        foreach (string folder in folders)
+                        {
+                            if (_cancellationToken.Token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            var fileInfo = new FileInfo(folder);
+
+                            var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+                            ApplicationData folderData = new()
+                            {
+                                TitleName = fileInfo.Name,
+                                FileExtension = "Folder",
+                                Path = fullPath,
+                                Icon = _folderIcon,
+                            };
+                            OnApplicationAdded(new ApplicationAddedEventArgs
+                            {
+                                AppData = folderData,
+                            });
+                        }
+
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.TopDirectoryOnly).Where(file =>
                         {
                             return
                             (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
@@ -163,7 +189,26 @@ namespace Ryujinx.UI.App.Common
                         return;
                     }
 
-                    long fileSize = new FileInfo(applicationPath).Length;
+                    var fileInfo = new FileInfo(applicationPath);
+
+                    if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        Console.WriteLine($"Found directory 2: {fileInfo.Name}");
+                        ApplicationData folder = new()
+                        {
+                            TitleName = fileInfo.Name,
+                            FileExtension = "Folder",
+                            Developer = "null",
+                            Path = applicationPath,
+                            Icon = _nsoIcon,
+                        };
+                        OnApplicationAdded(new ApplicationAddedEventArgs
+                        {
+                            AppData = folder,
+                        });
+                    }
+
+                    long fileSize = fileInfo.Length;
                     string titleName = "Unknown";
                     string titleId = "0000000000000000";
                     string developer = "Unknown";

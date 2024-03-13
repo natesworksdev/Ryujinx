@@ -51,6 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private const int HotKeyPressDelayMs = 500;
 
         private ObservableCollection<ApplicationData> _applications;
+        private Queue<string> _pathHistory;
         private string _aspectStatusText;
 
         private string _loadHeading;
@@ -120,6 +121,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 .Bind(out _appsObservableList).AsObservableList();
 
             _rendererWaitEvent = new AutoResetEvent(false);
+            _pathHistory = new Queue<string>();
 
             if (Program.PreviewerDetached)
             {
@@ -1279,6 +1281,34 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void ToggleShowConsole()
         {
             ShowConsole = !ShowConsole;
+        }
+
+        public void OpenFolder(string path)
+        {
+            _pathHistory.Enqueue(path);
+            Applications.Clear();
+            List<string> SearchPaths = new List<string>();
+            SearchPaths.Add(path);
+            ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
+        }
+
+        public void NavigateBack()
+        {
+            if (_pathHistory.Count != 0)
+            {
+                string path = _pathHistory.Dequeue();
+                Applications.Clear();
+                if (_pathHistory.Count == 0)
+                {
+                    ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                }
+                else
+                {
+                    List<string> SearchPaths = new List<string>();
+                    SearchPaths.Add(path);
+                    ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
+                }
+            }
         }
 
         public void SetListMode()
