@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     struct AnalogStickState
     {

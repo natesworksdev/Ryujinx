@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     struct AtomicStorage<T> where T : unmanaged, ISampledDataStruct
     {

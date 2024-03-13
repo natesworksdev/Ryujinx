@@ -1,21 +1,18 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Memory;
-using Ryujinx.HLE.Exceptions;
-using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.Horizon.Sdk.Hid;
+using Ryujinx.Horizon.Sdk.Hid.HidDevices;
 using Ryujinx.Horizon.Sdk.Hid.Npad;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ControllerType = Ryujinx.Horizon.Sdk.Hid.Npad.ControllerType;
 using PlayerIndex = Ryujinx.Horizon.Sdk.Hid.Npad.PlayerIndex;
 
-namespace Ryujinx.HLE.HOS.Services.Hid
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     public class Hid
     {
-        private readonly Switch _device;
-
+        internal const int HidSize = 0x40000;
         private readonly SharedMemoryStorage _storage;
 
         internal ref SharedMemory SharedMemory => ref _storage.GetRef<SharedMemory>(0);
@@ -43,12 +40,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             CheckTypeSizeOrThrow<RingLifo<MouseState>>(0x350);
             CheckTypeSizeOrThrow<RingLifo<KeyboardState>>(0x3D8);
             CheckTypeSizeOrThrow<Array10<NpadState>>(0x32000);
-            CheckTypeSizeOrThrow<SharedMemory>(Horizon.HidSize);
+            CheckTypeSizeOrThrow<SharedMemory>(HidSize);
         }
 
-        internal Hid(in Switch device, SharedMemoryStorage storage)
+        internal Hid(SharedMemoryStorage storage)
         {
-            _device = device;
             _storage = storage;
 
             SharedMemory = SharedMemory.Create();
@@ -58,11 +54,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private void InitDevices()
         {
-            DebugPad = new DebugPadDevice(_device, true);
-            Touchscreen = new TouchDevice(_device, true);
-            Mouse = new MouseDevice(_device, false);
-            Keyboard = new KeyboardDevice(_device, false);
-            Npads = new NpadDevices(_device, true);
+            DebugPad = new DebugPadDevice(true);
+            Touchscreen = new TouchDevice(true);
+            Mouse = new MouseDevice(false);
+            Keyboard = new KeyboardDevice(false);
+            Npads = new NpadDevices(true);
         }
 
         public void RefreshInputConfig(List<InputConfig> inputConfig)
@@ -75,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 npadConfig[i].Type = (ControllerType)inputConfig[i].ControllerType;
             }
 
-            _device.Hid.Npads.Configure(npadConfig);
+            Npads.Configure(npadConfig);
         }
 
         public ControllerKeys UpdateStickButtons(JoystickPosition leftStick, JoystickPosition rightStick)

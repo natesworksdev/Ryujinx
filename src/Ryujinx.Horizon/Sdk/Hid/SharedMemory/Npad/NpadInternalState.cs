@@ -1,7 +1,6 @@
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Npad
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     struct NpadInternalState
     {

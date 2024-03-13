@@ -1,6 +1,6 @@
 using Ryujinx.Common.Memory;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Keyboard
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     struct KeyboardKey
     {

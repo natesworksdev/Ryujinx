@@ -1,5 +1,3 @@
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.TouchScreen;
-
 namespace Ryujinx.Horizon.Sdk.Hid
 {
     public struct TouchPoint

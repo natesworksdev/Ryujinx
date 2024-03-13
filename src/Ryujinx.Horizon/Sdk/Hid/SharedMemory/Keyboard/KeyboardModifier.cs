@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Keyboard
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     [Flags]
     enum KeyboardModifier : ulong

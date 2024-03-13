@@ -3,6 +3,8 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Horizon.Sdk.Hid;
+using Ryujinx.Horizon.Sdk.Hid.HidDevices;
+using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

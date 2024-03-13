@@ -1,9 +1,10 @@
 namespace Ryujinx.Horizon.Sdk.Hid.Vibration
 {
-    public enum VibrationDeviceType
+    enum VibrationDeviceType
     {
-        None,
-        LinearResonantActuator,
-        GcErm,
+        Unknown = 0,
+        LinearResonantActuator = 1,
+        GcErm = 2,
+        Erm = 3
     }
 }

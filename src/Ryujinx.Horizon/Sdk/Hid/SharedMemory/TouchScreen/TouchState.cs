@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.TouchScreen
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     struct TouchState
     {

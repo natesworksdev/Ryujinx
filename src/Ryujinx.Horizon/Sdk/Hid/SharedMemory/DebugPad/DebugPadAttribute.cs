@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.DebugPad
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     [Flags]
     enum DebugPadAttribute : uint

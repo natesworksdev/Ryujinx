@@ -1,11 +1,10 @@
-using Ryujinx.Horizon.Sdk.Hid;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.Hid
+namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 {
     public class KeyboardDevice : BaseDevice
     {
-        public KeyboardDevice(Switch device, bool active) : base(device, active) { }
+        public KeyboardDevice(bool active) : base(active) { }
 
         public void Update(KeyboardInput keyState)
         {

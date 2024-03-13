@@ -1,13 +1,7 @@
 using Ryujinx.Common.Memory;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.DebugPad;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Keyboard;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Mouse;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Npad;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.TouchScreen;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     /// <summary>
     /// Represent the shared memory shared between applications for input.

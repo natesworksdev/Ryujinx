@@ -1,11 +1,10 @@
-using Ryujinx.Horizon.Sdk.Hid;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.Hid
+namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 {
     public class TouchDevice : BaseDevice
     {
-        public TouchDevice(Switch device, bool active) : base(device, active) { }
+        public TouchDevice(bool active) : base(active) { }
 
         public void Update(params TouchPoint[] points)
         {

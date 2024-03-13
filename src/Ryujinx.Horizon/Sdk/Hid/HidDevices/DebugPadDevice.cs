@@ -1,8 +1,8 @@
-namespace Ryujinx.HLE.HOS.Services.Hid
+namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 {
     public class DebugPadDevice : BaseDevice
     {
-        public DebugPadDevice(Switch device, bool active) : base(device, active) { }
+        public DebugPadDevice(bool active) : base(active) { }
 
         public void Update()
         {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.TouchScreen
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     [Flags]
     public enum TouchAttribute : uint

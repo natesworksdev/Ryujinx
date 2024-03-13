@@ -1,9 +1,9 @@
 namespace Ryujinx.Horizon.Sdk.Hid.Vibration
 {
-    public enum VibrationDevicePosition
+    enum VibrationDevicePosition
     {
-        None,
-        Left,
-        Right,
+        None = 0,
+        Left = 1,
+        Right = 2
     }
 }

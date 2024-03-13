@@ -1,7 +1,7 @@
 using Ryujinx.Horizon.Sdk.Hid.Npad;
 using System.Numerics;
 
-namespace Ryujinx.Horizon.Sdk.Hid
+namespace Ryujinx.Horizon.Sdk.Hid.SixAxis
 {
     public struct SixAxisInput
     {

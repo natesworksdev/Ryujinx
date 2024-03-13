@@ -6,6 +6,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Horizon.Sdk.Hid;
 using Ryujinx.Horizon.Sdk.Hid.Npad;
+using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using Ryujinx.Horizon.Sdk.Hid.Vibration;
 using System;
 using System.Collections.Concurrent;

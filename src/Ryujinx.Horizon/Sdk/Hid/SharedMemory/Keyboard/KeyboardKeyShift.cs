@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Keyboard
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     enum KeyboardKeyShift
     {

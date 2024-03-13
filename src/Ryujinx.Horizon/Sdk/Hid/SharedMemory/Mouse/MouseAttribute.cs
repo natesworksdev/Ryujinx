@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Mouse
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     [Flags]
     enum MouseAttribute : uint

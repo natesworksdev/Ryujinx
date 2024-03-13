@@ -2,7 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     /// <summary>
     /// This is a "marker interface" to add some compile-time safety to a convention-based optimization.
@@ -57,7 +57,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common
         {
             return sampledDataStruct switch
             {
-                Npad.SixAxisSensorState _ => sizeof(ulong),
+                SixAxisSensorState _ => sizeof(ulong),
                 _ => 0,
             };
         }

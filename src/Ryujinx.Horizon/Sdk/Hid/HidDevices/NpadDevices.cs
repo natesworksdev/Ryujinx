@@ -1,15 +1,15 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.Horizon.Sdk.Hid;
 using Ryujinx.Horizon.Sdk.Hid.Npad;
+using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using Ryujinx.Horizon.Sdk.Hid.Vibration;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.HLE.HOS.Services.Hid
+namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 {
     public class NpadDevices : BaseDevice
     {
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public const int MaxControllers = 9; // Players 1-8 and Handheld
         private ControllerType[] _configuredTypes;
-        private readonly KEvent[] _styleSetUpdateEvents;
+        private readonly Event[] _styleSetUpdateEvents;
         private readonly bool[] _supportedPlayers;
         private VibrationValue _neutralVibrationValue = new()
         {
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
         public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new();
 
-        public NpadDevices(Switch device, bool active = true) : base(device, active)
+        public NpadDevices(bool active = true) : base(active)
         {
             _configuredTypes = new ControllerType[MaxControllers];
 
@@ -47,10 +47,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _supportedPlayers = new bool[MaxControllers];
             _supportedPlayers.AsSpan().Fill(true);
 
-            _styleSetUpdateEvents = new KEvent[MaxControllers];
+            _styleSetUpdateEvents = new Event[MaxControllers];
             for (int i = 0; i < _styleSetUpdateEvents.Length; ++i)
             {
-                _styleSetUpdateEvents[i] = new KEvent(_device.System.KernelContext);
+                _styleSetUpdateEvents[i] = new Event(_device.System.KernelContext);
             }
 
             _activeCount = 0;
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             JoyHold = NpadJoyHoldType.Vertical;
         }
 
-        internal ref KEvent GetStyleSetUpdateEvent(PlayerIndex player)
+        internal ref Event GetStyleSetUpdateEvent(PlayerIndex player)
         {
             return ref _styleSetUpdateEvents[(int)player];
         }

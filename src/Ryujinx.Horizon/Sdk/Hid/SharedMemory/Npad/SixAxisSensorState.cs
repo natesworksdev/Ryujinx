@@ -1,8 +1,7 @@
 using Ryujinx.Common.Memory;
-using Ryujinx.Horizon.Sdk.Hid.SharedMemory.Common;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Npad
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct SixAxisSensorState : ISampledDataStruct

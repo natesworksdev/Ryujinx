@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Sdk.Hid.SharedMemory.Npad
+namespace Ryujinx.Horizon.Sdk.Hid
 {
     enum NpadBatteryLevel
     {
