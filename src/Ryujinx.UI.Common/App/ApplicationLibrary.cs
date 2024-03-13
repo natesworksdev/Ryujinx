@@ -41,7 +41,6 @@ namespace Ryujinx.UI.App.Common
         private readonly byte[] _ncaIcon;
         private readonly byte[] _nroIcon;
         private readonly byte[] _nsoIcon;
-        private readonly byte[] _folderIcon;
 
         private readonly VirtualFileSystem _virtualFileSystem;
         private Language _desiredTitleLanguage;
@@ -59,11 +58,15 @@ namespace Ryujinx.UI.App.Common
             _ncaIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NCA.png");
             _nroIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NRO.png");
             _nsoIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NSO.png");
-            _folderIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_Folder.png");
         }
 
         private static byte[] GetResourceBytes(string resourceName)
         {
+            if (resourceName == "")
+            {
+                return Array.Empty<byte>();
+            }
+
             Stream resourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
             byte[] resourceByteArray = new byte[resourceStream.Length];
 
@@ -131,7 +134,6 @@ namespace Ryujinx.UI.App.Common
                                 TitleName = fileInfo.Name,
                                 FileExtension = "Folder",
                                 Path = fullPath,
-                                Icon = _folderIcon,
                             };
                             OnApplicationAdded(new ApplicationAddedEventArgs
                             {

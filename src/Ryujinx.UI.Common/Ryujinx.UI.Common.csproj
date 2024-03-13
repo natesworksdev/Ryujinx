@@ -15,7 +15,6 @@
     <None Remove="Resources\Icon_NSO.png" />
     <None Remove="Resources\Icon_NSP.png" />
     <None Remove="Resources\Icon_XCI.png" />
-    <None Remove="Resources\Icon_Folder.png" />
     <None Remove="Resources\Logo_Amiibo.png" />
     <None Remove="Resources\Logo_Discord.png" />
     <None Remove="Resources\Logo_GitHub.png" />
@@ -34,7 +33,6 @@
     <EmbeddedResource Include="Resources\Icon_NSO.png" />
     <EmbeddedResource Include="Resources\Icon_NSP.png" />
     <EmbeddedResource Include="Resources\Icon_XCI.png" />
-    <EmbeddedResource Include="Resources\Icon_Folder.png" />
     <EmbeddedResource Include="Resources\Logo_Amiibo.png" />
     <EmbeddedResource Include="Resources\Logo_Ryujinx.png" />
     <EmbeddedResource Include="Resources\Logo_Discord_Dark.png" />

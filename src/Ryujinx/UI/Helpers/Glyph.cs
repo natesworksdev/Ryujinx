@@ -6,5 +6,6 @@ namespace Ryujinx.Ava.UI.Helpers
         Grid,
         Back,
         Chip,
+        Folder,
     }
 }
