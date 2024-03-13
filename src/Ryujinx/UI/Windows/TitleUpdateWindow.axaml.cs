@@ -47,7 +47,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             contentDialog.Styles.Add(bottomBorder);
 
-            await ContentDialogHelper.ShowAsync(contentDialog);
+            await contentDialog.ShowAsync();
         }
 
         private void Close(object sender, RoutedEventArgs e)
