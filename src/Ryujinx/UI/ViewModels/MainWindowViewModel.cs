@@ -85,6 +85,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private bool _showAll;
         private string _lastScannedAmiiboId;
         private bool _statusBarVisible;
+        private bool _isInFolder;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
 
         private string _showUiKey = "F4";
@@ -670,6 +671,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsGrid => Glyph == Glyph.Grid;
         public bool IsList => Glyph == Glyph.List;
+        public bool IsInFolder
+        {
+            get => _isInFolder;
+            set
+            {
+                _isInFolder = value;
+
+                OnPropertyChanged();
+            }
+        }
 
         internal void Sort(bool isAscending)
         {
@@ -1286,6 +1297,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void OpenFolder(string path)
         {
             _pathHistory.Enqueue(path);
+            IsInFolder = _pathHistory.Count != 0;
+
             Applications.Clear();
             List<string> SearchPaths = new List<string>();
             SearchPaths.Add(path);
@@ -1309,6 +1322,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
                 }
             }
+            IsInFolder = _pathHistory.Count != 0;
         }
 
         public void SetListMode()

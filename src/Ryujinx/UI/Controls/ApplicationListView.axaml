@@ -123,6 +123,7 @@
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Top"
                                     Orientation="Vertical"
+                                    IsVisible="{Binding IsGame}"
                                     Spacing="5">
                                     <TextBlock
                                         HorizontalAlignment="Stretch"

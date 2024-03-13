@@ -23,7 +23,8 @@
             MinWidth="80"
             Margin="5,2,0,2"
             VerticalAlignment="Stretch"
-            Command="{Binding NavigateBack}">
+            Command="{Binding NavigateBack}"
+            IsEnabled="{Binding IsInFolder}">
             <ui:FontIcon
                 Margin="0"
                 HorizontalAlignment="Stretch"
