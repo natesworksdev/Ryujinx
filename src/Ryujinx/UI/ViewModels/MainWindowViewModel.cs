@@ -51,7 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private const int HotKeyPressDelayMs = 500;
 
         private ObservableCollection<ApplicationData> _applications;
-        private Queue<string> _pathHistory;
+        private readonly Queue<string> _pathHistory;
         private string _aspectStatusText;
 
         private string _loadHeading;
