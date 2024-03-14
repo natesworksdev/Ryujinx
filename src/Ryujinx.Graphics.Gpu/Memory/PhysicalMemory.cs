@@ -413,7 +413,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="handles">Handles to inherit state from or reuse</param>
         /// <param name="granularity">Desired granularity of write tracking</param>
         /// <returns>The memory tracking handle</returns>
-        public MultiRegionHandle BeginGranularTracking(ulong address, ulong size, ResourceKind kind, RegionFlags flags = RegionFlags.None, IEnumerable<IRegionHandle> handles = null, ulong granularity = 4096)
+        public MultiRegionHandle BeginGranularTracking(
+            ulong address,
+            ulong size,
+            ResourceKind kind,
+            RegionFlags flags = RegionFlags.None,
+            IEnumerable<IRegionHandle> handles = null,
+            ulong granularity = 4096)
         {
             return _cpuMemory.BeginGranularTracking(address, size, handles, granularity, (int)kind, flags);
         }

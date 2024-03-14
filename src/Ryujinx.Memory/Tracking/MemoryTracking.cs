@@ -33,7 +33,7 @@ namespace Ryujinx.Memory.Tracking
         /// with a given "virtual" memory manager that will provide mappings and virtual memory protection.
         /// </summary>
         /// <remarks>
-        /// If singleByteGuestTracking is true, the memory manager must also support protection on partially
+        /// If <paramref name="singleByteGuestTracking" /> is true, the memory manager must also support protection on partially
         /// unmapped regions without throwing exceptions or dropping protection on the mapped portion.
         /// </remarks>
         /// <param name="memoryManager">Virtual memory manager</param>

@@ -615,7 +615,6 @@ namespace Ryujinx.Cpu.Jit
             return Tracking.BeginSmartGranularTracking(address, size, granularity, id);
         }
 
-        /// <inheritdoc/>
         private void SignalMemoryTrackingImpl(ulong va, ulong size, bool write, bool guest, bool precise = false, int? exemptId = null)
         {
             AssertValidAddressAndSize(va, size);
