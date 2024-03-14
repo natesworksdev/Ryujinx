@@ -1,5 +1,6 @@
 using Ryujinx.Memory;
 using Ryujinx.Memory.Tracking;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -34,7 +35,8 @@ namespace Ryujinx.Cpu
 
         public ManagedPageFlags(int addressSpaceBits)
         {
-            _pageBitmap = new ulong[1 << (addressSpaceBits - (PageBits + PageToPteShift))];
+            int bits = Math.Max(0, addressSpaceBits - (PageBits + PageToPteShift));
+            _pageBitmap = new ulong[1 << bits];
         }
 
         /// <summary>
