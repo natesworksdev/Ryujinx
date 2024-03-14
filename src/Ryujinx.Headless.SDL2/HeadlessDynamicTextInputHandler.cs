@@ -1,4 +1,4 @@
-using Ryujinx.HLE.UI;
+using Ryujinx.Horizon.UI;
 using System.Threading;
 using System.Threading.Tasks;
 

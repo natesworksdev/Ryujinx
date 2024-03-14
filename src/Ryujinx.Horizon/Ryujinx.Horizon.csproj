@@ -15,6 +15,15 @@
   <ItemGroup>
     <PackageReference Include="Concentus" />
     <PackageReference Include="LibHac" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
+    <EmbeddedResource Include="Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
+    <EmbeddedResource Include="Applets\SoftwareKeyboard\Resources\Icon_KeyF6.png" />
+    <EmbeddedResource Include="Applets\SoftwareKeyboard\Resources\Logo_Ryujinx.png" />
   </ItemGroup>
 
   <!-- Due to Concentus. -->

@@ -1,5 +1,6 @@
 using Ryujinx.Horizon.Arp;
 using Ryujinx.Horizon.Audio;
+using Ryujinx.Horizon.Am;
 using Ryujinx.Horizon.Bcat;
 using Ryujinx.Horizon.Friends;
 using Ryujinx.Horizon.Hshl;
@@ -56,6 +57,7 @@ namespace Ryujinx.Horizon
             RegisterService<SrepoMain>();
             RegisterService<UsbMain>();
             RegisterService<WlanMain>();
+            RegisterService<AmMain>();
 
             _totalServices = entries.Count;
 

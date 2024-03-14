@@ -1,4 +1,4 @@
-using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
+using Ryujinx.Horizon.Sdk.Am;
 using System;
 using System.Collections.Generic;
 

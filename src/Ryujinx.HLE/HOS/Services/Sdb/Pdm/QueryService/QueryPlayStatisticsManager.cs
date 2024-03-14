@@ -47,7 +47,8 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
                 {
                     if (!context.Device.Processes.ActiveApplication.ApplicationControlProperties.PlayLogQueryableApplicationId.ItemsRo.Contains(titleId))
                     {
-                        return (ResultCode)Am.ResultCode.ObjectInvalid;
+                        // Am Result.ObjectInvalid
+                        return (ResultCode)((500 << 9) | 128);
                     }
                 }
             }

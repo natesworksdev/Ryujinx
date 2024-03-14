@@ -1,4 +1,4 @@
-using Ryujinx.HLE.UI;
+using Ryujinx.Horizon.UI;
 
 namespace Ryujinx.Headless.SDL2
 {
