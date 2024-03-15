@@ -5,7 +5,7 @@
     
     <FontFamily x:Key="FluentSystemIconsResizable">avares://Ryujinx/Assets/Fonts#FluentSystemIcons-Resizable</FontFamily>
 
-    <!-- The same symbol size FluentAvalonia uses, see https://github.com/amwx/FluentAvalonia/blob/v2.0.4/src/FluentAvalonia/UI/Controls/IconElement/SymbolIcon.cs -->
+    <!-- This value matches the overridden value for NavigationViewItemOnLeftIconBoxHeight in SettingsWindow.axaml -->
     <x:Double x:Key="FontIconSize">20</x:Double> 
 
     <ui:FontIconSource
