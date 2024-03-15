@@ -208,9 +208,6 @@ namespace Ryujinx.Cpu.Jit
         private ulong _cachedFirstPagePa;
         private ulong _cachedLastPagePa;
         private MemoryBlock _firstPageMemoryForUnmap;
-        private MemoryBlock _lastPageMemoryForUnmap;
-        private bool _hasBridgeAtEnd;
-        private MemoryPermission _lastPageProtection;
 
         public ulong Address { get; }
         public ulong Size { get; }
@@ -233,7 +230,6 @@ namespace Ryujinx.Cpu.Jit
 
             _cachedFirstPagePa = ulong.MaxValue;
             _cachedLastPagePa = ulong.MaxValue;
-            _lastPageProtection = MemoryPermission.ReadAndWrite;
 
             Address = address;
             Size = size;
@@ -297,20 +293,6 @@ namespace Ryujinx.Cpu.Jit
             Debug.Assert(va + size <= EndAddress);
 
             _baseMemory.Reprotect(va - Address, size, protection, false);
-
-            if (va + size > EndAddress - _hostPageSize)
-            {
-                // Protections at the last page also applies to the bridge, if we have one.
-                // (This is because last page access is always done on the bridge, not on our base mapping,
-                // for the cases where access crosses a page boundary and reaches the non-contiguous next mapping).
-
-                if (_hasBridgeAtEnd)
-                {
-                    _baseMemory.Reprotect(Size, _hostPageSize, protection, false);
-                }
-
-                _lastPageProtection = protection;
-            }
         }
 
         public void Reprotect(
@@ -325,26 +307,6 @@ namespace Ryujinx.Cpu.Jit
                 LateMap();
             }
 
-            ulong lastPageAddress = EndAddress - GuestPageSize;
-
-            if (va + size > lastPageAddress)
-            {
-                // Protections at the last page also applies to the bridge, if we have one.
-                // (This is because last page access is always done on the bridge, not on our base mapping,
-                // for the cases where access crosses a page boundary and reaches the non-contiguous next mapping).
-
-                if (_hasBridgeAtEnd)
-                {
-                    IntPtr ptPtr = _baseMemory.GetPointerForProtection(Size, _hostPageSize, protection);
-
-                    updatePtCallback(lastPageAddress, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
-                }
-
-                _lastPageProtection = protection;
-
-                size = lastPageAddress - va;
-            }
-
             updatePtCallback(va, _baseMemory.GetPointerForProtection(va - Address, size, protection), size);
         }
 
@@ -353,106 +315,37 @@ namespace Ryujinx.Cpu.Jit
             Debug.Assert(va >= Address);
             Debug.Assert(va + size <= EndAddress);
 
-            if (va >= EndAddress - GuestPageSize && _hasBridgeAtEnd)
-            {
-                return _baseMemory.GetPointer(Size + (_hostPageSize - GuestPageSize), size);
-            }
-
             return _baseMemory.GetPointer(va - Address, size);
         }
 
-        public void InsertBridgeAtEnd(AddressSpacePartition partitionAfter, Action<ulong, IntPtr, ulong> updatePtCallback, bool useProtectionMirrors)
+        public void InsertBridgeAtEnd(AddressSpacePartition partitionAfter)
         {
-            ulong firstPagePa = partitionAfter._firstPagePa ?? ulong.MaxValue;
+            ulong firstPagePa = partitionAfter?._firstPagePa ?? ulong.MaxValue;
             ulong lastPagePa = _lastPagePa ?? ulong.MaxValue;
 
             if (firstPagePa != _cachedFirstPagePa || lastPagePa != _cachedLastPagePa)
             {
-                if (partitionAfter._firstPagePa.HasValue && _lastPagePa.HasValue)
+                if (partitionAfter != null && partitionAfter._firstPagePa.HasValue)
                 {
                     (MemoryBlock firstPageMemory, ulong firstPageOffset) = partitionAfter.GetFirstPageMemoryAndOffset();
-                    (MemoryBlock lastPageMemory, ulong lastPageOffset) = GetLastPageMemoryAndOffset();
 
-                    _baseMemory.MapView(lastPageMemory, lastPageOffset, Size, _hostPageSize);
-                    _baseMemory.MapView(firstPageMemory, firstPageOffset, Size + _hostPageSize, _hostPageSize);
-
-                    IntPtr ptPtr;
-
-                    if (useProtectionMirrors)
-                    {
-                        ptPtr = _baseMemory.GetPointerForProtection(Size, _hostPageSize, _lastPageProtection);
-                    }
-                    else
-                    {
-                        _baseMemory.Reprotect(Size, _hostPageSize, _lastPageProtection, false);
-
-                        ptPtr = _baseMemory.GetPointer(Size, _hostPageSize);
-                    }
-
-                    updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
-
+                    _baseMemory.MapView(firstPageMemory, firstPageOffset, Size, _hostPageSize);
                     _firstPageMemoryForUnmap = firstPageMemory;
-                    _lastPageMemoryForUnmap = lastPageMemory;
-                    _hasBridgeAtEnd = true;
                 }
                 else
                 {
-                    IntPtr ptPtr = useProtectionMirrors
-                        ? _baseMemory.GetPointerForProtection(Size - _hostPageSize, _hostPageSize, _lastPageProtection)
-                        : _baseMemory.GetPointer(Size - _hostPageSize, _hostPageSize);
-
-                    updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
-
                     MemoryBlock firstPageMemoryForUnmap = _firstPageMemoryForUnmap;
-                    MemoryBlock lastPageMemoryForUnmap = _lastPageMemoryForUnmap;
 
                     if (firstPageMemoryForUnmap != null)
                     {
-                        _baseMemory.UnmapView(firstPageMemoryForUnmap, Size + _hostPageSize, _hostPageSize);
+                        _baseMemory.UnmapView(firstPageMemoryForUnmap, Size, _hostPageSize);
                         _firstPageMemoryForUnmap = null;
                     }
-
-                    if (lastPageMemoryForUnmap != null)
-                    {
-                        _baseMemory.UnmapView(lastPageMemoryForUnmap, Size, _hostPageSize);
-                        _lastPageMemoryForUnmap = null;
-                    }
-
-                    _hasBridgeAtEnd = false;
                 }
 
                 _cachedFirstPagePa = firstPagePa;
                 _cachedLastPagePa = lastPagePa;
             }
-        }
-
-        public void RemoveBridgeFromEnd(Action<ulong, IntPtr, ulong> updatePtCallback, bool useProtectionMirrors)
-        {
-            IntPtr ptPtr = useProtectionMirrors
-                ? _baseMemory.GetPointerForProtection(Size - _hostPageSize, _hostPageSize, _lastPageProtection)
-                : _baseMemory.GetPointer(Size - _hostPageSize, _hostPageSize);
-
-            updatePtCallback(EndAddress - GuestPageSize, ptPtr + (IntPtr)(_hostPageSize - GuestPageSize), GuestPageSize);
-
-            MemoryBlock firstPageMemoryForUnmap = _firstPageMemoryForUnmap;
-            MemoryBlock lastPageMemoryForUnmap = _lastPageMemoryForUnmap;
-
-            if (firstPageMemoryForUnmap != null)
-            {
-                _baseMemory.UnmapView(firstPageMemoryForUnmap, Size + _hostPageSize, _hostPageSize);
-                _firstPageMemoryForUnmap = null;
-            }
-
-            if (lastPageMemoryForUnmap != null)
-            {
-                _baseMemory.UnmapView(lastPageMemoryForUnmap, Size, _hostPageSize);
-                _lastPageMemoryForUnmap = null;
-            }
-
-            _cachedFirstPagePa = ulong.MaxValue;
-            _cachedLastPagePa = ulong.MaxValue;
-
-            _hasBridgeAtEnd = false;
         }
 
         private (MemoryBlock, ulong) GetFirstPageMemoryAndOffset()
@@ -474,29 +367,6 @@ namespace Ryujinx.Cpu.Jit
             }
 
             return (_backingMemory, _firstPagePa.Value);
-        }
-
-        private (MemoryBlock, ulong) GetLastPageMemoryAndOffset()
-        {
-            _treeLock.EnterReadLock();
-
-            try
-            {
-                ulong pageAddress = EndAddress - _hostPageSize;
-
-                PrivateMapping map = _privateTree.GetNode(pageAddress);
-
-                if (map != null && map.PrivateAllocation.IsValid)
-                {
-                    return (map.PrivateAllocation.Memory, map.PrivateAllocation.Offset + (pageAddress - map.Address));
-                }
-            }
-            finally
-            {
-                _treeLock.ExitReadLock();
-            }
-
-            return (_backingMemory, _lastPagePa.Value & ~(_hostPageSize - 1));
         }
 
         public PrivateRange GetPrivateAllocation(ulong va)

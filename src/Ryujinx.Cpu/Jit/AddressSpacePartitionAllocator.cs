@@ -23,9 +23,9 @@ namespace Ryujinx.Cpu.Jit
             _allocation = allocation;
         }
 
-        public void RegisterMapping(ulong va, ulong endVa, int bridgeSize)
+        public void RegisterMapping(ulong va, ulong endVa)
         {
-            _allocation.Block.AddMapping(_allocation.Offset, _allocation.Size, va, endVa, bridgeSize);
+            _allocation.Block.AddMapping(_allocation.Offset, _allocation.Size, va, endVa);
         }
 
         public void MapView(MemoryBlock srcBlock, ulong srcOffset, ulong dstOffset, ulong size)
@@ -72,15 +72,13 @@ namespace Ryujinx.Cpu.Jit
                 public ulong EndAddress => Address + Size;
                 public ulong Va { get; }
                 public ulong EndVa { get; }
-                public int BridgeSize { get; }
 
-                public Mapping(ulong address, ulong size, ulong va, ulong endVa, int bridgeSize)
+                public Mapping(ulong address, ulong size, ulong va, ulong endVa)
                 {
                     Address = address;
                     Size = size;
                     Va = va;
                     EndVa = endVa;
-                    BridgeSize = bridgeSize;
                 }
 
                 public int CompareTo(Mapping other)
@@ -128,9 +126,9 @@ namespace Ryujinx.Cpu.Jit
                 _lock = locker;
             }
 
-            public void AddMapping(ulong offset, ulong size, ulong va, ulong endVa, int bridgeSize)
+            public void AddMapping(ulong offset, ulong size, ulong va, ulong endVa)
             {
-                _mappingTree.Add(new(offset, size, va, endVa, bridgeSize));
+                _mappingTree.Add(new(offset, size, va, endVa));
             }
 
             public void RemoveMapping(ulong offset, ulong size)
@@ -153,11 +151,6 @@ namespace Ryujinx.Cpu.Jit
                 }
 
                 address -= map.Address;
-
-                if (address >= (map.EndVa - map.Va))
-                {
-                    address -= (ulong)(map.BridgeSize / 2);
-                }
 
                 ulong addressAligned = BitUtils.AlignDown(address, AddressSpacePartition.GuestPageSize);
                 ulong endAddressAligned = BitUtils.AlignUp(address + size, AddressSpacePartition.GuestPageSize);
@@ -193,18 +186,10 @@ namespace Ryujinx.Cpu.Jit
             _lock = locker;
         }
 
-        public AddressSpacePartitionAllocation Allocate(ulong va, ulong size, int bridgeSize)
-        {
-            AddressSpacePartitionAllocation allocation = new(this, Allocate(size + (ulong)bridgeSize, MemoryBlock.GetPageSize(), CreateBlock));
-            allocation.RegisterMapping(va, va + size, bridgeSize);
-
-            return allocation;
-        }
-
-        public AddressSpacePartitionAllocation AllocatePage(ulong va, ulong size)
+        public AddressSpacePartitionAllocation Allocate(ulong va, ulong size)
         {
             AddressSpacePartitionAllocation allocation = new(this, Allocate(size, MemoryBlock.GetPageSize(), CreateBlock));
-            allocation.RegisterMapping(va, va + size, 0);
+            allocation.RegisterMapping(va, va + size);
 
             return allocation;
         }

@@ -49,7 +49,7 @@ namespace Ryujinx.Cpu.Jit
                     va += currentSize;
                     pa += currentSize;
 
-                    InsertBridgeIfNeeded(partitionIndex);
+                    InsertOrRemoveBridgeIfNeeded(partitionIndex);
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace Ryujinx.Cpu.Jit
 
                     va += clampedEndVa - clampedVa;
 
-                    RemoveBridgeIfNeeded(partitionIndex);
+                    InsertOrRemoveBridgeIfNeeded(partitionIndex);
 
                     if (partition.IsEmpty())
                     {
@@ -181,33 +181,27 @@ namespace Ryujinx.Cpu.Jit
             return false;
         }
 
-        private void InsertBridgeIfNeeded(int partitionIndex)
+        private void InsertOrRemoveBridgeIfNeeded(int partitionIndex)
         {
-            if (partitionIndex > 0 && _partitions[partitionIndex - 1].EndAddress == _partitions[partitionIndex].Address)
+            if (partitionIndex > 0)
             {
-                _partitions[partitionIndex - 1].InsertBridgeAtEnd(_partitions[partitionIndex], _updatePtCallback, _useProtectionMirrors);
+                if (_partitions[partitionIndex - 1].EndAddress == _partitions[partitionIndex].Address)
+                {
+                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(_partitions[partitionIndex]);
+                }
+                else
+                {
+                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(null);
+                }
             }
 
             if (partitionIndex + 1 < _partitions.Count && _partitions[partitionIndex].EndAddress == _partitions[partitionIndex + 1].Address)
             {
-                _partitions[partitionIndex].InsertBridgeAtEnd(_partitions[partitionIndex + 1], _updatePtCallback, _useProtectionMirrors);
-            }
-        }
-
-        private void RemoveBridgeIfNeeded(int partitionIndex)
-        {
-            if (partitionIndex > 0 && _partitions[partitionIndex - 1].EndAddress == _partitions[partitionIndex].Address)
-            {
-                _partitions[partitionIndex - 1].InsertBridgeAtEnd(_partitions[partitionIndex], _updatePtCallback, _useProtectionMirrors);
-            }
-
-            if (partitionIndex + 1 < _partitions.Count && _partitions[partitionIndex].EndAddress == _partitions[partitionIndex + 1].Address)
-            {
-                _partitions[partitionIndex].InsertBridgeAtEnd(_partitions[partitionIndex + 1], _updatePtCallback, _useProtectionMirrors);
+                _partitions[partitionIndex].InsertBridgeAtEnd(_partitions[partitionIndex + 1]);
             }
             else
             {
-                _partitions[partitionIndex].RemoveBridgeFromEnd(_updatePtCallback, _useProtectionMirrors);
+                _partitions[partitionIndex].InsertBridgeAtEnd(null);
             }
         }
 
@@ -360,9 +354,7 @@ namespace Ryujinx.Cpu.Jit
 
         public AddressSpacePartitionAllocation CreateAsPartitionAllocation(ulong va, ulong size)
         {
-            ulong bridgeSize = MemoryBlock.GetPageSize() * 2;
-
-            return _asAllocator.Allocate(va, size, (int)bridgeSize);
+            return _asAllocator.Allocate(va, size + MemoryBlock.GetPageSize());
         }
 
         protected virtual void Dispose(bool disposing)
