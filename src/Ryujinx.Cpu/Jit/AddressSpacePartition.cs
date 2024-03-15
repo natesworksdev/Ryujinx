@@ -208,6 +208,7 @@ namespace Ryujinx.Cpu.Jit
         private ulong _cachedFirstPagePa;
         private ulong _cachedLastPagePa;
         private MemoryBlock _firstPageMemoryForUnmap;
+        private ulong _firstPageOffsetForLateMap;
 
         public ulong Address { get; }
         public ulong Size { get; }
@@ -331,6 +332,7 @@ namespace Ryujinx.Cpu.Jit
 
                     _baseMemory.MapView(firstPageMemory, firstPageOffset, Size, _hostPageSize);
                     _firstPageMemoryForUnmap = firstPageMemory;
+                    _firstPageOffsetForLateMap = firstPageOffset;
                 }
                 else
                 {
@@ -602,6 +604,14 @@ namespace Ryujinx.Cpu.Jit
                 {
                     _baseMemory.LateMapView(map.PrivateAllocation.Memory, map.PrivateAllocation.Offset, map.Address - Address, map.Size);
                 }
+            }
+
+            MemoryBlock firstPageMemory = _firstPageMemoryForUnmap;
+            ulong firstPageOffset = _firstPageOffsetForLateMap;
+
+            if (firstPageMemory != null)
+            {
+                _baseMemory.LateMapView(firstPageMemory, firstPageOffset, Size, _hostPageSize);
             }
         }
 
