@@ -35,8 +35,6 @@ namespace Ryujinx.Ava.UI.Windows
     {
         internal static MainWindowViewModel MainWindowViewModel { get; private set; }
 
-        private bool _isLoading;
-
         private UserChannelPersistence _userChannelPersistence;
         private static bool _deferLoad;
         private static string _launchPath;
@@ -534,39 +532,22 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void ReloadGameList()
         {
-            if (_isLoading)
-            {
-                return;
-            }
-
-            _isLoading = true;
-
             if (ViewModel.IsInFolder && !ConfigurationState.Instance.UI.UseSystemGameFolders)
             {
                 ViewModel.PathHistory.Clear();
                 ViewModel.IsInFolder = false;
             }
 
-            Thread applicationLibraryThread = new(() =>
+            if (ViewModel.IsInFolder)
             {
-                if (ViewModel.IsInFolder)
-                {
-                    List<string> SearchPaths = new();
-                    SearchPaths.Add(ViewModel.PathHistory.Peek());
-                    ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
-                }
-                else
-                {
-                    ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
-                }
-
-                _isLoading = false;
-            })
+                List<string> SearchPaths = new();
+                SearchPaths.Add(ViewModel.PathHistory.Peek());
+                ApplicationLibrary.LoadApplications(SearchPaths, ConfigurationState.Instance.System.Language);
+            }
+            else
             {
-                Name = "GUI.ApplicationLibraryThread",
-                IsBackground = true,
-            };
-            applicationLibraryThread.Start();
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+            }
         }
     }
 }

@@ -45,6 +45,7 @@ namespace Ryujinx.UI.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private Language _desiredTitleLanguage;
         private CancellationTokenSource _cancellationToken;
+        private bool _isLoading;
 
         private static readonly ApplicationJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
         private static readonly TitleUpdateMetadataJsonSerializerContext _titleSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
@@ -89,6 +90,28 @@ namespace Ryujinx.UI.App.Common
         }
 
         public void LoadApplications(List<string> appDirs, Language desiredTitleLanguage)
+        {
+            if (_isLoading)
+            {
+                return;
+            }
+
+            _isLoading = true;
+
+            Thread applicationLibraryThread = new(() =>
+            {
+                LoadApplicationsReal(appDirs, desiredTitleLanguage);
+
+                _isLoading = false;
+            })
+            {
+                Name = "GUI.ApplicationLibraryThread",
+                IsBackground = true,
+            };
+            applicationLibraryThread.Start();
+        }
+
+        private void LoadApplicationsReal(List<string> appDirs, Language desiredTitleLanguage)
         {
             int numApplicationsFound = 0;
             int numApplicationsLoaded = 0;

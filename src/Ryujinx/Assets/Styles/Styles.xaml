@@ -108,15 +108,15 @@
     </Style>
     <Style Selector="ui|SymbolIcon.gridNormal">
         <Setter Property="FontSize"
-                Value="130" />
+                Value="120" />
     </Style>
     <Style Selector="ui|SymbolIcon.gridLarge">
         <Setter Property="FontSize"
-                Value="140" />
+                Value="160" />
     </Style>
     <Style Selector="ui|SymbolIcon.gridHuge">
         <Setter Property="FontSize"
-                Value="180" />
+                Value="200" />
     </Style>
     <Style Selector="#TitleBarHost &gt; Image">
         <Setter Property="Margin"
