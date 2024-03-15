@@ -85,6 +85,7 @@
   "SettingsTabGeneral": "사용자 인터페이스",
   "SettingsTabGeneralGeneral": "일반",
   "SettingsTabGeneralEnableDiscordRichPresence": "디스코드 활동 상태 활성화",
+  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "시작 시, 업데이트 확인",
   "SettingsTabGeneralShowConfirmExitDialog": "\"종료 확인\" 대화 상자 표시",
   "SettingsTabGeneralHideCursor": "마우스 커서 숨기기",

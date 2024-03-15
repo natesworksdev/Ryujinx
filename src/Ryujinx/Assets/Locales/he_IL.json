@@ -85,6 +85,7 @@
   "SettingsTabGeneral": "ממשק משתמש",
   "SettingsTabGeneralGeneral": "כללי",
   "SettingsTabGeneralEnableDiscordRichPresence": "הפעלת תצוגה עשירה בדיסקורד",
+  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "בדוק אם קיימים עדכונים בהפעלה",
   "SettingsTabGeneralShowConfirmExitDialog": "הראה דיאלוג \"אשר יציאה\"",
   "SettingsTabGeneralHideCursor": "הסתר את הסמן",

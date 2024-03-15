@@ -541,6 +541,12 @@ namespace Ryujinx.Ava.UI.Windows
 
             _isLoading = true;
 
+            if (ViewModel.IsInFolder && !ConfigurationState.Instance.UI.UseSystemGameFolders)
+            {
+                ViewModel.PathHistory.Clear();
+                ViewModel.IsInFolder = false;
+            }
+
             Thread applicationLibraryThread = new(() =>
             {
                 if (ViewModel.IsInFolder)

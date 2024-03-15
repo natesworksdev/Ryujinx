@@ -118,30 +118,37 @@ namespace Ryujinx.UI.App.Common
 
                     try
                     {
-                        IEnumerable<string> folders = Directory.EnumerateDirectories(appDir, "*", SearchOption.TopDirectoryOnly);
-                        foreach (string folder in folders)
+                        var FileSearchOption = SearchOption.AllDirectories;
+
+                        if (ConfigurationState.Instance.UI.UseSystemGameFolders)
                         {
-                            if (_cancellationToken.Token.IsCancellationRequested)
+                            IEnumerable<string> folders = Directory.EnumerateDirectories(appDir, "*", SearchOption.TopDirectoryOnly);
+                            foreach (string folder in folders)
                             {
-                                return;
+                                if (_cancellationToken.Token.IsCancellationRequested)
+                                {
+                                    return;
+                                }
+
+                                var fileInfo = new FileInfo(folder);
+
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+                                ApplicationData folderData = new()
+                                {
+                                    TitleName = fileInfo.Name,
+                                    FileExtension = "Folder",
+                                    Path = fullPath,
+                                };
+                                OnApplicationAdded(new ApplicationAddedEventArgs
+                                {
+                                    AppData = folderData,
+                                });
                             }
 
-                            var fileInfo = new FileInfo(folder);
-
-                            var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
-                            ApplicationData folderData = new()
-                            {
-                                TitleName = fileInfo.Name,
-                                FileExtension = "Folder",
-                                Path = fullPath,
-                            };
-                            OnApplicationAdded(new ApplicationAddedEventArgs
-                            {
-                                AppData = folderData,
-                            });
+                            FileSearchOption = SearchOption.TopDirectoryOnly;
                         }
 
-                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.TopDirectoryOnly).Where(file =>
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", FileSearchOption).Where(file =>
                         {
                             return
                             (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||

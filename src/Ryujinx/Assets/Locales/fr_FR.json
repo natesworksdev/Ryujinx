@@ -85,6 +85,7 @@
   "SettingsTabGeneral": "Interface Utilisateur",
   "SettingsTabGeneralGeneral": "Général",
   "SettingsTabGeneralEnableDiscordRichPresence": "Activer Discord Rich Presence",
+  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Vérifier les mises à jour au démarrage",
   "SettingsTabGeneralShowConfirmExitDialog": "Afficher le message de \"Confirmation de sortie\"",
   "SettingsTabGeneralHideCursor": "Masquer le Curseur :",
