@@ -13,7 +13,7 @@ namespace Ryujinx.Cpu.Jit
     /// <summary>
     /// Represents a CPU memory manager which maps guest virtual memory directly onto a host virtual region.
     /// </summary>
-    public sealed class MemoryManagerHostMapped : VirtualMemoryManagerRefCountedBase<ulong, ulong>, IMemoryManager, IVirtualMemoryManagerTracked, IWritableBlock
+    public sealed class MemoryManagerHostMapped : VirtualMemoryManagerRefCountedBase, IMemoryManager, IVirtualMemoryManagerTracked
     {
         private readonly InvalidAccessHandler _invalidAccessHandler;
         private readonly bool _unsafeMode;
@@ -98,12 +98,6 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
-        public void MapForeign(ulong va, nuint hostPointer, ulong size)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <inheritdoc/>
         public void Unmap(ulong va, ulong size)
         {
             AssertValidAddressAndSize(va, size);
@@ -139,8 +133,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public T Read<T>(ulong va) where T : unmanaged
+        public override T Read<T>(ulong va)
         {
             try
             {
@@ -159,14 +152,11 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public T ReadTracked<T>(ulong va) where T : unmanaged
+        public override T ReadTracked<T>(ulong va)
         {
             try
             {
-                SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), false);
-
-                return Read<T>(va);
+                return base.ReadTracked<T>(va);
             }
             catch (InvalidMemoryRegionException)
             {
@@ -179,7 +169,6 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
         public override void Read(ulong va, Span<byte> data)
         {
             try
@@ -197,9 +186,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-
-        /// <inheritdoc/>
-        public void Write<T>(ulong va, T value) where T : unmanaged
+        public override void Write<T>(ulong va, T value)
         {
             try
             {
@@ -216,8 +203,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public void Write(ulong va, ReadOnlySpan<byte> data)
+        public override void Write(ulong va, ReadOnlySpan<byte> data)
         {
             try
             {
@@ -234,8 +220,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
+        public override void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
         {
             try
             {
@@ -252,8 +237,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public bool WriteWithRedundancyCheck(ulong va, ReadOnlySpan<byte> data)
+        public override bool WriteWithRedundancyCheck(ulong va, ReadOnlySpan<byte> data)
         {
             try
             {
@@ -280,8 +264,7 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        /// <inheritdoc/>
-        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        public override ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
         {
             if (tracked)
             {
@@ -295,8 +278,7 @@ namespace Ryujinx.Cpu.Jit
             return new ReadOnlySequence<byte>(_addressSpace.Mirror.GetMemory(va, size));
         }
 
-        /// <inheritdoc/>
-        public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
+        public override ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (tracked)
             {
@@ -310,8 +292,7 @@ namespace Ryujinx.Cpu.Jit
             return _addressSpace.Mirror.GetSpan(va, size);
         }
 
-        /// <inheritdoc/>
-        public WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
+        public override WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
         {
             if (tracked)
             {
@@ -325,7 +306,6 @@ namespace Ryujinx.Cpu.Jit
             return _addressSpace.Mirror.GetWritableRegion(va, size);
         }
 
-        /// <inheritdoc/>
         public ref T GetRef<T>(ulong va) where T : unmanaged
         {
             SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), true);
@@ -333,9 +313,8 @@ namespace Ryujinx.Cpu.Jit
             return ref _addressSpace.Mirror.GetRef<T>(va);
         }
 
-        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMapped(ulong va)
+        public override bool IsMapped(ulong va)
         {
             return ValidateAddress(va) && _pages.IsMapped(va);
         }
@@ -406,11 +385,10 @@ namespace Ryujinx.Cpu.Jit
             return _pageTable.Read(va) + (va & PageMask);
         }
 
-        /// <inheritdoc/>
         /// <remarks>
         /// This function also validates that the given range is both valid and mapped, and will throw if it is not.
         /// </remarks>
-        public void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null)
+        public override void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false, int? exemptId = null)
         {
             AssertValidAddressAndSize(va, size);
 
@@ -421,23 +399,6 @@ namespace Ryujinx.Cpu.Jit
             }
 
             _pages.SignalMemoryTracking(Tracking, va, size, write, exemptId);
-        }
-
-        /// <summary>
-        /// Computes the number of pages in a virtual address range.
-        /// </summary>
-        /// <param name="va">Virtual address of the range</param>
-        /// <param name="size">Size of the range</param>
-        /// <param name="startVa">The virtual address of the beginning of the first page</param>
-        /// <remarks>This function does not differentiate between allocated and unallocated pages.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetPagesCount(ulong va, ulong size, out ulong startVa)
-        {
-            // WARNING: Always check if ulong does not overflow during the operations.
-            startVa = va & ~(ulong)PageMask;
-            ulong vaSpan = (va - startVa + size + PageMask) & ~(ulong)PageMask;
-
-            return (int)(vaSpan / PageSize);
         }
 
         /// <inheritdoc/>
@@ -486,10 +447,16 @@ namespace Ryujinx.Cpu.Jit
             _memoryEh.Dispose();
         }
 
-        protected override Span<byte> GetPhysicalAddressSpan(ulong pa, int size)
+        protected override Memory<byte> GetPhysicalAddressMemory(nuint pa, int size)
+            => _addressSpace.Mirror.GetMemory(pa, size);
+
+        protected override Span<byte> GetPhysicalAddressSpan(nuint pa, int size)
             => _addressSpace.Mirror.GetSpan(pa, size);
 
-        protected override ulong TranslateVirtualAddressForRead(ulong va)
-            => va;
+        protected override nuint TranslateVirtualAddressChecked(ulong va)
+            => (nuint)GetPhysicalAddressChecked(va);
+
+        protected override nuint TranslateVirtualAddressUnchecked(ulong va)
+            => (nuint)GetPhysicalAddressInternal(va);
     }
 }
