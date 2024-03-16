@@ -14,7 +14,7 @@ namespace Ryujinx.Horizon.Ptm.Ipc
         public const int MaximumTemperature = 100;
 
         [CmifCommand(0)] // 1.0.0-16.1.0
-        public Result GetTemperatureRange(Location location, out int minimumTemperature, out int maximumTemperature)
+        public Result GetTemperatureRange(out int minimumTemperature, out int maximumTemperature, Location location)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePtm, new { location });
 
@@ -25,7 +25,7 @@ namespace Ryujinx.Horizon.Ptm.Ipc
         }
 
         [CmifCommand(1)] // 1.0.0-16.1.0
-        public Result GetTemperature(Location location, out int temperature)
+        public Result GetTemperature(out int temperature, Location location)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePtm, new { location });
 
@@ -43,7 +43,7 @@ namespace Ryujinx.Horizon.Ptm.Ipc
         }
 
         [CmifCommand(3)] // 1.0.0-13.2.1
-        public Result GetTemperatureMilliC(Location location, out int temperatureMilliC)
+        public Result GetTemperatureMilliC(out int temperatureMilliC, Location location)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePtm, new { location });
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Horizon.Ptm.Ipc
         }
 
         [CmifCommand(4)] // 8.0.0+
-        Result IMeasurementServer.OpenSession(DeviceCode deviceCode, out ISession session)
+        public Result OpenSession(out ISession session, DeviceCode deviceCode)
         {
             session = new Session(deviceCode);
 

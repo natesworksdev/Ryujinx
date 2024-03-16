@@ -5,10 +5,10 @@ namespace Ryujinx.Horizon.Sdk.Ts
 {
     interface IMeasurementServer : IServiceObject
     {
-        Result GetTemperatureRange(Location location, out int minimumTemperature, out int maximumTemperature);
-        Result GetTemperature(Location location, out int temperature);
+        Result GetTemperatureRange(out int minimumTemperature, out int maximumTemperature, Location location);
+        Result GetTemperature(out int temperature, Location location);
         Result SetMeasurementMode(Location location, byte measurementMode);
-        Result GetTemperatureMilliC(Location location, out int temperatureMilliC);
-        Result OpenSession(DeviceCode deviceCode, out ISession session);
+        Result GetTemperatureMilliC(out int temperatureMilliC, Location location);
+        Result OpenSession(out ISession session, DeviceCode deviceCode);
     }
 }
