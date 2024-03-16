@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Tracking;
 using System;
@@ -191,7 +192,7 @@ namespace Ryujinx.Tests.Memory
             ClassicAssert.False(alignedAfterTriggers);
         }
 
-        [Test, Explicit, CancelAfterAttribute(1000)]
+        [Test, Explicit, CancelAfter(1000)]
         public void Multithreading()
         {
             // Multithreading sanity test
