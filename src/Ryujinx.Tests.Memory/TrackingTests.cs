@@ -53,46 +53,46 @@ namespace Ryujinx.Tests.Memory
             });
 
             bool dirtyInitial = handle.Dirty;
-            Assert.True(dirtyInitial); // Handle starts dirty.
+            ClassicAssert.True(dirtyInitial); // Handle starts dirty.
 
             handle.Reprotect();
 
             bool dirtyAfterReprotect = handle.Dirty;
-            Assert.False(dirtyAfterReprotect); // Handle is no longer dirty.
+            ClassicAssert.False(dirtyAfterReprotect); // Handle is no longer dirty.
 
             _tracking.VirtualMemoryEvent(PageSize * 2, 4, true);
             _tracking.VirtualMemoryEvent(PageSize * 2, 4, false);
 
             bool dirtyAfterUnrelatedReadWrite = handle.Dirty;
-            Assert.False(dirtyAfterUnrelatedReadWrite); // Not dirtied, as the write was to an unrelated address.
+            ClassicAssert.False(dirtyAfterUnrelatedReadWrite); // Not dirtied, as the write was to an unrelated address.
 
-            Assert.IsNull(readTrackingTriggered); // Hasn't been triggered yet
+            ClassicAssert.Null(readTrackingTriggered); // Hasn't been triggered yet
 
             _tracking.VirtualMemoryEvent(0, 4, false);
 
             bool dirtyAfterRelatedRead = handle.Dirty;
-            Assert.False(dirtyAfterRelatedRead); // Only triggers on write.
-            Assert.AreEqual(readTrackingTriggered, (0UL, 4UL)); // Read action was triggered.
+            ClassicAssert.False(dirtyAfterRelatedRead); // Only triggers on write.
+            ClassicAssert.AreEqual(readTrackingTriggered, (0UL, 4UL)); // Read action was triggered.
 
             readTrackingTriggered = null;
             _tracking.VirtualMemoryEvent(0, 4, true);
 
             bool dirtyAfterRelatedWrite = handle.Dirty;
-            Assert.True(dirtyAfterRelatedWrite); // Dirty flag should now be set.
+            ClassicAssert.True(dirtyAfterRelatedWrite); // Dirty flag should now be set.
 
             _tracking.VirtualMemoryEvent(4, 4, true);
             bool dirtyAfterRelatedWrite2 = handle.Dirty;
-            Assert.True(dirtyAfterRelatedWrite2); // Dirty flag should still be set.
+            ClassicAssert.True(dirtyAfterRelatedWrite2); // Dirty flag should still be set.
 
             handle.Reprotect();
 
             bool dirtyAfterReprotect2 = handle.Dirty;
-            Assert.False(dirtyAfterReprotect2); // Handle is no longer dirty.
+            ClassicAssert.False(dirtyAfterReprotect2); // Handle is no longer dirty.
 
             handle.Dispose();
 
             bool dirtyAfterDispose = TestSingleWrite(handle, 0, 4);
-            Assert.False(dirtyAfterDispose); // Handle cannot be triggered when disposed
+            ClassicAssert.False(dirtyAfterDispose); // Handle cannot be triggered when disposed
         }
 
         [Test]
@@ -126,27 +126,27 @@ namespace Ryujinx.Tests.Memory
             for (int i = 0; i < 16; i++)
             {
                 // No handles are dirty.
-                Assert.False(allHandle.Dirty);
-                Assert.IsNull(readTrackingTriggeredAll);
+                ClassicAssert.False(allHandle.Dirty);
+                ClassicAssert.Null(readTrackingTriggeredAll);
                 for (int j = 0; j < 16; j++)
                 {
-                    Assert.False(containedHandles[j].Dirty);
+                    ClassicAssert.False(containedHandles[j].Dirty);
                 }
 
                 _tracking.VirtualMemoryEvent((ulong)i * PageSize, 1, true);
 
                 // Only the handle covering the entire range and the relevant contained handle are dirty.
-                Assert.True(allHandle.Dirty);
-                Assert.AreEqual(readTrackingTriggeredAll, ((ulong)i * PageSize, 1UL)); // Triggered read tracking
+                ClassicAssert.True(allHandle.Dirty);
+                ClassicAssert.AreEqual(readTrackingTriggeredAll, ((ulong)i * PageSize, 1UL)); // Triggered read tracking
                 for (int j = 0; j < 16; j++)
                 {
                     if (j == i)
                     {
-                        Assert.True(containedHandles[j].Dirty);
+                        ClassicAssert.True(containedHandles[j].Dirty);
                     }
                     else
                     {
-                        Assert.False(containedHandles[j].Dirty);
+                        ClassicAssert.False(containedHandles[j].Dirty);
                     }
                 }
 
@@ -171,27 +171,27 @@ namespace Ryujinx.Tests.Memory
             // Anywhere inside the pages the region is contained on should trigger.
 
             bool originalRangeTriggers = TestSingleWrite(handle, address, size);
-            Assert.True(originalRangeTriggers);
+            ClassicAssert.True(originalRangeTriggers);
 
             bool alignedRangeTriggers = TestSingleWrite(handle, alignedStart, alignedSize);
-            Assert.True(alignedRangeTriggers);
+            ClassicAssert.True(alignedRangeTriggers);
 
             bool alignedStartTriggers = TestSingleWrite(handle, alignedStart, 1);
-            Assert.True(alignedStartTriggers);
+            ClassicAssert.True(alignedStartTriggers);
 
             bool alignedEndTriggers = TestSingleWrite(handle, alignedEnd - 1, 1);
-            Assert.True(alignedEndTriggers);
+            ClassicAssert.True(alignedEndTriggers);
 
             // Outside the tracked range should not trigger.
 
             bool alignedBeforeTriggers = TestSingleWrite(handle, alignedStart - 1, 1);
-            Assert.False(alignedBeforeTriggers);
+            ClassicAssert.False(alignedBeforeTriggers);
 
             bool alignedAfterTriggers = TestSingleWrite(handle, alignedEnd, 1);
-            Assert.False(alignedAfterTriggers);
+            ClassicAssert.False(alignedAfterTriggers);
         }
 
-        [Test, Explicit, Timeout(1000)]
+        [Test, Explicit, CancelAfterAttribute(1000)]
         public void Multithreading()
         {
             // Multithreading sanity test
@@ -287,9 +287,9 @@ namespace Ryujinx.Tests.Memory
                 thread.Join();
             }
 
-            Assert.Greater(dirtyFlagReprotects, 10);
-            Assert.Greater(writeTriggers, 10);
-            Assert.Greater(handleLifecycles, 10);
+            ClassicAssert.Greater(dirtyFlagReprotects, 10);
+            ClassicAssert.Greater(writeTriggers, 10);
+            ClassicAssert.Greater(handleLifecycles, 10);
         }
 
         [Test]
@@ -354,7 +354,7 @@ namespace Ryujinx.Tests.Memory
 
             // The action should trigger exactly once for every registration,
             // then we register once after all the threads signalling it cease.
-            Assert.AreEqual(registeredCount, triggeredCount + 1);
+            ClassicAssert.AreEqual(registeredCount, triggeredCount + 1);
         }
 
         [Test]
@@ -365,11 +365,11 @@ namespace Ryujinx.Tests.Memory
             RegionHandle handle = _tracking.BeginTracking(0, PageSize, 0);
             handle.Reprotect();
 
-            Assert.AreEqual(1, _tracking.GetRegionCount());
+            ClassicAssert.AreEqual(1, _tracking.GetRegionCount());
 
             handle.Dispose();
 
-            Assert.AreEqual(0, _tracking.GetRegionCount());
+            ClassicAssert.AreEqual(0, _tracking.GetRegionCount());
 
             // Two handles, small entirely contains big.
             // We expect there to be three regions after creating both, one for the small region and two covering the big one around it.
@@ -378,16 +378,16 @@ namespace Ryujinx.Tests.Memory
             RegionHandle handleSmall = _tracking.BeginTracking(PageSize, PageSize, 0);
             RegionHandle handleBig = _tracking.BeginTracking(0, PageSize * 4, 0);
 
-            Assert.AreEqual(3, _tracking.GetRegionCount());
+            ClassicAssert.AreEqual(3, _tracking.GetRegionCount());
 
             // After disposing the big region, only the small one will remain.
             handleBig.Dispose();
 
-            Assert.AreEqual(1, _tracking.GetRegionCount());
+            ClassicAssert.AreEqual(1, _tracking.GetRegionCount());
 
             handleSmall.Dispose();
 
-            Assert.AreEqual(0, _tracking.GetRegionCount());
+            ClassicAssert.AreEqual(0, _tracking.GetRegionCount());
         }
 
         [Test]
@@ -397,22 +397,22 @@ namespace Ryujinx.Tests.Memory
 
             _memoryManager.OnProtect += (va, size, newProtection) =>
             {
-                Assert.AreEqual((0, PageSize), (va, size)); // Should protect the exact region all the operations use.
+                ClassicAssert.AreEqual((0, PageSize), (va, size)); // Should protect the exact region all the operations use.
                 protection = newProtection;
             };
 
             RegionHandle handle = _tracking.BeginTracking(0, PageSize, 0);
 
             // After creating the handle, there is no protection yet.
-            Assert.AreEqual(MemoryPermission.ReadAndWrite, protection);
+            ClassicAssert.AreEqual(MemoryPermission.ReadAndWrite, protection);
 
             bool dirtyInitial = handle.Dirty;
-            Assert.True(dirtyInitial); // Handle starts dirty.
+            ClassicAssert.True(dirtyInitial); // Handle starts dirty.
 
             handle.Reprotect();
 
             // After a reprotect, there is write protection, which will set a dirty flag when any write happens.
-            Assert.AreEqual(MemoryPermission.Read, protection);
+            ClassicAssert.AreEqual(MemoryPermission.Read, protection);
 
             (ulong address, ulong size)? readTrackingTriggered = null;
             handle.RegisterAction((address, size) =>
@@ -421,21 +421,21 @@ namespace Ryujinx.Tests.Memory
             });
 
             // Registering an action adds read/write protection.
-            Assert.AreEqual(MemoryPermission.None, protection);
+            ClassicAssert.AreEqual(MemoryPermission.None, protection);
 
             bool dirtyAfterReprotect = handle.Dirty;
-            Assert.False(dirtyAfterReprotect); // Handle is no longer dirty.
+            ClassicAssert.False(dirtyAfterReprotect); // Handle is no longer dirty.
 
             // First we should read, which will trigger the action. This _should not_ remove write protection on the memory.
 
             _tracking.VirtualMemoryEvent(0, 4, false);
 
             bool dirtyAfterRead = handle.Dirty;
-            Assert.False(dirtyAfterRead); // Not dirtied, as this was a read.
+            ClassicAssert.False(dirtyAfterRead); // Not dirtied, as this was a read.
 
-            Assert.AreEqual(readTrackingTriggered, (0UL, 4UL)); // Read action was triggered.
+            ClassicAssert.AreEqual(readTrackingTriggered, (0UL, 4UL)); // Read action was triggered.
 
-            Assert.AreEqual(MemoryPermission.Read, protection); // Write protection is still present.
+            ClassicAssert.AreEqual(MemoryPermission.Read, protection); // Write protection is still present.
 
             readTrackingTriggered = null;
 
@@ -444,11 +444,11 @@ namespace Ryujinx.Tests.Memory
             _tracking.VirtualMemoryEvent(0, 4, true);
 
             bool dirtyAfterWriteAfterRead = handle.Dirty;
-            Assert.True(dirtyAfterWriteAfterRead); // Should be dirty.
+            ClassicAssert.True(dirtyAfterWriteAfterRead); // Should be dirty.
 
-            Assert.AreEqual(MemoryPermission.ReadAndWrite, protection); // All protection is now be removed from the memory.
+            ClassicAssert.AreEqual(MemoryPermission.ReadAndWrite, protection); // All protection is now be removed from the memory.
 
-            Assert.IsNull(readTrackingTriggered); // Read tracking was removed when the action fired, as it can only fire once.
+            ClassicAssert.Null(readTrackingTriggered); // Read tracking was removed when the action fired, as it can only fire once.
 
             handle.Dispose();
         }
@@ -476,22 +476,22 @@ namespace Ryujinx.Tests.Memory
 
             _tracking.VirtualMemoryEvent(0, 4, false, precise: true);
 
-            Assert.IsNull(readTrackingTriggered); // Hasn't been triggered - precise action returned true.
-            Assert.AreEqual(preciseTriggered, (0UL, 4UL, false)); // Precise action was triggered.
+            ClassicAssert.Null(readTrackingTriggered); // Hasn't been triggered - precise action returned true.
+            ClassicAssert.AreEqual(preciseTriggered, (0UL, 4UL, false)); // Precise action was triggered.
 
             _tracking.VirtualMemoryEvent(0, 4, true, precise: true);
 
-            Assert.IsNull(readTrackingTriggered); // Still hasn't been triggered.
+            ClassicAssert.Null(readTrackingTriggered); // Still hasn't been triggered.
             bool dirtyAfterPreciseActionTrue = handle.Dirty;
-            Assert.False(dirtyAfterPreciseActionTrue); // Not dirtied - precise action returned true.
-            Assert.AreEqual(preciseTriggered, (0UL, 4UL, true)); // Precise action was triggered.
+            ClassicAssert.False(dirtyAfterPreciseActionTrue); // Not dirtied - precise action returned true.
+            ClassicAssert.AreEqual(preciseTriggered, (0UL, 4UL, true)); // Precise action was triggered.
 
             // Handle is now dirty.
             handle.Reprotect(true);
             preciseTriggered = null;
 
             _tracking.VirtualMemoryEvent(4, 4, true, precise: true);
-            Assert.AreEqual(preciseTriggered, (4UL, 4UL, true)); // Precise action was triggered even though handle was dirty.
+            ClassicAssert.AreEqual(preciseTriggered, (4UL, 4UL, true)); // Precise action was triggered even though handle was dirty.
 
             handle.Reprotect();
             handle.RegisterPreciseAction((address, size, write) =>
@@ -503,10 +503,10 @@ namespace Ryujinx.Tests.Memory
 
             _tracking.VirtualMemoryEvent(8, 4, true, precise: true);
 
-            Assert.AreEqual(readTrackingTriggered, (8UL, 4UL)); // Read action triggered, as precise action returned false.
+            ClassicAssert.AreEqual(readTrackingTriggered, (8UL, 4UL)); // Read action triggered, as precise action returned false.
             bool dirtyAfterPreciseActionFalse = handle.Dirty;
-            Assert.True(dirtyAfterPreciseActionFalse); // Dirtied, as precise action returned false.
-            Assert.AreEqual(preciseTriggered, (8UL, 4UL, true)); // Precise action was triggered.
+            ClassicAssert.True(dirtyAfterPreciseActionFalse); // Dirtied, as precise action returned false.
+            ClassicAssert.AreEqual(preciseTriggered, (8UL, 4UL, true)); // Precise action was triggered.
         }
     }
 }
