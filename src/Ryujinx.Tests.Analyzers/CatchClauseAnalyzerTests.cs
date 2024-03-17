@@ -32,7 +32,7 @@ public class MyClass
         }
         catch
         {
-            throw;
+            // Skip
         }
     }
 }
@@ -73,12 +73,87 @@ public class MyClass
         }
 
         [Fact]
+        public async Task CatchWithEmptyThrowStatement_NoDiagnostic()
+        {
+            string text = @"
+using System;
+
+public class MyClass
+{
+    public void MyMethod3()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch
+        {
+            throw;
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task CatchWithIdentifierAndThrowStatement_NoDiagnostic()
+        {
+            string text = @"
+using System;
+
+public class MyClass
+{
+    public void MyMethod4()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (NullReferenceException exception)
+        {
+            throw new InvalidOperationException(""invalid"");
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task CatchWithIgnoredIdentifier_NoDiagnostic()
+        {
+            string text = @"
+using System;
+
+public class MyClass
+{
+    public void MyMethod5()
+    {
+        try
+        {
+            Console.WriteLine(""test"");
+        }
+        catch (NullReferenceException _)
+        {
+            // Skip
+        }
+    }
+}
+";
+
+            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        }
+
+        [Fact]
         public async Task LogWithoutCatchIdentifier_WarningDiagnostic()
         {
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod3()
+    public void MyMethod6()
     {
         try
         {
@@ -104,7 +179,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod4()
+    public void MyMethod7()
     {
         try
         {
@@ -128,7 +203,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod5()
+    public void MyMethod8()
     {
         try
         {
@@ -152,7 +227,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod6()
+    public void MyMethod9()
     {
         try
         {
@@ -176,7 +251,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod7()
+    public void MyMethod10()
     {
         try
         {
@@ -201,7 +276,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod8()
+    public void MyMethod11()
     {
         try
         {
@@ -225,7 +300,7 @@ public class MyClass
             string text = _loggerText + @"
 public class MyClass
 {
-    public void MyMethod9()
+    public void MyMethod12()
     {
         try
         {

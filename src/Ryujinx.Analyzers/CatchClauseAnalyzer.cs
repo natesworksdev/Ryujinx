@@ -117,6 +117,12 @@ namespace Ryujinx.Analyzers
 
             var catchDeclaration = catchClauseSyntax.Declaration;
 
+            // Ignore if catch block contains a throw statement.
+            if (catchClauseSyntax.Block.DescendantNodes().Any(x => x is ThrowStatementSyntax))
+            {
+                return;
+            }
+
             // Find catch clauses without declaration.
             if (catchDeclaration == null)
             {
@@ -144,6 +150,12 @@ namespace Ryujinx.Analyzers
             {
                 var catchDeclarationIdentifier = catchDeclaration.Identifier;
                 bool exceptionLogged = false;
+
+                // Ignore if identifier is equal to "_"
+                if (catchDeclarationIdentifier.Text == "_")
+                {
+                    return;
+                }
 
                 // Iterate through all expression statements
                 foreach (var blockNode in catchClauseSyntax.Block.DescendantNodes())
