@@ -193,6 +193,12 @@ namespace Ryujinx.Ava
                     _ => ConfigurationState.Instance.HideCursor.Value,
                 };
             }
+
+            // Check if hardware-acceleration was overridden.
+            if (CommandLineState.OverrideHardwareAcceleration == true)
+            {
+                ConfigurationState.Instance.EnableHardwareAcceleration.Value = false;
+            }
         }
 
         private static void PrintSystemInfo()
