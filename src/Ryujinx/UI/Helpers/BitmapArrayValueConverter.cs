@@ -37,8 +37,7 @@ namespace Ryujinx.Ava.UI.Helpers
                     {
                         bitmap = bitmap.CreateScaledBitmap(new PixelSize(256, 256));
                     }
-                    cache.Set(hash, bitmap, options);
-                    return bitmap;
+                    return cache.Set(hash, bitmap, options);
                 }
                 else
                 {
