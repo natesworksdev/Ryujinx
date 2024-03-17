@@ -195,9 +195,9 @@ namespace Ryujinx.Ava
             }
 
             // Check if hardware-acceleration was overridden.
-            if (CommandLineState.OverrideHardwareAcceleration == true)
+            if (CommandLineState.OverrideHardwareAcceleration != null)
             {
-                ConfigurationState.Instance.EnableHardwareAcceleration.Value = false;
+                ConfigurationState.Instance.EnableHardwareAcceleration.Value = CommandLineState.OverrideHardwareAcceleration.Value;
             }
         }
 

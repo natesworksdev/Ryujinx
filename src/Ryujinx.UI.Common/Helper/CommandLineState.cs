@@ -88,7 +88,10 @@ namespace Ryujinx.UI.Common.Helper
 
                         OverrideHideCursor = args[++i];
                         break;
-                    case "--disable-angle":
+                    case "--software-gui":
+                        OverrideHardwareAcceleration = false;
+                        break;
+                    case "--hardware-gui":
                         OverrideHardwareAcceleration = true;
                         break;
                     default:
