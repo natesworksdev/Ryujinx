@@ -163,7 +163,7 @@ namespace Ryujinx.UI.Common.Configuration
         public bool ShowConfirmExit { get; set; }
 
         /// <summary>
-        /// Checks for updates when Ryujinx starts when enabled
+        /// Enables ANGLE hardware-accelerated rendering for Avalonia
         /// </summary>
         public bool EnableHardwareAcceleration { get; set; }
 
