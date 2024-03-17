@@ -39,10 +39,11 @@ namespace Ryujinx.Ava.Common.Locale
             LoadDefaultLanguage();
             LoadLanguage(localeLanguageCode);
 
-            // Save whatever we ended up with
+            // Save whatever we ended up with.
             if (Program.PreviewerDetached)
             {
                 ConfigurationState.Instance.UI.LanguageCode.Value = _localeLanguageCode;
+
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
@@ -151,7 +152,7 @@ namespace Ryujinx.Ava.Common.Locale
 
             if (languageJson == null)
             {
-                // We were unable to find file for that language code
+                // We were unable to find file for that language code.
                 return null;
             }
 
