@@ -65,8 +65,8 @@ namespace Ryujinx.Ava
                 .With(new Win32PlatformOptions
                 {
                     WinUICompositionBackdropCornerRadius = 8.0f,
-                    RenderingMode = ConfigurationState.Instance.EnableHardwareAcceleration ? 
-                        new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software } : 
+                    RenderingMode = ConfigurationState.Instance.EnableHardwareAcceleration ?
+                        new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software } :
                         new[] { Win32RenderingMode.Software },
                 })
                 .UseSkia();
