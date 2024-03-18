@@ -26,12 +26,7 @@
             Command="{Binding NavigateBack}"
             IsVisible="{Binding FoldersEnabled}"
             IsEnabled="{Binding IsInFolder}">
-            <ui:FontIcon
-                Margin="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                FontFamily="avares://FluentAvalonia/Fonts#Symbols"
-                Glyph="{helpers:GlyphValueConverter Back}" />
+            <ui:SymbolIcon Symbol="Back" />
         </Button>
         <Button
             Width="40"
