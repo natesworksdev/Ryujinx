@@ -86,6 +86,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string _lastScannedAmiiboId;
         private bool _statusBarVisible;
         private bool _isInFolder;
+        private bool _foldersEnabled;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
 
         private string _showUiKey = "F4";
@@ -123,6 +124,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _rendererWaitEvent = new AutoResetEvent(false);
             _pathHistory = new Stack<string>();
+            FoldersEnabled = ConfigurationState.Instance.UI.UseSystemGameFolders;
 
             if (Program.PreviewerDetached)
             {
@@ -679,6 +681,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _isInFolder = value;
+
+                OnPropertyChanged();
+            }
+        }
+        public bool FoldersEnabled
+        {
+            get => _foldersEnabled;
+            set
+            {
+                _foldersEnabled = value;
 
                 OnPropertyChanged();
             }

@@ -24,6 +24,7 @@
             Margin="5,2,0,2"
             VerticalAlignment="Stretch"
             Command="{Binding NavigateBack}"
+            IsVisible="{Binding FoldersEnabled}"
             IsEnabled="{Binding IsInFolder}">
             <ui:FontIcon
                 Margin="0"
