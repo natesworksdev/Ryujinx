@@ -627,7 +627,7 @@ namespace Ryujinx.UI.Common.Configuration
         public ReactiveObject<bool> ShowConfirmExit { get; private set; }
 
         /// <summary>
-        /// Enables ANGLE hardware-accelerated rendering for Avalonia
+        /// Enables hardware-accelerated rendering for Avalonia
         /// </summary>
         public ReactiveObject<bool> EnableHardwareAcceleration { get; private set; }
 
