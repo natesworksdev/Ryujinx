@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DriverId.MesaV3DV => "V3DV",
                 DriverId.MesaVenus => "Venus",
                 DriverId.Moltenvk => "MoltenVK",
-                DriverId.NvidiaProprietary => "Nvidia",
+                DriverId.NvidiaProprietary => "NVIDIA",
                 DriverId.QualcommProprietary => "Qualcomm",
                 DriverId.SamsungProprietary => "Samsung",
                 DriverId.VerisiliconProprietary => "Verisilicon",
