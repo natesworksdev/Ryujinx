@@ -749,8 +749,9 @@ namespace Ryujinx.Graphics.Vulkan
                 Vendor == Vendor.Broadcom ||
                 Vendor == Vendor.ImgTec;
 
-            GpuVendor = VendorUtils.GetNameFromId(properties.VendorID);;
-            GpuDriver = hasDriverProperties ? VendorUtils.GetFriendlyDriverName(driverProperties.DriverID) : GpuVendor;
+            GpuVendor = VendorUtils.GetNameFromId(properties.VendorID);
+            GpuDriver = hasDriverProperties && !OperatingSystem.IsMacOS() ?
+                VendorUtils.GetFriendlyDriverName(driverProperties.DriverID) : GpuVendor; // Fallback to vendor name if driver is unavailable or on MacOS where vendor is prefered.
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
