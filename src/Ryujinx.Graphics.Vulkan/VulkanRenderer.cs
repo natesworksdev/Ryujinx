@@ -738,8 +738,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             var hasDriverProperties = _physicalDevice.TryGetPhysicalDeviceDriverPropertiesKHR(Api, out var driverProperties);
 
-            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
-
             Vendor = VendorUtils.FromId(properties.VendorID);
 
             IsAmdWindows = Vendor == Vendor.Amd && OperatingSystem.IsWindows();
@@ -751,8 +749,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Vendor == Vendor.Broadcom ||
                 Vendor == Vendor.ImgTec;
 
-            GpuVendor = vendorName;
-            GpuDriver = hasDriverProperties ? Marshal.PtrToStringAnsi((IntPtr)driverProperties.DriverName) : vendorName; // Fall back to vendor name if driver name isn't available.
+            GpuVendor = VendorUtils.GetNameFromId(properties.VendorID);;
+            GpuDriver = hasDriverProperties ? VendorUtils.GetFriendlyDriverName(driverProperties.DriverID) : GpuVendor;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
 
