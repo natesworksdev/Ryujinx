@@ -525,16 +525,18 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VRINTR.F<size> <Sd>, <Sm>")]
-        [Platform(Exclude = "Linux,MacOsX")] // Instruction isn't testable due to Unicorn.
-        public void Vrintr([Values(0u, 1u)] uint rd,
-                           [Values(0u, 1u)] uint rm,
-                           [Values(2u, 3u)] uint size,
-                           [ValueSource(nameof(_1D_F_))] ulong s0,
-                           [ValueSource(nameof(_1D_F_))] ulong s1,
-                           [ValueSource(nameof(_1D_F_))] ulong s2,
-                           [Values(RMode.Rn, RMode.Rm, RMode.Rp)] RMode rMode)
+        [Theory(DisplayName = "VRINTR.F<size> <Sd>, <Sm>")]
+        [PairwiseData]
+        public void Vrintr([CombinatorialValues(0u, 1u)] uint rd,
+                           [CombinatorialValues(0u, 1u)] uint rm,
+                           [CombinatorialValues(2u, 3u)] uint size,
+                           [CombinatorialMemberData(nameof(_1D_F_))] ulong s0,
+                           [CombinatorialMemberData(nameof(_1D_F_))] ulong s1,
+                           [CombinatorialMemberData(nameof(_1D_F_))] ulong s2,
+                           [CombinatorialValues(RMode.Rn, RMode.Rm, RMode.Rp)] RMode rMode)
         {
+            Skip.If(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS(), "Instruction not testable with Unicorn");
+            
             uint opcode = 0xEEB60A40;
 
             V128 v0, v1, v2;
