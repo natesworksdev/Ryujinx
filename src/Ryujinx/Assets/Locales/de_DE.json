@@ -341,7 +341,7 @@
   "DialogThemeRestartMessage": "Das Design wurde gespeichert. Ein Neustart ist erforderlich, um das Design anzuwenden.",
   "DialogThemeRestartSubMessage": "Jetzt neu starten?",
   "DialogFirmwareInstallEmbeddedMessage": "Die in diesem Spiel enthaltene Firmware installieren? (Firmware {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "Es wurde keine installierte Firmware gefunden, aber Ryujinx konnte die Firmware {0} aus dem bereitgestellten Spiel installieren.\nRyujinx wird nun gestartet.",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "No installed firmware was found but Ryujinx was able to install firmware {0} from the provided game.\nThe emulator will now start.",
   "DialogFirmwareNoFirmwareInstalledMessage": "Keine Firmware installiert",
   "DialogFirmwareInstalledMessage": "Firmware {0} wurde installiert",
   "DialogInstallFileTypesSuccessMessage": "Dateitypen erfolgreich installiert!",
