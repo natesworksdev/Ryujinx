@@ -341,7 +341,7 @@
   "DialogThemeRestartMessage": "Motyw został zapisany. Aby zastosować motyw, konieczne jest ponowne uruchomienie.",
   "DialogThemeRestartSubMessage": "Czy chcesz uruchomić ponownie?",
   "DialogFirmwareInstallEmbeddedMessage": "Czy chcesz zainstalować firmware wbudowany w tę grę? (Firmware {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "Nie znaleziono zainstalowanego firmware'u, ale Ryujinx był w stanie zainstalować firmware {0} z dostarczonej gry.\n\nEmulator uruchomi się teraz.",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "No installed firmware was found but Ryujinx was able to install firmware {0} from the provided game.\nThe emulator will now start.",
   "DialogFirmwareNoFirmwareInstalledMessage": "Brak Zainstalowanego Firmware'u",
   "DialogFirmwareInstalledMessage": "Firmware {0} został zainstalowany",
   "DialogInstallFileTypesSuccessMessage": "Pomyślnie zainstalowano typy plików!",
