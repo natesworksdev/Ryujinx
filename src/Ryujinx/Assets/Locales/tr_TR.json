@@ -341,7 +341,7 @@
   "DialogThemeRestartMessage": "Tema kaydedildi. Temayı uygulamak için yeniden başlatma gerekiyor.",
   "DialogThemeRestartSubMessage": "Yeniden başlatmak ister misiniz",
   "DialogFirmwareInstallEmbeddedMessage": "Bu oyunun içine gömülü olan yazılımı yüklemek ister misiniz? (Firmware {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "Yüklü firmware bulunamadı ancak Ryujinx sağlanan oyundan {0} firmware sürümünü yükledi.\nEmülatör şimdi başlatılacak.",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "No installed firmware was found but Ryujinx was able to install firmware {0} from the provided game.\nThe emulator will now start.",
   "DialogFirmwareNoFirmwareInstalledMessage": "Yazılım Yüklü Değil",
   "DialogFirmwareInstalledMessage": "Yazılım {0} yüklendi",
   "DialogInstallFileTypesSuccessMessage": "Dosya uzantıları başarıyla yüklendi!",
