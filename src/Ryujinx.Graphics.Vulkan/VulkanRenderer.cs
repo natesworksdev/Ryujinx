@@ -801,11 +801,16 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
+        private void PrintGpuInformation()
+        {
+            Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
+        }
+
         public void Initialize(GraphicsDebugLevel logLevel)
         {
             SetupContext(logLevel);
 
-            Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
+            PrintGpuInformation();
         }
 
         internal bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
