@@ -648,6 +648,9 @@
   "GraphicsAALabel": "抗锯齿：",
   "GraphicsScalingFilterLabel": "缩放过滤：",
   "GraphicsScalingFilterTooltip": "选择在分辨率缩放时将使用的缩放过滤器。\n\nBilinear（双线性过滤）对于3D游戏效果较好，是一个安全的默认选项。\n\nNearest（最近邻过滤）推荐用于像素艺术游戏。\n\nFSR 1.0 只是一个锐化过滤器，不推荐与 FXAA 或 SMAA 抗锯齿一起使用。\n\n在游戏运行时，通过点击下面的“应用”按钮可以使设置生效；你可以将设置窗口移开，并试验找到您喜欢的游戏画面效果。\n\n如果不确定，请保持为“Bilinear”。",
+  "GraphicsScalingFilterBilinear": "Bilinear",
+  "GraphicsScalingFilterNearest": "Nearest",
+  "GraphicsScalingFilterFsr": "FSR",
   "GraphicsScalingFilterLevelLabel": "等级",
   "GraphicsScalingFilterLevelTooltip": "设置 FSR 1.0 的锐化等级，数值越高，图像越锐利。",
   "SmaaLow": "SMAA 低质量",
@@ -664,5 +667,7 @@
   "AboutChangelogButtonTooltipMessage": "点击这里在浏览器中打开此版本的更新日志。",
   "SettingsTabNetworkMultiplayer": "多人联机游玩",
   "MultiplayerMode": "联机模式：",
-  "MultiplayerModeTooltip": "修改 LDN 多人联机游玩模式。\n\nLdnMitm 将修改游戏中的本地无线和本地游玩功能，使其表现得像局域网一样，允许和其他安装了 ldn_mitm 模块的 Ryujinx 模拟器和破解的任天堂 Switch 主机在同一网络下进行本地连接，实现多人联机游玩。\n\n多人联机游玩要求所有玩家必须运行相同的游戏版本（例如，任天堂明星大乱斗特别版 v13.0.1 无法与 v13.0.0 版本联机）。\n\n如果不确定，请保持为“禁用”。"
+  "MultiplayerModeTooltip": "修改 LDN 多人联机游玩模式。\n\nLdnMitm 将修改游戏中的本地无线和本地游玩功能，使其表现得像局域网一样，允许和其他安装了 ldn_mitm 模块的 Ryujinx 模拟器和破解的任天堂 Switch 主机在同一网络下进行本地连接，实现多人联机游玩。\n\n多人联机游玩要求所有玩家必须运行相同的游戏版本（例如，任天堂明星大乱斗特别版 v13.0.1 无法与 v13.0.0 版本联机）。\n\n如果不确定，请保持为“禁用”。",
+  "MultiplayerModeDisabled": "Disabled",
+  "MultiplayerModeLdnMitm": "ldn_mitm"
 }
