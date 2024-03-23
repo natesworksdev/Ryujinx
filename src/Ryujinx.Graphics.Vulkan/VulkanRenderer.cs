@@ -87,6 +87,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsIntelWindows { get; private set; }
         internal bool IsAmdGcn { get; private set; }
         internal bool IsNvidiaPreTuring { get; private set; }
+        internal bool IsIntelArc { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
         internal bool IsSharedMemory { get; private set; }
@@ -349,6 +350,10 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     IsNvidiaPreTuring = true;
                 }
+            }
+            else if (Vendor == Vendor.Intel)
+            {
+                IsIntelArc = GpuRenderer.StartsWith("Intel(R) Arc(TM)");
             }
 
             ulong minResourceAlignment = Math.Max(
