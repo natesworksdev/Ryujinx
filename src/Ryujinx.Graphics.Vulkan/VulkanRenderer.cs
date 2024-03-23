@@ -310,6 +310,47 @@ namespace Ryujinx.Graphics.Vulkan
 
             ref var properties = ref properties2.Properties;
 
+            var hasDriverProperties = _physicalDevice.TryGetPhysicalDeviceDriverPropertiesKHR(Api, out var driverProperties);
+
+            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
+
+            Vendor = VendorUtils.FromId(properties.VendorID);
+
+            IsAmdWindows = Vendor == Vendor.Amd && OperatingSystem.IsWindows();
+            IsIntelWindows = Vendor == Vendor.Intel && OperatingSystem.IsWindows();
+            IsTBDR =
+                Vendor == Vendor.Apple ||
+                Vendor == Vendor.Qualcomm ||
+                Vendor == Vendor.ARM ||
+                Vendor == Vendor.Broadcom ||
+                Vendor == Vendor.ImgTec;
+
+            GpuVendor = vendorName;
+            GpuDriver = hasDriverProperties ? Marshal.PtrToStringAnsi((IntPtr)driverProperties.DriverName) : vendorName; // Fall back to vendor name if driver name isn't available.
+
+            fixed (byte* deviceName = properties.DeviceName)
+            {
+                GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)deviceName);
+            }
+
+            GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
+
+            IsAmdGcn = !IsMoltenVk && Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
+
+            if (Vendor == Vendor.Nvidia)
+            {
+                var match = VendorUtils.NvidiaConsumerClassRegex().Match(GpuRenderer);
+
+                if (match != null && int.TryParse(match.Groups[2].Value, out int gpuNumber))
+                {
+                    IsNvidiaPreTuring = gpuNumber < 2000;
+                }
+                else if (GpuDriver.Contains("TITAN") && !GpuDriver.Contains("RTX"))
+                {
+                    IsNvidiaPreTuring = true;
+                }
+            }
+
             ulong minResourceAlignment = Math.Max(
                 Math.Max(
                     properties.Limits.MinStorageBufferOffsetAlignment,
@@ -732,49 +773,6 @@ namespace Ryujinx.Graphics.Vulkan
             return ParseStandardVulkanVersion(driverVersionRaw);
         }
 
-        private unsafe void PrintGpuInformation()
-        {
-            var properties = _physicalDevice.PhysicalDeviceProperties;
-
-            var hasDriverProperties = _physicalDevice.TryGetPhysicalDeviceDriverPropertiesKHR(Api, out var driverProperties);
-
-            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
-
-            Vendor = VendorUtils.FromId(properties.VendorID);
-
-            IsAmdWindows = Vendor == Vendor.Amd && OperatingSystem.IsWindows();
-            IsIntelWindows = Vendor == Vendor.Intel && OperatingSystem.IsWindows();
-            IsTBDR =
-                Vendor == Vendor.Apple ||
-                Vendor == Vendor.Qualcomm ||
-                Vendor == Vendor.ARM ||
-                Vendor == Vendor.Broadcom ||
-                Vendor == Vendor.ImgTec;
-
-            GpuVendor = vendorName;
-            GpuDriver = hasDriverProperties ? Marshal.PtrToStringAnsi((IntPtr)driverProperties.DriverName) : vendorName; // Fall back to vendor name if driver name isn't available.
-            GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
-            GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
-
-            IsAmdGcn = !IsMoltenVk && Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex().IsMatch(GpuRenderer);
-
-            if (Vendor == Vendor.Nvidia)
-            {
-                var match = VendorUtils.NvidiaConsumerClassRegex().Match(GpuRenderer);
-
-                if (match != null && int.TryParse(match.Groups[2].Value, out int gpuNumber))
-                {
-                    IsNvidiaPreTuring = gpuNumber < 2000;
-                }
-                else if (GpuDriver.Contains("TITAN") && !GpuDriver.Contains("RTX"))
-                {
-                    IsNvidiaPreTuring = true;
-                }
-            }
-
-            Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
-        }
-
         internal PrimitiveTopology TopologyRemap(PrimitiveTopology topology)
         {
             return topology switch
@@ -802,7 +800,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             SetupContext(logLevel);
 
-            PrintGpuInformation();
+            Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
 
         internal bool NeedsVertexBufferAlignment(int attrScalarAlignment, out int alignment)
