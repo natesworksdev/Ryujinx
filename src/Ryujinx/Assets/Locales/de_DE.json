@@ -85,7 +85,6 @@
   "SettingsTabGeneral": "Oberfläche",
   "SettingsTabGeneralGeneral": "Allgemein",
   "SettingsTabGeneralEnableDiscordRichPresence": "Aktiviere die Statusanzeige für Discord",
-  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Beim Start nach Updates suchen",
   "SettingsTabGeneralShowConfirmExitDialog": "Zeige den \"Beenden bestätigen\"-Dialog",
   "SettingsTabGeneralHideCursor": "Mauszeiger ausblenden",

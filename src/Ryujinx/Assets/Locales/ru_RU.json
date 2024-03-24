@@ -85,7 +85,6 @@
   "SettingsTabGeneral": "Пользовательский интерфейс",
   "SettingsTabGeneralGeneral": "Общее",
   "SettingsTabGeneralEnableDiscordRichPresence": "Включить Discord Rich Presence",
-  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Проверять наличие обновлений при запуске",
   "SettingsTabGeneralShowConfirmExitDialog": "Показать диалоговое окно \"Подтвердить выход\"",
   "SettingsTabGeneralHideCursor": "Скрыть курсор",

@@ -85,7 +85,6 @@
   "SettingsTabGeneral": "用户界面",
   "SettingsTabGeneralGeneral": "常规",
   "SettingsTabGeneralEnableDiscordRichPresence": "启用 Discord 在线状态展示",
-  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "自动检查更新",
   "SettingsTabGeneralShowConfirmExitDialog": "显示 \"确认退出\" 对话框",
   "SettingsTabGeneralHideCursor": "隐藏鼠标指针：",

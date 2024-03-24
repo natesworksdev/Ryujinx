@@ -85,7 +85,6 @@
   "SettingsTabGeneral": "ユーザインタフェース",
   "SettingsTabGeneralGeneral": "一般",
   "SettingsTabGeneralEnableDiscordRichPresence": "Discord リッチプレゼンスを有効にする",
-  "SettingsTabGeneralUseSystemGameFolders": "Show Folders",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "起動時にアップデートを確認する",
   "SettingsTabGeneralShowConfirmExitDialog": "\"終了を確認\" ダイアログを表示する",
   "SettingsTabGeneralHideCursor": "マウスカーソルを非表示",
