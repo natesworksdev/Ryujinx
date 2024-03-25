@@ -618,9 +618,9 @@
   "SettingsTabGraphicsBackend": "Графічний сервер",
   "SettingsTabGraphicsBackendTooltip": "Виберіть backend графіки, що буде використовуватись в емуляторі.\n\n\"Vulkan\" краще для всіх сучасних відеокарт, якщо драйвери вчасно оновлюються. У Vulkan також швидше компілюються шейдери (менше \"заїкання\" зображення) на відеокартах всіх компаній.\n\n\"OpenGL\" може дати кращі результати на старих відеокартах Nvidia, старих відеокартах AMD на Linux, або на відеокартах з маленькою кількістю VRAM, але \"заїкання\" через компіляцію шейдерів будуть частіші.\n\nЯкщо не впевнені, встановіть на \"Vulkan\". Встановіть на \"OpenGL\", якщо Ваша відеокарта не підтримує Vulkan навіть на останніх драйверах.",
   "SettingsEnableTextureRecompression": "Увімкнути рекомпресію текстури",
-  "SettingsEnableTextureRecompressionTooltip": "Стискає текстури ASTC, щоб зменшити використання VRAM.\n\nЦим форматом текстур користуються такі ігри, як Astral Chain, Bayonetta 3, Fire Emblem Engage, Metroid Prime Remastered, Super Mario Bros. Wonder і The Legend of Zelda: Tears of the Kingdom.\n\nЦі ігри, скоріше всього крашнуться на відеокартах з розміром VRAM в 4 Гб і менше.\n\nВмикайте тільки якщо у Вас закінчується VRAM на цих іграх. Якщо не впевнені, залиште на \"OFF\".",
+  "SettingsEnableTextureRecompressionTooltip": "Стискає текстури ASTC, щоб зменшити використання VRAM.\n\nЦим форматом текстур користуються такі ігри, як Astral Chain, Bayonetta 3, Fire Emblem Engage, Metroid Prime Remastered, Super Mario Bros. Wonder і The Legend of Zelda: Tears of the Kingdom.\n\nЦі ігри, скоріше всього крашнуться на відеокартах з розміром VRAM в 4 Гб і менше.\n\nВмикайте тільки якщо у Вас закінчується VRAM на цих іграх. Залиште на \"Вимкнути\", якщо не впевнені.",
   "SettingsTabGraphicsPreferredGpu": "Бажаний GPU",
-  "SettingsTabGraphicsPreferredGpuTooltip": "Виберіть відеокарту, яка використовуватиметься з графічним сервером Vulkan.\n\nНе впливає на графічний процесор, який використовуватиме OpenGL.\n\nЯкщо не впевнені, встановіть графічний процесор, позначений як «dGPU». Якщо такого немає, залиште це.",
+  "SettingsTabGraphicsPreferredGpuTooltip": "Виберіть відеокарту, яка використовуватиметься з графічним сервером Vulkan.\n\nНе впливає на графічний процесор, який використовуватиме OpenGL.\n\nВстановіть графічний процесор, позначений як «dGPU», якщо не впевнені. Якщо такого немає, не чіпайте.",
   "SettingsAppRequiredRestartMessage": "Необхідно перезапустити Ryujinx",
   "SettingsGpuBackendRestartMessage": "Налаштування графічного сервера або GPU було змінено. Для цього знадобиться перезапуск",
   "SettingsGpuBackendRestartSubMessage": "Бажаєте перезапустити зараз?",
@@ -667,7 +667,7 @@
   "AboutChangelogButtonTooltipMessage": "Клацніть, щоб відкрити журнал змін для цієї версії у стандартному браузері.",
   "SettingsTabNetworkMultiplayer": "Мережева гра",
   "MultiplayerMode": "Режим:",
-  "MultiplayerModeTooltip": "Змінити LDN мультиплеєру.\n\nLdnMitm змінить функціонал бездротової/локальної гри в іграх, щоб вони працювали так, ніби це LAN, що дозволяє локальні підключення в тій самій мережі з іншими екземплярами Ryujinx та хакнутими консолями Nintendo Switch, які мають встановлений модуль ldn_mitm.\n\nМультиплеєр вимагає, щоб усі гравці були на одній і тій же версії гри (наприклад Super Smash Bros. Ultimate v13.0.1 не зможе під'єднатися до v13.0.0).\n\nЯкщо не впевнені, залиште на \"DISABLED\".",
+  "MultiplayerModeTooltip": "Змінити LDN мультиплеєру.\n\nLdnMitm змінить функціонал бездротової/локальної гри в іграх, щоб вони працювали так, ніби це LAN, що дозволяє локальні підключення в тій самій мережі з іншими екземплярами Ryujinx та хакнутими консолями Nintendo Switch, які мають встановлений модуль ldn_mitm.\n\nМультиплеєр вимагає, щоб усі гравці були на одній і тій же версії гри (наприклад Super Smash Bros. Ultimate v13.0.1 не зможе під'єднатися до v13.0.0).\n\nЗалиште на \"Вимкнено\", якщо не впевнені, ",
   "MultiplayerModeDisabled": "Вимкнено",
   "MultiplayerModeLdnMitm": "ldn_mitm"
 }
