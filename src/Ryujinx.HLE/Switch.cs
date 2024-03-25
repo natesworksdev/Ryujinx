@@ -131,6 +131,13 @@ namespace Ryujinx.HLE
             System.TickSource.TickMultiplier = tickMultiplier;
         }
 
+        public void ToggleTurbo()
+        {
+            TurboMode = !TurboMode;
+            long turboMultiplier = TurboMode ? Configuration.TurboMultiplier : 100;
+            SetTickSourceMultiplier(turboMultiplier);
+        }
+
         public void EnableCheats()
         {
             ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);

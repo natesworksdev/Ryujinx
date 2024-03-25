@@ -1068,11 +1068,10 @@ namespace Ryujinx.Ava
 
                 if (currentHotkeyState != _prevHotkeyState)
                 {
-                    if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo) != Device.TurboMode)
+                    if (ConfigurationState.Instance.Hid.Hotkeys.Value.TurboWhileHeld &&
+                        _keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo) != Device.TurboMode)
                     {
-                        Device.TurboMode = !Device.TurboMode;
-                        long turboMultiplier = Device.TurboMode ? Device.Configuration.TurboMultiplier : 100;
-                        Device.SetTickSourceMultiplier(turboMultiplier);
+                        Device.ToggleTurbo();
                     }
                     switch (currentHotkeyState)
                     {
@@ -1087,6 +1086,10 @@ namespace Ryujinx.Ava
                             _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
                         case KeyboardHotkeyState.ToggleTurbo:
+                            if (!ConfigurationState.Instance.Hid.Hotkeys.Value.TurboWhileHeld)
+                            {
+                                Device.ToggleTurbo();
+                            }
                             break;
                         case KeyboardHotkeyState.Pause:
                             if (_viewModel.IsPaused)

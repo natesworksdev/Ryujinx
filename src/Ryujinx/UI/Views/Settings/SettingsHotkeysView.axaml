@@ -105,6 +105,12 @@
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
+                <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                    <TextBlock Text="{locale:Locale SettingsTabHotkeysToggleTurboToggle}"
+                               ToolTip.Tip="{locale:Locale SettingsTabHotkeysToggleTurboToggleTooltip}"
+                                Width="230" />
+                    <CheckBox IsChecked="{Binding KeyboardHotkeys.TurboWhileHeld}" />
+                </StackPanel>
             </StackPanel>
         </Border>
    </ScrollViewer>

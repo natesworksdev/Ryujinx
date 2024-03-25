@@ -864,6 +864,7 @@ namespace Ryujinx.UI.Common.Configuration
                 VolumeUp = Key.Unbound,
                 VolumeDown = Key.Unbound,
                 ToggleTurbo = Key.Unbound,
+                TurboWhileHeld = false,
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -1461,6 +1462,7 @@ namespace Ryujinx.UI.Common.Configuration
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
                     ToggleTurbo = Key.Unbound,
+                    TurboWhileHeld = false,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
                     ShowUI = configurationFileFormat.Hotkeys.ShowUI,
                     Pause = configurationFileFormat.Hotkeys.Pause,
