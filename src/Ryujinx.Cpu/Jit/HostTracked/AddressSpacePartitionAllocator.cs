@@ -4,7 +4,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Tracking;
 using System;
 
-namespace Ryujinx.Cpu.Jit
+namespace Ryujinx.Cpu.Jit.HostTracked
 {
     readonly struct AddressSpacePartitionAllocation : IDisposable
     {

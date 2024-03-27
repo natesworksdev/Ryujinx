@@ -2,7 +2,7 @@ using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
 
-namespace Ryujinx.Cpu.Jit
+namespace Ryujinx.Cpu.Jit.HostTracked
 {
     class AddressSpacePartitionMultiAllocation : IDisposable
     {

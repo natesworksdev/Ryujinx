@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Ryujinx.Cpu.Jit
+namespace Ryujinx.Cpu.Jit.HostTracked
 {
     class AddressSpacePartitioned : IDisposable
     {

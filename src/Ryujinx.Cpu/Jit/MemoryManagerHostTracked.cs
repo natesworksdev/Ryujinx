@@ -1,4 +1,5 @@
 using ARMeilleure.Memory;
+using Ryujinx.Cpu.Jit.HostTracked;
 using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;

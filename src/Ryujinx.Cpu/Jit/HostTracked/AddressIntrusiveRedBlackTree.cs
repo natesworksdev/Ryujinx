@@ -1,7 +1,7 @@
 using Ryujinx.Common.Collections;
 using System;
 
-namespace Ryujinx.Cpu.Jit
+namespace Ryujinx.Cpu.Jit.HostTracked
 {
     internal class AddressIntrusiveRedBlackTree<T> : IntrusiveRedBlackTree<T> where T : IntrusiveRedBlackTreeNode<T>, IComparable<T>, IComparable<ulong>
     {

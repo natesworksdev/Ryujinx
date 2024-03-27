@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Ryujinx.Cpu.Jit
+namespace Ryujinx.Cpu.Jit.HostTracked
 {
     readonly struct PrivateRange
     {
