@@ -55,6 +55,16 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             ulong pc,
             uint encoding)
         {
+            if (name.IsPrefetchMemory() && mmType == MemoryManagerType.HostTrackedUnsafe)
+            {
+                // Prefetch to invalid addresses do not cause faults, so for memory manager
+                // types where we need to access the page table before doing the prefetch,
+                // we should make sure we won't try to access an out of bounds page table region.
+                // To do this, we force the masked memory manager variant to be used.
+
+                mmType = MemoryManagerType.HostTracked;
+            }
+
             switch (addressForm)
             {
                 case AddressForm.OffsetReg:
@@ -511,14 +521,26 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             WriteAddressTranslation(asBits, mmType, regAlloc, ref asm, destination, guestAddress);
         }
 
-        private static void WriteAddressTranslation(int asBits, MemoryManagerType mmType, RegisterAllocator regAlloc, ref Assembler asm, Operand destination, ulong guestAddress)
+        private static void WriteAddressTranslation(
+            int asBits,
+            MemoryManagerType mmType,
+            RegisterAllocator regAlloc,
+            ref Assembler asm,
+            Operand destination,
+            ulong guestAddress)
         {
             asm.Mov(destination, guestAddress);
 
             WriteAddressTranslation(asBits, mmType, regAlloc, ref asm, destination, destination);
         }
 
-        private static void WriteAddressTranslation(int asBits, MemoryManagerType mmType, RegisterAllocator regAlloc, ref Assembler asm, Operand destination, Operand guestAddress)
+        private static void WriteAddressTranslation(
+            int asBits,
+            MemoryManagerType mmType,
+            RegisterAllocator regAlloc,
+            ref Assembler asm,
+            Operand destination,
+            Operand guestAddress)
         {
             Operand basePointer = new(regAlloc.FixedPageTableRegister, RegisterType.Integer, OperandType.I64);
 

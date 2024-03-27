@@ -1149,5 +1149,19 @@ namespace Ryujinx.Cpu.LightningJit.Arm64
 
             return false;
         }
+
+        public static bool IsPrefetchMemory(this InstName name)
+        {
+            switch (name)
+            {
+                case InstName.PrfmImm:
+                case InstName.PrfmLit:
+                case InstName.PrfmReg:
+                case InstName.Prfum:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
