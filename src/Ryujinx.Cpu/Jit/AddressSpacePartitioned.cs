@@ -361,6 +361,12 @@ namespace Ryujinx.Cpu.Jit
                 _partitions.Add(CreateAsPartition(va, endVa - va));
             }
 
+            ValidatePartitionList();
+        }
+
+        [Conditional("DEBUG")]
+        private void ValidatePartitionList()
+        {
             for (int i = 1; i < _partitions.Count; i++)
             {
                 Debug.Assert(_partitions[i].Address > _partitions[i - 1].Address);
