@@ -12,6 +12,8 @@
     <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.Vp9\Ryujinx.Graphics.Nvdec.Vp9.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Texture\Ryujinx.Graphics.Texture.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Video\Ryujinx.Graphics.Video.csproj" />
+    <ProjectReference Include="..\Ryujinx.Analyzers\Ryujinx.Analyzers.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
 </Project>

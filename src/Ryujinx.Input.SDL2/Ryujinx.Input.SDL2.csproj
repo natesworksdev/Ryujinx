@@ -8,6 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Input\Ryujinx.Input.csproj" />
     <ProjectReference Include="..\Ryujinx.SDL2.Common\Ryujinx.SDL2.Common.csproj" />
+    <ProjectReference Include="..\Ryujinx.Analyzers\Ryujinx.Analyzers.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
 </Project>
