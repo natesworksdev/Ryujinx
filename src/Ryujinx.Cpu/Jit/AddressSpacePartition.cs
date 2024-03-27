@@ -209,6 +209,7 @@ namespace Ryujinx.Cpu.Jit
         private ulong _cachedLastPagePa;
         private MemoryBlock _firstPageMemoryForUnmap;
         private ulong _firstPageOffsetForLateMap;
+        private MemoryPermission _firstPageMemoryProtection;
 
         public ulong Address { get; }
         public ulong Size { get; }
@@ -294,6 +295,11 @@ namespace Ryujinx.Cpu.Jit
             Debug.Assert(va + size <= EndAddress);
 
             _baseMemory.Reprotect(va - Address, size, protection, false);
+
+            if (va == Address)
+            {
+                _firstPageMemoryProtection = protection;
+            }
         }
 
         public void Reprotect(
@@ -319,7 +325,7 @@ namespace Ryujinx.Cpu.Jit
             return _baseMemory.GetPointer(va - Address, size);
         }
 
-        public void InsertBridgeAtEnd(AddressSpacePartition partitionAfter)
+        public void InsertBridgeAtEnd(AddressSpacePartition partitionAfter, bool useProtectionMirrors)
         {
             ulong firstPagePa = partitionAfter?._firstPagePa ?? ulong.MaxValue;
             ulong lastPagePa = _lastPagePa ?? ulong.MaxValue;
@@ -331,6 +337,12 @@ namespace Ryujinx.Cpu.Jit
                     (MemoryBlock firstPageMemory, ulong firstPageOffset) = partitionAfter.GetFirstPageMemoryAndOffset();
 
                     _baseMemory.MapView(firstPageMemory, firstPageOffset, Size, _hostPageSize);
+
+                    if (!useProtectionMirrors)
+                    {
+                        _baseMemory.Reprotect(Size, _hostPageSize, partitionAfter._firstPageMemoryProtection, throwOnFail: false);
+                    }
+
                     _firstPageMemoryForUnmap = firstPageMemory;
                     _firstPageOffsetForLateMap = firstPageOffset;
                 }
@@ -347,6 +359,14 @@ namespace Ryujinx.Cpu.Jit
 
                 _cachedFirstPagePa = firstPagePa;
                 _cachedLastPagePa = lastPagePa;
+            }
+        }
+
+        public void ReprotectBridge(MemoryPermission protection)
+        {
+            if (_firstPageMemoryForUnmap != null)
+            {
+                _baseMemory.Reprotect(Size, _hostPageSize, protection, throwOnFail: false);
             }
         }
 

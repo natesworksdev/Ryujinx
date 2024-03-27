@@ -99,7 +99,7 @@ namespace Ryujinx.Cpu.Jit
             {
                 while (va < endVa)
                 {
-                    AddressSpacePartition partition = FindPartition(va);
+                    AddressSpacePartition partition = FindPartitionWithIndex(va, out int partitionIndex);
 
                     if (partition == null)
                     {
@@ -117,6 +117,13 @@ namespace Ryujinx.Cpu.Jit
                     else
                     {
                         partition.ReprotectAligned(clampedVa, clampedEndVa - clampedVa, protection);
+
+                        if (clampedVa == partition.Address &&
+                            partitionIndex > 0 &&
+                            _partitions[partitionIndex - 1].EndAddress == partition.Address)
+                        {
+                            _partitions[partitionIndex - 1].ReprotectBridge(protection);
+                        }
                     }
 
                     va += clampedEndVa - clampedVa;
@@ -187,21 +194,21 @@ namespace Ryujinx.Cpu.Jit
             {
                 if (_partitions[partitionIndex - 1].EndAddress == _partitions[partitionIndex].Address)
                 {
-                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(_partitions[partitionIndex]);
+                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(_partitions[partitionIndex], _useProtectionMirrors);
                 }
                 else
                 {
-                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(null);
+                    _partitions[partitionIndex - 1].InsertBridgeAtEnd(null, _useProtectionMirrors);
                 }
             }
 
             if (partitionIndex + 1 < _partitions.Count && _partitions[partitionIndex].EndAddress == _partitions[partitionIndex + 1].Address)
             {
-                _partitions[partitionIndex].InsertBridgeAtEnd(_partitions[partitionIndex + 1]);
+                _partitions[partitionIndex].InsertBridgeAtEnd(_partitions[partitionIndex + 1], _useProtectionMirrors);
             }
             else
             {
-                _partitions[partitionIndex].InsertBridgeAtEnd(null);
+                _partitions[partitionIndex].InsertBridgeAtEnd(null, _useProtectionMirrors);
             }
         }
 
@@ -232,6 +239,20 @@ namespace Ryujinx.Cpu.Jit
             lock (_partitions)
             {
                 int index = FindPartitionIndexLocked(va);
+                if (index >= 0)
+                {
+                    return _partitions[index];
+                }
+            }
+
+            return null;
+        }
+
+        private AddressSpacePartition FindPartitionWithIndex(ulong va, out int index)
+        {
+            lock (_partitions)
+            {
+                index = FindPartitionIndexLocked(va);
                 if (index >= 0)
                 {
                     return _partitions[index];
