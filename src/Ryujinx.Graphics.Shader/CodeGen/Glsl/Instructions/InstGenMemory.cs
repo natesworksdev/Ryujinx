@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string Src(AggregateType type)
             {
-                return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
+                return GetSourceExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
             string imageName = GetImageName(context, texOp, ref srcIndex);
@@ -175,14 +175,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 for (int index = 0; index < coordsCount; index++)
                 {
-                    elems[index] = GetSoureExpr(context, texOp.GetSource(coordsIndex + index), AggregateType.FP32);
+                    elems[index] = GetSourceExpr(context, texOp.GetSource(coordsIndex + index), AggregateType.FP32);
                 }
 
                 coordsExpr = "vec" + coordsCount + "(" + string.Join(", ", elems) + ")";
             }
             else
             {
-                coordsExpr = GetSoureExpr(context, texOp.GetSource(coordsIndex), AggregateType.FP32);
+                coordsExpr = GetSourceExpr(context, texOp.GetSource(coordsIndex), AggregateType.FP32);
             }
 
             return $"textureQueryLod({samplerName}, {coordsExpr}){GetMask(texOp.Index)}";
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string Src(AggregateType type)
             {
-                return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
+                return GetSourceExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
             string samplerName = GetSamplerName(context, texOp, ref srcIndex);
@@ -469,7 +469,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 if (hasLod)
                 {
                     IAstNode lod = operation.GetSource(srcIndex);
-                    string lodExpr = GetSoureExpr(context, lod, GetSrcVarType(operation.Inst, srcIndex));
+                    string lodExpr = GetSourceExpr(context, lod, GetSrcVarType(operation.Inst, srcIndex));
 
                     texCall = $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
                 }
@@ -586,12 +586,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                         if (storageKind == StorageKind.Input)
                         {
-                            string expr = GetSoureExpr(context, operation.GetSource(srcIndex++), AggregateType.S32);
+                            string expr = GetSourceExpr(context, operation.GetSource(srcIndex++), AggregateType.S32);
                             varName = $"gl_in[{expr}].{varName}";
                         }
                         else if (storageKind == StorageKind.Output)
                         {
-                            string expr = GetSoureExpr(context, operation.GetSource(srcIndex++), AggregateType.S32);
+                            string expr = GetSourceExpr(context, operation.GetSource(srcIndex++), AggregateType.S32);
                             varName = $"gl_out[{expr}].{varName}";
                         }
                     }
@@ -624,14 +624,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 }
                 else
                 {
-                    varName += $"[{GetSoureExpr(context, src, AggregateType.S32)}]";
+                    varName += $"[{GetSourceExpr(context, src, AggregateType.S32)}]";
                 }
             }
 
             if (isStore)
             {
                 varType &= AggregateType.ElementTypeMask;
-                varName = $"{varName} = {GetSoureExpr(context, operation.GetSource(srcIndex), varType)}";
+                varName = $"{varName} = {GetSourceExpr(context, operation.GetSource(srcIndex), varType)}";
             }
 
             return varName;
@@ -644,7 +644,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (definition.ArrayLength != 1)
             {
-                name = $"{name}[{GetSoureExpr(context, texOp.GetSource(srcIndex++), AggregateType.S32)}]";
+                name = $"{name}[{GetSourceExpr(context, texOp.GetSource(srcIndex++), AggregateType.S32)}]";
             }
 
             return name;
@@ -657,7 +657,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (definition.ArrayLength != 1)
             {
-                name = $"{name}[{GetSoureExpr(context, texOp.GetSource(srcIndex++), AggregateType.S32)}]";
+                name = $"{name}[{GetSourceExpr(context, texOp.GetSource(srcIndex++), AggregateType.S32)}]";
             }
 
             return name;
