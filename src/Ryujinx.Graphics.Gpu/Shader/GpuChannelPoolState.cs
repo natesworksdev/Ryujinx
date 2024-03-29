@@ -2,7 +2,6 @@ using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
-#pragma warning disable CS0659 // Class overrides Object.Equals(object o) but does not override Object.GetHashCode()
     /// <summary>
     /// State used by the <see cref="GpuAccessor"/>.
     /// </summary>
@@ -28,6 +27,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="texturePoolGpuVa">GPU virtual address of the texture pool</param>
         /// <param name="texturePoolMaximumId">Maximum ID of the texture pool</param>
+        /// <param name="samplerPoolMaximumId">Maximum ID of the sampler pool</param>
         /// <param name="textureBufferIndex">Constant buffer slot where the texture handles are located</param>
         public GpuChannelPoolState(ulong texturePoolGpuVa, int texturePoolMaximumId, int textureBufferIndex)
         {
@@ -52,6 +52,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             return obj is GpuChannelPoolState state && Equals(state);
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(TexturePoolGpuVa, TexturePoolMaximumId, TextureBufferIndex);
+        }
     }
-#pragma warning restore CS0659
 }
