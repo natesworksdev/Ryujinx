@@ -668,6 +668,6 @@
   "SettingsTabNetworkMultiplayer": "멀티 플레이어",
   "MultiplayerMode": "모드 :",
   "MultiplayerModeTooltip": "LDN 멀티플레이어 모드를 변경합니다.\n\nLdnMitm은 로컬 무선/로컬 플레이 기능을 수정하여 LAN 모드에 있는 것처럼 만들어 로컬이나 동일한 네트워크 상에 있는 다른 Ryujinx 인스턴스나 커펌된 닌텐도 스위치 콘솔(ldn_mitm 모듈 설치 필요)과 연결할 수 있습니다.\n\n멀티플레이어 모드는 모든 플레이어들이 동일한 게임 버전을 요구합니다. 예를 들어 슈퍼 스매시브라더스 얼티밋 v13.0.1 사용자는 v13.0.0 사용자와 연결할 수 없습니다.\n\n해당 옵션에 대해 잘 모른다면 비활성화해두세요.",
-  "MultiplayerModeDisabled": "Disabled",
+  "MultiplayerModeDisabled": "비활성화됨",
   "MultiplayerModeLdnMitm": "ldn_mitm"
 }
