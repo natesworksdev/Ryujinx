@@ -1,6 +1,7 @@
 using DiscordRPC;
 using Ryujinx.Common;
 using Ryujinx.UI.Common.Configuration;
+using System.Text;
 
 namespace Ryujinx.UI.Common
 {
@@ -9,7 +10,7 @@ namespace Ryujinx.UI.Common
         private const string Description = "A simple, experimental Nintendo Switch emulator.";
         private const string ApplicationId = "1216775165866807456";
 
-        private const int TitleCharLimit = 128;
+        private const int TitleByteLimit = 128;
 
         private static DiscordRpcClient _discordClient;
         private static RichPresence _discordPresenceMain;
@@ -64,20 +65,16 @@ namespace Ryujinx.UI.Common
 
         public static void SwitchToPlayingState(string titleId, string titleName)
         {
-            // LargeImageText and Details must be 128 characters or less.
-            titleName = titleName.Length > TitleCharLimit ? titleName[..TitleCharLimit] : titleName;
-            string details = titleName.Length > TitleCharLimit - 8 ? titleName[..(TitleCharLimit - 8)] : titleName;
-
             _discordClient?.SetPresence(new RichPresence
             {
                 Assets = new Assets
                 {
                     LargeImageKey = "game",
-                    LargeImageText = titleName,
+                    LargeImageText = TruncateToByteLength(titleName, TitleByteLimit),
                     SmallImageKey = "ryujinx",
                     SmallImageText = Description,
                 },
-                Details = $"Playing {details}",
+                Details = TruncateToByteLength($"Playing {titleName}", TitleByteLimit),
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
                 Buttons =
@@ -94,6 +91,22 @@ namespace Ryujinx.UI.Common
         public static void SwitchToMainMenu()
         {
             _discordClient?.SetPresence(_discordPresenceMain);
+        }
+
+        private static string TruncateToByteLength(string input, int byteLimit)
+        {
+            string trimmed = input;
+
+            while (Encoding.UTF8.GetByteCount(trimmed) > byteLimit)
+            {
+                // Remove one character from the end of the string at a time.
+                trimmed = trimmed[..^1];
+            }
+
+            // Remove another 3 characters to make sure we have room for "…".
+            trimmed = trimmed[..^3].TrimEnd() + "…";
+
+            return trimmed == input ? input : trimmed;
         }
 
         public static void Exit()
