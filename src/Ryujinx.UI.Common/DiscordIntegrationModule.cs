@@ -95,21 +95,23 @@ namespace Ryujinx.UI.Common
 
         private static string TruncateToByteLength(string input, int byteLimit)
         {
-            bool isModified = false;
+            if (Encoding.UTF8.GetByteCount(input) <= byteLimit)
+            {
+                return input;
+            }
+
             string trimmed = input;
 
             while (Encoding.UTF8.GetByteCount(trimmed) > byteLimit)
             {
                 // Remove one character from the end of the string at a time.
                 trimmed = trimmed[..^1];
-
-                isModified = true;
             }
 
             // Remove another 3 characters to make sure we have room for "…".
             trimmed = trimmed[..^3].TrimEnd() + "…";
 
-            return isModified ? trimmed : input;
+            return trimmed;
         }
 
         public static void Exit()
