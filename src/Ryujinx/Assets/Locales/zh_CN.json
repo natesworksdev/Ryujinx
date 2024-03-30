@@ -341,7 +341,7 @@
   "DialogThemeRestartMessage": "主题设置已保存，需要重启模拟器才能生效。",
   "DialogThemeRestartSubMessage": "是否要重启模拟器？",
   "DialogFirmwareInstallEmbeddedMessage": "要安装游戏文件中内嵌的系统固件吗？(固件版本 {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "由于模拟器未安装系统固件，Ryujinx 模拟器已经从当前游戏文件中安装了系统固件 {0} 。\n模拟器现在可以运行了。",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "Ryujinx 模拟器已经从当前游戏文件中安装了系统固件 {0} 。\n模拟器现在可以正常运行了。",
   "DialogFirmwareNoFirmwareInstalledMessage": "未安装系统固件",
   "DialogFirmwareInstalledMessage": "已安装系统固件 {0}",
   "DialogInstallFileTypesSuccessMessage": "关联文件类型成功！",
