@@ -9,6 +9,8 @@ namespace Ryujinx.UI.Common
         private const string Description = "A simple, experimental Nintendo Switch emulator.";
         private const string ApplicationId = "1216775165866807456";
 
+        private const int TitleCharLimit = 128;
+
         private static DiscordRpcClient _discordClient;
         private static RichPresence _discordPresenceMain;
 
@@ -62,6 +64,10 @@ namespace Ryujinx.UI.Common
 
         public static void SwitchToPlayingState(string titleId, string titleName)
         {
+            // LargeImageText and Details must be 128 characters or less.
+            titleName = titleName.Length > TitleCharLimit ? titleName[..TitleCharLimit] : titleName;
+            string details = titleName.Length > TitleCharLimit - 8 ? titleName[..(TitleCharLimit - 8)] : titleName;
+
             _discordClient?.SetPresence(new RichPresence
             {
                 Assets = new Assets
@@ -71,7 +77,7 @@ namespace Ryujinx.UI.Common
                     SmallImageKey = "ryujinx",
                     SmallImageText = Description,
                 },
-                Details = $"Playing {titleName}",
+                Details = $"Playing {details}",
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
                 Buttons =
