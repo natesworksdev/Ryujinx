@@ -14,7 +14,7 @@ namespace Ryujinx.Memory
     public sealed class AddressSpaceManager : VirtualMemoryManagerBase<ulong, nuint>, IVirtualMemoryManager, IWritableBlock
     {
         /// <inheritdoc/>
-        public bool Supports4KBPages => true;
+        public bool UsesPrivateAllocations => false;
 
         /// <summary>
         /// Address space width in bits.

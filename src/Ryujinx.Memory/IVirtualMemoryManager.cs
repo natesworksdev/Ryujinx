@@ -11,7 +11,7 @@ namespace Ryujinx.Memory
         /// Indicates whenever the memory manager supports aliasing pages at 4KB granularity.
         /// </summary>
         /// <returns>True if 4KB pages are supported by the memory manager, false otherwise</returns>
-        bool Supports4KBPages { get; }
+        bool UsesPrivateAllocations { get; }
 
         /// <summary>
         /// Maps a virtual memory range into a physical memory range.

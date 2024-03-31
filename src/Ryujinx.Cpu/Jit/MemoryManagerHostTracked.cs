@@ -34,7 +34,7 @@ namespace Ryujinx.Cpu.Jit
         protected override ulong AddressSpaceSize { get; }
 
         /// <inheritdoc/>
-        public bool Supports4KBPages => false;
+        public bool UsesPrivateAllocations => true;
 
         public IntPtr PageTablePointer => _nativePageTable.PageTablePointer;
 

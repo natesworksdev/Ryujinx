@@ -24,7 +24,7 @@ namespace Ryujinx.Cpu.Jit
         private readonly InvalidAccessHandler _invalidAccessHandler;
 
         /// <inheritdoc/>
-        public bool Supports4KBPages => true;
+        public bool UsesPrivateAllocations => true;
 
         /// <summary>
         /// Address space width in bits.
