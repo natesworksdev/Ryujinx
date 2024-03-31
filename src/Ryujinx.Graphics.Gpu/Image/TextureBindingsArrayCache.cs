@@ -463,7 +463,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 bindingInfo,
                 isImage,
                 ref textureBufferBounds,
-                out bool isNewEnry);
+                out bool isNewEntry);
 
             bool poolsModified = entry.PoolsModified();
             bool isStore = bindingInfo.Flags.HasFlag(TextureUsageFlags.ImageStore);
@@ -471,7 +471,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             ReadOnlySpan<int> cachedTextureBuffer;
             ReadOnlySpan<int> cachedSamplerBuffer;
 
-            if (!poolsModified && !isNewEnry && entry.ValidateTextures())
+            if (!poolsModified && !isNewEntry && entry.ValidateTextures())
             {
                 if (entry.MatchesSequenceNumber(_context.SequenceNumber))
                 {
@@ -532,7 +532,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (!isNewEnry)
+            if (!isNewEntry)
             {
                 entry.Reset();
             }

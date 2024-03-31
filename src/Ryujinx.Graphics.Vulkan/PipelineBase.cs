@@ -1385,6 +1385,16 @@ namespace Ryujinx.Graphics.Vulkan
             SignalCommandBufferChange();
         }
 
+        public void ForceTextureDirty()
+        {
+            _descriptorSetUpdater.ForceTextureDirty();
+        }
+
+        public void ForceImageDirty()
+        {
+            _descriptorSetUpdater.ForceImageDirty();
+        }
+
         public unsafe void TextureBarrier()
         {
             MemoryBarrier memoryBarrier = new()

@@ -506,7 +506,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public IImageArray CreateImageArray(int size, bool isBuffer)
         {
-            return new ImageArray(size, isBuffer);
+            return new ImageArray(this, size, isBuffer);
         }
 
         public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)
@@ -543,7 +543,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ITextureArray CreateTextureArray(int size, bool isBuffer)
         {
-            return new TextureArray(size, isBuffer);
+            return new TextureArray(this, size, isBuffer);
         }
 
         internal TextureView CreateTextureView(TextureCreateInfo info)

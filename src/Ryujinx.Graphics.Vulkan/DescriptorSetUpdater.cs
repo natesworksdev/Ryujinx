@@ -501,8 +501,18 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_textureArrayRefs[binding].Stage != stage || _textureArrayRefs[binding].Array != array)
             {
+                if (_textureArrayRefs[binding].Array != null)
+                {
+                    _textureArrayRefs[binding].Array.Bound = false;
+                }
+
+                if (array is TextureArray textureArray)
+                {
+                    textureArray.Bound = true;
+                    textureArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
+                }
+
                 _textureArrayRefs[binding] = new ArrayRef<TextureArray>(stage, array as TextureArray);
-                _textureArrayRefs[binding].Array?.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
 
                 SignalDirty(DirtyFlags.Texture);
             }
@@ -517,8 +527,18 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_imageArrayRefs[binding].Stage != stage || _imageArrayRefs[binding].Array != array)
             {
+                if (_imageArrayRefs[binding].Array != null)
+                {
+                    _imageArrayRefs[binding].Array.Bound = false;
+                }
+
+                if (array is ImageArray imageArray)
+                {
+                    imageArray.Bound = true;
+                    imageArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
+                }
+
                 _imageArrayRefs[binding] = new ArrayRef<ImageArray>(stage, array as ImageArray);
-                _imageArrayRefs[binding].Array?.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
 
                 SignalDirty(DirtyFlags.Image);
             }
@@ -920,6 +940,16 @@ namespace Ryujinx.Graphics.Vulkan
             _uniformSet.Clear();
             _storageSet.Clear();
             AdvancePdSequence();
+        }
+
+        public void ForceTextureDirty()
+        {
+            SignalDirty(DirtyFlags.Texture);
+        }
+
+        public void ForceImageDirty()
+        {
+            SignalDirty(DirtyFlags.Image);
         }
 
         private static void SwapBuffer(BufferRef[] list, Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)

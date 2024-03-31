@@ -7,6 +7,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class ImageArray : IImageArray
     {
+        private readonly VulkanRenderer _gd;
+
         private record struct TextureRef
         {
             public TextureStorage Storage;
@@ -27,8 +29,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly bool _isBuffer;
 
-        public ImageArray(int size, bool isBuffer)
+        public bool Bound;
+
+        public bool IsDirty => _storages == null;
+
+        public ImageArray(VulkanRenderer gd, int size, bool isBuffer)
         {
+            _gd = gd;
+
             if (isBuffer)
             {
                 _bufferTextureRefs = new TextureBuffer[size];
@@ -91,6 +99,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _cachedCommandBufferIndex = -1;
             _storages = null;
+
+            _gd.PipelineInternal.ForceImageDirty();
         }
 
         public void QueueWriteToReadBarriers(CommandBufferScoped cbs, PipelineStageFlags stageFlags)

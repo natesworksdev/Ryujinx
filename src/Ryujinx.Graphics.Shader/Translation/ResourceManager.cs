@@ -319,16 +319,22 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             string nameSuffix;
+            string prefix = isImage ? "i" : "t";
+
+            if (arrayLength != 1 && type != SamplerType.None)
+            {
+                prefix += type.ToShortSamplerType();
+            }
 
             if (isImage)
             {
                 nameSuffix = cbufSlot < 0
-                    ? $"i_tcb_{handle:X}_{format.ToGlslFormat()}"
-                    : $"i_cb{cbufSlot}_{handle:X}_{format.ToGlslFormat()}";
+                    ? $"{prefix}_tcb_{handle:X}_{format.ToGlslFormat()}"
+                    : $"{prefix}_cb{cbufSlot}_{handle:X}_{format.ToGlslFormat()}";
             }
             else
             {
-                nameSuffix = cbufSlot < 0 ? $"t_tcb_{handle:X}" : $"t_cb{cbufSlot}_{handle:X}";
+                nameSuffix = cbufSlot < 0 ? $"{prefix}_tcb_{handle:X}" : $"{prefix}_cb{cbufSlot}_{handle:X}";
             }
 
             var definition = new TextureDefinition(
