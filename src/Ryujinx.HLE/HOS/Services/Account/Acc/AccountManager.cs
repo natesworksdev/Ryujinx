@@ -187,7 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             _profiles.Remove(userId.ToString(), out _);
 
-            OpenUser(DefaultUserId);
+            OpenUser(new UserId(_profiles.First().Key));
 
             _accountSaveDataManager.Save(_profiles);
         }
