@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
                 // Use a random UserId as default to avoid issues in multiplayer per #3396.
                 UserId userId = new UserId(Guid.NewGuid().ToString().Replace("-", ""));
-                
+
                 AddUser("RyuPlayer", defaultUserImage, userId);
 
                 OpenUser(userId);

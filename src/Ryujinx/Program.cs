@@ -118,6 +118,13 @@ namespace Ryujinx.Ava
                 }
             }
 
+            // Check if we've made any profiles yet
+            if (!File.Exists(Path.Combine(AppDataManager.BaseDirPath, "system", "Profiles.json")))
+            {
+                MainWindow.ShowNewUserEditPrompt = true;
+            }
+
+
             if (CommandLineState.LaunchPathArg != null)
             {
                 MainWindow.DeferLoadApplication(CommandLineState.LaunchPathArg, CommandLineState.StartFullscreenArg);
