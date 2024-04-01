@@ -1,6 +1,7 @@
 using DiscordRPC;
 using Ryujinx.Common;
 using Ryujinx.UI.Common.Configuration;
+using System;
 using System.Text;
 
 namespace Ryujinx.UI.Common
@@ -11,6 +12,7 @@ namespace Ryujinx.UI.Common
         private const string ApplicationId = "1216775165866807456";
 
         private const int TitleByteLimit = 128;
+        private const string Ellipsis = "…";
 
         private static DiscordRpcClient _discordClient;
         private static RichPresence _discordPresenceMain;
@@ -100,18 +102,19 @@ namespace Ryujinx.UI.Common
                 return input;
             }
 
-            string trimmed = input;
+            // Find the length to trim the string to guarantee we have space for the trailing ellipsis.
+            int trimLimit = byteLimit - Encoding.UTF8.GetByteCount(Ellipsis);
 
-            while (Encoding.UTF8.GetByteCount(trimmed) > byteLimit)
+            // Basic trim to best case scenario of 1 byte characters.
+            input = input[..trimLimit];
+
+            while (Encoding.UTF8.GetByteCount(input) > trimLimit)
             {
                 // Remove one character from the end of the string at a time.
-                trimmed = trimmed[..^1];
+                input = input[..^1];
             }
 
-            // Remove another 3 characters to make sure we have room for "…".
-            trimmed = trimmed[..^3].TrimEnd() + "…";
-
-            return trimmed;
+            return input.TrimEnd() + Ellipsis;
         }
 
         public static void Exit()
