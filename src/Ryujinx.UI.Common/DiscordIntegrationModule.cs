@@ -1,7 +1,6 @@
 using DiscordRPC;
 using Ryujinx.Common;
 using Ryujinx.UI.Common.Configuration;
-using System;
 using System.Text;
 
 namespace Ryujinx.UI.Common
