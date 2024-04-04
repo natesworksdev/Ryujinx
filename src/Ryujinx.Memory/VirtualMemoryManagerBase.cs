@@ -329,10 +329,8 @@ namespace Ryujinx.Memory
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool IsContiguousAndMapped(ulong va, int size) => IsContiguous(va, size) && IsMapped(va);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool IsContiguousAndMapped(ulong va, ulong size) => IsContiguous(va, size) && IsMapped(va);
+        protected bool IsContiguousAndMapped(ulong va, int size)
+            => IsContiguous(va, size) && IsMapped(va);
 
         protected abstract nuint TranslateVirtualAddressChecked(ulong va);
 
