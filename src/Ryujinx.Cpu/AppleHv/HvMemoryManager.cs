@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu.AppleHv
     /// Represents a CPU memory manager which maps guest virtual memory directly onto the Hypervisor page table.
     /// </summary>
     [SupportedOSPlatform("macos")]
-    public class HvMemoryManager : VirtualMemoryManagerRefCountedBase, IMemoryManager, IVirtualMemoryManagerTracked
+    public sealed class HvMemoryManager : VirtualMemoryManagerRefCountedBase, IMemoryManager, IVirtualMemoryManagerTracked
     {
         private readonly InvalidAccessHandler _invalidAccessHandler;
 
