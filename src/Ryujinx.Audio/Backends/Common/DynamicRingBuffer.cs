@@ -73,7 +73,7 @@ namespace Ryujinx.Audio.Backends.Common
                 }
                 else
                 {
-                    _buffer.Slice(_headOffset, _buffer.Length - _headOffset).CopyTo(newBuffer);
+                    _buffer[_headOffset..].CopyTo(newBuffer);
                     _buffer[.._tailOffset].CopyTo(newBuffer[(_buffer.Length - _headOffset)..]);
                 }
             }

@@ -32,7 +32,7 @@ namespace Ryujinx.Audio.Renderer.Server
         private readonly ref readonly UpdateDataHeader _inputHeader;
         private readonly Memory<UpdateDataHeader> _outputHeader;
 
-        private ref UpdateDataHeader OutputHeader => ref _outputHeader.Span[0];
+        private readonly ref UpdateDataHeader OutputHeader => ref _outputHeader.Span[0];
 
         public StateUpdater(ReadOnlySequence<byte> input, Memory<byte> output, uint processHandle, BehaviourContext behaviourContext)
         {
@@ -573,7 +573,7 @@ namespace Ryujinx.Audio.Renderer.Server
             return ResultCode.Success;
         }
 
-        public ResultCode CheckConsumedSize()
+        public readonly ResultCode CheckConsumedSize()
         {
             long consumedInputSize = _inputReader.Consumed;
             int consumedOutputSize = _outputOrigin.Length - _output.Length;
