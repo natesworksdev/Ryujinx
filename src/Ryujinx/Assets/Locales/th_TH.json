@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "จัดการโปรไฟล์ผู้ใช้",
   "CheatWindowTitle": "จัดการสูตรโกง",
   "DlcWindowTitle": "จัดการเนื้อหาที่ดาวน์โหลดได้สำหรับ {0} ({1})",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "จัดการการอัพเดตชื่อเรื่อง",
   "CheatWindowHeading": "สูตรโกงมีให้สำหรับ {0} [{1}]",
   "BuildId": "รหัสบิวด์:",
