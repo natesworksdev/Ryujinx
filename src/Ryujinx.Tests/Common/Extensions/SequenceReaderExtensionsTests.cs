@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using Ryujinx.Common.Extensions;
-using Ryujinx.Common.Memory;
+using Ryujinx.Memory;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
