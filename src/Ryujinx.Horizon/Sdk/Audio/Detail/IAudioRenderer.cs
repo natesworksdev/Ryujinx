@@ -11,13 +11,13 @@ namespace Ryujinx.Horizon.Sdk.Audio.Detail
         Result GetSampleCount(out int sampleCount);
         Result GetMixBufferCount(out int mixBufferCount);
         Result GetState(out int state);
-        Result RequestUpdate(Span<byte> output, Span<byte> performanceOutput, ReadOnlySequence<byte> input);
+        Result RequestUpdate(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlySequence<byte> input);
         Result Start();
         Result Stop();
         Result QuerySystemEvent(out int eventHandle);
         Result SetRenderingTimeLimit(int percent);
         Result GetRenderingTimeLimit(out int percent);
-        Result RequestUpdateAuto(Span<byte> output, Span<byte> performanceOutput, ReadOnlySequence<byte> input);
+        Result RequestUpdateAuto(Memory<byte> output, Memory<byte> performanceOutput, ReadOnlySequence<byte> input);
         Result ExecuteAudioRendererRendering();
         Result SetVoiceDropParameter(float voiceDropParameter);
         Result GetVoiceDropParameter(out float voiceDropParameter);

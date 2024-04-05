@@ -18,6 +18,7 @@ namespace Ryujinx.Horizon.Generators.Hipc
         private const string OutRawDataVariableName = "outRawData";
 
         private const string TypeSystemBuffersReadOnlySequence = "System.Buffers.ReadOnlySequence";
+        private const string TypeSystemMemory = "System.Memory";
         private const string TypeSystemReadOnlySpan = "System.ReadOnlySpan";
         private const string TypeSystemSpan = "System.Span";
         private const string TypeStructLayoutAttribute = "System.Runtime.InteropServices.StructLayoutAttribute";
@@ -330,7 +331,11 @@ namespace Ryujinx.Horizon.Generators.Hipc
                             value = $"{InObjectsVariableName}[{inObjectIndex++}]";
                             break;
                         case CommandArgType.Buffer:
-                            if (IsReadOnlySequence(compilation, parameter))
+                            if (IsMemory(compilation, parameter))
+                            {
+                                value = $"CommandSerialization.GetWritableRegion(processor.GetBufferRange({index}))";
+                            }
+                            else if (IsReadOnlySequence(compilation, parameter))
                             {
                                 value = $"CommandSerialization.GetReadOnlySequence(processor.GetBufferRange({index}))";
                             }
@@ -351,7 +356,13 @@ namespace Ryujinx.Horizon.Generators.Hipc
                             break;
                     }
 
-                    if (IsSpan(compilation, parameter))
+                    if (IsMemory(compilation, parameter))
+                    {
+                        generator.AppendLine($"using var {argName} = {value};");
+
+                        argName = $"{argName}.Memory";
+                    }
+                    else if (IsSpan(compilation, parameter))
                     {
                         generator.AppendLine($"using var {argName} = {value};");
 
@@ -642,7 +653,8 @@ namespace Ryujinx.Horizon.Generators.Hipc
 
         private static bool IsValidTypeForBuffer(Compilation compilation, ParameterSyntax parameter)
         {
-            return IsReadOnlySequence(compilation, parameter) ||
+            return IsMemory(compilation, parameter) ||
+                   IsReadOnlySequence(compilation, parameter) ||
                    IsReadOnlySpan(compilation, parameter) ||
                    IsSpan(compilation, parameter) ||
                    IsUnmanagedType(compilation, parameter.Type);
@@ -653,6 +665,11 @@ namespace Ryujinx.Horizon.Generators.Hipc
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
 
             return typeInfo.Type.IsUnmanagedType;
+        }
+
+        private static bool IsMemory(Compilation compilation, ParameterSyntax parameter)
+        {
+            return GetCanonicalTypeName(compilation, parameter.Type) == TypeSystemMemory;
         }
 
         private static bool IsReadOnlySequence(Compilation compilation, ParameterSyntax parameter)
