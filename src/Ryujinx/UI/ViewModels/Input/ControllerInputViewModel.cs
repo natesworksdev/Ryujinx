@@ -54,11 +54,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        public InputViewModel parentModel;
+        private readonly InputViewModel _parentModel;
 
         public ControllerInputViewModel(InputViewModel model, GamepadInputConfig config)
         {
-            parentModel = model;
+            _parentModel = model;
             model.NotifyChangesEvent += OnParentModelChanged;
             OnParentModelChanged();
             Config = config;
@@ -76,9 +76,9 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public void OnParentModelChanged()
         {
-            IsLeft = parentModel.IsLeft;
-            IsRight = parentModel.IsRight;
-            Image = parentModel.Image;
+            IsLeft = _parentModel.IsLeft;
+            IsRight = _parentModel.IsRight;
+            Image = _parentModel.Image;
         }
     }
 }
