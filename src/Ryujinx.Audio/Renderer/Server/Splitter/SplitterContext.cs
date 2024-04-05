@@ -153,9 +153,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         {
             for (int i = 0; i < inputHeader.SplitterCount; i++)
             {
-                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.
                 ref readonly SplitterInParameter parameter = ref input.GetRefOrRefToCopy<SplitterInParameter>(out _);
-                input.Rewind(Unsafe.SizeOf<SplitterInParameter>());
 
                 Debug.Assert(parameter.IsMagicValid());
 
@@ -165,15 +163,15 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                     {
                         ref SplitterState splitter = ref GetState(parameter.Id);
 
-                        input.Advance(Unsafe.SizeOf<SplitterInParameter>());
                         splitter.Update(this, in parameter, ref input);
                     }
 
-                    // NOTE: there are 12 bytes of unused (or unknown?) data after the destination IDs array.
+                    // NOTE: there are 12 bytes of unused/unknown data after the destination IDs array.
                     input.Advance(0xC);
                 }
                 else
                 {
+                    input.Rewind(Unsafe.SizeOf<SplitterInParameter>());
                     break;
                 }
             }
@@ -188,9 +186,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         {
             for (int i = 0; i < inputHeader.SplitterDestinationCount; i++)
             {
-                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.
                 ref readonly SplitterDestinationInParameter parameter = ref input.GetRefOrRefToCopy<SplitterDestinationInParameter>(out _);
-                input.Rewind(Unsafe.SizeOf<SplitterDestinationInParameter>());
 
                 Debug.Assert(parameter.IsMagicValid());
 
@@ -202,11 +198,10 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
 
                         destination.Update(parameter);
                     }
-
-                    input.Advance(Unsafe.SizeOf<SplitterDestinationInParameter>());
                 }
                 else
                 {
+                    input.Rewind(Unsafe.SizeOf<SplitterDestinationInParameter>());
                     break;
                 }
             }
