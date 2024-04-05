@@ -17,12 +17,12 @@ namespace Ryujinx.Ava.UI.Helpers
             { Key.Unknown, LocaleKeys.KeyUnknown },
             { Key.ShiftLeft, LocaleKeys.KeyShiftLeft },
             { Key.ShiftRight, LocaleKeys.KeyShiftRight },
-            { Key.ControlLeft, LocaleKeys.KeySideLeft },
-            { Key.ControlRight, LocaleKeys.KeySideRight },
-            { Key.AltLeft, LocaleKeys.KeySideLeft },
-            { Key.AltRight, LocaleKeys.KeySideRight },
-            { Key.WinLeft, LocaleKeys.KeySideLeft },
-            { Key.WinRight, LocaleKeys.KeySideRight },
+            { Key.ControlLeft, LocaleKeys.KeyControlLeft },
+            { Key.ControlRight, LocaleKeys.KeyControlRight },
+            { Key.AltLeft, LocaleKeys.KeyControlLeft },
+            { Key.AltRight, LocaleKeys.KeyControlRight },
+            { Key.WinLeft, LocaleKeys.KeyWinLeft },
+            { Key.WinRight, LocaleKeys.KeyWinRight },
             { Key.Up, LocaleKeys.KeyUp },
             { Key.Down, LocaleKeys.KeyDown },
             { Key.Left, LocaleKeys.KeyLeft },
@@ -128,25 +128,21 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 if (_keysMap.TryGetValue(key, out LocaleKeys localeKey))
                 {
-                    var symbol = "";
-
-                    switch (key)
+                    if (OperatingSystem.IsMacOS())
                     {
-                        case Key.ControlLeft:
-                        case Key.ControlRight:
-                            symbol = OperatingSystem.IsMacOS() ? "⌃ " : "Ctrl ";
-                            break;
-                        case Key.WinLeft:
-                        case Key.WinRight:
-                            symbol = OperatingSystem.IsMacOS() ? "⌘ " : "⊞ ";
-                            break;
-                        case Key.AltLeft:
-                        case Key.AltRight:
-                            symbol = OperatingSystem.IsMacOS() ? "⌥ " : "Alt ";
-                            break;
+                        localeKey = localeKey switch
+                        {
+                            LocaleKeys.KeyControlLeft => LocaleKeys.KeyMacControlLeft,
+                            LocaleKeys.KeyControlRight => LocaleKeys.KeyMacControlRight,
+                            LocaleKeys.KeyAltLeft => LocaleKeys.KeyMacAltLeft,
+                            LocaleKeys.KeyAltRight => LocaleKeys.KeyMacAltRight,
+                            LocaleKeys.KeyWinLeft => LocaleKeys.KeyMacWinLeft,
+                            LocaleKeys.KeyWinRight => LocaleKeys.KeyMacWinRight,
+                            _ => localeKey
+                        };
                     }
 
-                    keyString = symbol + LocaleManager.Instance[localeKey];
+                    keyString = LocaleManager.Instance[localeKey];
                 }
                 else
                 {
