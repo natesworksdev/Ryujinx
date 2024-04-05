@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "Administrar perfiles de usuario",
   "CheatWindowTitle": "Administrar cheats",
   "DlcWindowTitle": "Administrar contenido descargable",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "Administrar actualizaciones",
   "CheatWindowHeading": "Cheats disponibles para {0} [{1}]",
   "BuildId": "Id de compilación:",
