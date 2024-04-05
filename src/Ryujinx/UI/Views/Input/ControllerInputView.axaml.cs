@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
                         var viewModel = (DataContext as ControllerInputViewModel);
 
-                        IKeyboard keyboard = (IKeyboard)viewModel.parentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                        IKeyboard keyboard = (IKeyboard)viewModel.ParentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
                         IButtonAssigner assigner = CreateButtonAssigner(isStick);
 
                         _currentAssigner.ButtonAssigned += (sender, e) =>
@@ -71,7 +71,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                             if (e.ButtonValue.HasValue)
                             {
                                 var buttonValue = e.ButtonValue.Value;
-                                viewModel.parentModel.IsModified = true;
+                                viewModel.ParentModel.IsModified = true;
 
                                 switch (button.Name)
                                 {
@@ -178,7 +178,7 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             IButtonAssigner assigner;
 
-            assigner = new GamepadButtonAssigner((DataContext as ControllerInputViewModel).parentModel.SelectedGamepad, ((DataContext as ControllerInputViewModel).parentModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick);
+            assigner = new GamepadButtonAssigner((DataContext as ControllerInputViewModel).ParentModel.SelectedGamepad, ((DataContext as ControllerInputViewModel).ParentModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick);
 
             return assigner;
         }
