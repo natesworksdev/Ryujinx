@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "Menedżer Profili Użytkowników",
   "CheatWindowTitle": "Menedżer Kodów",
   "DlcWindowTitle": "Menedżer Zawartości do Pobrania",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "Menedżer Aktualizacji Tytułu",
   "CheatWindowHeading": "Kody Dostępne dla {0} [{1}]",
   "BuildId": "Identyfikator wersji:",
