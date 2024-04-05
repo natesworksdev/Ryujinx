@@ -10,10 +10,10 @@ namespace Ryujinx.Common.Extensions
     {
         /// <summary>
         /// Dumps the entire <see cref="SequenceReader{byte}"/> to a file, restoring its previous location afterward.
-        /// Useful for debugging purposes. 
+        /// Useful for debugging purposes.
         /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="fileFullName"></param>
+        /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to write to a file</param>
+        /// <param name="fileFullName">The path and name of the file to create and dump to</param>
         public static void DumpToFile(this ref SequenceReader<byte> reader, string fileFullName)
         {
             var initialConsumed = reader.Consumed;
@@ -37,7 +37,7 @@ namespace Ryujinx.Common.Extensions
         /// Returns a reference to the desired value. This ref should always be used. The argument passed in <paramref name="copyDestinationIfRequiredDoNotUse"/> should never be used, as this is only used for storage if the value
         /// must be copied from multiple <see cref="ReadOnlyMemory{Byte}"/> segments held by the <see cref="SequenceReader{Byte}"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type to get</typeparam>
         /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
         /// <param name="copyDestinationIfRequiredDoNotUse">A location used as storage if (and only if) the value to be read spans multiple <see cref="ReadOnlyMemory{Byte}"/> segments</param>
         /// <returns>A reference to the desired value, either directly to memory in the <see cref="SequenceReader{Byte}"/>, or to <paramref name="copyDestinationIfRequiredDoNotUse"/> if it has been used for copying the value in to</returns>
@@ -102,7 +102,7 @@ namespace Ryujinx.Common.Extensions
         /// <summary>
         /// Reads the desired unmanaged value by copying it to the specified <paramref name="value"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type to read</typeparam>
         /// <param name="reader">The <see cref="SequenceReader{Byte}"/> to read from</param>
         /// <param name="value">The target that will receive the read value</param>
         /// <exception cref="ArgumentOutOfRangeException">The <see cref="SequenceReader{Byte}"/> does not contain enough data to read a value of type <typeparamref name="T"/></exception>
@@ -130,6 +130,7 @@ namespace Ryujinx.Common.Extensions
         /// Try to read the given type out of the buffer if possible. Warning: this is dangerous to use with arbitrary
         /// structs - see remarks for full details.
         /// </summary>
+        /// <typeparam name="T">Type to read</typeparam>
         /// <remarks>
         /// IMPORTANT: The read is a straight copy of bits. If a struct depends on specific state of it's members to
         /// behave correctly this can lead to exceptions, etc. If reading endian specific integers, use the explicit

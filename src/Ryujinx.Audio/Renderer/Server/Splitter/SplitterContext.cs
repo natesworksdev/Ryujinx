@@ -26,7 +26,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         private Memory<SplitterDestination> _splitterDestinations;
 
         /// <summary>
-        /// If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext,in SplitterInParameter,ref SequenceReader{byte})"/>.
+        /// If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, in SplitterInParameter, ref SequenceReader{byte})"/>.
         /// </summary>
         public bool IsBugFixed { get; private set; }
 
@@ -111,7 +111,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// </summary>
         /// <param name="splitters">The <see cref="SplitterState"/> storage.</param>
         /// <param name="splitterDestinations">The <see cref="SplitterDestination"/> storage.</param>
-        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext,in SplitterInParameter,ref SequenceReader{byte})"/>.</param>
+        /// <param name="isBugFixed">If set to true, trust the user destination count in <see cref="SplitterState.Update(SplitterContext, in SplitterInParameter, ref SequenceReader{byte})"/>.</param>
         private void Setup(Memory<SplitterState> splitters, Memory<SplitterDestination> splitterDestinations, bool isBugFixed)
         {
             _splitters = splitters;
@@ -153,7 +153,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         {
             for (int i = 0; i < inputHeader.SplitterCount; i++)
             {
-                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation. 
+                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.
                 ref readonly SplitterInParameter parameter = ref input.GetRefOrRefToCopy<SplitterInParameter>(out _);
                 input.Rewind(Unsafe.SizeOf<SplitterInParameter>());
 
@@ -169,13 +169,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
                         splitter.Update(this, in parameter, ref input);
                     }
 
-                    // NOTE: this historically has been advancing 0xC (12) bytes without explanation. It was hard
-                    // to discern as it was combined with the sizeof(SplitterInParameter) (16), == 0x1C (28).
-
-                    // NOTE: this historically was also advancing by parameter.DestinationCount * 4, but that was
-                    // to account for the reading done by splitter.Update(). Now we pass in `ref input`, so the 
-                    // reads performed by splitter.Update() are automatically accounted for.
-
+                    // NOTE: there are 12 bytes of unused (or unknown?) data after the destination IDs array.
                     input.Advance(0xC);
                 }
                 else
@@ -194,7 +188,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         {
             for (int i = 0; i < inputHeader.SplitterDestinationCount; i++)
             {
-                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.                
+                // NOTE: this Rewind/Advance logic is done here to mimic the behavior of the previous implementation.
                 ref readonly SplitterDestinationInParameter parameter = ref input.GetRefOrRefToCopy<SplitterDestinationInParameter>(out _);
                 input.Rewind(Unsafe.SizeOf<SplitterDestinationInParameter>());
 
