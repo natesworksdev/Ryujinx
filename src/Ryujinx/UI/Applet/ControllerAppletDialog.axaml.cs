@@ -9,7 +9,6 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Hid;
-using Svg.Model;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
