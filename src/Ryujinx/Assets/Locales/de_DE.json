@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "Benutzerprofile verwalten",
   "CheatWindowTitle": "Spiel-Cheats verwalten",
   "DlcWindowTitle": "Spiel-DLC verwalten",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "Spiel-Updates verwalten",
   "CheatWindowHeading": "Cheats verfügbar für {0} [{1}]",
   "BuildId": "BuildId:",
