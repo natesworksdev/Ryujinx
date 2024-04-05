@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
         {
             base.OnPointerReleased(e);
 
-            if (_currentAssigner != null && _currentAssigner.ToggledButton != null && !_currentAssigner.ToggledButton.IsPointerOver)
+            if (!_currentAssigner?.ToggledButton?.IsPointerOver ?? false)
             {
                 _currentAssigner.Cancel();
             }
