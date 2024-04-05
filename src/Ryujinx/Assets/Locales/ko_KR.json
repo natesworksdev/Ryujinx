@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "사용자 프로파일 관리자",
   "CheatWindowTitle": "치트 관리자",
   "DlcWindowTitle": "{0} ({1})의 다운로드 가능한 콘텐츠 관리",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "타이틀 업데이트 관리자",
   "CheatWindowHeading": "{0} [{1}]에 사용할 수 있는 치트",
   "BuildId": "빌드ID :",
