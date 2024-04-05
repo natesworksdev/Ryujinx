@@ -203,8 +203,6 @@ namespace Ryujinx.Input.HLE
             new(Key.NumLock,      10),
         };
 
-        private bool _isValid;
-
         private MotionInput _leftMotionInput;
         private MotionInput _rightMotionInput;
 
@@ -222,7 +220,6 @@ namespace Ryujinx.Input.HLE
         {
             State = default;
             Id = null;
-            _isValid = false;
             _cemuHookClient = cemuHookClient;
         }
 
@@ -234,11 +231,10 @@ namespace Ryujinx.Input.HLE
 
             Id = config.Id;
             _gamepad = GamepadDriver.GetGamepad(Id);
-            _isValid = _gamepad != null;
 
             UpdateUserConfiguration(config);
 
-            return _isValid;
+            return _gamepad != null;
         }
 
         public void UpdateUserConfiguration(InputConfig config)
@@ -262,10 +258,7 @@ namespace Ryujinx.Input.HLE
 
             _config = config;
 
-            if (_isValid)
-            {
-                _gamepad.SetConfiguration(config);
-            }
+            _gamepad?.SetConfiguration(config);
         }
 
         private void UpdateMotionInput(MotionConfigController motionConfig)
@@ -282,7 +275,7 @@ namespace Ryujinx.Input.HLE
 
         public void Update()
         {
-            if (_isValid && GamepadDriver != null)
+            if (_gamepad != null && GamepadDriver != null)
             {
                 State = _gamepad.GetMappedStateSnapshot();
 
