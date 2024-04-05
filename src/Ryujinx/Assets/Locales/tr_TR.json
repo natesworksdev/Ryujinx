@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "Kullanıcı Profillerini Yönet",
   "CheatWindowTitle": "Oyun Hilelerini Yönet",
   "DlcWindowTitle": "Oyun DLC'lerini Yönet",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "Oyun Güncellemelerini Yönet",
   "CheatWindowHeading": "{0} için Hile mevcut [{1}]",
   "BuildId": "BuildId:",
