@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "使用者設定檔管理員",
   "CheatWindowTitle": "密技管理員",
   "DlcWindowTitle": "管理 {0} 的可下載內容 ({1})",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "遊戲更新管理員",
   "CheatWindowHeading": "可用於 {0} [{1}] 的密技",
   "BuildId": "組建識別碼:",
