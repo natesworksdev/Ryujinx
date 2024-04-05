@@ -53,11 +53,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        private readonly InputViewModel _parentModel;
+        public readonly InputViewModel ParentModel;
 
         public KeyboardInputViewModel(InputViewModel model, KeyboardInputConfig config)
         {
-            _parentModel = model;
+            ParentModel = model;
             model.NotifyChangesEvent += OnParentModelChanged;
             OnParentModelChanged();
             Config = config;
@@ -65,9 +65,9 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public void OnParentModelChanged()
         {
-            IsLeft = _parentModel.IsLeft;
-            IsRight = _parentModel.IsRight;
-            Image = _parentModel.Image;
+            IsLeft = ParentModel.IsLeft;
+            IsRight = ParentModel.IsRight;
+            Image = ParentModel.Image;
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        public InputViewModel ParentModel { get; }
+        public readonly InputViewModel ParentModel;
 
         public ControllerInputViewModel(InputViewModel model, GamepadInputConfig config)
         {
