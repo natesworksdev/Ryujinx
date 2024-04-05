@@ -178,7 +178,12 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             IButtonAssigner assigner;
 
-            assigner = new GamepadButtonAssigner((DataContext as ControllerInputViewModel).ParentModel.SelectedGamepad, ((DataContext as ControllerInputViewModel).ParentModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick);
+            var controllerInputViewModel = DataContext as ControllerInputViewModel;
+
+            assigner = new GamepadButtonAssigner(
+                controllerInputViewModel.ParentModel.SelectedGamepad,
+                (controllerInputViewModel.ParentModel.Config as StandardControllerInputConfig).TriggerThreshold,
+                forStick);
 
             return assigner;
         }
