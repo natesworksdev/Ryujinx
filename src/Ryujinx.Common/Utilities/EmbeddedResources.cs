@@ -24,13 +24,6 @@ namespace Ryujinx.Common
             return Read(assembly, path);
         }
 
-        public static IMemoryOwner<byte> ReadRentedMemory(string filename)
-        {
-            var (assembly, path) = ResolveManifestPath(filename);
-
-            return ReadRentedMemory(assembly, path);
-        }
-
         public static Task<byte[]> ReadAsync(string filename)
         {
             var (assembly, path) = ResolveManifestPath(filename);
@@ -47,6 +40,13 @@ namespace Ryujinx.Common
             }
 
             return StreamUtils.StreamToBytes(stream);
+        }
+
+        public static IMemoryOwner<byte> ReadRentedMemory(string filename)
+        {
+            var (assembly, path) = ResolveManifestPath(filename);
+
+            return ReadRentedMemory(assembly, path);
         }
 
         public static IMemoryOwner<byte> ReadRentedMemory(Assembly assembly, string filename)
