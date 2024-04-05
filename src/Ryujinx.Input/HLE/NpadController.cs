@@ -275,18 +275,21 @@ namespace Ryujinx.Input.HLE
 
         public void Update()
         {
-            if (_gamepad != null && GamepadDriver != null)
+            // _gamepad may be altered by other threads
+            var gamepad = _gamepad;
+
+            if (gamepad != null && GamepadDriver != null)
             {
-                State = _gamepad.GetMappedStateSnapshot();
+                State = gamepad.GetMappedStateSnapshot();
 
                 if (_config is StandardControllerInputConfig controllerConfig && controllerConfig.Motion.EnableMotion)
                 {
                     if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.GamepadDriver)
                     {
-                        if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
+                        if (gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
                         {
-                            Vector3 accelerometer = _gamepad.GetMotionData(MotionInputId.Accelerometer);
-                            Vector3 gyroscope = _gamepad.GetMotionData(MotionInputId.Gyroscope);
+                            Vector3 accelerometer = gamepad.GetMotionData(MotionInputId.Accelerometer);
+                            Vector3 gyroscope = gamepad.GetMotionData(MotionInputId.Gyroscope);
 
                             accelerometer = new Vector3(accelerometer.X, -accelerometer.Z, accelerometer.Y);
                             gyroscope = new Vector3(gyroscope.X, -gyroscope.Z, gyroscope.Y);
