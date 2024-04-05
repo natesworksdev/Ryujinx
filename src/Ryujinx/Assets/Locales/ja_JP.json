@@ -597,6 +597,7 @@
   "UserProfileWindowTitle": "ユーザプロファイルを管理",
   "CheatWindowTitle": "チート管理",
   "DlcWindowTitle": "DLC 管理",
+  "ModWindowTitle": "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "アップデート管理",
   "CheatWindowHeading": "利用可能なチート {0} [{1}]",
   "BuildId": "ビルドID:",
