@@ -365,7 +365,7 @@ namespace Ryujinx.Memory
         protected static void ThrowMemoryNotContiguous()
             => throw new MemoryNotContiguousException();
 
-        private void WriteImpl(ulong va, ReadOnlySpan<byte> data)
+        protected virtual void WriteImpl(ulong va, ReadOnlySpan<byte> data)
         {
             AssertValidAddressAndSize(va, data.Length);
 

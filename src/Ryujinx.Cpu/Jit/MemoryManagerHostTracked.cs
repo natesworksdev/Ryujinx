@@ -193,34 +193,6 @@ namespace Ryujinx.Cpu.Jit
             }
         }
 
-        private void WriteImpl(ulong va, ReadOnlySpan<byte> data)
-        {
-            try
-            {
-                AssertValidAddressAndSize(va, (ulong)data.Length);
-
-                ulong endVa = va + (ulong)data.Length;
-                int offset = 0;
-
-                while (va < endVa)
-                {
-                    (MemoryBlock memory, ulong rangeOffset, ulong copySize) = GetMemoryOffsetAndSize(va, (ulong)(data.Length - offset));
-
-                    data.Slice(offset, (int)copySize).CopyTo(memory.GetSpan(rangeOffset, (int)copySize));
-
-                    va += copySize;
-                    offset += (int)copySize;
-                }
-            }
-            catch (InvalidMemoryRegionException)
-            {
-                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
-                {
-                    throw;
-                }
-            }
-        }
-
         public override ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
@@ -558,6 +530,34 @@ namespace Ryujinx.Cpu.Jit
 
         protected override Span<byte> GetPhysicalAddressSpan(nuint pa, int size)
             => _backingMemory.GetSpan(pa, size);
+
+        protected override void WriteImpl(ulong va, ReadOnlySpan<byte> data)
+        {
+            try
+            {
+                AssertValidAddressAndSize(va, (ulong)data.Length);
+
+                ulong endVa = va + (ulong)data.Length;
+                int offset = 0;
+
+                while (va < endVa)
+                {
+                    (MemoryBlock memory, ulong rangeOffset, ulong copySize) = GetMemoryOffsetAndSize(va, (ulong)(data.Length - offset));
+
+                    data.Slice(offset, (int)copySize).CopyTo(memory.GetSpan(rangeOffset, (int)copySize));
+
+                    va += copySize;
+                    offset += (int)copySize;
+                }
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
+        }
 
         protected override nuint TranslateVirtualAddressChecked(ulong va)
             => (nuint)GetPhysicalAddressChecked(va);
