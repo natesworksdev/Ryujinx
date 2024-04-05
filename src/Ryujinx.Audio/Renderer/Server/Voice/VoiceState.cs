@@ -426,11 +426,12 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="voiceUpdateStates">The voice states associated to the <see cref="VoiceState"/>.</param>
         /// <param name="mapper">The mapper to use.</param>
         /// <param name="behaviourContext">The behaviour context.</param>
-        public void UpdateWaveBuffers(out ErrorInfo[] errorInfos,
-                                      in VoiceInParameter parameter,
-                                      ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates,
-                                      PoolMapper mapper,
-                                      ref BehaviourContext behaviourContext)
+        public void UpdateWaveBuffers(
+            out ErrorInfo[] errorInfos,
+            in VoiceInParameter parameter,
+            ReadOnlySpan<Memory<VoiceUpdateState>> voiceUpdateStates,
+            PoolMapper mapper,
+            ref BehaviourContext behaviourContext)
         {
             errorInfos = new ErrorInfo[Constants.VoiceWaveBufferCount * 2];
 
@@ -462,13 +463,14 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
         /// <param name="isValid">If set to true, the server side wavebuffer is considered valid.</param>
         /// <param name="mapper">The mapper to use.</param>
         /// <param name="behaviourContext">The behaviour context.</param>
-        private void UpdateWaveBuffer(Span<ErrorInfo> errorInfos,
-                                      ref WaveBuffer waveBuffer,
-                                      ref WaveBufferInternal inputWaveBuffer,
-                                      SampleFormat sampleFormat,
-                                      bool isValid,
-                                      PoolMapper mapper,
-                                      ref BehaviourContext behaviourContext)
+        private void UpdateWaveBuffer(
+            Span<ErrorInfo> errorInfos,
+            ref WaveBuffer waveBuffer,
+            ref WaveBufferInternal inputWaveBuffer,
+            SampleFormat sampleFormat,
+            bool isValid,
+            PoolMapper mapper,
+            ref BehaviourContext behaviourContext)
         {
             if (!isValid && waveBuffer.IsSendToAudioProcessor && waveBuffer.BufferAddressInfo.CpuAddress != 0)
             {
