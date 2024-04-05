@@ -9,6 +9,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Svg.Model;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -104,9 +105,8 @@ namespace Ryujinx.Ava.UI.Applet
 
             if (!string.IsNullOrWhiteSpace(path))
             {
-                SvgSource source = new(default(Uri));
-
-                source.Load(EmbeddedResources.GetStream(path));
+                SvgSource source = SvgSource.LoadFromStream(EmbeddedResources.GetStream(path));
+                source.ReLoad(null);
 
                 image.Source = source;
             }

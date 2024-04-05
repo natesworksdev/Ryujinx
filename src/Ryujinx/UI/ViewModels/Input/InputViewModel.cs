@@ -181,9 +181,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                 if (!string.IsNullOrWhiteSpace(_controllerImage))
                 {
-                    SvgSource source = new(default(Uri));
-
-                    source.Load(EmbeddedResources.GetStream(_controllerImage));
+                    SvgSource source = SvgSource.LoadFromStream(EmbeddedResources.GetStream(_controllerImage));
+                    source.ReLoad(null);
 
                     image.Source = source;
                 }
