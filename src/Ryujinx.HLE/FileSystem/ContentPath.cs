@@ -41,7 +41,6 @@ namespace Ryujinx.HLE.FileSystem
             return realPath != null;
         }
 
-
         public static string GetContentPath(ContentStorageId contentStorageId)
         {
             return contentStorageId switch
