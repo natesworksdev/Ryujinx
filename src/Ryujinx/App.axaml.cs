@@ -134,8 +134,7 @@ namespace Ryujinx.Ava
 
         private ThemeVariant DetectSystemTheme()
         {
-            var platformSettings = this.PlatformSettings;
-            var colorValues = platformSettings.GetColorValues();
+            var colorValues = PlatformSettings.GetColorValues();
 
             return ConvertThemeVariant(colorValues.ThemeVariant);
         }

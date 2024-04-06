@@ -100,10 +100,10 @@ namespace Ryujinx.Ava.UI.Windows
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            if (this.PlatformSettings != null)
+            if (PlatformSettings != null)
             {
                 // Unsubscribe to the ColorValuesChanged event
-                this.PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
+                PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
             }
         }
 
@@ -391,7 +391,7 @@ namespace Ryujinx.Ava.UI.Windows
             Initialize();
 
             // Subscribe to the ColorValuesChanged event
-            this.PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
+            PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
 
             ViewModel.Initialize(
                 ContentManager,
