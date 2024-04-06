@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         // Event handler for detecting OS theme change when using "Follow OS theme" option
-        private void OnPlatformColorValuesChanged(object? sender, PlatformColorValues e)
+        private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
         {
             if (Application.Current is App app)
             {
