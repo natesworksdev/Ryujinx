@@ -597,7 +597,7 @@
   "UserProfileWindowTitle": "Gestione profili utente",
   "CheatWindowTitle": "Gestione trucchi",
   "DlcWindowTitle": "Gestisci DLC per {0} ({1})",
-  "ModWindowTitle": "Manage Mods for {0} ({1})",
+  "ModWindowTitle": "Gestisci mod per {0} ({1})",
   "UpdateWindowTitle": "Gestione aggiornamenti",
   "CheatWindowHeading": "Trucchi disponibili per {0} [{1}]",
   "BuildId": "ID Build",
