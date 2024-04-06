@@ -10,7 +10,7 @@ namespace Ryujinx.UI.Common
         private const string Description = "A simple, experimental Nintendo Switch emulator.";
         private const string ApplicationId = "1216775165866807456";
 
-        private const int TitleByteLimit = 128;
+        private const int ApplicationByteLimit = 128;
         private const string Ellipsis = "…";
 
         private static DiscordRpcClient _discordClient;
@@ -64,18 +64,18 @@ namespace Ryujinx.UI.Common
             }
         }
 
-        public static void SwitchToPlayingState(string titleId, string titleName)
+        public static void SwitchToPlayingState(string titleId, string applicationName)
         {
             _discordClient?.SetPresence(new RichPresence
             {
                 Assets = new Assets
                 {
                     LargeImageKey = "game",
-                    LargeImageText = TruncateToByteLength(titleName, TitleByteLimit),
+                    LargeImageText = TruncateToByteLength(applicationName, ApplicationByteLimit),
                     SmallImageKey = "ryujinx",
                     SmallImageText = Description,
                 },
-                Details = TruncateToByteLength($"Playing {titleName}", TitleByteLimit),
+                Details = TruncateToByteLength($"Playing {applicationName}", ApplicationByteLimit),
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
                 Buttons =
