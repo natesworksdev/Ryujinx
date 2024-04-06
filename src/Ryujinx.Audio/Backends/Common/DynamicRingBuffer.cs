@@ -86,7 +86,7 @@ namespace Ryujinx.Audio.Backends.Common
             _tailOffset = _size;
         }
 
-        public void Write(Span<byte> buffer, int index, int count)
+        public void Write(ReadOnlySpan<byte> buffer, int index, int count)
         {
             if (count == 0)
             {
