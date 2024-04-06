@@ -26,18 +26,31 @@ namespace Ryujinx.HLE.FileSystem
         public const string Nintendo = "Nintendo";
         public const string Contents = "Contents";
 
-        public static string GetRealPath(string switchContentPath)
+        public static bool TryGetRealPath(string switchContentPath, out string realPath)
         {
-            return switchContentPath switch
+            switch (switchContentPath)
             {
-                SystemContent => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents),
-                UserContent => Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents),
-                SdCardContent => Path.Combine(GetSdCardPath(), Nintendo, Contents),
-                System => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
-                User => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
-                _ => throw new NotSupportedException($"Content Path \"`{switchContentPath}`\" is not supported."),
-            };
+                case SystemContent:
+                    realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents);
+                    return true;
+                case UserContent:
+                    realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents);
+                    return true;
+                case SdCardContent:
+                    realPath = Path.Combine(GetSdCardPath(), Nintendo, Contents);
+                    return true;
+                case System:
+                    realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath);
+                    return true;
+                case User:
+                    realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath);
+                    return true;
+                default:
+                    realPath = null;
+                    return false;
+            }
         }
+
 
         public static string GetContentPath(ContentStorageId contentStorageId)
         {
@@ -50,15 +63,23 @@ namespace Ryujinx.HLE.FileSystem
             };
         }
 
-        public static string GetContentPath(StorageId storageId)
+        public static bool TryGetContentPath(StorageId storageId, out string contentPath)
         {
-            return storageId switch
+            switch (storageId)
             {
-                StorageId.BuiltInSystem => SystemContent,
-                StorageId.BuiltInUser => UserContent,
-                StorageId.SdCard => SdCardContent,
-                _ => throw new NotSupportedException($"Storage Id \"`{storageId}`\" is not supported."),
-            };
+                case StorageId.BuiltInSystem:
+                    contentPath = SystemContent;
+                    return true;
+                case StorageId.BuiltInUser:
+                    contentPath = UserContent;
+                    return true;
+                case StorageId.SdCard:
+                    contentPath = SdCardContent;
+                    return true;
+                default:
+                    contentPath = null;
+                    return false;
+            }
         }
 
         public static StorageId GetStorageId(string contentPathString)
