@@ -969,7 +969,12 @@ namespace Ryujinx.Ava
         public void InitStatus()
         {
             StatusInitEvent?.Invoke(this, new StatusInitEventArgs(
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
+                ConfigurationState.Instance.Graphics.GraphicsBackend.Value switch
+                {
+                    GraphicsBackend.Vulkan => "Vulkan",
+                    GraphicsBackend.OpenGl => "OpenGL",
+                    _ => throw new NotImplementedException()
+                },
                 $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
         }
 
