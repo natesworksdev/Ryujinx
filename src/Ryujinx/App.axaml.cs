@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
@@ -115,19 +116,19 @@ namespace Ryujinx.Ava
             }
         }
 
-        // Convert Avalonia.Platform.PlatformThemeVariant to the expected ThemeVariant type
-        private Avalonia.Styling.ThemeVariant ConvertThemeVariant(Avalonia.Platform.PlatformThemeVariant platformThemeVariant)
+        // Convert PlatformThemeVariant to the expected ThemeVariant type
+        private ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant)
         {
             switch (platformThemeVariant)
             {
-                case Avalonia.Platform.PlatformThemeVariant.Dark:
-                    return Avalonia.Styling.ThemeVariant.Dark;
+                case PlatformThemeVariant.Dark:
+                    return ThemeVariant.Dark;
 
-                case Avalonia.Platform.PlatformThemeVariant.Light:
-                    return Avalonia.Styling.ThemeVariant.Light;
+                case PlatformThemeVariant.Light:
+                    return ThemeVariant.Light;
 
                 default:
-                    return Avalonia.Styling.ThemeVariant.Default;
+                    return ThemeVariant.Default;
             }
         }
 
