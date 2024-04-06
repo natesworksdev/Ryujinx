@@ -1,6 +1,7 @@
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace Ryujinx.Tests.Memory
@@ -57,6 +58,11 @@ namespace Ryujinx.Tests.Memory
             throw new NotImplementedException();
         }
 
+        public ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size, bool tracked = false)
+        {
+            throw new NotImplementedException();
+        }
+
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             throw new NotImplementedException();
@@ -107,7 +113,7 @@ namespace Ryujinx.Tests.Memory
             throw new NotImplementedException();
         }
 
-        public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
+        public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection, bool guest)
         {
             OnProtect?.Invoke(va, size, protection);
         }

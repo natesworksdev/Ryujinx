@@ -420,6 +420,12 @@ namespace Ryujinx.Ava
             Device.Configuration.MultiplayerMode = e.NewValue;
         }
 
+        public void ToggleVSync()
+        {
+            Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
+            _renderer.Window.ChangeVSyncMode(Device.EnableDeviceVsync);
+        }
+
         public void Stop()
         {
             _isActive = false;
@@ -779,31 +785,31 @@ namespace Ryujinx.Ava
             var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB;
 
             HLEConfiguration configuration = new(VirtualFileSystem,
-                                                     _viewModel.LibHacHorizonManager,
-                                                     ContentManager,
-                                                     _accountManager,
-                                                     _userChannelPersistence,
-                                                     renderer,
-                                                     InitializeAudio(),
-                                                     memoryConfiguration,
-                                                     _viewModel.UiHandler,
-                                                     (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
-                                                     (RegionCode)ConfigurationState.Instance.System.Region.Value,
-                                                     ConfigurationState.Instance.Graphics.EnableVsync,
-                                                     ConfigurationState.Instance.System.EnableDockedMode,
-                                                     ConfigurationState.Instance.System.EnablePtc,
-                                                     ConfigurationState.Instance.System.EnableInternetAccess,
-                                                     ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
-                                                     ConfigurationState.Instance.System.FsGlobalAccessLogMode,
-                                                     ConfigurationState.Instance.System.SystemTimeOffset,
-                                                     ConfigurationState.Instance.System.TimeZone,
-                                                     ConfigurationState.Instance.System.MemoryManagerMode,
-                                                     ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                     ConfigurationState.Instance.Graphics.AspectRatio,
-                                                     ConfigurationState.Instance.System.AudioVolume,
-                                                     ConfigurationState.Instance.System.UseHypervisor,
-                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                                                     ConfigurationState.Instance.Multiplayer.Mode);
+                                                 _viewModel.LibHacHorizonManager,
+                                                 ContentManager,
+                                                 _accountManager,
+                                                 _userChannelPersistence,
+                                                 renderer,
+                                                 InitializeAudio(),
+                                                 memoryConfiguration,
+                                                 _viewModel.UiHandler,
+                                                 (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
+                                                 (RegionCode)ConfigurationState.Instance.System.Region.Value,
+                                                 ConfigurationState.Instance.Graphics.EnableVsync,
+                                                 ConfigurationState.Instance.System.EnableDockedMode,
+                                                 ConfigurationState.Instance.System.EnablePtc,
+                                                 ConfigurationState.Instance.System.EnableInternetAccess,
+                                                 ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                                                 ConfigurationState.Instance.System.FsGlobalAccessLogMode,
+                                                 ConfigurationState.Instance.System.SystemTimeOffset,
+                                                 ConfigurationState.Instance.System.TimeZone,
+                                                 ConfigurationState.Instance.System.MemoryManagerMode,
+                                                 ConfigurationState.Instance.System.IgnoreMissingServices,
+                                                 ConfigurationState.Instance.Graphics.AspectRatio,
+                                                 ConfigurationState.Instance.System.AudioVolume,
+                                                 ConfigurationState.Instance.System.UseHypervisor,
+                                                 ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                                                 ConfigurationState.Instance.Multiplayer.Mode);
 
             Device = new Switch(configuration);
         }
@@ -1084,8 +1090,7 @@ namespace Ryujinx.Ava
                     switch (currentHotkeyState)
                     {
                         case KeyboardHotkeyState.ToggleVSync:
-                            Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
+                            ToggleVSync();
                             break;
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;
