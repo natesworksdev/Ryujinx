@@ -117,20 +117,13 @@ namespace Ryujinx.Ava
         }
 
         // Convert PlatformThemeVariant to the expected ThemeVariant type
-        private ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant)
-        {
-            switch (platformThemeVariant)
+        private ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant) =>
+            platformThemeVariant switch
             {
-                case PlatformThemeVariant.Dark:
-                    return ThemeVariant.Dark;
-
-                case PlatformThemeVariant.Light:
-                    return ThemeVariant.Light;
-
-                default:
-                    return ThemeVariant.Default;
-            }
-        }
+                PlatformThemeVariant.Dark => ThemeVariant.Dark,
+                PlatformThemeVariant.Light => ThemeVariant.Light,
+                _ => ThemeVariant.Default,
+            };
 
         private ThemeVariant DetectSystemTheme()
         {
