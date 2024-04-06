@@ -28,27 +28,15 @@ namespace Ryujinx.HLE.FileSystem
 
         public static bool TryGetRealPath(string switchContentPath, out string realPath)
         {
-            switch (switchContentPath)
+            realPath = switchContentPath switch
             {
-                case SystemContent:
-                    realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents);
-                    break;
-                case UserContent:
-                    realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents);
-                    break;
-                case SdCardContent:
-                    realPath = Path.Combine(GetSdCardPath(), Nintendo, Contents);
-                    break;
-                case System:
-                    realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath);
-                    break;
-                case User:
-                    realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath);
-                    break;
-                default:
-                    realPath = null;
-                    break;
-            }
+                SystemContent => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents),
+                UserContent => Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents),
+                SdCardContent => Path.Combine(GetSdCardPath(), Nintendo, Contents),
+                System => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
+                User => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
+                _ => null,
+            };
 
             return realPath != null;
         }
@@ -67,21 +55,13 @@ namespace Ryujinx.HLE.FileSystem
 
         public static bool TryGetContentPath(StorageId storageId, out string contentPath)
         {
-            switch (storageId)
+            contentPath = storageId switch
             {
-                case StorageId.BuiltInSystem:
-                    contentPath = SystemContent;
-                    break;
-                case StorageId.BuiltInUser:
-                    contentPath = UserContent;
-                    break;
-                case StorageId.SdCard:
-                    contentPath = SdCardContent;
-                    break;
-                default:
-                    contentPath = null;
-                    break;
-            }
+                StorageId.BuiltInSystem => SystemContent,
+                StorageId.BuiltInUser => UserContent,
+                StorageId.SdCard => SdCardContent,
+                _ => null,
+            };
 
             return contentPath != null;
         }
