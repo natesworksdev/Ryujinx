@@ -597,7 +597,7 @@
   "UserProfileWindowTitle": "Менеджер профілів користувачів",
   "CheatWindowTitle": "Менеджер читів",
   "DlcWindowTitle": "Менеджер вмісту для завантаження",
-  "ModWindowTitle": "Manage Mods for {0} ({1})",
+  "ModWindowTitle": "Керувати модами для {0} ({1})",
   "UpdateWindowTitle": "Менеджер оновлення назв",
   "CheatWindowHeading": "Коди доступні для {0} [{1}]",
   "BuildId": "ID збірки:",
