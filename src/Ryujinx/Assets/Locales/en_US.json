@@ -298,6 +298,7 @@
   "GameListContextMenuToggleFavorite": "Toggle Favorite",
   "GameListContextMenuToggleFavoriteToolTip": "Toggle Favorite status of Game",
   "SettingsTabGeneralTheme": "Theme:",
+  "SettingsTabGeneralThemeAuto": "Follow OS theme",
   "SettingsTabGeneralThemeDark": "Dark",
   "SettingsTabGeneralThemeLight": "Light",
   "ControllerSettingsConfigureGeneral": "Configure",
