@@ -597,7 +597,7 @@
   "UserProfileWindowTitle": "Менеджер учетных записей",
   "CheatWindowTitle": "Менеджер читов",
   "DlcWindowTitle": "Управление DLC для {0} ({1})",
-  "ModWindowTitle": "Manage Mods for {0} ({1})",
+  "ModWindowTitle": "Управление модами для {0} ({1})",
   "UpdateWindowTitle": "Менеджер обновлений игр",
   "CheatWindowHeading": "Доступные читы для {0} [{1}]",
   "BuildId": "ID версии:",
