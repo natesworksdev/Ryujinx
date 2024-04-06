@@ -32,23 +32,25 @@ namespace Ryujinx.HLE.FileSystem
             {
                 case SystemContent:
                     realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents);
-                    return true;
+                    break;
                 case UserContent:
                     realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents);
-                    return true;
+                    break;
                 case SdCardContent:
                     realPath = Path.Combine(GetSdCardPath(), Nintendo, Contents);
-                    return true;
+                    break;
                 case System:
                     realPath = Path.Combine(AppDataManager.BaseDirPath, SystemNandPath);
-                    return true;
+                    break;
                 case User:
                     realPath = Path.Combine(AppDataManager.BaseDirPath, UserNandPath);
-                    return true;
+                    break;
                 default:
                     realPath = null;
-                    return false;
+                    break;
             }
+
+            return realPath != null;
         }
 
 
@@ -69,17 +71,19 @@ namespace Ryujinx.HLE.FileSystem
             {
                 case StorageId.BuiltInSystem:
                     contentPath = SystemContent;
-                    return true;
+                    break;
                 case StorageId.BuiltInUser:
                     contentPath = UserContent;
-                    return true;
+                    break;
                 case StorageId.SdCard:
                     contentPath = SdCardContent;
-                    return true;
+                    break;
                 default:
                     contentPath = null;
-                    return false;
+                    break;
             }
+
+            return contentPath != null;
         }
 
         public static StorageId GetStorageId(string contentPathString)
