@@ -597,7 +597,7 @@
   "UserProfileWindowTitle": "مدير الملفات الشخصية للمستخدمين",
   "CheatWindowTitle": "مدير الغش",
   "DlcWindowTitle": "إدارة المحتوى القابل للتنزيل لـ {0} ({1})",
-  "ModWindowTitle": "Manage Mods for {0} ({1})",
+  "ModWindowTitle": "إدارة التعديلات لـ {0} ({1})",
   "UpdateWindowTitle": "مدير تحديث العنوان",
   "CheatWindowHeading": "الغش متوفر لـ {0} [{1}]",
   "BuildId": "معرف البناء:",
