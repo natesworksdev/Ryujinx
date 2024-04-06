@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -84,6 +85,25 @@ namespace Ryujinx.Ava.UI.Windows
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
                 this.ScalingChanged += OnScalingChanged;
+            }
+        }
+
+        // Event handler for detecting OS theme change when using "Follow OS theme" option
+        private void OnPlatformColorValuesChanged(object? sender, PlatformColorValues e)
+        {
+            if (Application.Current is App app)
+            {
+                app.ApplyConfiguredTheme();
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            if (this.PlatformSettings != null)
+            {
+                // Unsubscribe to the ColorValuesChanged event
+                this.PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
             }
         }
 
@@ -369,6 +389,9 @@ namespace Ryujinx.Ava.UI.Windows
             base.OnOpened(e);
 
             Initialize();
+
+            // Subscribe to the ColorValuesChanged event
+            this.PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
 
             ViewModel.Initialize(
                 ContentManager,

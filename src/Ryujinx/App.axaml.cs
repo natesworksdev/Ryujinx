@@ -84,7 +84,7 @@ namespace Ryujinx.Ava
             ApplyConfiguredTheme();
         }
 
-        private void ApplyConfiguredTheme()
+        public void ApplyConfiguredTheme()
         {
             try
             {
@@ -92,13 +92,16 @@ namespace Ryujinx.Ava
 
                 if (string.IsNullOrWhiteSpace(baseStyle))
                 {
-                    ConfigurationState.Instance.UI.BaseStyle.Value = "Dark";
+                    ConfigurationState.Instance.UI.BaseStyle.Value = "Auto";
 
                     baseStyle = ConfigurationState.Instance.UI.BaseStyle;
                 }
 
+                ThemeVariant systemTheme = DetectSystemTheme();
+
                 RequestedThemeVariant = baseStyle switch
                 {
+                    "Auto" => systemTheme,
                     "Light" => ThemeVariant.Light,
                     "Dark" => ThemeVariant.Dark,
                     _ => ThemeVariant.Default,
@@ -110,6 +113,30 @@ namespace Ryujinx.Ava
 
                 ShowRestartDialog();
             }
+        }
+
+        // Convert Avalonia.Platform.PlatformThemeVariant to the expected ThemeVariant type
+        private Avalonia.Styling.ThemeVariant ConvertThemeVariant(Avalonia.Platform.PlatformThemeVariant platformThemeVariant)
+        {
+            switch (platformThemeVariant)
+            {
+                case Avalonia.Platform.PlatformThemeVariant.Dark:
+                    return Avalonia.Styling.ThemeVariant.Dark;
+
+                case Avalonia.Platform.PlatformThemeVariant.Light:
+                    return Avalonia.Styling.ThemeVariant.Light;
+
+                default:
+                    return Avalonia.Styling.ThemeVariant.Default;
+            }
+        }
+
+        private ThemeVariant DetectSystemTheme()
+        {
+            var platformSettings = this.PlatformSettings;
+            var colorValues = platformSettings.GetColorValues();
+
+            return ConvertThemeVariant(colorValues.ThemeVariant);
         }
     }
 }
