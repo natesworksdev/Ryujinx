@@ -120,6 +120,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void Dispose()
         {
             ThemeManager.ThemeChanged -= ThemeManager_ThemeChanged;
+            GC.SuppressFinalize(this);
         }
 
         private async Task DownloadPatronsJson()
