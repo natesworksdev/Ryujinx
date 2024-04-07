@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _updateSize;
         private int _copyFramebufferHandle;
         private IPostProcessingEffect _antiAliasing;
-        private IScalingFilter _scalingFilter;
+        private FsrScalingFilter _scalingFilter;
         private bool _isLinear;
         private AntiAliasing _currentAntiAliasing;
         private bool _updateEffect;

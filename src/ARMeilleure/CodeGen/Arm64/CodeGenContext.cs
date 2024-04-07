@@ -5,6 +5,7 @@ using Ryujinx.Common.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.IO;
 
 namespace ARMeilleure.CodeGen.Arm64
 {
@@ -14,7 +15,7 @@ namespace ARMeilleure.CodeGen.Arm64
         private const int CbnzInstLength = 4;
         private const int LdrLitInstLength = 4;
 
-        private readonly Stream _stream;
+        private readonly RecyclableMemoryStream _stream;
 
         public int StreamOffset => (int)_stream.Length;
 

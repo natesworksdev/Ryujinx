@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Vulkan
         private AntiAliasing _currentAntiAliasing;
         private bool _updateEffect;
         private IPostProcessingEffect _effect;
-        private IScalingFilter _scalingFilter;
+        private FsrScalingFilter _scalingFilter;
         private bool _isLinear;
         private float _scalingFilterLevel;
         private bool _updateScalingFilter;

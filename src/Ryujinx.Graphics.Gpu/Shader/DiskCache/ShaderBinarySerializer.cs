@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.IO;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
@@ -12,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
     {
         public static byte[] Pack(ShaderSource[] sources)
         {
-            using MemoryStream output = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream output = MemoryStreamManager.Shared.GetStream();
 
             output.Write(sources.Length);
 

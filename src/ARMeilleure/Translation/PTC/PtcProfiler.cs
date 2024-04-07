@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Timers;
+using Microsoft.IO;
 using static ARMeilleure.Translation.PTC.PtcFormatter;
 using Timer = System.Timers.Timer;
 
@@ -189,7 +190,7 @@ namespace ARMeilleure.Translation.PTC
                     return false;
                 }
 
-                using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+                using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
                 Debug.Assert(stream.Seek(0L, SeekOrigin.Begin) == 0L && stream.Length == 0L);
 
                 try

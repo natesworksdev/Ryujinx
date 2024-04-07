@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.IO;
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
 
 namespace Ryujinx.HLE.HOS.Applets
@@ -124,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private static byte[] BuildResponse(ControllerSupportResultInfo result)
         {
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
 
             writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
@@ -134,7 +135,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private static byte[] BuildResponse()
         {
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
 
             writer.Write((ulong)ResultCode.Success);

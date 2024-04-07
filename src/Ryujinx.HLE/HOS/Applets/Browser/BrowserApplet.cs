@@ -5,6 +5,7 @@ using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
@@ -70,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
         private static byte[] BuildResponseOld(WebCommonReturnValue result)
         {
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
             writer.WriteStruct(result);
 
@@ -78,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         }
         private byte[] BuildResponseNew(List<BrowserOutput> outputArguments)
         {
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
             writer.WriteStruct(new WebArgHeader
             {

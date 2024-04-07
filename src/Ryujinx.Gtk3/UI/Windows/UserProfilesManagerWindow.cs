@@ -12,6 +12,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.IO;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.UI.Windows
@@ -181,7 +182,7 @@ namespace Ryujinx.UI.Windows
 
             image.Mutate(x => x.Resize(256, 256));
 
-            using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
 
             image.SaveAsJpeg(streamJpg);
 

@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Threading.Tasks;
+using Microsoft.IO;
 
 namespace Ryujinx.Input.Motion.CemuHook
 {
@@ -380,7 +381,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
 
             writer.WriteStruct(header);
@@ -419,7 +420,7 @@ namespace Ryujinx.Input.Motion.CemuHook
 
             Header header = GenerateHeader(clientId);
 
-            using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream stream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter writer = new(stream);
 
             writer.WriteStruct(header);

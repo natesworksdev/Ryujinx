@@ -1,6 +1,7 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System.IO;
+using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage
 {
@@ -11,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage
         public static byte[] MakeLaunchParams(UserProfile userProfile)
         {
             // Size needs to be at least 0x88 bytes otherwise application errors.
-            using MemoryStream ms = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream ms = MemoryStreamManager.Shared.GetStream();
             BinaryWriter writer = new(ms);
 
             ms.SetLength(0x88);

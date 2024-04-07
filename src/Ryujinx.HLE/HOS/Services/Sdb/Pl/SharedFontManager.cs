@@ -14,6 +14,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
@@ -161,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             static uint KXor(uint data) => data ^ FontKey;
 
             using BinaryReader reader = new(bfttfStream);
-            using MemoryStream ttfStream = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream ttfStream = MemoryStreamManager.Shared.GetStream();
             using BinaryWriter output = new(ttfStream);
 
             if (KXor(reader.ReadUInt32()) != BFTTFMagic)
