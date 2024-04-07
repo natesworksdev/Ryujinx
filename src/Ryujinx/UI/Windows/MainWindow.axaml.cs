@@ -88,7 +88,9 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
-        // Event handler for detecting OS theme change when using "Follow OS theme" option
+        /// <summary>
+        /// Event handler for detecting OS theme change when using "Follow OS theme" option
+        /// </summary>
         private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
         {
             if (Application.Current is App app)
@@ -102,7 +104,9 @@ namespace Ryujinx.Ava.UI.Windows
             base.OnClosed(e);
             if (PlatformSettings != null)
             {
-                // Unsubscribe to the ColorValuesChanged event
+                /// <summary>
+                /// Unsubscribe to the ColorValuesChanged event
+                /// </summary>
                 PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
             }
         }
@@ -390,7 +394,9 @@ namespace Ryujinx.Ava.UI.Windows
 
             Initialize();
 
-            // Subscribe to the ColorValuesChanged event
+            /// <summary>
+            /// Subscribe to the ColorValuesChanged event
+            /// </summary>
             PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
 
             ViewModel.Initialize(

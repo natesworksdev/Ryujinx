@@ -116,7 +116,9 @@ namespace Ryujinx.Ava
             }
         }
 
-        // Convert PlatformThemeVariant to the expected ThemeVariant type
+        /// <summary>
+        /// Converts a PlatformThemeVariant value to the corresponding ThemeVariant value.
+        /// </summary>
         private ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant) =>
             platformThemeVariant switch
             {
