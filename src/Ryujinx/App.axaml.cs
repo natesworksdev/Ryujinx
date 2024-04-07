@@ -4,7 +4,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
@@ -115,14 +114,12 @@ namespace Ryujinx.Ava
 
                 ShowRestartDialog();
             }
-
-            ThemeManager.OnThemeChanged();
         }
 
         /// <summary>
         /// Converts a PlatformThemeVariant value to the corresponding ThemeVariant value.
         /// </summary>
-        public static ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant) =>
+        private ThemeVariant ConvertThemeVariant(PlatformThemeVariant platformThemeVariant) =>
             platformThemeVariant switch
             {
                 PlatformThemeVariant.Dark => ThemeVariant.Dark,
@@ -130,16 +127,11 @@ namespace Ryujinx.Ava
                 _ => ThemeVariant.Default,
             };
 
-        public static ThemeVariant DetectSystemTheme()
+        private ThemeVariant DetectSystemTheme()
         {
-            if (Application.Current is App app)
-            {
-                var colorValues = app.PlatformSettings.GetColorValues();
+            var colorValues = PlatformSettings.GetColorValues();
 
-                return ConvertThemeVariant(colorValues.ThemeVariant);
-            }
-
-            return ThemeVariant.Default;
+            return ConvertThemeVariant(colorValues.ThemeVariant);
         }
     }
 }
