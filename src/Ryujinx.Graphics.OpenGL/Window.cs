@@ -365,11 +365,7 @@ namespace Ryujinx.Graphics.OpenGL
                         _upscaledTexture = null;
                         break;
                     case ScalingFilter.Fsr:
-                        if (_scalingFilter is null)
-                        {
-                            _scalingFilter?.Dispose();
-                            _scalingFilter = new FsrScalingFilter(_renderer);
-                        }
+                        _scalingFilter ??= new FsrScalingFilter(_renderer);
                         _isLinear = false;
                         _scalingFilter.Level = _scalingFilterLevel;
 
