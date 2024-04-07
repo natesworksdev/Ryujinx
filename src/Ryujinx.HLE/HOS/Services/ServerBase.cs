@@ -1,3 +1,4 @@
+using Microsoft.IO;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
@@ -14,7 +15,6 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Services
 {

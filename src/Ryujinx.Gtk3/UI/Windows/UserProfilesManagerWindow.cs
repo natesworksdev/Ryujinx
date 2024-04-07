@@ -1,4 +1,5 @@
 using Gtk;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -12,7 +13,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.IO;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.UI.Windows

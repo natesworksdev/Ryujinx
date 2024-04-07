@@ -1,3 +1,4 @@
+using Microsoft.IO;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
@@ -14,7 +15,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.IO;
 
 namespace Ryujinx.Input.Motion.CemuHook
 {

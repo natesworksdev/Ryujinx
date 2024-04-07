@@ -5,6 +5,7 @@ using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
@@ -14,7 +15,6 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {

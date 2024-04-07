@@ -1,11 +1,11 @@
 using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.IO;
 
 namespace ARMeilleure.CodeGen.Arm64
 {

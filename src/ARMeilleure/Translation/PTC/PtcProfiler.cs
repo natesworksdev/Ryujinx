@@ -1,4 +1,5 @@
 using ARMeilleure.State;
+using Microsoft.IO;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
@@ -14,7 +15,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Timers;
-using Microsoft.IO;
 using static ARMeilleure.Translation.PTC.PtcFormatter;
 using Timer = System.Timers.Timer;
 

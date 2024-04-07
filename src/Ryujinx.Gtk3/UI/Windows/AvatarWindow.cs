@@ -6,6 +6,7 @@ using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.Common.Configuration;
@@ -18,7 +19,6 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Microsoft.IO;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.UI.Windows

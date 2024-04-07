@@ -1,3 +1,4 @@
+using Microsoft.IO;
 using Ryujinx.Common;
 using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
@@ -5,7 +6,6 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.IO;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {

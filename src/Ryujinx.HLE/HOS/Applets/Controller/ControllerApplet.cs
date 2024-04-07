@@ -1,3 +1,4 @@
+using Microsoft.IO;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
@@ -7,7 +8,6 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft.IO;
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
 
 namespace Ryujinx.HLE.HOS.Applets

@@ -1,3 +1,4 @@
+using Microsoft.IO;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
@@ -5,7 +6,6 @@ using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.IO;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
