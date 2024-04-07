@@ -138,6 +138,7 @@ namespace Ryujinx.Ava
 
                 return ConvertThemeVariant(colorValues.ThemeVariant);
             }
+
             return ThemeVariant.Default;
         }
     }
