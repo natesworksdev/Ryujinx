@@ -11,6 +11,8 @@ namespace Ryujinx.ShaderTools
     {
         private class GpuAccessor : IGpuAccessor
         {
+            private const int DefaultArrayLength = 32;
+
             private readonly byte[] _data;
 
             private int _texturesCount;
@@ -58,7 +60,7 @@ namespace Ryujinx.ShaderTools
 
             public int QueryTextureArrayLengthFromBuffer(int slot)
             {
-                throw new NotImplementedException();
+                return DefaultArrayLength;
             }
         }
 

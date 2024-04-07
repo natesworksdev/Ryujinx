@@ -1,8 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
-using Ryujinx.Graphics.Shader;
 using Ryujinx.Memory.Range;
-using System;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -11,6 +9,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     readonly struct BufferTextureArrayBinding<T>
     {
+        /// <summary>
+        /// Backend texture or image array.
+        /// </summary>
         public T Array { get; }
 
         /// <summary>

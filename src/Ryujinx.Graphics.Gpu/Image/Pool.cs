@@ -212,6 +212,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             return false;
         }
 
+        /// <summary>
+        /// Checks if the pool was modified by comparing the current <seealso cref="ModifiedSequenceNumber"/> with a cached one.
+        /// </summary>
+        /// <param name="sequenceNumber">Cached modified sequence number</param>
+        /// <returns>True if the pool was modified, false otherwise</returns>
         public bool WasModified(ref int sequenceNumber)
         {
             if (sequenceNumber != ModifiedSequenceNumber)
