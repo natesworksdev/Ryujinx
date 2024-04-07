@@ -108,8 +108,6 @@ namespace Ryujinx.Ava
                     "Dark" => ThemeVariant.Dark,
                     _ => ThemeVariant.Default,
                 };
-
-                ThemeManager.OnThemeChanged();
             }
             catch (Exception)
             {
