@@ -31,8 +31,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool Bound;
 
-        public bool IsDirty => _storages == null;
-
         public ImageArray(VulkanRenderer gd, int size, bool isBuffer)
         {
             _gd = gd;

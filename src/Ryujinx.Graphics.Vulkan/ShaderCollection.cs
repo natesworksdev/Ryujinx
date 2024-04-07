@@ -1,4 +1,4 @@
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
@@ -357,7 +357,8 @@ namespace Ryujinx.Graphics.Vulkan
                         _device,
                         segments,
                         _plce,
-                        IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics, setIndex);
+                        IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics,
+                        setIndex);
                 }
             }
 
