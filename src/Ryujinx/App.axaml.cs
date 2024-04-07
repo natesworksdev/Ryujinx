@@ -101,6 +101,8 @@ namespace Ryujinx.Ava
 
                 ThemeVariant systemTheme = DetectSystemTheme();
 
+                ThemeManager.OnThemeChanged();
+
                 RequestedThemeVariant = baseStyle switch
                 {
                     "Auto" => systemTheme,
