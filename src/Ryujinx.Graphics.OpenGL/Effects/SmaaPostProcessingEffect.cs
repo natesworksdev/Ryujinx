@@ -151,8 +151,8 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             _areaTexture = new TextureStorage(_renderer, areaInfo);
             _searchTexture = new TextureStorage(_renderer, searchInfo);
 
-            var areaTexture = EmbeddedResources.ReadRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaAreaTexture.bin");
-            var searchTexture = EmbeddedResources.ReadRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaSearchTexture.bin");
+            var areaTexture = EmbeddedResources.ReadFileToRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaAreaTexture.bin");
+            var searchTexture = EmbeddedResources.ReadFileToRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaSearchTexture.bin");
 
             var areaView = _areaTexture.CreateDefaultView();
             var searchView = _searchTexture.CreateDefaultView();

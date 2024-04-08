@@ -795,15 +795,15 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (!_context.Capabilities.SupportsAstcCompression && Format.IsAstc())
             {
                 if (!AstcDecoder.TryDecodeToRgba8P(
-                        result.Memory,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        width,
-                        height,
-                        sliceDepth,
-                        levels,
-                        layers,
-                        out IMemoryOwner<byte> decoded))
+                    result.Memory,
+                    Info.FormatInfo.BlockWidth,
+                    Info.FormatInfo.BlockHeight,
+                    width,
+                    height,
+                    sliceDepth,
+                    levels,
+                    layers,
+                    out IMemoryOwner<byte> decoded))
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 

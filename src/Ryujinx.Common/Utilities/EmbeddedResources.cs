@@ -42,14 +42,14 @@ namespace Ryujinx.Common
             return StreamUtils.StreamToBytes(stream);
         }
 
-        public static IMemoryOwner<byte> ReadRentedMemory(string filename)
+        public static IMemoryOwner<byte> ReadFileToRentedMemory(string filename)
         {
             var (assembly, path) = ResolveManifestPath(filename);
 
-            return ReadRentedMemory(assembly, path);
+            return ReadFileToRentedMemory(assembly, path);
         }
 
-        public static IMemoryOwner<byte> ReadRentedMemory(Assembly assembly, string filename)
+        public static IMemoryOwner<byte> ReadFileToRentedMemory(Assembly assembly, string filename)
         {
             using var stream = GetStream(assembly, filename);
 
