@@ -21,7 +21,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
-        private readonly bool _isCompute;
 
         /// <summary>
         /// Array cache entry key.
@@ -67,6 +66,16 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 _texturePool = texturePool;
                 _samplerPool = samplerPool;
+            }
+
+            /// <summary>
+            /// Checks if the pool matches the cached pool.
+            /// </summary>
+            /// <param name="texturePool">Texture or sampler pool instance</param>
+            /// <returns>True if the pool matches, false otherwise</returns>
+            public bool MatchesPool<T>(IPool<T> pool)
+            {
+                return _texturePool == pool || _samplerPool == pool;
             }
 
             /// <summary>
@@ -531,12 +540,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        /// <param name="isCompute">Whether the bindings will be used for compute or graphics pipelines</param>
-        public TextureBindingsArrayCache(GpuContext context, GpuChannel channel, bool isCompute)
+        public TextureBindingsArrayCache(GpuContext context, GpuChannel channel)
         {
             _context = context;
             _channel = channel;
-            _isCompute = isCompute;
             _cacheFromBuffer = new Dictionary<CacheEntryFromBufferKey, CacheEntryFromBuffer>();
             _cacheFromPool = new Dictionary<CacheEntryFromPoolKey, CacheEntry>();
             _lruCache = new LinkedList<CacheEntryFromBuffer>();
@@ -757,9 +764,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             (textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(bindingInfo.CbufSlot, textureBufferIndex);
 
             bool separateSamplerBuffer = textureBufferIndex != samplerBufferIndex;
+            bool isCompute = stage == ShaderStage.Compute;
 
-            ref BufferBounds textureBufferBounds = ref _channel.BufferManager.GetUniformBufferBounds(_isCompute, stageIndex, textureBufferIndex);
-            ref BufferBounds samplerBufferBounds = ref _channel.BufferManager.GetUniformBufferBounds(_isCompute, stageIndex, samplerBufferIndex);
+            ref BufferBounds textureBufferBounds = ref _channel.BufferManager.GetUniformBufferBounds(isCompute, stageIndex, textureBufferIndex);
+            ref BufferBounds samplerBufferBounds = ref _channel.BufferManager.GetUniformBufferBounds(isCompute, stageIndex, samplerBufferIndex);
 
             CacheEntryFromBuffer entry = GetOrAddEntry(
                 texturePool,
@@ -1061,6 +1069,31 @@ namespace Ryujinx.Graphics.Gpu.Image
                 nextNode = nextNode.Next;
                 _cacheFromBuffer.Remove(toRemove.Value.Key);
                 _lruCache.Remove(toRemove);
+            }
+        }
+
+        /// <summary>
+        /// Removes all cached texture arrays matching the specified texture pool.
+        /// </summary>
+        /// <param name="pool">Texture pool</param>
+        public void RemoveAllWithPool<T>(IPool<T> pool)
+        {
+            List<CacheEntryFromPoolKey> keysToRemove = null;
+
+            foreach (CacheEntryFromPoolKey key in _cacheFromPool.Keys)
+            {
+                if (key.MatchesPool(pool))
+                {
+                    (keysToRemove ??= new()).Add(key);
+                }
+            }
+
+            if (keysToRemove != null)
+            {
+                foreach (CacheEntryFromPoolKey key in keysToRemove)
+                {
+                    _cacheFromPool.Remove(key);
+                }
             }
         }
 

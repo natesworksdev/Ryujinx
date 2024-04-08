@@ -292,6 +292,15 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
+        /// Queries host API support for separate textures and samplers.
+        /// </summary>
+        /// <returns>True if the API supports samplers and textures to be combined on the shader, false otherwise</returns>
+        bool QueryHostSupportsSeparateSampler()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Queries host GPU shader ballot support.
         /// </summary>
         /// <returns>True if the GPU and driver supports shader ballot, false otherwise</returns>

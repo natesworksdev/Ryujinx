@@ -55,6 +55,13 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             TextureOperation texOp,
             LinkedListNode<INode> node)
         {
+            if (!gpuAccessor.QueryHostSupportsSeparateSampler())
+            {
+                // We depend on combining samplers and textures in the shader being supported for this.
+
+                return false;
+            }
+
             Operand nvHandle = texOp.GetSource(0);
 
             if (nvHandle.AsgOp is not Operation handleOp ||
