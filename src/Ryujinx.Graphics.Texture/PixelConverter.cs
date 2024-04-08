@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Texture
 
                 for (int i = start; i < data.Length; i++)
                 {
-                    outputSpan[i] = (ushort)data[i];
+                    outputSpan[i] = data[i];
                 }
             }
             else
@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static IMemoryOwner<byte> ConvertR5G6B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
+        public static IMemoryOwner<byte> ConvertR5G6B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
             int offset = 0;
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static IMemoryOwner<byte> ConvertR5G5B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width, bool forceAlpha)
+        public static IMemoryOwner<byte> ConvertR5G5B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width, bool forceAlpha)
         {
             IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
             int offset = 0;
@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static IMemoryOwner<byte> ConvertA1B5G5R5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
+        public static IMemoryOwner<byte> ConvertA1B5G5R5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
             int offset = 0;
@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static IMemoryOwner<byte> ConvertR4G4B4A4ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
+        public static IMemoryOwner<byte> ConvertR4G4B4A4ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
             IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
             int offset = 0;
