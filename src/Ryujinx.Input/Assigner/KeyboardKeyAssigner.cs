@@ -21,7 +21,7 @@ namespace Ryujinx.Input.Assigner
             _keyboardState = _keyboard.GetKeyboardStateSnapshot();
         }
 
-        public bool HasAnyButtonPressed()
+        public bool IsAnyButtonPressed()
         {
             return GetPressedButton() is not null;
         }

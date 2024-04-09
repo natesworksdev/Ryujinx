@@ -66,7 +66,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                     assigner.ReadInput();
 
-                    if (assigner.HasAnyButtonPressed() || assigner.ShouldCancel() || (keyboard != null && keyboard.IsPressed(Key.Escape)))
+                    if (assigner.IsAnyButtonPressed() || assigner.ShouldCancel() || (keyboard != null && keyboard.IsPressed(Key.Escape)))
                     {
                         break;
                     }

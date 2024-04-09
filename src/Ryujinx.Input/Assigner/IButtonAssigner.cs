@@ -19,7 +19,7 @@ namespace Ryujinx.Input.Assigner
         /// Check if a button was pressed.
         /// </summary>
         /// <returns>True if a button was pressed</returns>
-        bool HasAnyButtonPressed();
+        bool IsAnyButtonPressed();
 
         /// <summary>
         /// Indicate if the user of this API should cancel operations. This is triggered for example when a gamepad get disconnected or when a user cancel assignation operations.

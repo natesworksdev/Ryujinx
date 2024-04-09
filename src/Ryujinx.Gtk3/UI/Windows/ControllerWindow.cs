@@ -889,7 +889,7 @@ namespace Ryujinx.UI.Windows
                     Thread.Sleep(10);
                     assigner.ReadInput();
 
-                    if (_mousePressed || keyboard.IsPressed(Ryujinx.Input.Key.Escape) || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
+                    if (_mousePressed || keyboard.IsPressed(Ryujinx.Input.Key.Escape) || assigner.IsAnyButtonPressed() || assigner.ShouldCancel())
                     {
                         break;
                     }

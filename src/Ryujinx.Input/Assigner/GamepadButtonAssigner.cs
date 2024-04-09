@@ -49,9 +49,9 @@ namespace Ryujinx.Input.Assigner
             CollectButtonStats();
         }
 
-        public bool HasAnyButtonPressed()
+        public bool IsAnyButtonPressed()
         {
-            return _detector.HasAnyButtonPressed();
+            return _detector.IsAnyButtonPressed();
         }
 
         public bool ShouldCancel()
@@ -123,7 +123,7 @@ namespace Ryujinx.Input.Assigner
                 _stats = new Dictionary<GamepadButtonInputId, InputSummary>();
             }
 
-            public bool HasAnyButtonPressed()
+            public bool IsAnyButtonPressed()
             {
                 return _stats.Values.Any(CheckButtonPressed);
             }
