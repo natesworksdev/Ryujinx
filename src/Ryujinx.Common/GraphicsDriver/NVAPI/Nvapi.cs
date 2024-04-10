@@ -5,7 +5,7 @@ namespace Ryujinx.Common.GraphicsDriver.NVAPI
         OglThreadControlId = 0x20C1221E,
         OglCplPreferDxPresentId = 0x20D690F8,
     }
-    
+
     enum OglThreadControl : uint
     {
         OglThreadControlDefault = 0,
