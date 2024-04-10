@@ -130,7 +130,7 @@
   "SettingsTabSystemSystemTimeZone": "Часовой пояс прошивки:",
   "SettingsTabSystemSystemTime": "Время в прошивке:",
   "SettingsTabSystemEnableVsync": "Вертикальная синхронизация",
-  "SettingsTabSystemEnablePptc": "PPTC (Profiled Persistent Translation Cache)",
+  "SettingsTabSystemEnablePptc": "Использовать PPTC (Profiled Persistent Translation Cache)",
   "SettingsTabSystemEnableFsIntegrityChecks": "Проверка целостности файловой системы",
   "SettingsTabSystemAudioBackend": "Аудио бэкенд:",
   "SettingsTabSystemAudioBackendDummy": "Без звука",
