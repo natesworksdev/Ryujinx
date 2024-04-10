@@ -11,7 +11,19 @@ namespace Ryujinx.Common.GraphicsDriver
 
             try
             {
-                NVThreadedOptimization.SetThreadedOptimization(enabled);
+                NVDriverHelper.SetThreadedOptimization(enabled);
+            }
+            catch
+            {
+                // NVAPI is not available, or couldn't change the application profile.
+            }
+        }
+
+        public static void ToggleDxgiSwapchain(bool enabled)
+        {
+            try
+            {
+                NVDriverHelper.SetDxgiSwapchain(enabled);
             }
             catch
             {

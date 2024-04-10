@@ -114,6 +114,9 @@ namespace Ryujinx.Ava
             // Enable OGL multithreading on the driver, when available.
             DriverUtilities.ToggleOGLThreading(ConfigurationState.Instance.Graphics.BackendThreading == BackendThreading.Off);
 
+            // Enable Dxgi present on the driver, when available.
+            DriverUtilities.ToggleDxgiSwapchain(true);
+
             // Check if keys exists.
             if (!File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys")))
             {
