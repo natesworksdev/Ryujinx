@@ -1,7 +1,5 @@
 using Ryujinx.Common.GraphicsDriver.NVAPI;
 using System;
-using System.ComponentModel;
-using System.Dynamic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
