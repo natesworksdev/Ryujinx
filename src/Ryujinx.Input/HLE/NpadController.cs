@@ -245,14 +245,7 @@ namespace Ryujinx.Input.HLE
         {
             if (config is StandardControllerInputConfig controllerConfig)
             {
-                bool needsMotionInputUpdate = _config == null || (_config is StandardControllerInputConfig oldControllerConfig &&
-                                                                (oldControllerConfig.Motion.EnableMotion != controllerConfig.Motion.EnableMotion) &&
-                                                                (oldControllerConfig.Motion.MotionBackend != controllerConfig.Motion.MotionBackend));
-
-                if (needsMotionInputUpdate)
-                {
-                    UpdateMotionInput(controllerConfig.Motion);
-                }
+                UpdateMotionInput(controllerConfig.Motion);
             }
             else
             {
