@@ -139,7 +139,7 @@ namespace Ryujinx.Common.GraphicsDriver
             NvdrsSetting setting = new()
             {
                 Version = MakeVersion<NvdrsSetting>(1),
-                SettingId = NvapiSettingID.OglThreadControlId,
+                SettingId = NvapiSettingId.OglThreadControlId,
                 SettingType = NvdrsSettingType.NvdrsDwordType,
                 SettingLocation = NvdrsSettingLocation.NvdrsCurrentProfileLocation,
                 IsCurrentPredefined = 0,
@@ -149,7 +149,6 @@ namespace Ryujinx.Common.GraphicsDriver
             };
 
             Check(NvAPI_DRS_SetSetting(_handle, _profileHandle, ref setting));
-
             Check(NvAPI_DRS_SaveSettings(_handle));
 
             NvAPI_DRS_DestroySession(_handle);
@@ -166,7 +165,7 @@ namespace Ryujinx.Common.GraphicsDriver
             NvdrsSetting setting = new()
             {
                 Version = MakeVersion<NvdrsSetting>(1),
-                SettingId = NvapiSettingID.OglCplPreferDxPresentId,
+                SettingId = NvapiSettingId.OglCplPreferDxPresentId,
                 SettingType = NvdrsSettingType.NvdrsDwordType,
                 SettingLocation = NvdrsSettingLocation.NvdrsCurrentProfileLocation,
                 IsCurrentPredefined = 0,
@@ -176,7 +175,6 @@ namespace Ryujinx.Common.GraphicsDriver
             };
 
             Check(NvAPI_DRS_SetSetting(_handle, _profileHandle, ref setting));
-
             Check(NvAPI_DRS_SaveSettings(_handle));
 
             NvAPI_DRS_DestroySession(_handle);
