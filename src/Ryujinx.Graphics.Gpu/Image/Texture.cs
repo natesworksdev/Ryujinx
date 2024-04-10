@@ -794,31 +794,34 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Format.IsAstc())
             {
-                if (!AstcDecoder.TryDecodeToRgba8P(
-                    result.Memory,
-                    Info.FormatInfo.BlockWidth,
-                    Info.FormatInfo.BlockHeight,
-                    width,
-                    height,
-                    sliceDepth,
-                    levels,
-                    layers,
-                    out IMemoryOwner<byte> decoded))
+                using (result)
                 {
-                    string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
-
-                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
-                }
-
-                if (GraphicsConfig.EnableTextureRecompression)
-                {
-                    using (decoded)
+                    if (!AstcDecoder.TryDecodeToRgba8P(
+                        result.Memory,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        width,
+                        height,
+                        sliceDepth,
+                        levels,
+                        layers,
+                        out IMemoryOwner<byte> decoded))
                     {
-                        return BCnEncoder.EncodeBC7(decoded.Memory, width, height, sliceDepth, levels, layers);
-                    }
-                }
+                        string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 
-                return decoded;
+                        Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
+                    }
+
+                    if (GraphicsConfig.EnableTextureRecompression)
+                    {
+                        using (decoded)
+                        {
+                            return BCnEncoder.EncodeBC7(decoded.Memory, width, height, sliceDepth, levels, layers);
+                        }
+                    }
+
+                    return decoded;
+                }
             }
             else if (!_context.Capabilities.SupportsEtc2Compression && Format.IsEtc2())
             {
