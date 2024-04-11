@@ -128,44 +128,23 @@ namespace Ryujinx.Common.GraphicsDriver
             return (uint)Unsafe.SizeOf<T>() | version << 16;
         }
 
-        public static void SetThreadedOptimization(bool enabled)
+        public static void SetControlOption(NvapiSettingId id, bool enabled)
         {
             Initialize();
 
             SetupNvProfile();
 
-            uint targetValue = (uint)(enabled ? OglThreadControl.OglThreadControlEnable : OglThreadControl.OglThreadControlDisable);
-
-            NvdrsSetting setting = new()
+            uint targetValue = id switch
             {
-                Version = MakeVersion<NvdrsSetting>(1),
-                SettingId = NvapiSettingId.OglThreadControlId,
-                SettingType = NvdrsSettingType.NvdrsDwordType,
-                SettingLocation = NvdrsSettingLocation.NvdrsCurrentProfileLocation,
-                IsCurrentPredefined = 0,
-                IsPredefinedValid = 0,
-                CurrentValue = targetValue,
-                PredefinedValue = targetValue,
+                NvapiSettingId.OglThreadControlId => (uint)(enabled ? OglThreadControl.OglThreadControlEnable : OglThreadControl.OglThreadControlDisable),
+                NvapiSettingId.OglCplPreferDxPresentId => (uint)(enabled ? OglCplDxPresent.OglCplPreferDxPresentEnable : OglCplDxPresent.OglCplPreferDxPresentDisable),
+                _ => throw new ArgumentException(),
             };
 
-            Check(NvAPI_DRS_SetSetting(_handle, _profileHandle, ref setting));
-            Check(NvAPI_DRS_SaveSettings(_handle));
-
-            NvAPI_DRS_DestroySession(_handle);
-        }
-
-        public static void SetDxgiSwapchain(bool enabled)
-        {
-            Initialize();
-
-            SetupNvProfile();
-
-            uint targetValue = (uint)(enabled ? OglCplDxPresent.OglCplPreferDxPresentEnable : OglCplDxPresent.OglCplPreferDxPresentDisable);
-
             NvdrsSetting setting = new()
             {
                 Version = MakeVersion<NvdrsSetting>(1),
-                SettingId = NvapiSettingId.OglCplPreferDxPresentId,
+                SettingId = id,
                 SettingType = NvdrsSettingType.NvdrsDwordType,
                 SettingLocation = NvdrsSettingLocation.NvdrsCurrentProfileLocation,
                 IsCurrentPredefined = 0,

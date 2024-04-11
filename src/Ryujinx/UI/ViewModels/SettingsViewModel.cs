@@ -12,6 +12,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
+using Ryujinx.Common.GraphicsDriver.NVAPI;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
@@ -529,7 +530,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
-                DriverUtilities.ToggleOGLThreading(GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
+                DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglThreadControlId, GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
             }
 
             config.Graphics.BackendThreading.Value = (BackendThreading)GraphicsBackendMultithreadingIndex;
