@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using System;
 
 namespace Ryujinx.Common.GraphicsDriver
@@ -15,7 +16,7 @@ namespace Ryujinx.Common.GraphicsDriver
             }
             catch
             {
-                // NVAPI is not available, or couldn't change the application profile.
+                Logger.Warning?.Print(LogClass.Application, "Failed to set threaded optimizations. NVAPI may be unavailable.");
             }
         }
 
@@ -27,7 +28,7 @@ namespace Ryujinx.Common.GraphicsDriver
             }
             catch
             {
-                // NVAPI is not available, or couldn't change the application profile.
+                Logger.Warning?.Print(LogClass.Application, "Failed to set Vulkan/OpenGL present method. NVAPI may be unavailable.");
             }
         }
     }
