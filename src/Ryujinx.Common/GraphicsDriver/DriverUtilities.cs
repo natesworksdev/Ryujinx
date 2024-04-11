@@ -8,7 +8,7 @@ namespace Ryujinx.Common.GraphicsDriver
     {
         public static void ToggleNvDriverSetting(NvapiSettingId id, bool enabled)
         {
-            try 
+            try
             {
                 if (id == NvapiSettingId.OglThreadControlId)
                 {
