@@ -315,6 +315,7 @@ namespace Ryujinx.Ava
                             bitmapToSave = new SKBitmap(bitmap.Width, bitmap.Height);
 
                             using var canvas = new SKCanvas(bitmapToSave);
+
                             canvas.Clear(SKColors.Transparent);
 
                             float scaleX = e.FlipX ? -1 : 1;
@@ -324,8 +325,7 @@ namespace Ryujinx.Ava
 
                             canvas.SetMatrix(matrix);
 
-                            SKPoint drawPosition = new SKPoint(e.FlipX ? -bitmap.Width : 0, e.FlipY ? -bitmap.Height : 0);
-                            canvas.DrawBitmap(bitmap, drawPosition);
+                            canvas.DrawBitmap(bitmap, new SKPoint(e.FlipX ? -bitmap.Width : 0, e.FlipY ? -bitmap.Height : 0));
                         }
 
                         SaveBitmapAsPng(bitmapToSave ?? bitmap, path);
@@ -345,6 +345,7 @@ namespace Ryujinx.Ava
         {
             using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
             using var stream = File.OpenWrite(path);
+
             data.SaveTo(stream);
         }
 

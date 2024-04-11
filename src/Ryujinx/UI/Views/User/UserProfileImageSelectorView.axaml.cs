@@ -110,6 +110,7 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 using var image = SKImage.FromBitmap(resizedBitmap);
                 using var dataJpeg = image.Encode(SKEncodedImageFormat.Jpeg, 100);
+
                 dataJpeg.SaveTo(streamJpg);
             }
 

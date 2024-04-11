@@ -68,8 +68,8 @@ namespace Ryujinx.Ava.UI.Views.User
             {
                 using var streamJpg = new MemoryStream();
                 using var bitmap = SKBitmap.Decode(ViewModel.SelectedImage);
-
                 using var newBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
+
                 using (var canvas = new SKCanvas(newBitmap))
                 {
                     canvas.Clear(new SKColor(

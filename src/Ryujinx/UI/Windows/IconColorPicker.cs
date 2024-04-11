@@ -124,6 +124,7 @@ namespace Ryujinx.Ava.UI.Windows
         public static SKColor[] GetBuffer(SKBitmap image)
         {
             var pixels = new SKColor[image.Width * image.Height];
+
             for (int y = 0; y < image.Height; y++)
             {
                 for (int x = 0; x < image.Width; x++)
@@ -131,6 +132,7 @@ namespace Ryujinx.Ava.UI.Windows
                     pixels[x + y * image.Width] = image.GetPixel(x, y);
                 }
             }
+
             return pixels;
         }
 
