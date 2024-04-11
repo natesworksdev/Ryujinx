@@ -39,7 +39,10 @@ namespace Ryujinx.Ava.UI.Windows
         {
             var color = GetColor(image);
 
-            // Luminosity calculation
+
+            // We don't want colors that are too dark.
+            // If the color is too dark, make it brighter by reducing the range
+            // and adding a constant color.
             int luminosity = GetColorApproximateLuminosity(color.Red, color.Green, color.Blue);
             if (luminosity < CutOffLuminosity)
             {
