@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Input
 {
@@ -33,5 +34,12 @@ namespace Ryujinx.Input
         /// <param name="id">The unique id of the gamepad</param>
         /// <returns>An instance of <see cref="IGamepad"/> associated to the gamepad id given or null if not found</returns>
         IGamepad GetGamepad(string id);
+
+        /// <summary>
+        /// Flush the internal state of the driver.
+        /// </summary>
+        /// <remarks>Does nothing by default.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void Flush() { }
     }
 }
