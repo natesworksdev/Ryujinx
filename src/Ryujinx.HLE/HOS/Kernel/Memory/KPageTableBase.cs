@@ -1569,7 +1569,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     while (size > 0)
                     {
-                        ulong copySize = 0x100000; // Copy chunck size. Any value will do, moderate sizes are recommended.
+                        // Copy chunk size. Previous impl created copies to write using GetSpan(), and moderate sizes
+                        // were recommended to avoid allocating very large temporary buffers. Since moving to use
+                        // ReadOnlySequence<byte> and reading directly, we set the copySize to the max size of a
+                        // segment: Int32.MaxValue.
+                        ulong copySize = int.MaxValue;
 
                         if (copySize > size)
                         {
@@ -1578,11 +1582,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                         if (toServer)
                         {
-                            currentProcess.CpuMemory.Write(serverAddress, GetSpan(clientAddress, (int)copySize));
+                            currentProcess.CpuMemory.Write(serverAddress, GetReadOnlySequence(clientAddress, (int)copySize));
                         }
                         else
                         {
-                            Write(clientAddress, currentProcess.CpuMemory.GetSpan(serverAddress, (int)copySize));
+                            Write(clientAddress, currentProcess.CpuMemory.GetReadOnlySequence(serverAddress, (int)copySize));
                         }
 
                         serverAddress += copySize;
@@ -1912,9 +1916,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     Context.Memory.Fill(GetDramAddressFromPa(dstFirstPagePa), unusedSizeBefore, (byte)_ipcFillValue);
 
                     ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
-                    var data = srcPageTable.GetSpan(addressTruncated + unusedSizeBefore, (int)copySize);
+                    var data = srcPageTable.GetReadOnlySequence(addressTruncated + unusedSizeBefore, (int)copySize);
 
-                    Context.Memory.Write(GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore), data);
+                    ((IWritableBlock)Context.Memory).Write(GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore), data);
 
                     firstPageFillAddress += unusedSizeBefore + copySize;
 
@@ -1978,9 +1982,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 if (send)
                 {
                     ulong copySize = endAddr - endAddrTruncated;
-                    var data = srcPageTable.GetSpan(endAddrTruncated, (int)copySize);
+                    var data = srcPageTable.GetReadOnlySequence(endAddrTruncated, (int)copySize);
 
-                    Context.Memory.Write(GetDramAddressFromPa(dstLastPagePa), data);
+                    ((IWritableBlock)Context.Memory).Write(GetDramAddressFromPa(dstLastPagePa), data);
 
                     lastPageFillAddr += copySize;
 
