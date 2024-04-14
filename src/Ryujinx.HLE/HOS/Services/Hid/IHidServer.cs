@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
-	private bool _NpadAnalogStickCenterClampEnabled;
+	    private bool _NpadAnalogStickCenterClampEnabled;
         private bool _vibrationPermitted;
         private bool _usbFullKeyControllerEnabled;
         private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
@@ -1117,7 +1117,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
 
             return ResultCode.Success;
-              }
+        }
 
         [CommandCmif(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
