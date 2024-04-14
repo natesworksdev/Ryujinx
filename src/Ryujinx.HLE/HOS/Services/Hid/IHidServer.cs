@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
-        private bool _NpadAnalogStickCenterClampEnabled;
+        private bool _npadAnalogStickCenterClampEnabled;
         private bool _vibrationPermitted;
         private bool _usbFullKeyControllerEnabled;
         private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
@@ -1107,8 +1107,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             //       If one is found, it returns the npadIdType of the other Npad and a bool.
             //       If not, it returns nothing.
         }
-        [CommandCmif(134)] //6.1.0+
-        //SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)
+        [CommandCmif(134)] // 6.1.0+
+        // SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
         {
             _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
