@@ -22,6 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
+	private bool _NpadAnalogStickCenterClampEnabled;
         private bool _vibrationPermitted;
         private bool _usbFullKeyControllerEnabled;
         private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
@@ -1094,6 +1095,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             return ResultCode.Success;
         }
+	[CommandCmif(134)] //6.1.0+
+	//SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)  
+	public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
+	{
+	    _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
+	    long appletResourceUserId = context.RequestData.ReadInt64();
+
+	    Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
+
+	    return ResultCode.Success;
+	}
 
         private void SetNpadJoyAssignmentModeSingleWithDestinationImpl(ServiceCtx context, NpadIdType npadIdType, long appletResourceUserId, NpadJoyDeviceType npadJoyDeviceType, out NpadIdType npadIdTypeSet, out bool npadIdTypeIsSet)
         {
