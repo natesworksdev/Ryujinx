@@ -1111,7 +1111,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
         {
-            _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
+            _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadUInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
