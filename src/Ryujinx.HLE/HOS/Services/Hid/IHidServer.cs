@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
-	    private bool _NpadAnalogStickCenterClampEnabled;
+        private bool _NpadAnalogStickCenterClampEnabled;
         private bool _vibrationPermitted;
         private bool _usbFullKeyControllerEnabled;
         private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
