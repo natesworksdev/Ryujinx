@@ -1108,16 +1108,16 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             //       If not, it returns nothing.
         }
         [CommandCmif(134)] //6.1.0+
-	    //SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)  
-	    public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
-	    {
-	        _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
-	        long appletResourceUserId = context.RequestData.ReadInt64();
+        //SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)
+        public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
+        {
+            _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
+            long appletResourceUserId = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
 
             return ResultCode.Success;
-        }
+    }
 
         [CommandCmif(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
