@@ -1095,17 +1095,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             return ResultCode.Success;
         }
-	[CommandCmif(134)] //6.1.0+
-	//SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)  
-	public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
-	{
-	    _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
-	    long appletResourceUserId = context.RequestData.ReadInt64();
-
-	    Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
-
-	    return ResultCode.Success;
-	}
 
         private void SetNpadJoyAssignmentModeSingleWithDestinationImpl(ServiceCtx context, NpadIdType npadIdType, long appletResourceUserId, NpadJoyDeviceType npadJoyDeviceType, out NpadIdType npadIdTypeSet, out bool npadIdTypeIsSet)
         {
@@ -1118,6 +1107,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             //       If one is found, it returns the npadIdType of the other Npad and a bool.
             //       If not, it returns nothing.
         }
+        [CommandCmif(134)] //6.1.0+
+	    //SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)  
+	    public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
+	    {
+	        _NpadAnalogStickCenterClampEnabled = context.RequestData.ReadBoolean();
+	        long appletResourceUserId = context.RequestData.ReadInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
+
+            return ResultCode.Success;
+              }
 
         [CommandCmif(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
