@@ -1117,7 +1117,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _NpadAnalogStickCenterClampEnabled });
 
             return ResultCode.Success;
-    }
+        }
 
         [CommandCmif(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
