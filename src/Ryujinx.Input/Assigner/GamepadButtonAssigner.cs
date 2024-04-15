@@ -63,12 +63,7 @@ namespace Ryujinx.Input.Assigner
         {
             IEnumerable<GamepadButtonInputId> pressedButtons = _detector.GetPressedButtons();
 
-            if (pressedButtons.Any())
-            {
-                return !_forStick ? new(pressedButtons.First()) : new(((StickInputId)pressedButtons.First()));
-            }
-
-            return null;
+            return !_forStick ? new(pressedButtons.FirstOrDefault()) : new((StickInputId)pressedButtons.FirstOrDefault());
         }
 
         private void CollectButtonStats()
