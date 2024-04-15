@@ -121,34 +121,35 @@ namespace Ryujinx.UI.Helper
         {
             string keyString = "";
 
-            if (button.Type == ButtonType.Key)
+            switch (button.Type)
             {
-                var key = button.AsHidType<Key>();
+                case ButtonType.Key:
+                    var key = button.AsHidType<Key>();
 
-                if (!_keysMap.TryGetValue(button.AsHidType<Key>(), out keyString))
-                {
-                    keyString = key.ToString();
-                }
-            }
+                    if (!_keysMap.TryGetValue(button.AsHidType<Key>(), out keyString))
+                    {
+                        keyString = key.ToString();
+                    }
 
-            if (button.Type == ButtonType.GamepadButtonInputId)
-            {
-                var gamepadButton = button.AsHidType<GamepadInputId>();
+                    break;
+                case ButtonType.GamepadButtonInputId:
+                    var gamepadButton = button.AsHidType<GamepadInputId>();
 
-                if (!_gamepadInputIdMap.TryGetValue(button.AsHidType<GamepadInputId>(), out keyString))
-                {
-                    keyString = gamepadButton.ToString();
-                }
-            }
+                    if (!_gamepadInputIdMap.TryGetValue(button.AsHidType<GamepadInputId>(), out keyString))
+                    {
+                        keyString = gamepadButton.ToString();
+                    }
 
-            if (button.Type == ButtonType.StickId)
-            {
-                var stickInput = button.AsHidType<StickInputId>();
+                    break;
+                case ButtonType.StickId:
+                    var stickInput = button.AsHidType<StickInputId>();
 
-                if (!_stickInputIdMap.TryGetValue(button.AsHidType<StickInputId>(), out keyString))
-                {
-                    keyString = stickInput.ToString();
-                }
+                    if (!_stickInputIdMap.TryGetValue(button.AsHidType<StickInputId>(), out keyString))
+                    {
+                        keyString = stickInput.ToString();
+                    }
+
+                    break;
             }
 
             return keyString;

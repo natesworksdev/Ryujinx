@@ -123,53 +123,54 @@ namespace Ryujinx.Ava.UI.Helpers
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string keyString = "";
+            LocaleKeys localeKey;
 
-            if (value is Key key)
+            switch (value)
             {
-                if (_keysMap.TryGetValue(key, out LocaleKeys localeKey))
-                {
-                    if (OperatingSystem.IsMacOS())
+                case Key key:
+                    if (_keysMap.TryGetValue(key, out localeKey))
                     {
-                        localeKey = localeKey switch
+                        if (OperatingSystem.IsMacOS())
                         {
-                            LocaleKeys.KeyControlLeft => LocaleKeys.KeyMacControlLeft,
-                            LocaleKeys.KeyControlRight => LocaleKeys.KeyMacControlRight,
-                            LocaleKeys.KeyAltLeft => LocaleKeys.KeyMacAltLeft,
-                            LocaleKeys.KeyAltRight => LocaleKeys.KeyMacAltRight,
-                            LocaleKeys.KeyWinLeft => LocaleKeys.KeyMacWinLeft,
-                            LocaleKeys.KeyWinRight => LocaleKeys.KeyMacWinRight,
-                            _ => localeKey
-                        };
-                    }
+                            localeKey = localeKey switch
+                            {
+                                LocaleKeys.KeyControlLeft => LocaleKeys.KeyMacControlLeft,
+                                LocaleKeys.KeyControlRight => LocaleKeys.KeyMacControlRight,
+                                LocaleKeys.KeyAltLeft => LocaleKeys.KeyMacAltLeft,
+                                LocaleKeys.KeyAltRight => LocaleKeys.KeyMacAltRight,
+                                LocaleKeys.KeyWinLeft => LocaleKeys.KeyMacWinLeft,
+                                LocaleKeys.KeyWinRight => LocaleKeys.KeyMacWinRight,
+                                _ => localeKey
+                            };
+                        }
 
-                    keyString = LocaleManager.Instance[localeKey];
-                }
-                else
-                {
-                    keyString = key.ToString();
-                }
-            }
-            else if (value is GamepadInputId gamepadInputId)
-            {
-                if (_gamepadInputIdMap.TryGetValue(gamepadInputId, out LocaleKeys localeKey))
-                {
-                    keyString = LocaleManager.Instance[localeKey];
-                }
-                else
-                {
-                    keyString = gamepadInputId.ToString();
-                }
-            }
-            else if (value is StickInputId stickInputId)
-            {
-                if (_stickInputIdMap.TryGetValue(stickInputId, out LocaleKeys localeKey))
-                {
-                    keyString = LocaleManager.Instance[localeKey];
-                }
-                else
-                {
-                    keyString = stickInputId.ToString();
-                }
+                        keyString = LocaleManager.Instance[localeKey];
+                    }
+                    else
+                    {
+                        keyString = key.ToString();
+                    }
+                    break;
+                case GamepadInputId gamepadInputId:
+                    if (_gamepadInputIdMap.TryGetValue(gamepadInputId, out localeKey))
+                    {
+                        keyString = LocaleManager.Instance[localeKey];
+                    }
+                    else
+                    {
+                        keyString = gamepadInputId.ToString();
+                    }
+                    break;
+                case StickInputId stickInputId:
+                    if (_stickInputIdMap.TryGetValue(stickInputId, out localeKey))
+                    {
+                        keyString = LocaleManager.Instance[localeKey];
+                    }
+                    else
+                    {
+                        keyString = stickInputId.ToString();
+                    }
+                    break;
             }
 
             return keyString;
