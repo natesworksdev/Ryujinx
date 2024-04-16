@@ -68,7 +68,7 @@ namespace Ryujinx.Modules
 
             DetectPlatform();
 
-            Version currentVersion = GetCurrentVersion();
+            Version currentVersion = await GetCurrentVersion();
             if (currentVersion == null)
             {
                 return;
@@ -110,7 +110,7 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static Version GetCurrentVersion()
+        private static async Task<Version> GetCurrentVersion()
         {
             try
             {
@@ -120,7 +120,7 @@ namespace Ryujinx.Modules
             {
                 Logger.Error?.Print(LogClass.Application, "Failed to convert the current Ryujinx version!");
 
-                ContentDialogHelper.CreateWarningDialog(
+                await ContentDialogHelper.CreateWarningDialog(
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedMessage],
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage]);
                 _running = false;
@@ -195,6 +195,7 @@ namespace Ryujinx.Modules
             }
         }
 
+        // Fetch build size information to learn chunk sizes.
         private static async Task FetchBuildSizeInfo()
         {
             try
@@ -310,7 +311,10 @@ namespace Ryujinx.Modules
             }
             else
             {
-                string ryuName = Path.GetFileName(Environment.ProcessPath) ?? (OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx");
+                string ryuName = Path.GetFileName(Environment.ProcessPath) ?? string.Empty;
+
+                // Migration: Start the updated binary.
+                // TODO: Remove this in a future update.
                 if (ryuName.StartsWith("Ryujinx.Ava"))
                 {
                     ryuName = ryuName.Replace(".Ava", "");
@@ -327,7 +331,7 @@ namespace Ryujinx.Modules
                     ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
                 }
 
-                ProcessStartInfo processStart = new ProcessStartInfo(ryuName)
+                ProcessStartInfo processStart = new(ryuName)
                 {
                     UseShellExecute = true,
                     WorkingDirectory = executableDirectory,
@@ -418,7 +422,7 @@ namespace Ryujinx.Modules
             byte[] buffer = new byte[8192];
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Range = new RangeHeaderValue(start, end);
-            HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             using var stream = await response.Content.ReadAsStreamAsync();
             using var memoryStream = new MemoryStream();
             int bytesRead;
