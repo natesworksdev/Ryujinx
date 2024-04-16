@@ -74,7 +74,8 @@ namespace Ryujinx.Modules
                 return;
             }
 
-            string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+            //string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+            string buildInfoUrl = $"{GitHubApiUrl}/repos/Ryujinx/release-channel-master/releases/latest"; // Temporary code, will revert back
             if (!await TryUpdateVersionInfo(buildInfoUrl, showVersionUpToDate))
             {
                 return;
@@ -114,7 +115,8 @@ namespace Ryujinx.Modules
         {
             try
             {
-                return Version.Parse(Program.Version);
+                //return Version.Parse(Program.Version);
+                return Version.Parse("1.1.0"); // Temporary code, will revert back
             }
             catch
             {
@@ -663,7 +665,7 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
+            /*if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
             {
                 if (showWarnings)
                 {
@@ -675,7 +677,7 @@ namespace Ryujinx.Modules
                 }
 
                 return false;
-            }
+            }*/ // Temporary commented out, will revert back
 
             return true;
 #else
