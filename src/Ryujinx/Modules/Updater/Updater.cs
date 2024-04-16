@@ -228,16 +228,6 @@ namespace Ryujinx.Modules
             }
         };
 
-        private static HttpClient ConstructHttpClient()
-        {
-            HttpClient result = new();
-
-            // Required by GitHub to interact with APIs.
-            result.DefaultRequestHeaders.Add("User-Agent", "Ryujinx-Updater/1.0.0");
-
-            return result;
-        }
-
         private static async Task UpdateRyujinx(Window parent, string downloadUrl)
         {
             _updateSuccessful = false;
