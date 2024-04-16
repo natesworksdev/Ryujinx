@@ -95,10 +95,9 @@ namespace Ryujinx.Modules
             // Get latest version number from GitHub API
             try
             {
-                using HttpClient jsonClient = ConstructHttpClient();
 
                 string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
-                string fetchedJson = await jsonClient.GetStringAsync(buildInfoUrl);
+                string fetchedJson = await httpClient.GetStringAsync(buildInfoUrl);
                 var fetched = JsonHelper.Deserialize(fetchedJson, _serializerContext.GithubReleasesJsonResponse);
                 _buildVer = fetched.Name;
 
@@ -185,12 +184,11 @@ namespace Ryujinx.Modules
             }
 
             // Fetch build size information to learn chunk sizes.
-            using HttpClient buildSizeClient = ConstructHttpClient();
             try
             {
-                buildSizeClient.DefaultRequestHeaders.Add("Range", "bytes=0-0");
+                httpClient.DefaultRequestHeaders.Add("Range", "bytes=0-0");
 
-                HttpResponseMessage message = await buildSizeClient.GetAsync(new Uri(_buildUrl), HttpCompletionOption.ResponseHeadersRead);
+                HttpResponseMessage message = await httpClient.GetAsync(new Uri(_buildUrl), HttpCompletionOption.ResponseHeadersRead);
 
                 _buildSize = message.Content.Headers.ContentRange.Length.Value;
             }
@@ -220,6 +218,15 @@ namespace Ryujinx.Modules
                 }
             });
         }
+
+        private static readonly HttpClient httpClient = new HttpClient
+        {
+            // Required by GitHub to interact with APIs.
+            DefaultRequestHeaders =
+            {
+                { "User-Agent", "Ryujinx-Updater/1.0.0" }
+            }
+        };
 
         private static HttpClient ConstructHttpClient()
         {
