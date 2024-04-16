@@ -49,6 +49,14 @@ namespace Ryujinx.Modules
 
         private static readonly string[] _windowsDependencyDirs = Array.Empty<string>();
 
+        private static readonly HttpClient httpClient = new HttpClient
+        {
+            DefaultRequestHeaders =
+            {
+                { "User-Agent", "Ryujinx-Updater/1.0.0" }
+            }
+        };
+
         public static async Task BeginParse(Window mainWindow, bool showVersionUpToDate)
         {
             if (_running)
@@ -58,7 +66,35 @@ namespace Ryujinx.Modules
 
             _running = true;
 
-            // Detect current platform
+            DetectPlatform();
+
+            Version currentVersion = GetCurrentVersion();
+            if (currentVersion == null)
+            {
+                return;
+            }
+
+            string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
+            if (!await TryUpdateVersionInfo(buildInfoUrl, showVersionUpToDate))
+            {
+                return;
+            }
+
+            if (!await HandleVersionComparison(currentVersion, showVersionUpToDate))
+            {
+                return;
+            }
+
+            await FetchBuildSizeInfo();
+
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await ShowUpdateDialogAndExecute(mainWindow);
+            });
+        }
+
+        private static void DetectPlatform()
+        {
             if (OperatingSystem.IsMacOS())
             {
                 _platformExt = "macos_universal.app.tar.gz";
@@ -72,164 +108,134 @@ namespace Ryujinx.Modules
                 var arch = RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "arm64" : "x64";
                 _platformExt = $"linux_{arch}.tar.gz";
             }
+        }
 
-            Version newVersion;
-            Version currentVersion;
-
+        private static Version GetCurrentVersion()
+        {
             try
             {
-                currentVersion = Version.Parse(Program.Version);
+                return Version.Parse(Program.Version);
             }
             catch
             {
                 Logger.Error?.Print(LogClass.Application, "Failed to convert the current Ryujinx version!");
 
-                await ContentDialogHelper.CreateWarningDialog(
+                ContentDialogHelper.CreateWarningDialog(
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedMessage],
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage]);
-
                 _running = false;
-
-                return;
+                return null;
             }
+        }
 
-            // Get latest version number from GitHub API
+        private static async Task<bool> TryUpdateVersionInfo(string buildInfoUrl, bool showVersionUpToDate)
+        {
             try
             {
-
-                string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
-                string fetchedJson = await httpClient.GetStringAsync(buildInfoUrl);
+                HttpResponseMessage response = await SendAsyncWithHeaders(buildInfoUrl);
+                string fetchedJson = await response.Content.ReadAsStringAsync();
                 var fetched = JsonHelper.Deserialize(fetchedJson, _serializerContext.GithubReleasesJsonResponse);
                 _buildVer = fetched.Name;
 
                 foreach (var asset in fetched.Assets)
                 {
-                    if (asset.Name.StartsWith("ryujinx") && asset.Name.EndsWith(_platformExt))
+                    if (asset.Name.StartsWith("ryujinx") && asset.Name.EndsWith(_platformExt) && asset.State == "uploaded")
                     {
                         _buildUrl = asset.BrowserDownloadUrl;
-
-                        if (asset.State != "uploaded")
-                        {
-                            if (showVersionUpToDate)
-                            {
-                                await ContentDialogHelper.CreateUpdaterInfoDialog(
-                                    LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
-                                    "");
-                            }
-
-                            _running = false;
-
-                            return;
-                        }
-
-                        break;
+                        return true;
                     }
                 }
 
-                // If build not done, assume no new update are available.
-                if (_buildUrl is null)
+                if (_buildUrl == null && showVersionUpToDate)
                 {
-                    if (showVersionUpToDate)
-                    {
-                        await ContentDialogHelper.CreateUpdaterInfoDialog(
-                            LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
-                            "");
-                    }
-
-                    _running = false;
-
-                    return;
+                    await ContentDialogHelper.CreateUpdaterInfoDialog(
+                        LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage], "");
                 }
+
+                _running = false;
+                return false;
             }
             catch (Exception exception)
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
-
                 await ContentDialogHelper.CreateErrorDialog(
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterFailedToGetVersionMessage]);
-
                 _running = false;
-
-                return;
+                return false;
             }
+        }
 
+        private static async Task<bool> HandleVersionComparison(Version currentVersion, bool showVersionUpToDate)
+        {
             try
             {
-                newVersion = Version.Parse(_buildVer);
+                Version newVersion = Version.Parse(_buildVer);
+                if (newVersion <= currentVersion)
+                {
+                    if (showVersionUpToDate)
+                    {
+                        await ContentDialogHelper.CreateUpdaterInfoDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage], "");
+                    }
+
+                    _running = false;
+                    return false;
+                }
+
+                return true;
             }
             catch
             {
                 Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from Github!");
-
                 await ContentDialogHelper.CreateWarningDialog(
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterConvertFailedGithubMessage],
                     LocaleManager.Instance[LocaleKeys.DialogUpdaterCancelUpdateMessage]);
-
                 _running = false;
-
-                return;
+                return false;
             }
+        }
 
-            if (newVersion <= currentVersion)
-            {
-                if (showVersionUpToDate)
-                {
-                    await ContentDialogHelper.CreateUpdaterInfoDialog(
-                        LocaleManager.Instance[LocaleKeys.DialogUpdaterAlreadyOnLatestVersionMessage],
-                        "");
-                }
-
-                _running = false;
-
-                return;
-            }
-
-            // Fetch build size information to learn chunk sizes.
+        private static async Task FetchBuildSizeInfo()
+        {
             try
             {
-                httpClient.DefaultRequestHeaders.Range = new RangeHeaderValue(0, 0);
-
-                HttpResponseMessage message = await httpClient.GetAsync(new Uri(_buildUrl), HttpCompletionOption.ResponseHeadersRead);
-
+                HttpResponseMessage message = await SendAsyncWithHeaders(_buildUrl, new RangeHeaderValue(0, 0));
                 _buildSize = message.Content.Headers.ContentRange.Length.Value;
-
-                httpClient.DefaultRequestHeaders.Remove("Range");
             }
             catch (Exception ex)
             {
                 Logger.Warning?.Print(LogClass.Application, ex.Message);
                 Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, using single-threaded updater");
-
                 _buildSize = -1;
             }
-
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                // Show a message asking the user if they want to update
-                var shouldUpdate = await ContentDialogHelper.CreateChoiceDialog(
-                    LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
-                    LocaleManager.Instance[LocaleKeys.RyujinxUpdaterMessage],
-                    $"{Program.Version} -> {newVersion}");
-
-                if (shouldUpdate)
-                {
-                    await UpdateRyujinx(mainWindow, _buildUrl);
-                }
-                else
-                {
-                    _running = false;
-                }
-            });
         }
 
-        private static readonly HttpClient httpClient = new HttpClient
+        private static async Task ShowUpdateDialogAndExecute(Window mainWindow)
         {
-            // Required by GitHub to interact with APIs.
-            DefaultRequestHeaders =
+            var shouldUpdate = await ContentDialogHelper.CreateChoiceDialog(
+                LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
+                LocaleManager.Instance[LocaleKeys.RyujinxUpdaterMessage],
+                $"{Program.Version} -> {_buildVer}");
+
+            if (shouldUpdate)
             {
-                { "User-Agent", "Ryujinx-Updater/1.0.0" }
+                await UpdateRyujinx(mainWindow, _buildUrl);
             }
-        };
+            else
+            {
+                _running = false;
+            }
+        }
+
+        private static async Task<HttpResponseMessage> SendAsyncWithHeaders(string url, RangeHeaderValue range = null)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            if (range != null)
+            {
+                request.Headers.Range = range;
+            }
+            return await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        }
 
         private static async Task UpdateRyujinx(Window parent, string downloadUrl)
         {
@@ -274,68 +280,68 @@ namespace Ryujinx.Modules
 
                 if (!OperatingSystem.IsMacOS())
                 {
-                    shouldRestart = await ContentDialogHelper.CreateChoiceDialog(LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
+                    shouldRestart = await ContentDialogHelper.CreateChoiceDialog(
+                        LocaleManager.Instance[LocaleKeys.RyujinxUpdater],
                         LocaleManager.Instance[LocaleKeys.DialogUpdaterCompleteMessage],
                         LocaleManager.Instance[LocaleKeys.DialogUpdaterRestartMessage]);
                 }
 
                 if (shouldRestart)
                 {
-                    List<string> arguments = CommandLineState.Arguments.ToList();
-                    string executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-                    // On macOS we perform the update at relaunch.
-                    if (OperatingSystem.IsMacOS())
-                    {
-                        string baseBundlePath = Path.GetFullPath(Path.Combine(executableDirectory, "..", ".."));
-                        string newBundlePath = Path.Combine(_updateDir, "Ryujinx.app");
-                        string updaterScriptPath = Path.Combine(newBundlePath, "Contents", "Resources", "updater.sh");
-                        string currentPid = Environment.ProcessId.ToString();
-
-                        arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, newBundlePath, currentPid });
-                        Process.Start("/bin/bash", arguments);
-                    }
-                    else
-                    {
-                        // Find the process name.
-                        string ryuName = Path.GetFileName(Environment.ProcessPath) ?? string.Empty;
-
-                        // Migration: Start the updated binary.
-                        // TODO: Remove this in a future update.
-                        if (ryuName.StartsWith("Ryujinx.Ava"))
-                        {
-                            ryuName = ryuName.Replace(".Ava", "");
-                        }
-
-                        // Some operating systems can see the renamed executable, so strip off the .ryuold if found.
-                        if (ryuName.EndsWith(".ryuold"))
-                        {
-                            ryuName = ryuName[..^7];
-                        }
-
-                        // Fallback if the executable could not be found.
-                        if (ryuName.Length == 0 || !Path.Exists(Path.Combine(executableDirectory, ryuName)))
-                        {
-                            ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
-                        }
-
-                        ProcessStartInfo processStart = new(ryuName)
-                        {
-                            UseShellExecute = true,
-                            WorkingDirectory = executableDirectory,
-                        };
-
-                        foreach (string argument in CommandLineState.Arguments)
-                        {
-                            processStart.ArgumentList.Add(argument);
-                        }
-
-                        Process.Start(processStart);
-                    }
-
-                    Environment.Exit(0);
+                    RestartApplication(parent);
                 }
             }
+        }
+
+        private static void RestartApplication(Window parent)
+        {
+            List<string> arguments = CommandLineState.Arguments.ToList();
+            string executableDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (OperatingSystem.IsMacOS())
+            {
+                string baseBundlePath = Path.GetFullPath(Path.Combine(executableDirectory, "..", ".."));
+                string newBundlePath = Path.Combine(_updateDir, "Ryujinx.app");
+                string updaterScriptPath = Path.Combine(newBundlePath, "Contents", "Resources", "updater.sh");
+                string currentPid = Environment.ProcessId.ToString();
+
+                arguments.InsertRange(0, new List<string> { updaterScriptPath, baseBundlePath, newBundlePath, currentPid });
+                Process.Start("/bin/bash", arguments);
+            }
+            else
+            {
+                string ryuName = Path.GetFileName(Environment.ProcessPath) ?? (OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx");
+                if (ryuName.StartsWith("Ryujinx.Ava"))
+                {
+                    ryuName = ryuName.Replace(".Ava", "");
+                }
+
+                if (ryuName.EndsWith(".ryuold"))
+                {
+                    ryuName = ryuName[..^7];
+                }
+
+                // Fallback if the executable could not be found.
+                if (ryuName.Length == 0 || !Path.Exists(Path.Combine(executableDirectory, ryuName)))
+                {
+                    ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
+                }
+
+                ProcessStartInfo processStart = new ProcessStartInfo(ryuName)
+                {
+                    UseShellExecute = true,
+                    WorkingDirectory = executableDirectory,
+                };
+
+                foreach (string argument in arguments)
+                {
+                    processStart.ArgumentList.Add(argument);
+                }
+
+                Process.Start(processStart);
+            }
+
+            Environment.Exit(0);
         }
 
         private static async Task DoUpdateWithMultipleThreads(TaskDialog taskDialog, string downloadUrl, string updateFile)
