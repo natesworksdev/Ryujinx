@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Input
 {
@@ -39,7 +38,6 @@ namespace Ryujinx.Input
         /// Flush the internal state of the driver.
         /// </summary>
         /// <remarks>Does nothing by default.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void Flush() { }
+        void Clear() { }
     }
 }

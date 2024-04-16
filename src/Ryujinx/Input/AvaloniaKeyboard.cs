@@ -195,7 +195,7 @@ namespace Ryujinx.Ava.Input
 
         public void Clear()
         {
-            _driver?.Flush();
+            _driver?.Clear();
         }
 
         public void Dispose() { }

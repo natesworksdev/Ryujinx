@@ -81,7 +81,7 @@ namespace Ryujinx.Input.GTK3
             return _pressedKeys.Contains(nativeKey);
         }
 
-        public void Flush()
+        public void Clear()
         {
             _pressedKeys.Clear();
         }
