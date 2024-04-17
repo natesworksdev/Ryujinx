@@ -12,7 +12,7 @@ namespace Ryujinx.Modules
     {
         private const string GitHubApiUrl = "https://api.github.com";
 
-        private static readonly HttpClient httpClient = new HttpClient
+        private static readonly HttpClient _httpClient = new HttpClient
         {
             DefaultRequestHeaders =
             {

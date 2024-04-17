@@ -14,7 +14,7 @@ namespace Ryujinx.Modules
             {
                 request.Headers.Range = range;
             }
-            return await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         }
     }
 }

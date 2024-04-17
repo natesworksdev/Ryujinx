@@ -21,9 +21,9 @@ namespace Ryujinx.Modules
         private static async Task DoUpdateWithSingleThreadWorker(TaskDialog taskDialog, string downloadUrl, string updateFile)
         {
             // We do not want to timeout while downloading
-            httpClient.Timeout = TimeSpan.FromDays(1);
+            _httpClient.Timeout = TimeSpan.FromDays(1);
 
-            HttpResponseMessage response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            HttpResponseMessage response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.Error?.Print(LogClass.Application, $"Failed to download file: {response.ReasonPhrase}");
