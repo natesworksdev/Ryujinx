@@ -1,7 +1,7 @@
-using System;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
