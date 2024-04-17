@@ -105,20 +105,24 @@ namespace Ryujinx.Modules
             using var memoryStream = new MemoryStream();
             int bytesRead;
             long totalRead = 0;
+            int lastReportedProgress = -1;
 
             while ((bytesRead = await stream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
-#pragma warning disable IDE0057 // Disable the warning for unnecessary slicing
-                memoryStream.Write(buffer.Slice(0, bytesRead).ToArray(), 0, bytesRead);
-#pragma warning restore IDE0057
+                memoryStream.Write(buffer.Span[..bytesRead]);
                 totalRead += bytesRead;
                 int progress = (int)((totalRead * 100) / (end - start + 1));
                 progressPercentage[index] = progress;
 
-                Dispatcher.UIThread.Post(() =>
+                // Throttle UI updates to only fire when there is a change in progress percentage
+                if (progress != lastReportedProgress)
                 {
-                    taskDialog.SetProgressBarState(progressPercentage.Sum() / ConnectionCount, TaskDialogProgressState.Normal);
-                });
+                    lastReportedProgress = progress;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        taskDialog.SetProgressBarState(progressPercentage.Sum() / ConnectionCount, TaskDialogProgressState.Normal);
+                    });
+                }
             }
 
             return memoryStream.ToArray();

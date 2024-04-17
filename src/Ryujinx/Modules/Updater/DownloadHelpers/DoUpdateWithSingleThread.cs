@@ -42,7 +42,7 @@ namespace Ryujinx.Modules
 
             while ((readSize = await remoteFileStream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
-                updateFileStream.Write(buffer.Span.Slice(0, readSize));
+                updateFileStream.Write(buffer.Span[..readSize]);
                 byteWritten += readSize;
 
                 Dispatcher.UIThread.Post(() =>
