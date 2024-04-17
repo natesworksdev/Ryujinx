@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Ryujinx.Common;
 using System;
 using System.IO;
 using System.Net.Http;

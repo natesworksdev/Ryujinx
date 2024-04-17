@@ -2,6 +2,7 @@ using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Common;
 using System;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
