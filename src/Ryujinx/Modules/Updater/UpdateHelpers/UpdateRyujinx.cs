@@ -55,7 +55,7 @@ namespace Ryujinx.Modules
                 }
                 else
                 {
-                    DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
+                    await DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
                 }
             };
 

@@ -8,8 +8,6 @@ namespace Ryujinx.Modules
 {
     internal static partial class Updater
     {
-        private static readonly string _homeDir = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string _updatePublishDir = Path.Combine(_updateDir, "publish");
         private static readonly string[] _windowsDependencyDirs = Array.Empty<string>();
 
         // NOTE: This method should always reflect the latest build layout.

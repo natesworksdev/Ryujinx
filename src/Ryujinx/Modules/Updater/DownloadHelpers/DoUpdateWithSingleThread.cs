@@ -18,7 +18,7 @@ namespace Ryujinx.Modules
 {
     internal static partial class Updater
     {
-        private static async Task DoUpdateWithSingleThreadWorker(TaskDialog taskDialog, string downloadUrl, string updateFile)
+        private static async Task DoUpdateWithSingleThread(TaskDialog taskDialog, string downloadUrl, string updateFile)
         {
             // We do not want to timeout while downloading
             _httpClient.Timeout = TimeSpan.FromDays(1);
@@ -42,40 +42,22 @@ namespace Ryujinx.Modules
 
             while ((readSize = await remoteFileStream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
-#pragma warning disable IDE0057 // Disable the warning for unnecessary slicing
-                updateFileStream.Write(buffer.Slice(0, readSize).ToArray(), 0, readSize);
-#pragma warning restore IDE0057
+                updateFileStream.Write(buffer.Span.Slice(0, readSize));
                 byteWritten += readSize;
 
-                int progress = GetPercentage(byteWritten, totalBytes);
                 Dispatcher.UIThread.Post(() =>
                 {
-                    taskDialog.SetProgressBarState(progress, TaskDialogProgressState.Normal);
+                    taskDialog.SetProgressBarState(GetPercentage(byteWritten, totalBytes), TaskDialogProgressState.Normal);
                 });
             }
 
             await InstallUpdate(taskDialog, updateFile);
         }
 
-        private static int GetPercentage(long value, long total)
-        {
-            if (total == 0)
-                return 0;
-            return (int)((value * 100) / total);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double GetPercentage(double value, double max)
         {
             return max == 0 ? 0 : value / max * 100;
-        }
-
-        private static void DoUpdateWithSingleThread(TaskDialog taskDialog, string downloadUrl, string updateFile)
-        {
-            Task.Run(async () =>
-            {
-                await DoUpdateWithSingleThreadWorker(taskDialog, downloadUrl, updateFile);
-            });
         }
     }
 }

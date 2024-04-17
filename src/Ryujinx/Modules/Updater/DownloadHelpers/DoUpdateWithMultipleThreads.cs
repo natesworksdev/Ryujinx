@@ -71,7 +71,7 @@ namespace Ryujinx.Modules
                             {
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
                                 Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
-                                DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
+                                await DoUpdateWithSingleThread(taskDialog, downloadUrl, updateFile);
                             }
                         });
                     }
