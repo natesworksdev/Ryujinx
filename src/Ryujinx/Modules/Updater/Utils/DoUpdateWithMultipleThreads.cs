@@ -95,18 +95,20 @@ namespace Ryujinx.Modules
 
         private static async Task<byte[]> DownloadFileChunk(string url, long start, long end, int index, TaskDialog taskDialog, int[] progressPercentage)
         {
-            byte[] buffer = new byte[8192];
+            Memory<byte> buffer = new byte[8192];
+
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Range = new RangeHeaderValue(start, end);
             HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+
             using var stream = await response.Content.ReadAsStreamAsync();
             using var memoryStream = new MemoryStream();
             int bytesRead;
             long totalRead = 0;
 
-            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            while ((bytesRead = await stream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
-                memoryStream.Write(buffer, 0, bytesRead);
+                memoryStream.Write(buffer.Slice(0, bytesRead).ToArray(), 0, bytesRead);
                 totalRead += bytesRead;
                 int progress = (int)((totalRead * 100) / (end - start + 1));
                 progressPercentage[index] = progress;

@@ -26,6 +26,7 @@ namespace Ryujinx.Modules
             HttpResponseMessage response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
             if (!response.IsSuccessStatusCode)
             {
+                Logger.Error?.Print(LogClass.Application, $"Failed to download file: {response.ReasonPhrase}");
                 throw new HttpRequestException($"Failed to download file: {response.ReasonPhrase}");
             }
 
@@ -36,12 +37,12 @@ namespace Ryujinx.Modules
             using Stream remoteFileStream = await response.Content.ReadAsStreamAsync();
             using Stream updateFileStream = File.Open(updateFile, FileMode.Create);
 
-            byte[] buffer = new byte[32 * 1024];
+            Memory<byte> buffer = new byte[32 * 1024];
             int readSize;
 
-            while ((readSize = await remoteFileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            while ((readSize = await remoteFileStream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
-                updateFileStream.Write(buffer, 0, readSize);
+                updateFileStream.Write(buffer.Slice(0, readSize).ToArray(), 0, readSize);
                 byteWritten += readSize;
 
                 int progress = GetPercentage(byteWritten, totalBytes);
