@@ -42,7 +42,9 @@ namespace Ryujinx.Modules
 
             while ((readSize = await remoteFileStream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
+#pragma warning disable IDE0057 // Disable the warning for unnecessary slicing
                 updateFileStream.Write(buffer.Slice(0, readSize).ToArray(), 0, readSize);
+#pragma warning restore IDE0057
                 byteWritten += readSize;
 
                 int progress = GetPercentage(byteWritten, totalBytes);

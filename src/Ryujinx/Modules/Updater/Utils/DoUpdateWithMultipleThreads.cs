@@ -108,7 +108,9 @@ namespace Ryujinx.Modules
 
             while ((bytesRead = await stream.ReadAsync(buffer, CancellationToken.None)) > 0)
             {
+#pragma warning disable IDE0057 // Disable the warning for unnecessary slicing
                 memoryStream.Write(buffer.Slice(0, bytesRead).ToArray(), 0, bytesRead);
+#pragma warning restore IDE0057
                 totalRead += bytesRead;
                 int progress = (int)((totalRead * 100) / (end - start + 1));
                 progressPercentage[index] = progress;
