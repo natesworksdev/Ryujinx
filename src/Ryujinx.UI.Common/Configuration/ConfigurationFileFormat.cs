@@ -163,6 +163,11 @@ namespace Ryujinx.UI.Common.Configuration
         public bool ShowConfirmExit { get; set; }
 
         /// <summary>
+        /// Enables hardware-accelerated rendering for Avalonia
+        /// </summary>
+        public bool EnableHardwareAcceleration { get; set; }
+
+        /// <summary>
         /// Whether to hide cursor on idle, always or never
         /// </summary>
         public HideCursorMode HideCursor { get; set; }

@@ -113,6 +113,7 @@ namespace Ryujinx.Ava
         private readonly object _lockObject = new();
 
         public event EventHandler AppExit;
+        public event EventHandler<StatusInitEventArgs> StatusInitEvent;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         public VirtualFileSystem VirtualFileSystem { get; }
@@ -778,32 +779,32 @@ namespace Ryujinx.Ava
             var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB;
 
             HLEConfiguration configuration = new(VirtualFileSystem,
-                                                     _viewModel.LibHacHorizonManager,
-                                                     ContentManager,
-                                                     _accountManager,
-                                                     _userChannelPersistence,
-                                                     renderer,
-                                                     InitializeAudio(),
-                                                     memoryConfiguration,
-                                                     _viewModel.UiHandler,
-                                                     (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
-                                                     (RegionCode)ConfigurationState.Instance.System.Region.Value,
-                                                     ConfigurationState.Instance.Graphics.EnableVsync,
-                                                     ConfigurationState.Instance.System.EnableDockedMode,
-                                                     ConfigurationState.Instance.System.EnablePtc,
-                                                     ConfigurationState.Instance.System.EnableInternetAccess,
-                                                     ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
-                                                     ConfigurationState.Instance.System.FsGlobalAccessLogMode,
-                                                     ConfigurationState.Instance.System.SystemTimeOffset,
-                                                     ConfigurationState.Instance.System.TimeZone,
-                                                     ConfigurationState.Instance.System.MemoryManagerMode,
-                                                     ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                     ConfigurationState.Instance.Graphics.AspectRatio,
-                                                     ConfigurationState.Instance.System.AudioVolume,
-                                                     ConfigurationState.Instance.System.UseHypervisor,
-                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                                                     ConfigurationState.Instance.Multiplayer.Mode,
-                                                     ConfigurationState.Instance.System.TurboMultiplier);
+                                                 _viewModel.LibHacHorizonManager,
+                                                 ContentManager,
+                                                 _accountManager,
+                                                 _userChannelPersistence,
+                                                 renderer,
+                                                 InitializeAudio(),
+                                                 memoryConfiguration,
+                                                 _viewModel.UiHandler,
+                                                 (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
+                                                 (RegionCode)ConfigurationState.Instance.System.Region.Value,
+                                                 ConfigurationState.Instance.Graphics.EnableVsync,
+                                                 ConfigurationState.Instance.System.EnableDockedMode,
+                                                 ConfigurationState.Instance.System.EnablePtc,
+                                                 ConfigurationState.Instance.System.EnableInternetAccess,
+                                                 ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                                                 ConfigurationState.Instance.System.FsGlobalAccessLogMode,
+                                                 ConfigurationState.Instance.System.SystemTimeOffset,
+                                                 ConfigurationState.Instance.System.TimeZone,
+                                                 ConfigurationState.Instance.System.MemoryManagerMode,
+                                                 ConfigurationState.Instance.System.IgnoreMissingServices,
+                                                 ConfigurationState.Instance.Graphics.AspectRatio,
+                                                 ConfigurationState.Instance.System.AudioVolume,
+                                                 ConfigurationState.Instance.System.UseHypervisor,
+                                                 ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                                                 ConfigurationState.Instance.Multiplayer.Mode,
+                                                 ConfigurationState.Instance.System.TurboMultiplier);
 
             Device = new Switch(configuration);
         }
@@ -949,6 +950,7 @@ namespace Ryujinx.Ava
                         {
                             _renderingStarted = true;
                             _viewModel.SwitchToRenderer(false);
+                            InitStatus();
                         }
 
                         Device.PresentFrame(() => (RendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.SwapBuffers());
@@ -972,6 +974,18 @@ namespace Ryujinx.Ava
             (RendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
         }
 
+        public void InitStatus()
+        {
+            StatusInitEvent?.Invoke(this, new StatusInitEventArgs(
+                ConfigurationState.Instance.Graphics.GraphicsBackend.Value switch
+                {
+                    GraphicsBackend.Vulkan => "Vulkan",
+                    GraphicsBackend.OpenGl => "OpenGL",
+                    _ => throw new NotImplementedException()
+                },
+                $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
+        }
+
         public void UpdateStatus()
         {
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued.
@@ -985,13 +999,11 @@ namespace Ryujinx.Ava
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value == GraphicsBackend.Vulkan ? "Vulkan" : "OpenGL",
                 dockedMode,
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)"
                             + (Device.TurboMode ? $" Turbo ({Device.Configuration.TurboMultiplier}%)" : ""),
-                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
-                $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
+                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %"));
         }
 
         public async Task ShowExitPrompt()

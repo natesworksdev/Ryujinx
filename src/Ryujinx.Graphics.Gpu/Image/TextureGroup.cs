@@ -1,4 +1,3 @@
-using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -6,6 +5,7 @@ using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -282,7 +282,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         /// <summary>
         /// Discards all data for a given texture.
-        /// This clears all dirty flags, modified flags, and pending copies from other textures.
+        /// This clears all dirty flags and pending copies from other textures.
         /// </summary>
         /// <param name="texture">The texture being discarded</param>
         public void DiscardData(Texture texture)
@@ -445,7 +445,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = dataSpan[(offset - spanBase)..];
 
-                            SpanOrArray<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
+                            IMemoryOwner<byte> result = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel + level, true);
 
                             Storage.SetData(result, info.BaseLayer + layer, info.BaseLevel + level);
                         }
