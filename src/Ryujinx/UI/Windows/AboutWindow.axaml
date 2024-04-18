@@ -144,7 +144,6 @@
                         Background="Transparent"
                         Click="Button_OnClick"
                         CornerRadius="15"
-                        Tag="https://github.com/Ryujinx/Ryujinx"
                         ToolTip.Tip="{locale:Locale AboutGithubUrlTooltipMessage}">
                         <Image Source="{Binding GithubLogo}" />
                     </Button>
