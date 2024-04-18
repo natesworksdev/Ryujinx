@@ -591,10 +591,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             _directoryChanged = false;
         }
 
-        private static void RevertIfNotSaved()
-        {
-            Program.ReloadConfig();
-        }
 
         public void ApplyButton()
         {
@@ -604,12 +600,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void OkButton()
         {
             SaveSettings();
-            CloseWindow?.Invoke();
-        }
-
-        public void CancelButton()
-        {
-            RevertIfNotSaved();
             CloseWindow?.Invoke();
         }
     }
