@@ -56,11 +56,9 @@ namespace Ryujinx.Ava.UI.Windows
 
         private static async Task<string> FetchChangelogHtml()
         {
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("Ryujinx-Updater/1.0.0");
-                return await client.GetStringAsync("https://github.com/Ryujinx/Ryujinx/wiki/Changelog");
-            }
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Ryujinx-Updater/1.0.0");
+            return await client.GetStringAsync("https://github.com/Ryujinx/Ryujinx/wiki/Changelog");
         }
 
         private static string ParseChangelogForRecentVersions(string html, int count)
