@@ -12,9 +12,9 @@
     d:DesignHeight="600"
     d:DesignWidth="800"
     CanResize="False"
+    WindowStartupLocation="CenterOwner"
     Focusable="True"
     mc:Ignorable="d"
-    Title="{locale:Locale ChangelogWindowTitle}"
     Icon="resm:Ryujinx.UI.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.UI.Common">
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <StackPanel Orientation="Vertical" Margin="20">
