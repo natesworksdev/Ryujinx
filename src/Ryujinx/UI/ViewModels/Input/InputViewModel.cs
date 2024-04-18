@@ -82,8 +82,9 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public bool EnableKeyboard { get; set; }
         public bool EnableMouse { get; set; }
 
-        public bool IsModified { get; set; }
         public event Action NotifyChangesEvent;
+
+        public SettingsViewModel SettingsViewModel;
 
         public object ConfigViewModel
         {
@@ -101,12 +102,12 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             get => _playerId;
             set
             {
-                if (IsModified)
+                if (SettingsViewModel.IsModified)
                 {
                     return;
                 }
 
-                IsModified = false;
+                SettingsViewModel.IsModified = false;
                 _playerId = value;
 
                 if (!Enum.IsDefined(typeof(PlayerIndex), _playerId))
@@ -243,8 +244,10 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public InputConfig Config { get; set; }
 
-        public InputViewModel(UserControl owner) : this()
+        public InputViewModel(UserControl owner, SettingsViewModel settingsViewModel) : this()
         {
+            SettingsViewModel = settingsViewModel;
+
             if (Program.PreviewerDetached)
             {
                 _mainWindow =
@@ -819,8 +822,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public void Save()
         {
-            IsModified = false;
-
             List<InputConfig> newConfig = new();
 
             newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
