@@ -146,9 +146,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool ShowConfirmExit { get; set; }
         public bool RememberWindowState { get; set; }
         public int HideCursor { get; set; }
-        public bool EnableDockedMode { get; set; }
-        public bool EnableKeyboard { get; set; }
-        public bool EnableMouse { get; set; }
         public bool EnableVsync { get; set; }
         public bool EnablePptc { get; set; }
         public bool EnableInternetAccess { get; set; }
@@ -418,11 +415,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _ => 0
             };
 
-            // Input
-            EnableDockedMode = config.System.EnableDockedMode;
-            EnableKeyboard = config.Hid.EnableKeyboard;
-            EnableMouse = config.Hid.EnableMouse;
-
             // Keyboard Hotkeys
             KeyboardHotkey = new HotkeyConfig(config.Hid.Hotkeys.Value);
 
@@ -512,11 +504,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 2 => "Dark",
                 _ => "Auto"
             };
-
-            // Input
-            config.System.EnableDockedMode.Value = EnableDockedMode;
-            config.Hid.EnableKeyboard.Value = EnableKeyboard;
-            config.Hid.EnableMouse.Value = EnableMouse;
 
             // Keyboard Hotkeys
             config.Hid.Hotkeys.Value = KeyboardHotkey.GetConfig();
