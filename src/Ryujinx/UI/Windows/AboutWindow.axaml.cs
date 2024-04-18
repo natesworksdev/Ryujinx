@@ -52,6 +52,12 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
+        private void OpenChangelogWindow(object sender, RoutedEventArgs e)
+        {
+            ChangelogWindow changelogWindow = new ChangelogWindow();
+            changelogWindow.Show();
+        }
+
         private void AmiiboLabel_OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
             if (sender is TextBlock)
