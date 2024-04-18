@@ -19,12 +19,14 @@ using System.Net.Http;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class ChangelogWindow : Window
+    public partial class ChangelogWindow : StyleableWindow
     {
         public ChangelogWindow()
         {
+            DataContext = this;
             InitializeComponent();
             InitializeAsync();
+            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance[LocaleKeys.ChangelogWindowTitle];
         }
 
         private async void InitializeAsync()
