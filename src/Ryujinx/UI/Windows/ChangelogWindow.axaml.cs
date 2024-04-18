@@ -11,10 +11,10 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.UI.Common.Helper;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
-using System.Net.Http;
 
 
 namespace Ryujinx.Ava.UI.Windows
@@ -76,7 +76,9 @@ namespace Ryujinx.Ava.UI.Windows
 
                 foreach (var header in headers)
                 {
-                    if (versionsFound >= count) break; // Stop after finding the desired number of versions
+                    if (versionsFound >= count)
+                        break; // Stop after finding the desired number of versions
+
                     content.Append(header.OuterHtml);
                     var currentNode = header.ParentNode.NextSibling;
 
@@ -85,7 +87,8 @@ namespace Ryujinx.Ava.UI.Windows
                         if (currentNode.Name == "div" && currentNode.SelectSingleNode("h2") != null)
                         {
                             versionsFound++; // Increment for each version header found
-                            if (versionsFound >= count) break;
+                            if (versionsFound >= count)
+                                break;
                         }
                         content.Append(currentNode.OuterHtml);
                         currentNode = currentNode.NextSibling;
