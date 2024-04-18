@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
@@ -55,7 +56,13 @@ namespace Ryujinx.Ava.UI.Windows
         private void OpenChangelogWindow(object sender, RoutedEventArgs e)
         {
             ChangelogWindow changelogWindow = new ChangelogWindow();
-            changelogWindow.Show();
+
+            // Find the parent window to use as the owner for the modal dialog
+            var parentWindow = this.FindAncestorOfType<Window>();
+            if (parentWindow != null)
+            {
+                changelogWindow.ShowDialog(parentWindow);  // Pass the parent window as the owner
+            }
         }
 
         private void AmiiboLabel_OnPointerPressed(object sender, PointerPressedEventArgs e)
