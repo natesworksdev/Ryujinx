@@ -1,3 +1,4 @@
+using Ryujinx.Ava;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common.Logging;
@@ -15,8 +16,7 @@ namespace Ryujinx.Modules
         {
             try
             {
-                //return Version.Parse(Program.Version);
-                return Version.Parse("1.1.0"); // Temporary code, will revert back
+                return Version.Parse(Program.Version);
             }
             catch
             {

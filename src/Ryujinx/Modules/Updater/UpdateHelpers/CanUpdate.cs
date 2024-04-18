@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
+using Ryujinx.Ava;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Common;
@@ -28,7 +29,7 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            /*if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
+            if (Program.Version.Contains("dirty") || !ReleaseInformation.IsValid)
             {
                 if (showWarnings)
                 {
@@ -40,7 +41,7 @@ namespace Ryujinx.Modules
                 }
 
                 return false;
-            }*/ // Temporary commented out, will revert back
+            }
 
             return true;
 #else

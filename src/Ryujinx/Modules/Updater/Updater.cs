@@ -44,8 +44,7 @@ namespace Ryujinx.Modules
                 return;
             }
 
-            //string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
-            string buildInfoUrl = $"{GitHubApiUrl}/repos/Ryujinx/release-channel-master/releases/latest"; // Temporary code, will revert back
+            string buildInfoUrl = $"{GitHubApiUrl}/repos/{ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelRepo}/releases/latest";
             if (!await TryUpdateVersionInfo(buildInfoUrl, showVersionUpToDate))
             {
                 return;
