@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
 
         public event Action NotifyChangesEvent;
 
-        public SettingsViewModel SettingsViewModel;
+        private readonly SettingsViewModel _settingsViewModel;
 
         public object ConfigViewModel
         {
@@ -241,7 +241,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
 
         public SettingsInputViewModel(UserControl owner, SettingsViewModel settingsViewModel) : this()
         {
-            SettingsViewModel = settingsViewModel;
+            _settingsViewModel = settingsViewModel;
 
             if (Program.PreviewerDetached)
             {
