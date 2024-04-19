@@ -1107,6 +1107,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             //       If one is found, it returns the npadIdType of the other Npad and a bool.
             //       If not, it returns nothing.
         }
+
         [CommandCmif(134)] // 6.1.0+
         // SetNpadUseAnalogStickUseCenterClamp(bool Enable, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadUseAnalogStickUseCenterClamp(ServiceCtx context)
@@ -1115,7 +1116,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _npadAnalogStickCenterClampEnabled = context.RequestData.ReadUInt32() != 0;
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadAnalogStickCenterClampEnabled });
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { pid, appletResourceUserId, _npadAnalogStickCenterClampEnabled });
 
             return ResultCode.Success;
         }
