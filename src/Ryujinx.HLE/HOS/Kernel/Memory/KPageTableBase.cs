@@ -1569,10 +1569,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     while (size > 0)
                     {
-                        // Copy chunk size. Previous impl created copies to write using GetSpan(), and moderate sizes
-                        // were recommended to avoid allocating very large temporary buffers. Since moving to use
-                        // ReadOnlySequence<byte> and reading directly, we set the copySize to the max size of a
-                        // segment: Int32.MaxValue.
                         ulong copySize = int.MaxValue;
 
                         if (copySize > size)
