@@ -137,7 +137,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             // TODO: figure out what this value is
 
             Span<byte> fourBytes = stackalloc byte[4];
-            fourBytes.Clear();
 
             WriteInplaceObject(fourBytes);
         }
