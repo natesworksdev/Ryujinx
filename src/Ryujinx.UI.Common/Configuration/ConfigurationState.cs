@@ -789,7 +789,7 @@ namespace Ryujinx.UI.Common.Configuration
             System.TimeZone.Value = "UTC";
             System.SystemTimeOffset.Value = 0;
             System.EnableDockedMode.Value = true;
-            EnableDiscordIntegration.Value = true;
+            EnableDiscordIntegration.Value = false;
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
             EnableHardwareAcceleration.Value = true;
