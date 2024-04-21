@@ -25,6 +25,7 @@ using Ryujinx.UI.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +41,7 @@ namespace Ryujinx.Ava.UI.Windows
         private UserChannelPersistence _userChannelPersistence;
         private static bool _deferLoad;
         private static string _launchPath;
+        private static string _launchApplicationId;
         private static bool _startFullscreen;
         internal readonly AvaHostUIHandler UiHandler;
 
@@ -174,10 +176,11 @@ namespace Ryujinx.Ava.UI.Windows
             args.Handled = true;
         }
 
-        internal static void DeferLoadApplication(string launchPathArg, bool startFullscreenArg)
+        internal static void DeferLoadApplication(string launchPathArg, string launchApplicationId, bool startFullscreenArg)
         {
             _deferLoad = true;
             _launchPath = launchPathArg;
+            _launchApplicationId = launchApplicationId;
             _startFullscreen = startFullscreenArg;
         }
 
@@ -316,12 +319,35 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     _deferLoad = false;
 
-                    ApplicationData applicationData = new()
+                    if (ApplicationLibrary.TryGetApplicationsFromFile(_launchPath, out List<ApplicationData> applications))
                     {
-                        Path = _launchPath,
-                    };
+                        ApplicationData applicationData;
 
-                    ViewModel.LoadApplication(applicationData, _startFullscreen).Wait();
+                        if (_launchApplicationId != null)
+                        {
+                            applicationData = applications.Find(application => application.IdString == _launchApplicationId);
+
+                            if (applicationData != null)
+                            {
+                                await ViewModel.LoadApplication(applicationData, _startFullscreen);
+                            }
+                            else
+                            {
+                                Logger.Error?.Print(LogClass.Application, $"Couldn't find requested application id '{_launchApplicationId}' in '{_launchPath}'.");
+                                await Dispatcher.UIThread.InvokeAsync(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.ApplicationNotFound));
+                            }
+                        }
+                        else
+                        {
+                            applicationData = applications[0];
+                            await ViewModel.LoadApplication(applicationData, _startFullscreen);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Couldn't find any application in '{_launchPath}'.");
+                        await Dispatcher.UIThread.InvokeAsync(async () => await UserErrorDialog.ShowUserErrorDialog(UserError.ApplicationNotFound));
+                    }
                 }
             }
             else

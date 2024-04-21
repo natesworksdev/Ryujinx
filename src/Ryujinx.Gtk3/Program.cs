@@ -323,12 +323,35 @@ namespace Ryujinx
 
             if (CommandLineState.LaunchPathArg != null)
             {
-                ApplicationData applicationData = new()
+                if (mainWindow.ApplicationLibrary.TryGetApplicationsFromFile(CommandLineState.LaunchPathArg, out List<ApplicationData> applications))
                 {
-                    Path = CommandLineState.LaunchPathArg,
-                };
+                    ApplicationData applicationData;
 
-                mainWindow.RunApplication(applicationData, CommandLineState.StartFullscreenArg);
+                    if (CommandLineState.LaunchApplicationId != null)
+                    {
+                        applicationData = applications.Find(application => application.IdString == CommandLineState.LaunchApplicationId);
+
+                        if (applicationData != null)
+                        {
+                            mainWindow.RunApplication(applicationData, CommandLineState.StartFullscreenArg);
+                        }
+                        else
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"Couldn't find requested application id '{CommandLineState.LaunchApplicationId}' in '{CommandLineState.LaunchPathArg}'.");
+                            UserErrorDialog.CreateUserErrorDialog(UserError.ApplicationNotFound);
+                        }
+                    }
+                    else
+                    {
+                        applicationData = applications[0];
+                        mainWindow.RunApplication(applicationData, CommandLineState.StartFullscreenArg);
+                    }
+                }
+                else
+                {
+                    Logger.Error?.Print(LogClass.Application, $"Couldn't find any application in '{CommandLineState.LaunchPathArg}'.");
+                    UserErrorDialog.CreateUserErrorDialog(UserError.ApplicationNotFound);
+                }
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))

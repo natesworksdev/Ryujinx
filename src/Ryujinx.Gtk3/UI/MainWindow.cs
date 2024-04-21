@@ -62,7 +62,6 @@ namespace Ryujinx.UI
 
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
-        private readonly ApplicationLibrary _applicationLibrary;
         private readonly GtkHostUIHandler _uiHandler;
         private readonly AutoResetEvent _deviceExitStatus;
         private readonly ListStore _tableStore;
@@ -76,6 +75,7 @@ namespace Ryujinx.UI
         private string _lastScannedAmiiboId = "";
         private bool _lastScannedAmiiboShowAll = false;
 
+        public readonly ApplicationLibrary ApplicationLibrary;
         public RendererWidgetBase RendererWidget;
         public InputManager InputManager;
 
@@ -187,7 +187,7 @@ namespace Ryujinx.UI
                 : IntegrityCheckLevel.None;
 
             // Instantiate GUI objects.
-            _applicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel);
+            ApplicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel);
             _uiHandler = new GtkHostUIHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
 
@@ -196,8 +196,8 @@ namespace Ryujinx.UI
             FocusInEvent += MainWindow_FocusInEvent;
             FocusOutEvent += MainWindow_FocusOutEvent;
 
-            _applicationLibrary.ApplicationAdded += Application_Added;
-            _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
+            ApplicationLibrary.ApplicationAdded += Application_Added;
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
             _fileMenu.StateChanged += FileMenu_StateChanged;
             _actionMenu.StateChanged += ActionMenu_StateChanged;
@@ -738,7 +738,7 @@ namespace Ryujinx.UI
 
             Thread applicationLibraryThread = new(() =>
             {
-                _applicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _updatingGameTable = false;
             })
@@ -1369,7 +1369,7 @@ namespace Ryujinx.UI
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                if (_applicationLibrary.TryGetApplicationsFromFile(fileChooser.Filename,
+                if (ApplicationLibrary.TryGetApplicationsFromFile(fileChooser.Filename,
                         out List<ApplicationData> applications))
                 {
                     RunApplication(applications[0]);
