@@ -98,7 +98,7 @@ namespace Ryujinx.Cpu.Jit
 
                 ulong endVa = va + (ulong)size;
                 int offset = 0;
-                
+
                 BytesReadOnlySequenceSegment first = null, last = null;
 
                 while (va < endVa)
@@ -106,7 +106,7 @@ namespace Ryujinx.Cpu.Jit
                     (MemoryBlock memory, ulong rangeOffset, ulong copySize) = GetMemoryOffsetAndSize(va, (ulong)(size - offset));
 
                     Memory<byte> physicalMemory = memory.GetMemory(rangeOffset, (int)copySize);
-                    
+
                     if (first is null)
                     {
                         first = last = new BytesReadOnlySequenceSegment(physicalMemory);
@@ -122,7 +122,7 @@ namespace Ryujinx.Cpu.Jit
                             last = last.Append(physicalMemory);
                         }
                     }
-                    
+
                     va += copySize;
                     offset += (int)copySize;
                 }
@@ -135,7 +135,7 @@ namespace Ryujinx.Cpu.Jit
                 {
                     throw;
                 }
-                
+
                 return ReadOnlySequence<byte>.Empty;
             }
         }
