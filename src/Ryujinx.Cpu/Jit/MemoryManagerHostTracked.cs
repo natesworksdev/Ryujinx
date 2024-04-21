@@ -92,14 +92,16 @@ namespace Ryujinx.Cpu.Jit
                 return ReadOnlySequence<byte>.Empty;
             }
 
-            if (tracked)
-            {
-                SignalMemoryTracking(va, (ulong)size, false);
-            }
-
             try
             {
-                AssertValidAddressAndSize(va, (ulong)size);
+                if (tracked)
+                {
+                    SignalMemoryTracking(va, (ulong)size, false);
+                }
+                else
+                {
+                    AssertValidAddressAndSize(va, (ulong)size);
+                }
 
                 ulong endVa = va + (ulong)size;
                 int offset = 0;
