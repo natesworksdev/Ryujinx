@@ -136,9 +136,9 @@ namespace Ryujinx.Common.GraphicsDriver
 
             uint targetValue = id switch
             {
-                NvapiSettingId.OglThreadControlId => (uint)(enabled ? OglThreadControl.OglThreadControlEnable : OglThreadControl.OglThreadControlDisable),
-                NvapiSettingId.OglCplPreferDxPresentId => (uint)(enabled ? OglCplDxPresent.OglCplPreferDxPresentEnable : OglCplDxPresent.OglCplPreferDxPresentDisable),
-                _ => throw new ArgumentException($"Invalid NVAPI setting id: {id}"),
+                NvapiSettingId.OglThreadControlId => (uint)(enabled ? OglThreadControl.Enabled : OglThreadControl.Disabled),
+                NvapiSettingId.OglCplPreferDxPresentId => (uint)(enabled ? OglCplDxPresent.Enabled : OglCplDxPresent.Disabled),
+                _ => throw new ArgumentException($"Invalid NVAPI setting id: 0x{id:X}"),
             };
 
             NvdrsSetting setting = new()
