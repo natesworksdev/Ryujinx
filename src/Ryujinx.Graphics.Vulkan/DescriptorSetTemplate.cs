@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     entries[seg] = new DescriptorUpdateTemplateEntry()
                     {
-                        DescriptorType = DescriptorType.UniformTexelBuffer,
+                        DescriptorType = segment.Type.Convert(),
                         DstBinding = (uint)binding,
                         DescriptorCount = (uint)count,
                         Offset = structureOffset,

@@ -630,10 +630,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             bool isSampler = bindingInfo.IsSamplerOnly;
             bool poolModified = isSampler ? entry.SamplerPoolModified() : entry.TexturePoolModified();
             bool isStore = bindingInfo.Flags.HasFlag(TextureUsageFlags.ImageStore);
+            bool resScaleUnsupported = bindingInfo.Flags.HasFlag(TextureUsageFlags.ResScaleUnsupported);
 
             if (!poolModified && !isNewEntry && entry.ValidateTextures())
             {
-                entry.SynchronizeMemory(isStore);
+                entry.SynchronizeMemory(isStore, resScaleUnsupported);
 
                 if (isImage)
                 {
@@ -679,6 +680,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                         if (isStore)
                         {
                             texture.SignalModified();
+                        }
+
+                        if (resScaleUnsupported && texture.ScaleMode != TextureScaleMode.Blacklisted)
+                        {
+                            // Scaling textures used on arrays is currently not supported.
+
+                            texture.BlacklistScale();
                         }
                     }
                 }

@@ -27,7 +27,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="texturePoolGpuVa">GPU virtual address of the texture pool</param>
         /// <param name="texturePoolMaximumId">Maximum ID of the texture pool</param>
-        /// <param name="samplerPoolMaximumId">Maximum ID of the sampler pool</param>
         /// <param name="textureBufferIndex">Constant buffer slot where the texture handles are located</param>
         public GpuChannelPoolState(ulong texturePoolGpuVa, int texturePoolMaximumId, int textureBufferIndex)
         {

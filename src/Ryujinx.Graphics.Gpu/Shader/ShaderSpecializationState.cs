@@ -399,7 +399,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Checks if a given texture was registerd on this specialization state.
+        /// Checks if a given texture was registered on this specialization state.
         /// </summary>
         /// <param name="stageIndex">Shader stage where the texture is used</param>
         /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
@@ -410,7 +410,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Checks if a given texture array (from constant buffer) was registerd on this specialization state.
+        /// Checks if a given texture array (from constant buffer) was registered on this specialization state.
         /// </summary>
         /// <param name="stageIndex">Shader stage where the texture is used</param>
         /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
@@ -422,7 +422,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Checks if a given texture array (from a sampler pool or texture pool) was registerd on this specialization state.
+        /// Checks if a given texture array (from a sampler pool or texture pool) was registered on this specialization state.
         /// </summary>
         /// <param name="isSampler">True for sampler pool, false for texture pool</param>
         /// <returns>True if the length for the given pool, false otherwise</returns>
