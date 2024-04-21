@@ -126,7 +126,7 @@ namespace Ryujinx.Cpu.Jit
                     va += copySize;
                     offset += (int)copySize;
                 }
-                
+
                 return new ReadOnlySequence<byte>(first, 0, last, (int)(size - last.RunningIndex));
             }
             catch (InvalidMemoryRegionException)
