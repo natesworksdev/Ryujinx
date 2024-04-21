@@ -123,6 +123,7 @@ namespace Ryujinx.Cpu.Jit
                         if (last.IsContiguousWith(physicalMemory, out nuint contiguousStart, out int contiguousSize))
                         {
                             Memory<byte> contiguousPhysicalMemory = new NativeMemoryManager<byte>(contiguousStart, contiguousSize).Memory;
+
                             last.Replace(contiguousPhysicalMemory);
                         }
                         else
