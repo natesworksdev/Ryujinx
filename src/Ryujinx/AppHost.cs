@@ -1054,6 +1054,7 @@ namespace Ryujinx.Ava
                 {
                     GraphicsBackend.Vulkan => "Vulkan",
                     GraphicsBackend.OpenGl => "OpenGL",
+                    GraphicsBackend.Metal => "Metal",
                     _ => throw new NotImplementedException()
                 },
                 $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
@@ -1072,12 +1073,10 @@ namespace Ryujinx.Ava
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value.ToString(),
                 dockedMode,
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                 LocaleManager.Instance[LocaleKeys.Game] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
-                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
-                $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
+                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %"));
         }
 
         public async Task ShowExitPrompt()
