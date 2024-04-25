@@ -236,7 +236,7 @@ namespace Ryujinx
 
             // Enable OGL multithreading on the driver, when available.
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
-            DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglThreadControlId, threadingMode == BackendThreading.Off);
+            DriverUtilities.ToggleOglThreading(threadingMode == BackendThreading.Off);
 
             // Enable DXGI present mode on the driver, when available.
             DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglCplPreferDxPresentId, true);

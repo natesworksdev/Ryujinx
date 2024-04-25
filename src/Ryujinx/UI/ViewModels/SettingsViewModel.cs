@@ -530,7 +530,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
-                DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglThreadControlId, GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
+                DriverUtilities.ToggleOglThreading(GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
             }
 
             config.Graphics.BackendThreading.Value = (BackendThreading)GraphicsBackendMultithreadingIndex;

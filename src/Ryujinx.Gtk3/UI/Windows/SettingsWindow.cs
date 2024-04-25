@@ -611,7 +611,7 @@ namespace Ryujinx.UI.Windows
             BackendThreading backendThreading = Enum.Parse<BackendThreading>(_galThreading.ActiveId);
             if (ConfigurationState.Instance.Graphics.BackendThreading != backendThreading)
             {
-                DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglThreadControlId, backendThreading == BackendThreading.Off);
+                DriverUtilities.ToggleOglThreading(backendThreading == BackendThreading.Off);
             }
 
             ConfigurationState.Instance.Logger.EnableError.Value = _errorLogToggle.Active;

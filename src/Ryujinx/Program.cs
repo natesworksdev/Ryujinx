@@ -113,7 +113,7 @@ namespace Ryujinx.Ava
             PrintSystemInfo();
 
             // Enable OGL multithreading on the driver, when available.
-            DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglThreadControlId, ConfigurationState.Instance.Graphics.BackendThreading == BackendThreading.Off);
+            DriverUtilities.ToggleOglThreading(ConfigurationState.Instance.Graphics.BackendThreading == BackendThreading.Off);
 
             // Enable Dxgi present on the driver, when available.
             DriverUtilities.ToggleNvDriverSetting(NvapiSettingId.OglCplPreferDxPresentId, true);
