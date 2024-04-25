@@ -234,7 +234,7 @@ namespace Ryujinx.Input.HLE
 
                         if (_enableKeyboard)
                         {
-                            hleKeyboardInput = controller.GetHLEKeyboardInput();
+                            hleKeyboardInput = controller.GetHLEKeyboardInput(_keyboardDriver);
                         }
                     }
                     else
