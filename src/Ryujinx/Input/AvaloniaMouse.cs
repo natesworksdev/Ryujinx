@@ -17,6 +17,13 @@ namespace Ryujinx.Ava.Input
         public GamepadFeaturesFlag Features => throw new NotImplementedException();
         public bool[] Buttons => _driver.PressedButtons;
 
+        public enum CursorStates
+        {
+            CursorIsHidden,
+            CursorIsVisible,
+            ForceChangeCursor
+        };
+
         public AvaloniaMouse(AvaloniaMouseDriver driver)
         {
             _driver = driver;

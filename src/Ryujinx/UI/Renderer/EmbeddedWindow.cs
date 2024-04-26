@@ -36,6 +36,9 @@ namespace Ryujinx.Ava.UI.Renderer
         public event EventHandler<IntPtr> WindowCreated;
         public event EventHandler<Size> BoundsChanged;
 
+        [SupportedOSPlatform("windows")]
+        private readonly IntPtr DefaultCursorWin = CreateArrowCursor();
+
         public EmbeddedWindow()
         {
             this.GetObservable(BoundsProperty).Subscribe(StateChanged);
@@ -157,7 +160,7 @@ namespace Ryujinx.Ava.UI.Renderer
                 lpfnWndProc = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate),
                 style = ClassStyles.CsOwndc,
                 lpszClassName = Marshal.StringToHGlobalUni(_className),
-                hCursor = CreateArrowCursor(),
+                hCursor = DefaultCursorWin
             };
 
             RegisterClassEx(ref wndClassEx);
