@@ -106,8 +106,6 @@ namespace Ryujinx.Ava
         private CursorStates _cursorState = !ConfigurationState.Instance.Hid.EnableMouse.Value ?
                                              CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
 
-        private bool _isCursorVisible = !ConfigurationState.Instance.Hid.EnableMouse.Value;
-
         private bool _isStopped;
         private bool _isActive;
         private bool _renderingStarted;
@@ -224,7 +222,9 @@ namespace Ryujinx.Ava
             if (sender is MainWindow window)
             {
                 if (ConfigurationState.Instance.HideCursor.Value == HideCursorMode.OnIdle)
+                {
                     _lastCursorMoveTime = Stopwatch.GetTimestamp();
+                }
 
                 var point = e.GetCurrentPoint(window).Position;
                 var bounds = RendererHost.EmbeddedWindow.Bounds;
@@ -269,10 +269,9 @@ namespace Ryujinx.Ava
                     Math.Ceiling(point.X) == (int)window.Bounds.Width) &&
                     point.Y >= windowYOffset &&
                     point.Y <= windowYLimit;
-
             }
-            _cursorState = CursorStates.ForceChangeCursor;
 
+            _cursorState = CursorStates.ForceChangeCursor;
         }
 
         private void UpdateScalingFilterLevel(object sender, ReactiveEventArgs<int> e)
@@ -1101,35 +1100,32 @@ namespace Ryujinx.Ava
 
             if (_viewModel.IsActive)
             {
+                bool isCursorVisible = true;
+
                 if (_isCursorInRenderer && !_viewModel.ShowLoadProgress)
                 {
                     if (ConfigurationState.Instance.Hid.EnableMouse.Value)
                     {
-                        _isCursorVisible = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never;
+                        isCursorVisible = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never;
                     }
                     else
                     {
-                        _isCursorVisible = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never ||
+                        isCursorVisible = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never ||
                             (ConfigurationState.Instance.HideCursor.Value == HideCursorMode.OnIdle &&
                             Stopwatch.GetTimestamp() - _lastCursorMoveTime < CursorHideIdleTime * Stopwatch.Frequency);
                     }
-
-                    if (_cursorState != (_isCursorVisible ? CursorStates.CursorIsVisible : CursorStates.CursorIsHidden))
-                    {
-                        if (_isCursorVisible)
-                        {
-                            ShowCursor();
-                        }
-                        else
-                        {
-                            HideCursor();
-                        }
-                    }
                 }
-                else
+
+                if (_cursorState != (isCursorVisible ? CursorStates.CursorIsVisible : CursorStates.CursorIsHidden))
                 {
-                    if (_cursorState != CursorStates.CursorIsVisible)
+                    if (isCursorVisible)
+                    {
                         ShowCursor();
+                    }
+                    else
+                    {
+                        HideCursor();
+                    }
                 }
 
                 Dispatcher.UIThread.Post(() =>
