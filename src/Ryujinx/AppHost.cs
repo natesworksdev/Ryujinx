@@ -103,6 +103,8 @@ namespace Ryujinx.Ava
             ForceChangeCursor
         };
 
+        private CursorStates cursorState = CursorStates.CursorIsVisible;
+
         private CursorStates _cursorState = !ConfigurationState.Instance.Hid.EnableMouse.Value ?
                                              CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
 
@@ -1103,43 +1105,27 @@ namespace Ryujinx.Ava
                 {
                     if (ConfigurationState.Instance.Hid.EnableMouse.Value)
                     {
-                        switch (ConfigurationState.Instance.HideCursor.Value)
-                        {
-                            case HideCursorMode.Never:
-                                if (_cursorState != CursorStates.CursorIsVisible)
-                                    ShowCursor();
-                                break;
-                            case HideCursorMode.OnIdle:
-                            case HideCursorMode.Always:
-                                if (_cursorState != CursorStates.CursorIsHidden)
-                                    HideCursor();
-                                break;
-                        }
+                        cursorState = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never
+                                      ? CursorStates.CursorIsVisible
+                                      : CursorStates.CursorIsHidden;
                     }
                     else
                     {
-                        switch (ConfigurationState.Instance.HideCursor.Value)
+                        cursorState = ConfigurationState.Instance.HideCursor.Value == HideCursorMode.Never ||
+                                      Stopwatch.GetTimestamp() - _lastCursorMoveTime < CursorHideIdleTime * Stopwatch.Frequency
+                                      ? CursorStates.CursorIsVisible
+                                      : CursorStates.CursorIsHidden;
+                    }
+
+                    if (_cursorState != cursorState)
+                    {
+                        if (cursorState == CursorStates.CursorIsVisible)
                         {
-                            case HideCursorMode.Never:
-                                if (_cursorState != CursorStates.CursorIsVisible)
-                                    ShowCursor();
-                                break;
-                            case HideCursorMode.OnIdle:
-                                if (Stopwatch.GetTimestamp() - _lastCursorMoveTime >= CursorHideIdleTime * Stopwatch.Frequency)
-                                {
-                                    if (_cursorState != CursorStates.CursorIsHidden)
-                                        HideCursor();
-                                }
-                                else
-                                {
-                                    if (_cursorState != CursorStates.CursorIsVisible)
-                                        ShowCursor();
-                                }
-                                break;
-                            case HideCursorMode.Always:
-                                if (_cursorState != CursorStates.CursorIsHidden)
-                                    HideCursor();
-                                break;
+                            ShowCursor();
+                        }
+                        else
+                        {
+                            HideCursor();
                         }
                     }
                 }
