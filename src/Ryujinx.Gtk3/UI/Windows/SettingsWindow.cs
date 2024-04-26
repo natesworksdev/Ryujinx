@@ -56,7 +56,6 @@ namespace Ryujinx.UI.Windows
         [GUI] ComboBoxText _hideCursorSelect;
         [GUI] Box _hideCursorIdleTimeBox;
         [GUI] Entry _hideCursorIdleTimeSpin;
-        [GUI] Adjustment _hideCursorIdleTimeSpinAdjustment;
         [GUI] CheckButton _vSyncToggle;
         [GUI] CheckButton _shaderCacheToggle;
         [GUI] CheckButton _textureRecompressionToggle;
