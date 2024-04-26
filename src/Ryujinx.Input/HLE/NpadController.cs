@@ -517,7 +517,6 @@ namespace Ryujinx.Input.HLE
 
         }
 
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
