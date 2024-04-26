@@ -231,7 +231,6 @@ namespace Ryujinx.Input.HLE
                         var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
 
                         motionState = (controller.GetHLEMotionState(), altMotionState);
-
                     }
                     else
                     {
