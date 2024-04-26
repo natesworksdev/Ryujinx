@@ -632,9 +632,14 @@ namespace Ryujinx.UI.Common.Configuration
         public ReactiveObject<bool> EnableHardwareAcceleration { get; private set; }
 
         /// <summary>
-        /// Hide Cursor on Idle
+        /// Whether to hide cursor on idle, always or never
         /// </summary>
         public ReactiveObject<HideCursorMode> HideCursor { get; private set; }
+
+        /// <summary>
+        /// How many seconds to wait before hiding the cursor when set to hide on idle
+        /// </summary>
+        public ReactiveObject<int> HideCursorIdleTime { get; private set; }
 
         private ConfigurationState()
         {
@@ -649,6 +654,7 @@ namespace Ryujinx.UI.Common.Configuration
             ShowConfirmExit = new ReactiveObject<bool>();
             EnableHardwareAcceleration = new ReactiveObject<bool>();
             HideCursor = new ReactiveObject<HideCursorMode>();
+            HideCursorIdleTime = new ReactiveObject<int>();
         }
 
         public ConfigurationFileFormat ToFileFormat()
@@ -686,6 +692,7 @@ namespace Ryujinx.UI.Common.Configuration
                 ShowConfirmExit = ShowConfirmExit,
                 EnableHardwareAcceleration = EnableHardwareAcceleration,
                 HideCursor = HideCursor,
+                HideCursorIdleTime = HideCursorIdleTime,
                 EnableVsync = Graphics.EnableVsync,
                 EnableShaderCache = Graphics.EnableShaderCache,
                 EnableTextureRecompression = Graphics.EnableTextureRecompression,
@@ -794,6 +801,7 @@ namespace Ryujinx.UI.Common.Configuration
             ShowConfirmExit.Value = true;
             EnableHardwareAcceleration.Value = true;
             HideCursor.Value = HideCursorMode.OnIdle;
+            HideCursorIdleTime.Value = 5;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
             Graphics.EnableTextureRecompression.Value = false;
@@ -1491,6 +1499,7 @@ namespace Ryujinx.UI.Common.Configuration
             ShowConfirmExit.Value = configurationFileFormat.ShowConfirmExit;
             EnableHardwareAcceleration.Value = configurationFileFormat.EnableHardwareAcceleration;
             HideCursor.Value = configurationFileFormat.HideCursor;
+            HideCursorIdleTime.Value = configurationFileFormat.HideCursorIdleTime;
             Graphics.EnableVsync.Value = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value = configurationFileFormat.EnableShaderCache;
             Graphics.EnableTextureRecompression.Value = configurationFileFormat.EnableTextureRecompression;
