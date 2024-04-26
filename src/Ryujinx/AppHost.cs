@@ -53,7 +53,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
-using CursorStates = Ryujinx.Ava.Input.AvaloniaMouse.CursorStates;
 using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using IRenderer = Ryujinx.Graphics.GAL.IRenderer;
@@ -96,6 +95,13 @@ namespace Ryujinx.Ava
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer = true;
         private bool _ignoreCursorState = false;
+
+        private enum CursorStates
+        {
+            CursorIsHidden,
+            CursorIsVisible,
+            ForceChangeCursor
+        };
 
         private CursorStates _cursorState = !ConfigurationState.Instance.Hid.EnableMouse.Value ?
                                              CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
@@ -206,7 +212,6 @@ namespace Ryujinx.Ava
 
         private void TopLevel_PointerEnteredOrMoved(object sender, PointerEventArgs e)
         {
-
             if (!_viewModel.IsActive)
             {
                 _isCursorInRenderer = false;
@@ -216,14 +221,13 @@ namespace Ryujinx.Ava
 
             if (sender is MainWindow window)
             {
-                _lastCursorMoveTime = Stopwatch.GetTimestamp();
+                if (ConfigurationState.Instance.HideCursor.Value == HideCursorMode.OnIdle)
+                    _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
                 var point = e.GetCurrentPoint(window).Position;
                 var bounds = RendererHost.EmbeddedWindow.Bounds;
                 var windowYOffset = bounds.Y + window.MenuBarHeight;
                 var windowYLimit = (int)window.Bounds.Height - window.StatusBarHeight - 1;
-
-
 
                 if (!_viewModel.ShowMenuAndStatusBar)
                 {
@@ -239,7 +243,6 @@ namespace Ryujinx.Ava
                                       !_viewModel.IsSubMenuOpen;
 
                 _ignoreCursorState = false;
-
             }
         }
 
@@ -261,9 +264,9 @@ namespace Ryujinx.Ava
                 }
 
                 _ignoreCursorState = (point.X == bounds.X ||
-                                         Math.Ceiling(point.X) == (int)window.Bounds.Width) &&
-                                         point.Y >= windowYOffset &&
-                                         point.Y <= windowYLimit;
+                                     Math.Ceiling(point.X) == (int)window.Bounds.Width) &&
+                                     point.Y >= windowYOffset &&
+                                     point.Y <= windowYLimit;
 
             }
             _cursorState = CursorStates.ForceChangeCursor;
