@@ -104,7 +104,7 @@ namespace Ryujinx.Ava
         };
 
         private CursorStates _cursorState = !ConfigurationState.Instance.Hid.EnableMouse.Value ?
-                                             CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
+            CursorStates.CursorIsVisible : CursorStates.CursorIsHidden;
 
         private bool _isStopped;
         private bool _isActive;
@@ -236,7 +236,6 @@ namespace Ryujinx.Ava
                     windowYOffset -= window.MenuBarHeight;
                     windowYLimit += window.StatusBarHeight + 1;
                 }
-
 
                 _isCursorInRenderer = point.X >= bounds.X &&
                     Math.Ceiling(point.X) <= (int)window.Bounds.Width &&
