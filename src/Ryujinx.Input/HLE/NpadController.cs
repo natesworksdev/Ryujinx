@@ -487,7 +487,7 @@ namespace Ryujinx.Input.HLE
             return value;
         }
 
-        public static KeyboardInput? GetHLEKeyboardInput(IGamepadDriver KeyboardDriver)
+        public static KeyboardInput GetHLEKeyboardInput(IGamepadDriver KeyboardDriver)
         {
             var keyboard = KeyboardDriver.GetGamepad("0") as IKeyboard;
 
