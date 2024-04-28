@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
+using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
@@ -183,7 +184,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(path, VirtualFileSystem);
 
-                Dictionary<ulong, ContentMetaData> updates = pfs.GetUpdateData(VirtualFileSystem, checkLevel);
+                Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.Patch, VirtualFileSystem, checkLevel);
 
                 Nca patchNca = null;
                 Nca controlNca = null;

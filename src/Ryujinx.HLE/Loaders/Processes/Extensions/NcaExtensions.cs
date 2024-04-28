@@ -147,9 +147,9 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 {
                     IFileSystem updatePartitionFileSystem = PartitionFileSystemUtils.OpenApplicationFileSystem(updatePath, fileSystem);
 
-                    foreach ((ulong updateTitleId, ContentMetaData content) in updatePartitionFileSystem.GetUpdateData(fileSystem, checkLevel))
+                    foreach ((ulong applicationTitleId, ContentMetaData content) in updatePartitionFileSystem.GetContentData(ContentMetaType.Patch, fileSystem, checkLevel))
                     {
-                        if ((updateTitleId & ~0x1FFFUL) != titleIdBase)
+                        if ((applicationTitleId & ~0x1FFFUL) != titleIdBase)
                         {
                             continue;
                         }

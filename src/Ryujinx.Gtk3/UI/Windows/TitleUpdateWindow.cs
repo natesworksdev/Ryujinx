@@ -2,6 +2,7 @@ using Gtk;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
+using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
@@ -104,7 +105,7 @@ namespace Ryujinx.UI.Windows
             {
                 using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(path, _virtualFileSystem);
 
-                Dictionary<ulong, ContentMetaData> updates = pfs.GetUpdateData(_virtualFileSystem, checkLevel);
+                Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.Patch, _virtualFileSystem, checkLevel);
 
                 Nca patchNca = null;
                 Nca controlNca = null;

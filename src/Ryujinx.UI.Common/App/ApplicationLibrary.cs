@@ -4,6 +4,7 @@ using LibHac.Common.Keys;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
+using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
@@ -166,11 +167,12 @@ namespace Ryujinx.UI.App.Common
             var applications = new List<ApplicationData>();
             string extension = Path.GetExtension(filePath).ToLower();
 
-            foreach ((ulong titleId, ContentMetaData content) in pfs.GetApplicationData(_virtualFileSystem, _checkLevel))
+            foreach ((ulong titleId, ContentMetaData content) in pfs.GetContentData(ContentMetaType.Application, _virtualFileSystem, _checkLevel))
             {
                 ApplicationData applicationData = new()
                 {
                     Id = titleId,
+                    Path = filePath,
                 };
 
                 try
@@ -697,7 +699,7 @@ namespace Ryujinx.UI.App.Common
                             else
                             {
                                 // Store the ControlFS in variable called controlFs
-                                Dictionary<ulong, ContentMetaData> programs = pfs.GetApplicationData(_virtualFileSystem, _checkLevel);
+                                Dictionary<ulong, ContentMetaData> programs = pfs.GetContentData(ContentMetaType.Application, _virtualFileSystem, _checkLevel);
                                 IFileSystem controlFs = null;
 
                                 if (programs.TryGetValue(titleId, out ContentMetaData value))

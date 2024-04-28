@@ -23,8 +23,8 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
     {
         private static readonly DownloadableContentJsonSerializerContext _contentSerializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
-        public static Dictionary<ulong, ContentMetaData> GetApplicationData(this IFileSystem partitionFileSystem,
-            VirtualFileSystem fileSystem, IntegrityCheckLevel checkLevel)
+        public static Dictionary<ulong, ContentMetaData> GetContentData(this IFileSystem partitionFileSystem,
+            ContentMetaType contentType, VirtualFileSystem fileSystem, IntegrityCheckLevel checkLevel)
         {
             fileSystem.ImportTickets(partitionFileSystem);
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
             foreach (DirectoryEntryEx fileEntry in partitionFileSystem.EnumerateEntries("/", "*.cnmt.nca"))
             {
-                Cnmt cnmt = partitionFileSystem.GetNca(fileSystem.KeySet, fileEntry.FullPath).GetCnmt(checkLevel, ContentMetaType.Application);
+                Cnmt cnmt = partitionFileSystem.GetNca(fileSystem.KeySet, fileEntry.FullPath).GetCnmt(checkLevel, contentType);
 
                 if (cnmt == null)
                 {
@@ -41,41 +41,23 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
                 ContentMetaData content = new(partitionFileSystem, cnmt);
 
-                if (content.Type != ContentMetaType.Application)
+                if (content.Type != contentType)
                 {
                     continue;
                 }
 
-                programs.TryAdd(content.ApplicationId, content);
-            }
+                var applicationId = content.ApplicationId;
 
-            return programs;
-        }
+                // NOTE: The application id in the CNMT might not match the actual program id of an application.
+                //       So we grab the application id from the control NCA if possible.
+                Nca controlNca = content.GetNcaByType(fileSystem.KeySet, ContentType.Control);
 
-        public static Dictionary<ulong, ContentMetaData> GetUpdateData(this IFileSystem partitionFileSystem,
-            VirtualFileSystem fileSystem, IntegrityCheckLevel checkLevel)
-        {
-            fileSystem.ImportTickets(partitionFileSystem);
-
-            var programs = new Dictionary<ulong, ContentMetaData>();
-
-            foreach (DirectoryEntryEx fileEntry in partitionFileSystem.EnumerateEntries("/", "*.cnmt.nca"))
-            {
-                Cnmt cnmt = partitionFileSystem.GetNca(fileSystem.KeySet, fileEntry.FullPath).GetCnmt(checkLevel, ContentMetaType.Patch);
-
-                if (cnmt == null)
+                if (controlNca != null)
                 {
-                    continue;
+                    applicationId = controlNca.Header.TitleId;
                 }
 
-                ContentMetaData content = new(partitionFileSystem, cnmt);
-
-                if (content.Type != ContentMetaType.Patch)
-                {
-                    continue;
-                }
-
-                programs.TryAdd(content.ApplicationId, content);
+                programs.TryAdd(applicationId, content);
             }
 
             return programs;
@@ -96,7 +78,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
             try
             {
-                Dictionary<ulong, ContentMetaData> applications = partitionFileSystem.GetApplicationData(device.FileSystem, device.System.FsIntegrityCheckLevel);
+                Dictionary<ulong, ContentMetaData> applications = partitionFileSystem.GetContentData(ContentMetaType.Application, device.FileSystem, device.System.FsIntegrityCheckLevel);
 
                 if (titleId == 0)
                 {
