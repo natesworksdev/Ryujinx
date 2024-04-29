@@ -328,7 +328,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ViewModel.WindowHeight = 777 * Program.WindowScaleFactor;
                 ViewModel.WindowWidth = 1280 * Program.WindowScaleFactor;
-                
+
                 WindowState = WindowState.Normal;
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
 

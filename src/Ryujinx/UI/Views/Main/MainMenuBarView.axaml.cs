@@ -230,7 +230,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                         height = 1080;
                         width = 1920;
                         break;
-                    
+
                     default:
                         throw new ArgumentNullException(nameof(item.Tag));
                 }
