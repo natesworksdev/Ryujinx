@@ -232,7 +232,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                         break;
 
                     default:
-                        throw new ArgumentNullException(nameof(item.Tag));
+                        throw new ArgumentNullException($"Invalid Tag for {item}");
                 }
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
