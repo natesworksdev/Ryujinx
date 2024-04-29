@@ -863,17 +863,20 @@ namespace Ryujinx.UI.App.Common
                 }
             }
 
-            if (controlData.PresenceGroupId != 0)
+            if (data.Id == 0)
             {
-                data.Id = controlData.PresenceGroupId;
-            }
-            else if (controlData.SaveDataOwnerId != 0)
-            {
-                data.Id = controlData.SaveDataOwnerId;
-            }
-            else if (controlData.AddOnContentBaseId != 0)
-            {
-                data.Id = (controlData.AddOnContentBaseId - 0x1000);
+                if (controlData.SaveDataOwnerId != 0)
+                {
+                    data.Id = controlData.SaveDataOwnerId;
+                }
+                else if (controlData.PresenceGroupId != 0)
+                {
+                    data.Id = controlData.PresenceGroupId;
+                }
+                else if (controlData.AddOnContentBaseId != 0)
+                {
+                    data.Id = (controlData.AddOnContentBaseId - 0x1000);
+                }
             }
 
             data.Version = controlData.DisplayVersionString.ToString();
