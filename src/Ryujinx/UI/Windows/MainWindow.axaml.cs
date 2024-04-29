@@ -326,7 +326,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             if (!ConfigurationState.Instance.RememberWindowState)
             {
-                ViewModel.WindowHeight = 777 * Program.WindowScaleFactor;
+                ViewModel.WindowHeight = (720 + StatusBarHeight + MenuBarHeight) * Program.WindowScaleFactor;
                 ViewModel.WindowWidth = 1280 * Program.WindowScaleFactor;
 
                 WindowState = WindowState.Normal;
