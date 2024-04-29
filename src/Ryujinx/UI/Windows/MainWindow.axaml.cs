@@ -70,8 +70,6 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
             Load();
 
-            SetWindowSizePosition();
-
             UiHandler = new AvaHostUIHandler(this);
 
             ViewModel.Title = $"Ryujinx {Program.Version}";
@@ -82,6 +80,8 @@ namespace Ryujinx.Ava.UI.Windows
             double barHeight = MenuBarHeight + StatusBarHeight;
             Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
+
+            SetWindowSizePosition();
 
             if (Program.PreviewerDetached)
             {
