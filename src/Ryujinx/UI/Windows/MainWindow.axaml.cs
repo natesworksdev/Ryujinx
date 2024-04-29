@@ -336,8 +336,6 @@ namespace Ryujinx.Ava.UI.Windows
 
                 Position = windowCenter;
 
-                Console.WriteLine($"{ViewModel.WindowWidth}, {ViewModel.WindowHeight}, {WindowState}, {Position}");
-
                 return;
             }
 
@@ -357,8 +355,6 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 Position = windowCenter;
             }
-
-            Console.WriteLine($"{ViewModel.WindowWidth}, {ViewModel.WindowHeight}, {WindowState}, {Position}");
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
