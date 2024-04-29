@@ -358,13 +358,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SaveWindowSizePosition()
         {
-            ConfigurationState.Instance.UI.WindowStartup.WindowSizeHeight.Value = (int)Height;
-            ConfigurationState.Instance.UI.WindowStartup.WindowSizeWidth.Value = (int)Width;
-
-            ConfigurationState.Instance.UI.WindowStartup.WindowPositionX.Value = Position.X;
-            ConfigurationState.Instance.UI.WindowStartup.WindowPositionY.Value = Position.Y;
-
             ConfigurationState.Instance.UI.WindowStartup.WindowMaximized.Value = WindowState == WindowState.Maximized;
+
+            // Only save rectangle properties if the window is not in a maximized state.
+            if (WindowState != WindowState.Maximized)
+            {
+                ConfigurationState.Instance.UI.WindowStartup.WindowSizeHeight.Value = (int)Height;
+                ConfigurationState.Instance.UI.WindowStartup.WindowSizeWidth.Value = (int)Width;
+
+                ConfigurationState.Instance.UI.WindowStartup.WindowPositionX.Value = Position.X;
+                ConfigurationState.Instance.UI.WindowStartup.WindowPositionY.Value = Position.Y;
+            }
 
             MainWindowViewModel.SaveConfig();
         }
