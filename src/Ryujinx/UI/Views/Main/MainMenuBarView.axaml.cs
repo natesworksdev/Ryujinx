@@ -237,6 +237,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
+                    ViewModel.WindowState = WindowState.Normal;
                     ViewModel.WindowHeight = height + Window.StatusBarHeight + Window.MenuBarHeight;
                     ViewModel.WindowWidth = width;
                 });
