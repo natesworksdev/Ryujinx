@@ -324,6 +324,23 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
+            // WindowStartupLocation is unable to be used after the MainWindow is created.
+            // To center a window manually we need the raw display dimensions.
+            PixelPoint windowCenter = new(Screens.Primary.Bounds.Width / 4, Screens.Primary.Bounds.Height / 4);
+
+            if (!ConfigurationState.Instance.RememberWindowState)
+            {
+                ViewModel.WindowHeight = 777 * Program.WindowScaleFactor;
+                ViewModel.WindowWidth = 1280 * Program.WindowScaleFactor;
+                WindowState = WindowState.Normal;
+
+                Position = windowCenter;
+
+                Console.WriteLine($"{ViewModel.WindowWidth}, {ViewModel.WindowHeight}, {WindowState}, {Position}");
+
+                return;
+            }
+
             PixelPoint savedPoint = new(ConfigurationState.Instance.UI.WindowStartup.WindowPositionX,
                                         ConfigurationState.Instance.UI.WindowStartup.WindowPositionY);
 
@@ -338,8 +355,10 @@ namespace Ryujinx.Ava.UI.Windows
             }
             else
             {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                Position = windowCenter;
             }
+
+            Console.WriteLine($"{ViewModel.WindowWidth}, {ViewModel.WindowHeight}, {WindowState}, {Position}");
         }
 
         private bool CheckScreenBounds(PixelPoint configPoint)
@@ -481,7 +500,10 @@ namespace Ryujinx.Ava.UI.Windows
                 return;
             }
 
-            SaveWindowSizePosition();
+            if (ConfigurationState.Instance.RememberWindowState)
+            {
+                SaveWindowSizePosition();
+            }
 
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();
