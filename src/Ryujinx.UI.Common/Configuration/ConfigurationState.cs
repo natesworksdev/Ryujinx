@@ -1,4 +1,3 @@
-using LibHac.Tools.Npdm;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
