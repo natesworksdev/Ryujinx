@@ -67,10 +67,10 @@ namespace Ryujinx.Ava.UI.Windows
 
             DataContext = ViewModel;
 
-            SetWindowSizePosition();
-
             InitializeComponent();
             Load();
+
+            SetWindowSizePosition();
 
             UiHandler = new AvaHostUIHandler(this);
 
@@ -324,17 +324,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
-            // WindowStartupLocation is unable to be used after the MainWindow is created.
-            // To center a window manually we need the raw display dimensions.
-            PixelPoint windowCenter = new(Screens.Primary.Bounds.Width / 4, Screens.Primary.Bounds.Height / 4);
-
             if (!ConfigurationState.Instance.RememberWindowState)
             {
                 ViewModel.WindowHeight = 777 * Program.WindowScaleFactor;
                 ViewModel.WindowWidth = 1280 * Program.WindowScaleFactor;
+                
                 WindowState = WindowState.Normal;
-
-                Position = windowCenter;
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
                 return;
             }
@@ -353,7 +349,7 @@ namespace Ryujinx.Ava.UI.Windows
             }
             else
             {
-                Position = windowCenter;
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
         }
 
