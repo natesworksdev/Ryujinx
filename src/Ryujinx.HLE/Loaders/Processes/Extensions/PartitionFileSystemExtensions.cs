@@ -46,18 +46,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                     continue;
                 }
 
-                var applicationId = content.ApplicationId;
-
-                // NOTE: The application id in the CNMT might not match the actual program id of an application.
-                //       So we grab the application id from the control NCA if possible.
-                Nca controlNca = content.GetNcaByType(fileSystem.KeySet, ContentType.Control);
-
-                if (controlNca != null)
-                {
-                    applicationId = controlNca.Header.TitleId;
-                }
-
-                programs.TryAdd(applicationId, content);
+                programs.TryAdd(content.ApplicationId, content);
             }
 
             return programs;

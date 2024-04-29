@@ -19,9 +19,6 @@ namespace Ryujinx.HLE.FileSystem
         public ulong Id => _cnmt.TitleId;
         public TitleVersion Version => _cnmt.TitleVersion;
         public ContentMetaType Type => _cnmt.Type;
-        /// <remarks>
-        /// <see cref="Cnmt.ApplicationTitleId"/> of applications might not match the title id of their control NCA or NPDM.
-        /// </remarks>
         public ulong ApplicationId => _cnmt.ApplicationTitleId;
         public ulong PatchId => _cnmt.PatchTitleId;
         public TitleVersion RequiredSystemVersion => _cnmt.MinimumSystemVersion;
