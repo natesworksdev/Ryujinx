@@ -48,8 +48,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public Decoder(int sampleRate, int channelsCount)
             {
-                Logger.Warning?.Print(LogClass.Audio, "Creating an Opus decoder!");
-                _decoder = OpusCodecFactory.CreateDecoder(sampleRate, channelsCount, Console.Out);
+                _decoder = OpusCodecFactory.CreateDecoder(sampleRate, channelsCount);
             }
 
             public int Decode(ReadOnlySpan<byte> inData, Span<short> outPcm, int frameSize)
@@ -78,8 +77,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             public MultiSampleDecoder(int sampleRate, int channelsCount, int streams, int coupledStreams, byte[] mapping)
             {
                 ChannelsCount = channelsCount;
-                Logger.Warning?.Print(LogClass.Audio, "Creating an Opus multistream decoder!");
-                _decoder = OpusCodecFactory.CreateMultiStreamDecoder(sampleRate, channelsCount, streams, coupledStreams, mapping, Console.Out);
+                _decoder = OpusCodecFactory.CreateMultiStreamDecoder(sampleRate, channelsCount, streams, coupledStreams, mapping);
             }
 
             public int Decode(ReadOnlySpan<byte> inData, Span<short> outPcm, int frameSize)
@@ -309,7 +307,6 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
                 try
                 {
-                    Logger.Debug?.Print(LogClass.Audio, "Decoding Opus audio!");
                     outSamples = decoder.Decode(opusData, outPcmData, numSamples);
                     outConsumed = (int)totalSize;
                 }
