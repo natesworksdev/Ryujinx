@@ -63,7 +63,16 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public void Dispose()
             {
-                _decoder?.Dispose();
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _decoder?.Dispose();
+                }
             }
         }
 
@@ -92,7 +101,16 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public void Dispose()
             {
-                _decoder?.Dispose();
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _decoder?.Dispose();
+                }
             }
         }
 
