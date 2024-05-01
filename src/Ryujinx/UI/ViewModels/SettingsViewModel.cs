@@ -413,8 +413,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             TimeZone = config.System.TimeZone;
 
             DateTime currentHostDateTime = DateTime.Now;
-            TimeSpan SystemDateTimeOffset = TimeSpan.FromSeconds(config.System.SystemTimeOffset);
-            DateTime currentDateTime = currentHostDateTime.Add(SystemDateTimeOffset);
+            TimeSpan systemDateTimeOffset = TimeSpan.FromSeconds(config.System.SystemTimeOffset);
+            DateTime currentDateTime = currentHostDateTime.Add(systemDateTimeOffset);
             CurrentDate = currentDateTime.Date;
             CurrentTime = currentDateTime.TimeOfDay;
 
