@@ -48,6 +48,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public Decoder(int sampleRate, int channelsCount)
             {
+                OpusCodecFactory.AttemptToUseNativeLibrary = false;
                 _decoder = OpusCodecFactory.CreateDecoder(sampleRate, channelsCount);
             }
 
@@ -81,11 +82,11 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             private readonly IOpusMultiStreamDecoder _decoder;
 
             public int SampleRate => _decoder.SampleRate;
-            public int ChannelsCount { get; }
+            public int ChannelsCount => _decoder.NumChannels;
 
             public MultiSampleDecoder(int sampleRate, int channelsCount, int streams, int coupledStreams, byte[] mapping)
             {
-                ChannelsCount = channelsCount;
+                OpusCodecFactory.AttemptToUseNativeLibrary = false;
                 _decoder = OpusCodecFactory.CreateMultiStreamDecoder(sampleRate, channelsCount, streams, coupledStreams, mapping);
             }
 
