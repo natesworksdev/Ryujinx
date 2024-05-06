@@ -14,6 +14,11 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 {
     partial class HardwareOpusDecoder : IHardwareOpusDecoder, IDisposable
     {
+        static HardwareOpusDecoder()
+        {
+            OpusCodecFactory.AttemptToUseNativeLibrary = false;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct OpusPacketHeader
         {
@@ -48,7 +53,6 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public Decoder(int sampleRate, int channelsCount)
             {
-                OpusCodecFactory.AttemptToUseNativeLibrary = false;
                 _decoder = OpusCodecFactory.CreateDecoder(sampleRate, channelsCount);
             }
 
@@ -86,7 +90,6 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
 
             public MultiSampleDecoder(int sampleRate, int channelsCount, int streams, int coupledStreams, byte[] mapping)
             {
-                OpusCodecFactory.AttemptToUseNativeLibrary = false;
                 _decoder = OpusCodecFactory.CreateMultiStreamDecoder(sampleRate, channelsCount, streams, coupledStreams, mapping);
             }
 

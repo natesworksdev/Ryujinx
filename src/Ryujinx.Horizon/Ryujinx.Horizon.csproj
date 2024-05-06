@@ -13,11 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Concentus" >
-      <!-- Exclude Opus native binaries from coming in through the package, they are large and complicate the build -->
-      <IncludeAssets>compile;runtime</IncludeAssets>
-      <ExcludeAssets>contentFiles;build;native</ExcludeAssets>
-    </PackageReference>
+    <PackageReference Include="Concentus" />
     <PackageReference Include="LibHac" />
   </ItemGroup>
 </Project>
