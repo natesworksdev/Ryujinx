@@ -396,9 +396,13 @@ namespace Ryujinx.Graphics.Gpu
                 Renderer.CreateSync(SyncNumber, strict);
 
                 foreach (var action in SyncActions)
+                {
                     action.SyncPreAction(syncpoint);
+                }
                 foreach (var action in SyncpointActions)
+                {
                     action.SyncPreAction(syncpoint);
+                }
 
                 SyncNumber++;
 
