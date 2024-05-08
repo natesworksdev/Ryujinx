@@ -440,8 +440,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     try
                     {
-                        using FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough);
-                        dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                        await using FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough);
+                        await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
                     }
                     catch (Exception exception)
                     {
@@ -479,7 +479,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (response.IsSuccessStatusCode)
             {
                 byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                using MemoryStream memoryStream = new(amiiboPreviewBytes);
+                await using MemoryStream memoryStream = new(amiiboPreviewBytes);
 
                 Bitmap bitmap = new(memoryStream);
 
