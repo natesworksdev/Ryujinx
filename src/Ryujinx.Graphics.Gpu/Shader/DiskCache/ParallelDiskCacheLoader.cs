@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using static Ryujinx.Graphics.Gpu.Shader.ShaderCache;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
@@ -226,7 +227,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <summary>
         /// Loads all shaders from the cache.
         /// </summary>
-        public void LoadShaders()
+        public async Task LoadShaders()
         {
             Thread[] workThreads = new Thread[ThreadCount];
 
@@ -254,7 +255,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             try
             {
-                _hostStorage.LoadShaders(_context, this);
+                await _hostStorage.LoadShaders(_context, this);
             }
             catch (DiskCacheLoadException diskCacheLoadException)
             {

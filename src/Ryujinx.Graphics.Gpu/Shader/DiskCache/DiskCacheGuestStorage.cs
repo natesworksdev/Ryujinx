@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
@@ -194,7 +195,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="dataFileStream">Guest data file stream</param>
         /// <param name="index">Guest shader index</param>
         /// <returns>Guest code and constant buffer 1 data</returns>
-        public GuestCodeAndCbData LoadShader(Stream tocFileStream, Stream dataFileStream, int index)
+        public async Task<GuestCodeAndCbData> LoadShader(Stream tocFileStream, Stream dataFileStream, int index)
         {
             if (_cache == null || index >= _cache.Length)
             {
@@ -220,7 +221,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 }
 
                 dataFileStream.Seek((long)entry.Offset, SeekOrigin.Begin);
-                dataFileStream.Read(cb1Data);
+                await dataFileStream.ReadAsync(cb1Data);
                 BinarySerializer.ReadCompressed(dataFileStream, guestCode);
 
                 _cache[index] = (guestCode, cb1Data);

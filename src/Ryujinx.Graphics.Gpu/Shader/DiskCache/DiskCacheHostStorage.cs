@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
@@ -289,7 +290,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="loader">Parallel disk cache loader</param>
-        public void LoadShaders(GpuContext context, ParallelDiskCacheLoader loader)
+        public async Task LoadShaders(GpuContext context, ParallelDiskCacheLoader loader)
         {
             if (!CacheExists())
             {
@@ -301,11 +302,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             try
             {
-                using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: false);
-                using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: false);
+                await using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: false);
+                await using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: false);
 
-                using var guestTocFileStream = _guestStorage.OpenTocFileStream();
-                using var guestDataFileStream = _guestStorage.OpenDataFileStream();
+                await using var guestTocFileStream = _guestStorage.OpenTocFileStream();
+                await using var guestDataFileStream = _guestStorage.OpenDataFileStream();
 
                 BinarySerializer tocReader = new(tocFileStream);
                 BinarySerializer dataReader = new(dataFileStream);
@@ -365,7 +366,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
                         dataReader.Read(ref stageEntry);
 
-                        guestShaders[stageIndex] = _guestStorage.LoadShader(
+                        guestShaders[stageIndex] = await _guestStorage.LoadShader(
                             guestTocFileStream,
                             guestDataFileStream,
                             stageEntry.GuestCodeIndex);
@@ -432,8 +433,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             {
                 _guestStorage.ClearMemoryCache();
 
-                hostTocFileStream?.Dispose();
-                hostDataFileStream?.Dispose();
+                if (hostTocFileStream != null)
+                {
+                    await hostTocFileStream.DisposeAsync();
+                }
+
+                if (hostDataFileStream != null)
+                {
+                    await hostDataFileStream.DisposeAsync();
+                }
             }
         }
 

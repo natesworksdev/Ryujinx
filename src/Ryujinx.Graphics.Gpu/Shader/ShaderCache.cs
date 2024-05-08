@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -152,7 +153,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Initialize the cache.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token to cancel the shader cache initialization process</param>
-        internal void Initialize(CancellationToken cancellationToken)
+        internal async Task Initialize(CancellationToken cancellationToken)
         {
             if (_diskCacheHostStorage.CacheEnabled)
             {
@@ -164,7 +165,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     ShaderCacheStateUpdate,
                     cancellationToken);
 
-                loader.LoadShaders();
+                await loader.LoadShaders();
 
                 int errorCount = loader.ErrorCount;
                 if (errorCount != 0)

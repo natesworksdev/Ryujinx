@@ -8,7 +8,9 @@ using Ryujinx.Graphics.Gpu.Synchronization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -274,14 +276,11 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Initialize the GPU shader cache.
         /// </summary>
-        public void InitializeShaderCache(CancellationToken cancellationToken)
+        public async Task InitializeShaderCache(CancellationToken cancellationToken)
         {
             HostInitalized.WaitOne();
 
-            foreach (var physicalMemory in PhysicalMemoryRegistry.Values)
-            {
-                physicalMemory.ShaderCache.Initialize(cancellationToken);
-            }
+            await Task.WhenAll(PhysicalMemoryRegistry.Values.Select(pm => pm.ShaderCache.Initialize(cancellationToken)));
 
             _gpuReadyEvent.Set();
         }
