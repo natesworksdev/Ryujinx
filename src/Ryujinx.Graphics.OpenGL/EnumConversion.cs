@@ -1,4 +1,6 @@
 using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
+using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
@@ -16,11 +18,11 @@ namespace Ryujinx.Graphics.OpenGL
                 case AddressMode.Repeat:
                     return TextureWrapMode.Repeat;
                 case AddressMode.MirrorClamp:
-                    return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampExt;
+                    return (TextureWrapMode)EXT.MirrorClampExt;
                 case AddressMode.MirrorClampToEdge:
-                    return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampToEdgeExt;
+                    return (TextureWrapMode)EXT.MirrorClampToEdgeExt;
                 case AddressMode.MirrorClampToBorder:
-                    return (TextureWrapMode)ExtTextureMirrorClamp.MirrorClampToBorderExt;
+                    return (TextureWrapMode)EXT.MirrorClampToBorderExt;
                 case AddressMode.ClampToBorder:
                     return TextureWrapMode.ClampToBorder;
                 case AddressMode.MirroredRepeat:
@@ -34,124 +36,124 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureWrapMode.Clamp;
         }
 
-        public static NvBlendEquationAdvanced Convert(this AdvancedBlendOp op)
+        public static NV Convert(this AdvancedBlendOp op)
         {
             switch (op)
             {
                 case AdvancedBlendOp.Zero:
-                    return NvBlendEquationAdvanced.Zero;
+                    return NV.Zero;
                 case AdvancedBlendOp.Src:
-                    return NvBlendEquationAdvanced.SrcNv;
+                    return NV.SrcNV;
                 case AdvancedBlendOp.Dst:
-                    return NvBlendEquationAdvanced.DstNv;
+                    return NV.DstNV;
                 case AdvancedBlendOp.SrcOver:
-                    return NvBlendEquationAdvanced.SrcOverNv;
+                    return NV.SrcOverNV;
                 case AdvancedBlendOp.DstOver:
-                    return NvBlendEquationAdvanced.DstOverNv;
+                    return NV.DstOverNV;
                 case AdvancedBlendOp.SrcIn:
-                    return NvBlendEquationAdvanced.SrcInNv;
+                    return NV.SrcInNV;
                 case AdvancedBlendOp.DstIn:
-                    return NvBlendEquationAdvanced.DstInNv;
+                    return NV.DstInNV;
                 case AdvancedBlendOp.SrcOut:
-                    return NvBlendEquationAdvanced.SrcOutNv;
+                    return NV.SrcOutNV;
                 case AdvancedBlendOp.DstOut:
-                    return NvBlendEquationAdvanced.DstOutNv;
+                    return NV.DstOutNV;
                 case AdvancedBlendOp.SrcAtop:
-                    return NvBlendEquationAdvanced.SrcAtopNv;
+                    return NV.SrcAtopNV;
                 case AdvancedBlendOp.DstAtop:
-                    return NvBlendEquationAdvanced.DstAtopNv;
+                    return NV.DstAtopNV;
                 case AdvancedBlendOp.Xor:
-                    return NvBlendEquationAdvanced.XorNv;
+                    return NV.XorNV;
                 case AdvancedBlendOp.Plus:
-                    return NvBlendEquationAdvanced.PlusNv;
+                    return NV.PlusNV;
                 case AdvancedBlendOp.PlusClamped:
-                    return NvBlendEquationAdvanced.PlusClampedNv;
+                    return NV.PlusClampedNV;
                 case AdvancedBlendOp.PlusClampedAlpha:
-                    return NvBlendEquationAdvanced.PlusClampedAlphaNv;
+                    return NV.PlusClampedAlphaNV;
                 case AdvancedBlendOp.PlusDarker:
-                    return NvBlendEquationAdvanced.PlusDarkerNv;
+                    return NV.PlusDarkerNV;
                 case AdvancedBlendOp.Multiply:
-                    return NvBlendEquationAdvanced.MultiplyNv;
+                    return NV.MultiplyNV;
                 case AdvancedBlendOp.Screen:
-                    return NvBlendEquationAdvanced.ScreenNv;
+                    return NV.ScreenNV;
                 case AdvancedBlendOp.Overlay:
-                    return NvBlendEquationAdvanced.OverlayNv;
+                    return NV.OverlayNV;
                 case AdvancedBlendOp.Darken:
-                    return NvBlendEquationAdvanced.DarkenNv;
+                    return NV.DarkenNV;
                 case AdvancedBlendOp.Lighten:
-                    return NvBlendEquationAdvanced.LightenNv;
+                    return NV.LightenNV;
                 case AdvancedBlendOp.ColorDodge:
-                    return NvBlendEquationAdvanced.ColordodgeNv;
+                    return NV.ColordodgeNV;
                 case AdvancedBlendOp.ColorBurn:
-                    return NvBlendEquationAdvanced.ColorburnNv;
+                    return NV.ColorburnNV;
                 case AdvancedBlendOp.HardLight:
-                    return NvBlendEquationAdvanced.HardlightNv;
+                    return NV.HardlightNV;
                 case AdvancedBlendOp.SoftLight:
-                    return NvBlendEquationAdvanced.SoftlightNv;
+                    return NV.SoftlightNV;
                 case AdvancedBlendOp.Difference:
-                    return NvBlendEquationAdvanced.DifferenceNv;
+                    return NV.DifferenceNV;
                 case AdvancedBlendOp.Minus:
-                    return NvBlendEquationAdvanced.MinusNv;
+                    return NV.MinusNV;
                 case AdvancedBlendOp.MinusClamped:
-                    return NvBlendEquationAdvanced.MinusClampedNv;
+                    return NV.MinusClampedNV;
                 case AdvancedBlendOp.Exclusion:
-                    return NvBlendEquationAdvanced.ExclusionNv;
+                    return NV.ExclusionNV;
                 case AdvancedBlendOp.Contrast:
-                    return NvBlendEquationAdvanced.ContrastNv;
+                    return NV.ContrastNV;
                 case AdvancedBlendOp.Invert:
-                    return NvBlendEquationAdvanced.Invert;
+                    return NV.Invert;
                 case AdvancedBlendOp.InvertRGB:
-                    return NvBlendEquationAdvanced.InvertRgbNv;
+                    return NV.InvertRgbNV;
                 case AdvancedBlendOp.InvertOvg:
-                    return NvBlendEquationAdvanced.InvertOvgNv;
+                    return NV.InvertOvgNV;
                 case AdvancedBlendOp.LinearDodge:
-                    return NvBlendEquationAdvanced.LineardodgeNv;
+                    return NV.LineardodgeNV;
                 case AdvancedBlendOp.LinearBurn:
-                    return NvBlendEquationAdvanced.LinearburnNv;
+                    return NV.LinearburnNV;
                 case AdvancedBlendOp.VividLight:
-                    return NvBlendEquationAdvanced.VividlightNv;
+                    return NV.VividlightNV;
                 case AdvancedBlendOp.LinearLight:
-                    return NvBlendEquationAdvanced.LinearlightNv;
+                    return NV.LinearlightNV;
                 case AdvancedBlendOp.PinLight:
-                    return NvBlendEquationAdvanced.PinlightNv;
+                    return NV.PinlightNV;
                 case AdvancedBlendOp.HardMix:
-                    return NvBlendEquationAdvanced.HardmixNv;
+                    return NV.HardmixNV;
                 case AdvancedBlendOp.Red:
-                    return NvBlendEquationAdvanced.RedNv;
+                    return NV.RedNV;
                 case AdvancedBlendOp.Green:
-                    return NvBlendEquationAdvanced.GreenNv;
+                    return NV.GreenNV;
                 case AdvancedBlendOp.Blue:
-                    return NvBlendEquationAdvanced.BlueNv;
+                    return NV.BlueNV;
                 case AdvancedBlendOp.HslHue:
-                    return NvBlendEquationAdvanced.HslHueNv;
+                    return NV.HslHueNV;
                 case AdvancedBlendOp.HslSaturation:
-                    return NvBlendEquationAdvanced.HslSaturationNv;
+                    return NV.HslSaturationNV;
                 case AdvancedBlendOp.HslColor:
-                    return NvBlendEquationAdvanced.HslColorNv;
+                    return NV.HslColorNV;
                 case AdvancedBlendOp.HslLuminosity:
-                    return NvBlendEquationAdvanced.HslLuminosityNv;
+                    return NV.HslLuminosityNV;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AdvancedBlendOp)} enum value: {op}.");
 
-            return NvBlendEquationAdvanced.Zero;
+            return NV.Zero;
         }
 
-        public static All Convert(this AdvancedBlendOverlap overlap)
+        public static NV Convert(this AdvancedBlendOverlap overlap)
         {
             switch (overlap)
             {
                 case AdvancedBlendOverlap.Uncorrelated:
-                    return All.UncorrelatedNv;
+                    return NV.UncorrelatedNV;
                 case AdvancedBlendOverlap.Disjoint:
-                    return All.DisjointNv;
+                    return NV.DisjointNV;
                 case AdvancedBlendOverlap.Conjoint:
-                    return All.ConjointNv;
+                    return NV.ConjointNV;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AdvancedBlendOverlap)} enum value: {overlap}.");
 
-            return All.UncorrelatedNv;
+            return NV.UncorrelatedNV;
         }
 
         public static GLEnum Convert(this BlendFactor factor)
@@ -469,29 +471,29 @@ namespace Ryujinx.Graphics.OpenGL
             return PrimitiveType.Points;
         }
 
-        public static TransformFeedbackPrimitiveType ConvertToTfType(this PrimitiveTopology topology)
+        public static PrimitiveType ConvertToTfType(this PrimitiveTopology topology)
         {
             switch (topology)
             {
                 case PrimitiveTopology.Points:
-                    return TransformFeedbackPrimitiveType.Points;
+                    return PrimitiveType.Points;
                 case PrimitiveTopology.Lines:
                 case PrimitiveTopology.LineLoop:
                 case PrimitiveTopology.LineStrip:
                 case PrimitiveTopology.LinesAdjacency:
                 case PrimitiveTopology.LineStripAdjacency:
-                    return TransformFeedbackPrimitiveType.Lines;
+                    return PrimitiveType.Lines;
                 case PrimitiveTopology.Triangles:
                 case PrimitiveTopology.TriangleStrip:
                 case PrimitiveTopology.TriangleFan:
                 case PrimitiveTopology.TrianglesAdjacency:
                 case PrimitiveTopology.TriangleStripAdjacency:
-                    return TransformFeedbackPrimitiveType.Triangles;
+                    return PrimitiveType.Triangles;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(PrimitiveTopology)} enum value: {topology}.");
 
-            return TransformFeedbackPrimitiveType.Points;
+            return PrimitiveType.Points;
         }
 
         public static Silk.NET.OpenGL.Legacy.StencilOp Convert(this GAL.StencilOp op)
@@ -588,31 +590,31 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureTarget.Texture2D;
         }
 
-        public static NvViewportSwizzle Convert(this ViewportSwizzle swizzle)
+        public static NV Convert(this ViewportSwizzle swizzle)
         {
             switch (swizzle)
             {
                 case ViewportSwizzle.PositiveX:
-                    return NvViewportSwizzle.ViewportSwizzlePositiveXNv;
+                    return NV.ViewportSwizzlePositiveXNV;
                 case ViewportSwizzle.PositiveY:
-                    return NvViewportSwizzle.ViewportSwizzlePositiveYNv;
+                    return NV.ViewportSwizzlePositiveYNV;
                 case ViewportSwizzle.PositiveZ:
-                    return NvViewportSwizzle.ViewportSwizzlePositiveZNv;
+                    return NV.ViewportSwizzlePositiveZNV;
                 case ViewportSwizzle.PositiveW:
-                    return NvViewportSwizzle.ViewportSwizzlePositiveWNv;
+                    return NV.ViewportSwizzlePositiveWNV;
                 case ViewportSwizzle.NegativeX:
-                    return NvViewportSwizzle.ViewportSwizzleNegativeXNv;
+                    return NV.ViewportSwizzleNegativeXNV;
                 case ViewportSwizzle.NegativeY:
-                    return NvViewportSwizzle.ViewportSwizzleNegativeYNv;
+                    return NV.ViewportSwizzleNegativeYNV;
                 case ViewportSwizzle.NegativeZ:
-                    return NvViewportSwizzle.ViewportSwizzleNegativeZNv;
+                    return NV.ViewportSwizzleNegativeZNV;
                 case ViewportSwizzle.NegativeW:
-                    return NvViewportSwizzle.ViewportSwizzleNegativeWNv;
+                    return NV.ViewportSwizzleNegativeWNV;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(ViewportSwizzle)} enum value: {swizzle}.");
 
-            return NvViewportSwizzle.ViewportSwizzlePositiveXNv;
+            return NV.ViewportSwizzlePositiveXNV;
         }
 
         public static GLEnum Convert(this LogicalOp op)
