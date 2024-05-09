@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.OpenGL
     class PersistentBuffer : IDisposable
     {
         private IntPtr _bufferMap;
-        private int _copyBufferHandle;
+        private uint _copyBufferHandle;
         private int _copyBufferSize;
 
         private byte[] _data;
@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToInt32());
+            GL.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
             GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
 
             GL.CopyBufferSubData(BufferTargetARB.CopyReadBuffer, BufferTargetARB.CopyWriteBuffer, (IntPtr)offset, IntPtr.Zero, size);

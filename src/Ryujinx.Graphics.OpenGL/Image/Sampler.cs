@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
     class Sampler : ISampler
     {
         public uint Handle { get; private set; }
-        private GL _api;
+        private readonly GL _api;
 
         public Sampler(GL api, SamplerCreateInfo info)
         {

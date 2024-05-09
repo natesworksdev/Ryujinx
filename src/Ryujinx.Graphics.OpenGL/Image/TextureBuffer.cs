@@ -7,16 +7,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBuffer : TextureBase, ITexture
     {
-        private readonly OpenGLRenderer _renderer;
         private int _bufferOffset;
         private int _bufferSize;
         private int _bufferCount;
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(GL api, OpenGLRenderer renderer, TextureCreateInfo info) : base(api, info)
+        public TextureBuffer(OpenGLRenderer gd, TextureCreateInfo info) : base(gd, info)
         {
-            _renderer = renderer;
+
         }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
@@ -41,7 +40,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public PinnedSpan<byte> GetData()
         {
-            return Buffer.GetData(Api, _renderer, _buffer, _bufferOffset, _bufferSize);
+            return Buffer.GetData(_gd, _buffer, _bufferOffset, _bufferSize);
         }
 
         public PinnedSpan<byte> GetData(int layer, int level)
@@ -59,7 +58,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             var dataSpan = data.Memory.Span;
 
-            Buffer.SetData(Api, _buffer, _bufferOffset, dataSpan[..Math.Min(dataSpan.Length, _bufferSize)]);
+            Buffer.SetData(_gd.Api, _buffer, _bufferOffset, dataSpan[..Math.Min(dataSpan.Length, _bufferSize)]);
 
             data.Dispose();
         }
@@ -82,7 +81,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _buffer == buffer.Handle &&
                 buffer.Offset == _bufferOffset &&
                 buffer.Size == _bufferSize &&
-                _renderer.BufferCount == _bufferCount)
+                _gd.BufferCount == _bufferCount)
             {
                 // Only rebind the buffer when more have been created.
                 return;
@@ -91,20 +90,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _buffer = buffer.Handle;
             _bufferOffset = buffer.Offset;
             _bufferSize = buffer.Size;
-            _bufferCount = _renderer.BufferCount;
+            _bufferCount = _gd.BufferCount;
 
             Bind(0);
 
             SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).InternalFormat;
 
-            Api.TexBufferRange(TextureTarget.TextureBuffer, format, _buffer.ToUInt32(), buffer.Offset, (uint)buffer.Size);
+            _gd.Api.TexBufferRange(TextureTarget.TextureBuffer, format, _buffer.ToUInt32(), buffer.Offset, (uint)buffer.Size);
         }
 
         public void Dispose()
         {
             if (Handle != 0)
             {
-                Api.DeleteTexture(Handle);
+                _gd.Api.DeleteTexture(Handle);
 
                 Handle = 0;
             }

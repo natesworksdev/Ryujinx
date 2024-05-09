@@ -23,14 +23,15 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Framebuffer(GL api)
         {
-            Handle = GL.GenFramebuffer();
-            _clearFbHandle = GL.GenFramebuffer();
+            _api = api;
+
+            Handle = _api.GenFramebuffer();
+            _clearFbHandle = _api.GenFramebuffer();
 
             _colors = new TextureView[8];
-            _api = api;
         }
 
-        public int Bind()
+        public uint Bind()
         {
             _api.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
             return Handle;
@@ -203,7 +204,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (!_clearFbInitialized)
             {
-                SetDrawBuffersImpl(Constants.MaxRenderTargets);
+                SetDrawBuffersImpl(_api, Constants.MaxRenderTargets);
                 _clearFbInitialized = true;
             }
         }

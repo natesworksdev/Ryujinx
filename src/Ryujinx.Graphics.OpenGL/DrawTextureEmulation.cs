@@ -1,6 +1,7 @@
 using Silk.NET.OpenGL;
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
+using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
 {

@@ -93,15 +93,13 @@ void main()
     imageStore(imgOut, ivec2(int(coords.x) >> samplesInXLog2, int(coords.y) >> samplesInYLog2), sampleIdx, value);
 }";
 
-        private readonly GL _api;
-        private readonly OpenGLRenderer _renderer;
+        private readonly OpenGLRenderer _gd;
         private readonly uint[] _msToNonMSProgramHandles;
         private readonly uint[] _nonMSToMSProgramHandles;
 
-        public TextureCopyMS(GL api, OpenGLRenderer renderer)
+        public TextureCopyMS(OpenGLRenderer gd)
         {
-            _api = api;
-            _renderer = renderer;
+            _gd = gd;
             _msToNonMSProgramHandles = new uint[5];
             _nonMSToMSProgramHandles = new uint[5];
         }
@@ -117,17 +115,17 @@ void main()
             uint dstWidth = (uint)dstInfo.Width;
             uint dstHeight = (uint)dstInfo.Height;
 
-            _api.UseProgram(GetMSToNonMSShader(srcInfo.BytesPerPixel));
+            _gd.Api.UseProgram(GetMSToNonMSShader(srcInfo.BytesPerPixel));
 
             for (int z = 0; z < depth; z++)
             {
-                _api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
-                _api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
 
-                _api.DispatchCompute((dstWidth + 31) / 32, (dstHeight + 31) / 32, 1);
+                _gd.Api.DispatchCompute((dstWidth + 31) / 32, (dstHeight + 31) / 32, 1);
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -147,17 +145,17 @@ void main()
             uint srcWidth = (uint)srcInfo.Width;
             uint srcHeight = (uint)srcInfo.Height;
 
-            _api.UseProgram(GetNonMSToMSShader(srcInfo.BytesPerPixel));
+            _gd.Api.UseProgram(GetNonMSToMSShader(srcInfo.BytesPerPixel));
 
             for (int z = 0; z < depth; z++)
             {
-                _api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
-                _api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
 
-                _api.DispatchCompute((srcWidth + 31) / 32, (srcHeight + 31) / 32, 1);
+                _gd.Api.DispatchCompute((srcWidth + 31) / 32, (srcHeight + 31) / 32, 1);
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -185,9 +183,9 @@ void main()
             // we need to create and bind a RGBA view for it to work.
             if (texture.Info.Format == Format.R8G8B8A8Srgb)
             {
-                uint handle = _api.GenTexture();
+                uint handle = _gd.Api.GenTexture();
 
-                _api.TextureView(
+                _gd.Api.TextureView(
                     handle,
                     texture.Info.Target.Convert(),
                     texture.Storage.Handle,
@@ -207,7 +205,7 @@ void main()
         {
             if (info.Handle != handle)
             {
-                _api.DeleteTexture(handle);
+                _gd.Api.DeleteTexture(handle);
             }
         }
 
@@ -227,25 +225,25 @@ void main()
 
             if (programHandles[index] == 0)
             {
-                uint csHandle = _api.CreateShader(ShaderType.ComputeShader);
+                uint csHandle = _gd.Api.CreateShader(ShaderType.ComputeShader);
 
                 string format = new[] { "r8ui", "r16ui", "r32ui", "rg32ui", "rgba32ui" }[index];
 
-                _api.ShaderSource(csHandle, code.Replace("$FORMAT$", format));
-                _api.CompileShader(csHandle);
+                _gd.Api.ShaderSource(csHandle, code.Replace("$FORMAT$", format));
+                _gd.Api.CompileShader(csHandle);
 
-                uint programHandle = _api.CreateProgram();
+                uint programHandle = _gd.Api.CreateProgram();
 
-                _api.AttachShader(programHandle, csHandle);
-                _api.LinkProgram(programHandle);
-                _api.DetachShader(programHandle, csHandle);
-                _api.DeleteShader(csHandle);
+                _gd.Api.AttachShader(programHandle, csHandle);
+                _gd.Api.LinkProgram(programHandle);
+                _gd.Api.DetachShader(programHandle, csHandle);
+                _gd.Api.DeleteShader(csHandle);
 
-                _api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
+                _gd.Api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
 
                 if (status == 0)
                 {
-                    throw new Exception(_api.GetProgramInfoLog(programHandle));
+                    throw new Exception(_gd.Api.GetProgramInfoLog(programHandle));
                 }
 
                 programHandles[index] = programHandle;
@@ -260,7 +258,7 @@ void main()
             {
                 if (_msToNonMSProgramHandles[i] != 0)
                 {
-                    _api.DeleteProgram(_msToNonMSProgramHandles[i]);
+                    _gd.Api.DeleteProgram(_msToNonMSProgramHandles[i]);
                     _msToNonMSProgramHandles[i] = 0;
                 }
             }
@@ -269,7 +267,7 @@ void main()
             {
                 if (_nonMSToMSProgramHandles[i] != 0)
                 {
-                    _api.DeleteProgram(_nonMSToMSProgramHandles[i]);
+                    _gd.Api.DeleteProgram(_nonMSToMSProgramHandles[i]);
                     _nonMSToMSProgramHandles[i] = 0;
                 }
             }

@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             Handle = GL.CreateProgram();
 
-            GL.ProgramParameter(Handle, ProgramParameterName.ProgramBinaryRetrievableHint, 1);
+            GL.ProgramParameter(Handle, ProgramParameterPName.BinaryRetrievableHint, 1);
 
             _shaderHandles = new int[shaders.Length];
             bool hasFragmentShader = false;

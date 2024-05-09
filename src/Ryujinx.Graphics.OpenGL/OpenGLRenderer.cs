@@ -6,12 +6,13 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
+using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
 {
     public sealed class OpenGLRenderer : IRenderer
     {
-        private GL _api;
+        public readonly GL Api;
         private readonly Pipeline _pipeline;
 
         public IPipeline Pipeline => _pipeline;
@@ -44,10 +45,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public bool PreferThreading => true;
 
-        public OpenGLRenderer()
+        public OpenGLRenderer(GL api)
         {
+            Api = api;
             _pipeline = new Pipeline();
-            _counters = new Counters();
+            _counters = new Counters(Api);
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
@@ -64,7 +66,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (access.HasFlag(BufferAccess.FlushPersistent))
             {
-                BufferHandle handle = Buffer.CreatePersistent(_api, size);
+                BufferHandle handle = Buffer.CreatePersistent(Api, size);
 
                 PersistentBuffers.Map(handle, size);
 
@@ -72,7 +74,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else
             {
-                return Buffer.Create(_api, size);
+                return Buffer.Create(Api, size);
             }
         }
 
@@ -93,7 +95,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IImageArray CreateImageArray(int size, bool isBuffer)
         {
-            return new ImageArray(size);
+            return new ImageArray(Api, size);
         }
 
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
@@ -103,7 +105,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public ISampler CreateSampler(SamplerCreateInfo info)
         {
-            return new Sampler(info);
+            return new Sampler(Api, info);
         }
 
         public ITexture CreateTexture(TextureCreateInfo info)
@@ -120,14 +122,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public ITextureArray CreateTextureArray(int size, bool isBuffer)
         {
-            return new TextureArray(size);
+            return new TextureArray(Api, size);
         }
 
         public void DeleteBuffer(BufferHandle buffer)
         {
             PersistentBuffers.Unmap(buffer);
 
-            Buffer.Delete(buffer);
+            Buffer.Delete(Api, buffer);
         }
 
         public HardwareInfo GetHardwareInfo()
@@ -203,7 +205,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
         {
-            Buffer.SetData(buffer, offset, data);
+            Buffer.SetData(Api, buffer, offset, data);
         }
 
         public void UpdateCounters()
@@ -224,7 +226,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Initialize(GraphicsDebugLevel glLogLevel)
         {
-            Debugger.Initialize(glLogLevel);
+            Debugger.Initialize(Api, glLogLevel);
 
             PrintGpuInformation();
 
@@ -239,14 +241,14 @@ namespace Ryujinx.Graphics.OpenGL
             // This call is expected to fail if we're running with a core profile,
             // as this clamp target was deprecated, but that's fine as a core profile
             // should already have the desired behaviour were outputs are not clamped.
-            GL.ClampColor(ClampColorTargetARB.FragmentColorArb, ClampColorModeARB.False);
+            Api.ClampColor(ClampColorTargetARB.FragmentColorArb, ClampColorModeARB.False);
         }
 
         private void PrintGpuInformation()
         {
-            GpuVendor = GL.GetString(StringName.Vendor);
-            GpuRenderer = GL.GetString(StringName.Renderer);
-            GpuVersion = GL.GetString(StringName.Version);
+            GpuVendor = Api.GetString(StringName.Vendor);
+            GpuRenderer = Api.GetString(StringName.Renderer);
+            GpuVersion = Api.GetString(StringName.Version);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }

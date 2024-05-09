@@ -69,26 +69,26 @@ namespace Ryujinx.Graphics.OpenGL
                 (uint)size);
         }
 
-        public static unsafe PinnedSpan<byte> GetData(GL api, OpenGLRenderer renderer, BufferHandle buffer, int offset, int size)
+        public static unsafe PinnedSpan<byte> GetData(OpenGLRenderer gd, BufferHandle buffer, int offset, int size)
         {
             // Data in the persistent buffer and host array is guaranteed to be available
             // until the next time the host thread requests data.
 
-            if (renderer.PersistentBuffers.TryGet(buffer, out IntPtr ptr))
+            if (gd.PersistentBuffers.TryGet(buffer, out IntPtr ptr))
             {
                 return new PinnedSpan<byte>(IntPtr.Add(ptr, offset).ToPointer(), size);
             }
             else if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                return PinnedSpan<byte>.UnsafeFromSpan(renderer.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
+                return PinnedSpan<byte>.UnsafeFromSpan(gd.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
             }
             else
             {
-                IntPtr target = renderer.PersistentBuffers.Default.GetHostArray(size);
+                IntPtr target = gd.PersistentBuffers.Default.GetHostArray(size);
 
-                api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
+                gd.Api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
 
-                api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, target);
+                gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, target);
 
                 return new PinnedSpan<byte>(target.ToPointer(), size);
             }

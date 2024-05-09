@@ -67,15 +67,13 @@ void main()
     imageStore(dst, ivec2(coords), uvec4(r, g, b, a));
 }";
 
-        private readonly GL _api;
-        private readonly OpenGLRenderer _renderer;
+        private readonly OpenGLRenderer _gd;
         private readonly Dictionary<int, uint> _shorteningProgramHandles;
         private readonly Dictionary<int, uint> _wideningProgramHandles;
 
-        public TextureCopyIncompatible(GL api, OpenGLRenderer renderer)
+        public TextureCopyIncompatible(OpenGLRenderer gd)
         {
-            _api = api;
-            _renderer = renderer;
+            _gd = gd;
             _shorteningProgramHandles = new Dictionary<int, uint>();
             _wideningProgramHandles = new Dictionary<int, uint>();
         }
@@ -96,7 +94,7 @@ void main()
             var srcFormat = (InternalFormat)GetFormat(componentSize, srcComponentsCount);
             var dstFormat = (InternalFormat)GetFormat(componentSize, dstComponentsCount);
 
-            _api.UseProgram(srcBpp < dstBpp
+            _gd.Api.UseProgram(srcBpp < dstBpp
                 ? GetWideningShader(componentSize, srcComponentsCount, dstComponentsCount)
                 : GetShorteningShader(componentSize, srcComponentsCount, dstComponentsCount));
 
@@ -113,14 +111,14 @@ void main()
 
                 for (int z = 0; z < depth; z++)
                 {
-                    _api.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, BufferAccessARB.ReadOnly, srcFormat);
-                    _api.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, BufferAccessARB.WriteOnly, dstFormat);
+                    _gd.Api.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, BufferAccessARB.ReadOnly, srcFormat);
+                    _gd.Api.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, BufferAccessARB.WriteOnly, dstFormat);
 
-                    _api.DispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
+                    _gd.Api.DispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
                 }
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -190,7 +188,7 @@ void main()
 
             if (!programHandles.TryGetValue(key, out uint programHandle))
             {
-                uint csHandle = _api.CreateShader(ShaderType.ComputeShader);
+                uint csHandle = _gd.Api.CreateShader(ShaderType.ComputeShader);
 
                 string[] formatTable = new[] { "r8ui", "r16ui", "r32ui", "rg8ui", "rg16ui", "rg32ui", "rgba8ui", "rgba16ui", "rgba32ui" };
 
@@ -203,25 +201,25 @@ void main()
                 int ratio = srcBpp < dstBpp ? dstBpp / srcBpp : srcBpp / dstBpp;
                 int ratioLog2 = BitOperations.Log2((uint)ratio);
 
-                _api.ShaderSource(csHandle, code
+                _gd.Api.ShaderSource(csHandle, code
                     .Replace("$SRC_FORMAT$", srcFormat)
                     .Replace("$DST_FORMAT$", dstFormat)
                     .Replace("$RATIO_LOG2$", ratioLog2.ToString(CultureInfo.InvariantCulture)));
 
-                _api.CompileShader(csHandle);
+                _gd.Api.CompileShader(csHandle);
 
-                programHandle = _api.CreateProgram();
+                programHandle = _gd.Api.CreateProgram();
 
-                _api.AttachShader(programHandle, csHandle);
-                _api.LinkProgram(programHandle);
-                _api.DetachShader(programHandle, csHandle);
-                _api.DeleteShader(csHandle);
+                _gd.Api.AttachShader(programHandle, csHandle);
+                _gd.Api.LinkProgram(programHandle);
+                _gd.Api.DetachShader(programHandle, csHandle);
+                _gd.Api.DeleteShader(csHandle);
 
-                _api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
+                _gd.Api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
 
                 if (status == 0)
                 {
-                    throw new Exception(_api.GetProgramInfoLog(programHandle));
+                    throw new Exception(_gd.Api.GetProgramInfoLog(programHandle));
                 }
 
                 programHandles.Add(key, programHandle);
@@ -234,14 +232,14 @@ void main()
         {
             foreach (uint handle in _shorteningProgramHandles.Values)
             {
-                _api.DeleteProgram(handle);
+                _gd.Api.DeleteProgram(handle);
             }
 
             _shorteningProgramHandles.Clear();
 
             foreach (uint handle in _wideningProgramHandles.Values)
             {
-                _api.DeleteProgram(handle);
+                _gd.Api.DeleteProgram(handle);
             }
 
             _wideningProgramHandles.Clear();
