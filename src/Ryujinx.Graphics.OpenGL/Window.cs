@@ -252,12 +252,13 @@ namespace Ryujinx.Graphics.OpenGL
             _initialized = true;
         }
 
-        public void CaptureFrame(int x, int y, uint width, uint height, bool isBgra, bool flipX, bool flipY)
+        public unsafe void CaptureFrame(int x, int y, uint width, uint height, bool isBgra, bool flipX, bool flipY)
         {
             long size = 4 * width * height;
-            byte[] bitmap = new byte[size];
 
-            _gd.Api.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, bitmap);
+            _gd.Api.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, out int data);
+
+            var bitmap = new Span<byte>((void*)data, (int)size).ToArray();
 
             _gd.OnScreenCaptured(new ScreenCaptureImageInfo((int)width, (int)height, isBgra, bitmap, flipX, flipY));
         }

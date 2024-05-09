@@ -118,7 +118,7 @@ namespace Ryujinx.Graphics.OpenGL
                 drawBuffers[index] = DrawBufferMode.ColorAttachment0 + index;
             }
 
-            api.DrawBuffers(colorsCount, drawBuffers);
+            api.DrawBuffers((uint)colorsCount, drawBuffers);
         }
 
         private static FramebufferAttachment GetAttachment(Format format)

@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Map(BufferHandle handle, int size)
         {
-            GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
             IntPtr ptr = GL.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, size, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
 
             _maps[handle] = ptr;
@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_maps.ContainsKey(handle))
             {
-                GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToInt32());
+                GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
                 GL.UnmapBuffer(BufferTargetARB.CopyWriteBuffer);
 
                 _maps.Remove(handle);
@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static void Sync()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+            GL.MemoryBarrier(MemoryBarrierMask.ClientMappedBufferBarrierBit);
 
             IntPtr sync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
             WaitSyncStatus syncResult = GL.ClientWaitSync(sync, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);

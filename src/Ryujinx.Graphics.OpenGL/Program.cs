@@ -144,7 +144,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             byte[] data = new byte[size + 4];
 
-            _api.GetProgramBinary(Handle, size, out _, out ShaderBinaryFormat binFormat, data);
+            _api.GetProgramBinary(Handle, (uint)size, out _, out GLEnum binFormat, data);
 
             BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(size, 4), (int)binFormat);
 
