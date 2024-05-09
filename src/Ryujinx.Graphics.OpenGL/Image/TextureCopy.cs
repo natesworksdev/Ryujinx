@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using System;
@@ -348,16 +348,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             EnsurePbo(from);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
 
             from.WriteToPbo(0, forceBgra: true);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelUnpackBuffer, _copyPboHandle);
 
             to.ReadFromPbo(0, _copyPboSize);
 
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelUnpackBuffer, 0);
 
             return to;
         }
@@ -393,7 +393,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             EnsurePbo(from);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
 
             // The source texture is written out in full, then the destination is taken as a slice from the data using unpack params.
             // The offset points to the base at which the requested layer is at.
@@ -412,15 +412,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 if (to.Info.IsCompressed)
                 {
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, to.Info.BlockWidth);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, to.Info.BlockHeight);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 1);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockWidth, to.Info.BlockWidth);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockHeight, to.Info.BlockHeight);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockDepth, 1);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
                 }
             }
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelUnpackBuffer, _copyPboHandle);
 
             to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight);
 
@@ -432,14 +432,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 if (to.Info.IsCompressed)
                 {
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, 0);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockWidth, 0);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockHeight, 0);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockDepth, 0);
+                    GL.PixelStore(GLEnum.UnpackCompressedBlockSize, 0);
                 }
             }
 
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelUnpackBuffer, 0);
         }
 
         private void EnsurePbo(TextureView view)
@@ -463,8 +463,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _copyPboHandle = GL.GenBuffer();
                 _copyPboSize = requiredSize;
 
-                GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
-                GL.BufferData(BufferTarget.PixelPackBuffer, requiredSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
+                GL.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
+                GL.BufferData(BufferTargetARB.PixelPackBuffer, requiredSize, IntPtr.Zero, BufferUsageARB.DynamicCopy);
             }
         }
 

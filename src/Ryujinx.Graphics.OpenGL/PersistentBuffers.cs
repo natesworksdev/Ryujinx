@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
@@ -26,8 +26,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Map(BufferHandle handle, int size)
         {
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-            IntPtr ptr = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, size, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
+            GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToInt32());
+            IntPtr ptr = GL.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, size, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
 
             _maps[handle] = ptr;
         }
@@ -36,8 +36,8 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_maps.ContainsKey(handle))
             {
-                GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-                GL.UnmapBuffer(BufferTarget.CopyWriteBuffer);
+                GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToInt32());
+                GL.UnmapBuffer(BufferTargetARB.CopyWriteBuffer);
 
                 _maps.Remove(handle);
             }
@@ -72,10 +72,10 @@ namespace Ryujinx.Graphics.OpenGL
                 _copyBufferHandle = GL.GenBuffer();
                 _copyBufferSize = requiredSize;
 
-                GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
-                GL.BufferStorage(BufferTarget.CopyWriteBuffer, requiredSize, IntPtr.Zero, BufferStorageFlags.MapReadBit | BufferStorageFlags.MapPersistentBit);
+                GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
+                GL.BufferStorage(BufferTargetARB.CopyWriteBuffer, requiredSize, IntPtr.Zero, BufferStorageFlags.MapReadBit | BufferStorageFlags.MapPersistentBit);
 
-                _bufferMap = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, requiredSize, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
+                _bufferMap = GL.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, requiredSize, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
             }
         }
 
@@ -110,11 +110,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyBufferHandle);
 
             view.WriteToPbo(0, false);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
 
             Sync();
 
@@ -125,11 +125,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyBufferHandle);
 
             int offset = view.WriteToPbo2D(0, layer, level);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
 
             Sync();
 
@@ -140,12 +140,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.CopyReadBuffer, buffer.ToInt32());
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
+            GL.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToInt32());
+            GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
 
-            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, (IntPtr)offset, IntPtr.Zero, size);
+            GL.CopyBufferSubData(BufferTargetARB.CopyReadBuffer, BufferTargetARB.CopyWriteBuffer, (IntPtr)offset, IntPtr.Zero, size);
 
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.CopyWriteBuffer, 0);
 
             Sync();
 

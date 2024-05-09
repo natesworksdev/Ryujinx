@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.OpenGL
             switch (mode)
             {
                 case AddressMode.Clamp:
-                    return TextureWrapMode.Clamp;
+                    return GLEnum.Clamp;
                 case AddressMode.Repeat:
                     return TextureWrapMode.Repeat;
                 case AddressMode.MirrorClamp:
@@ -154,94 +154,94 @@ namespace Ryujinx.Graphics.OpenGL
             return All.UncorrelatedNv;
         }
 
-        public static All Convert(this BlendFactor factor)
+        public static GLEnum Convert(this BlendFactor factor)
         {
             switch (factor)
             {
                 case BlendFactor.Zero:
                 case BlendFactor.ZeroGl:
-                    return All.Zero;
+                    return GLEnum.Zero;
                 case BlendFactor.One:
                 case BlendFactor.OneGl:
-                    return All.One;
+                    return GLEnum.One;
                 case BlendFactor.SrcColor:
                 case BlendFactor.SrcColorGl:
-                    return All.SrcColor;
+                    return GLEnum.SrcColor;
                 case BlendFactor.OneMinusSrcColor:
                 case BlendFactor.OneMinusSrcColorGl:
-                    return All.OneMinusSrcColor;
+                    return GLEnum.OneMinusSrcColor;
                 case BlendFactor.SrcAlpha:
                 case BlendFactor.SrcAlphaGl:
-                    return All.SrcAlpha;
+                    return GLEnum.SrcAlpha;
                 case BlendFactor.OneMinusSrcAlpha:
                 case BlendFactor.OneMinusSrcAlphaGl:
-                    return All.OneMinusSrcAlpha;
+                    return GLEnum.OneMinusSrcAlpha;
                 case BlendFactor.DstAlpha:
                 case BlendFactor.DstAlphaGl:
-                    return All.DstAlpha;
+                    return GLEnum.DstAlpha;
                 case BlendFactor.OneMinusDstAlpha:
                 case BlendFactor.OneMinusDstAlphaGl:
-                    return All.OneMinusDstAlpha;
+                    return GLEnum.OneMinusDstAlpha;
                 case BlendFactor.DstColor:
                 case BlendFactor.DstColorGl:
-                    return All.DstColor;
+                    return GLEnum.DstColor;
                 case BlendFactor.OneMinusDstColor:
                 case BlendFactor.OneMinusDstColorGl:
-                    return All.OneMinusDstColor;
+                    return GLEnum.OneMinusDstColor;
                 case BlendFactor.SrcAlphaSaturate:
                 case BlendFactor.SrcAlphaSaturateGl:
-                    return All.SrcAlphaSaturate;
+                    return GLEnum.SrcAlphaSaturate;
                 case BlendFactor.Src1Color:
                 case BlendFactor.Src1ColorGl:
-                    return All.Src1Color;
+                    return GLEnum.Src1Color;
                 case BlendFactor.OneMinusSrc1Color:
                 case BlendFactor.OneMinusSrc1ColorGl:
-                    return All.OneMinusSrc1Color;
+                    return GLEnum.OneMinusSrc1Color;
                 case BlendFactor.Src1Alpha:
                 case BlendFactor.Src1AlphaGl:
-                    return All.Src1Alpha;
+                    return GLEnum.Src1Alpha;
                 case BlendFactor.OneMinusSrc1Alpha:
                 case BlendFactor.OneMinusSrc1AlphaGl:
-                    return All.OneMinusSrc1Alpha;
+                    return GLEnum.OneMinusSrc1Alpha;
                 case BlendFactor.ConstantColor:
-                    return All.ConstantColor;
+                    return GLEnum.ConstantColor;
                 case BlendFactor.OneMinusConstantColor:
-                    return All.OneMinusConstantColor;
+                    return GLEnum.OneMinusConstantColor;
                 case BlendFactor.ConstantAlpha:
-                    return All.ConstantAlpha;
+                    return GLEnum.ConstantAlpha;
                 case BlendFactor.OneMinusConstantAlpha:
-                    return All.OneMinusConstantAlpha;
+                    return GLEnum.OneMinusConstantAlpha;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(BlendFactor)} enum value: {factor}.");
 
-            return All.Zero;
+            return GLEnum.Zero;
         }
 
-        public static BlendEquationMode Convert(this BlendOp op)
+        public static GLEnum Convert(this BlendOp op)
         {
             switch (op)
             {
                 case BlendOp.Add:
                 case BlendOp.AddGl:
-                    return BlendEquationMode.FuncAdd;
+                    return GLEnum.FuncAdd;
                 case BlendOp.Minimum:
                 case BlendOp.MinimumGl:
-                    return BlendEquationMode.Min;
+                    return GLEnum.Min;
                 case BlendOp.Maximum:
                 case BlendOp.MaximumGl:
-                    return BlendEquationMode.Max;
+                    return GLEnum.Max;
                 case BlendOp.Subtract:
                 case BlendOp.SubtractGl:
-                    return BlendEquationMode.FuncSubtract;
+                    return GLEnum.FuncSubtract;
                 case BlendOp.ReverseSubtract:
                 case BlendOp.ReverseSubtractGl:
-                    return BlendEquationMode.FuncReverseSubtract;
+                    return GLEnum.FuncReverseSubtract;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(BlendOp)} enum value: {op}.");
 
-            return BlendEquationMode.FuncAdd;
+            return GLEnum.FuncAdd;
         }
 
         public static TextureCompareMode Convert(this CompareMode mode)
@@ -251,7 +251,7 @@ namespace Ryujinx.Graphics.OpenGL
                 case CompareMode.None:
                     return TextureCompareMode.None;
                 case CompareMode.CompareRToTexture:
-                    return TextureCompareMode.CompareRToTexture;
+                    return TextureCompareMode.CompareRefToTexture;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(CompareMode)} enum value: {mode}.");
@@ -259,86 +259,86 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureCompareMode.None;
         }
 
-        public static All Convert(this CompareOp op)
+        public static GLEnum Convert(this CompareOp op)
         {
             switch (op)
             {
                 case CompareOp.Never:
                 case CompareOp.NeverGl:
-                    return All.Never;
+                    return GLEnum.Never;
                 case CompareOp.Less:
                 case CompareOp.LessGl:
-                    return All.Less;
+                    return GLEnum.Less;
                 case CompareOp.Equal:
                 case CompareOp.EqualGl:
-                    return All.Equal;
+                    return GLEnum.Equal;
                 case CompareOp.LessOrEqual:
                 case CompareOp.LessOrEqualGl:
-                    return All.Lequal;
+                    return GLEnum.Lequal;
                 case CompareOp.Greater:
                 case CompareOp.GreaterGl:
-                    return All.Greater;
+                    return GLEnum.Greater;
                 case CompareOp.NotEqual:
                 case CompareOp.NotEqualGl:
-                    return All.Notequal;
+                    return GLEnum.Notequal;
                 case CompareOp.GreaterOrEqual:
                 case CompareOp.GreaterOrEqualGl:
-                    return All.Gequal;
+                    return GLEnum.Gequal;
                 case CompareOp.Always:
                 case CompareOp.AlwaysGl:
-                    return All.Always;
+                    return GLEnum.Always;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(CompareOp)} enum value: {op}.");
 
-            return All.Never;
+            return GLEnum.Never;
         }
 
-        public static ClipDepthMode Convert(this DepthMode mode)
+        public static GLEnum Convert(this DepthMode mode)
         {
             switch (mode)
             {
                 case DepthMode.MinusOneToOne:
-                    return ClipDepthMode.NegativeOneToOne;
+                    return GLEnum.NegativeOneToOne;
                 case DepthMode.ZeroToOne:
-                    return ClipDepthMode.ZeroToOne;
+                    return GLEnum.ZeroToOne;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(DepthMode)} enum value: {mode}.");
 
-            return ClipDepthMode.NegativeOneToOne;
+            return GLEnum.NegativeOneToOne;
         }
 
-        public static All Convert(this DepthStencilMode mode)
+        public static GLEnum Convert(this DepthStencilMode mode)
         {
             switch (mode)
             {
                 case DepthStencilMode.Depth:
-                    return All.DepthComponent;
+                    return GLEnum.DepthComponent;
                 case DepthStencilMode.Stencil:
-                    return All.StencilIndex;
+                    return GLEnum.StencilIndex;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(DepthStencilMode)} enum value: {mode}.");
 
-            return All.Depth;
+            return GLEnum.Depth;
         }
 
-        public static CullFaceMode Convert(this Face face)
+        public static GLEnum Convert(this Face face)
         {
             switch (face)
             {
                 case Face.Back:
-                    return CullFaceMode.Back;
+                    return GLEnum.Back;
                 case Face.Front:
-                    return CullFaceMode.Front;
+                    return GLEnum.Front;
                 case Face.FrontAndBack:
-                    return CullFaceMode.FrontAndBack;
+                    return GLEnum.FrontAndBack;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");
 
-            return CullFaceMode.Back;
+            return GLEnum.Back;
         }
 
         public static FrontFaceDirection Convert(this FrontFace frontFace)
@@ -346,14 +346,14 @@ namespace Ryujinx.Graphics.OpenGL
             switch (frontFace)
             {
                 case FrontFace.Clockwise:
-                    return FrontFaceDirection.Cw;
+                    return FrontFaceDirection.CW;
                 case FrontFace.CounterClockwise:
                     return FrontFaceDirection.Ccw;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(FrontFace)} enum value: {frontFace}.");
 
-            return FrontFaceDirection.Cw;
+            return FrontFaceDirection.CW;
         }
 
         public static DrawElementsType Convert(this IndexType type)
@@ -411,21 +411,21 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureMinFilter.Nearest;
         }
 
-        public static OpenTK.Graphics.OpenGL.PolygonMode Convert(this GAL.PolygonMode mode)
+        public static Silk.NET.OpenGL.PolygonMode Convert(this GAL.PolygonMode mode)
         {
             switch (mode)
             {
                 case GAL.PolygonMode.Point:
-                    return OpenTK.Graphics.OpenGL.PolygonMode.Point;
+                    return Silk.NET.OpenGL.PolygonMode.Point;
                 case GAL.PolygonMode.Line:
-                    return OpenTK.Graphics.OpenGL.PolygonMode.Line;
+                    return Silk.NET.OpenGL.PolygonMode.Line;
                 case GAL.PolygonMode.Fill:
-                    return OpenTK.Graphics.OpenGL.PolygonMode.Fill;
+                    return Silk.NET.OpenGL.PolygonMode.Fill;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.PolygonMode)} enum value: {mode}.");
 
-            return OpenTK.Graphics.OpenGL.PolygonMode.Fill;
+            return Silk.NET.OpenGL.PolygonMode.Fill;
         }
 
         public static PrimitiveType Convert(this PrimitiveTopology topology)
@@ -615,47 +615,47 @@ namespace Ryujinx.Graphics.OpenGL
             return NvViewportSwizzle.ViewportSwizzlePositiveXNv;
         }
 
-        public static All Convert(this LogicalOp op)
+        public static GLEnum Convert(this LogicalOp op)
         {
             switch (op)
             {
                 case LogicalOp.Clear:
-                    return All.Clear;
+                    return GLEnum.Clear;
                 case LogicalOp.And:
-                    return All.And;
+                    return GLEnum.And;
                 case LogicalOp.AndReverse:
-                    return All.AndReverse;
+                    return GLEnum.AndReverse;
                 case LogicalOp.Copy:
-                    return All.Copy;
+                    return GLEnum.Copy;
                 case LogicalOp.AndInverted:
-                    return All.AndInverted;
+                    return GLEnum.AndInverted;
                 case LogicalOp.Noop:
-                    return All.Noop;
+                    return GLEnum.Noop;
                 case LogicalOp.Xor:
-                    return All.Xor;
+                    return GLEnum.Xor;
                 case LogicalOp.Or:
-                    return All.Or;
+                    return GLEnum.Or;
                 case LogicalOp.Nor:
-                    return All.Nor;
+                    return GLEnum.Nor;
                 case LogicalOp.Equiv:
-                    return All.Equiv;
+                    return GLEnum.Equiv;
                 case LogicalOp.Invert:
-                    return All.Invert;
+                    return GLEnum.Invert;
                 case LogicalOp.OrReverse:
-                    return All.OrReverse;
+                    return GLEnum.OrReverse;
                 case LogicalOp.CopyInverted:
-                    return All.CopyInverted;
+                    return GLEnum.CopyInverted;
                 case LogicalOp.OrInverted:
-                    return All.OrInverted;
+                    return GLEnum.OrInverted;
                 case LogicalOp.Nand:
-                    return All.Nand;
+                    return GLEnum.Nand;
                 case LogicalOp.Set:
-                    return All.Set;
+                    return GLEnum.Set;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(LogicalOp)} enum value: {op}.");
 
-            return All.Never;
+            return GLEnum.Never;
         }
 
         public static ShaderType Convert(this ShaderStage stage)

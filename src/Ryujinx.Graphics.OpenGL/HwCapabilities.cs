@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL
@@ -27,9 +27,9 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsTextureShadowLod = new(() => HasExtension("GL_EXT_texture_shadow_lod"));
         private static readonly Lazy<bool> _supportsViewportSwizzle = new(() => HasExtension("GL_NV_viewport_swizzle"));
 
-        private static readonly Lazy<int> _maximumComputeSharedMemorySize = new(() => GetLimit(All.MaxComputeSharedMemorySize));
-        private static readonly Lazy<int> _storageBufferOffsetAlignment = new(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
-        private static readonly Lazy<int> _textureBufferOffsetAlignment = new(() => GetLimit(All.TextureBufferOffsetAlignment));
+        private static readonly Lazy<int> _maximumComputeSharedMemorySize = new(() => GetLimit(GLEnum.MaxComputeSharedMemorySize));
+        private static readonly Lazy<int> _storageBufferOffsetAlignment = new(() => GetLimit(GLEnum.ShaderStorageBufferOffsetAlignment));
+        private static readonly Lazy<int> _textureBufferOffsetAlignment = new(() => GetLimit(GLEnum.TextureBufferOffsetAlignment));
 
         public enum GpuVendor
         {
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static GpuVendor Vendor => _gpuVendor.Value;
 
-        private static readonly Lazy<float> _maxSupportedAnisotropy = new(GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy));
+        private static readonly Lazy<float> _maxSupportedAnisotropy = new(GL.GetFloat((GetPName)GLEnum.MaxTextureMaxAnisotropy));
 
         public static bool UsePersistentBufferForFlush => _gpuVendor.Value == GpuVendor.AmdWindows || _gpuVendor.Value == GpuVendor.Nvidia;
 
@@ -98,7 +98,7 @@ namespace Ryujinx.Graphics.OpenGL
             return false;
         }
 
-        private static int GetLimit(All name)
+        private static int GetLimit(GLEnum name)
         {
             return GL.GetInteger((GetPName)name);
         }

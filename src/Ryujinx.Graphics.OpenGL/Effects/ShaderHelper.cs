@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {

@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 using System.Buffers;
@@ -95,9 +95,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             Bind(0);
 
-            SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).PixelInternalFormat;
+            SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).InternalFormat;
 
-            GL.TexBufferRange(TextureBufferTarget.TextureBuffer, format, _buffer.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+            GL.TexBufferRange(TextureTarget.TextureBuffer, format, _buffer.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
         }
 
         public void Dispose()

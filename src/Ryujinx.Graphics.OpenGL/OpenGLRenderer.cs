@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics.OpenGL
             // This call is expected to fail if we're running with a core profile,
             // as this clamp target was deprecated, but that's fine as a core profile
             // should already have the desired behaviour were outputs are not clamped.
-            GL.ClampColor(ClampColorTarget.ClampFragmentColor, ClampColorMode.False);
+            GL.ClampColor(ClampColorTargetARB.FragmentColorArb, ClampColorModeARB.False);
         }
 
         private void PrintGpuInformation()

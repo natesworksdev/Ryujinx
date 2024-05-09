@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 using System.Threading;
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                     return true;
                 }
 
-                if (ClearCounter || Type == QueryTarget.Timestamp)
+                if (ClearCounter || Type == QueryTarget.TimeElapsed)
                 {
                     result = 0;
                 }

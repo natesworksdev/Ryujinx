@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
@@ -107,11 +107,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static void SetDrawBuffersImpl(int colorsCount)
         {
-            DrawBuffersEnum[] drawBuffers = new DrawBuffersEnum[colorsCount];
+            DrawBufferMode[] drawBuffers = new DrawBufferMode[colorsCount];
 
             for (int index = 0; index < colorsCount; index++)
             {
-                drawBuffers[index] = DrawBuffersEnum.ColorAttachment0 + index;
+                drawBuffers[index] = DrawBufferMode.ColorAttachment0 + index;
             }
 
             GL.DrawBuffers(colorsCount, drawBuffers);

@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -111,8 +111,8 @@ void main()
 
                 for (int z = 0; z < depth; z++)
                 {
-                    GL.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, TextureAccess.ReadOnly, srcFormat);
-                    GL.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, TextureAccess.WriteOnly, dstFormat);
+                    GL.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, BufferAccessARB.ReadOnly, srcFormat);
+                    GL.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, BufferAccessARB.WriteOnly, dstFormat);
 
                     GL.DispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
                 }
@@ -131,7 +131,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R8ui,
-                    2 => SizedInternalFormat.Rg8ui,
+                    2 => SizedInternalFormat.RG8ui,
                     4 => SizedInternalFormat.Rgba8ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
@@ -141,7 +141,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R16ui,
-                    2 => SizedInternalFormat.Rg16ui,
+                    2 => SizedInternalFormat.RG16ui,
                     4 => SizedInternalFormat.Rgba16ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
@@ -151,7 +151,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R32ui,
-                    2 => SizedInternalFormat.Rg32ui,
+                    2 => SizedInternalFormat.RG32ui,
                     4 => SizedInternalFormat.Rgba32ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };

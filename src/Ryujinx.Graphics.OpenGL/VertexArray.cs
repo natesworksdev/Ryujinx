@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 using System.Numerics;
@@ -134,19 +134,19 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetIndexBuffer(BufferRange range)
         {
             _indexBuffer = range;
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, range.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, range.Handle.ToInt32());
         }
 
         public void SetRangeOfIndexBuffer()
         {
             Buffer.Resize(_tempIndexBuffer, _indexBuffer.Size);
             Buffer.Copy(_indexBuffer.Handle, _tempIndexBuffer, _indexBuffer.Offset, 0, _indexBuffer.Size);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _tempIndexBuffer.ToInt32());
+            GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _tempIndexBuffer.ToInt32());
         }
 
         public void RestoreIndexBuffer()
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer.Handle.ToInt32());
         }
 
         public void PreDraw(int vertexCount)

@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 using System.Numerics;
@@ -119,8 +119,8 @@ void main()
 
             for (int z = 0; z < depth; z++)
             {
-                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, TextureAccess.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
-                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, TextureAccess.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
+                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
+                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
 
                 GL.DispatchCompute((dstWidth + 31) / 32, (dstHeight + 31) / 32, 1);
             }
@@ -149,8 +149,8 @@ void main()
 
             for (int z = 0; z < depth; z++)
             {
-                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, TextureAccess.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
-                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, TextureAccess.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
+                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
+                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
 
                 GL.DispatchCompute((srcWidth + 31) / 32, (srcHeight + 31) / 32, 1);
             }
@@ -171,7 +171,7 @@ void main()
                 1 => SizedInternalFormat.R8ui,
                 2 => SizedInternalFormat.R16ui,
                 4 => SizedInternalFormat.R32ui,
-                8 => SizedInternalFormat.Rg32ui,
+                8 => SizedInternalFormat.RG32ui,
                 16 => SizedInternalFormat.Rgba32ui,
                 _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}."),
             };
@@ -189,7 +189,7 @@ void main()
                     handle,
                     texture.Info.Target.Convert(),
                     texture.Storage.Handle,
-                    PixelInternalFormat.Rgba8,
+                    InternalFormat.Rgba8,
                     texture.FirstLevel,
                     1,
                     texture.FirstLayer,

@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common.Logging;
 using System;
 using System.Runtime.InteropServices;
@@ -24,14 +24,14 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             Query = GL.GenQuery();
             _type = type;
 
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
+            GL.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
 
             unsafe
             {
                 long defaultValue = DefaultValue;
-                GL.BufferStorage(BufferTarget.QueryBuffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageFlags.MapReadBit | BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit);
+                GL.BufferStorage(BufferTargetARB.QueryBuffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageMask.MapReadBit | BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit);
             }
-            _bufferMap = GL.MapBufferRange(BufferTarget.QueryBuffer, IntPtr.Zero, sizeof(long), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit);
+            _bufferMap = GL.MapBufferRange(BufferTargetARB.QueryBuffer, IntPtr.Zero, sizeof(long), MapBufferAccessMask.ReadBit | MapBufferAccessMask.WriteBit | MapBufferAccessMask.PersistentBit);
         }
 
         public void Reset()
@@ -51,11 +51,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
             if (withResult)
             {
-                GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
+                GL.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
 
                 Marshal.WriteInt64(_bufferMap, -1L);
                 GL.GetQueryObject(Query, GetQueryObjectParam.QueryResult, (long*)0);
-                GL.MemoryBarrier(MemoryBarrierFlags.QueryBufferBarrierBit | MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+                GL.MemoryBarrier(MemoryBarrierMask.QueryBufferBarrierBit | MemoryBarrierMask.ClientMappedBufferBarrierBit);
             }
             else
             {
@@ -111,8 +111,8 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public void Dispose()
         {
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
-            GL.UnmapBuffer(BufferTarget.QueryBuffer);
+            GL.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
+            GL.UnmapBuffer(BufferTargetARB.QueryBuffer);
             GL.DeleteBuffer(_buffer);
             GL.DeleteQuery(Query);
         }

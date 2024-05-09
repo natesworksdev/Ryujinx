@@ -1,6 +1,5 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Graphics.GAL;
-using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
@@ -50,7 +49,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 if (_images[i].Handle == 0)
                 {
-                    GL.BindImageTexture(baseBinding + i, 0, 0, true, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+                    GL.BindImageTexture(baseBinding + i, 0, 0, true, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
                 }
                 else
                 {
@@ -58,7 +57,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                     if (format != 0)
                     {
-                        GL.BindImageTexture(baseBinding + i, _images[i].Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+                        GL.BindImageTexture(baseBinding + i, _images[i].Handle, 0, true, 0, BufferAccessARB.ReadWrite, format);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.OpenGL.Image;
 

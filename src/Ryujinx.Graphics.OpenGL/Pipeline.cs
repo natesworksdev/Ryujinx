@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
@@ -119,14 +119,14 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     _framebuffer.AttachColorLayerForClear(index, l);
 
-                    GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
+                    GL.ClearBuffer(BufferKind.Color, index, colors);
                 }
 
                 _framebuffer.DetachColorLayerForClear(index);
             }
             else
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
+                GL.ClearBuffer(BufferKind.Color, index, colors);
             }
 
             RestoreComponentMask(index);
@@ -187,11 +187,11 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else if (depthMask)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Depth, 0, ref depthValue);
+                GL.ClearBuffer(BufferKind.Depth, 0, ref depthValue);
             }
             else if (stencilMask != 0)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
+                GL.ClearBuffer(BufferKind.Stencil, 0, ref stencilValue);
             }
         }
 
@@ -634,7 +634,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDrawVbUnbounded();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
 
             GL.DrawArraysIndirect(_primitiveType, (IntPtr)indirectBuffer.Offset);
 
@@ -651,8 +651,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDrawVbUnbounded();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
-            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToInt32());
 
             GL.MultiDrawArraysIndirectCount(
                 _primitiveType,

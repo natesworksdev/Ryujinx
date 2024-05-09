@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             GL.ActiveTexture(TextureUnit.Texture0);
             int previousTextureBinding = GL.GetInteger(GetPName.TextureBinding2D);
 
-            GL.BindImageTexture(0, textureView.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+            GL.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
 
             int threadGroupWorkRegionDim = 16;
             int dispatchX = (width + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
@@ -152,11 +152,11 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             GL.Uniform1(_scaleYUniform, scaleY);
             GL.DispatchCompute(dispatchX, dispatchY, 1);
 
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+            GL.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
             // Sharpening Pass
             GL.UseProgram(_sharpeningShaderProgram);
-            GL.BindImageTexture(0, destinationTexture.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+            GL.BindImageTexture(0, destinationTexture.Handle, 0, false, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
             textureView.Bind(0);
             GL.Uniform1(_inputUniform, 0);
             GL.Uniform1(_outputUniform, 0);
@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             GL.DispatchCompute(dispatchX, dispatchY, 1);
 
             GL.UseProgram(previousProgram);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+            GL.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
             (_renderer.Pipeline as Pipeline).RestoreImages1And2();
 

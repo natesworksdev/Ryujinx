@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using System;
@@ -40,15 +40,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
-            PixelInternalFormat pixelInternalFormat;
+            InternalFormat pixelInternalFormat;
 
             if (format.IsCompressed)
             {
-                pixelInternalFormat = (PixelInternalFormat)format.PixelFormat;
+                pixelInternalFormat = (InternalFormat)format.PixelFormat;
             }
             else
             {
-                pixelInternalFormat = format.PixelInternalFormat;
+                pixelInternalFormat = format.InternalFormat;
             }
 
             int levels = Info.GetLevelsClamped();
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 throw new NotSupportedException("Stride conversion for texture copy to buffer not supported.");
             }
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, range.Handle.ToInt32());
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, range.Handle.ToInt32());
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
             if (format.PixelFormat == PixelFormat.DepthStencil)
@@ -334,7 +334,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             Debug.Assert(offset == 0);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
         }
 
         public void WriteToPbo(int offset, bool forceBgra)
@@ -405,9 +405,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 if (pixelType == PixelType.UnsignedShort565)
                 {
-                    pixelType = PixelType.UnsignedShort565Reversed;
+                    pixelType = PixelType.UnsignedShort565Rev;
                 }
-                else if (pixelType == PixelType.UnsignedShort565Reversed)
+                else if (pixelType == PixelType.UnsignedShort565Rev)
                 {
                     pixelType = PixelType.UnsignedShort565;
                 }

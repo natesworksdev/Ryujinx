@@ -28,7 +28,6 @@
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageVersion Include="OpenTK.Core" Version="4.8.2" />
-    <PackageVersion Include="OpenTK.Graphics" Version="4.8.2" />
     <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.8.2" />
     <PackageVersion Include="OpenTK.Windowing.GraphicsLibraryFramework" Version="4.8.2" />
     <PackageVersion Include="Ryujinx.Audio.OpenAL.Dependencies" Version="1.21.0.1" />
@@ -39,6 +38,8 @@
     <PackageVersion Include="securifybv.ShellLink" Version="0.1.0" />
     <PackageVersion Include="shaderc.net" Version="0.1.0" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
+    <PackageVersion Include="Silk.NET.OpenGL" Version="2.21.0" />
+    <PackageVersion Include="Silk.NET.OpenGL.Legacy" Version="2.21.0" />
     <PackageVersion Include="Silk.NET.Vulkan" Version="2.16.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.16.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.16.0" />
