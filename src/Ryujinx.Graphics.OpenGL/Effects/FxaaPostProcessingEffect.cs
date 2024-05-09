@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
         private void Initialize()
         {
-            _shaderProgram = ShaderHelper.CompileProgram(EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/fxaa.glsl"), ShaderType.ComputeShader);
+            _shaderProgram = ShaderHelper.CompileProgram(_gd.Api, EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/fxaa.glsl"), ShaderType.ComputeShader);
 
             _resolutionUniform = _gd.Api.GetUniformLocation(_shaderProgram, "invResolution");
             _inputUniform = _gd.Api.GetUniformLocation(_shaderProgram, "inputTexture");
@@ -49,21 +49,21 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
             var textureView = _textureStorage.CreateView(view.Info, 0, 0) as TextureView;
 
-            int previousProgram = _gd.Api.GetInteger(GetPName.CurrentProgram);
+            uint previousProgram = (uint)_gd.Api.GetInteger(GetPName.CurrentProgram);
             int previousUnit = _gd.Api.GetInteger(GetPName.ActiveTexture);
             _gd.Api.ActiveTexture(TextureUnit.Texture0);
-            int previousTextureBinding = _gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
 
-            _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
+            _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             _gd.Api.UseProgram(_shaderProgram);
 
-            var dispatchX = BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
-            var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
+            uint dispatchX = (uint)BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
+            uint dispatchY = (uint)BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
             view.Bind(0);
             _gd.Api.Uniform1(_inputUniform, 0);
             _gd.Api.Uniform1(_outputUniform, 0);
-            _gd.Api.Uniform2(_resolutionUniform, (float)view.Width, (float)view.Height);
+            _gd.Api.Uniform2(_resolutionUniform, view.Width, view.Height);
             _gd.Api.DispatchCompute(dispatchX, dispatchY, 1);
             _gd.Api.UseProgram(previousProgram);
             _gd.Api.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);

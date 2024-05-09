@@ -123,13 +123,13 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             uint previousProgram = (uint)_gd.Api.GetInteger(GetPName.CurrentProgram);
             int previousUnit = _gd.Api.GetInteger(GetPName.ActiveTexture);
             _gd.Api.ActiveTexture(TextureUnit.Texture0);
-            int previousTextureBinding = _gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
 
-            _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
+            _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
 
             int threadGroupWorkRegionDim = 16;
-            int dispatchX = (width + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
-            int dispatchY = (height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+            uint dispatchX = (uint)((width + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim);
+            uint dispatchY = (uint)((height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim);
 
             // Scaling pass
             float srcWidth = Math.Abs(source.X2 - source.X1);
@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
             // Sharpening Pass
             _gd.Api.UseProgram(_sharpeningShaderProgram);
-            _gd.Api.BindImageTexture(0, destinationTexture.Handle, 0, false, 0, BufferAccessARB.ReadWrite, SizedInternalFormat.Rgba8);
+            _gd.Api.BindImageTexture(0, destinationTexture.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             textureView.Bind(0);
             _gd.Api.Uniform1(_inputUniform, 0);
             _gd.Api.Uniform1(_outputUniform, 0);
