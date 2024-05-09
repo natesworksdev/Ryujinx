@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.OpenGL
         public bool Normalized { get; }
         public bool Scaled { get; }
 
-        public PixelInternalFormat PixelInternalFormat { get; }
+        public InternalFormat InternalFormat { get; }
         public PixelFormat PixelFormat { get; }
         public PixelType PixelType { get; }
 
@@ -18,25 +18,25 @@ namespace Ryujinx.Graphics.OpenGL
             int components,
             bool normalized,
             bool scaled,
-            All pixelInternalFormat,
+            InternalFormat internalFormat,
             PixelFormat pixelFormat,
             PixelType pixelType)
         {
             Components = components;
             Normalized = normalized;
             Scaled = scaled;
-            PixelInternalFormat = (PixelInternalFormat)pixelInternalFormat;
+            InternalFormat = internalFormat;
             PixelFormat = pixelFormat;
             PixelType = pixelType;
             IsCompressed = false;
         }
 
-        public FormatInfo(int components, bool normalized, bool scaled, All pixelFormat)
+        public FormatInfo(int components, bool normalized, bool scaled, InternalFormat pixelFormat)
         {
             Components = components;
             Normalized = normalized;
             Scaled = scaled;
-            PixelInternalFormat = 0;
+            InternalFormat = 0;
             PixelFormat = (PixelFormat)pixelFormat;
             PixelType = 0;
             IsCompressed = true;
