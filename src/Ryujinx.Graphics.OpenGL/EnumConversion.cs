@@ -1,4 +1,4 @@
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.OpenGL
             switch (mode)
             {
                 case AddressMode.Clamp:
-                    return GLEnum.Clamp;
+                    return TextureWrapMode.Clamp;
                 case AddressMode.Repeat:
                     return TextureWrapMode.Repeat;
                 case AddressMode.MirrorClamp:
@@ -411,21 +411,21 @@ namespace Ryujinx.Graphics.OpenGL
             return TextureMinFilter.Nearest;
         }
 
-        public static Silk.NET.OpenGL.PolygonMode Convert(this GAL.PolygonMode mode)
+        public static Silk.NET.OpenGL.Legacy.PolygonMode Convert(this GAL.PolygonMode mode)
         {
             switch (mode)
             {
                 case GAL.PolygonMode.Point:
-                    return Silk.NET.OpenGL.PolygonMode.Point;
+                    return Silk.NET.OpenGL.Legacy.PolygonMode.Point;
                 case GAL.PolygonMode.Line:
-                    return Silk.NET.OpenGL.PolygonMode.Line;
+                    return Silk.NET.OpenGL.Legacy.PolygonMode.Line;
                 case GAL.PolygonMode.Fill:
-                    return Silk.NET.OpenGL.PolygonMode.Fill;
+                    return Silk.NET.OpenGL.Legacy.PolygonMode.Fill;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.PolygonMode)} enum value: {mode}.");
 
-            return Silk.NET.OpenGL.PolygonMode.Fill;
+            return Silk.NET.OpenGL.Legacy.PolygonMode.Fill;
         }
 
         public static PrimitiveType Convert(this PrimitiveTopology topology)

@@ -1,4 +1,4 @@
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

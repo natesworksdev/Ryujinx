@@ -1,4 +1,4 @@
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;

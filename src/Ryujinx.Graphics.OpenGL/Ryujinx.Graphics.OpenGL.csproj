@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Silk.NET.OpenGL" />
     <PackageReference Include="Silk.NET.OpenGL.Legacy" />
   </ItemGroup>
 

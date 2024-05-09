@@ -1,5 +1,5 @@
 using Ryujinx.Graphics.GAL;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {

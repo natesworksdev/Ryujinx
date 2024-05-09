@@ -1,5 +1,5 @@
 using OpenTK;
-using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
