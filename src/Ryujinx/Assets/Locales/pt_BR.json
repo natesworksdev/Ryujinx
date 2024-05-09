@@ -96,7 +96,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "Habilitar Rich Presence do Discord",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Verificar se há atualizações ao iniciar",
   "SettingsTabGeneralShowConfirmExitDialog": "Exibir diálogo de confirmação ao sair",
-  "SettingsTabGeneralRememberWindowState": "Remember Window Size/Position",
+  "SettingsTabGeneralRememberWindowState": "Lembrar tamanho/posição da Janela",
   "SettingsTabGeneralHideCursor": "Esconder o cursor do mouse:",
   "SettingsTabGeneralHideCursorNever": "Nunca",
   "SettingsTabGeneralHideCursorOnIdle": "Esconder o cursor quando ocioso",
