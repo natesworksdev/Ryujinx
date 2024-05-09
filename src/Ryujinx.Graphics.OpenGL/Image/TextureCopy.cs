@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureCopy : IDisposable
     {
-        private GL _api;
+        private readonly GL _api;
         private readonly OpenGLRenderer _renderer;
 
         private uint _srcFramebuffer;

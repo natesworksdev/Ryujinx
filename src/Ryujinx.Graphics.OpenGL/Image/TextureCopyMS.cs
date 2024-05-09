@@ -94,14 +94,14 @@ void main()
 }";
 
         private readonly OpenGLRenderer _renderer;
-        private readonly int[] _msToNonMSProgramHandles;
-        private readonly int[] _nonMSToMSProgramHandles;
+        private readonly uint[] _msToNonMSProgramHandles;
+        private readonly uint[] _nonMSToMSProgramHandles;
 
         public TextureCopyMS(OpenGLRenderer renderer)
         {
             _renderer = renderer;
-            _msToNonMSProgramHandles = new int[5];
-            _nonMSToMSProgramHandles = new int[5];
+            _msToNonMSProgramHandles = new uint[5];
+            _nonMSToMSProgramHandles = new uint[5];
         }
 
         public void CopyMSToNonMS(ITextureInfo src, ITextureInfo dst, int srcLayer, int dstLayer, int depth)
@@ -177,7 +177,7 @@ void main()
             };
         }
 
-        private static int CreateViewIfNeeded(ITextureInfo texture)
+        private static uint CreateViewIfNeeded(ITextureInfo texture)
         {
             // Binding sRGB textures as images doesn't work on NVIDIA,
             // we need to create and bind a RGBA view for it to work.

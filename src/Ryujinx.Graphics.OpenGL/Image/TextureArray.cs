@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         private readonly TextureRef[] _textureRefs;
-        private GL _api;
+        private readonly GL _api;
 
         public TextureArray(GL api, int size)
         {

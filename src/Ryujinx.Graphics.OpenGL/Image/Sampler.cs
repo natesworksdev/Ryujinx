@@ -41,9 +41,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _api.SamplerParameter(Handle, SamplerParameterF.BorderColor, borderColor);
             }
 
-            _api.SamplerParameter(Handle, SamplerParameterF.TextureMinLod, info.MinLod);
-            _api.SamplerParameter(Handle, SamplerParameterF.TextureMaxLod, info.MaxLod);
-            _api.SamplerParameter(Handle, SamplerParameterF.TextureLodBias, info.MipLodBias);
+            _api.SamplerParameter(Handle, SamplerParameterF.MinLod, info.MinLod);
+            _api.SamplerParameter(Handle, SamplerParameterF.MaxLod, info.MaxLod);
+            _api.SamplerParameter(Handle, SamplerParameterF.LodBias, info.MipLodBias);
 
             _api.SamplerParameter(Handle, SamplerParameterF.MaxAnisotropy, info.MaxAnisotropy);
         }

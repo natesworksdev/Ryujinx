@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
     class TextureStorage : ITextureInfo
     {
         public ITextureInfo Storage => this;
-        public int Handle { get; private set; }
+        public uint Handle { get; private set; }
 
         public TextureCreateInfo Info { get; }
 

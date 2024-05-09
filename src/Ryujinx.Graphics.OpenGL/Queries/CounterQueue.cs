@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private readonly Thread _consumerThread;
 
-        internal CounterQueue(CounterType type)
+        internal CounterQueue(GL api, CounterType type)
         {
             Type = type;
 
@@ -37,10 +37,10 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _queryPool = new Queue<BufferedQuery>(QueryPoolInitialSize);
             for (int i = 0; i < QueryPoolInitialSize; i++)
             {
-                _queryPool.Enqueue(new BufferedQuery(glType));
+                _queryPool.Enqueue(new BufferedQuery(api, glType));
             }
 
-            _current = new CounterQueueEvent(this, glType, 0);
+            _current = new CounterQueueEvent(api, this, glType, 0);
 
             _consumerThread = new Thread(EventConsumer);
             _consumerThread.Start();
@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             }
         }
 
-        internal BufferedQuery GetQueryObject()
+        internal BufferedQuery GetQueryObject(GL api)
         {
             // Creating/disposing query objects on a context we're sharing with will cause issues.
             // So instead, make a lot of query objects on the main thread and reuse them.
@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 }
                 else
                 {
-                    return new BufferedQuery(GetTarget(Type));
+                    return new BufferedQuery(api, GetTarget(Type));
                 }
             }
         }
@@ -103,7 +103,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             }
         }
 
-        public CounterQueueEvent QueueReport(EventHandler<ulong> resultHandler, float divisor, ulong lastDrawIndex, bool hostReserved)
+        public CounterQueueEvent QueueReport(GL api, EventHandler<ulong> resultHandler, float divisor, ulong lastDrawIndex, bool hostReserved)
         {
             CounterQueueEvent result;
             ulong draws = lastDrawIndex - _current.DrawIndex;
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
                 result = _current;
 
-                _current = new CounterQueueEvent(this, GetTarget(Type), lastDrawIndex);
+                _current = new CounterQueueEvent(api, this, GetTarget(Type), lastDrawIndex);
             }
 
             _queuedEvent.Set();

@@ -21,14 +21,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
             if (Avx2.IsSupported)
             {
                 var mask = Vector256.Create(
-                    (byte)3, (byte)0, (byte)1, (byte)2,
-                    (byte)7, (byte)4, (byte)5, (byte)6,
-                    (byte)11, (byte)8, (byte)9, (byte)10,
-                    (byte)15, (byte)12, (byte)13, (byte)14,
-                    (byte)19, (byte)16, (byte)17, (byte)18,
-                    (byte)23, (byte)20, (byte)21, (byte)22,
-                    (byte)27, (byte)24, (byte)25, (byte)26,
-                    (byte)31, (byte)28, (byte)29, (byte)30);
+                    3, 0, 1, 2,
+                    7, 4, 5, 6,
+                    11, 8, 9, 10,
+                    15, 12, 13, 14,
+                    19, 16, 17, 18,
+                    23, 20, 21, 22,
+                    27, 24, 25, 26,
+                    31, 28, 29, (byte)30);
 
                 int sizeAligned = data.Length & ~31;
 
@@ -49,10 +49,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
             else if (Ssse3.IsSupported)
             {
                 var mask = Vector128.Create(
-                    (byte)3, (byte)0, (byte)1, (byte)2,
-                    (byte)7, (byte)4, (byte)5, (byte)6,
-                    (byte)11, (byte)8, (byte)9, (byte)10,
-                    (byte)15, (byte)12, (byte)13, (byte)14);
+                    3, 0, 1, 2,
+                    7, 4, 5, 6,
+                    11, 8, 9, 10,
+                    15, 12, 13, (byte)14);
 
                 int sizeAligned = data.Length & ~15;
 
@@ -90,14 +90,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
             if (Avx2.IsSupported)
             {
                 var mask = Vector256.Create(
-                    (byte)1, (byte)2, (byte)3, (byte)0,
-                    (byte)5, (byte)6, (byte)7, (byte)4,
-                    (byte)9, (byte)10, (byte)11, (byte)8,
-                    (byte)13, (byte)14, (byte)15, (byte)12,
-                    (byte)17, (byte)18, (byte)19, (byte)16,
-                    (byte)21, (byte)22, (byte)23, (byte)20,
-                    (byte)25, (byte)26, (byte)27, (byte)24,
-                    (byte)29, (byte)30, (byte)31, (byte)28);
+                    1, 2, 3, 0,
+                    5, 6, 7, 4,
+                    9, 10, 11, 8,
+                    13, 14, 15, 12,
+                    17, 18, 19, 16,
+                    21, 22, 23, 20,
+                    25, 26, 27, 24,
+                    29, 30, 31, (byte)28);
 
                 int sizeAligned = data.Length & ~31;
 
@@ -118,10 +118,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
             else if (Ssse3.IsSupported)
             {
                 var mask = Vector128.Create(
-                    (byte)1, (byte)2, (byte)3, (byte)0,
-                    (byte)5, (byte)6, (byte)7, (byte)4,
-                    (byte)9, (byte)10, (byte)11, (byte)8,
-                    (byte)13, (byte)14, (byte)15, (byte)12);
+                    1, 2, 3, 0,
+                    5, 6, 7, 4,
+                    9, 10, 11, 8,
+                    13, 14, 15, (byte)12);
 
                 int sizeAligned = data.Length & ~15;
 

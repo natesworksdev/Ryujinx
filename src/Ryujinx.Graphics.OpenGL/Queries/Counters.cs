@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
@@ -6,12 +7,14 @@ namespace Ryujinx.Graphics.OpenGL.Queries
     class Counters : IDisposable
     {
         private readonly CounterQueue[] _counterQueues;
+        private readonly GL _api;
 
-        public Counters()
+        public Counters(GL api)
         {
             int count = Enum.GetNames<CounterType>().Length;
 
             _counterQueues = new CounterQueue[count];
+            _api = api;
         }
 
         public void Initialize()
@@ -19,13 +22,13 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             for (int index = 0; index < _counterQueues.Length; index++)
             {
                 CounterType type = (CounterType)index;
-                _counterQueues[index] = new CounterQueue(type);
+                _counterQueues[index] = new CounterQueue(_api, type);
             }
         }
 
         public CounterQueueEvent QueueReport(CounterType type, EventHandler<ulong> resultHandler, float divisor, ulong lastDrawIndex, bool hostReserved)
         {
-            return _counterQueues[(int)type].QueueReport(resultHandler, divisor, lastDrawIndex, hostReserved);
+            return _counterQueues[(int)type].QueueReport(_api, resultHandler, divisor, lastDrawIndex, hostReserved);
         }
 
         public void QueueReset(CounterType type)

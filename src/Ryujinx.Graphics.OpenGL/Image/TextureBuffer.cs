@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public PinnedSpan<byte> GetData()
         {
-            return Buffer.GetData(_api, _renderer, _buffer, _bufferOffset, _bufferSize);
+            return Buffer.GetData(Api, _renderer, _buffer, _bufferOffset, _bufferSize);
         }
 
         public PinnedSpan<byte> GetData(int layer, int level)
@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             var dataSpan = data.Memory.Span;
 
-            Buffer.SetData(_api, _buffer, _bufferOffset, dataSpan[..Math.Min(dataSpan.Length, _bufferSize)]);
+            Buffer.SetData(Api, _buffer, _bufferOffset, dataSpan[..Math.Min(dataSpan.Length, _bufferSize)]);
 
             data.Dispose();
         }
@@ -97,14 +97,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).InternalFormat;
 
-            _api.TexBufferRange(TextureTarget.TextureBuffer, format, _buffer.ToUInt32(), buffer.Offset, (uint)buffer.Size);
+            Api.TexBufferRange(TextureTarget.TextureBuffer, format, _buffer.ToUInt32(), buffer.Offset, (uint)buffer.Size);
         }
 
         public void Dispose()
         {
             if (Handle != 0)
             {
-                _api.DeleteTexture(Handle);
+                Api.DeleteTexture(Handle);
 
                 Handle = 0;
             }
