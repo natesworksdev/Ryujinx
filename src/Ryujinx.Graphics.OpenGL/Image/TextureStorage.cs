@@ -12,17 +12,19 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public TextureCreateInfo Info { get; }
 
         private readonly OpenGLRenderer _renderer;
+        private readonly GL _api;
 
         private int _viewsCount;
 
         internal ITexture DefaultView { get; private set; }
 
-        public TextureStorage(OpenGLRenderer renderer, TextureCreateInfo info)
+        public TextureStorage(GL api, OpenGLRenderer renderer, TextureCreateInfo info)
         {
+            _api = api;
             _renderer = renderer;
             Info = info;
 
-            Handle = GL.GenTexture();
+            Handle = _api.GenTexture();
 
             CreateImmutableStorage();
         }
@@ -31,9 +33,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureTarget target = Info.Target.Convert();
 
-            GL.ActiveTexture(TextureUnit.Texture0);
+            _api.ActiveTexture(TextureUnit.Texture0);
 
-            GL.BindTexture(target, Handle);
+            _api.BindTexture(target, Handle);
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -48,94 +50,94 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 internalFormat = (SizedInternalFormat)format.InternalFormat;
             }
 
-            int levels = Info.GetLevelsClamped();
+            uint levels = (uint)Info.GetLevelsClamped();
 
             switch (Info.Target)
             {
                 case Target.Texture1D:
-                    GL.TexStorage1D(
+                    _api.TexStorage1D(
                         TextureTarget.Texture1D,
                         levels,
                         internalFormat,
-                        Info.Width);
+                        (uint)Info.Width);
                     break;
 
                 case Target.Texture1DArray:
-                    GL.TexStorage2D(
+                    _api.TexStorage2D(
                         TextureTarget.Texture1DArray,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height);
+                        (uint)Info.Width,
+                        (uint)Info.Height);
                     break;
 
                 case Target.Texture2D:
-                    GL.TexStorage2D(
+                    _api.TexStorage2D(
                         TextureTarget.Texture2D,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height);
+                        (uint)Info.Width,
+                        (uint)Info.Height);
                     break;
 
                 case Target.Texture2DArray:
-                    GL.TexStorage3D(
+                    _api.TexStorage3D(
                         TextureTarget.Texture2DArray,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height,
-                        Info.Depth);
+                        (uint)Info.Width,
+                        (uint)Info.Height,
+                        (uint)Info.Depth);
                     break;
 
                 case Target.Texture2DMultisample:
-                    GL.TexStorage2DMultisample(
+                    _api.TexStorage2DMultisample(
                         TextureTarget.Texture2DMultisample,
-                        Info.Samples,
+                        (uint)Info.Samples,
                         internalFormat,
-                        Info.Width,
-                        Info.Height,
+                        (uint)Info.Width,
+                        (uint)Info.Height,
                         true);
                     break;
 
                 case Target.Texture2DMultisampleArray:
-                    GL.TexStorage3DMultisample(
+                    _api.TexStorage3DMultisample(
                         TextureTarget.Texture2DMultisampleArray,
-                        Info.Samples,
+                        (uint)Info.Samples,
                         internalFormat,
-                        Info.Width,
-                        Info.Height,
-                        Info.Depth,
+                        (uint)Info.Width,
+                        (uint)Info.Height,
+                        (uint)Info.Depth,
                         true);
                     break;
 
                 case Target.Texture3D:
-                    GL.TexStorage3D(
+                    _api.TexStorage3D(
                         TextureTarget.Texture3D,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height,
-                        Info.Depth);
+                        (uint)Info.Width,
+                        (uint)Info.Height,
+                        (uint)Info.Depth);
                     break;
 
                 case Target.Cubemap:
-                    GL.TexStorage2D(
+                    _api.TexStorage2D(
                         TextureTarget.TextureCubeMap,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height);
+                        (uint)Info.Width,
+                        (uint)Info.Height);
                     break;
 
                 case Target.CubemapArray:
-                    GL.TexStorage3D(
+                    _api.TexStorage3D(
                         TextureTarget.TextureCubeMapArray,
                         levels,
                         internalFormat,
-                        Info.Width,
-                        Info.Height,
-                        Info.Depth);
+                        (uint)Info.Width,
+                        (uint)Info.Height,
+                        (uint)Info.Depth);
                     break;
 
                 default:
@@ -201,7 +203,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (Handle != 0)
             {
-                GL.DeleteTexture(Handle);
+                _api.DeleteTexture(Handle);
 
                 Handle = 0;
             }
