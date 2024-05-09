@@ -494,62 +494,62 @@ namespace Ryujinx.Graphics.OpenGL
             return TransformFeedbackPrimitiveType.Points;
         }
 
-        public static OpenTK.Graphics.OpenGL.StencilOp Convert(this GAL.StencilOp op)
+        public static Silk.NET.OpenGL.Legacy.StencilOp Convert(this GAL.StencilOp op)
         {
             switch (op)
             {
                 case GAL.StencilOp.Keep:
                 case GAL.StencilOp.KeepGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Keep;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Keep;
                 case GAL.StencilOp.Zero:
                 case GAL.StencilOp.ZeroGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Zero;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Zero;
                 case GAL.StencilOp.Replace:
                 case GAL.StencilOp.ReplaceGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Replace;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Replace;
                 case GAL.StencilOp.IncrementAndClamp:
                 case GAL.StencilOp.IncrementAndClampGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Incr;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Incr;
                 case GAL.StencilOp.DecrementAndClamp:
                 case GAL.StencilOp.DecrementAndClampGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Decr;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Decr;
                 case GAL.StencilOp.Invert:
                 case GAL.StencilOp.InvertGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.Invert;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.Invert;
                 case GAL.StencilOp.IncrementAndWrap:
                 case GAL.StencilOp.IncrementAndWrapGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.IncrWrap;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.IncrWrap;
                 case GAL.StencilOp.DecrementAndWrap:
                 case GAL.StencilOp.DecrementAndWrapGl:
-                    return OpenTK.Graphics.OpenGL.StencilOp.DecrWrap;
+                    return Silk.NET.OpenGL.Legacy.StencilOp.DecrWrap;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.StencilOp)} enum value: {op}.");
 
-            return OpenTK.Graphics.OpenGL.StencilOp.Keep;
+            return Silk.NET.OpenGL.Legacy.StencilOp.Keep;
         }
 
-        public static All Convert(this SwizzleComponent swizzleComponent)
+        public static GLEnum Convert(this SwizzleComponent swizzleComponent)
         {
             switch (swizzleComponent)
             {
                 case SwizzleComponent.Zero:
-                    return All.Zero;
+                    return GLEnum.Zero;
                 case SwizzleComponent.One:
-                    return All.One;
+                    return GLEnum.One;
                 case SwizzleComponent.Red:
-                    return All.Red;
+                    return GLEnum.Red;
                 case SwizzleComponent.Green:
-                    return All.Green;
+                    return GLEnum.Green;
                 case SwizzleComponent.Blue:
-                    return All.Blue;
+                    return GLEnum.Blue;
                 case SwizzleComponent.Alpha:
-                    return All.Alpha;
+                    return GLEnum.Alpha;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(SwizzleComponent)} enum value: {swizzleComponent}.");
 
-            return All.Zero;
+            return GLEnum.Zero;
         }
 
         public static CopyImageSubDataTarget ConvertToImageTarget(this Target target)
