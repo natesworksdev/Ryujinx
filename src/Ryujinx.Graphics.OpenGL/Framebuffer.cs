@@ -1,6 +1,7 @@
 using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
 using System.Runtime.CompilerServices;
 

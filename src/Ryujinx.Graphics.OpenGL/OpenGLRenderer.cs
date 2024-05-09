@@ -48,14 +48,14 @@ namespace Ryujinx.Graphics.OpenGL
         public OpenGLRenderer(GL api)
         {
             Api = api;
-            _pipeline = new Pipeline();
+            _pipeline = new Pipeline(Api);
             _counters = new Counters(Api);
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
             TextureCopyIncompatible = new TextureCopyIncompatible(this);
             TextureCopyMS = new TextureCopyMS(this);
-            _sync = new Sync();
+            _sync = new Sync(Api);
             PersistentBuffers = new PersistentBuffers();
             ResourcePool = new ResourcePool();
         }
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
         {
-            return new Program(shaders, info.FragmentOutputMap);
+            return new Program(Api, shaders, info.FragmentOutputMap);
         }
 
         public ISampler CreateSampler(SamplerCreateInfo info)
@@ -292,7 +292,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IProgram LoadProgramBinary(byte[] programBinary, bool hasFragmentShader, ShaderInfo info)
         {
-            return new Program(programBinary, hasFragmentShader, info.FragmentOutputMap);
+            return new Program(Api, programBinary, hasFragmentShader, info.FragmentOutputMap);
         }
 
         public void CreateSync(ulong id, bool strict)

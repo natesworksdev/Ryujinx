@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private const int MaxShaderLogLength = 2048;
 
-        public int Handle { get; private set; }
+        public uint Handle { get; private set; }
 
         public bool IsLinked
         {
@@ -27,18 +27,20 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        private readonly GL _api;
         private ProgramLinkStatus _status = ProgramLinkStatus.Incomplete;
-        private int[] _shaderHandles;
+        private uint[] _shaderHandles;
 
         public int FragmentOutputMap { get; }
 
-        public Program(ShaderSource[] shaders, int fragmentOutputMap)
+        public Program(GL api, ShaderSource[] shaders, int fragmentOutputMap)
         {
-            Handle = GL.CreateProgram();
+            _api = api;
+            Handle = _api.CreateProgram();
 
-            GL.ProgramParameter(Handle, ProgramParameterPName.BinaryRetrievableHint, 1);
+            _api.ProgramParameter(Handle, ProgramParameterPName.BinaryRetrievableHint, 1);
 
-            _shaderHandles = new int[shaders.Length];
+            _shaderHandles = new uint[shaders.Length];
             bool hasFragmentShader = false;
 
             for (int index = 0; index < shaders.Length; index++)
@@ -50,43 +52,44 @@ namespace Ryujinx.Graphics.OpenGL
                     hasFragmentShader = true;
                 }
 
-                int shaderHandle = GL.CreateShader(shader.Stage.Convert());
+                uint shaderHandle = _api.CreateShader(shader.Stage.Convert());
 
                 switch (shader.Language)
                 {
                     case TargetLanguage.Glsl:
-                        GL.ShaderSource(shaderHandle, shader.Code);
-                        GL.CompileShader(shaderHandle);
+                        _api.ShaderSource(shaderHandle, shader.Code);
+                        _api.CompileShader(shaderHandle);
                         break;
                     case TargetLanguage.Spirv:
-                        GL.ShaderBinary(1, ref shaderHandle, (BinaryFormat)All.ShaderBinaryFormatSpirVArb, shader.BinaryCode, shader.BinaryCode.Length);
-                        GL.SpecializeShader(shaderHandle, "main", 0, (int[])null, (int[])null);
+                        _api.ShaderBinary(1, ref shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, shader.BinaryCode, shader.BinaryCode.Length);
+                        _api.SpecializeShader(shaderHandle, "main", 0, (int[])null, (int[])null);
                         break;
                 }
 
-                GL.AttachShader(Handle, shaderHandle);
+                _api.AttachShader(Handle, shaderHandle);
 
                 _shaderHandles[index] = shaderHandle;
             }
 
-            GL.LinkProgram(Handle);
+            _api.LinkProgram(Handle);
 
             FragmentOutputMap = hasFragmentShader ? fragmentOutputMap : 0;
         }
 
-        public Program(ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
+        public Program(GL api, ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
         {
-            Handle = GL.CreateProgram();
+            _api = api;
+            Handle = _api.CreateProgram();
 
             if (code.Length >= 4)
             {
-                BinaryFormat binaryFormat = (BinaryFormat)BinaryPrimitives.ReadInt32LittleEndian(code.Slice(code.Length - 4, 4));
+                ShaderBinaryFormat binaryFormat = (ShaderBinaryFormat)BinaryPrimitives.ReadInt32LittleEndian(code.Slice(code.Length - 4, 4));
 
                 unsafe
                 {
                     fixed (byte* ptr = code)
                     {
-                        GL.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
+                        _api.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
                     }
                 }
             }
@@ -96,14 +99,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Bind()
         {
-            GL.UseProgram(Handle);
+            _api.UseProgram(Handle);
         }
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
             if (!blocking && HwCapabilities.SupportsParallelShaderCompile)
             {
-                GL.GetProgram(Handle, (GetProgramParameterName)ArbParallelShaderCompile.CompletionStatusArb, out int completed);
+                _api.GetProgram(Handle, (GetProgramParameterName)ArbParallelShaderCompile.CompletionStatusArb, out int completed);
 
                 if (completed == 0)
                 {
@@ -111,14 +114,14 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out int status);
+            _api.GetProgram(Handle, ProgramPropertyARB.LinkStatus, out int status);
             DeleteShaders();
 
             if (status == 0)
             {
                 _status = ProgramLinkStatus.Failure;
 
-                string log = GL.GetProgramInfoLog(Handle);
+                string log = _api.GetProgramInfoLog(Handle);
 
                 if (log.Length > MaxShaderLogLength)
                 {
@@ -137,11 +140,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public byte[] GetBinary()
         {
-            GL.GetProgram(Handle, (GetProgramParameterName)All.ProgramBinaryLength, out int size);
+            _api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
 
             byte[] data = new byte[size + 4];
 
-            GL.GetProgramBinary(Handle, size, out _, out BinaryFormat binFormat, data);
+            _api.GetProgramBinary(Handle, size, out _, out ShaderBinaryFormat binFormat, data);
 
             BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(size, 4), (int)binFormat);
 
@@ -152,10 +155,10 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_shaderHandles != null)
             {
-                foreach (int shaderHandle in _shaderHandles)
+                foreach (uint shaderHandle in _shaderHandles)
                 {
-                    GL.DetachShader(Handle, shaderHandle);
-                    GL.DeleteShader(shaderHandle);
+                    _api.DetachShader(Handle, shaderHandle);
+                    _api.DeleteShader(shaderHandle);
                 }
 
                 _shaderHandles = null;
@@ -167,7 +170,7 @@ namespace Ryujinx.Graphics.OpenGL
             if (Handle != 0)
             {
                 DeleteShaders();
-                GL.DeleteProgram(Handle);
+                _api.DeleteProgram(Handle);
 
                 Handle = 0;
             }

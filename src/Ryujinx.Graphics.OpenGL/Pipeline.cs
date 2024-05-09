@@ -4,6 +4,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
 using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
@@ -674,7 +675,9 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 if (HwCapabilities.SupportsDrawTexture)
                 {
-                    GL.NV.DrawTexture(
+                    _api.TryGetExtension(out NVDrawTexture drawTexture);
+
+                    drawTexture.DrawTexture(
                         view.Handle,
                         samp.Handle,
                         dstRegion.X1,
@@ -689,25 +692,25 @@ namespace Ryujinx.Graphics.OpenGL
                 }
                 else
                 {
-                    static void Disable(EnableCap cap, bool enabled)
+                    static void Disable(GL api, EnableCap cap, bool enabled)
                     {
                         if (enabled)
                         {
-                            _api.Disable(cap);
+                            api.Disable(cap);
                         }
                     }
 
-                    static void Enable(EnableCap cap, bool enabled)
+                    static void Enable(GL api, EnableCap cap, bool enabled)
                     {
                         if (enabled)
                         {
-                            _api.Enable(cap);
+                            api.Enable(cap);
                         }
                     }
 
-                    Disable(EnableCap.CullFace, _cullEnable);
-                    Disable(EnableCap.StencilTest, _stencilTestEnable);
-                    Disable(EnableCap.DepthTest, _depthTestEnable);
+                    Disable(_api, EnableCap.CullFace, _cullEnable);
+                    Disable(_api, EnableCap.StencilTest, _stencilTestEnable);
+                    Disable(_api, EnableCap.DepthTest, _depthTestEnable);
 
                     if (_depthMask)
                     {
@@ -779,10 +782,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (HwCapabilities.SupportsBlendEquationAdvanced)
             {
-                GL.BlendEquation((BlendEquationMode)blend.Op.Convert());
-                GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendOverlapNv, (int)blend.Overlap.Convert());
-                GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendPremultipliedSrcNv, blend.SrcPreMultiplied ? 1 : 0);
-                GL.Enable(EnableCap.Blend);
+                _api.BlendEquation((GLEnum)blend.Op.Convert());
+
+                _api.TryGetExtension(out NVBlendEquationAdvanced nvBlendEquationAdvanced);
+                nvBlendEquationAdvanced.BlendParameter(NV.BlendOverlapNV, (int)blend.Overlap.Convert());
+                nvBlendEquationAdvanced.BlendParameter(NV.BlendPremultipliedSrcNV, blend.SrcPreMultiplied ? 1 : 0);
+                _api.Enable(EnableCap.Blend);
                 _advancedBlendEnable = true;
             }
         }
@@ -832,7 +837,7 @@ namespace Ryujinx.Graphics.OpenGL
                     blend.BlendConstant.Alpha);
             }
 
-            GL.Enable(EnableCap.Blend, index);
+            _api.Enable(EnableCap.Blend, index);
         }
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
@@ -1009,9 +1014,11 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (HwCapabilities.SupportsAlphaToCoverageDitherControl)
                 {
-                    GL.NV.AlphaToCoverageDitherControl(multisample.AlphaToCoverageDitherEnable
-                        ? NvAlphaToCoverageDitherControl.AlphaToCoverageDitherEnableNv
-                        : NvAlphaToCoverageDitherControl.AlphaToCoverageDitherDisableNv);
+                    _api.TryGetExtension(out NVAlphaToCoverageDitherControl nvAlphaToCoverageDitherControl);
+
+                    nvAlphaToCoverageDitherControl.AlphaToCoverageDitherControl(multisample.AlphaToCoverageDitherEnable
+                        ? NV.AlphaToCoverageDitherEnableNV
+                        : NV.AlphaToCoverageDitherDisableNV);
                 }
             }
             else
@@ -1055,11 +1062,11 @@ namespace Ryujinx.Graphics.OpenGL
             // As we don't know if the current context is core or compat, it's safer to keep this code.
             if (enablePointSprite)
             {
-                _api.Enable(EnableCap.PointSprite);
+                _api.Enable(GLEnum.PointSprite);
             }
             else
             {
-                _api.Disable(EnableCap.PointSprite);
+                _api.Disable(GLEnum.PointSprite);
             }
 
             if (isProgramPointSize)
@@ -1390,11 +1397,11 @@ namespace Ryujinx.Graphics.OpenGL
             float[] viewportArray = _viewportArray;
             double[] depthRangeArray = _depthRangeArray;
 
-            for (int index = 0; index < viewports.Length; index++)
+            for (uint index = 0; index < viewports.Length; index++)
             {
-                int viewportElemIndex = index * 4;
+                uint viewportElemIndex = index * 4;
 
-                Viewport viewport = viewports[index];
+                Viewport viewport = viewports[(int)index];
 
                 viewportArray[viewportElemIndex + 0] = viewport.Region.X;
                 viewportArray[viewportElemIndex + 1] = viewport.Region.Y + (viewport.Region.Height < 0 ? viewport.Region.Height : 0);
@@ -1403,7 +1410,9 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (HwCapabilities.SupportsViewportSwizzle)
                 {
-                    GL.NV.ViewportSwizzle(
+                    _api.TryGetExtension(out NVViewportSwizzle nvViewportSwizzle);
+
+                    nvViewportSwizzle.ViewportSwizzle(
                         index,
                         viewport.SwizzleX.Convert(),
                         viewport.SwizzleY.Convert(),
@@ -1568,7 +1577,7 @@ namespace Ryujinx.Graphics.OpenGL
             componentMask &= 0xfu;
 
             _api.ColorMask(
-                index,
+                (uint)index,
                 (componentMask & redMask) != 0,
                 (componentMask & 2u) != 0,
                 (componentMask & blueMask) != 0,

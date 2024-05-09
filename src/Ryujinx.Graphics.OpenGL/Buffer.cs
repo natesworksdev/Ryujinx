@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 gd.Api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
 
-                gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, target);
+                gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, (void*)target);
 
                 return new PinnedSpan<byte>(target.ToPointer(), size);
             }
