@@ -7,6 +7,7 @@ using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using System;
+using System.Runtime.InteropServices;
 using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
@@ -247,11 +248,11 @@ namespace Ryujinx.Graphics.OpenGL
             Api.ClampColor(ClampColorTargetARB.FragmentColorArb, ClampColorModeARB.False);
         }
 
-        private void PrintGpuInformation()
+        private unsafe void PrintGpuInformation()
         {
-            GpuVendor = Api.GetString(StringName.Vendor);
-            GpuRenderer = Api.GetString(StringName.Renderer);
-            GpuVersion = Api.GetString(StringName.Version);
+            GpuVendor = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Vendor));
+            GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Renderer));
+            GpuVersion = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Version));
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }

@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL
             _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
             void* ptr = _api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)size, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit);
 
-            _maps[handle] = new IntPtr(ptr);
+            _maps[handle] = (IntPtr)ptr;
         }
 
         public void Unmap(BufferHandle handle)
@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
                 _api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)requiredSize, IntPtr.Zero, BufferStorageMask.MapReadBit | BufferStorageMask.MapPersistentBit);
 
-                _bufferMap = new IntPtr(_api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)requiredSize, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit));
+                _bufferMap = (IntPtr)_api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)requiredSize, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit);
             }
         }
 

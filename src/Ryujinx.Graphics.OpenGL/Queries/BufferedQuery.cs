@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
             unsafe
             {
-                _bufferMap = new IntPtr(_api.MapBufferRange(BufferTargetARB.QueryBuffer, IntPtr.Zero, sizeof(long), MapBufferAccessMask.ReadBit | MapBufferAccessMask.WriteBit | MapBufferAccessMask.PersistentBit));
+                _bufferMap = (IntPtr)_api.MapBufferRange(BufferTargetARB.QueryBuffer, IntPtr.Zero, sizeof(long), MapBufferAccessMask.ReadBit | MapBufferAccessMask.WriteBit | MapBufferAccessMask.PersistentBit);
             }
         }
 
