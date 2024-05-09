@@ -5,6 +5,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
+using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using System;
 using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
@@ -56,7 +57,7 @@ namespace Ryujinx.Graphics.OpenGL
             TextureCopyIncompatible = new TextureCopyIncompatible(this);
             TextureCopyMS = new TextureCopyMS(this);
             _sync = new Sync(Api);
-            PersistentBuffers = new PersistentBuffers();
+            PersistentBuffers = new PersistentBuffers(Api);
             ResourcePool = new ResourcePool();
         }
 
@@ -232,7 +233,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (HwCapabilities.SupportsParallelShaderCompile)
             {
-                GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
+                Api.TryGetExtension(out ArbParallelShaderCompile arbParallelShaderCompile);
+
+                arbParallelShaderCompile.MaxShaderCompilerThreads((uint)Math.Min(Environment.ProcessorCount, 8));
             }
 
             _counters.Initialize();

@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private ulong _firstHandle = 0;
-        private static SyncBehaviorFlags SyncFlags => HwCapabilities.RequiresSyncFlush ? SyncBehaviorFlags.None : SyncBehaviorFlags.SyncFlushCommandsBit;
+        private static SyncObjectMask SyncFlags => HwCapabilities.RequiresSyncFlush ? 0 : SyncObjectMask.Bit;
 
         private readonly List<SyncHandle> _handles = new();
         private readonly GL _api;
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL
             if (HwCapabilities.RequiresSyncFlush)
             {
                 // Force commands to flush up to the syncpoint.
-                _api.ClientWaitSync(handle.Handle, SyncBehaviorFlags.SyncFlushCommandsBit, 0);
+                _api.ClientWaitSync(handle.Handle, SyncObjectMask.Bit, 0);
             }
 
             lock (_handles)
