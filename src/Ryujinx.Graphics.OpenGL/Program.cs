@@ -1,4 +1,5 @@
 using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
@@ -33,7 +34,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public int FragmentOutputMap { get; }
 
-        public Program(GL api, ShaderSource[] shaders, int fragmentOutputMap)
+        public unsafe Program(GL api, ShaderSource[] shaders, int fragmentOutputMap)
         {
             _api = api;
             Handle = _api.CreateProgram();
@@ -61,8 +62,11 @@ namespace Ryujinx.Graphics.OpenGL
                         _api.CompileShader(shaderHandle);
                         break;
                     case TargetLanguage.Spirv:
-                        _api.ShaderBinary(1, ref shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, shader.BinaryCode, shader.BinaryCode.Length);
-                        _api.SpecializeShader(shaderHandle, "main", 0, (int[])null, (int[])null);
+                        fixed (byte* ptr = shader.BinaryCode.AsSpan())
+                        {
+                            _api.ShaderBinary(1, in shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, ptr, (uint)shader.BinaryCode.Length);
+                        }
+                        _api.SpecializeShader(shaderHandle, "main", 0, (uint[])null, (uint[])null);
                         break;
                 }
 
@@ -106,7 +110,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (!blocking && HwCapabilities.SupportsParallelShaderCompile)
             {
-                _api.GetProgram(Handle, (GetProgramParameterName)ArbParallelShaderCompile.CompletionStatusArb, out int completed);
+                _api.GetProgram(Handle, (GLEnum)ARB.CompletionStatusArb, out int completed);
 
                 if (completed == 0)
                 {
@@ -142,7 +146,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
 
-            Span<byte> data = stackalloc byte[size];
+            byte[] data = new byte[size];
             GLEnum binFormat;
 
             fixed (byte* ptr = data)
@@ -152,7 +156,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             BinaryPrimitives.WriteInt32LittleEndian(data, (int)binFormat);
 
-            return data.ToArray();
+            return data;
         }
 
         private void DeleteShaders()
