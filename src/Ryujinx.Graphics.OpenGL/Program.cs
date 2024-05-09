@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     fixed (byte* ptr = code)
                     {
-                        _api.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
+                        _api.ProgramBinary(Handle, (GLEnum)binaryFormat, (IntPtr)ptr, (uint)code.Length - 4);
                     }
                 }
             }
@@ -138,17 +138,21 @@ namespace Ryujinx.Graphics.OpenGL
             return _status;
         }
 
-        public byte[] GetBinary()
+        public unsafe byte[] GetBinary()
         {
             _api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
 
-            byte[] data = new byte[size + 4];
+            Span<byte> data = stackalloc byte[size];
+            GLEnum binFormat;
 
-            _api.GetProgramBinary(Handle, (uint)size, out _, out GLEnum binFormat, data);
+            fixed (byte* ptr = data)
+            {
+                _api.GetProgramBinary(Handle, (uint)size, out _, out binFormat, ptr);
+            }
 
-            BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(size, 4), (int)binFormat);
+            BinaryPrimitives.WriteInt32LittleEndian(data, (int)binFormat);
 
-            return data;
+            return data.ToArray();
         }
 
         private void DeleteShaders()
