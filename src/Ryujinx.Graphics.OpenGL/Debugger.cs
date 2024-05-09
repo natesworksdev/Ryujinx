@@ -13,48 +13,48 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static int _counter;
 
-        public static void Initialize(GraphicsDebugLevel logLevel)
+        public static void Initialize(GL gl, GraphicsDebugLevel logLevel)
         {
             // Disable everything
-            GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, false);
+            gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, false);
 
             if (logLevel == GraphicsDebugLevel.None)
             {
-                GL.Disable(EnableCap.DebugOutputSynchronous);
-                GL.DebugMessageCallback(null, IntPtr.Zero);
+                gl.Disable(EnableCap.DebugOutputSynchronous);
+                gl.DebugMessageCallback(null, IntPtr.Zero);
 
                 return;
             }
 
-            GL.Enable(EnableCap.DebugOutputSynchronous);
+            gl.Enable(EnableCap.DebugOutputSynchronous);
 
             if (logLevel == GraphicsDebugLevel.Error)
             {
-                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
             }
             else if (logLevel == GraphicsDebugLevel.Slowdowns)
             {
-                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
-                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (int[])null, true);
             }
             else
             {
-                GL.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, true);
             }
 
             _counter = 0;
             _debugCallback = GLDebugHandler;
 
-            GL.DebugMessageCallback(_debugCallback, IntPtr.Zero);
+            gl.DebugMessageCallback(_debugCallback, IntPtr.Zero);
 
             Logger.Warning?.Print(LogClass.Gpu, "OpenGL Debugging is enabled. Performance will be negatively impacted.");
         }
 
         private static void GLDebugHandler(
-            DebugSource source,
-            DebugType type,
+            GLEnum source,
+            GLEnum type,
             int id,
-            DebugSeverity severity,
+            GLEnum severity,
             int length,
             IntPtr message,
             IntPtr userParam)
@@ -89,21 +89,21 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         // Useful debug helpers
-        public static void PushGroup(string dbgMsg)
+        public static void PushGroup(GL gl, string dbgMsg)
         {
             int counter = Interlocked.Increment(ref _counter);
 
-            GL.PushDebugGroup(DebugSource.DebugSourceApplication, counter, dbgMsg.Length, dbgMsg);
+            gl.PushDebugGroup(DebugSource.DebugSourceApplication, counter, dbgMsg.Length, dbgMsg);
         }
 
-        public static void PopGroup()
+        public static void PopGroup(GL gl)
         {
-            GL.PopDebugGroup();
+            gl.PopDebugGroup();
         }
 
-        public static void Print(string dbgMsg, DebugType type = DebugType.DebugTypeMarker, DebugSeverity severity = DebugSeverity.DebugSeverityNotification, int id = 999999)
+        public static void Print(GL gl, string dbgMsg, DebugType type = DebugType.DebugTypeMarker, DebugSeverity severity = DebugSeverity.DebugSeverityNotification, int id = 999999)
         {
-            GL.DebugMessageInsert(DebugSource.DebugSourceApplication, type, id, severity, dbgMsg.Length, dbgMsg);
+            gl.DebugMessageInsert(DebugSource.DebugSourceApplication, type, id, severity, dbgMsg.Length, dbgMsg);
         }
     }
 }

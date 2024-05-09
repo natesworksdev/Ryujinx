@@ -38,8 +38,8 @@ namespace Ryujinx.Graphics.OpenGL
         private float[] _viewportArray = Array.Empty<float>();
         private double[] _depthRangeArray = Array.Empty<double>();
 
-        private int _boundDrawFramebuffer;
-        private int _boundReadFramebuffer;
+        private uint _boundDrawFramebuffer;
+        private uint _boundReadFramebuffer;
 
         private CounterQueueEvent _activeConditionalRender;
 
@@ -1496,7 +1496,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        internal (int drawHandle, int readHandle) GetBoundFramebuffers()
+        internal (uint drawHandle, uint readHandle) GetBoundFramebuffers()
         {
             if (BackgroundContextWorker.InBackground)
             {

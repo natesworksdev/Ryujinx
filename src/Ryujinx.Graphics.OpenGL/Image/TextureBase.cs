@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBase
     {
-        public int Handle { get; protected set; }
+        public uint Handle { get; protected set; }
 
         public TextureCreateInfo Info { get; }
 
@@ -15,28 +15,31 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public Target Target => Info.Target;
         public Format Format => Info.Format;
 
-        public TextureBase(TextureCreateInfo info)
+        private protected GL _api;
+
+        public TextureBase(GL api, TextureCreateInfo info)
         {
+            _api = api;
             Info = info;
 
-            Handle = GL.GenTexture();
+            Handle = _api.GenTexture();
         }
 
-        public void Bind(int unit)
+        public void Bind(uint unit)
         {
             Bind(Target.Convert(), unit);
         }
 
-        protected void Bind(TextureTarget target, int unit)
+        protected void Bind(TextureTarget target, uint unit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + unit);
-            GL.BindTexture(target, Handle);
+            _api.ActiveTexture((TextureUnit)((uint)TextureUnit.Texture0 + unit));
+            _api.BindTexture(target, Handle);
         }
 
-        public static void ClearBinding(int unit)
+        public static void ClearBinding(GL api, uint unit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + unit);
-            GL.BindTextureUnit(unit, 0);
+            api.ActiveTexture((TextureUnit)((uint)TextureUnit.Texture0 + unit));
+            api.BindTextureUnit(unit, 0);
         }
     }
 }

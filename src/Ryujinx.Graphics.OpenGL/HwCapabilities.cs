@@ -131,13 +131,13 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private static bool SupportsQuadsCheck()
+        private static bool SupportsQuadsCheck(GL api)
         {
-            GL.GetError(); // Clear any existing error.
-            GL.Begin(PrimitiveType.Quads);
-            GL.End();
+            api.GetError(); // Clear any existing error.
+            api.Begin(PrimitiveType.Quads);
+            api.End();
 
-            return GL.GetError() == ErrorCode.NoError;
+            return api.GetError() == ErrorCode.NoError;
         }
     }
 }

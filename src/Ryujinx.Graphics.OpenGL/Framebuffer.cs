@@ -8,8 +8,8 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Framebuffer : IDisposable
     {
-        public int Handle { get; private set; }
-        private int _clearFbHandle;
+        public uint Handle { get; private set; }
+        private uint _clearFbHandle;
         private bool _clearFbInitialized;
 
         private FramebufferAttachment _lastDsAttachment;
@@ -19,18 +19,20 @@ namespace Ryujinx.Graphics.OpenGL
 
         private int _colorsCount;
         private bool _dualSourceBlend;
+        private GL _api;
 
-        public Framebuffer()
+        public Framebuffer(GL api)
         {
             Handle = GL.GenFramebuffer();
             _clearFbHandle = GL.GenFramebuffer();
 
             _colors = new TextureView[8];
+            _api = api;
         }
 
         public int Bind()
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+            _api.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
             return Handle;
         }
 
@@ -44,7 +46,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             FramebufferAttachment attachment = FramebufferAttachment.ColorAttachment0 + index;
 
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.Handle ?? 0, 0);
+            _api.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.Handle ?? 0, 0);
 
             _colors[index] = color;
         }
@@ -54,14 +56,14 @@ namespace Ryujinx.Graphics.OpenGL
             // Detach the last depth/stencil buffer if there is any.
             if (_lastDsAttachment != 0)
             {
-                GL.FramebufferTexture(FramebufferTarget.Framebuffer, _lastDsAttachment, 0, 0);
+                _api.FramebufferTexture(FramebufferTarget.Framebuffer, _lastDsAttachment, 0, 0);
             }
 
             if (depthStencil != null)
             {
                 FramebufferAttachment attachment = GetAttachment(depthStencil.Format);
 
-                GL.FramebufferTexture(
+                _api.FramebufferTexture(
                     FramebufferTarget.Framebuffer,
                     attachment,
                     depthStencil.Handle,
@@ -87,11 +89,11 @@ namespace Ryujinx.Graphics.OpenGL
             // we can only have one draw buffer.
             if (enable)
             {
-                GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+                _api.DrawBuffer(DrawBufferMode.ColorAttachment0);
             }
             else if (oldEnable)
             {
-                SetDrawBuffersImpl(_colorsCount);
+                SetDrawBuffersImpl(_api, _colorsCount);
             }
         }
 
@@ -99,13 +101,13 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_colorsCount != colorsCount && !_dualSourceBlend)
             {
-                SetDrawBuffersImpl(colorsCount);
+                SetDrawBuffersImpl(_api, colorsCount);
             }
 
             _colorsCount = colorsCount;
         }
 
-        private static void SetDrawBuffersImpl(int colorsCount)
+        private static void SetDrawBuffersImpl(GL api, int colorsCount)
         {
             DrawBufferMode[] drawBuffers = new DrawBufferMode[colorsCount];
 
@@ -114,7 +116,7 @@ namespace Ryujinx.Graphics.OpenGL
                 drawBuffers[index] = DrawBufferMode.ColorAttachment0 + index;
             }
 
-            GL.DrawBuffers(colorsCount, drawBuffers);
+            api.DrawBuffers(colorsCount, drawBuffers);
         }
 
         private static FramebufferAttachment GetAttachment(Format format)
@@ -153,7 +155,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             BindClearFb();
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + index, color.Handle, 0, layer);
+            _api.FramebufferTextureLayer(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + index, color.Handle, 0, layer);
         }
 
         public void DetachColorLayerForClear(int index)
@@ -165,7 +167,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + index, 0, 0);
+            _api.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0 + index, 0, 0);
             Bind();
         }
 
@@ -179,7 +181,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             BindClearFb();
-            GL.FramebufferTextureLayer(FramebufferTarget.Framebuffer, GetAttachment(depthStencil.Format), depthStencil.Handle, 0, layer);
+            _api.FramebufferTextureLayer(FramebufferTarget.Framebuffer, GetAttachment(depthStencil.Format), depthStencil.Handle, 0, layer);
         }
 
         public void DetachDepthStencilLayerForClear()
@@ -191,13 +193,13 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, GetAttachment(depthStencil.Format), 0, 0);
+            _api.FramebufferTexture(FramebufferTarget.Framebuffer, GetAttachment(depthStencil.Format), 0, 0);
             Bind();
         }
 
         private void BindClearFb()
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _clearFbHandle);
+            _api.BindFramebuffer(FramebufferTarget.Framebuffer, _clearFbHandle);
 
             if (!_clearFbInitialized)
             {
@@ -219,14 +221,14 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (Handle != 0)
             {
-                GL.DeleteFramebuffer(Handle);
+                _api.DeleteFramebuffer(Handle);
 
                 Handle = 0;
             }
 
             if (_clearFbHandle != 0)
             {
-                GL.DeleteFramebuffer(_clearFbHandle);
+                _api.DeleteFramebuffer(_clearFbHandle);
 
                 _clearFbHandle = 0;
             }

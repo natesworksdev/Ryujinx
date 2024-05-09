@@ -552,9 +552,9 @@ namespace Ryujinx.Graphics.OpenGL
             return All.Zero;
         }
 
-        public static ImageTarget ConvertToImageTarget(this Target target)
+        public static CopyImageSubDataTarget ConvertToImageTarget(this Target target)
         {
-            return (ImageTarget)target.Convert();
+            return (CopyImageSubDataTarget)target.Convert();
         }
 
         public static TextureTarget Convert(this Target target)

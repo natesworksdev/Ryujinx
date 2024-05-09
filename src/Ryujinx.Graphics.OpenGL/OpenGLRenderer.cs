@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     public sealed class OpenGLRenderer : IRenderer
     {
+        private GL _api;
         private readonly Pipeline _pipeline;
 
         public IPipeline Pipeline => _pipeline;
@@ -57,13 +58,13 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool = new ResourcePool();
         }
 
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access)
+        public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
             BufferCount++;
 
-            if (access.HasFlag(GAL.BufferAccess.FlushPersistent))
+            if (access.HasFlag(BufferAccess.FlushPersistent))
             {
-                BufferHandle handle = Buffer.CreatePersistent(size);
+                BufferHandle handle = Buffer.CreatePersistent(_api, size);
 
                 PersistentBuffers.Map(handle, size);
 
@@ -71,7 +72,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else
             {
-                return Buffer.Create(size);
+                return Buffer.Create(_api, size);
             }
         }
 
