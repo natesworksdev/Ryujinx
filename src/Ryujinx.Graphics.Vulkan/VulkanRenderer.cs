@@ -675,9 +675,23 @@ namespace Ryujinx.Graphics.Vulkan
             var limits = _physicalDevice.PhysicalDeviceProperties.Limits;
             var mainQueueProperties = _physicalDevice.QueueFamilyProperties[QueueFamilyIndex];
 
+            SystemMemoryType memoryType;
+
+            if (IsSharedMemory)
+            {
+                memoryType = SystemMemoryType.UnifiedMemory;
+            }
+            else
+            {
+                memoryType = Vendor == Vendor.Nvidia ?
+                    SystemMemoryType.DedicatedMemorySlowStorage :
+                    SystemMemoryType.DedicatedMemory;
+            }
+
             return new Capabilities(
                 api: TargetApi.Vulkan,
                 GpuVendor,
+                memoryType: memoryType,
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 needsFragmentOutputSpecialization: IsMoltenVk,

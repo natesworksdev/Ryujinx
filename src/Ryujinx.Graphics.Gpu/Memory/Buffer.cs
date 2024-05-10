@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Synchronization;
 using Ryujinx.Memory.Range;
@@ -10,6 +11,8 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
+    delegate void BufferFlushAction(ulong address, ulong size, ulong syncNumber);
+
     /// <summary>
     /// Buffer, used to store vertex and index data, uniform and storage buffers, and others.
     /// </summary>
@@ -23,7 +26,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Host buffer handle.
         /// </summary>
-        public BufferHandle Handle { get; }
+        public BufferHandle Handle { get; private set; }
 
         /// <summary>
         /// Start address of the buffer in guest memory.
@@ -60,6 +63,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </remarks>
         private BufferModifiedRangeList _modifiedRanges = null;
 
+        /// <summary>
+        /// A structure that is used to flush buffer data back to a host mapped buffer for cached readback.
+        /// Only used if the buffer data is explicitly owned by device local memory.
+        /// </summary>
+        private BufferPreFlush _preFlush = null;
+
+        /// <summary>
+        /// Usage tracking state that determines what type of backing the buffer should use.
+        /// </summary>
+        public BufferBackingState BackingState;
+
         private readonly MultiRegionHandle _memoryTrackingGranular;
         private readonly RegionHandle _memoryTracking;
 
@@ -87,6 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="physicalMemory">Physical memory where the buffer is mapped</param>
         /// <param name="address">Start address of the buffer</param>
         /// <param name="size">Size of the buffer in bytes</param>
+        /// <param name="stage">The type of usage that created the buffer</param>
         /// <param name="sparseCompatible">Indicates if the buffer can be used in a sparse buffer mapping</param>
         /// <param name="baseBuffers">Buffers which this buffer contains, and will inherit tracking handles from</param>
         public Buffer(
@@ -94,6 +109,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             PhysicalMemory physicalMemory,
             ulong address,
             ulong size,
+            BufferStage stage,
             bool sparseCompatible,
             IEnumerable<Buffer> baseBuffers = null)
         {
@@ -103,7 +119,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Size = size;
             SparseCompatible = sparseCompatible;
 
-            BufferAccess access = sparseCompatible ? BufferAccess.SparseCompatible : BufferAccess.Default;
+            BackingState = new BufferBackingState(_context, this, stage, baseBuffers);
+
+            BufferAccess access = BackingState.SwitchAccess(this);
 
             Handle = context.Renderer.CreateBuffer((int)size, access, baseBuffers?.MaxBy(x => x.Size).Handle ?? BufferHandle.Null);
 
@@ -159,6 +177,26 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
 
             _virtualDependenciesLock = new ReaderWriterLockSlim();
+        }
+
+        private void ChangeBacking()
+        {
+            var before = BackingState.Active;
+            BufferAccess access = BackingState.SwitchAccess(this);
+
+            Logger.Warning?.PrintMsg(LogClass.Gpu, $"Migrating {Size} from {before} to {BackingState.Active}");
+
+            BufferHandle newHandle = _context.Renderer.CreateBuffer((int)Size, access, Handle);
+
+            _context.Renderer.Pipeline.CopyBuffer(Handle, newHandle, 0, 0, (int)Size);
+
+            _modifiedRanges?.SelfMigration();
+
+            // If swtiching from device local to host mapped, pre-flushing data no longer makes sense.
+            // This is set to null and disposed when the migration fully completes.
+            _preFlush = null;
+
+            Handle = newHandle;
         }
 
         /// <summary>
@@ -246,6 +284,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                     else
                     {
+                        BackingState.RecordSet();
                         _context.Renderer.SetBufferData(Handle, 0, _physicalMemory.GetSpan(Address, (int)Size));
                         CopyToDependantVirtualBuffers();
                     }
@@ -284,13 +323,33 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Checks if a backing change is deemed necessary from the given usage.
+        /// If it is, queues a backing change to happen on the next sync action.
+        /// </summary>
+        /// <param name="stage">Buffer stage that can change backing type</param>
+        private void TryQueueBackingChange(BufferStage stage)
+        {
+            if (BackingState.ShouldChangeBacking(stage))
+            {
+                if (!_syncActionRegistered)
+                {
+                    _context.RegisterSyncAction(this);
+                    _syncActionRegistered = true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Signal that the given region of the buffer has been modified.
         /// </summary>
         /// <param name="address">The start address of the modified region</param>
         /// <param name="size">The size of the modified region</param>
-        public void SignalModified(ulong address, ulong size)
+        /// <param name="stage">Buffer stage that triggered the modification</param>
+        public void SignalModified(ulong address, ulong size, BufferStage stage)
         {
             EnsureRangeList();
+
+            TryQueueBackingChange(stage);
 
             _modifiedRanges.SignalModified(address, size);
 
@@ -309,6 +368,39 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void ClearModified(ulong address, ulong size)
         {
             _modifiedRanges?.Clear(address, size);
+        }
+
+        /// <summary>
+        /// Action to be performed immediately before sync is created.
+        /// This will copy any buffer ranges designated for pre-flushing.
+        /// </summary>
+        /// <param name="syncpoint">True if the action is a guest syncpoint</param>
+        public void SyncPreAction(bool syncpoint)
+        {
+            if (_referenceCount == 0)
+            {
+                return;
+            }
+
+            if (BackingState.ShouldChangeBacking())
+            {
+                ChangeBacking();
+
+                _physicalMemory.BufferCache.BufferBackingChanged(this);
+            }
+
+            if (BackingState.IsDeviceLocal)
+            {
+                _preFlush ??= new BufferPreFlush(_context, _physicalMemory, this, FlushImpl);
+
+                if (_preFlush.ShouldCopy)
+                {
+                    _modifiedRanges?.GetRangesAtSync(Address, Size, _context.SyncNumber, (address, size) =>
+                    {
+                        _preFlush.CopyModified(address, size);
+                    });
+                }
+            }
         }
 
         /// <summary>
@@ -466,6 +558,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="mSize">Size of the modified region</param>
         private void LoadRegion(ulong mAddress, ulong mSize)
         {
+            BackingState.RecordSet();
+
             int offset = (int)(mAddress - Address);
 
             _context.Renderer.SetBufferData(Handle, offset, _physicalMemory.GetSpan(mAddress, (int)mSize));
@@ -535,20 +629,73 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
         }
 
+        private void FlushImpl(BufferHandle handle, ulong address, ulong size)
+        {
+            int offset = (int)(address - Address);
+
+            using PinnedSpan<byte> data = _context.Renderer.GetBufferData(handle, offset, (int)size);
+
+            // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
+            _physicalMemory.WriteUntracked(address, CopyFromDependantVirtualBuffers(data.Get(), address, size));
+        }
+
+        private void FlushImpl(ulong address, ulong size)
+        {
+            FlushImpl(Handle, address, size);
+        }
+
         /// <summary>
         /// Flushes a range of the buffer.
         /// This writes the range data back into guest memory.
         /// </summary>
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size in bytes of the range</param>
-        public void Flush(ulong address, ulong size)
+        /// <param name="syncNumber">Sync number waited for before flushing the data</param>
+        public void Flush(ulong address, ulong size, ulong syncNumber)
         {
-            int offset = (int)(address - Address);
+            BackingState.RecordFlush();
 
-            using PinnedSpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
+            BufferPreFlush preFlush = _preFlush;
 
-            // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
-            _physicalMemory.WriteUntracked(address, CopyFromDependantVirtualBuffers(data.Get(), address, size));
+            if (preFlush != null)
+            {
+                preFlush.FlushWithAction(address, size, syncNumber);
+            }
+            else
+            {
+                FlushImpl(address, size);
+            }
+        }
+        /// <summary>
+        /// Gets an action that disposes the backing buffer using its current handle.
+        /// Useful for deleting an old copy of the buffer after the handle changes.
+        /// </summary>
+        /// <returns>An action that flushes data from the specified range, using the buffer handle at the time this the method is generated</returns>
+        public Action GetSnapshotDisposeAction()
+        {
+            BufferHandle handle = Handle;
+            BufferPreFlush preFlush = _preFlush;
+
+            return () =>
+            {
+                _context.Renderer.DeleteBuffer(handle);
+                preFlush?.Dispose();
+            };
+        }
+
+        /// <summary>
+        /// Gets an action that flushes a range of the buffer using its current handle.
+        /// Useful for flushing data from old copies of the buffer after the handle changes.
+        /// </summary>
+        /// <returns>An action that flushes data from the specified range, using the buffer handle at the time this the method is generated</returns>
+        public BufferFlushAction GetSnapshotFlushAction()
+        {
+            BufferHandle handle = Handle;
+
+            return (ulong address, ulong size, ulong _) =>
+            {
+                FlushImpl(handle, address, size);
+            };
         }
 
         /// <summary>
@@ -857,6 +1004,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _modifiedRanges?.Clear();
 
             _context.Renderer.DeleteBuffer(Handle);
+            _preFlush?.Dispose();
+            _preFlush = null;
 
             UnmappedSequence++;
         }

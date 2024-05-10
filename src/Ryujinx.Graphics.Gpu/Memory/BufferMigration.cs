@@ -3,35 +3,18 @@ using System;
 namespace Ryujinx.Graphics.Gpu.Memory
 {
     /// <summary>
-    /// A record of when buffer data was copied from one buffer to another, along with the SyncNumber when the migration will be complete.
-    /// Keeps the source buffer alive for data flushes until the migration is complete.
+    /// A record of when buffer data was copied from multiple buffers to one migration target,
+    /// along with the SyncNumber when the migration will be complete.
+    /// Keeps the source buffers alive for data flushes until the migration is complete.
+    /// All spans cover the full range of the "destination" buffer.
     /// </summary>
     internal class BufferMigration : IDisposable
     {
         /// <summary>
-        /// The offset for the migrated region.
+        /// Ranges from source buffers that were copied as part of this migration.
+        /// Ordered by increasing base address.
         /// </summary>
-        private readonly ulong _offset;
-
-        /// <summary>
-        /// The size for the migrated region.
-        /// </summary>
-        private readonly ulong _size;
-
-        /// <summary>
-        /// The buffer that was migrated from.
-        /// </summary>
-        private readonly Buffer _buffer;
-
-        /// <summary>
-        /// The source range action, to be called on overlap with an unreached sync number.
-        /// </summary>
-        private readonly Action<ulong, ulong> _sourceRangeAction;
-
-        /// <summary>
-        /// The source range list.
-        /// </summary>
-        private readonly BufferModifiedRangeList _source;
+        public BufferMigrationSpan[] Spans { get; private set; }
 
         /// <summary>
         /// The destination range list. This range list must be updated when flushing the source.
@@ -43,55 +26,167 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public readonly ulong SyncNumber;
 
+        public BufferMigration(BufferMigrationSpan[] spans, BufferModifiedRangeList destination, ulong syncNumber)
+        {
+            Spans = spans;
+            Destination = destination;
+            SyncNumber = syncNumber;
+        }
+
+        /// <summary>
+        /// Add a span to the migration. Allocates a new array with the target size, and replaces it.
+        /// </summary>
+        /// <remarks>
+        /// The base address for the span is assumed to be higher than all other spans in the migration,
+        /// to keep the span array ordered.
+        /// </remarks>
+        public void AddSpanToEnd(BufferMigrationSpan span)
+        {
+            BufferMigrationSpan[] oldSpans = Spans;
+
+            BufferMigrationSpan[] newSpans = new BufferMigrationSpan[oldSpans.Length + 1];
+
+            oldSpans.CopyTo(newSpans, 0);
+
+            newSpans[oldSpans.Length] = span;
+
+            Spans = newSpans;
+        }
+
+        /// <summary>
+        /// Performs the given range action, or one from a migration that overlaps and has not synced yet.
+        /// </summary>
+        /// <param name="offset">The offset to pass to the action</param>
+        /// <param name="size">The size to pass to the action</param>
+        /// <param name="syncNumber">The sync number that has been reached</param>
+        /// <param name="rangeAction">The action to perform</param>
+        public void RangeActionWithMigration(ulong offset, ulong size, ulong syncNumber, BufferFlushAction rangeAction)
+        {
+            long syncDiff = (long)(syncNumber - SyncNumber);
+
+            if (syncDiff >= 0)
+            {
+                // The migration has completed. Run the parent action.
+                rangeAction(offset, size, syncNumber);
+            }
+            else
+            {
+                ulong prevAddress = offset;
+                ulong endAddress = offset + size;
+
+                foreach (BufferMigrationSpan span in Spans)
+                {
+                    if (!span.Overlaps(offset, size))
+                    {
+                        continue;
+                    }
+
+                    if (span.Address > prevAddress)
+                    {
+                        // There's a gap between this span and the last (or the start address). Flush the range using the parent action.
+
+                        rangeAction(prevAddress, span.Address - prevAddress, syncNumber);
+                    }
+
+                    span.RangeActionWithMigration(offset, size, syncNumber);
+
+                    prevAddress = span.Address + span.Size;
+                }
+
+                if (endAddress > prevAddress)
+                {
+                    // There's a gap at the end of the range with no migration. Flush the range using the parent action.
+                    rangeAction(prevAddress, endAddress - prevAddress, syncNumber);
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            Destination.RemoveMigration(this);
+
+            foreach (BufferMigrationSpan span in Spans)
+            {
+                span.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// A record of when buffer data was copied from one buffer to another, for a specific range in a source buffer.
+    /// Keeps the source buffer alive for data flushes until the migration is complete.
+    /// </summary>
+    internal readonly struct BufferMigrationSpan : IDisposable
+    {
+        /// <summary>
+        /// The offset for the migrated region.
+        /// </summary>
+        public readonly ulong Address;
+
+        /// <summary>
+        /// The size for the migrated region.
+        /// </summary>
+        public readonly ulong Size;
+
+        /// <summary>
+        /// The action to perform when the migration isn't needed anymore.
+        /// </summary>
+        private readonly Action _disposeAction;
+
+        /// <summary>
+        /// The source range action, to be called on overlap with an unreached sync number.
+        /// </summary>
+        private readonly BufferFlushAction _sourceRangeAction;
+
+        /// <summary>
+        /// Optional migration for the source data. Can chain together if many migrations happen in a short time.
+        /// If this is null, then _sourceRangeAction will always provide up to date data.
+        /// </summary>
+        private readonly BufferMigration _source;
+
         /// <summary>
         /// Creates a record for a buffer migration.
         /// </summary>
         /// <param name="buffer">The source buffer for this migration</param>
+        /// <param name="disposeAction">The action to perform when the migration isn't needed anymore</param>
         /// <param name="sourceRangeAction">The flush action for the source buffer</param>
-        /// <param name="source">The modified range list for the source buffer</param>
-        /// <param name="dest">The modified range list for the destination buffer</param>
-        /// <param name="syncNumber">The sync number for when the migration is complete</param>
-        public BufferMigration(
+        /// <param name="source">Pending migration for the source buffer</param>
+        public BufferMigrationSpan(
             Buffer buffer,
-            Action<ulong, ulong> sourceRangeAction,
-            BufferModifiedRangeList source,
-            BufferModifiedRangeList dest,
-            ulong syncNumber)
+            Action disposeAction,
+            BufferFlushAction sourceRangeAction,
+            BufferMigration source)
         {
-            _offset = buffer.Address;
-            _size = buffer.Size;
-            _buffer = buffer;
+            Address = buffer.Address;
+            Size = buffer.Size;
+            _disposeAction = disposeAction;
             _sourceRangeAction = sourceRangeAction;
             _source = source;
-            Destination = dest;
-            SyncNumber = syncNumber;
         }
+
+        /// <summary>
+        /// Creates a record for a buffer migration, using the default buffer dispose action.
+        /// </summary>
+        /// <param name="buffer">The source buffer for this migration</param>
+        /// <param name="sourceRangeAction">The flush action for the source buffer</param>
+        /// <param name="source">Pending migration for the source buffer</param>
+        public BufferMigrationSpan(
+            Buffer buffer,
+            BufferFlushAction sourceRangeAction,
+            BufferMigration source) : this(buffer, buffer.DecrementReferenceCount, sourceRangeAction, source) { }
 
         /// <summary>
         /// Determine if the given range overlaps this migration, and has not been completed yet.
         /// </summary>
         /// <param name="offset">Start offset</param>
         /// <param name="size">Range size</param>
-        /// <param name="syncNumber">The sync number that was waited on</param>
         /// <returns>True if overlapping and in progress, false otherwise</returns>
-        public bool Overlaps(ulong offset, ulong size, ulong syncNumber)
+        public bool Overlaps(ulong offset, ulong size)
         {
             ulong end = offset + size;
-            ulong destEnd = _offset + _size;
-            long syncDiff = (long)(syncNumber - SyncNumber); // syncNumber is less if the copy has not completed.
+            ulong destEnd = Address + Size;
 
-            return !(end <= _offset || offset >= destEnd) && syncDiff < 0;
-        }
-
-        /// <summary>
-        /// Determine if the given range matches this migration.
-        /// </summary>
-        /// <param name="offset">Start offset</param>
-        /// <param name="size">Range size</param>
-        /// <returns>True if the range exactly matches, false otherwise</returns>
-        public bool FullyMatches(ulong offset, ulong size)
-        {
-            return _offset == offset && _size == size;
+            return !(end <= Address || offset >= destEnd);
         }
 
         /// <summary>
@@ -100,26 +195,30 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="offset">Start offset</param>
         /// <param name="size">Range size</param>
         /// <param name="syncNumber">Current sync number</param>
-        /// <param name="parent">The modified range list that originally owned this range</param>
-        public void RangeActionWithMigration(ulong offset, ulong size, ulong syncNumber, BufferModifiedRangeList parent)
+        public void RangeActionWithMigration(ulong offset, ulong size, ulong syncNumber)
         {
             ulong end = offset + size;
-            end = Math.Min(_offset + _size, end);
-            offset = Math.Max(_offset, offset);
+            end = Math.Min(Address + Size, end);
+            offset = Math.Max(Address, offset);
 
             size = end - offset;
 
-            _source.RangeActionWithMigration(offset, size, syncNumber, parent, _sourceRangeAction);
+            if (_source != null)
+            {
+                _source.RangeActionWithMigration(offset, size, syncNumber, _sourceRangeAction);
+            }
+            else
+            {
+                _sourceRangeAction(offset, size, syncNumber);
+            }
         }
 
         /// <summary>
-        /// Removes this reference to the range list, potentially allowing for the source buffer to be disposed.
+        /// Removes this migration span, potentially allowing for the source buffer to be disposed.
         /// </summary>
         public void Dispose()
         {
-            Destination.RemoveMigration(this);
-
-            _buffer.DecrementReferenceCount();
+            _disposeAction();
         }
     }
 }

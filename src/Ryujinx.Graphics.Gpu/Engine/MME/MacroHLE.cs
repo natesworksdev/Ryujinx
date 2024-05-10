@@ -495,8 +495,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             ulong indirectBufferSize = (ulong)maxDrawCount * (ulong)stride;
 
-            MultiRange indirectBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, indirectBufferGpuVa, indirectBufferSize);
-            MultiRange parameterBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, parameterBufferGpuVa, 4);
+            MultiRange indirectBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, indirectBufferGpuVa, indirectBufferSize, Memory.BufferStage.Indirect);
+            MultiRange parameterBufferRange = bufferCache.TranslateAndCreateMultiBuffers(_processor.MemoryManager, parameterBufferGpuVa, 4, Memory.BufferStage.Indirect);
 
             _processor.ThreedClass.DrawIndirect(
                 topology,

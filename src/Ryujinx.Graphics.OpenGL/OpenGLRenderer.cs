@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             BufferCount++;
 
-            if (access.HasFlag(GAL.BufferAccess.FlushPersistent))
+            if (access.HasFlag(GAL.BufferAccess.HostMemory))
             {
                 BufferHandle handle = Buffer.CreatePersistent(size);
 
@@ -148,6 +148,7 @@ namespace Ryujinx.Graphics.OpenGL
             return new Capabilities(
                 api: TargetApi.OpenGL,
                 vendorName: GpuVendor,
+                memoryType: SystemMemoryType.BackendManaged,
                 hasFrontFacingBug: intelWindows,
                 hasVectorIndexingBug: amdWindows,
                 needsFragmentOutputSpecialization: false,

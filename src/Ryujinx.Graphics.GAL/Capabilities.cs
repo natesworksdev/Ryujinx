@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.GAL
     {
         public readonly TargetApi Api;
         public readonly string VendorName;
+        public readonly SystemMemoryType MemoryType;
 
         public readonly bool HasFrontFacingBug;
         public readonly bool HasVectorIndexingBug;
@@ -65,6 +66,7 @@ namespace Ryujinx.Graphics.GAL
         public Capabilities(
             TargetApi api,
             string vendorName,
+            SystemMemoryType memoryType,
             bool hasFrontFacingBug,
             bool hasVectorIndexingBug,
             bool needsFragmentOutputSpecialization,
@@ -118,6 +120,7 @@ namespace Ryujinx.Graphics.GAL
         {
             Api = api;
             VendorName = vendorName;
+            MemoryType = memoryType;
             HasFrontFacingBug = hasFrontFacingBug;
             HasVectorIndexingBug = hasVectorIndexingBug;
             NeedsFragmentOutputSpecialization = needsFragmentOutputSpecialization;
