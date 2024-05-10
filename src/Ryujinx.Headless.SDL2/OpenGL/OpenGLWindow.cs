@@ -1,4 +1,4 @@
-using OpenTK;
+// using OpenTK;
 using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;

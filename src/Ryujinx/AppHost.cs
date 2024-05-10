@@ -823,7 +823,7 @@ namespace Ryujinx.Ava
             }
             else
             {
-                renderer = new OpenGLRenderer();
+                renderer = new OpenGLRenderer((RendererHost.EmbeddedWindow as EmbeddedWindowOpenGL).CreateApi());
             }
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
