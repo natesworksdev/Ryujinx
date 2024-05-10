@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.OpenGL
                     Buffer.Copy(_api, vb.Buffer.Handle, tempVertexBuffer, vb.Buffer.Offset, currentTempVbOffset, vb.Buffer.Size);
                     Buffer.Clear(_api, tempVertexBuffer, currentTempVbOffset + vb.Buffer.Size, (uint)(requiredSize - vb.Buffer.Size), 0);
 
-                    _api.BindVertexBuffer((uint)vbIndex, tempVertexBuffer.ToUInt32(), (IntPtr)currentTempVbOffset, (uint)vb.Stride);
+                    _api.BindVertexBuffer((uint)vbIndex, tempVertexBuffer.ToUInt32(), currentTempVbOffset, (uint)vb.Stride);
 
                     currentTempVbOffset += requiredSize;
                     _vertexBuffersLimited |= 1u << vbIndex;
@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 ref var vb = ref _vertexBuffers[vbIndex];
 
-                _api.BindVertexBuffer((uint)vbIndex, vb.Buffer.Handle.ToUInt32(), (IntPtr)vb.Buffer.Offset, (uint)vb.Stride);
+                _api.BindVertexBuffer((uint)vbIndex, vb.Buffer.Handle.ToUInt32(), vb.Buffer.Offset, (uint)vb.Stride);
 
                 buffersLimited &= ~(1u << vbIndex);
             }

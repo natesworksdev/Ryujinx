@@ -76,13 +76,11 @@ namespace Ryujinx.Graphics.OpenGL
 
                 return handle;
             }
-            else
-            {
-                return Buffer.Create(Api, size);
-            }
+
+            return Buffer.Create(Api, size);
         }
 
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access, BufferHandle storageHint)
+        public BufferHandle CreateBuffer(int size, BufferAccess access, BufferHandle storageHint)
         {
             return CreateBuffer(size, access);
         }
@@ -118,10 +116,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return new TextureBuffer(this, info);
             }
-            else
-            {
-                return ResourcePool.GetTextureOrNull(info) ?? new TextureStorage(this, info).CreateDefaultView();
-            }
+
+            return ResourcePool.GetTextureOrNull(info) ?? new TextureStorage(this, info).CreateDefaultView();
         }
 
         public ITextureArray CreateTextureArray(int size, bool isBuffer)

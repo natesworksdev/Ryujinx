@@ -127,14 +127,13 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return FramebufferAttachment.DepthStencilAttachment;
             }
-            else if (FormatTable.IsDepthOnly(format))
+
+            if (FormatTable.IsDepthOnly(format))
             {
                 return FramebufferAttachment.DepthAttachment;
             }
-            else
-            {
-                return FramebufferAttachment.StencilAttachment;
-            }
+
+            return FramebufferAttachment.StencilAttachment;
         }
 
         public int GetColorLayerCount(int index)

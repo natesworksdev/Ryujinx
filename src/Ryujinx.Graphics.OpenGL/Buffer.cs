@@ -78,20 +78,18 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return new PinnedSpan<byte>(IntPtr.Add(ptr, offset).ToPointer(), size);
             }
-            else if (gd.Capabilities.UsePersistentBufferForFlush)
+
+            if (gd.Capabilities.UsePersistentBufferForFlush)
             {
                 return PinnedSpan<byte>.UnsafeFromSpan(gd.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
             }
-            else
-            {
-                IntPtr target = gd.PersistentBuffers.Default.GetHostArray(size);
 
-                gd.Api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
+            IntPtr target = gd.PersistentBuffers.Default.GetHostArray(size);
 
-                gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, (void*)target);
+            gd.Api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
+            gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, (void*)target);
 
-                return new PinnedSpan<byte>(target.ToPointer(), size);
-            }
+            return new PinnedSpan<byte>(target.ToPointer(), size);
         }
 
         public static void Resize(GL api, BufferHandle handle, int size)

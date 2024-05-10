@@ -83,7 +83,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     var swappedView = _gd.TextureCopy.BgraSwap(viewConverted);
 
-                    viewConverted?.Dispose();
+                    viewConverted.Dispose();
 
                     viewConverted = swappedView;
                 }

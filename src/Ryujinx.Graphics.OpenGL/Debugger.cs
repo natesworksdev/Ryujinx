@@ -28,18 +28,18 @@ namespace Ryujinx.Graphics.OpenGL
 
             gl.Enable(EnableCap.DebugOutputSynchronous);
 
-            if (logLevel == GraphicsDebugLevel.Error)
+            switch (logLevel)
             {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
-            }
-            else if (logLevel == GraphicsDebugLevel.Slowdowns)
-            {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (uint[])null, true);
-            }
-            else
-            {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint[])null, true);
+                case GraphicsDebugLevel.Error:
+                    gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
+                    break;
+                case GraphicsDebugLevel.Slowdowns:
+                    gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
+                    gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (uint[])null, true);
+                    break;
+                default:
+                    gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint[])null, true);
+                    break;
             }
 
             _counter = 0;

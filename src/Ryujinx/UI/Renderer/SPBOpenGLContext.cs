@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.OpenGL;
-using Silk.NET.OpenGL.Legacy;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;
@@ -38,9 +37,6 @@ namespace Ryujinx.Ava.UI.Renderer
 
             context.Initialize(window);
             context.MakeCurrent(window);
-
-            GL api = GL.GetApi(context.GetProcAddress);
-
             context.MakeCurrent(null);
 
             return new SPBOpenGLContext(context, window);
