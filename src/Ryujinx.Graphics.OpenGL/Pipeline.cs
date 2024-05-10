@@ -537,13 +537,13 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
-                _api.DrawElements(_primitiveType, indexCount, _elementsType, indexBaseOffset);
+                _api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, indexBaseOffset);
             }
             else if (firstInstance == 0 && instanceCount == 1)
             {
                 _api.DrawElementsBaseVertex(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
                     indexBaseOffset,
                     firstVertex);
@@ -552,41 +552,41 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _api.DrawElementsInstanced(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
                     indexBaseOffset,
-                    instanceCount);
+                    (uint)instanceCount);
             }
             else if (firstInstance == 0)
             {
                 _api.DrawElementsInstancedBaseVertex(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
                     indexBaseOffset,
-                    instanceCount,
+                    (uint)instanceCount,
                     firstVertex);
             }
             else if (firstVertex == 0)
             {
                 _api.DrawElementsInstancedBaseInstance(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
                     indexBaseOffset,
-                    instanceCount,
-                    firstInstance);
+                    (uint)instanceCount,
+                    (uint)firstInstance);
             }
             else
             {
                 _api.DrawElementsInstancedBaseVertexBaseInstance(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
                     indexBaseOffset,
-                    instanceCount,
+                    (uint)instanceCount,
                     firstVertex,
-                    firstInstance);
+                    (uint)firstInstance);
             }
         }
 
@@ -630,9 +630,9 @@ namespace Ryujinx.Graphics.OpenGL
                 _primitiveType,
                 _elementsType,
                 (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
-                maxDrawCount,
-                stride);
+                parameterBuffer.Offset,
+                (uint)maxDrawCount,
+                (uint)stride);
 
             _vertexArray.RestoreIndexBuffer();
 
@@ -672,9 +672,9 @@ namespace Ryujinx.Graphics.OpenGL
             _api.MultiDrawArraysIndirectCount(
                 _primitiveType,
                 (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
-                maxDrawCount,
-                stride);
+                parameterBuffer.Offset,
+                (uint)maxDrawCount,
+                (uint)stride);
 
             PostDraw();
         }
