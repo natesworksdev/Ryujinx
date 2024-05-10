@@ -1,6 +1,6 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {

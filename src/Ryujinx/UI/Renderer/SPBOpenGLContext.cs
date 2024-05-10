@@ -1,5 +1,5 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Graphics.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;

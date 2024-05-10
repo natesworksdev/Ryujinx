@@ -1,7 +1,7 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
@@ -219,7 +219,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             _gd.Api.DispatchCompute(dispatchX, dispatchY, 1);
             _gd.Api.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
-            _gd.Api.BindImageTexture(0, blendOutput.Handle, 0, false, 0, BufferAccessARB.ReadWrite,InternalFormat.Rgba8);
+            _gd.Api.BindImageTexture(0, blendOutput.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             _gd.Api.UseProgram(_blendShaderPrograms[Quality]);
             edgeOutput.Bind(0);
             areaTexture.Bind(1);

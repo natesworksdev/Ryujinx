@@ -1,5 +1,5 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;

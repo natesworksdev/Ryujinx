@@ -1,5 +1,5 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Logging;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;

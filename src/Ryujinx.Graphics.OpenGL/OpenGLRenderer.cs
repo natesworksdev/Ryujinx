@@ -1,11 +1,11 @@
-using Silk.NET.OpenGL.Legacy;
-using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
+using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using System;
 using System.Runtime.InteropServices;
 using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.OpenGL
         public Capabilities GetCapabilities()
         {
             bool intelWindows = Capabilities.GpuVendor == OpenGL.GpuVendor.IntelWindows;
-            bool intelUnix = Capabilities.GpuVendor ==  OpenGL.GpuVendor.IntelUnix;
+            bool intelUnix = Capabilities.GpuVendor == OpenGL.GpuVendor.IntelUnix;
             bool amdWindows = Capabilities.GpuVendor == OpenGL.GpuVendor.AmdWindows;
 
             return new Capabilities(

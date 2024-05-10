@@ -1,7 +1,7 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using static Ryujinx.Graphics.OpenGL.Effects.ShaderHelper;
 

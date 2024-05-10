@@ -1,9 +1,9 @@
-using Silk.NET.OpenGL.Legacy;
-using Silk.NET.OpenGL.Legacy.Extensions.NV;
-using Silk.NET.OpenGL.Legacy.Extensions.EXT;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.EXT;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 
 namespace Ryujinx.Graphics.OpenGL
 {

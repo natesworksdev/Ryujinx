@@ -1,6 +1,6 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Buffers;
 using System.Diagnostics;

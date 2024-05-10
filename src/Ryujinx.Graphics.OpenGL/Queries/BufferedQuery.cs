@@ -1,5 +1,5 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Logging;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 _api.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
 
                 Marshal.WriteInt64(_bufferMap, -1L);
-                _api.GetQueryObject(Query,QueryObjectParameterName.Result, (long*)0);
+                _api.GetQueryObject(Query, QueryObjectParameterName.Result, (long*)0);
                 _api.MemoryBarrier(MemoryBarrierMask.QueryBufferBarrierBit | MemoryBarrierMask.ClientMappedBufferBarrierBit);
             }
             else

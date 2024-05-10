@@ -1,9 +1,9 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
+using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
 using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
