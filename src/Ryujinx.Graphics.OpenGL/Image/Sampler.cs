@@ -6,27 +6,27 @@ namespace Ryujinx.Graphics.OpenGL.Image
     class Sampler : ISampler
     {
         public uint Handle { get; private set; }
-        private readonly GL _api;
+        private readonly OpenGLRenderer _gd;
 
-        public Sampler(GL api, SamplerCreateInfo info)
+        public Sampler(OpenGLRenderer gd, SamplerCreateInfo info)
         {
-            _api = api;
-            Handle = _api.GenSampler();
+            _gd = gd;
+            Handle = _gd.Api.GenSampler();
 
-            _api.SamplerParameter(Handle, SamplerParameterI.MinFilter, (int)info.MinFilter.Convert());
-            _api.SamplerParameter(Handle, SamplerParameterI.MagFilter, (int)info.MagFilter.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.MinFilter, (int)info.MinFilter.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.MagFilter, (int)info.MagFilter.Convert());
 
-            if (HwCapabilities.SupportsSeamlessCubemapPerTexture)
+            if (_gd.Capabilities.SupportsSeamlessCubemapPerTexture)
             {
-                _api.SamplerParameter(Handle, GLEnum.TextureCubeMapSeamless, info.SeamlessCubemap ? 1 : 0);
+                _gd.Api.SamplerParameter(Handle, GLEnum.TextureCubeMapSeamless, info.SeamlessCubemap ? 1 : 0);
             }
 
-            _api.SamplerParameter(Handle, SamplerParameterI.WrapS, (int)info.AddressU.Convert());
-            _api.SamplerParameter(Handle, SamplerParameterI.WrapT, (int)info.AddressV.Convert());
-            _api.SamplerParameter(Handle, SamplerParameterI.WrapR, (int)info.AddressP.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.WrapS, (int)info.AddressU.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.WrapT, (int)info.AddressV.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.WrapR, (int)info.AddressP.Convert());
 
-            _api.SamplerParameter(Handle, SamplerParameterI.CompareMode, (int)info.CompareMode.Convert());
-            _api.SamplerParameter(Handle, SamplerParameterI.CompareFunc, (int)info.CompareOp.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.CompareMode, (int)info.CompareMode.Convert());
+            _gd.Api.SamplerParameter(Handle, SamplerParameterI.CompareFunc, (int)info.CompareOp.Convert());
 
             unsafe
             {
@@ -38,26 +38,26 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     info.BorderColor.Alpha,
                 };
 
-                _api.SamplerParameter(Handle, SamplerParameterF.BorderColor, borderColor);
+                _gd.Api.SamplerParameter(Handle, SamplerParameterF.BorderColor, borderColor);
             }
 
-            _api.SamplerParameter(Handle, SamplerParameterF.MinLod, info.MinLod);
-            _api.SamplerParameter(Handle, SamplerParameterF.MaxLod, info.MaxLod);
-            _api.SamplerParameter(Handle, SamplerParameterF.LodBias, info.MipLodBias);
+            _gd.Api.SamplerParameter(Handle, SamplerParameterF.MinLod, info.MinLod);
+            _gd.Api.SamplerParameter(Handle, SamplerParameterF.MaxLod, info.MaxLod);
+            _gd.Api.SamplerParameter(Handle, SamplerParameterF.LodBias, info.MipLodBias);
 
-            _api.SamplerParameter(Handle, SamplerParameterF.MaxAnisotropy, info.MaxAnisotropy);
+            _gd.Api.SamplerParameter(Handle, SamplerParameterF.MaxAnisotropy, info.MaxAnisotropy);
         }
 
         public void Bind(uint unit)
         {
-            _api.BindSampler(unit, Handle);
+            _gd.Api.BindSampler(unit, Handle);
         }
 
         public void Dispose()
         {
             if (Handle != 0)
             {
-                _api.DeleteSampler(Handle);
+                _gd.Api.DeleteSampler(Handle);
 
                 Handle = 0;
             }

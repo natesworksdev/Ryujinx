@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return new PinnedSpan<byte>(IntPtr.Add(ptr, offset).ToPointer(), size);
             }
-            else if (HwCapabilities.UsePersistentBufferForFlush)
+            else if (gd.Capabilities.UsePersistentBufferForFlush)
             {
                 return PinnedSpan<byte>.UnsafeFromSpan(gd.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
             }

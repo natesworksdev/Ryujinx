@@ -14,15 +14,15 @@ namespace Ryujinx.Graphics.OpenGL
             public IntPtr Handle;
         }
 
-        private ulong _firstHandle = 0;
-        private static SyncObjectMask SyncFlags => HwCapabilities.RequiresSyncFlush ? 0 : SyncObjectMask.Bit;
+        private ulong _firstHandle;
+        private SyncObjectMask SyncFlags => _gd.Capabilities.RequiresSyncFlush ? 0 : SyncObjectMask.Bit;
 
         private readonly List<SyncHandle> _handles = new();
-        private readonly GL _api;
+        private readonly OpenGLRenderer _gd;
 
-        public Sync(GL api)
+        public Sync(OpenGLRenderer gd)
         {
-            _api = api;
+            _gd = gd;
         }
 
         public void Create(ulong id)
@@ -30,14 +30,14 @@ namespace Ryujinx.Graphics.OpenGL
             SyncHandle handle = new()
             {
                 ID = id,
-                Handle = _api.FenceSync(SyncCondition.SyncGpuCommandsComplete, SyncBehaviorFlags.None),
+                Handle = _gd.Api.FenceSync(SyncCondition.SyncGpuCommandsComplete, SyncBehaviorFlags.None),
             };
 
 
-            if (HwCapabilities.RequiresSyncFlush)
+            if (_gd.Capabilities.RequiresSyncFlush)
             {
                 // Force commands to flush up to the syncpoint.
-                _api.ClientWaitSync(handle.Handle, SyncObjectMask.Bit, 0);
+                _gd.Api.ClientWaitSync(handle.Handle, SyncObjectMask.Bit, 0);
             }
 
             lock (_handles)
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                         if (handle.ID > lastHandle)
                         {
-                            GLEnum syncResult = _api.ClientWaitSync(handle.Handle, SyncFlags, 0);
+                            GLEnum syncResult = _gd.Api.ClientWaitSync(handle.Handle, SyncFlags, 0);
 
                             if (syncResult == GLEnum.AlreadySignaled)
                             {
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.OpenGL
                         return;
                     }
 
-                    GLEnum syncResult = _api.ClientWaitSync(result.Handle, SyncFlags, 1000000000);
+                    GLEnum syncResult = _gd.Api.ClientWaitSync(result.Handle, SyncFlags, 1000000000);
 
                     if (syncResult == GLEnum.TimeoutExpired)
                     {
@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.OpenGL
                     break;
                 }
 
-                GLEnum syncResult = _api.ClientWaitSync(first.Handle, SyncFlags, 0);
+                GLEnum syncResult = _gd.Api.ClientWaitSync(first.Handle, SyncFlags, 0);
 
                 if (syncResult == GLEnum.AlreadySignaled)
                 {
@@ -145,7 +145,7 @@ namespace Ryujinx.Graphics.OpenGL
                         {
                             _firstHandle = first.ID + 1;
                             _handles.RemoveAt(0);
-                            _api.DeleteSync(first.Handle);
+                            _gd.Api.DeleteSync(first.Handle);
                             first.Handle = IntPtr.Zero;
                         }
                     }
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     lock (handle)
                     {
-                        _api.DeleteSync(handle.Handle);
+                        _gd.Api.DeleteSync(handle.Handle);
                         handle.Handle = IntPtr.Zero;
                     }
                 }

@@ -28,18 +28,18 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private readonly GL _api;
+        private readonly OpenGLRenderer _gd;
         private ProgramLinkStatus _status = ProgramLinkStatus.Incomplete;
         private uint[] _shaderHandles;
 
         public int FragmentOutputMap { get; }
 
-        public unsafe Program(GL api, ShaderSource[] shaders, int fragmentOutputMap)
+        public unsafe Program(OpenGLRenderer gd, ShaderSource[] shaders, int fragmentOutputMap)
         {
-            _api = api;
-            Handle = _api.CreateProgram();
+            _gd = gd;
+            Handle = _gd.Api.CreateProgram();
 
-            _api.ProgramParameter(Handle, ProgramParameterPName.BinaryRetrievableHint, 1);
+            _gd.Api.ProgramParameter(Handle, ProgramParameterPName.BinaryRetrievableHint, 1);
 
             _shaderHandles = new uint[shaders.Length];
             bool hasFragmentShader = false;
@@ -53,37 +53,37 @@ namespace Ryujinx.Graphics.OpenGL
                     hasFragmentShader = true;
                 }
 
-                uint shaderHandle = _api.CreateShader(shader.Stage.Convert());
+                uint shaderHandle = _gd.Api.CreateShader(shader.Stage.Convert());
 
                 switch (shader.Language)
                 {
                     case TargetLanguage.Glsl:
-                        _api.ShaderSource(shaderHandle, shader.Code);
-                        _api.CompileShader(shaderHandle);
+                        _gd.Api.ShaderSource(shaderHandle, shader.Code);
+                        _gd.Api.CompileShader(shaderHandle);
                         break;
                     case TargetLanguage.Spirv:
                         fixed (byte* ptr = shader.BinaryCode.AsSpan())
                         {
-                            _api.ShaderBinary(1, in shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, ptr, (uint)shader.BinaryCode.Length);
+                            _gd.Api.ShaderBinary(1, in shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, ptr, (uint)shader.BinaryCode.Length);
                         }
-                        _api.SpecializeShader(shaderHandle, "main", 0, (uint[])null, (uint[])null);
+                        _gd.Api.SpecializeShader(shaderHandle, "main", 0, (uint[])null, (uint[])null);
                         break;
                 }
 
-                _api.AttachShader(Handle, shaderHandle);
+                _gd.Api.AttachShader(Handle, shaderHandle);
 
                 _shaderHandles[index] = shaderHandle;
             }
 
-            _api.LinkProgram(Handle);
+            _gd.Api.LinkProgram(Handle);
 
             FragmentOutputMap = hasFragmentShader ? fragmentOutputMap : 0;
         }
 
-        public Program(GL api, ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
+        public Program(OpenGLRenderer gd, ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
         {
-            _api = api;
-            Handle = _api.CreateProgram();
+            _gd = gd;
+            Handle = _gd.Api.CreateProgram();
 
             if (code.Length >= 4)
             {
@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     fixed (byte* ptr = code)
                     {
-                        _api.ProgramBinary(Handle, (GLEnum)binaryFormat, (IntPtr)ptr, (uint)code.Length - 4);
+                        _gd.Api.ProgramBinary(Handle, (GLEnum)binaryFormat, (IntPtr)ptr, (uint)code.Length - 4);
                     }
                 }
             }
@@ -103,14 +103,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Bind()
         {
-            _api.UseProgram(Handle);
+            _gd.Api.UseProgram(Handle);
         }
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
-            if (!blocking && HwCapabilities.SupportsParallelShaderCompile)
+            if (!blocking && _gd.Capabilities.SupportsParallelShaderCompile)
             {
-                _api.GetProgram(Handle, (GLEnum)ARB.CompletionStatusArb, out int completed);
+                _gd.Api.GetProgram(Handle, (GLEnum)ARB.CompletionStatusArb, out int completed);
 
                 if (completed == 0)
                 {
@@ -118,14 +118,14 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            _api.GetProgram(Handle, ProgramPropertyARB.LinkStatus, out int status);
+            _gd.Api.GetProgram(Handle, ProgramPropertyARB.LinkStatus, out int status);
             DeleteShaders();
 
             if (status == 0)
             {
                 _status = ProgramLinkStatus.Failure;
 
-                string log = _api.GetProgramInfoLog(Handle);
+                string log = _gd.Api.GetProgramInfoLog(Handle);
 
                 if (log.Length > MaxShaderLogLength)
                 {
@@ -144,14 +144,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public unsafe byte[] GetBinary()
         {
-            _api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
+            _gd.Api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
 
             byte[] data = new byte[size];
             GLEnum binFormat;
 
             fixed (byte* ptr = data)
             {
-                _api.GetProgramBinary(Handle, (uint)size, out _, out binFormat, ptr);
+                _gd.Api.GetProgramBinary(Handle, (uint)size, out _, out binFormat, ptr);
             }
 
             BinaryPrimitives.WriteInt32LittleEndian(data, (int)binFormat);
@@ -165,8 +165,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 foreach (uint shaderHandle in _shaderHandles)
                 {
-                    _api.DetachShader(Handle, shaderHandle);
-                    _api.DeleteShader(shaderHandle);
+                    _gd.Api.DetachShader(Handle, shaderHandle);
+                    _gd.Api.DeleteShader(shaderHandle);
                 }
 
                 _shaderHandles = null;
@@ -178,7 +178,7 @@ namespace Ryujinx.Graphics.OpenGL
             if (Handle != 0)
             {
                 DeleteShaders();
-                _api.DeleteProgram(Handle);
+                _gd.Api.DeleteProgram(Handle);
 
                 Handle = 0;
             }

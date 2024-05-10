@@ -273,7 +273,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             ReadOnlySpan<byte> data;
 
-            if (HwCapabilities.UsePersistentBufferForFlush)
+            if (_gd.Capabilities.UsePersistentBufferForFlush)
             {
                 data = _gd.PersistentBuffers.Default.GetTextureData(this, size);
             }
@@ -298,7 +298,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             int size = Info.GetMipSize(level);
 
-            if (HwCapabilities.UsePersistentBufferForFlush)
+            if (_gd.Capabilities.UsePersistentBufferForFlush)
             {
                 return PinnedSpan<byte>.UnsafeFromSpan(_gd.PersistentBuffers.Default.GetTextureData(this, size, layer, level));
             }
@@ -719,7 +719,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             uint baseLevel = 0;
 
             // glTexSubImage on cubemap views is broken on Intel, we have to use the storage instead.
-            if (Target == Target.Cubemap && HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows)
+            if (Target == Target.Cubemap && _gd.Capabilities.GpuVendor == GpuVendor.IntelWindows)
             {
                 _gd.Api.ActiveTexture(TextureUnit.Texture0);
                 _gd.Api.BindTexture(target, Storage.Handle);
