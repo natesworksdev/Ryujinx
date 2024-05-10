@@ -9,13 +9,11 @@ namespace Ryujinx.UI
 {
     class SPBOpenGLContext : IOpenGLContext
     {
-        public readonly GL Api;
         private readonly OpenGLContextBase _context;
         private readonly NativeWindowBase _window;
 
-        private SPBOpenGLContext(GL api, OpenGLContextBase context, NativeWindowBase window)
+        private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
         {
-            Api = api;
             _context = context;
             _window = window;
         }
@@ -45,7 +43,7 @@ namespace Ryujinx.UI
 
             context.MakeCurrent(null);
 
-            return new SPBOpenGLContext(api, context, window);
+            return new SPBOpenGLContext(context, window);
         }
     }
 }

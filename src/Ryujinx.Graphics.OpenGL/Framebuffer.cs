@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private int _colorsCount;
         private bool _dualSourceBlend;
-        private GL _api;
+        private readonly GL _api;
 
         public Framebuffer(GL api)
         {
