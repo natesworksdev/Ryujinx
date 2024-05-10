@@ -1,10 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using System;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.Arm;
-using System.Runtime.Intrinsics.X86;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -14,7 +10,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     internal class BufferPreFlush : IDisposable
     {
-        private const ulong PageSize = 4096;
+        private const ulong PageSize = MemoryManager.PageSize;
+
+        /// <summary>
+        /// Threshold for the number of copies without a flush required to disable preflush on a page.
+        /// </summary>
+        private const int DeactivateCopyThreshold = 200;
 
         private enum PreFlushState
         {
@@ -23,12 +24,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             HasCopied
         }
 
-        // TODO: avoid copies when write to flush ratio is something like 100:1
         private struct PreFlushPage
         {
             public PreFlushState State;
             public ulong FirstActivatedSync;
             public ulong LastCopiedSync;
+            public int CopyCount;
         }
 
         /// <summary>
@@ -124,6 +125,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         page.FirstActivatedSync = syncNumber;
                         page.State = PreFlushState.HasCopied;
                     }
+                    else if (page.CopyCount++ >= DeactivateCopyThreshold)
+                    {
+                        page.CopyCount = 0;
+                        page.State = PreFlushState.None;
+                    }
 
                     if (page.LastCopiedSync != syncNumber)
                     {
@@ -190,6 +196,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 ref PreFlushPage page = ref _pages[pageIndex];
 
                 bool flushPage = false;
+                page.CopyCount = 0;
 
                 if (page.State == PreFlushState.HasCopied)
                 {
