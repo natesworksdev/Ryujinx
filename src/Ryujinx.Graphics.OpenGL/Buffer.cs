@@ -32,22 +32,22 @@ namespace Ryujinx.Graphics.OpenGL
             return Handle.FromUInt32<BufferHandle>(api.GenBuffer());
         }
 
-        public static BufferHandle Create(GL api, int size)
+        public unsafe static BufferHandle Create(GL api, int size)
         {
             uint handle = api.GenBuffer();
 
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
-            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, in UIntPtr.Zero, BufferUsageARB.DynamicDraw);
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, null, BufferUsageARB.DynamicDraw);
 
             return Handle.FromUInt32<BufferHandle>(handle);
         }
 
-        public static BufferHandle CreatePersistent(GL api, int size)
+        public unsafe static BufferHandle CreatePersistent(GL api, int size)
         {
             uint handle = api.GenBuffer();
 
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
-            api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)size, in UIntPtr.Zero,
+            api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)size, null,
                 BufferStorageMask.MapPersistentBit |
                 BufferStorageMask.MapCoherentBit |
                 BufferStorageMask.ClientStorageBit |
@@ -92,10 +92,10 @@ namespace Ryujinx.Graphics.OpenGL
             return new PinnedSpan<byte>(target.ToPointer(), size);
         }
 
-        public static void Resize(GL api, BufferHandle handle, int size)
+        public unsafe static void Resize(GL api, BufferHandle handle, int size)
         {
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
-            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, in UIntPtr.Zero, BufferUsageARB.StreamCopy);
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, null, BufferUsageARB.StreamCopy);
         }
 
         public static void SetData(GL api, BufferHandle buffer, int offset, ReadOnlySpan<byte> data)

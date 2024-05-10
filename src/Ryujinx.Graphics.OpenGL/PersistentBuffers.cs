@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _copyBufferSize = requiredSize;
 
                 _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
-                _api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)requiredSize, in IntPtr.Zero, BufferStorageMask.MapReadBit | BufferStorageMask.MapPersistentBit);
+                _api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)requiredSize, null, BufferStorageMask.MapReadBit | BufferStorageMask.MapPersistentBit);
 
                 _bufferMap = (IntPtr)_api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)requiredSize, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit);
             }

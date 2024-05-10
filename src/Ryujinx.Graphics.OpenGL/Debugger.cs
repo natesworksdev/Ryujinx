@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static int _counter;
 
-        public static void Initialize(GL gl, GraphicsDebugLevel logLevel)
+        public unsafe static void Initialize(GL gl, GraphicsDebugLevel logLevel)
         {
             // Disable everything
             gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint[])null, false);
@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.OpenGL
             if (logLevel == GraphicsDebugLevel.None)
             {
                 gl.Disable(EnableCap.DebugOutputSynchronous);
-                gl.DebugMessageCallback(null, in IntPtr.Zero);
+                gl.DebugMessageCallback(null, null);
 
                 return;
             }
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
             _counter = 0;
             _debugCallback = GLDebugHandler;
 
-            gl.DebugMessageCallback(_debugCallback, in IntPtr.Zero);
+            gl.DebugMessageCallback(_debugCallback, null);
 
             Logger.Warning?.Print(LogClass.Gpu, "OpenGL Debugging is enabled. Performance will be negatively impacted.");
         }

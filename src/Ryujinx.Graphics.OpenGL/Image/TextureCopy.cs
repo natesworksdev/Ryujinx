@@ -442,7 +442,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _gd.Api.BindBuffer(BufferTargetARB.PixelUnpackBuffer, 0);
         }
 
-        private void EnsurePbo(TextureView view)
+        private unsafe void EnsurePbo(TextureView view)
         {
             int requiredSize = 0;
 
@@ -464,7 +464,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _copyPboSize = requiredSize;
 
                 _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
-                _gd.Api.BufferData(BufferTargetARB.PixelPackBuffer, (uint)requiredSize, in IntPtr.Zero, BufferUsageARB.DynamicCopy);
+                _gd.Api.BufferData(BufferTargetARB.PixelPackBuffer, (uint)requiredSize, null, BufferUsageARB.DynamicCopy);
             }
         }
 
