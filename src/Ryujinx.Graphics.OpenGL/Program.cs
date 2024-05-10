@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     fixed (byte* ptr = code)
                     {
-                        _gd.Api.ProgramBinary(Handle, (GLEnum)binaryFormat, (IntPtr)ptr, (uint)code.Length - 4);
+                        _gd.Api.ProgramBinary(Handle, (GLEnum)binaryFormat, ptr, (uint)code.Length - 4);
                     }
                 }
             }

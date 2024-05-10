@@ -238,7 +238,9 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 DrawQuadsImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 DrawQuadStripImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
@@ -376,7 +378,9 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 DrawQuadStripIndexedImpl(
                     indexCount,
@@ -476,7 +480,7 @@ namespace Ryujinx.Graphics.OpenGL
                         PrimitiveType.TriangleFan,
                         countsPtr,
                         _elementsType,
-                        indicesPtr,
+                        in indicesPtr,
                         (uint)quadsCount,
                         baseVerticesPtr);
                 }
@@ -523,7 +527,7 @@ namespace Ryujinx.Graphics.OpenGL
                     PrimitiveType.TriangleFan,
                     countsPtr,
                     _elementsType,
-                    indicesPtr,
+                    in indicesPtr,
                     (uint)quadsCount,
                     baseVerticesPtr);
             }
@@ -538,7 +542,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
-                _gd.Api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, indexBaseOffset);
+                _gd.Api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, in indexBaseOffset);
             }
             else if (firstInstance == 0 && instanceCount == 1)
             {
@@ -546,7 +550,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    in indexBaseOffset,
                     firstVertex);
             }
             else if (firstInstance == 0 && firstVertex == 0)
@@ -555,7 +559,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    in indexBaseOffset,
                     (uint)instanceCount);
             }
             else if (firstInstance == 0)
@@ -564,7 +568,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    in indexBaseOffset,
                     (uint)instanceCount,
                     firstVertex);
             }
@@ -574,7 +578,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    in indexBaseOffset,
                     (uint)instanceCount,
                     (uint)firstInstance);
             }
@@ -584,7 +588,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    in indexBaseOffset,
                     (uint)instanceCount,
                     firstVertex,
                     (uint)firstInstance);
@@ -605,7 +609,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            _gd.Api.DrawElementsIndirect(_primitiveType, _elementsType, (IntPtr)indirectBuffer.Offset);
+            _gd.Api.DrawElementsIndirect(_primitiveType, _elementsType, indirectBuffer.Offset);
 
             _vertexArray.RestoreIndexBuffer();
 
@@ -630,7 +634,7 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.MultiDrawElementsIndirectCount(
                 _primitiveType,
                 _elementsType,
-                (IntPtr)indirectBuffer.Offset,
+                indirectBuffer.Offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
@@ -652,7 +656,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            _gd.Api.DrawArraysIndirect(_primitiveType, (IntPtr)indirectBuffer.Offset);
+            _gd.Api.DrawArraysIndirect(_primitiveType, indirectBuffer.Offset);
 
             PostDraw();
         }
@@ -672,7 +676,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                (IntPtr)indirectBuffer.Offset,
+                indirectBuffer.Offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
@@ -778,6 +782,7 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = false;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             if (!enable)
@@ -789,6 +794,7 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.AlphaFunc((AlphaFunction)op.Convert(), reference);
             _gd.Api.Enable(EnableCap.AlphaTest);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
@@ -1068,6 +1074,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
         {
             // GL_POINT_SPRITE was deprecated in core profile 3.2+ and causes GL_INVALID_ENUM when set.
@@ -1098,6 +1105,7 @@ namespace Ryujinx.Graphics.OpenGL
             // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0.
             _gd.Api.PointSize(Math.Max(float.Epsilon, size));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public void SetPolygonMode(GAL.PolygonMode frontMode, GAL.PolygonMode backMode)
         {

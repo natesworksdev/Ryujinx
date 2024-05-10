@@ -27,12 +27,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _type = type;
 
             _api.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
-
-            unsafe
-            {
-                long defaultValue = DefaultValue;
-                _api.BufferStorage(BufferStorageTarget.QueryBuffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageMask.MapReadBit | BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit);
-            }
+            _api.BufferStorage(BufferStorageTarget.QueryBuffer, sizeof(long), DefaultValue, BufferStorageMask.MapReadBit | BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit);
 
             unsafe
             {

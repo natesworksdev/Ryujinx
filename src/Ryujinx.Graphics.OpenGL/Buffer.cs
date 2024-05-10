@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.OpenGL
                     size,
                     PixelFormat.RgbaInteger,
                     PixelType.UnsignedByte,
-                    (IntPtr)valueArr);
+                    valueArr);
             }
         }
 
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL
             uint handle = api.GenBuffer();
 
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
-            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, UIntPtr.Zero, BufferUsageARB.DynamicDraw);
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, in UIntPtr.Zero, BufferUsageARB.DynamicDraw);
 
             return Handle.FromUInt32<BufferHandle>(handle);
         }
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.OpenGL
             uint handle = api.GenBuffer();
 
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
-            api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)size, UIntPtr.Zero,
+            api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)size, in UIntPtr.Zero,
                 BufferStorageMask.MapPersistentBit |
                 BufferStorageMask.MapCoherentBit |
                 BufferStorageMask.ClientStorageBit |
@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static void Resize(GL api, BufferHandle handle, int size)
         {
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
-            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, UIntPtr.Zero, BufferUsageARB.StreamCopy);
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, in UIntPtr.Zero, BufferUsageARB.StreamCopy);
         }
 
         public static void SetData(GL api, BufferHandle buffer, int offset, ReadOnlySpan<byte> data)

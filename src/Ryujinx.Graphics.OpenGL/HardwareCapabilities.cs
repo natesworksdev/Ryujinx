@@ -152,8 +152,10 @@ namespace Ryujinx.Graphics.OpenGL
         public static bool SupportsQuadsCheck(GL api)
         {
             api.GetError(); // Clear any existing error.
+#pragma warning disable CS0618 // Type or member is obsolete
             api.Begin(PrimitiveType.Quads);
             api.End();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return api.GetError() == GLEnum.NoError;
         }
