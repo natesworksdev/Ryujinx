@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static void Initialize(GL gl, GraphicsDebugLevel logLevel)
         {
             // Disable everything
-            gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, false);
+            gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint[])null, false);
 
             if (logLevel == GraphicsDebugLevel.None)
             {
@@ -30,16 +30,16 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (logLevel == GraphicsDebugLevel.Error)
             {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
             }
             else if (logLevel == GraphicsDebugLevel.Slowdowns)
             {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (int[])null, true);
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypeError, DebugSeverity.DontCare, 0, (uint[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DebugTypePerformance, DebugSeverity.DontCare, 0, (uint[])null, true);
             }
             else
             {
-                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (int[])null, true);
+                gl.DebugMessageControl(DebugSource.DontCare, DebugType.DontCare, DebugSeverity.DontCare, 0, (uint[])null, true);
             }
 
             _counter = 0;
@@ -61,7 +61,10 @@ namespace Ryujinx.Graphics.OpenGL
         {
             string msg = Marshal.PtrToStringUTF8(message).Replace('\n', ' ');
 
-            switch (type)
+            DebugType debugType = (DebugType)type;
+            DebugSource debugSource = (DebugSource)source;
+
+            switch (debugType)
             {
                 case DebugType.DebugTypeError:
                     Logger.Error?.Print(LogClass.Gpu, $"{severity}: {msg}\nCallStack={Environment.StackTrace}", "GLERROR");
@@ -76,7 +79,7 @@ namespace Ryujinx.Graphics.OpenGL
                     Logger.Info?.Print(LogClass.Gpu, $"}} ({id}) {severity}: {msg}", "GLINFO");
                     break;
                 default:
-                    if (source == DebugSource.DebugSourceApplication)
+                    if (debugSource == DebugSource.DebugSourceApplication)
                     {
                         Logger.Info?.Print(LogClass.Gpu, $"{type} {severity}: {msg}", "GLINFO");
                     }
@@ -93,7 +96,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             int counter = Interlocked.Increment(ref _counter);
 
-            gl.PushDebugGroup(DebugSource.DebugSourceApplication, counter, dbgMsg.Length, dbgMsg);
+            gl.PushDebugGroup(DebugSource.DebugSourceApplication, (uint)counter, (uint)dbgMsg.Length, dbgMsg);
         }
 
         public static void PopGroup(GL gl)
@@ -103,7 +106,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static void Print(GL gl, string dbgMsg, DebugType type = DebugType.DebugTypeMarker, DebugSeverity severity = DebugSeverity.DebugSeverityNotification, int id = 999999)
         {
-            gl.DebugMessageInsert(DebugSource.DebugSourceApplication, type, id, severity, dbgMsg.Length, dbgMsg);
+            gl.DebugMessageInsert(DebugSource.DebugSourceApplication, type, (uint)id, severity, (uint)dbgMsg.Length, dbgMsg);
         }
     }
 }

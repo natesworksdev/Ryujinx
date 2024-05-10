@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             PrepareForDispatch();
 
-            _api.DispatchCompute(groupsX, groupsY, groupsZ);
+            _api.DispatchCompute((uint)groupsX, (uint)groupsY, (uint)groupsZ);
         }
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
@@ -256,10 +256,10 @@ namespace Ryujinx.Graphics.OpenGL
             int firstInstance)
         {
             // TODO: Instanced rendering.
-            int quadsCount = vertexCount / 4;
+            uint quadsCount = (uint)(vertexCount / 4);
 
             int[] firsts = new int[quadsCount];
-            int[] counts = new int[quadsCount];
+            uint[] counts = new uint[quadsCount];
 
             for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
             {
@@ -280,19 +280,19 @@ namespace Ryujinx.Graphics.OpenGL
             int firstVertex,
             int firstInstance)
         {
-            int quadsCount = (vertexCount - 2) / 2;
+            uint quadsCount = (uint)((vertexCount - 2) / 2);
 
             if (firstInstance != 0 || instanceCount != 1)
             {
                 for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                 {
-                    _api.DrawArraysInstancedBaseInstance(PrimitiveType.TriangleFan, firstVertex + quadIndex * 2, 4, instanceCount, firstInstance);
+                    _api.DrawArraysInstancedBaseInstance(PrimitiveType.TriangleFan, firstVertex + quadIndex * 2, 4, (uint)instanceCount, (uint)firstInstance);
                 }
             }
             else
             {
                 int[] firsts = new int[quadsCount];
-                int[] counts = new int[quadsCount];
+                uint[] counts = new uint[quadsCount];
 
                 firsts[0] = firstVertex;
                 counts[0] = 4;
@@ -319,20 +319,20 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && instanceCount == 1)
             {
-                _api.DrawArrays(_primitiveType, firstVertex, vertexCount);
+                _api.DrawArrays(_primitiveType, firstVertex, (uint)vertexCount);
             }
             else if (firstInstance == 0)
             {
-                _api.DrawArraysInstanced(_primitiveType, firstVertex, vertexCount, instanceCount);
+                _api.DrawArraysInstanced(_primitiveType, firstVertex, (uint)vertexCount, (uint)instanceCount);
             }
             else
             {
                 _api.DrawArraysInstancedBaseInstance(
                     _primitiveType,
                     firstVertex,
-                    vertexCount,
-                    instanceCount,
-                    firstInstance);
+                    (uint)vertexCount,
+                    (uint)instanceCount,
+                    (uint)firstInstance);
             }
         }
 
@@ -398,7 +398,7 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        private void DrawQuadsIndexedImpl(
+        private unsafe void DrawQuadsIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -419,9 +419,9 @@ namespace Ryujinx.Graphics.OpenGL
                             4,
                             _elementsType,
                             indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount,
+                            (uint)instanceCount,
                             firstVertex,
-                            firstInstance);
+                            (uint)firstInstance);
                     }
                 }
                 else if (firstInstance != 0)
@@ -433,8 +433,8 @@ namespace Ryujinx.Graphics.OpenGL
                             4,
                             _elementsType,
                             indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount,
-                            firstInstance);
+                            (uint)instanceCount,
+                            (uint)firstInstance);
                     }
                 }
                 else
@@ -446,38 +446,43 @@ namespace Ryujinx.Graphics.OpenGL
                             4,
                             _elementsType,
                             indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount);
+                            (uint)instanceCount);
                     }
                 }
             }
             else
             {
-                IntPtr[] indices = new IntPtr[quadsCount];
+                void*[] indices = new void*[quadsCount];
 
-                int[] counts = new int[quadsCount];
+                uint[] counts = new uint[quadsCount];
 
                 int[] baseVertices = new int[quadsCount];
 
                 for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                 {
-                    indices[quadIndex] = indexBaseOffset + quadIndex * 4 * indexElemSize;
+                    indices[quadIndex] = (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize);
 
                     counts[quadIndex] = 4;
 
                     baseVertices[quadIndex] = firstVertex;
                 }
 
-                _api.MultiDrawElementsBaseVertex(
-                    PrimitiveType.TriangleFan,
-                    counts,
-                    _elementsType,
-                    indices,
-                    quadsCount,
-                    baseVertices);
+                fixed (uint* countsPtr = counts)
+                fixed (void* indicesPtr = indices)
+                fixed (int* baseVerticesPtr = baseVertices)
+                {
+                    _api.MultiDrawElementsBaseVertex(
+                        PrimitiveType.TriangleFan,
+                        countsPtr,
+                        _elementsType,
+                        indicesPtr,
+                        (uint)quadsCount,
+                        baseVerticesPtr);
+                }
             }
         }
 
-        private void DrawQuadStripIndexedImpl(
+        private unsafe void DrawQuadStripIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -488,13 +493,13 @@ namespace Ryujinx.Graphics.OpenGL
             // TODO: Instanced rendering.
             int quadsCount = (indexCount - 2) / 2;
 
-            IntPtr[] indices = new IntPtr[quadsCount];
+            void*[] indices = new void*[quadsCount];
 
-            int[] counts = new int[quadsCount];
+            uint[] counts = new uint[quadsCount];
 
             int[] baseVertices = new int[quadsCount];
 
-            indices[0] = indexBaseOffset;
+            indices[0] = (void*)indexBaseOffset;
 
             counts[0] = 4;
 
@@ -502,20 +507,25 @@ namespace Ryujinx.Graphics.OpenGL
 
             for (int quadIndex = 1; quadIndex < quadsCount; quadIndex++)
             {
-                indices[quadIndex] = indexBaseOffset + quadIndex * 2 * indexElemSize;
+                indices[quadIndex] = (void*)(indexBaseOffset + quadIndex * 2 * indexElemSize);
 
                 counts[quadIndex] = 4;
 
                 baseVertices[quadIndex] = firstVertex;
             }
 
-            _api.MultiDrawElementsBaseVertex(
-                PrimitiveType.TriangleFan,
-                counts,
-                _elementsType,
-                indices,
-                quadsCount,
-                baseVertices);
+            fixed (uint* countsPtr = counts)
+            fixed (void* indicesPtr = indices)
+            fixed (int* baseVerticesPtr = baseVertices)
+            {
+                _api.MultiDrawElementsBaseVertex(
+                    PrimitiveType.TriangleFan,
+                    countsPtr,
+                    _elementsType,
+                    indicesPtr,
+                    (uint)quadsCount,
+                    baseVerticesPtr);
+            }
         }
 
         private void DrawIndexedImpl(
@@ -725,6 +735,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _api.ClipControl(ClipControlOrigin.UpperLeft, ClipControlDepth.NegativeOneToOne);
 
                     _drawTexture.Draw(
+                        _api,
                         view,
                         samp,
                         dstRegion.X1,
