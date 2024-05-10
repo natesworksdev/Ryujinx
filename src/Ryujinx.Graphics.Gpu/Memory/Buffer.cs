@@ -1,4 +1,3 @@
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Synchronization;
 using Ryujinx.Memory.Range;
@@ -183,8 +182,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             var before = BackingState.Active;
             BufferAccess access = BackingState.SwitchAccess(this);
-
-            Logger.Warning?.PrintMsg(LogClass.Gpu, $"Migrating {Size} from {before} to {BackingState.Active}");
 
             BufferHandle newHandle = _context.Renderer.CreateBuffer((int)Size, access, Handle);
 
