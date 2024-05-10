@@ -391,7 +391,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (BackingState.IsDeviceLocal)
             {
-                _preFlush ??= new BufferPreFlush(_context, _physicalMemory, this, FlushImpl);
+                _preFlush ??= new BufferPreFlush(_context, this, FlushImpl);
 
                 if (_preFlush.ShouldCopy)
                 {

@@ -38,20 +38,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public bool ShouldCopy { get; private set; }
 
         private readonly GpuContext _context;
-        private readonly PhysicalMemory _physicalMemory;
         private readonly Buffer _buffer;
         private readonly PreFlushPage[] _pages;
         private readonly ulong _address;
         private readonly ulong _size;
         private readonly ulong _misalignment;
-        private readonly Action<ulong, ulong> _flushAction;
+        private readonly Action<BufferHandle, ulong, ulong> _flushAction;
 
         private BufferHandle _flushBuffer;
 
-        public BufferPreFlush(GpuContext context, PhysicalMemory physicalMemory, Buffer parent, Action<ulong, ulong> flushAction)
+        public BufferPreFlush(GpuContext context, Buffer parent, Action<BufferHandle, ulong, ulong> flushAction)
         {
             _context = context;
-            _physicalMemory = physicalMemory;
             _buffer = parent;
             _address = parent.Address;
             _size = parent.Size;
@@ -162,19 +160,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (end >= offset)
             {
-                if (preFlush)
-                {
-                    // Flush from the host mapped buffer
-                    using PinnedSpan<byte> data = _context.Renderer.GetBufferData(_flushBuffer, offset, end - offset);
-
-                    // TODO: dependant virtual buffers thing? maybe just disable pre-flush when that is active
-                    _physicalMemory.WriteUntracked(_address + (ulong)offset, data.Get());
-                }
-                else
-                {
-                    // Flush from the real buffer
-                    _flushAction(_address + (ulong)offset, (ulong)(end - offset));
-                }
+                BufferHandle handle = preFlush ? _flushBuffer : _buffer.Handle;
+                _flushAction(handle, _address + (ulong)offset, (ulong)(end - offset));
             }
         }
 
