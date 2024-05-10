@@ -419,11 +419,13 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
+                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
+
                         _gd.Api.DrawElementsInstancedBaseVertexBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
+                            in indices,
                             (uint)instanceCount,
                             firstVertex,
                             (uint)firstInstance);
@@ -433,11 +435,13 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
+                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
+
                         _gd.Api.DrawElementsInstancedBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
+                            in indices,
                             (uint)instanceCount,
                             (uint)firstInstance);
                     }
@@ -446,11 +450,13 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
+                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
+
                         _gd.Api.DrawElementsInstanced(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
+                            in indices,
                             (uint)instanceCount);
                     }
                 }
@@ -609,7 +615,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            _gd.Api.DrawElementsIndirect(_primitiveType, _elementsType, indirectBuffer.Offset);
+            var offset = indirectBuffer.Offset;
+            _gd.Api.DrawElementsIndirect(_primitiveType, _elementsType, in offset);
 
             _vertexArray.RestoreIndexBuffer();
 
@@ -631,10 +638,11 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
             _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
+            var offset = indirectBuffer.Offset;
             _gd.Api.MultiDrawElementsIndirectCount(
                 _primitiveType,
                 _elementsType,
-                indirectBuffer.Offset,
+                in offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
@@ -656,7 +664,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            _gd.Api.DrawArraysIndirect(_primitiveType, indirectBuffer.Offset);
+            var offset = indirectBuffer.Offset;
+            _gd.Api.DrawArraysIndirect(_primitiveType, in offset);
 
             PostDraw();
         }
@@ -674,9 +683,10 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
             _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
+            var offset = indirectBuffer.Offset;
             _gd.Api.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                indirectBuffer.Offset,
+                in offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);

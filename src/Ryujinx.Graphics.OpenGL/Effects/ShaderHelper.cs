@@ -23,7 +23,8 @@ namespace Ryujinx.Graphics.OpenGL.Effects
         public static uint CompileProgram(GL api, string[] shaders, ShaderType shaderType)
         {
             var shader = api.CreateShader(shaderType);
-            api.ShaderSource(shader, (uint)shaders.Length, shaders, 0);
+            var length = 0;
+            api.ShaderSource(shader, (uint)shaders.Length, shaders, in length);
             api.CompileShader(shader);
 
             var program = api.CreateProgram();
