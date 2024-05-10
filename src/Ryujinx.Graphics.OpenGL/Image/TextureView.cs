@@ -554,7 +554,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return data;
         }
 
-        private void ReadFrom2D(IntPtr data, int layer, int level, int x, int y, int width, int height, int mipSize)
+        private unsafe void ReadFrom2D(IntPtr data, int layer, int level, int x, int y, int width, int height, int mipSize)
         {
             TextureTarget target = Target.Convert();
 
@@ -574,7 +574,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)width,
                             (InternalFormat)format.PixelFormat,
                             (uint)mipSize,
-                            data);
+                            (void*)data);
                     }
                     else
                     {
@@ -585,7 +585,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)width,
                             format.PixelFormat,
                             format.PixelType,
-                            data);
+                            (void*)data);
                     }
                     break;
 
@@ -601,7 +601,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             1,
                             (InternalFormat)format.PixelFormat,
                             (uint)mipSize,
-                            data);
+                            (void*)data);
                     }
                     else
                     {
@@ -614,7 +614,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             1,
                             format.PixelFormat,
                             format.PixelType,
-                            data);
+                            (void*)data);
                     }
                     break;
 
@@ -630,7 +630,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)height,
                             (InternalFormat)format.PixelFormat,
                             (uint)mipSize,
-                            data);
+                            (void*)data);
                     }
                     else
                     {
@@ -643,7 +643,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)height,
                             format.PixelFormat,
                             format.PixelType,
-                            data);
+                            (void*)data);
                     }
                     break;
 
@@ -663,7 +663,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             1,
                             (InternalFormat)format.PixelFormat,
                             (uint)mipSize,
-                            data);
+                            (void*)data);
                     }
                     else
                     {
@@ -678,7 +678,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             1,
                             format.PixelFormat,
                             format.PixelType,
-                            data);
+                            (void*)data);
                     }
                     break;
 
@@ -694,7 +694,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)height,
                             (InternalFormat)format.PixelFormat,
                             (uint)mipSize,
-                            data);
+                            (void*)data);
                     }
                     else
                     {
@@ -707,13 +707,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             (uint)height,
                             format.PixelFormat,
                             format.PixelType,
-                            data);
+                            (void*)data);
                     }
                     break;
             }
         }
 
-        private void ReadFrom(IntPtr data, int size)
+        private unsafe void ReadFrom(IntPtr data, int size)
         {
             TextureTarget target = Target.Convert();
             uint baseLevel = 0;
@@ -762,7 +762,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 width,
                                 (InternalFormat)format.PixelFormat,
                                 (uint)mipSize,
-                                data);
+                                (void*)data);
                         }
                         else
                         {
@@ -773,7 +773,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 width,
                                 format.PixelFormat,
                                 format.PixelType,
-                                data);
+                                (void*)data);
                         }
                         break;
 
@@ -790,7 +790,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 height,
                                 (InternalFormat)format.PixelFormat,
                                 (uint)mipSize,
-                                data);
+                                (void*)data);
                         }
                         else
                         {
@@ -803,7 +803,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 height,
                                 format.PixelFormat,
                                 format.PixelType,
-                                data);
+                                (void*)data);
                         }
                         break;
 
@@ -823,7 +823,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 depth,
                                 (InternalFormat)format.PixelFormat,
                                 (uint)mipSize,
-                                data);
+                                (void*)data);
                         }
                         else
                         {
@@ -838,7 +838,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                 depth,
                                 format.PixelFormat,
                                 format.PixelType,
-                                data);
+                                (void*)data);
                         }
                         break;
 
@@ -858,7 +858,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                     height,
                                     (InternalFormat)format.PixelFormat,
                                     (uint)mipSize / 6,
-                                    data + faceOffset);
+                                    (void*)(data + faceOffset));
                             }
                             else
                             {
@@ -871,7 +871,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                                     height,
                                     format.PixelFormat,
                                     format.PixelType,
-                                    data + faceOffset);
+                                    (void*)(data + faceOffset));
                             }
                         }
                         break;

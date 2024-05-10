@@ -103,14 +103,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static void SetData(GL api, BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
         {
             api.BindBuffer(BufferTargetARB.CopyWriteBuffer, buffer.ToUInt32());
-
-            unsafe
-            {
-                fixed (byte* ptr = data)
-                {
-                    api.BufferSubData(BufferTargetARB.CopyWriteBuffer, offset, (uint)data.Length, (IntPtr)ptr);
-                }
-            }
+            api.BufferSubData(BufferTargetARB.CopyWriteBuffer, offset, (uint)data.Length, data);
         }
 
         public static void Delete(GL api, BufferHandle buffer)
