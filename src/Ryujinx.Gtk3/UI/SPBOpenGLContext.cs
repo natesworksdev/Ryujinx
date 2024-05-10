@@ -1,5 +1,5 @@
-using Silk.NET.OpenGL.Legacy;
 using Ryujinx.Graphics.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;
@@ -9,11 +9,13 @@ namespace Ryujinx.UI
 {
     class SPBOpenGLContext : IOpenGLContext
     {
+        public readonly GL Api;
         private readonly OpenGLContextBase _context;
         private readonly NativeWindowBase _window;
 
-        private SPBOpenGLContext(OpenGLContextBase context, NativeWindowBase window)
+        private SPBOpenGLContext(GL api, OpenGLContextBase context, NativeWindowBase window)
         {
+            Api = api;
             _context = context;
             _window = window;
         }
@@ -39,11 +41,11 @@ namespace Ryujinx.UI
             context.Initialize(window);
             context.MakeCurrent(window);
 
-            GL.LoadBindings(new OpenToolkitBindingsContext(context));
+            GL api = GL.GetApi(context.GetProcAddress);
 
             context.MakeCurrent(null);
 
-            return new SPBOpenGLContext(context, window);
+            return new SPBOpenGLContext(api, context, window);
         }
     }
 }

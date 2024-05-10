@@ -532,8 +532,8 @@ namespace Ryujinx.Headless.SDL2
                     preferredGpuId);
             }
 
-            var openGlWindow = (OpenGLWindow)window;
-            return new OpenGLRenderer(window.);
+            var openGlWindow = window as OpenGLWindow;
+            return new OpenGLRenderer(openGlWindow.Api);
         }
 
         private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options)
