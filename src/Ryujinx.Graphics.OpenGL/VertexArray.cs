@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     if ((_vertexBuffersInUse & (1u << bindingIndex)) != 0)
                     {
-                        _api.BindVertexBuffer((uint)bindingIndex, 0, IntPtr.Zero, 0);
+                        _api.BindVertexBuffer((uint)bindingIndex, 0, 0, 0);
                         _vertexBuffersInUse &= ~(1u << bindingIndex);
                     }
                 }

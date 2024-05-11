@@ -419,13 +419,11 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
-
                         _gd.Api.DrawElementsInstancedBaseVertexBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            in indices,
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
                             (uint)instanceCount,
                             firstVertex,
                             (uint)firstInstance);
@@ -435,13 +433,11 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
-
                         _gd.Api.DrawElementsInstancedBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            in indices,
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
                             (uint)instanceCount,
                             (uint)firstInstance);
                     }
@@ -450,13 +446,11 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        var indices = indexBaseOffset + quadIndex * 4 * indexElemSize;
-
                         _gd.Api.DrawElementsInstanced(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            in indices,
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
                             (uint)instanceCount);
                     }
                 }
@@ -479,14 +473,14 @@ namespace Ryujinx.Graphics.OpenGL
                 }
 
                 fixed (uint* countsPtr = counts)
-                fixed (void* indicesPtr = indices)
+                fixed (void** indicesPtr = indices)
                 fixed (int* baseVerticesPtr = baseVertices)
                 {
                     _gd.Api.MultiDrawElementsBaseVertex(
                         PrimitiveType.TriangleFan,
                         countsPtr,
                         _elementsType,
-                        in indicesPtr,
+                        indicesPtr,
                         (uint)quadsCount,
                         baseVerticesPtr);
                 }
@@ -526,20 +520,20 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             fixed (uint* countsPtr = counts)
-            fixed (void* indicesPtr = indices)
+            fixed (void** indicesPtr = indices)
             fixed (int* baseVerticesPtr = baseVertices)
             {
                 _gd.Api.MultiDrawElementsBaseVertex(
                     PrimitiveType.TriangleFan,
                     countsPtr,
                     _elementsType,
-                    in indicesPtr,
+                    indicesPtr,
                     (uint)quadsCount,
                     baseVerticesPtr);
             }
         }
 
-        private void DrawIndexedImpl(
+        private unsafe void DrawIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -548,7 +542,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
-                _gd.Api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, in indexBaseOffset);
+                _gd.Api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, (void*)indexBaseOffset);
             }
             else if (firstInstance == 0 && instanceCount == 1)
             {
@@ -556,7 +550,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    in indexBaseOffset,
+                    (void*)indexBaseOffset,
                     firstVertex);
             }
             else if (firstInstance == 0 && firstVertex == 0)
@@ -565,7 +559,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    in indexBaseOffset,
+                    (void*)indexBaseOffset,
                     (uint)instanceCount);
             }
             else if (firstInstance == 0)
@@ -574,7 +568,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    in indexBaseOffset,
+                    (void*)indexBaseOffset,
                     (uint)instanceCount,
                     firstVertex);
             }
@@ -584,7 +578,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    in indexBaseOffset,
+                    (void*)indexBaseOffset,
                     (uint)instanceCount,
                     (uint)firstInstance);
             }
@@ -594,7 +588,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _primitiveType,
                     (uint)indexCount,
                     _elementsType,
-                    in indexBaseOffset,
+                    (void*)indexBaseOffset,
                     (uint)instanceCount,
                     firstVertex,
                     (uint)firstInstance);
@@ -623,7 +617,7 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        public unsafe void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
             if (!_program.IsLinked)
             {
@@ -638,11 +632,10 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
             _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
-            var offset = indirectBuffer.Offset;
             _gd.Api.MultiDrawElementsIndirectCount(
                 _primitiveType,
                 _elementsType,
-                in offset,
+                (void*)indirectBuffer.Offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
@@ -652,7 +645,7 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        public void DrawIndirect(BufferRange indirectBuffer)
+        public unsafe void DrawIndirect(BufferRange indirectBuffer)
         {
             if (!_program.IsLinked)
             {
@@ -664,13 +657,12 @@ namespace Ryujinx.Graphics.OpenGL
 
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            var offset = indirectBuffer.Offset;
-            _gd.Api.DrawArraysIndirect(_primitiveType, in offset);
+            _gd.Api.DrawArraysIndirect(_primitiveType, (void*)indirectBuffer.Offset);
 
             PostDraw();
         }
 
-        public void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        public unsafe void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
             if (!_program.IsLinked)
             {
@@ -683,10 +675,9 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
             _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
-            var offset = indirectBuffer.Offset;
             _gd.Api.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                in offset,
+                (void*)indirectBuffer.Offset,
                 parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
@@ -1483,7 +1474,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    _gd.Api.BindBufferRange(target, (uint)assignment.Binding, 0, IntPtr.Zero, 0);
+                    _gd.Api.BindBufferRange(target, (uint)assignment.Binding, 0, 0, 0);
                     continue;
                 }
 
