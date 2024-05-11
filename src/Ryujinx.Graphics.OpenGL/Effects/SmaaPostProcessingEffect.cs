@@ -184,14 +184,14 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             var areaTexture = _areaTexture.DefaultView as TextureView;
             var searchTexture = _searchTexture.DefaultView as TextureView;
 
-            uint previousFramebuffer = (uint)_gd.Api.GetInteger(GetPName.DrawFramebufferBinding);
-            int previousUnit = _gd.Api.GetInteger(GetPName.ActiveTexture);
+            uint previousFramebuffer = (uint)_gd.Api.GetInteger(GLEnum.DrawFramebufferBinding);
+            int previousUnit = _gd.Api.GetInteger(GLEnum.ActiveTexture);
             _gd.Api.ActiveTexture(TextureUnit.Texture0);
-            uint previousTextureBinding0 = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding0 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
             _gd.Api.ActiveTexture(TextureUnit.Texture1);
-            uint previousTextureBinding1 = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding1 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
             _gd.Api.ActiveTexture(TextureUnit.Texture2);
-            uint previousTextureBinding2 = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding2 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
 
             var framebuffer = new Framebuffer(_gd.Api);
             framebuffer.Bind();
@@ -209,7 +209,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             uint dispatchX = (uint)BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
             uint dispatchY = (uint)BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
-            uint previousProgram = (uint)_gd.Api.GetInteger(GetPName.CurrentProgram);
+            uint previousProgram = (uint)_gd.Api.GetInteger(GLEnum.CurrentProgram);
             _gd.Api.BindImageTexture(0, edgeOutput.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             _gd.Api.UseProgram(_edgeShaderPrograms[Quality]);
             view.Bind(0);

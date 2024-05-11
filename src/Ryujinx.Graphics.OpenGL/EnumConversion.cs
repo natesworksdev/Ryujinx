@@ -14,9 +14,9 @@ namespace Ryujinx.Graphics.OpenGL
             switch (mode)
             {
                 case AddressMode.Clamp:
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
                     return TextureWrapMode.Clamp;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
                 case AddressMode.Repeat:
                     return TextureWrapMode.Repeat;
                 case AddressMode.MirrorClamp:
@@ -35,9 +35,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AddressMode)} enum value: {mode}.");
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
             return TextureWrapMode.Clamp;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         public static NV Convert(this AdvancedBlendOp op)
@@ -455,9 +455,9 @@ namespace Ryujinx.Graphics.OpenGL
                 case PrimitiveTopology.Quads:
                     return PrimitiveType.Quads;
                 case PrimitiveTopology.QuadStrip:
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
                     return PrimitiveType.QuadStrip;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
                 case PrimitiveTopology.Polygon:
                     return PrimitiveType.TriangleFan;
                 case PrimitiveTopology.LinesAdjacency:

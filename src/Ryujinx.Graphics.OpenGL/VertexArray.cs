@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -107,7 +108,7 @@ namespace Ryujinx.Graphics.OpenGL
                 int size = fmtInfo.Components;
 
                 bool isFloat = fmtInfo.PixelType == PixelType.Float ||
-                               fmtInfo.PixelType == PixelType.HalfFloat;
+                               fmtInfo.PixelType == (PixelType)NV.HalfFloatNV;
 
                 if (isFloat || fmtInfo.Normalized || fmtInfo.Scaled)
                 {

@@ -49,10 +49,10 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
             var textureView = _textureStorage.CreateView(view.Info, 0, 0) as TextureView;
 
-            uint previousProgram = (uint)_gd.Api.GetInteger(GetPName.CurrentProgram);
-            int previousUnit = _gd.Api.GetInteger(GetPName.ActiveTexture);
+            uint previousProgram = (uint)_gd.Api.GetInteger(GLEnum.CurrentProgram);
+            int previousUnit = _gd.Api.GetInteger(GLEnum.ActiveTexture);
             _gd.Api.ActiveTexture(TextureUnit.Texture0);
-            uint previousTextureBinding = (uint)_gd.Api.GetInteger(GetPName.TextureBinding2D);
+            uint previousTextureBinding = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
 
             _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             _gd.Api.UseProgram(_shaderProgram);

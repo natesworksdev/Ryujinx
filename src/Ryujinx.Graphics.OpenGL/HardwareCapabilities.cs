@@ -111,7 +111,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static unsafe bool HasExtension(GL api, string name)
         {
-            int numExtensions = api.GetInteger(GetPName.NumExtensions);
+            int numExtensions = api.GetInteger(GLEnum.NumExtensions);
 
             for (uint extension = 0; extension < numExtensions; extension++)
             {

@@ -150,7 +150,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (stencilMaskChanged)
             {
-                _gd.Api.StencilMaskSeparate(TriangleFace.Front, (uint)stencilMask);
+                _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)stencilMask);
             }
 
             if (depthMaskChanged)
@@ -176,7 +176,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (stencilMaskChanged)
             {
-                _gd.Api.StencilMaskSeparate(TriangleFace.Front, (uint)_stencilFrontMask);
+                _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)_stencilFrontMask);
             }
 
             if (depthMaskChanged)
@@ -193,11 +193,11 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else if (depthMask)
             {
-                _gd.Api.ClearBuffer(BufferKind.Depth, 0, ref depthValue);
+                _gd.Api.ClearBuffer(BufferKind.Depth, 0, in depthValue);
             }
             else if (stencilMask != 0)
             {
-                _gd.Api.ClearBuffer(BufferKind.Stencil, 0, ref stencilValue);
+                _gd.Api.ClearBuffer(BufferKind.Stencil, 0, in stencilValue);
             }
         }
 
@@ -238,9 +238,9 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 DrawQuadsImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
             else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 DrawQuadStripImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
@@ -378,9 +378,9 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
             else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 DrawQuadStripIndexedImpl(
                     indexCount,
@@ -436,7 +436,7 @@ namespace Ryujinx.Graphics.OpenGL
                         _gd.Api.DrawElementsInstancedBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
-                            _elementsType,
+                            (GLEnum)_elementsType,
                             (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
                             (uint)instanceCount,
                             (uint)firstInstance);
@@ -577,7 +577,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _gd.Api.DrawElementsInstancedBaseInstance(
                     _primitiveType,
                     (uint)indexCount,
-                    _elementsType,
+                    (GLEnum)_elementsType,
                     (void*)indexBaseOffset,
                     (uint)instanceCount,
                     (uint)firstInstance);
@@ -783,6 +783,7 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = false;
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
@@ -795,8 +796,9 @@ namespace Ryujinx.Graphics.OpenGL
             _gd.Api.AlphaFunc((AlphaFunction)op.Convert(), reference);
             _gd.Api.Enable(EnableCap.AlphaTest);
         }
+#pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
-
+        
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
             if (_gd.Capabilities.SupportsBlendEquationAdvanced)
@@ -1112,12 +1114,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (frontMode == backMode)
             {
-                _gd.Api.PolygonMode(TriangleFace.FrontAndBack, frontMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.FrontAndBack, frontMode.Convert());
             }
             else
             {
-                _gd.Api.PolygonMode(TriangleFace.Front, frontMode.Convert());
-                _gd.Api.PolygonMode(TriangleFace.Back, backMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.Front, frontMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.Back, backMode.Convert());
             }
         }
 
@@ -1260,7 +1262,7 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            _gd.Api.ScissorArray(0, (uint)count, ref v[0]);
+            _gd.Api.ScissorArray(0, (uint)count, in v[0]);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1274,32 +1276,32 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _gd.Api.StencilOpSeparate(
-                TriangleFace.Front,
+                StencilFaceDirection.Front,
                 stencilTest.FrontSFail.Convert(),
                 stencilTest.FrontDpFail.Convert(),
                 stencilTest.FrontDpPass.Convert());
 
             _gd.Api.StencilFuncSeparate(
-                TriangleFace.Front,
+                StencilFaceDirection.Front,
                 (StencilFunction)stencilTest.FrontFunc.Convert(),
                 stencilTest.FrontFuncRef,
                 (uint)stencilTest.FrontFuncMask);
 
-            _gd.Api.StencilMaskSeparate(TriangleFace.Front, (uint)stencilTest.FrontMask);
+            _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)stencilTest.FrontMask);
 
             _gd.Api.StencilOpSeparate(
-                TriangleFace.Back,
+                StencilFaceDirection.Back,
                 stencilTest.BackSFail.Convert(),
                 stencilTest.BackDpFail.Convert(),
                 stencilTest.BackDpPass.Convert());
 
             _gd.Api.StencilFuncSeparate(
-                TriangleFace.Back,
+                StencilFaceDirection.Back,
                 (StencilFunction)stencilTest.BackFunc.Convert(),
                 stencilTest.BackFuncRef,
                 (uint)stencilTest.BackFuncMask);
 
-            _gd.Api.StencilMaskSeparate(TriangleFace.Back, (uint)stencilTest.BackMask);
+            _gd.Api.StencilMaskSeparate(StencilFaceDirection.Back, (uint)stencilTest.BackMask);
 
             _gd.Api.Enable(EnableCap.StencilTest);
 
