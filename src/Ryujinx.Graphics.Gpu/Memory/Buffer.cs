@@ -180,7 +180,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private void ChangeBacking()
         {
-            var before = BackingState.Active;
             BufferAccess access = BackingState.SwitchAccess(this);
 
             BufferHandle newHandle = _context.Renderer.CreateBuffer((int)Size, access, Handle);

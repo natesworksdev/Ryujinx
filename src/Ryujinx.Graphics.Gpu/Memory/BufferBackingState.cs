@@ -101,8 +101,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _desiredType = (BufferBackingType)Math.Max((int)_desiredType, (int)oldState._desiredType);
         }
 
-        public BufferBackingType Active => _activeType;
-
         public BufferAccess SwitchAccess(Buffer parent)
         {
             BufferAccess access = parent.SparseCompatible ? BufferAccess.SparseCompatible : BufferAccess.Default;
