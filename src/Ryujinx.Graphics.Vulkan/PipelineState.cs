@@ -408,8 +408,6 @@ namespace Ryujinx.Graphics.Vulkan
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions2 = &_vertexAttributeDescriptions2[0])
             fixed (VertexInputBindingDescription* pVertexBindingDescriptions = &Internal.VertexBindingDescriptions[0])
-            fixed (Viewport* pViewports = &Internal.Viewports[0])
-            fixed (Rect2D* pScissors = &Internal.Scissors[0])
             fixed (PipelineColorBlendAttachmentState* pColorBlendAttachmentState = &Internal.ColorBlendAttachmentState[0])
             {
                 var vertexInputState = new PipelineVertexInputStateCreateInfo
@@ -472,18 +470,13 @@ namespace Ryujinx.Graphics.Vulkan
                     CullMode = CullMode,
                     FrontFace = FrontFace,
                     DepthBiasEnable = DepthBiasEnable,
-                    DepthBiasClamp = DepthBiasClamp,
-                    DepthBiasConstantFactor = DepthBiasConstantFactor,
-                    DepthBiasSlopeFactor = DepthBiasSlopeFactor,
                 };
 
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
                     SType = StructureType.PipelineViewportStateCreateInfo,
                     ViewportCount = ViewportsCount,
-                    PViewports = pViewports,
                     ScissorCount = ScissorsCount,
-                    PScissors = pScissors,
                 };
 
                 if (gd.Capabilities.SupportsDepthClipControl)
@@ -512,18 +505,18 @@ namespace Ryujinx.Graphics.Vulkan
                     StencilFrontPassOp,
                     StencilFrontDepthFailOp,
                     StencilFrontCompareOp,
-                    StencilFrontCompareMask,
-                    StencilFrontWriteMask,
-                    StencilFrontReference);
+                    null,
+                    null,
+                    null);
 
                 var stencilBack = new StencilOpState(
                     StencilBackFailOp,
                     StencilBackPassOp,
                     StencilBackDepthFailOp,
                     StencilBackCompareOp,
-                    StencilBackCompareMask,
-                    StencilBackWriteMask,
-                    StencilBackReference);
+                    null,
+                    null,
+                    null);
 
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
@@ -587,22 +580,21 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-                int dynamicStatesCount = supportsExtDynamicState ? 9 : 8;
+                int dynamicStatesCount = supportsExtDynamicState ? 8 : 7;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
                 dynamicStates[2] = DynamicState.DepthBias;
-                dynamicStates[3] = DynamicState.DepthBounds;
-                dynamicStates[4] = DynamicState.StencilCompareMask;
-                dynamicStates[5] = DynamicState.StencilWriteMask;
-                dynamicStates[6] = DynamicState.StencilReference;
-                dynamicStates[7] = DynamicState.BlendConstants;
+                dynamicStates[3] = DynamicState.StencilCompareMask;
+                dynamicStates[4] = DynamicState.StencilWriteMask;
+                dynamicStates[5] = DynamicState.StencilReference;
+                dynamicStates[6] = DynamicState.BlendConstants;
 
                 if (supportsExtDynamicState)
                 {
-                    dynamicStates[8] = DynamicState.VertexInputBindingStrideExt;
+                    dynamicStates[7] = DynamicState.VertexInputBindingStrideExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
