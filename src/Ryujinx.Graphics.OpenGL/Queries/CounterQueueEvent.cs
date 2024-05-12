@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                     return true;
                 }
 
-                if (ClearCounter || Type == QueryTarget.TimeElapsed)
+                if (ClearCounter || Type == (QueryTarget)GLEnum.Timestamp)
                 {
                     result = 0;
                 }
