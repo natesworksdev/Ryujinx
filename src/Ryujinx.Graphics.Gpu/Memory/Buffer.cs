@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             BufferAccess access = BackingState.SwitchAccess(this);
 
-            Handle = context.Renderer.CreateBuffer((int)size, access, baseBuffers?.MaxBy(x => x.Size).Handle ?? BufferHandle.Null);
+            Handle = context.Renderer.CreateBuffer((int)size, access);
 
             _useGranular = size > GranularBufferThreshold;
 
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             BufferAccess access = BackingState.SwitchAccess(this);
 
-            BufferHandle newHandle = _context.Renderer.CreateBuffer((int)Size, access, Handle);
+            BufferHandle newHandle = _context.Renderer.CreateBuffer((int)Size, access);
 
             _context.Renderer.Pipeline.CopyBuffer(Handle, newHandle, 0, 0, (int)Size);
 

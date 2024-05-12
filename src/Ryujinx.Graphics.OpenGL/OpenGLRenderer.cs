@@ -75,11 +75,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access, BufferHandle storageHint)
-        {
-            return CreateBuffer(size, access);
-        }
-
         public BufferHandle CreateBuffer(nint pointer, int size)
         {
             throw new NotSupportedException();
