@@ -509,11 +509,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
                     SType = StructureType.PipelineDepthStencilStateCreateInfo,
-                    DepthTestEnable = DepthTestEnable,
-                    DepthWriteEnable = DepthWriteEnable,
-                    DepthCompareOp = DepthCompareOp,
                     DepthBoundsTestEnable = DepthBoundsTestEnable,
-                    StencilTestEnable = StencilTestEnable,
                     MinDepthBounds = MinDepthBounds,
                     MaxDepthBounds = MaxDepthBounds,
                 };
@@ -540,6 +536,10 @@ namespace Ryujinx.Graphics.Vulkan
 
                     depthStencilState.Front = stencilFront;
                     depthStencilState.Back = stencilBack;
+                    depthStencilState.StencilTestEnable = StencilTestEnable;
+                    depthStencilState.DepthTestEnable = DepthTestEnable;
+                    depthStencilState.DepthWriteEnable = DepthWriteEnable;
+                    depthStencilState.DepthCompareOp = DepthCompareOp;
                 }
 
                 uint blendEnables = 0;
@@ -593,7 +593,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 10 : 11) : 7;
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 14 : 15) : 7;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -613,6 +613,10 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     dynamicStates[index++] = DynamicState.CullMode;
                     dynamicStates[index++] = DynamicState.FrontFace;
+                    dynamicStates[index++] = DynamicState.DepthTestEnable;
+                    dynamicStates[index++] = DynamicState.DepthWriteEnable;
+                    dynamicStates[index++] = DynamicState.DepthCompareOp;
+                    dynamicStates[index++] = DynamicState.StencilTestEnable;
                     dynamicStates[index] = DynamicState.StencilOp;
                 }
 
