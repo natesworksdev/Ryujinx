@@ -1,5 +1,6 @@
 using Ryujinx.Common.Memory;
 using Silk.NET.Vulkan;
+using System;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -18,12 +19,25 @@ namespace Ryujinx.Graphics.Vulkan
         private uint _frontCompareMask;
         private uint _frontWriteMask;
         private uint _frontReference;
+        private bool _opToo;
+        private StencilOp _backfailop;
+        private StencilOp _backpassop;
+        private StencilOp _backdepthfailop;
+        private CompareOp _backcompareop;
+        private StencilOp _frontfailop;
+        private StencilOp _frontpassop;
+        private StencilOp _frontdepthfailop;
+        private CompareOp _frontcompareop;
 
         private Array4<float> _blendConstants;
 
         public uint ViewportsCount;
         public Array16<Viewport> Viewports;
 
+        public CullModeFlags CullMode;
+        public FrontFace FrontFace;
+
+        [Flags]
         private enum DirtyFlags
         {
             None = 0,
@@ -32,7 +46,9 @@ namespace Ryujinx.Graphics.Vulkan
             Scissor = 1 << 2,
             Stencil = 1 << 3,
             Viewport = 1 << 4,
-            All = Blend | DepthBias | Scissor | Stencil | Viewport,
+            CullMode = 1 << 5,
+            FrontFace = 1 << 6,
+            All = Blend | DepthBias | Scissor | Stencil | Viewport | CullMode | FrontFace,
         }
 
         private DirtyFlags _dirty;
@@ -63,7 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.Scissor;
         }
 
-        public void SetStencilMasks(
+        public void SetStencilMask(
             uint backCompareMask,
             uint backWriteMask,
             uint backReference,
@@ -79,6 +95,27 @@ namespace Ryujinx.Graphics.Vulkan
             _frontReference = frontReference;
 
             _dirty |= DirtyFlags.Stencil;
+        }
+        
+        public void SetStencilOp(StencilOp backFailOp = default,
+            StencilOp backPassOp = default,
+            StencilOp backDepthFailOp = default,
+            CompareOp backCompareOp = default,
+            StencilOp frontFailOp = default,
+            StencilOp frontPassOp = default,
+            StencilOp frontDepthFailOp = default,
+            CompareOp frontCompareOp = default)
+        {
+            _backfailop = backFailOp;
+            _backpassop = backPassOp;
+            _backdepthfailop = backDepthFailOp;
+            _backcompareop = backCompareOp;
+
+            _frontfailop = frontFailOp;
+            _frontpassop = frontPassOp;
+            _frontdepthfailop = frontDepthFailOp;
+            _frontcompareop = frontCompareOp;
+            _opToo = true;
         }
 
         public void SetViewport(int index, Viewport viewport)
@@ -97,6 +134,20 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _dirty |= DirtyFlags.Viewport;
             }
+        }
+        
+        public void SetCullMode(CullModeFlags cullMode)
+        {
+            CullMode = cullMode;
+            
+            _dirty |= DirtyFlags.CullMode;
+        }
+        
+        public void SetFrontFace(FrontFace frontFace)
+        {
+            FrontFace = frontFace;
+            
+            _dirty |= DirtyFlags.FrontFace;
         }
 
         public void ForceAllDirty()
@@ -123,12 +174,22 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.Stencil))
             {
-                RecordStencilMasks(api, commandBuffer);
+                RecordStencil(api, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Viewport))
             {
                 RecordViewport(api, commandBuffer);
+            }
+            
+            if (_dirty.HasFlag(DirtyFlags.CullMode))
+            {
+                RecordCullMode(api, commandBuffer);
+            }
+            
+            if (_dirty.HasFlag(DirtyFlags.FrontFace))
+            {
+                RecordFrontFace(api, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -151,9 +212,17 @@ namespace Ryujinx.Graphics.Vulkan
                 api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors.AsSpan());
             }
         }
-
-        private readonly void RecordStencilMasks(Vk api, CommandBuffer commandBuffer)
+        
+        private readonly void RecordStencil(Vk api, CommandBuffer commandBuffer)
         {
+            if (_opToo)
+            {
+                api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
+                    _backdepthfailop, _backcompareop);
+                api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontfailop, _frontpassop,
+                    _frontdepthfailop, _frontcompareop);
+            }
+            
             api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backCompareMask);
             api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backWriteMask);
             api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceBackBit, _backReference);
@@ -168,6 +237,16 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 api.CmdSetViewport(commandBuffer, 0, ViewportsCount, Viewports.AsSpan());
             }
+        }
+        
+        private void RecordCullMode(Vk api, CommandBuffer commandBuffer)
+        {
+            api.CmdSetCullMode(commandBuffer, CullMode);
+        }
+        
+        private void RecordFrontFace(Vk api, CommandBuffer commandBuffer)
+        {
+            api.CmdSetFrontFace(commandBuffer, FrontFace);
         }
     }
 }
