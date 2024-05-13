@@ -404,6 +404,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 UpdateVertexAttributeDescriptions(gd);
             }
+            
+            bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions2 = &_vertexAttributeDescriptions2[0])
@@ -467,10 +469,14 @@ namespace Ryujinx.Graphics.Vulkan
                     RasterizerDiscardEnable = RasterizerDiscardEnable,
                     PolygonMode = PolygonMode,
                     LineWidth = LineWidth,
-                    CullMode = CullMode,
-                    FrontFace = FrontFace,
                     DepthBiasEnable = DepthBiasEnable,
                 };
+
+                if (!supportsExtDynamicState)
+                {
+                    rasterizationState.CullMode = CullMode;
+                    rasterizationState.FrontFace = FrontFace;
+                }
 
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
@@ -500,24 +506,6 @@ namespace Ryujinx.Graphics.Vulkan
                     AlphaToOneEnable = AlphaToOneEnable,
                 };
 
-                var stencilFront = new StencilOpState(
-                    StencilFrontFailOp,
-                    StencilFrontPassOp,
-                    StencilFrontDepthFailOp,
-                    StencilFrontCompareOp,
-                    null,
-                    null,
-                    null);
-
-                var stencilBack = new StencilOpState(
-                    StencilBackFailOp,
-                    StencilBackPassOp,
-                    StencilBackDepthFailOp,
-                    StencilBackCompareOp,
-                    null,
-                    null,
-                    null);
-
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
                     SType = StructureType.PipelineDepthStencilStateCreateInfo,
@@ -526,15 +514,37 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthCompareOp = DepthCompareOp,
                     DepthBoundsTestEnable = DepthBoundsTestEnable,
                     StencilTestEnable = StencilTestEnable,
-                    Front = stencilFront,
-                    Back = stencilBack,
                     MinDepthBounds = MinDepthBounds,
                     MaxDepthBounds = MaxDepthBounds,
                 };
+                
+                if (!supportsExtDynamicState)
+                {
+                    var stencilFront = new StencilOpState(
+                        StencilFrontFailOp,
+                        StencilFrontPassOp,
+                        StencilFrontDepthFailOp,
+                        StencilFrontCompareOp,
+                        null,
+                        null,
+                        null);
+
+                    var stencilBack = new StencilOpState(
+                        StencilBackFailOp,
+                        StencilBackPassOp,
+                        StencilBackDepthFailOp,
+                        StencilBackCompareOp,
+                        null,
+                        null,
+                        null);
+
+                    depthStencilState.Front = stencilFront;
+                    depthStencilState.Back = stencilBack;
+                }
 
                 uint blendEnables = 0;
 
-                if (gd.IsMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
+                if (isMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
                 {
                     // Blend can't be enabled for integer formats, so let's make sure it is disabled.
                     uint attachmentIntegerFormatMask = Internal.AttachmentIntegerFormatMask;
@@ -578,9 +588,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
-
-                bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-                int dynamicStatesCount = supportsExtDynamicState ? 8 : 7;
+                
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 10 : 11) : 7;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -594,7 +603,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState)
                 {
-                    dynamicStates[7] = DynamicState.VertexInputBindingStrideExt;
+                    int index = 7;
+                    if (!isMoltenVk) {
+                        dynamicStates[index++] = DynamicState.VertexInputBindingStrideExt;
+                    }
+                    dynamicStates[index++] = DynamicState.CullMode;
+                    dynamicStates[index++] = DynamicState.FrontFace;
+                    dynamicStates[index] = DynamicState.StencilOp;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo

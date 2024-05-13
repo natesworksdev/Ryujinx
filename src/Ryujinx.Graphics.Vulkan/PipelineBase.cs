@@ -84,6 +84,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfEnabled;
         private bool _tfActive;
 
+        private bool _supportExtDynamic;
+
         private readonly PipelineColorBlendAttachmentState[] _storedBlend;
 
         private ulong _drawCountSinceBarrier;
@@ -121,6 +123,8 @@ namespace Ryujinx.Graphics.Vulkan
             ClearScissor = new Rectangle<int>(0, 0, 0xffff, 0xffff);
 
             _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
+
+            _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
 
             _newState.Initialize();
         }
@@ -685,7 +689,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (texture is TextureView srcTexture)
             {
-                var oldCullMode = _newState.CullMode;
+                var oldCullMode = _supportExtDynamic ? DynamicState.CullMode : _newState.CullMode;
                 var oldStencilTestEnable = _newState.StencilTestEnable;
                 var oldDepthTestEnable = _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _newState.DepthWriteEnable;
@@ -693,7 +697,15 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _newState.ViewportsCount;
 
-                _newState.CullMode = CullModeFlags.None;
+                if (_supportExtDynamic)
+                {
+                    DynamicState.SetCullMode(CullModeFlags.None);
+                }
+                else
+                {
+                    _newState.CullMode = CullModeFlags.None;
+                }
+                
                 _newState.StencilTestEnable = false;
                 _newState.DepthTestEnable = false;
                 _newState.DepthWriteEnable = false;
@@ -707,7 +719,15 @@ namespace Ryujinx.Graphics.Vulkan
                     srcRegion,
                     dstRegion);
 
-                _newState.CullMode = oldCullMode;
+                if (_supportExtDynamic)
+                {
+                    DynamicState.SetCullMode(oldCullMode);
+                }
+                else
+                {
+                    _newState.CullMode = oldCullMode;
+                }
+                
                 _newState.StencilTestEnable = oldStencilTestEnable;
                 _newState.DepthTestEnable = oldDepthTestEnable;
                 _newState.DepthWriteEnable = oldDepthWriteEnable;
@@ -878,13 +898,29 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetFaceCulling(bool enable, Face face)
         {
-            _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
+            if (_supportExtDynamic)
+            {
+                DynamicState.SetCullMode(enable ? face.Convert() : CullModeFlags.None);
+            }
+            else
+            {
+                _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
+            }
+
             SignalStateChange();
         }
 
         public void SetFrontFace(FrontFace frontFace)
         {
-            _newState.FrontFace = frontFace.Convert();
+            if (_supportExtDynamic)
+            {
+                DynamicState.SetFrontFace(frontFace.Convert());
+            }
+            else
+            {
+                _newState.FrontFace = frontFace.Convert();
+            }
+
             SignalStateChange();
         }
 
@@ -1111,23 +1147,39 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
         {
-            DynamicState.SetStencilMasks(
-                (uint)stencilTest.BackFuncMask,
+            if (Gd.Capabilities.SupportsExtendedDynamicState)
+            {
+                DynamicState.SetStencilOp(
+                    stencilTest.BackSFail.Convert(),
+                    stencilTest.BackDpPass.Convert(),
+                    stencilTest.BackDpFail.Convert(),
+                    stencilTest.BackFunc.Convert(),
+                    stencilTest.FrontSFail.Convert(),
+                    stencilTest.FrontDpPass.Convert(),
+                    stencilTest.FrontDpFail.Convert(),
+                    stencilTest.FrontFunc.Convert());
+            }
+            else
+            {
+                _newState.StencilBackFailOp = stencilTest.BackSFail.Convert();
+                _newState.StencilBackPassOp = stencilTest.BackDpPass.Convert();
+                _newState.StencilBackDepthFailOp = stencilTest.BackDpFail.Convert();
+                _newState.StencilBackCompareOp = stencilTest.BackFunc.Convert();
+                _newState.StencilFrontFailOp = stencilTest.FrontSFail.Convert();
+                _newState.StencilFrontPassOp = stencilTest.FrontDpPass.Convert();
+                _newState.StencilFrontDepthFailOp = stencilTest.FrontDpFail.Convert();
+                _newState.StencilFrontCompareOp = stencilTest.FrontFunc.Convert();
+            }
+            
+            _newState.StencilTestEnable = stencilTest.TestEnable;
+            
+            DynamicState.SetStencilMask((uint)stencilTest.BackFuncMask,
                 (uint)stencilTest.BackMask,
                 (uint)stencilTest.BackFuncRef,
                 (uint)stencilTest.FrontFuncMask,
                 (uint)stencilTest.FrontMask,
                 (uint)stencilTest.FrontFuncRef);
 
-            _newState.StencilTestEnable = stencilTest.TestEnable;
-            _newState.StencilBackFailOp = stencilTest.BackSFail.Convert();
-            _newState.StencilBackPassOp = stencilTest.BackDpPass.Convert();
-            _newState.StencilBackDepthFailOp = stencilTest.BackDpFail.Convert();
-            _newState.StencilBackCompareOp = stencilTest.BackFunc.Convert();
-            _newState.StencilFrontFailOp = stencilTest.FrontSFail.Convert();
-            _newState.StencilFrontPassOp = stencilTest.FrontDpPass.Convert();
-            _newState.StencilFrontDepthFailOp = stencilTest.FrontDpFail.Convert();
-            _newState.StencilFrontCompareOp = stencilTest.FrontFunc.Convert();
             SignalStateChange();
         }
 
