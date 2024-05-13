@@ -693,7 +693,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState._stencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState._depthtestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState._depthwriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _newState.Topology;
+                var oldTopology = _supportExtDynamic ? DynamicState. Topology : _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _newState.ViewportsCount;
 
@@ -726,6 +726,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
+                    DynamicState.SetPrimitiveTopology(ref oldTopology);
                 }
                 else
                 {
@@ -733,9 +734,8 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.StencilTestEnable = oldStencilTestEnable;
                     _newState.DepthTestEnable = oldDepthTestEnable;
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
+                    _newState.Topology = oldTopology;
                 }
-                
-                _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
@@ -1019,9 +1019,15 @@ namespace Ryujinx.Graphics.Vulkan
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
-
-            _newState.Topology = vkTopology;
-
+            if (_supportExtDynamic)
+            {
+                DynamicState.SetPrimitiveTopology(ref vkTopology);
+            }
+            else
+            {
+                _newState.Topology = vkTopology;
+            }
+            
             SignalStateChange();
         }
 
