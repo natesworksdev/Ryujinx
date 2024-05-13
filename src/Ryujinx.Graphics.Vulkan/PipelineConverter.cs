@@ -164,10 +164,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.DepthBoundsTestEnable = false; // Not implemented.
 
             pipeline.DepthClampEnable = state.DepthClampEnable;
-
-            pipeline.DepthTestEnable = state.DepthTest.TestEnable;
-            pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
-            pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
+            
             pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
             
             pipeline.HasDepthStencil = state.DepthStencilEnable;
@@ -200,6 +197,10 @@ namespace Ryujinx.Graphics.Vulkan
             // Stencil masks and ref are dynamic, so are 0 in the Vulkan pipeline.
             if (!gd.Capabilities.SupportsExtendedDynamicState)
             {
+                pipeline.DepthTestEnable = state.DepthTest.TestEnable;
+                pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
+                pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
+                
                 pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
                 
                 pipeline.FrontFace = state.FrontFace.Convert();
@@ -213,12 +214,12 @@ namespace Ryujinx.Graphics.Vulkan
                 pipeline.StencilBackPassOp = state.StencilTest.BackDpPass.Convert();
                 pipeline.StencilBackDepthFailOp = state.StencilTest.BackDpFail.Convert();
                 pipeline.StencilBackCompareOp = state.StencilTest.BackFunc.Convert();
+                
+                pipeline.StencilTestEnable = state.StencilTest.TestEnable;
+                
+                pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
             }
-
-            pipeline.StencilTestEnable = state.StencilTest.TestEnable;
-
-            pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
-
+            
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);
 

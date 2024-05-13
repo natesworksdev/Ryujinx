@@ -453,8 +453,12 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                     PrimitiveRestartEnable = primitiveRestartEnable,
-                    Topology = Topology,
                 };
+
+                if (!supportsExtDynamicState)
+                {
+                    inputAssemblyState.Topology = Topology;
+                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
@@ -589,7 +593,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 14 : 15) : 7;
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 15 : 16) : 7;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -613,6 +617,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[index++] = DynamicState.DepthWriteEnable;
                     dynamicStates[index++] = DynamicState.DepthCompareOp;
                     dynamicStates[index++] = DynamicState.StencilTestEnable;
+                    dynamicStates[index++] = DynamicState.PrimitiveTopology;
                     dynamicStates[index] = DynamicState.StencilOp;
                 }
 
