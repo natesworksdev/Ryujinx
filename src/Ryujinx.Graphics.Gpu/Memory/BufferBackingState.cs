@@ -11,6 +11,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         DeviceMemoryWithFlush
     }
 
+    /// <summary>
+    /// Keeps track of buffer usage to decide what memory heap that buffer memory is placed on.
+    /// Dedicated GPUs prefer certain types of resources to be device local,
+    /// and if we need data to be read back, we might prefer that they're in host memory.
+    /// 
+    /// The measurements recorded here compare to a set of heruristics (thresholds and conditions)
+    /// that appear to produce good performance in most software.
+    /// </summary>
     internal struct BufferBackingState
     {
         private const int DeviceLocalSizeThreshold = 256 * 1024; // 256kb
@@ -18,6 +26,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const int SetCountThreshold = 100;
         private const int WriteCountThreshold = 50;
         private const int FlushCountThreshold = 5;
+        private const int DeviceLocalForceExpiry = 100;
 
         public readonly bool IsDeviceLocal => _activeType != BufferBackingType.HostMemory;
 
@@ -32,6 +41,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _flushCount;
         private int _flushTemp;
         private int _lastFlushWrite;
+        private int _deviceLocalForceCount;
 
         private readonly int _size;
 
@@ -51,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 BufferStage storageFlags = stage & BufferStage.StorageMask;
 
-                if (parent.Size > DeviceLocalSizeThreshold)
+                if (parent.Size > DeviceLocalSizeThreshold && baseBuffers == null)
                 {
                     _desiredType = BufferBackingType.DeviceMemory;
                 }
@@ -64,19 +74,20 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (rawStage == BufferStage.Fragment)
                     {
-                        // Fragment read should start device local. Fragment write should always be device local.
+                        // Fragment read should start device local.
 
                         _desiredType = BufferBackingType.DeviceMemory;
 
                         if (storageFlags != BufferStage.StorageRead)
                         {
-                            _canSwap = false;
+                            // Fragment write should stay device local until the use doesn't happen anymore.
+
+                            _deviceLocalForceCount = DeviceLocalForceExpiry;
                         }
                     }
 
                     // TODO: atomic access should likely always be device local
                 }
-
 
                 if (baseBuffers != null)
                 {
@@ -88,6 +99,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        private BufferBackingType CombineTypes(BufferBackingType left, BufferBackingType right)
+        {
+            return (BufferBackingType)Math.Max((int)left, (int)right);
+        }
+
         private void CombineState(BufferBackingState oldState)
         {
             _setCount += oldState._setCount;
@@ -95,10 +111,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _flushCount += oldState._flushCount;
             _flushTemp += oldState._flushTemp;
             _lastFlushWrite = -1;
+            _deviceLocalForceCount = Math.Max(_deviceLocalForceCount, oldState._deviceLocalForceCount);
 
             _canSwap &= oldState._canSwap;
 
-            _desiredType = (BufferBackingType)Math.Max((int)_desiredType, (int)oldState._desiredType);
+            _desiredType = CombineTypes(_desiredType, oldState._desiredType);
         }
 
         public BufferAccess SwitchAccess(Buffer parent)
@@ -170,10 +187,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (rawStage == BufferStage.Fragment)
                     {
-                        // Switch to device memory, never swap back.
+                        // Switch to device memory, swap back only if this use disappears.
 
-                        _desiredType = BufferBackingType.DeviceMemory;
-                        _canSwap = false;
+                        _desiredType = CombineTypes(_desiredType, BufferBackingType.DeviceMemory);
+                        _deviceLocalForceCount = DeviceLocalForceExpiry;
 
                         // TODO: atomic access should likely always be device local
                     }
@@ -191,18 +208,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 if (_writeCount >= WriteCountThreshold || _setCount >= SetCountThreshold || _flushCount >= FlushCountThreshold)
                 {
-                    if (_flushCount > 0 || _flushTemp-- > 0)
+                    if (_deviceLocalForceCount > 0 && --_deviceLocalForceCount != 0)
+                    {
+                        // Some buffer usage demanded that the buffer stay device local.
+                        // The desired type was selected when this counter was set.
+                    }
+                    else if (_flushCount > 0 || _flushTemp-- > 0)
                     {
                         // Buffers that flush should ideally be mapped in host address space for easy copies.
                         // If the buffer is large it will do better on GPU memory, as there will be more writes than data flushes (typically individual pages).
                         // If it is small, then it's likely most of the buffer will be flushed so we want it on host memory, as access is cached.
                         _desiredType = _size > DeviceLocalSizeThreshold ? BufferBackingType.DeviceMemoryWithFlush : BufferBackingType.HostMemory;
-
-                        // It's harder for a buffer that is flushed to revert to another type of mapping.
-                        if (_flushCount > 0)
-                        {
-                            _flushTemp = 1000;
-                        }
                     }
                     else if (_writeCount >= WriteCountThreshold)
                     {
@@ -213,6 +229,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     {
                         // Buffers that have their data set often should ideally be host mapped. (Constant buffers)
                         _desiredType = BufferBackingType.HostMemory;
+                    }
+
+                    // It's harder for a buffer that is flushed to revert to another type of mapping.
+                    if (_flushCount > 0)
+                    {
+                        _flushTemp = 1000;
                     }
 
                     _lastFlushWrite = -1;
