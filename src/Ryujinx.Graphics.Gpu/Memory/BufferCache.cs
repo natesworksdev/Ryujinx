@@ -1020,7 +1020,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         /// <summary>
         /// Signal that the given buffer's handle has changed,
-        /// Foricng rebind and forcing any overlapping multi-range buffers to be recreated.
+        /// forcing rebind and any overlapping multi-range buffers to be recreated.
         /// </summary>
         /// <param name="buffer">The buffer that has changed handle</param>
         public void BufferBackingChanged(Buffer buffer)
