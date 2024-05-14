@@ -257,7 +257,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
                 (name, flags, AddressForm addressForm) = InstTable.GetInstNameAndFlags(encoding, cpuPreset.Version, cpuPreset.Features);
 
-                if (name.IsPrivileged())
+                if (name.IsPrivileged() || (name == InstName.Sys && IsPrivilegedSys(encoding)))
                 {
                     name = InstName.UdfPermUndef;
                     flags = InstFlags.None;
@@ -274,7 +274,8 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
                 uint tempGprUseMask = gprUseMask | instGprReadMask | instGprWriteMask;
 
-                if (CalculateAvailableTemps(tempGprUseMask) < CalculateRequiredGprTemps(tempGprUseMask) || totalInsts++ >= MaxInstructionsPerFunction)
+                if (CalculateAvailableTemps(tempGprUseMask) < CalculateRequiredGprTemps(memoryManager.Type, tempGprUseMask) ||
+                    totalInsts++ >= MaxInstructionsPerFunction)
                 {
                     isTruncated = true;
                     address -= 4UL;
@@ -341,6 +342,11 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             return new(startAddress, address, insts, !isTruncated && !name.IsException(), isTruncated, isLoopEnd);
         }
 
+        private static bool IsPrivilegedSys(uint encoding)
+        {
+            return !SysUtils.IsCacheInstEl0(encoding);
+        }
+
         private static bool IsMrsNzcv(uint encoding)
         {
             return (encoding & ~0x1fu) == 0xd53b4200u;
@@ -373,9 +379,9 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             return false;
         }
 
-        private static int CalculateRequiredGprTemps(uint gprUseMask)
+        private static int CalculateRequiredGprTemps(MemoryManagerType mmType, uint gprUseMask)
         {
-            return BitOperations.PopCount(gprUseMask & RegisterUtils.ReservedRegsMask) + RegisterAllocator.MaxTempsInclFixed;
+            return BitOperations.PopCount(gprUseMask & RegisterUtils.ReservedRegsMask) + RegisterAllocator.CalculateMaxTempsInclFixed(mmType);
         }
 
         private static int CalculateAvailableTemps(uint gprUseMask)

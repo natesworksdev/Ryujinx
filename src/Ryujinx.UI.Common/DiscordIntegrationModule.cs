@@ -1,13 +1,17 @@
 using DiscordRPC;
 using Ryujinx.Common;
 using Ryujinx.UI.Common.Configuration;
+using System.Text;
 
 namespace Ryujinx.UI.Common
 {
     public static class DiscordIntegrationModule
     {
         private const string Description = "A simple, experimental Nintendo Switch emulator.";
-        private const string CliendId = "568815339807309834";
+        private const string ApplicationId = "1216775165866807456";
+
+        private const int ApplicationByteLimit = 128;
+        private const string Ellipsis = "…";
 
         private static DiscordRpcClient _discordClient;
         private static RichPresence _discordPresenceMain;
@@ -24,14 +28,14 @@ namespace Ryujinx.UI.Common
                 Details = "Main Menu",
                 State = "Idling",
                 Timestamps = Timestamps.Now,
-                Buttons = new[]
-                {
+                Buttons =
+                [
                     new Button
                     {
                         Label = "Website",
-                        Url   = "https://ryujinx.org/",
+                        Url = "https://ryujinx.org/",
                     },
-                },
+                ],
             };
 
             ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
@@ -52,7 +56,7 @@ namespace Ryujinx.UI.Common
                 // If we need to activate it and the client isn't active, initialize it
                 if (evnt.NewValue && _discordClient == null)
                 {
-                    _discordClient = new DiscordRpcClient(CliendId);
+                    _discordClient = new DiscordRpcClient(ApplicationId);
 
                     _discordClient.Initialize();
                     _discordClient.SetPresence(_discordPresenceMain);
@@ -60,34 +64,56 @@ namespace Ryujinx.UI.Common
             }
         }
 
-        public static void SwitchToPlayingState(string titleId, string titleName)
+        public static void SwitchToPlayingState(string titleId, string applicationName)
         {
             _discordClient?.SetPresence(new RichPresence
             {
                 Assets = new Assets
                 {
                     LargeImageKey = "game",
-                    LargeImageText = titleName,
+                    LargeImageText = TruncateToByteLength(applicationName, ApplicationByteLimit),
                     SmallImageKey = "ryujinx",
                     SmallImageText = Description,
                 },
-                Details = $"Playing {titleName}",
+                Details = TruncateToByteLength($"Playing {applicationName}", ApplicationByteLimit),
                 State = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
                 Timestamps = Timestamps.Now,
-                Buttons = new[]
-                {
+                Buttons =
+                [
                     new Button
                     {
                         Label = "Website",
                         Url = "https://ryujinx.org/",
                     },
-                },
+                ],
             });
         }
 
         public static void SwitchToMainMenu()
         {
             _discordClient?.SetPresence(_discordPresenceMain);
+        }
+
+        private static string TruncateToByteLength(string input, int byteLimit)
+        {
+            if (Encoding.UTF8.GetByteCount(input) <= byteLimit)
+            {
+                return input;
+            }
+
+            // Find the length to trim the string to guarantee we have space for the trailing ellipsis.
+            int trimLimit = byteLimit - Encoding.UTF8.GetByteCount(Ellipsis);
+
+            // Basic trim to best case scenario of 1 byte characters.
+            input = input[..trimLimit];
+
+            while (Encoding.UTF8.GetByteCount(input) > trimLimit)
+            {
+                // Remove one character from the end of the string at a time.
+                input = input[..^1];
+            }
+
+            return input.TrimEnd() + Ellipsis;
         }
 
         public static void Exit()

@@ -2,6 +2,7 @@ using Ryujinx.Horizon.Common;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -11,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     {
         private readonly IVirtualMemoryManager _cpuMemory;
 
-        protected override bool Supports4KBPages => _cpuMemory.Supports4KBPages;
+        protected override bool UsesPrivateAllocations => _cpuMemory.UsesPrivateAllocations;
 
         public KPageTable(KernelContext context, IVirtualMemoryManager cpuMemory, ulong reservedAddressSpaceSize) : base(context, reservedAddressSpaceSize)
         {
@@ -32,6 +33,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 pageList.AddRange(range.Address + DramMemoryMap.DramBase, range.Size / PageSize);
             }
+        }
+
+        /// <inheritdoc/>
+        protected override ReadOnlySequence<byte> GetReadOnlySequence(ulong va, int size)
+        {
+            return _cpuMemory.GetReadOnlySequence(va, size);
         }
 
         /// <inheritdoc/>
@@ -165,6 +172,29 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <inheritdoc/>
         protected override Result MapForeign(IEnumerable<HostMemoryRange> regions, ulong va, ulong size)
         {
+            ulong backingStart = (ulong)Context.Memory.Pointer;
+            ulong backingEnd = backingStart + Context.Memory.Size;
+
+            KPageList pageList = new();
+
+            foreach (HostMemoryRange region in regions)
+            {
+                // If the range is inside the physical memory, it is shared and we should increment the page count,
+                // otherwise it is private and we don't need to increment the page count.
+
+                if (region.Address >= backingStart && region.Address < backingEnd)
+                {
+                    pageList.AddRange(region.Address - backingStart + DramMemoryMap.DramBase, region.Size / PageSize);
+                }
+            }
+
+            using var scopedPageList = new KScopedPageList(Context.MemoryManager, pageList);
+
+            foreach (var pageNode in pageList)
+            {
+                Context.CommitMemory(pageNode.Address - DramMemoryMap.DramBase, pageNode.PagesCount * PageSize);
+            }
+
             ulong offset = 0;
 
             foreach (var region in regions)
@@ -173,6 +203,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 offset += region.Size;
             }
+
+            scopedPageList.SignalSuccess();
 
             return Result.Success;
         }
@@ -220,6 +252,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         protected override void SignalMemoryTracking(ulong va, ulong size, bool write)
         {
             _cpuMemory.SignalMemoryTracking(va, size, write);
+        }
+
+        /// <inheritdoc/>
+        protected override void Write(ulong va, ReadOnlySequence<byte> data)
+        {
+            _cpuMemory.Write(va, data);
         }
 
         /// <inheritdoc/>

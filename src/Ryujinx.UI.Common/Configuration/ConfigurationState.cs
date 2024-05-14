@@ -627,6 +627,16 @@ namespace Ryujinx.UI.Common.Configuration
         public ReactiveObject<bool> ShowConfirmExit { get; private set; }
 
         /// <summary>
+        /// Enables or disables save window size, position and state on close.
+        /// </summary>
+        public ReactiveObject<bool> RememberWindowState { get; private set; }
+
+        /// <summary>
+        /// Enables hardware-accelerated rendering for Avalonia
+        /// </summary>
+        public ReactiveObject<bool> EnableHardwareAcceleration { get; private set; }
+
+        /// <summary>
         /// Hide Cursor on Idle
         /// </summary>
         public ReactiveObject<HideCursorMode> HideCursor { get; private set; }
@@ -642,6 +652,8 @@ namespace Ryujinx.UI.Common.Configuration
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart = new ReactiveObject<bool>();
             ShowConfirmExit = new ReactiveObject<bool>();
+            RememberWindowState = new ReactiveObject<bool>();
+            EnableHardwareAcceleration = new ReactiveObject<bool>();
             HideCursor = new ReactiveObject<HideCursorMode>();
         }
 
@@ -678,6 +690,8 @@ namespace Ryujinx.UI.Common.Configuration
                 EnableDiscordIntegration = EnableDiscordIntegration,
                 CheckUpdatesOnStart = CheckUpdatesOnStart,
                 ShowConfirmExit = ShowConfirmExit,
+                RememberWindowState = RememberWindowState,
+                EnableHardwareAcceleration = EnableHardwareAcceleration,
                 HideCursor = HideCursor,
                 EnableVsync = Graphics.EnableVsync,
                 EnableShaderCache = Graphics.EnableShaderCache,
@@ -785,6 +799,8 @@ namespace Ryujinx.UI.Common.Configuration
             EnableDiscordIntegration.Value = true;
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
+            RememberWindowState.Value = true;
+            EnableHardwareAcceleration.Value = true;
             HideCursor.Value = HideCursorMode.OnIdle;
             Graphics.EnableVsync.Value = true;
             Graphics.EnableShaderCache.Value = true;
@@ -1442,6 +1458,24 @@ namespace Ryujinx.UI.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 50)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 50.");
+
+                configurationFileFormat.EnableHardwareAcceleration = true;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 51)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 51.");
+
+                configurationFileFormat.RememberWindowState = true;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
@@ -1472,6 +1506,8 @@ namespace Ryujinx.UI.Common.Configuration
             EnableDiscordIntegration.Value = configurationFileFormat.EnableDiscordIntegration;
             CheckUpdatesOnStart.Value = configurationFileFormat.CheckUpdatesOnStart;
             ShowConfirmExit.Value = configurationFileFormat.ShowConfirmExit;
+            RememberWindowState.Value = configurationFileFormat.RememberWindowState;
+            EnableHardwareAcceleration.Value = configurationFileFormat.EnableHardwareAcceleration;
             HideCursor.Value = configurationFileFormat.HideCursor;
             Graphics.EnableVsync.Value = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value = configurationFileFormat.EnableShaderCache;

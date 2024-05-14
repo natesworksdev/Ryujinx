@@ -20,7 +20,15 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             // Those passes are looking for specific patterns and only needs to run once.
             for (int blkIndex = 0; blkIndex < context.Blocks.Length; blkIndex++)
             {
-                BindlessToIndexed.RunPass(context.Blocks[blkIndex], context.ResourceManager);
+                if (context.TargetApi == TargetApi.OpenGL)
+                {
+                    BindlessToArray.RunPassOgl(context.Blocks[blkIndex], context.ResourceManager);
+                }
+                else
+                {
+                    BindlessToArray.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
+                }
+
                 BindlessElimination.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
 
                 // FragmentCoord only exists on fragment shaders, so we don't need to check other stages.
@@ -322,7 +330,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand lhs = operation.GetSource(0);
             Operand rhs = operation.GetSource(1);
 
-            // Check LHS of the the main multiplication operation. We expect an input being multiplied by gl_FragCoord.w.
+            // Check LHS of the main multiplication operation. We expect an input being multiplied by gl_FragCoord.w.
             if (lhs.AsgOp is not Operation attrMulOp || attrMulOp.Inst != (Instruction.FP32 | Instruction.Multiply))
             {
                 return;

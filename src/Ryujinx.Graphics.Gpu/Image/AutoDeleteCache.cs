@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private const int MinCountForDeletion = 32;
         private const int MaxCapacity = 2048;
-        private const ulong MaxTextureSizeCapacity = 512 * 1024 * 1024; // MB;
+        private const ulong MaxTextureSizeCapacity = 1024 * 1024 * 1024; // MB;
 
         private readonly LinkedList<Texture> _textures;
         private ulong _totalSize;
@@ -107,8 +107,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (texture.CacheNode != _textures.Last)
                 {
                     _textures.Remove(texture.CacheNode);
-
-                    texture.CacheNode = _textures.AddLast(texture);
+                    _textures.AddLast(texture.CacheNode);
                 }
 
                 if (_totalSize > MaxTextureSizeCapacity && _textures.Count >= MinCountForDeletion)
