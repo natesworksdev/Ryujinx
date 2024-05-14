@@ -1596,6 +1596,7 @@ namespace Ryujinx.UI.Common.Configuration
         private static void LogValueChange<T>(ReactiveEventArgs<T> eventArgs, string valueName)
         {
             string message = string.Create(CultureInfo.InvariantCulture, $"{valueName} set to: {eventArgs.NewValue}");
+
             Ryujinx.Common.Logging.Logger.Info?.Print(LogClass.Configuration, message);
         }
 
