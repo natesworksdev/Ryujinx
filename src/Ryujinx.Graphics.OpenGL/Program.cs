@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.OpenGL
                         _gd.Api.CompileShader(shaderHandle);
                         break;
                     case TargetLanguage.Spirv:
-                        fixed (byte* ptr = shader.BinaryCode.AsSpan())
+                        fixed (byte* ptr = shader.BinaryCode)
                         {
                             _gd.Api.ShaderBinary(1, in shaderHandle, ShaderBinaryFormat.ShaderBinaryFormatSpirV, ptr, (uint)shader.BinaryCode.Length);
                         }
@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _gd.Api.GetProgram(Handle, ProgramPropertyARB.ProgramBinaryLength, out int size);
 
-            byte[] data = new byte[size];
+            byte[] data = new byte[size + 4];
             GLEnum binFormat;
 
             fixed (byte* ptr = data)
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _gd.Api.GetProgramBinary(Handle, (uint)size, out _, out binFormat, ptr);
             }
 
-            BinaryPrimitives.WriteInt32LittleEndian(data, (int)binFormat);
+            BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(size, 4), (int)binFormat);
 
             return data;
         }
