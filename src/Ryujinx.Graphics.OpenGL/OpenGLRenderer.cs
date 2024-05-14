@@ -61,7 +61,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             BufferCount++;
 
-            if (access.HasFlag(GAL.BufferAccess.HostMemory))
+            var memType = access & GAL.BufferAccess.MemoryTypeMask;
+
+            if (memType == GAL.BufferAccess.HostMemory)
             {
                 BufferHandle handle = Buffer.CreatePersistent(size);
 

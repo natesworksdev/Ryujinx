@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
+    /// <summary>
+    /// Pipeline stages that can modify buffer data, as well as flags indicating storage usage.
+    /// Must match ShaderStage for the shader stages, though anything after that can be in any order.
+    /// </summary>
     internal enum BufferStage : byte
     {
         Compute,
@@ -31,6 +35,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 #pragma warning restore CA1069 // Enums values should not be duplicated
     }
 
+    /// <summary>
+    /// Utility methods to convert shader stages and binding flags into buffer stages.
+    /// </summary>
     internal static class BufferStageUtils
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

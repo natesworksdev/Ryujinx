@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (_canSwap)
             {
                 // Might want to start certain buffers as being device local,
-                // and the usage might also _lock_ those buffers into being device local.
+                // and the usage might also lock those buffers into being device local.
 
                 BufferStage storageFlags = stage & BufferStage.StorageMask;
 
@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         }
                     }
 
-                    // TODO: atomic access should likely always be device local
+                    // TODO: Might be nice to force atomic access to be device local for any stage.
                 }
 
                 if (baseBuffers != null)
@@ -99,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private BufferBackingType CombineTypes(BufferBackingType left, BufferBackingType right)
+        private static BufferBackingType CombineTypes(BufferBackingType left, BufferBackingType right)
         {
             return (BufferBackingType)Math.Max((int)left, (int)right);
         }
@@ -192,7 +192,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         _desiredType = CombineTypes(_desiredType, BufferBackingType.DeviceMemory);
                         _deviceLocalForceCount = DeviceLocalForceExpiry;
 
-                        // TODO: atomic access should likely always be device local
+                        // TODO: Might be nice to force atomic access to be device local for any stage.
                     }
                 }
 
