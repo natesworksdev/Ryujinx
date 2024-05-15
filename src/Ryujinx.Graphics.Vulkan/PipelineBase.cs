@@ -726,7 +726,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
-                    DynamicState.SetPrimitiveTopology(ref oldTopology);
+                    DynamicState.SetPrimitiveTopology(oldTopology);
                 }
                 else
                 {
@@ -1020,7 +1020,7 @@ namespace Ryujinx.Graphics.Vulkan
             var vkTopology = Gd.TopologyRemap(topology).Convert();
             if (_supportExtDynamic)
             {
-                DynamicState.SetPrimitiveTopology(ref vkTopology);
+                DynamicState.SetPrimitiveTopology(vkTopology);
             }
             else
             {
