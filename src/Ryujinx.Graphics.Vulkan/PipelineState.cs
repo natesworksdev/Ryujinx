@@ -449,6 +449,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 primitiveRestartEnable &= topologySupportsRestart;
 
+                if ((Topology == PrimitiveTopology.LineStrip || Topology == PrimitiveTopology.TriangleStrip ||
+                     Topology == PrimitiveTopology.LineStripWithAdjacency ||
+                     Topology == PrimitiveTopology.TriangleStripWithAdjacency) && isMoltenVk)
+                {
+                    primitiveRestartEnable = true;
+                }
+
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
@@ -648,7 +655,6 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicState = &pipelineDynamicStateCreateInfo,
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
-                    BasePipelineIndex = -1,
                 };
 
                 Result result = gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle);
