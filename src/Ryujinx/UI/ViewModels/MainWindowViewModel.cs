@@ -103,6 +103,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private double _windowHeight;
 
         private bool _isActive;
+        private bool _isSubMenuOpen;
 
         public ApplicationData ListSelectedApplication;
         public ApplicationData GridSelectedApplication;
@@ -311,6 +312,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _isFullScreen = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsSubMenuOpen
+        {
+            get => _isSubMenuOpen;
+            set
+            {
+                _isSubMenuOpen = value;
 
                 OnPropertyChanged();
             }
