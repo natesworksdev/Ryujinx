@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.DepthTestCompareOp;
         }
         
-        public void SetPrimitiveTopology(ref PrimitiveTopology topology)
+        public void SetPrimitiveTopology(PrimitiveTopology topology)
         {
             Topology = topology;
 
