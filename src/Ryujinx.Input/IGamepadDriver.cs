@@ -35,7 +35,7 @@ namespace Ryujinx.Input
         IGamepad GetGamepad(string id);
 
         /// <summary>
-        /// Flush the internal state of the driver.
+        /// Clear the internal state of the driver.
         /// </summary>
         /// <remarks>Does nothing by default.</remarks>
         void Clear() { }
