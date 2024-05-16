@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Audio.Renderer.Parameter
 {
     /// <summary>
-    /// Input header for a splitter destination version 1 update.
+    /// Input header for a splitter destination version 2 update.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SplitterDestinationInParameterVersion2 : ISplitterDestinationInParameter
