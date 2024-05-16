@@ -46,6 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsViewportArray2;
         public readonly bool SupportsHostImportedMemory;
         public readonly bool SupportsDepthClipControl;
+        public readonly bool SupportsWideLines;
         public readonly uint SubgroupSize;
         public readonly SampleCountFlags SupportedSampleCounts;
         public readonly PortabilitySubsetFlags PortabilitySubset;
@@ -84,6 +85,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsViewportArray2,
             bool supportsHostImportedMemory,
             bool supportsDepthClipControl,
+            bool supportsWideLines,
             uint subgroupSize,
             SampleCountFlags supportedSampleCounts,
             PortabilitySubsetFlags portabilitySubset,
@@ -121,6 +123,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsViewportArray2 = supportsViewportArray2;
             SupportsHostImportedMemory = supportsHostImportedMemory;
             SupportsDepthClipControl = supportsDepthClipControl;
+            SupportsWideLines = supportsWideLines;
             SubgroupSize = subgroupSize;
             SupportedSampleCounts = supportedSampleCounts;
             PortabilitySubset = portabilitySubset;

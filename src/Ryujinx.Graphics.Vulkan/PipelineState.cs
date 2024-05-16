@@ -479,7 +479,6 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthClampEnable = DepthClampEnable,
                     RasterizerDiscardEnable = RasterizerDiscardEnable,
                     PolygonMode = PolygonMode,
-                    LineWidth = LineWidth,
                     DepthBiasEnable = DepthBiasEnable,
                 };
 
@@ -604,7 +603,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 15 : 16) : 7;
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 16 : 17) : 8;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -615,21 +614,23 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[4] = DynamicState.StencilWriteMask;
                 dynamicStates[5] = DynamicState.StencilReference;
                 dynamicStates[6] = DynamicState.BlendConstants;
+                dynamicStates[7] = DynamicState.LineWidth;
 
+                
                 if (supportsExtDynamicState)
                 {
-                    int index = 7;
+                    int index = 8;
                     if (!isMoltenVk) {
                         dynamicStates[index++] = DynamicState.VertexInputBindingStrideExt;
                     }
-                    dynamicStates[index++] = DynamicState.CullMode;
-                    dynamicStates[index++] = DynamicState.FrontFace;
-                    dynamicStates[index++] = DynamicState.DepthTestEnable;
-                    dynamicStates[index++] = DynamicState.DepthWriteEnable;
-                    dynamicStates[index++] = DynamicState.DepthCompareOp;
-                    dynamicStates[index++] = DynamicState.StencilTestEnable;
-                    dynamicStates[index++] = DynamicState.PrimitiveTopology;
-                    dynamicStates[index] = DynamicState.StencilOp;
+                    dynamicStates[index++] = DynamicState.CullModeExt;
+                    dynamicStates[index++] = DynamicState.FrontFaceExt;
+                    dynamicStates[index++] = DynamicState.DepthTestEnableExt;
+                    dynamicStates[index++] = DynamicState.DepthWriteEnableExt;
+                    dynamicStates[index++] = DynamicState.DepthCompareOpExt;
+                    dynamicStates[index++] = DynamicState.StencilTestEnableExt;
+                    dynamicStates[index++] = DynamicState.PrimitiveTopologyExt;
+                    dynamicStates[index] = DynamicState.StencilOpExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo

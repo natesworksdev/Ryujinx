@@ -29,6 +29,8 @@ namespace Ryujinx.Graphics.Vulkan
         private StencilOp _frontpassop;
         private StencilOp _frontdepthfailop;
         private CompareOp _frontcompareop;
+
+        private float _linewidth;
         
         public bool _stencilTestEnable;
 
@@ -61,7 +63,8 @@ namespace Ryujinx.Graphics.Vulkan
             DepthTestCompareOp = 1 << 8,
             StencilTestEnable = 1 << 9,
             Toplogy = 1 << 10,
-            All = Blend | DepthBias | Scissor | Stencil | Viewport | CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | Toplogy,
+            LineWidth = 1 <<11,
+            All = Blend | DepthBias | Scissor | Stencil | Viewport | CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | Toplogy | LineWidth,
         }
 
         private DirtyFlags _dirty;
@@ -193,6 +196,13 @@ namespace Ryujinx.Graphics.Vulkan
             
             _dirty |= DirtyFlags.FrontFace;
         }
+        
+        public void SetLineWidth(float width)
+        {
+            _linewidth = width;
+            
+            _dirty |= DirtyFlags.LineWidth;
+        }
 
         public void ForceAllDirty()
         {
@@ -254,6 +264,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_dirty.HasFlag(DirtyFlags.Toplogy))
             {
                 RecordPrimitiveTopology(api, commandBuffer);
+            }
+            
+            if (_dirty.HasFlag(DirtyFlags.LineWidth))
+            {
+                RecordLineWidth(api, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -332,6 +347,11 @@ namespace Ryujinx.Graphics.Vulkan
         private void RecordPrimitiveTopology(Vk api, CommandBuffer commandBuffer)
         {
             api.CmdSetPrimitiveTopology(commandBuffer, Topology);
+        }
+        
+        private void RecordLineWidth(Vk api, CommandBuffer commandBuffer)
+        {
+            api.CmdSetLineWidth(commandBuffer, _linewidth);
         }
     }
 }
