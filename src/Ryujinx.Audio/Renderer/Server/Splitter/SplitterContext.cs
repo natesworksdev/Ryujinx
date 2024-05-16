@@ -19,7 +19,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// <summary>
         /// Amount of biquad filter states per splitter destination.
         /// </summary>
-        public const int BqfStatesPerDestination = 8;
+        public const int BqfStatesPerDestination = 4;
 
         /// <summary>
         /// Storage for <see cref="SplitterState"/>.
@@ -271,7 +271,9 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
 
             if (parameter.IsMagicValid())
             {
-                if (parameter.Id >= 0 && parameter.Id < _splitterDestinationsV1.Length)
+                int length = _splitterDestinationsV2.IsEmpty ? _splitterDestinationsV1.Length : _splitterDestinationsV2.Length;
+
+                if (parameter.Id >= 0 && parameter.Id < length)
                 {
                     SplitterDestination destination = GetDestination(parameter.Id);
 
@@ -325,7 +327,7 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
         /// <returns>Return true if the update was successful.</returns>
         public bool Update(ref SequenceReader<byte> input)
         {
-            if (_splitterDestinationsV1.IsEmpty || _splitters.IsEmpty)
+            if (!UsingSplitter())
             {
                 return true;
             }

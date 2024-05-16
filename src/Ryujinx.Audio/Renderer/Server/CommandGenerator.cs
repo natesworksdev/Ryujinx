@@ -12,7 +12,7 @@ using Ryujinx.Audio.Renderer.Server.Voice;
 using Ryujinx.Audio.Renderer.Utils;
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Server
 {
@@ -143,7 +143,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
             if (supportsOptimizedPath && voiceState.BiquadFilters[0].Enable && voiceState.BiquadFilters[1].Enable)
             {
-                Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state)[..(VoiceUpdateState.BiquadStateSize * Constants.VoiceBiquadFilterCount)];
+                Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state)[..(Unsafe.SizeOf<BiquadFilterState>() * Constants.VoiceBiquadFilterCount)];
                 Memory<BiquadFilterState> stateMemory = SpanMemoryManager<BiquadFilterState>.Cast(biquadStateRawMemory);
 
                 _commandBuffer.GenerateMultiTapBiquadFilter(baseIndex, voiceState.BiquadFilters.AsSpan(), stateMemory, bufferOffset, bufferOffset, voiceState.BiquadFilterNeedInitialization, nodeId);
@@ -156,8 +156,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
                     if (filter.Enable)
                     {
-                        Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state)[..(VoiceUpdateState.BiquadStateSize * Constants.VoiceBiquadFilterCount)];
-
+                        Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state)[..(Unsafe.SizeOf<BiquadFilterState>() * Constants.VoiceBiquadFilterCount)];
                         Memory<BiquadFilterState> stateMemory = SpanMemoryManager<BiquadFilterState>.Cast(biquadStateRawMemory);
 
                         _commandBuffer.GenerateBiquadFilter(
@@ -210,9 +209,9 @@ namespace Ryujinx.Audio.Renderer.Server
                             ref bqf0,
                             ref bqf1,
                             bqfState[..1],
+                            bqfState.Slice(1, 1),
                             bqfState.Slice(2, 1),
-                            bqfState.Slice(4, 1),
-                            bqfState.Slice(6, 1),
+                            bqfState.Slice(3, 1),
                             !destination.IsBiquadFilterEnabledPrev(),
                             !destination.IsBiquadFilterEnabledPrev(),
                             true,
@@ -233,7 +232,7 @@ namespace Ryujinx.Audio.Renderer.Server
                             state,
                             ref bqf0,
                             bqfState[..1],
-                            bqfState.Slice(2, 1),
+                            bqfState.Slice(1, 1),
                             !destination.IsBiquadFilterEnabledPrev(),
                             true,
                             isFirstMixBuffer,
@@ -252,7 +251,7 @@ namespace Ryujinx.Audio.Renderer.Server
                             state,
                             ref bqf1,
                             bqfState[..1],
-                            bqfState.Slice(2, 1),
+                            bqfState.Slice(1, 1),
                             !destination.IsBiquadFilterEnabledPrev(),
                             true,
                             isFirstMixBuffer,
@@ -863,9 +862,9 @@ namespace Ryujinx.Audio.Renderer.Server
                     ref bqf0,
                     ref bqf1,
                     bqfState[..1],
+                    bqfState.Slice(1, 1),
                     bqfState.Slice(2, 1),
-                    bqfState.Slice(4, 1),
-                    bqfState.Slice(6, 1),
+                    bqfState.Slice(3, 1),
                     !destination.IsBiquadFilterEnabledPrev(),
                     !destination.IsBiquadFilterEnabledPrev(),
                     false,
@@ -886,7 +885,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     Memory<VoiceUpdateState>.Empty,
                     ref bqf0,
                     bqfState[..1],
-                    bqfState.Slice(2, 1),
+                    bqfState.Slice(1, 1),
                     !destination.IsBiquadFilterEnabledPrev(),
                     false,
                     isFirstMixBuffer,
@@ -905,7 +904,7 @@ namespace Ryujinx.Audio.Renderer.Server
                     Memory<VoiceUpdateState>.Empty,
                     ref bqf1,
                     bqfState[..1],
-                    bqfState.Slice(2, 1),
+                    bqfState.Slice(1, 1),
                     !destination.IsBiquadFilterEnabledPrev(),
                     false,
                     isFirstMixBuffer,
