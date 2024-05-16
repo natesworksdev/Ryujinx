@@ -53,6 +53,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.70f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(1, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -79,6 +81,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.70f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(1, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -105,6 +109,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.70f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(1, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -131,6 +137,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.75f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(1, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -157,6 +165,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(2, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -183,6 +193,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(2, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -209,6 +221,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsFalse(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(2, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -235,6 +249,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsTrue(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsFalse(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(3, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -261,6 +277,8 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsTrue(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsTrue(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsFalse(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(3, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
@@ -287,9 +305,67 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
             Assert.IsTrue(behaviourContext.IsWaveBufferVersion2Supported());
             Assert.IsTrue(behaviourContext.IsEffectInfoVersion2Supported());
             Assert.IsTrue(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsFalse(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
 
             Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
             Assert.AreEqual(4, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
+            Assert.AreEqual(2, behaviourContext.GetPerformanceMetricsDataFormat());
+        }
+
+        [Test]
+        public void TestRevision11()
+        {
+            BehaviourContext behaviourContext = new();
+
+            behaviourContext.SetUserRevision(BehaviourContext.BaseRevisionMagic + BehaviourContext.Revision11);
+
+            Assert.IsTrue(behaviourContext.IsAdpcmLoopContextBugFixed());
+            Assert.IsTrue(behaviourContext.IsSplitterSupported());
+            Assert.IsTrue(behaviourContext.IsLongSizePreDelaySupported());
+            Assert.IsTrue(behaviourContext.IsAudioUsbDeviceOutputSupported());
+            Assert.IsTrue(behaviourContext.IsFlushVoiceWaveBuffersSupported());
+            Assert.IsTrue(behaviourContext.IsSplitterBugFixed());
+            Assert.IsTrue(behaviourContext.IsElapsedFrameCountSupported());
+            Assert.IsTrue(behaviourContext.IsDecodingBehaviourFlagSupported());
+            Assert.IsTrue(behaviourContext.IsBiquadFilterEffectStateClearBugFixed());
+            Assert.IsTrue(behaviourContext.IsMixInParameterDirtyOnlyUpdateSupported());
+            Assert.IsTrue(behaviourContext.IsWaveBufferVersion2Supported());
+            Assert.IsTrue(behaviourContext.IsEffectInfoVersion2Supported());
+            Assert.IsTrue(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsTrue(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsFalse(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
+
+            Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
+            Assert.AreEqual(5, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
+            Assert.AreEqual(2, behaviourContext.GetPerformanceMetricsDataFormat());
+        }
+
+        [Test]
+        public void TestRevision12()
+        {
+            BehaviourContext behaviourContext = new();
+
+            behaviourContext.SetUserRevision(BehaviourContext.BaseRevisionMagic + BehaviourContext.Revision12);
+
+            Assert.IsTrue(behaviourContext.IsAdpcmLoopContextBugFixed());
+            Assert.IsTrue(behaviourContext.IsSplitterSupported());
+            Assert.IsTrue(behaviourContext.IsLongSizePreDelaySupported());
+            Assert.IsTrue(behaviourContext.IsAudioUsbDeviceOutputSupported());
+            Assert.IsTrue(behaviourContext.IsFlushVoiceWaveBuffersSupported());
+            Assert.IsTrue(behaviourContext.IsSplitterBugFixed());
+            Assert.IsTrue(behaviourContext.IsElapsedFrameCountSupported());
+            Assert.IsTrue(behaviourContext.IsDecodingBehaviourFlagSupported());
+            Assert.IsTrue(behaviourContext.IsBiquadFilterEffectStateClearBugFixed());
+            Assert.IsTrue(behaviourContext.IsMixInParameterDirtyOnlyUpdateSupported());
+            Assert.IsTrue(behaviourContext.IsWaveBufferVersion2Supported());
+            Assert.IsTrue(behaviourContext.IsEffectInfoVersion2Supported());
+            Assert.IsTrue(behaviourContext.UseMultiTapBiquadFilterProcessing());
+            Assert.IsTrue(behaviourContext.IsNewEffectChannelMappingSupported());
+            Assert.IsTrue(behaviourContext.IsBiquadFilterParameterForSplitterEnabled());
+
+            Assert.AreEqual(0.80f, behaviourContext.GetAudioRendererProcessingTimeLimit());
+            Assert.AreEqual(5, behaviourContext.GetCommandProcessingTimeEstimatorVersion());
             Assert.AreEqual(2, behaviourContext.GetPerformanceMetricsDataFormat());
         }
     }
