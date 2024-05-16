@@ -968,7 +968,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetLineParameters(float width, bool smooth)
         {
-            _newState.LineWidth = width;
+            DynamicState.SetLineWidth(Gd.Capabilities.SupportsWideLines ? width : 1.0f);
+
             SignalStateChange();
         }
 

@@ -397,6 +397,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
+                _physicalDevice.PhysicalDeviceFeatures.WideLines,
                 propertiesSubgroup.SubgroupSize,
                 supportedSampleCounts,
                 portabilityFlags,

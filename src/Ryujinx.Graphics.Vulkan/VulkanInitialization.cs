@@ -382,6 +382,7 @@ namespace Ryujinx.Graphics.Vulkan
                 TessellationShader = supportedFeatures.TessellationShader,
                 VertexPipelineStoresAndAtomics = supportedFeatures.VertexPipelineStoresAndAtomics,
                 RobustBufferAccess = useRobustBufferAccess,
+                WideLines = supportedFeatures.WideLines,
             };
 
             void* pExtendedFeatures = null;
