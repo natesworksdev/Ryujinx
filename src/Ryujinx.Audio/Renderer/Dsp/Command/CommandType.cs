@@ -33,5 +33,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         GroupedBiquadFilter,
         CaptureBuffer,
         Compressor,
+        BiquadFilterAndMix,
+        MultiTapBiquadFilterAndMix,
     }
 }

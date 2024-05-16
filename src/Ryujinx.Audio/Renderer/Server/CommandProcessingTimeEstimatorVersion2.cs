@@ -476,5 +476,15 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             return 0;
         }
+
+        public uint Estimate(BiquadFilterAndMixCommand command)
+        {
+            return 0;
+        }
+
+        public uint Estimate(MultiTapBiquadFilterAndMixCommand command)
+        {
+            return 0;
+        }
     }
 }

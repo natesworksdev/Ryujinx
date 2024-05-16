@@ -232,7 +232,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="volume">The new volume.</param>
         /// <param name="state">The <see cref="VoiceUpdateState"/> to generate the command from.</param>
         /// <param name="nodeId">The node id associated to this command.</param>
-        public void GenerateMixRampGrouped(uint mixBufferCount, uint inputBufferIndex, uint outputBufferIndex, Span<float> previousVolume, Span<float> volume, Memory<VoiceUpdateState> state, int nodeId)
+        public void GenerateMixRampGrouped(uint mixBufferCount, uint inputBufferIndex, uint outputBufferIndex, ReadOnlySpan<float> previousVolume, ReadOnlySpan<float> volume, Memory<VoiceUpdateState> state, int nodeId)
         {
             MixRampGroupedCommand command = new(mixBufferCount, inputBufferIndex, outputBufferIndex, previousVolume, volume, state, nodeId);
 
@@ -254,6 +254,120 @@ namespace Ryujinx.Audio.Renderer.Server
         public void GenerateMixRamp(float previousVolume, float volume, uint inputBufferIndex, uint outputBufferIndex, int lastSampleIndex, Memory<VoiceUpdateState> state, int nodeId)
         {
             MixRampCommand command = new(previousVolume, volume, inputBufferIndex, outputBufferIndex, lastSampleIndex, state, nodeId);
+
+            command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+            AddCommand(command);
+        }
+
+        /// <summary>
+        /// Generate a new <see cref="BiquadFilterAndMixCommand"/>.
+        /// </summary>
+        /// <param name="previousVolume">The previous volume.</param>
+        /// <param name="volume">The new volume.</param>
+        /// <param name="inputBufferIndex">The input buffer index.</param>
+        /// <param name="outputBufferIndex">The output buffer index.</param>
+        /// <param name="lastSampleIndex">The index in the <see cref="VoiceUpdateState.LastSamples"/> array to store the ramped sample.</param>
+        /// <param name="state">The <see cref="VoiceUpdateState"/> to generate the command from.</param>
+        /// <param name="filter">The biquad filter parameter.</param>
+        /// <param name="biquadFilterState">The biquad state.</param>
+        /// <param name="previousBiquadFilterState">The previous biquad state.</param>
+        /// <param name="needInitialization">Set to true if the biquad filter state needs to be initialized.</param>
+        /// <param name="hasVolumeRamp">Set to true if the mix has volume ramp, and <paramref name="previousVolume"/> should be taken into account.</param>
+        /// <param name="isFirstMixBuffer">Set to true if the buffer is the first mix buffer.</param>
+        /// <param name="nodeId">The node id associated to this command.</param>
+        public void GenerateBiquadFilterAndMix(
+            float previousVolume,
+            float volume,
+            uint inputBufferIndex,
+            uint outputBufferIndex,
+            int lastSampleIndex,
+            Memory<VoiceUpdateState> state,
+            ref BiquadFilterParameter filter,
+            Memory<BiquadFilterState> biquadFilterState,
+            Memory<BiquadFilterState> previousBiquadFilterState,
+            bool needInitialization,
+            bool hasVolumeRamp,
+            bool isFirstMixBuffer,
+            int nodeId)
+        {
+            BiquadFilterAndMixCommand command = new(
+                previousVolume,
+                volume,
+                inputBufferIndex,
+                outputBufferIndex,
+                lastSampleIndex,
+                state,
+                ref filter,
+                biquadFilterState,
+                previousBiquadFilterState,
+                needInitialization,
+                hasVolumeRamp,
+                isFirstMixBuffer,
+                nodeId);
+
+            command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+            AddCommand(command);
+        }
+
+        /// <summary>
+        /// Generate a new <see cref="MultiTapBiquadFilterAndMixCommand"/>.
+        /// </summary>
+        /// <param name="previousVolume">The previous volume.</param>
+        /// <param name="volume">The new volume.</param>
+        /// <param name="inputBufferIndex">The input buffer index.</param>
+        /// <param name="outputBufferIndex">The output buffer index.</param>
+        /// <param name="lastSampleIndex">The index in the <see cref="VoiceUpdateState.LastSamples"/> array to store the ramped sample.</param>
+        /// <param name="state">The <see cref="VoiceUpdateState"/> to generate the command from.</param>
+        /// <param name="filter0">First biquad filter parameter.</param>
+        /// <param name="filter1">Second biquad filter parameter.</param>
+        /// <param name="biquadFilterState0">First biquad state.</param>
+        /// <param name="biquadFilterState1">Second biquad state.</param>
+        /// <param name="previousBiquadFilterState0">First previous biquad state.</param>
+        /// <param name="previousBiquadFilterState1">Second previous biquad state.</param>
+        /// <param name="needInitialization0">Set to true if the first biquad filter state needs to be initialized.</param>
+        /// <param name="needInitialization1">Set to true if the second biquad filter state needs to be initialized.</param>
+        /// <param name="hasVolumeRamp">Set to true if the mix has volume ramp, and <paramref name="previousVolume"/> should be taken into account.</param>
+        /// <param name="isFirstMixBuffer">Set to true if the buffer is the first mix buffer.</param>
+        /// <param name="nodeId">The node id associated to this command.</param>
+        public void GenerateMultiTapBiquadFilterAndMix(
+            float previousVolume,
+            float volume,
+            uint inputBufferIndex,
+            uint outputBufferIndex,
+            int lastSampleIndex,
+            Memory<VoiceUpdateState> state,
+            ref BiquadFilterParameter filter0,
+            ref BiquadFilterParameter filter1,
+            Memory<BiquadFilterState> biquadFilterState0,
+            Memory<BiquadFilterState> biquadFilterState1,
+            Memory<BiquadFilterState> previousBiquadFilterState0,
+            Memory<BiquadFilterState> previousBiquadFilterState1,
+            bool needInitialization0,
+            bool needInitialization1,
+            bool hasVolumeRamp,
+            bool isFirstMixBuffer,
+            int nodeId)
+        {
+            MultiTapBiquadFilterAndMixCommand command = new(
+                previousVolume,
+                volume,
+                inputBufferIndex,
+                outputBufferIndex,
+                lastSampleIndex,
+                state,
+                ref filter0,
+                ref filter1,
+                biquadFilterState0,
+                biquadFilterState1,
+                previousBiquadFilterState0,
+                previousBiquadFilterState1,
+                needInitialization0,
+                needInitialization1,
+                hasVolumeRamp,
+                isFirstMixBuffer,
+                nodeId);
 
             command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
 
