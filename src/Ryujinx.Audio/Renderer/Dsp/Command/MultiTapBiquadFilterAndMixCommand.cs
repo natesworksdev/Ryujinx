@@ -112,10 +112,9 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             UpdateState(BiquadFilterState0, PreviousBiquadFilterState0, NeedInitialization0);
             UpdateState(BiquadFilterState1, PreviousBiquadFilterState1, NeedInitialization1);
 
-            float volume = Volume0;
-
             if (HasVolumeRamp)
             {
+                float volume = Volume0;
                 float ramp = (Volume1 - Volume0) / (int)context.SampleCount;
 
                 State.Span[0].LastSamples[LastSampleIndex] = BiquadFilterHelper.ProcessDoubleBiquadFilterAndMixRamp(
@@ -139,7 +138,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     outputBuffer,
                     inputBuffer,
                     context.SampleCount,
-                    volume);
+                    Volume1);
             }
         }
     }
