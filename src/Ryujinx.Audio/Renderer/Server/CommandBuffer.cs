@@ -382,7 +382,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="bufferCount">The buffer count.</param>
         /// <param name="nodeId">The node id associated to this command.</param>
         /// <param name="sampleRate">The target sample rate in use.</param>
-        public void GenerateDepopForMixBuffersCommand(Memory<float> depopBuffer, uint bufferOffset, uint bufferCount, int nodeId, uint sampleRate)
+        public void GenerateDepopForMixBuffers(Memory<float> depopBuffer, uint bufferOffset, uint bufferCount, int nodeId, uint sampleRate)
         {
             DepopForMixBuffersCommand command = new(depopBuffer, bufferOffset, bufferCount, nodeId, sampleRate);
 
