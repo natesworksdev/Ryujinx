@@ -1,9 +1,10 @@
-using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Format = Ryujinx.Graphics.GAL.Format;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -36,7 +37,8 @@ namespace Ryujinx.Graphics.Vulkan
         public int FirstLayer { get; }
         public int FirstLevel { get; }
         public VkFormat VkFormat { get; }
-        public bool Valid { get; private set; }
+        private int _isValid;
+        public bool Valid => Volatile.Read(ref _isValid) != 0;
 
         public TextureView(
             VulkanRenderer gd,
@@ -158,7 +160,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            Valid = true;
+            _isValid = 1;
         }
 
         /// <summary>
@@ -178,7 +180,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             VkFormat = format;
 
-            Valid = true;
+            _isValid = 1;
         }
 
         public Auto<DisposableImage> GetImage()
@@ -700,19 +702,25 @@ namespace Ryujinx.Graphics.Vulkan
             return GetDataFromBuffer(result, size, result);
         }
 
-        public void SetData(SpanOrArray<byte> data)
+        /// <inheritdoc/>
+        public void SetData(IMemoryOwner<byte> data)
         {
-            SetData(data, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
+            SetData(data.Memory.Span, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
+            data.Dispose();
         }
 
-        public void SetData(SpanOrArray<byte> data, int layer, int level)
+        /// <inheritdoc/>
+        public void SetData(IMemoryOwner<byte> data, int layer, int level)
         {
-            SetData(data, layer, level, 1, 1, singleSlice: true);
+            SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true);
+            data.Dispose();
         }
 
-        public void SetData(SpanOrArray<byte> data, int layer, int level, Rectangle<int> region)
+        /// <inheritdoc/>
+        public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
-            SetData(data, layer, level, 1, 1, singleSlice: true, region);
+            SetData(data.Memory.Span, layer, level, 1, 1, singleSlice: true, region);
+            data.Dispose();
         }
 
         private void SetData(ReadOnlySpan<byte> data, int layer, int level, int layers, int levels, bool singleSlice, Rectangle<int>? region = null)
@@ -1017,10 +1025,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
-                Valid = false;
-
-                if (_gd.Textures.Remove(this))
+                bool wasValid = Interlocked.Exchange(ref _isValid, 0) != 0;
+                if (wasValid)
                 {
+                    _gd.Textures.Remove(this);
+
                     _imageView.Dispose();
                     _imageView2dArray?.Dispose();
 
@@ -1034,7 +1043,7 @@ namespace Ryujinx.Graphics.Vulkan
                         _imageViewDraw.Dispose();
                     }
 
-                    Storage.DecrementViewsCount();
+                    Storage?.DecrementViewsCount();
 
                     if (_renderPasses != null)
                     {
@@ -1045,22 +1054,22 @@ namespace Ryujinx.Graphics.Vulkan
                             pass.Dispose();
                         }
                     }
+
+                    if (_selfManagedViews != null)
+                    {
+                        foreach (var view in _selfManagedViews.Values)
+                        {
+                            view.Dispose();
+                        }
+
+                        _selfManagedViews = null;
+                    }
                 }
             }
         }
 
         public void Dispose()
         {
-            if (_selfManagedViews != null)
-            {
-                foreach (var view in _selfManagedViews.Values)
-                {
-                    view.Dispose();
-                }
-
-                _selfManagedViews = null;
-            }
-
             Dispose(true);
         }
 

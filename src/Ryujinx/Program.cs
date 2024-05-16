@@ -27,6 +27,7 @@ namespace Ryujinx.Ava
         public static string Version { get; private set; }
         public static string ConfigurationPath { get; private set; }
         public static bool PreviewerDetached { get; private set; }
+        public static bool UseHardwareAcceleration { get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial int MessageBoxA(IntPtr hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
@@ -39,7 +40,7 @@ namespace Ryujinx.Ava
 
             if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
             {
-                _ = MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nStarting on June 1st 2022, Ryujinx will only support Windows 10 1803 and newer.\n", $"Ryujinx {Version}", MbIconwarning);
+                _ = MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nRyujinx supports Windows 10 version 1803 and newer.\n", $"Ryujinx {Version}", MbIconwarning);
             }
 
             PreviewerDetached = true;
@@ -60,12 +61,16 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     EnableInputFocusProxy = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") == "gamescope",
-                    RenderingMode = new[] { X11RenderingMode.Glx, X11RenderingMode.Software },
+                    RenderingMode = UseHardwareAcceleration ?
+                        new[] { X11RenderingMode.Glx, X11RenderingMode.Software } :
+                        new[] { X11RenderingMode.Software },
                 })
                 .With(new Win32PlatformOptions
                 {
                     WinUICompositionBackdropCornerRadius = 8.0f,
-                    RenderingMode = new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software },
+                    RenderingMode = UseHardwareAcceleration ?
+                        new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software } :
+                        new[] { Win32RenderingMode.Software },
                 })
                 .UseSkia();
         }
@@ -143,23 +148,28 @@ namespace Ryujinx.Ava
             {
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
+                Logger.Notice.Print(LogClass.Application, $"No configuration file found. Saving default configuration to: {ConfigurationPath}");
 
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             }
             else
             {
+                Logger.Notice.Print(LogClass.Application, $"Loading configuration from: {ConfigurationPath}");
+
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
                     ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location: {ConfigurationPath}");
 
-                    Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
+                    ConfigurationState.Instance.LoadDefault();
                 }
             }
+
+            UseHardwareAcceleration = ConfigurationState.Instance.EnableHardwareAcceleration.Value;
 
             // Check if graphics backend was overridden
             if (CommandLineState.OverrideGraphicsBackend != null)
@@ -190,6 +200,12 @@ namespace Ryujinx.Ava
                     "always" => HideCursorMode.Always,
                     _ => ConfigurationState.Instance.HideCursor.Value,
                 };
+            }
+
+            // Check if hardware-acceleration was overridden.
+            if (CommandLineState.OverrideHardwareAcceleration != null)
+            {
+                UseHardwareAcceleration = CommandLineState.OverrideHardwareAcceleration.Value;
             }
         }
 

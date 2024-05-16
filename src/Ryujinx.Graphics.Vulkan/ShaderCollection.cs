@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         public bool HasMinimalLayout { get; }
         public bool UsePushDescriptors { get; }
         public bool IsCompute { get; }
+        public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
 
         public uint Stages { get; }
 
@@ -111,8 +112,8 @@ namespace Ryujinx.Graphics.Vulkan
             bool usePushDescriptors = !isMinimal &&
                 VulkanConfiguration.UsePushDescriptors &&
                 _gd.Capabilities.SupportsPushDescriptors &&
-                !_gd.IsNvidiaPreTuring &&
                 !IsCompute &&
+                !HasPushDescriptorsBug(gd) &&
                 CanUsePushDescriptors(gd, resourceLayout, IsCompute);
 
             ReadOnlyCollection<ResourceDescriptorCollection> sets = usePushDescriptors ?
@@ -145,6 +146,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             _compileTask = BackgroundCompilation();
             _firstBackgroundUse = !fromCache;
+        }
+
+        private static bool HasPushDescriptorsBug(VulkanRenderer gd)
+        {
+            // Those GPUs/drivers do not work properly with push descriptors, so we must force disable them.
+            return gd.IsNvidiaPreTuring || (gd.IsIntelArc && gd.IsIntelWindows);
         }
 
         private static bool CanUsePushDescriptors(VulkanRenderer gd, ResourceLayout layout, bool isCompute)
@@ -234,7 +241,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (currentDescriptor.Binding + currentCount != descriptor.Binding ||
                         currentDescriptor.Type != descriptor.Type ||
-                        currentDescriptor.Stages != descriptor.Stages)
+                        currentDescriptor.Stages != descriptor.Stages ||
+                        currentDescriptor.Count > 1 ||
+                        descriptor.Count > 1)
                     {
                         if (currentCount != 0)
                         {
@@ -242,7 +251,8 @@ namespace Ryujinx.Graphics.Vulkan
                                 currentDescriptor.Binding,
                                 currentCount,
                                 currentDescriptor.Type,
-                                currentDescriptor.Stages));
+                                currentDescriptor.Stages,
+                                currentDescriptor.Count > 1));
                         }
 
                         currentDescriptor = descriptor;
@@ -260,7 +270,8 @@ namespace Ryujinx.Graphics.Vulkan
                         currentDescriptor.Binding,
                         currentCount,
                         currentDescriptor.Type,
-                        currentDescriptor.Stages));
+                        currentDescriptor.Stages,
+                        currentDescriptor.Count > 1));
                 }
 
                 segments[setIndex] = currentSegments.ToArray();
@@ -286,7 +297,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (currentUsage.Binding + currentCount != usage.Binding ||
                         currentUsage.Type != usage.Type ||
-                        currentUsage.Stages != usage.Stages)
+                        currentUsage.Stages != usage.Stages ||
+                        currentUsage.ArrayLength > 1 ||
+                        usage.ArrayLength > 1)
                     {
                         if (currentCount != 0)
                         {
@@ -294,11 +307,12 @@ namespace Ryujinx.Graphics.Vulkan
                                 currentUsage.Binding,
                                 currentCount,
                                 currentUsage.Type,
-                                currentUsage.Stages));
+                                currentUsage.Stages,
+                                currentUsage.ArrayLength > 1));
                         }
 
                         currentUsage = usage;
-                        currentCount = 1;
+                        currentCount = usage.ArrayLength;
                     }
                     else
                     {
@@ -312,7 +326,8 @@ namespace Ryujinx.Graphics.Vulkan
                         currentUsage.Binding,
                         currentCount,
                         currentUsage.Type,
-                        currentUsage.Stages));
+                        currentUsage.Stages,
+                        currentUsage.ArrayLength > 1));
                 }
 
                 segments[setIndex] = currentSegments.ToArray();
@@ -337,7 +352,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (segments != null && segments.Length > 0)
                 {
-                    templates[setIndex] = new DescriptorSetTemplate(_gd, _device, segments, _plce, IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics, setIndex);
+                    templates[setIndex] = new DescriptorSetTemplate(
+                        _gd,
+                        _device,
+                        segments,
+                        _plce,
+                        IsCompute ? PipelineBindPoint.Compute : PipelineBindPoint.Graphics,
+                        setIndex);
                 }
             }
 
@@ -455,6 +476,7 @@ namespace Ryujinx.Graphics.Vulkan
                 stages[i] = _shaders[i].GetInfo();
             }
 
+            pipeline.HasTessellationControlShader = HasTessellationControlShader;
             pipeline.StagesCount = (uint)_shaders.Length;
             pipeline.PipelineLayout = PipelineLayout;
 

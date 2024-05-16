@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -56,6 +57,9 @@ namespace Ryujinx.Ava.UI.Windows
         public static bool ShowKeyErrorOnLoad { get; set; }
         public ApplicationLibrary ApplicationLibrary { get; set; }
 
+        public readonly double StatusBarHeight;
+        public readonly double MenuBarHeight;
+
         public MainWindow()
         {
             ViewModel = new MainWindowViewModel();
@@ -63,8 +67,6 @@ namespace Ryujinx.Ava.UI.Windows
             MainWindowViewModel = ViewModel;
 
             DataContext = ViewModel;
-
-            SetWindowSizePosition();
 
             InitializeComponent();
             Load();
@@ -74,9 +76,13 @@ namespace Ryujinx.Ava.UI.Windows
             ViewModel.Title = $"Ryujinx {Program.Version}";
 
             // NOTE: Height of MenuBar and StatusBar is not usable here, since it would still be 0 at this point.
-            double barHeight = MenuBar.MinHeight + StatusBarView.StatusBar.MinHeight;
+            StatusBarHeight = StatusBarView.StatusBar.MinHeight;
+            MenuBarHeight = MenuBar.MinHeight;
+            double barHeight = MenuBarHeight + StatusBarHeight;
             Height = ((Height - barHeight) / Program.WindowScaleFactor) + barHeight;
             Width /= Program.WindowScaleFactor;
+
+            SetWindowSizePosition();
 
             if (Program.PreviewerDetached)
             {
@@ -84,6 +90,29 @@ namespace Ryujinx.Ava.UI.Windows
 
                 this.GetObservable(IsActiveProperty).Subscribe(IsActiveChanged);
                 this.ScalingChanged += OnScalingChanged;
+            }
+        }
+
+        /// <summary>
+        /// Event handler for detecting OS theme change when using "Follow OS theme" option
+        /// </summary>
+        private void OnPlatformColorValuesChanged(object sender, PlatformColorValues e)
+        {
+            if (Application.Current is App app)
+            {
+                app.ApplyConfiguredTheme();
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            if (PlatformSettings != null)
+            {
+                /// <summary>
+                /// Unsubscribe to the ColorValuesChanged event
+                /// </summary>
+                PlatformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
             }
         }
 
@@ -285,7 +314,7 @@ namespace Ryujinx.Ava.UI.Windows
                 {
                     _deferLoad = false;
 
-                    ViewModel.LoadApplication(_launchPath, _startFullscreen).Wait();
+                    await ViewModel.LoadApplication(_launchPath, _startFullscreen);
                 }
             }
             else
@@ -319,6 +348,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SetWindowSizePosition()
         {
+            if (!ConfigurationState.Instance.RememberWindowState)
+            {
+                ViewModel.WindowHeight = (720 + StatusBarHeight + MenuBarHeight) * Program.WindowScaleFactor;
+                ViewModel.WindowWidth = 1280 * Program.WindowScaleFactor;
+
+                WindowState = WindowState.Normal;
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
+                return;
+            }
+
             PixelPoint savedPoint = new(ConfigurationState.Instance.UI.WindowStartup.WindowPositionX,
                                         ConfigurationState.Instance.UI.WindowStartup.WindowPositionY);
 
@@ -353,13 +393,17 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void SaveWindowSizePosition()
         {
-            ConfigurationState.Instance.UI.WindowStartup.WindowSizeHeight.Value = (int)Height;
-            ConfigurationState.Instance.UI.WindowStartup.WindowSizeWidth.Value = (int)Width;
-
-            ConfigurationState.Instance.UI.WindowStartup.WindowPositionX.Value = Position.X;
-            ConfigurationState.Instance.UI.WindowStartup.WindowPositionY.Value = Position.Y;
-
             ConfigurationState.Instance.UI.WindowStartup.WindowMaximized.Value = WindowState == WindowState.Maximized;
+
+            // Only save rectangle properties if the window is not in a maximized state.
+            if (WindowState != WindowState.Maximized)
+            {
+                ConfigurationState.Instance.UI.WindowStartup.WindowSizeHeight.Value = (int)Height;
+                ConfigurationState.Instance.UI.WindowStartup.WindowSizeWidth.Value = (int)Width;
+
+                ConfigurationState.Instance.UI.WindowStartup.WindowPositionX.Value = Position.X;
+                ConfigurationState.Instance.UI.WindowStartup.WindowPositionY.Value = Position.Y;
+            }
 
             MainWindowViewModel.SaveConfig();
         }
@@ -369,6 +413,11 @@ namespace Ryujinx.Ava.UI.Windows
             base.OnOpened(e);
 
             Initialize();
+
+            /// <summary>
+            /// Subscribe to the ColorValuesChanged event
+            /// </summary>
+            PlatformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
 
             ViewModel.Initialize(
                 ContentManager,
@@ -472,7 +521,10 @@ namespace Ryujinx.Ava.UI.Windows
                 return;
             }
 
-            SaveWindowSizePosition();
+            if (ConfigurationState.Instance.RememberWindowState)
+            {
+                SaveWindowSizePosition();
+            }
 
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();

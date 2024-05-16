@@ -11,16 +11,29 @@ namespace Ryujinx.Graphics.Shader
 
         public readonly int CbufSlot;
         public readonly int HandleIndex;
+        public readonly int ArrayLength;
+
+        public readonly bool Separate;
 
         public readonly TextureUsageFlags Flags;
 
-        public TextureDescriptor(int binding, SamplerType type, TextureFormat format, int cbufSlot, int handleIndex, TextureUsageFlags flags)
+        public TextureDescriptor(
+            int binding,
+            SamplerType type,
+            TextureFormat format,
+            int cbufSlot,
+            int handleIndex,
+            int arrayLength,
+            bool separate,
+            TextureUsageFlags flags)
         {
             Binding = binding;
             Type = type;
             Format = format;
             CbufSlot = cbufSlot;
             HandleIndex = handleIndex;
+            ArrayLength = arrayLength;
+            Separate = separate;
             Flags = flags;
         }
     }

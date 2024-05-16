@@ -343,11 +343,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             bool unalignedChanged = _currentSpecState.SetHasUnalignedStorageBuffer(_channel.BufferManager.HasUnalignedStorageBuffers);
 
-            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || unalignedChanged)
+            bool scaleMismatch;
+            do
             {
-                // Shader must be reloaded. _vtgWritesRtLayer should not change.
-                UpdateShaderState();
+                if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState, out scaleMismatch) || unalignedChanged)
+                {
+                    // Shader must be reloaded. _vtgWritesRtLayer should not change.
+                    UpdateShaderState();
+                }
+
+                if (scaleMismatch)
+                {
+                    // Binding textures changed scale of the bound render targets, correct the render target scale and rebind.
+                    UpdateRenderTargetState();
+                }
             }
+            while (scaleMismatch);
 
             _channel.BufferManager.CommitGraphicsBindings(_drawState.DrawIndexed);
         }
@@ -1418,7 +1429,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 addressesSpan[index] = baseAddress + shader.Offset;
             }
 
-            CachedShaderProgram gs = shaderCache.GetGraphicsShader(ref _state.State, ref _pipeline, _channel, ref _currentSpecState.GetPoolState(), ref _currentSpecState.GetGraphicsState(), addresses);
+            int samplerPoolMaximumId = _state.State.SamplerIndex == SamplerIndex.ViaHeaderIndex
+                ? _state.State.TexturePoolState.MaximumId
+                : _state.State.SamplerPoolState.MaximumId;
+
+            CachedShaderProgram gs = shaderCache.GetGraphicsShader(
+                ref _state.State,
+                ref _pipeline,
+                _channel,
+                samplerPoolMaximumId,
+                ref _currentSpecState.GetPoolState(),
+                ref _currentSpecState.GetGraphicsState(),
+                addresses);
 
             // Consume the modified flag for spec state so that it isn't checked again.
             _currentSpecState.SetShader(gs);
