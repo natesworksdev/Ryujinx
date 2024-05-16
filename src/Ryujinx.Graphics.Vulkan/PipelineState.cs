@@ -504,19 +504,13 @@ namespace Ryujinx.Graphics.Vulkan
                     StencilFrontFailOp,
                     StencilFrontPassOp,
                     StencilFrontDepthFailOp,
-                    StencilFrontCompareOp,
-                    null,
-                    null,
-                    null);
+                    StencilFrontCompareOp);
 
                 var stencilBack = new StencilOpState(
                     StencilBackFailOp,
                     StencilBackPassOp,
                     StencilBackDepthFailOp,
-                    StencilBackCompareOp,
-                    null,
-                    null,
-                    null);
+                    StencilBackCompareOp);
 
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
