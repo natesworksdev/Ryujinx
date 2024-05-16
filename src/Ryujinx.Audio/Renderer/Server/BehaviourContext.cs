@@ -361,7 +361,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// Check if the audio renderer should use an optimized Biquad Filter (Direct Form 1) in case of two biquad filters are defined on a voice.
         /// </summary>
         /// <returns>True if the audio renderer should use the optimization.</returns>
-        public bool IsBiquadFilterGroupedOptimizationSupported()
+        public bool UseMultiTapBiquadFilterProcessing()
         {
             return CheckFeatureSupported(UserRevision, BaseRevisionMagic + Revision10);
         }

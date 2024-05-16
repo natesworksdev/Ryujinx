@@ -632,7 +632,7 @@ namespace Ryujinx.Audio.Renderer.Server
             };
         }
 
-        public virtual uint Estimate(GroupedBiquadFilterCommand command)
+        public virtual uint Estimate(MultiTapBiquadFilterCommand command)
         {
             return 0;
         }

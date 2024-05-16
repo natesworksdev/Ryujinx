@@ -204,7 +204,7 @@ namespace Ryujinx.Audio.Renderer.Server
         }
 
         /// <summary>
-        /// Create a new <see cref="GroupedBiquadFilterCommand"/>.
+        /// Create a new <see cref="MultiTapBiquadFilterCommand"/>.
         /// </summary>
         /// <param name="baseIndex">The base index of the input and output buffer.</param>
         /// <param name="filters">The biquad filter parameters.</param>
@@ -213,9 +213,9 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="outputBufferOffset">The output buffer offset.</param>
         /// <param name="isInitialized">Set to true if the biquad filter state is initialized.</param>
         /// <param name="nodeId">The node id associated to this command.</param>
-        public void GenerateGroupedBiquadFilter(int baseIndex, ReadOnlySpan<BiquadFilterParameter> filters, Memory<BiquadFilterState> biquadFilterStatesMemory, int inputBufferOffset, int outputBufferOffset, ReadOnlySpan<bool> isInitialized, int nodeId)
+        public void GenerateMultiTapBiquadFilter(int baseIndex, ReadOnlySpan<BiquadFilterParameter> filters, Memory<BiquadFilterState> biquadFilterStatesMemory, int inputBufferOffset, int outputBufferOffset, ReadOnlySpan<bool> isInitialized, int nodeId)
         {
-            GroupedBiquadFilterCommand command = new(baseIndex, filters, biquadFilterStatesMemory, inputBufferOffset, outputBufferOffset, isInitialized, nodeId);
+            MultiTapBiquadFilterCommand command = new(baseIndex, filters, biquadFilterStatesMemory, inputBufferOffset, outputBufferOffset, isInitialized, nodeId);
 
             command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
 

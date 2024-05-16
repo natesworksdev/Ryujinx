@@ -30,7 +30,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         CopyMixBuffer,
         LimiterVersion1,
         LimiterVersion2,
-        GroupedBiquadFilter,
+        MultiTapBiquadFilter,
         CaptureBuffer,
         Compressor,
         BiquadFilterAndMix,

@@ -139,14 +139,14 @@ namespace Ryujinx.Audio.Renderer.Server
 
         private void GenerateBiquadFilterForVoice(ref VoiceState voiceState, Memory<VoiceUpdateState> state, int baseIndex, int bufferOffset, int nodeId)
         {
-            bool supportsOptimizedPath = _rendererContext.BehaviourContext.IsBiquadFilterGroupedOptimizationSupported();
+            bool supportsOptimizedPath = _rendererContext.BehaviourContext.UseMultiTapBiquadFilterProcessing();
 
             if (supportsOptimizedPath && voiceState.BiquadFilters[0].Enable && voiceState.BiquadFilters[1].Enable)
             {
                 Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state)[..(VoiceUpdateState.BiquadStateSize * Constants.VoiceBiquadFilterCount)];
                 Memory<BiquadFilterState> stateMemory = SpanMemoryManager<BiquadFilterState>.Cast(biquadStateRawMemory);
 
-                _commandBuffer.GenerateGroupedBiquadFilter(baseIndex, voiceState.BiquadFilters.AsSpan(), stateMemory, bufferOffset, bufferOffset, voiceState.BiquadFilterNeedInitialization, nodeId);
+                _commandBuffer.GenerateMultiTapBiquadFilter(baseIndex, voiceState.BiquadFilters.AsSpan(), stateMemory, bufferOffset, bufferOffset, voiceState.BiquadFilterNeedInitialization, nodeId);
             }
             else
             {
