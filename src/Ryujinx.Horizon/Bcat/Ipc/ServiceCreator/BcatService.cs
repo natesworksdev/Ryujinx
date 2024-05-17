@@ -20,10 +20,9 @@ namespace Ryujinx.Horizon.Bcat.Ipc
         [CmifCommand(10101)]
         public Result RequestSyncDeliveryCacheWithDirectoryName(out IDeliveryCacheProgressService deliveryCacheProgressService, DirectoryName directoryName)
         {
-            // Just have the network request fail and pretend that everything is fine.
             deliveryCacheProgressService = new DeliveryCacheProgressService();
 
-            return BcatResult.InternetRequestDenied;
+            return BcatResult.Success;
         }
     }
 }
