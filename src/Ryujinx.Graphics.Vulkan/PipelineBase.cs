@@ -884,7 +884,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthClamp(bool clamp)
         {
-            _newState.DepthClampEnable = clamp;
+            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
+            {
+                DynamicState.SetDepthClampEnable(clamp);
+            }
+            else
+            {
+                _newState.DepthClampEnable = clamp;
+            }
+
             SignalStateChange();
         }
 
@@ -989,7 +997,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetLogicOpState(bool enable, LogicalOp op)
         {
-            if (_supportExtDynamic2 && Gd.ExtendedLogicOp)
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
             {
                 DynamicState.SetLogicOp(op.Convert());
             }
@@ -998,21 +1006,53 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.LogicOp = op.Convert();
             }
 
-            _newState.LogicOpEnable = enable;
+            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
+            {
+                DynamicState.SetLogicOpEnable(enable);
+
+            }
+            else
+            {
+                _newState.LogicOpEnable = enable;
+            }
 
             SignalStateChange();
         }
 
         public void SetMultisampleState(MultisampleDescriptor multisample)
         {
-            _newState.AlphaToCoverageEnable = multisample.AlphaToCoverageEnable;
-            _newState.AlphaToOneEnable = multisample.AlphaToOneEnable;
+            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
+            {
+                DynamicState.SetAlphaToCoverEnable(multisample.AlphaToCoverageEnable);
+            }
+            else
+            {
+                _newState.AlphaToCoverageEnable = multisample.AlphaToCoverageEnable;
+            }
+
+            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
+            {
+                DynamicState.SetAlphaToOneEnable(multisample.AlphaToOneEnable);
+            }
+            else
+            {
+                _newState.AlphaToOneEnable = multisample.AlphaToOneEnable;
+            }
+
             SignalStateChange();
         }
 
         public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
-            _newState.PatchControlPoints = (uint)vertices;
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+            {
+                DynamicState.SetPatchControlPoints((uint)vertices);
+            }
+            else
+            {
+                _newState.PatchControlPoints = (uint)vertices;
+            }
+
             SignalStateChange();
 
             // TODO: Default levels (likely needs emulation on shaders?)

@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal ExtConditionalRendering ConditionalRenderingApi { get; private set; }
         internal ExtExtendedDynamicState ExtendedDynamicStateApi { get; private set; }
         internal ExtExtendedDynamicState2 ExtendedDynamicState2Api { get; private set; }
+        internal ExtExtendedDynamicState3 ExtendedDynamicState3Api { get; private set; }
 
         internal KhrPushDescriptor PushDescriptorApi { get; private set; }
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
@@ -99,7 +100,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool PreferThreading => true;
 
-        public bool ExtendedLogicOp;
+        public PhysicalDeviceExtendedDynamicState2FeaturesEXT ExtendedDynamicState2Features;
+
+        public PhysicalDeviceExtendedDynamicState3FeaturesEXT ExtendedDynamicState3Features;
+
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -139,6 +143,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState2 extendedDynamicState2Api))
             {
                 ExtendedDynamicState2Api = extendedDynamicState2Api;
+            }
+
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState3 extendedDynamicState3Api))
+            {
+                ExtendedDynamicState3Api = extendedDynamicState3Api;
             }
 
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrPushDescriptor pushDescriptorApi))
@@ -392,6 +401,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName),
                 features2.Features.MultiViewport && !(IsMoltenVk && Vendor == Vendor.Amd), // Workaround for AMD on MoltenVK issue
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 supportsPushDescriptors && !IsMoltenVk,
@@ -456,9 +466,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(Api, _physicalDevice, _surface, out uint maxQueueCount);
 
-            _device = VulkanInitialization.CreateDevice(Api, _physicalDevice, queueFamilyIndex, maxQueueCount, out bool extendedLogicOp);
+            _device = VulkanInitialization.CreateDevice(Api, _physicalDevice, queueFamilyIndex, maxQueueCount, out PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2Features, out PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedDynamicState3Features);
 
-            ExtendedLogicOp = extendedLogicOp;
+            ExtendedDynamicState2Features = extendedDynamicState2Features;
+            ExtendedDynamicState3Features = extendedDynamicState3Features;
 
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrSwapchain swapchainApi))
             {

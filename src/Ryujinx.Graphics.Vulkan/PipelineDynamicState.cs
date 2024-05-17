@@ -52,6 +52,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         private LogicOp _logicOp;
 
+        private uint _patchControlPoints;
+
+        private bool _logicOpEnable;
+
+        private bool _depthClampEnable;
+
+        private bool _alphaToCoverEnable;
+        private bool _alphaToOneEnable;
+
         [Flags]
         private enum DirtyFlags
         {
@@ -69,9 +78,14 @@ namespace Ryujinx.Graphics.Vulkan
             LineWidth = 1 << 10,
             RasterDiscard = 1 << 11,
             LogicOp = 1 << 12,
+            DepthClampEnable = 1 << 13,
+            LogicOpEnalbe = 1 << 14,
+            AlphaToCover = 1 << 15,
+            AlphaToOne = 1 << 16,
+            PatchControlPoints = 1 << 17,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
-            Extended2 = RasterDiscard | LogicOp,
+            Extended2 = RasterDiscard | LogicOp | PatchControlPoints,
         }
 
         private DirtyFlags _dirty;
@@ -219,6 +233,41 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.LogicOp;
         }
 
+        public void SetPatchControlPoints(uint points)
+        {
+            _patchControlPoints = points;
+
+            _dirty |= DirtyFlags.PatchControlPoints;
+        }
+
+        public void SetLogicOpEnable(bool logicOpEnable)
+        {
+            _logicOpEnable = logicOpEnable;
+
+            _dirty |= DirtyFlags.LogicOpEnalbe;
+        }
+
+        public void SetDepthClampEnable(bool depthClampEnable)
+        {
+            _depthClampEnable = depthClampEnable;
+
+            _dirty |= DirtyFlags.DepthClampEnable;
+        }
+
+        public void SetAlphaToCoverEnable(bool alphaToCoverEnable)
+        {
+            _alphaToCoverEnable = alphaToCoverEnable;
+
+            _dirty |= DirtyFlags.AlphaToCover;
+        }
+
+        public void SetAlphaToOneEnable(bool alphaToOneEnable)
+        {
+            _alphaToOneEnable = alphaToOneEnable;
+
+            _dirty |= DirtyFlags.AlphaToOne;
+        }
+
         public void ForceAllDirty(VulkanRenderer gd)
         {
             _dirty = DirtyFlags.Standard;
@@ -238,9 +287,34 @@ namespace Ryujinx.Graphics.Vulkan
                 _dirty &= ~DirtyFlags.LineWidth;
             }
 
-            if (!gd.ExtendedLogicOp)
+            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
             {
                 _dirty &= ~DirtyFlags.LogicOp;
+            }
+
+            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+            {
+                _dirty &= ~DirtyFlags.LogicOp;
+            }
+
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
+            {
+                _dirty = DirtyFlags.AlphaToCover;
+            }
+
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
+            {
+                _dirty = DirtyFlags.AlphaToOne;
+            }
+
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
+            {
+                _dirty = DirtyFlags.DepthClampEnable;
+            }
+
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
+            {
+                _dirty = DirtyFlags.LogicOpEnalbe;
             }
         }
 
@@ -306,9 +380,34 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordRasterizationDiscard(gd, commandBuffer);
             }
 
-            if (_dirty.HasFlag(DirtyFlags.RasterDiscard))
+            if (_dirty.HasFlag(DirtyFlags.LogicOp))
             {
                 RecordLogicOp(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.PatchControlPoints))
+            {
+                RecordPatchControlPoints(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.LogicOpEnalbe))
+            {
+                RecordLogicOpEnable(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.DepthClampEnable))
+            {
+                RecordDepthClampEnable(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.AlphaToCover))
+            {
+                RecordAlphaToCoverEnable(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.AlphaToOne))
+            {
+                RecordAlphaToOneEnable(gd, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -419,6 +518,31 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.ExtendedDynamicState2Api.CmdSetLogicOp(commandBuffer, _logicOp);
+        }
+
+        private readonly void RecordLogicOpEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState3Api.CmdSetLogicOpEnable(commandBuffer, _logicOpEnable);
+        }
+
+        private readonly void RecordDepthClampEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState3Api.CmdSetDepthClampEnable(commandBuffer, _depthClampEnable);
+        }
+
+        private readonly void RecordAlphaToCoverEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState3Api.CmdSetAlphaToCoverageEnable(commandBuffer, _alphaToCoverEnable);
+        }
+
+        private readonly void RecordAlphaToOneEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState3Api.CmdSetAlphaToOneEnable(commandBuffer, _alphaToOneEnable);
+        }
+
+        private readonly void RecordPatchControlPoints(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState2Api.CmdSetPatchControlPoints(commandBuffer, _patchControlPoints);
         }
 
         private readonly void RecordLineWidth(Vk api, CommandBuffer commandBuffer)

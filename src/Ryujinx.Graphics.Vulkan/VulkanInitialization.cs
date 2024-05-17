@@ -263,7 +263,7 @@ namespace Ryujinx.Graphics.Vulkan
             return InvalidIndex;
         }
 
-        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount, out bool extendedLogicOp)
+        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount, out PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2Features, out PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedDynamicState3Features)
         {
             if (queueCount > QueuesCount)
             {
@@ -320,6 +320,17 @@ namespace Ryujinx.Graphics.Vulkan
             if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName))
             {
                 features2.PNext = &supportedFeaturesExtExtendedDynamicState2;
+            }
+
+            PhysicalDeviceExtendedDynamicState3FeaturesEXT supportedFeaturesExtExtendedDynamicState3 = new()
+            {
+                SType = StructureType.PhysicalDeviceExtendedDynamicState3FeaturesExt,
+                PNext = features2.PNext,
+            };
+
+            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName))
+            {
+                features2.PNext = &supportedFeaturesExtExtendedDynamicState3;
             }
 
             PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT supportedFeaturesPrimitiveTopologyListRestart = new()
@@ -451,18 +462,45 @@ namespace Ryujinx.Graphics.Vulkan
 
             pExtendedFeatures = &featuresExtendedDynamicState;
 
-            var featuresExtendedDynamicState2 = new PhysicalDeviceExtendedDynamicState2FeaturesEXT()
+            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName))
             {
-                SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
-                PNext = pExtendedFeatures,
-                ExtendedDynamicState2 = physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
-                ExtendedDynamicState2LogicOp = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
-                ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints,
-            };
+                var featuresExtendedDynamicState2 = new PhysicalDeviceExtendedDynamicState2FeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
+                    PNext = pExtendedFeatures,
+                    ExtendedDynamicState2 =
+                        physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
+                    ExtendedDynamicState2LogicOp =
+                        supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
+                    ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2
+                        .ExtendedDynamicState2PatchControlPoints,
+                };
 
-            extendedLogicOp = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp;
+                pExtendedFeatures = &featuresExtendedDynamicState2;
+            }
 
-            pExtendedFeatures = &featuresExtendedDynamicState2;
+            extendedDynamicState2Features = supportedFeaturesExtExtendedDynamicState2;
+
+
+            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName))
+            {
+                var featuresExtendedDynamicState3 = new PhysicalDeviceExtendedDynamicState3FeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceExtendedDynamicState3FeaturesExt,
+                    PNext = pExtendedFeatures,
+                    ExtendedDynamicState3LogicOpEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable,
+                    ExtendedDynamicState3AlphaToCoverageEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable,
+                    ExtendedDynamicState3AlphaToOneEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToOneEnable,
+                    ExtendedDynamicState3DepthClampEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable,
+                };
+
+                pExtendedFeatures = &featuresExtendedDynamicState3;
+            }
+
+            //Seems to be a error in Silk.Net bidings investigate further later
+            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable = false;
+            
+            extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
 
             var featuresVk11 = new PhysicalDeviceVulkan11Features
             {
