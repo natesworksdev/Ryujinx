@@ -1,10 +1,12 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
+using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
+using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -35,11 +37,11 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _stencilTestEnable;
         private bool _cullEnable;
 
-        private float[] _viewportArray = Array.Empty<float>();
-        private double[] _depthRangeArray = Array.Empty<double>();
+        private float[] _viewportArray = [];
+        private double[] _depthRangeArray = [];
 
-        private int _boundDrawFramebuffer;
-        private int _boundReadFramebuffer;
+        private uint _boundDrawFramebuffer;
+        private uint _boundReadFramebuffer;
 
         private CounterQueueEvent _activeConditionalRender;
 
@@ -50,8 +52,8 @@ namespace Ryujinx.Graphics.OpenGL
         private Sampler _unit0Sampler;
 
         private FrontFaceDirection _frontFace;
-        private ClipOrigin _clipOrigin;
-        private ClipDepthMode _clipDepthMode;
+        private ClipControlOrigin _clipOrigin;
+        private ClipControlDepth _clipDepthMode;
 
         private uint _fragmentOutputMap;
         private uint _componentMasks;
@@ -61,19 +63,23 @@ namespace Ryujinx.Graphics.OpenGL
         private uint _scissorEnables;
 
         private bool _tfEnabled;
-        private TransformFeedbackPrimitiveType _tfTopology;
+        private PrimitiveType _tfTopology;
 
         private readonly BufferHandle[] _tfbs;
         private readonly BufferRange[] _tfbTargets;
 
         private ColorF _blendConstant;
 
-        internal Pipeline()
+        private readonly OpenGLRenderer _gd;
+
+        internal Pipeline(OpenGLRenderer gd)
         {
+            _gd = gd;
+
             _drawTexture = new DrawTextureEmulation();
             _rasterizerDiscard = false;
-            _clipOrigin = ClipOrigin.LowerLeft;
-            _clipDepthMode = ClipDepthMode.NegativeOneToOne;
+            _clipOrigin = ClipControlOrigin.LowerLeft;
+            _clipDepthMode = ClipControlDepth.NegativeOneToOne;
 
             _fragmentOutputMap = uint.MaxValue;
             _componentMasks = uint.MaxValue;
@@ -86,32 +92,32 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Barrier()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
         }
 
         public void BeginTransformFeedback(PrimitiveTopology topology)
         {
-            GL.BeginTransformFeedback(_tfTopology = topology.ConvertToTfType());
+            _gd.Api.BeginTransformFeedback(_tfTopology = topology.ConvertToTfType());
             _tfEnabled = true;
         }
 
         public void ClearBuffer(BufferHandle destination, int offset, int size, uint value)
         {
-            Buffer.Clear(destination, offset, size, value);
+            Buffer.Clear(_gd.Api, destination, offset, (uint)size, value);
         }
 
         public void ClearRenderTargetColor(int index, int layer, int layerCount, uint componentMask, ColorF color)
         {
             EnsureFramebuffer();
 
-            GL.ColorMask(
-                index,
+            _gd.Api.ColorMask(
+                (uint)index,
                 (componentMask & 1) != 0,
                 (componentMask & 2) != 0,
                 (componentMask & 4) != 0,
                 (componentMask & 8) != 0);
 
-            float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
+            float[] colors = [color.Red, color.Green, color.Blue, color.Alpha];
 
             if (layer != 0 || layerCount != _framebuffer.GetColorLayerCount(index))
             {
@@ -119,14 +125,14 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     _framebuffer.AttachColorLayerForClear(index, l);
 
-                    GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
+                    _gd.Api.ClearBuffer(BufferKind.Color, index, colors);
                 }
 
                 _framebuffer.DetachColorLayerForClear(index);
             }
             else
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
+                _gd.Api.ClearBuffer(BufferKind.Color, index, colors);
             }
 
             RestoreComponentMask(index);
@@ -144,12 +150,12 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (stencilMaskChanged)
             {
-                GL.StencilMaskSeparate(StencilFace.Front, stencilMask);
+                _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)stencilMask);
             }
 
             if (depthMaskChanged)
             {
-                GL.DepthMask(depthMask);
+                _gd.Api.DepthMask(depthMask);
             }
 
             if (layer != 0 || layerCount != _framebuffer.GetDepthStencilLayerCount())
@@ -170,39 +176,39 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (stencilMaskChanged)
             {
-                GL.StencilMaskSeparate(StencilFace.Front, _stencilFrontMask);
+                _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)_stencilFrontMask);
             }
 
             if (depthMaskChanged)
             {
-                GL.DepthMask(_depthMask);
+                _gd.Api.DepthMask(_depthMask);
             }
         }
 
-        private static void ClearDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        private void ClearDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
             if (depthMask && stencilMask != 0)
             {
-                GL.ClearBuffer(ClearBufferCombined.DepthStencil, 0, depthValue, stencilValue);
+                _gd.Api.ClearBuffer(GLEnum.DepthStencil, 0, depthValue, stencilValue);
             }
             else if (depthMask)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Depth, 0, ref depthValue);
+                _gd.Api.ClearBuffer(BufferKind.Depth, 0, in depthValue);
             }
             else if (stencilMask != 0)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
+                _gd.Api.ClearBuffer(BufferKind.Stencil, 0, in stencilValue);
             }
         }
 
         public void CommandBufferBarrier()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.CommandBarrierBit);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.CommandBarrierBit);
         }
 
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
         {
-            Buffer.Copy(source, destination, srcOffset, dstOffset, size);
+            Buffer.Copy(_gd.Api, source, destination, srcOffset, dstOffset, size);
         }
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
@@ -215,7 +221,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             PrepareForDispatch();
 
-            GL.DispatchCompute(groupsX, groupsY, groupsZ);
+            _gd.Api.DispatchCompute((uint)groupsX, (uint)groupsY, (uint)groupsZ);
         }
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
@@ -228,11 +234,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDraw(vertexCount);
 
-            if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
+            if (_primitiveType == PrimitiveType.Quads && !_gd.Capabilities.SupportsQuads)
             {
                 DrawQuadsImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
-            else if (_primitiveType == PrimitiveType.QuadStrip && !HwCapabilities.SupportsQuads)
+#pragma warning disable CS0612 // Type or member is obsolete
+            else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 DrawQuadStripImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
@@ -244,17 +252,17 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        private static void DrawQuadsImpl(
+        private void DrawQuadsImpl(
             int vertexCount,
             int instanceCount,
             int firstVertex,
             int firstInstance)
         {
             // TODO: Instanced rendering.
-            int quadsCount = vertexCount / 4;
+            uint quadsCount = (uint)(vertexCount / 4);
 
             int[] firsts = new int[quadsCount];
-            int[] counts = new int[quadsCount];
+            uint[] counts = new uint[quadsCount];
 
             for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
             {
@@ -262,32 +270,32 @@ namespace Ryujinx.Graphics.OpenGL
                 counts[quadIndex] = 4;
             }
 
-            GL.MultiDrawArrays(
+            _gd.Api.MultiDrawArrays(
                 PrimitiveType.TriangleFan,
                 firsts,
                 counts,
                 quadsCount);
         }
 
-        private static void DrawQuadStripImpl(
+        private void DrawQuadStripImpl(
             int vertexCount,
             int instanceCount,
             int firstVertex,
             int firstInstance)
         {
-            int quadsCount = (vertexCount - 2) / 2;
+            uint quadsCount = (uint)((vertexCount - 2) / 2);
 
             if (firstInstance != 0 || instanceCount != 1)
             {
                 for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                 {
-                    GL.DrawArraysInstancedBaseInstance(PrimitiveType.TriangleFan, firstVertex + quadIndex * 2, 4, instanceCount, firstInstance);
+                    _gd.Api.DrawArraysInstancedBaseInstance(PrimitiveType.TriangleFan, firstVertex + quadIndex * 2, 4, (uint)instanceCount, (uint)firstInstance);
                 }
             }
             else
             {
                 int[] firsts = new int[quadsCount];
-                int[] counts = new int[quadsCount];
+                uint[] counts = new uint[quadsCount];
 
                 firsts[0] = firstVertex;
                 counts[0] = 4;
@@ -298,7 +306,7 @@ namespace Ryujinx.Graphics.OpenGL
                     counts[quadIndex] = 4;
                 }
 
-                GL.MultiDrawArrays(
+                _gd.Api.MultiDrawArrays(
                     PrimitiveType.TriangleFan,
                     firsts,
                     counts,
@@ -314,20 +322,20 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && instanceCount == 1)
             {
-                GL.DrawArrays(_primitiveType, firstVertex, vertexCount);
+                _gd.Api.DrawArrays(_primitiveType, firstVertex, (uint)vertexCount);
             }
             else if (firstInstance == 0)
             {
-                GL.DrawArraysInstanced(_primitiveType, firstVertex, vertexCount, instanceCount);
+                _gd.Api.DrawArraysInstanced(_primitiveType, firstVertex, (uint)vertexCount, (uint)instanceCount);
             }
             else
             {
-                GL.DrawArraysInstancedBaseInstance(
+                _gd.Api.DrawArraysInstancedBaseInstance(
                     _primitiveType,
                     firstVertex,
-                    vertexCount,
-                    instanceCount,
-                    firstInstance);
+                    (uint)vertexCount,
+                    (uint)instanceCount,
+                    (uint)firstInstance);
             }
         }
 
@@ -360,7 +368,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
 
-            if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
+            if (_primitiveType == PrimitiveType.Quads && !_gd.Capabilities.SupportsQuads)
             {
                 DrawQuadsIndexedImpl(
                     indexCount,
@@ -370,7 +378,9 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
-            else if (_primitiveType == PrimitiveType.QuadStrip && !HwCapabilities.SupportsQuads)
+#pragma warning disable CS0612 // Type or member is obsolete
+            else if (_primitiveType == PrimitiveType.QuadStrip && !_gd.Capabilities.SupportsQuads)
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 DrawQuadStripIndexedImpl(
                     indexCount,
@@ -393,7 +403,7 @@ namespace Ryujinx.Graphics.OpenGL
             PostDraw();
         }
 
-        private void DrawQuadsIndexedImpl(
+        private unsafe void DrawQuadsIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -409,70 +419,75 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        GL.DrawElementsInstancedBaseVertexBaseInstance(
+                        _gd.Api.DrawElementsInstancedBaseVertexBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount,
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
+                            (uint)instanceCount,
                             firstVertex,
-                            firstInstance);
+                            (uint)firstInstance);
                     }
                 }
                 else if (firstInstance != 0)
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        GL.DrawElementsInstancedBaseInstance(
+                        _gd.Api.DrawElementsInstancedBaseInstance(
                             PrimitiveType.TriangleFan,
                             4,
-                            _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount,
-                            firstInstance);
+                            (GLEnum)_elementsType,
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
+                            (uint)instanceCount,
+                            (uint)firstInstance);
                     }
                 }
                 else
                 {
                     for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                     {
-                        GL.DrawElementsInstanced(
+                        _gd.Api.DrawElementsInstanced(
                             PrimitiveType.TriangleFan,
                             4,
                             _elementsType,
-                            indexBaseOffset + quadIndex * 4 * indexElemSize,
-                            instanceCount);
+                            (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize),
+                            (uint)instanceCount);
                     }
                 }
             }
             else
             {
-                IntPtr[] indices = new IntPtr[quadsCount];
+                void*[] indices = new void*[quadsCount];
 
-                int[] counts = new int[quadsCount];
+                uint[] counts = new uint[quadsCount];
 
                 int[] baseVertices = new int[quadsCount];
 
                 for (int quadIndex = 0; quadIndex < quadsCount; quadIndex++)
                 {
-                    indices[quadIndex] = indexBaseOffset + quadIndex * 4 * indexElemSize;
+                    indices[quadIndex] = (void*)(indexBaseOffset + quadIndex * 4 * indexElemSize);
 
                     counts[quadIndex] = 4;
 
                     baseVertices[quadIndex] = firstVertex;
                 }
 
-                GL.MultiDrawElementsBaseVertex(
-                    PrimitiveType.TriangleFan,
-                    counts,
-                    _elementsType,
-                    indices,
-                    quadsCount,
-                    baseVertices);
+                fixed (uint* countsPtr = counts)
+                fixed (void** indicesPtr = indices)
+                fixed (int* baseVerticesPtr = baseVertices)
+                {
+                    _gd.Api.MultiDrawElementsBaseVertex(
+                        PrimitiveType.TriangleFan,
+                        countsPtr,
+                        _elementsType,
+                        indicesPtr,
+                        (uint)quadsCount,
+                        baseVerticesPtr);
+                }
             }
         }
 
-        private void DrawQuadStripIndexedImpl(
+        private unsafe void DrawQuadStripIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -483,13 +498,13 @@ namespace Ryujinx.Graphics.OpenGL
             // TODO: Instanced rendering.
             int quadsCount = (indexCount - 2) / 2;
 
-            IntPtr[] indices = new IntPtr[quadsCount];
+            void*[] indices = new void*[quadsCount];
 
-            int[] counts = new int[quadsCount];
+            uint[] counts = new uint[quadsCount];
 
             int[] baseVertices = new int[quadsCount];
 
-            indices[0] = indexBaseOffset;
+            indices[0] = (void*)indexBaseOffset;
 
             counts[0] = 4;
 
@@ -497,23 +512,28 @@ namespace Ryujinx.Graphics.OpenGL
 
             for (int quadIndex = 1; quadIndex < quadsCount; quadIndex++)
             {
-                indices[quadIndex] = indexBaseOffset + quadIndex * 2 * indexElemSize;
+                indices[quadIndex] = (void*)(indexBaseOffset + quadIndex * 2 * indexElemSize);
 
                 counts[quadIndex] = 4;
 
                 baseVertices[quadIndex] = firstVertex;
             }
 
-            GL.MultiDrawElementsBaseVertex(
-                PrimitiveType.TriangleFan,
-                counts,
-                _elementsType,
-                indices,
-                quadsCount,
-                baseVertices);
+            fixed (uint* countsPtr = counts)
+            fixed (void** indicesPtr = indices)
+            fixed (int* baseVerticesPtr = baseVertices)
+            {
+                _gd.Api.MultiDrawElementsBaseVertex(
+                    PrimitiveType.TriangleFan,
+                    countsPtr,
+                    _elementsType,
+                    indicesPtr,
+                    (uint)quadsCount,
+                    baseVerticesPtr);
+            }
         }
 
-        private void DrawIndexedImpl(
+        private unsafe void DrawIndexedImpl(
             int indexCount,
             int instanceCount,
             IntPtr indexBaseOffset,
@@ -522,56 +542,56 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
-                GL.DrawElements(_primitiveType, indexCount, _elementsType, indexBaseOffset);
+                _gd.Api.DrawElements(_primitiveType, (uint)indexCount, _elementsType, (void*)indexBaseOffset);
             }
             else if (firstInstance == 0 && instanceCount == 1)
             {
-                GL.DrawElementsBaseVertex(
+                _gd.Api.DrawElementsBaseVertex(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
+                    (void*)indexBaseOffset,
                     firstVertex);
             }
             else if (firstInstance == 0 && firstVertex == 0)
             {
-                GL.DrawElementsInstanced(
+                _gd.Api.DrawElementsInstanced(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
-                    instanceCount);
+                    (void*)indexBaseOffset,
+                    (uint)instanceCount);
             }
             else if (firstInstance == 0)
             {
-                GL.DrawElementsInstancedBaseVertex(
+                _gd.Api.DrawElementsInstancedBaseVertex(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
-                    instanceCount,
+                    (void*)indexBaseOffset,
+                    (uint)instanceCount,
                     firstVertex);
             }
             else if (firstVertex == 0)
             {
-                GL.DrawElementsInstancedBaseInstance(
+                _gd.Api.DrawElementsInstancedBaseInstance(
                     _primitiveType,
-                    indexCount,
-                    _elementsType,
-                    indexBaseOffset,
-                    instanceCount,
-                    firstInstance);
+                    (uint)indexCount,
+                    (GLEnum)_elementsType,
+                    (void*)indexBaseOffset,
+                    (uint)instanceCount,
+                    (uint)firstInstance);
             }
             else
             {
-                GL.DrawElementsInstancedBaseVertexBaseInstance(
+                _gd.Api.DrawElementsInstancedBaseVertexBaseInstance(
                     _primitiveType,
-                    indexCount,
+                    (uint)indexCount,
                     _elementsType,
-                    indexBaseOffset,
-                    instanceCount,
+                    (void*)indexBaseOffset,
+                    (uint)instanceCount,
                     firstVertex,
-                    firstInstance);
+                    (uint)firstInstance);
             }
         }
 
@@ -587,16 +607,17 @@ namespace Ryujinx.Graphics.OpenGL
 
             _vertexArray.SetRangeOfIndexBuffer();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            GL.DrawElementsIndirect(_primitiveType, _elementsType, (IntPtr)indirectBuffer.Offset);
+            var offset = indirectBuffer.Offset;
+            _gd.Api.DrawElementsIndirect(_primitiveType, _elementsType, in offset);
 
             _vertexArray.RestoreIndexBuffer();
 
             PostDraw();
         }
 
-        public void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        public unsafe void DrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
             if (!_program.IsLinked)
             {
@@ -608,23 +629,23 @@ namespace Ryujinx.Graphics.OpenGL
 
             _vertexArray.SetRangeOfIndexBuffer();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
-            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
-            GL.MultiDrawElementsIndirectCount(
+            _gd.Api.MultiDrawElementsIndirectCount(
                 _primitiveType,
-                (All)_elementsType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
-                maxDrawCount,
-                stride);
+                _elementsType,
+                (void*)indirectBuffer.Offset,
+                parameterBuffer.Offset,
+                (uint)maxDrawCount,
+                (uint)stride);
 
             _vertexArray.RestoreIndexBuffer();
 
             PostDraw();
         }
 
-        public void DrawIndirect(BufferRange indirectBuffer)
+        public unsafe void DrawIndirect(BufferRange indirectBuffer)
         {
             if (!_program.IsLinked)
             {
@@ -634,14 +655,14 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDrawVbUnbounded();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
 
-            GL.DrawArraysIndirect(_primitiveType, (IntPtr)indirectBuffer.Offset);
+            _gd.Api.DrawArraysIndirect(_primitiveType, (void*)indirectBuffer.Offset);
 
             PostDraw();
         }
 
-        public void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        public unsafe void DrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
             if (!_program.IsLinked)
             {
@@ -651,15 +672,15 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDrawVbUnbounded();
 
-            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
-            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.DrawIndirectBuffer, indirectBuffer.Handle.ToUInt32());
+            _gd.Api.BindBuffer(BufferTargetARB.ParameterBuffer, parameterBuffer.Handle.ToUInt32());
 
-            GL.MultiDrawArraysIndirectCount(
+            _gd.Api.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
-                maxDrawCount,
-                stride);
+                (void*)indirectBuffer.Offset,
+                parameterBuffer.Offset,
+                (uint)maxDrawCount,
+                (uint)stride);
 
             PostDraw();
         }
@@ -668,9 +689,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (texture is TextureView view && sampler is Sampler samp)
             {
-                if (HwCapabilities.SupportsDrawTexture)
+                if (_gd.Capabilities.SupportsDrawTexture)
                 {
-                    GL.NV.DrawTexture(
+                    _gd.Api.TryGetExtension(out NVDrawTexture drawTexture);
+
+                    drawTexture.DrawTexture(
                         view.Handle,
                         samp.Handle,
                         dstRegion.X1,
@@ -685,39 +708,40 @@ namespace Ryujinx.Graphics.OpenGL
                 }
                 else
                 {
-                    static void Disable(EnableCap cap, bool enabled)
+                    static void Disable(GL api, EnableCap cap, bool enabled)
                     {
                         if (enabled)
                         {
-                            GL.Disable(cap);
+                            api.Disable(cap);
                         }
                     }
 
-                    static void Enable(EnableCap cap, bool enabled)
+                    static void Enable(GL api, EnableCap cap, bool enabled)
                     {
                         if (enabled)
                         {
-                            GL.Enable(cap);
+                            api.Enable(cap);
                         }
                     }
 
-                    Disable(EnableCap.CullFace, _cullEnable);
-                    Disable(EnableCap.StencilTest, _stencilTestEnable);
-                    Disable(EnableCap.DepthTest, _depthTestEnable);
+                    Disable(_gd.Api, EnableCap.CullFace, _cullEnable);
+                    Disable(_gd.Api, EnableCap.StencilTest, _stencilTestEnable);
+                    Disable(_gd.Api, EnableCap.DepthTest, _depthTestEnable);
 
                     if (_depthMask)
                     {
-                        GL.DepthMask(false);
+                        _gd.Api.DepthMask(false);
                     }
 
                     if (_tfEnabled)
                     {
-                        GL.EndTransformFeedback();
+                        _gd.Api.EndTransformFeedback();
                     }
 
-                    GL.ClipControl(ClipOrigin.UpperLeft, ClipDepthMode.NegativeOneToOne);
+                    _gd.Api.ClipControl(ClipControlOrigin.UpperLeft, ClipControlDepth.NegativeOneToOne);
 
                     _drawTexture.Draw(
+                        _gd.Api,
                         view,
                         samp,
                         dstRegion.X1,
@@ -734,18 +758,18 @@ namespace Ryujinx.Graphics.OpenGL
 
                     RestoreViewport0();
 
-                    Enable(EnableCap.CullFace, _cullEnable);
-                    Enable(EnableCap.StencilTest, _stencilTestEnable);
-                    Enable(EnableCap.DepthTest, _depthTestEnable);
+                    Enable(_gd.Api, EnableCap.CullFace, _cullEnable);
+                    Enable(_gd.Api, EnableCap.StencilTest, _stencilTestEnable);
+                    Enable(_gd.Api, EnableCap.DepthTest, _depthTestEnable);
 
                     if (_depthMask)
                     {
-                        GL.DepthMask(true);
+                        _gd.Api.DepthMask(true);
                     }
 
                     if (_tfEnabled)
                     {
-                        GL.BeginTransformFeedback(_tfTopology);
+                        _gd.Api.BeginTransformFeedback(_tfTopology);
                     }
 
                     RestoreClipControl();
@@ -755,30 +779,36 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void EndTransformFeedback()
         {
-            GL.EndTransformFeedback();
+            _gd.Api.EndTransformFeedback();
             _tfEnabled = false;
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             if (!enable)
             {
-                GL.Disable(EnableCap.AlphaTest);
+                _gd.Api.Disable(EnableCap.AlphaTest);
                 return;
             }
 
-            GL.AlphaFunc((AlphaFunction)op.Convert(), reference);
-            GL.Enable(EnableCap.AlphaTest);
+            _gd.Api.AlphaFunc((AlphaFunction)op.Convert(), reference);
+            _gd.Api.Enable(EnableCap.AlphaTest);
         }
+#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public void SetBlendState(AdvancedBlendDescriptor blend)
         {
-            if (HwCapabilities.SupportsBlendEquationAdvanced)
+            if (_gd.Capabilities.SupportsBlendEquationAdvanced)
             {
-                GL.BlendEquation((BlendEquationMode)blend.Op.Convert());
-                GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendOverlapNv, (int)blend.Overlap.Convert());
-                GL.NV.BlendParameter(NvBlendEquationAdvanced.BlendPremultipliedSrcNv, blend.SrcPreMultiplied ? 1 : 0);
-                GL.Enable(EnableCap.Blend);
+                _gd.Api.BlendEquation((GLEnum)blend.Op.Convert());
+
+                _gd.Api.TryGetExtension(out NVBlendEquationAdvanced nvBlendEquationAdvanced);
+                nvBlendEquationAdvanced.BlendParameter(NV.BlendOverlapNV, (int)blend.Overlap.Convert());
+                nvBlendEquationAdvanced.BlendParameter(NV.BlendPremultipliedSrcNV, blend.SrcPreMultiplied ? 1 : 0);
+                _gd.Api.Enable(EnableCap.Blend);
                 _advancedBlendEnable = true;
             }
         }
@@ -787,27 +817,27 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_advancedBlendEnable)
             {
-                GL.Disable(EnableCap.Blend);
+                _gd.Api.Disable(EnableCap.Blend);
                 _advancedBlendEnable = false;
             }
 
             if (!blend.Enable)
             {
-                GL.Disable(IndexedEnableCap.Blend, index);
+                _gd.Api.Disable(EnableCap.Blend, (uint)index);
                 return;
             }
 
-            GL.BlendEquationSeparate(
-                index,
+            _gd.Api.BlendEquationSeparate(
+                (uint)index,
                 blend.ColorOp.Convert(),
                 blend.AlphaOp.Convert());
 
-            GL.BlendFuncSeparate(
-                index,
-                (BlendingFactorSrc)blend.ColorSrcFactor.Convert(),
-                (BlendingFactorDest)blend.ColorDstFactor.Convert(),
-                (BlendingFactorSrc)blend.AlphaSrcFactor.Convert(),
-                (BlendingFactorDest)blend.AlphaDstFactor.Convert());
+            _gd.Api.BlendFuncSeparate(
+                (uint)index,
+                (BlendingFactor)blend.ColorSrcFactor.Convert(),
+                (BlendingFactor)blend.ColorDstFactor.Convert(),
+                (BlendingFactor)blend.AlphaSrcFactor.Convert(),
+                (BlendingFactor)blend.AlphaDstFactor.Convert());
 
             EnsureFramebuffer();
 
@@ -821,43 +851,43 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _blendConstant = blend.BlendConstant;
 
-                GL.BlendColor(
+                _gd.Api.BlendColor(
                     blend.BlendConstant.Red,
                     blend.BlendConstant.Green,
                     blend.BlendConstant.Blue,
                     blend.BlendConstant.Alpha);
             }
 
-            GL.Enable(IndexedEnableCap.Blend, index);
+            _gd.Api.Enable(EnableCap.Blend, (uint)index);
         }
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
             if ((enables & PolygonModeMask.Point) != 0)
             {
-                GL.Enable(EnableCap.PolygonOffsetPoint);
+                _gd.Api.Enable(EnableCap.PolygonOffsetPoint);
             }
             else
             {
-                GL.Disable(EnableCap.PolygonOffsetPoint);
+                _gd.Api.Disable(EnableCap.PolygonOffsetPoint);
             }
 
             if ((enables & PolygonModeMask.Line) != 0)
             {
-                GL.Enable(EnableCap.PolygonOffsetLine);
+                _gd.Api.Enable(EnableCap.PolygonOffsetLine);
             }
             else
             {
-                GL.Disable(EnableCap.PolygonOffsetLine);
+                _gd.Api.Disable(EnableCap.PolygonOffsetLine);
             }
 
             if ((enables & PolygonModeMask.Fill) != 0)
             {
-                GL.Enable(EnableCap.PolygonOffsetFill);
+                _gd.Api.Enable(EnableCap.PolygonOffsetFill);
             }
             else
             {
-                GL.Disable(EnableCap.PolygonOffsetFill);
+                _gd.Api.Disable(EnableCap.PolygonOffsetFill);
             }
 
             if (enables == 0)
@@ -865,13 +895,13 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            if (HwCapabilities.SupportsPolygonOffsetClamp)
+            if (_gd.Capabilities.SupportsPolygonOffsetClamp)
             {
-                GL.PolygonOffsetClamp(factor, units, clamp);
+                _gd.Api.PolygonOffsetClamp(factor, units, clamp);
             }
             else
             {
-                GL.PolygonOffset(factor, units);
+                _gd.Api.PolygonOffset(factor, units);
             }
         }
 
@@ -879,22 +909,22 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (!clamp)
             {
-                GL.Disable(EnableCap.DepthClamp);
+                _gd.Api.Disable(EnableCap.DepthClamp);
                 return;
             }
 
-            GL.Enable(EnableCap.DepthClamp);
+            _gd.Api.Enable(EnableCap.DepthClamp);
         }
 
         public void SetDepthMode(DepthMode mode)
         {
-            ClipDepthMode depthMode = mode.Convert();
+            ClipControlDepth depthMode = (ClipControlDepth)mode.Convert();
 
             if (_clipDepthMode != depthMode)
             {
                 _clipDepthMode = depthMode;
 
-                GL.ClipControl(_clipOrigin, depthMode);
+                _gd.Api.ClipControl(_clipOrigin, depthMode);
             }
         }
 
@@ -902,15 +932,15 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (depthTest.TestEnable)
             {
-                GL.Enable(EnableCap.DepthTest);
-                GL.DepthFunc((DepthFunction)depthTest.Func.Convert());
+                _gd.Api.Enable(EnableCap.DepthTest);
+                _gd.Api.DepthFunc((DepthFunction)depthTest.Func.Convert());
             }
             else
             {
-                GL.Disable(EnableCap.DepthTest);
+                _gd.Api.Disable(EnableCap.DepthTest);
             }
 
-            GL.DepthMask(depthTest.WriteEnable);
+            _gd.Api.DepthMask(depthTest.WriteEnable);
             _depthMask = depthTest.WriteEnable;
             _depthTestEnable = depthTest.TestEnable;
         }
@@ -921,13 +951,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (!enable)
             {
-                GL.Disable(EnableCap.CullFace);
+                _gd.Api.Disable(EnableCap.CullFace);
                 return;
             }
 
-            GL.CullFace(face.Convert());
+            _gd.Api.CullFace(face.Convert());
 
-            GL.Enable(EnableCap.CullFace);
+            _gd.Api.Enable(EnableCap.CullFace);
         }
 
         public void SetFrontFace(FrontFace frontFace)
@@ -944,30 +974,30 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (texture == null)
             {
-                GL.BindImageTexture(binding, 0, 0, true, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+                _gd.Api.BindImageTexture((uint)binding, 0, 0, true, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
                 return;
             }
 
             TextureBase texBase = (TextureBase)texture;
 
-            SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+            InternalFormat format = (InternalFormat)FormatTable.GetImageFormat(imageFormat);
 
             if (format != 0)
             {
-                GL.BindImageTexture(binding, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+                _gd.Api.BindImageTexture((uint)binding, texBase.Handle, 0, true, 0, BufferAccessARB.ReadWrite, format);
             }
         }
 
         public void SetImageArray(ShaderStage stage, int binding, IImageArray array)
         {
-            (array as ImageArray).Bind(binding);
+            (array as ImageArray).Bind((uint)binding);
         }
 
         public void SetIndexBuffer(BufferRange buffer, IndexType type)
         {
             _elementsType = type.Convert();
 
-            _indexBaseOffset = (IntPtr)buffer.Offset;
+            _indexBaseOffset = buffer.Offset;
 
             EnsureVertexArray();
 
@@ -978,13 +1008,13 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (enable)
             {
-                GL.Enable(EnableCap.ColorLogicOp);
+                _gd.Api.Enable(EnableCap.ColorLogicOp);
 
-                GL.LogicOp((LogicOp)op.Convert());
+                _gd.Api.LogicOp((LogicOp)op.Convert());
             }
             else
             {
-                GL.Disable(EnableCap.ColorLogicOp);
+                _gd.Api.Disable(EnableCap.ColorLogicOp);
             }
         }
 
@@ -992,27 +1022,29 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (multisample.AlphaToCoverageEnable)
             {
-                GL.Enable(EnableCap.SampleAlphaToCoverage);
+                _gd.Api.Enable(EnableCap.SampleAlphaToCoverage);
 
                 if (multisample.AlphaToOneEnable)
                 {
-                    GL.Enable(EnableCap.SampleAlphaToOne);
+                    _gd.Api.Enable(EnableCap.SampleAlphaToOne);
                 }
                 else
                 {
-                    GL.Disable(EnableCap.SampleAlphaToOne);
+                    _gd.Api.Disable(EnableCap.SampleAlphaToOne);
                 }
 
-                if (HwCapabilities.SupportsAlphaToCoverageDitherControl)
+                if (_gd.Capabilities.SupportsAlphaToCoverageDitherControl)
                 {
-                    GL.NV.AlphaToCoverageDitherControl(multisample.AlphaToCoverageDitherEnable
-                        ? NvAlphaToCoverageDitherControl.AlphaToCoverageDitherEnableNv
-                        : NvAlphaToCoverageDitherControl.AlphaToCoverageDitherDisableNv);
+                    _gd.Api.TryGetExtension(out NVAlphaToCoverageDitherControl nvAlphaToCoverageDitherControl);
+
+                    nvAlphaToCoverageDitherControl.AlphaToCoverageDitherControl(multisample.AlphaToCoverageDitherEnable
+                        ? NV.AlphaToCoverageDitherEnableNV
+                        : NV.AlphaToCoverageDitherDisableNV);
                 }
             }
             else
             {
-                GL.Disable(EnableCap.SampleAlphaToCoverage);
+                _gd.Api.Disable(EnableCap.SampleAlphaToCoverage);
             }
         }
 
@@ -1020,72 +1052,74 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (smooth)
             {
-                GL.Enable(EnableCap.LineSmooth);
+                _gd.Api.Enable(EnableCap.LineSmooth);
             }
             else
             {
-                GL.Disable(EnableCap.LineSmooth);
+                _gd.Api.Disable(EnableCap.LineSmooth);
             }
 
-            GL.LineWidth(width);
+            _gd.Api.LineWidth(width);
         }
 
         public unsafe void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
-            GL.PatchParameter(PatchParameterInt.PatchVertices, vertices);
+            _gd.Api.PatchParameter(PatchParameterName.Vertices, vertices);
 
             fixed (float* pOuterLevel = defaultOuterLevel)
             {
-                GL.PatchParameter(PatchParameterFloat.PatchDefaultOuterLevel, pOuterLevel);
+                _gd.Api.PatchParameter(PatchParameterName.DefaultOuterLevel, pOuterLevel);
             }
 
             fixed (float* pInnerLevel = defaultInnerLevel)
             {
-                GL.PatchParameter(PatchParameterFloat.PatchDefaultInnerLevel, pInnerLevel);
+                _gd.Api.PatchParameter(PatchParameterName.DefaultInnerLevel, pInnerLevel);
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
         {
             // GL_POINT_SPRITE was deprecated in core profile 3.2+ and causes GL_INVALID_ENUM when set.
             // As we don't know if the current context is core or compat, it's safer to keep this code.
             if (enablePointSprite)
             {
-                GL.Enable(EnableCap.PointSprite);
+                _gd.Api.Enable(GLEnum.PointSprite);
             }
             else
             {
-                GL.Disable(EnableCap.PointSprite);
+                _gd.Api.Disable(GLEnum.PointSprite);
             }
 
             if (isProgramPointSize)
             {
-                GL.Enable(EnableCap.ProgramPointSize);
+                _gd.Api.Enable(EnableCap.ProgramPointSize);
             }
             else
             {
-                GL.Disable(EnableCap.ProgramPointSize);
+                _gd.Api.Disable(EnableCap.ProgramPointSize);
             }
 
-            GL.PointParameter(origin == Origin.LowerLeft
-                ? PointSpriteCoordOriginParameter.LowerLeft
-                : PointSpriteCoordOriginParameter.UpperLeft);
+            _gd.Api.PointParameter(GLEnum.PointSpriteCoordOrigin, (int)(origin == Origin.LowerLeft
+                ? GLEnum.LowerLeft
+                : GLEnum.UpperLeft));
 
             // Games seem to set point size to 0 which generates a GL_INVALID_VALUE
             // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0.
-            GL.PointSize(Math.Max(float.Epsilon, size));
+            _gd.Api.PointSize(Math.Max(float.Epsilon, size));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public void SetPolygonMode(GAL.PolygonMode frontMode, GAL.PolygonMode backMode)
         {
             if (frontMode == backMode)
             {
-                GL.PolygonMode(MaterialFace.FrontAndBack, frontMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.FrontAndBack, frontMode.Convert());
             }
             else
             {
-                GL.PolygonMode(MaterialFace.Front, frontMode.Convert());
-                GL.PolygonMode(MaterialFace.Back, backMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.Front, frontMode.Convert());
+                _gd.Api.PolygonMode(MaterialFace.Back, backMode.Convert());
             }
         }
 
@@ -1093,13 +1127,13 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (!enable)
             {
-                GL.Disable(EnableCap.PrimitiveRestart);
+                _gd.Api.Disable(EnableCap.PrimitiveRestart);
                 return;
             }
 
-            GL.PrimitiveRestartIndex(index);
+            _gd.Api.PrimitiveRestartIndex((uint)index);
 
-            GL.Enable(EnableCap.PrimitiveRestart);
+            _gd.Api.Enable(EnableCap.PrimitiveRestart);
         }
 
         public void SetPrimitiveTopology(PrimitiveTopology topology)
@@ -1113,9 +1147,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_tfEnabled)
             {
-                GL.EndTransformFeedback();
+                _gd.Api.EndTransformFeedback();
                 prg.Bind();
-                GL.BeginTransformFeedback(_tfTopology);
+                _gd.Api.BeginTransformFeedback(_tfTopology);
             }
             else
             {
@@ -1139,11 +1173,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (discard)
             {
-                GL.Enable(EnableCap.RasterizerDiscard);
+                _gd.Api.Enable(EnableCap.RasterizerDiscard);
             }
             else
             {
-                GL.Disable(EnableCap.RasterizerDiscard);
+                _gd.Api.Disable(EnableCap.RasterizerDiscard);
             }
 
             _rasterizerDiscard = discard;
@@ -1215,7 +1249,7 @@ namespace Ryujinx.Graphics.OpenGL
                     if ((_scissorEnables & mask) == 0)
                     {
                         _scissorEnables |= mask;
-                        GL.Enable(IndexedEnableCap.ScissorTest, index);
+                        _gd.Api.Enable(EnableCap.ScissorTest, (uint)index);
                     }
                 }
                 else
@@ -1223,12 +1257,12 @@ namespace Ryujinx.Graphics.OpenGL
                     if ((_scissorEnables & mask) != 0)
                     {
                         _scissorEnables &= ~mask;
-                        GL.Disable(IndexedEnableCap.ScissorTest, index);
+                        _gd.Api.Disable(EnableCap.ScissorTest, (uint)index);
                     }
                 }
             }
 
-            GL.ScissorArray(0, count, ref v[0]);
+            _gd.Api.ScissorArray(0, (uint)count, in v[0]);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1237,39 +1271,39 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (!stencilTest.TestEnable)
             {
-                GL.Disable(EnableCap.StencilTest);
+                _gd.Api.Disable(EnableCap.StencilTest);
                 return;
             }
 
-            GL.StencilOpSeparate(
-                StencilFace.Front,
+            _gd.Api.StencilOpSeparate(
+                StencilFaceDirection.Front,
                 stencilTest.FrontSFail.Convert(),
                 stencilTest.FrontDpFail.Convert(),
                 stencilTest.FrontDpPass.Convert());
 
-            GL.StencilFuncSeparate(
-                StencilFace.Front,
+            _gd.Api.StencilFuncSeparate(
+                StencilFaceDirection.Front,
                 (StencilFunction)stencilTest.FrontFunc.Convert(),
                 stencilTest.FrontFuncRef,
-                stencilTest.FrontFuncMask);
+                (uint)stencilTest.FrontFuncMask);
 
-            GL.StencilMaskSeparate(StencilFace.Front, stencilTest.FrontMask);
+            _gd.Api.StencilMaskSeparate(StencilFaceDirection.Front, (uint)stencilTest.FrontMask);
 
-            GL.StencilOpSeparate(
-                StencilFace.Back,
+            _gd.Api.StencilOpSeparate(
+                StencilFaceDirection.Back,
                 stencilTest.BackSFail.Convert(),
                 stencilTest.BackDpFail.Convert(),
                 stencilTest.BackDpPass.Convert());
 
-            GL.StencilFuncSeparate(
-                StencilFace.Back,
+            _gd.Api.StencilFuncSeparate(
+                StencilFaceDirection.Back,
                 (StencilFunction)stencilTest.BackFunc.Convert(),
                 stencilTest.BackFuncRef,
-                stencilTest.BackFuncMask);
+                (uint)stencilTest.BackFuncMask);
 
-            GL.StencilMaskSeparate(StencilFace.Back, stencilTest.BackMask);
+            _gd.Api.StencilMaskSeparate(StencilFaceDirection.Back, (uint)stencilTest.BackMask);
 
-            GL.Enable(EnableCap.StencilTest);
+            _gd.Api.Enable(EnableCap.StencilTest);
 
             _stencilFrontMask = stencilTest.FrontMask;
         }
@@ -1289,17 +1323,17 @@ namespace Ryujinx.Graphics.OpenGL
                 }
                 else
                 {
-                    ((TextureBase)texture).Bind(binding);
+                    ((TextureBase)texture).Bind((uint)binding);
                 }
             }
             else
             {
-                TextureBase.ClearBinding(binding);
+                TextureBase.ClearBinding(_gd.Api, (uint)binding);
             }
 
             Sampler glSampler = (Sampler)sampler;
 
-            glSampler?.Bind(binding);
+            glSampler?.Bind((uint)binding);
 
             if (binding == 0)
             {
@@ -1309,14 +1343,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetTextureArray(ShaderStage stage, int binding, ITextureArray array)
         {
-            (array as TextureArray).Bind(binding);
+            (array as TextureArray).Bind((uint)binding);
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {
             if (_tfEnabled)
             {
-                GL.EndTransformFeedback();
+                _gd.Api.EndTransformFeedback();
             }
 
             int count = Math.Min(buffers.Length, Constants.MaxTransformFeedbackBuffers);
@@ -1328,23 +1362,23 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, 0);
+                    _gd.Api.BindBufferBase(BufferTargetARB.TransformFeedbackBuffer, (uint)i, 0);
                     continue;
                 }
 
                 if (_tfbs[i] == BufferHandle.Null)
                 {
-                    _tfbs[i] = Buffer.Create();
+                    _tfbs[i] = Buffer.Create(_gd.Api);
                 }
 
-                Buffer.Resize(_tfbs[i], buffer.Size);
-                Buffer.Copy(buffer.Handle, _tfbs[i], buffer.Offset, 0, buffer.Size);
-                GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, _tfbs[i].ToInt32());
+                Buffer.Resize(_gd.Api, _tfbs[i], buffer.Size);
+                Buffer.Copy(_gd.Api, buffer.Handle, _tfbs[i], buffer.Offset, 0, buffer.Size);
+                _gd.Api.BindBufferBase(BufferTargetARB.TransformFeedbackBuffer, (uint)i, _tfbs[i].ToUInt32());
             }
 
             if (_tfEnabled)
             {
-                GL.BeginTransformFeedback(_tfTopology);
+                _gd.Api.BeginTransformFeedback(_tfTopology);
             }
         }
 
@@ -1357,11 +1391,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (!enableClip)
             {
-                GL.Disable(EnableCap.ClipDistance0 + index);
+                _gd.Api.Disable(EnableCap.ClipDistance0 + index);
                 return;
             }
 
-            GL.Enable(EnableCap.ClipDistance0 + index);
+            _gd.Api.Enable(EnableCap.ClipDistance0 + index);
         }
 
         public void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)
@@ -1386,20 +1420,22 @@ namespace Ryujinx.Graphics.OpenGL
             float[] viewportArray = _viewportArray;
             double[] depthRangeArray = _depthRangeArray;
 
-            for (int index = 0; index < viewports.Length; index++)
+            for (uint index = 0; index < viewports.Length; index++)
             {
-                int viewportElemIndex = index * 4;
+                uint viewportElemIndex = index * 4;
 
-                Viewport viewport = viewports[index];
+                Viewport viewport = viewports[(int)index];
 
                 viewportArray[viewportElemIndex + 0] = viewport.Region.X;
                 viewportArray[viewportElemIndex + 1] = viewport.Region.Y + (viewport.Region.Height < 0 ? viewport.Region.Height : 0);
                 viewportArray[viewportElemIndex + 2] = viewport.Region.Width;
                 viewportArray[viewportElemIndex + 3] = MathF.Abs(viewport.Region.Height);
 
-                if (HwCapabilities.SupportsViewportSwizzle)
+                if (_gd.Capabilities.SupportsViewportSwizzle)
                 {
-                    GL.NV.ViewportSwizzle(
+                    _gd.Api.TryGetExtension(out NVViewportSwizzle nvViewportSwizzle);
+
+                    nvViewportSwizzle.ViewportSwizzle(
                         index,
                         viewport.SwizzleX.Convert(),
                         viewport.SwizzleY.Convert(),
@@ -1413,25 +1449,25 @@ namespace Ryujinx.Graphics.OpenGL
 
             bool flipY = viewports.Length != 0 && viewports[0].Region.Height < 0;
 
-            SetOrigin(flipY ? ClipOrigin.UpperLeft : ClipOrigin.LowerLeft);
+            SetOrigin(flipY ? ClipControlOrigin.UpperLeft : ClipControlOrigin.LowerLeft);
 
-            GL.ViewportArray(0, viewports.Length, viewportArray);
-            GL.DepthRangeArray(0, viewports.Length, depthRangeArray);
+            _gd.Api.ViewportArray(0, (uint)viewports.Length, viewportArray);
+            _gd.Api.DepthRangeArray(0, (uint)viewports.Length, depthRangeArray);
         }
 
         public void TextureBarrier()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.TextureFetchBarrierBit);
         }
 
         public void TextureBarrierTiled()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.TextureFetchBarrierBit);
         }
 
-        private static void SetBuffers(ReadOnlySpan<BufferAssignment> buffers, bool isStorage)
+        private void SetBuffers(ReadOnlySpan<BufferAssignment> buffers, bool isStorage)
         {
-            BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
+            BufferTargetARB target = isStorage ? BufferTargetARB.ShaderStorageBuffer : BufferTargetARB.UniformBuffer;
 
             for (int index = 0; index < buffers.Length; index++)
             {
@@ -1440,21 +1476,21 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferRange(target, assignment.Binding, 0, IntPtr.Zero, 0);
+                    _gd.Api.BindBufferRange(target, (uint)assignment.Binding, 0, 0, 0);
                     continue;
                 }
 
-                GL.BindBufferRange(target, assignment.Binding, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                _gd.Api.BindBufferRange(target, (uint)assignment.Binding, buffer.Handle.ToUInt32(), buffer.Offset, (UIntPtr)buffer.Size);
             }
         }
 
-        private void SetOrigin(ClipOrigin origin)
+        private void SetOrigin(ClipControlOrigin origin)
         {
             if (_clipOrigin != origin)
             {
                 _clipOrigin = origin;
 
-                GL.ClipControl(origin, _clipDepthMode);
+                _gd.Api.ClipControl(origin, _clipDepthMode);
 
                 SetFrontFace(_frontFace);
             }
@@ -1465,19 +1501,19 @@ namespace Ryujinx.Graphics.OpenGL
             // Changing clip origin will also change the front face to compensate
             // for the flipped viewport, we flip it again here to compensate as
             // this effect is undesirable for us.
-            if (_clipOrigin == ClipOrigin.UpperLeft)
+            if (_clipOrigin == ClipControlOrigin.UpperLeft)
             {
-                frontFace = frontFace == FrontFaceDirection.Ccw ? FrontFaceDirection.Cw : FrontFaceDirection.Ccw;
+                frontFace = frontFace == FrontFaceDirection.Ccw ? FrontFaceDirection.CW : FrontFaceDirection.Ccw;
             }
 
-            GL.FrontFace(frontFace);
+            _gd.Api.FrontFace(frontFace);
         }
 
         private void EnsureVertexArray()
         {
             if (_vertexArray == null)
             {
-                _vertexArray = new VertexArray();
+                _vertexArray = new VertexArray(_gd.Api);
 
                 _vertexArray.Bind();
             }
@@ -1487,16 +1523,16 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_framebuffer == null)
             {
-                _framebuffer = new Framebuffer();
+                _framebuffer = new Framebuffer(_gd.Api);
 
-                int boundHandle = _framebuffer.Bind();
+                uint boundHandle = _framebuffer.Bind();
                 _boundDrawFramebuffer = _boundReadFramebuffer = boundHandle;
 
-                GL.Enable(EnableCap.FramebufferSrgb);
+                _gd.Api.Enable(EnableCap.FramebufferSrgb);
             }
         }
 
-        internal (int drawHandle, int readHandle) GetBoundFramebuffers()
+        internal (uint drawHandle, uint readHandle) GetBoundFramebuffers()
         {
             if (BackgroundContextWorker.InBackground)
             {
@@ -1538,7 +1574,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     if (_tfbTargets[i].Handle != BufferHandle.Null)
                     {
-                        Buffer.Copy(_tfbs[i], _tfbTargets[i].Handle, 0, _tfbTargets[i].Offset, _tfbTargets[i].Size);
+                        Buffer.Copy(_gd.Api, _tfbs[i], _tfbTargets[i].Handle, 0, _tfbTargets[i].Offset, _tfbTargets[i].Size);
                     }
                 }
             }
@@ -1563,8 +1599,8 @@ namespace Ryujinx.Graphics.OpenGL
             componentMask >>= shift;
             componentMask &= 0xfu;
 
-            GL.ColorMask(
-                index,
+            _gd.Api.ColorMask(
+                (uint)index,
                 (componentMask & redMask) != 0,
                 (componentMask & 2u) != 0,
                 (componentMask & blueMask) != 0,
@@ -1576,14 +1612,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void RestoreClipControl()
         {
-            GL.ClipControl(_clipOrigin, _clipDepthMode);
+            _gd.Api.ClipControl(_clipOrigin, _clipDepthMode);
         }
 
         public void RestoreScissor0Enable()
         {
             if ((_scissorEnables & 1u) != 0)
             {
-                GL.Enable(IndexedEnableCap.ScissorTest, 0);
+                _gd.Api.Enable(EnableCap.ScissorTest, 0);
             }
         }
 
@@ -1591,7 +1627,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_rasterizerDiscard)
             {
-                GL.Enable(EnableCap.RasterizerDiscard);
+                _gd.Api.Enable(EnableCap.RasterizerDiscard);
             }
         }
 
@@ -1599,7 +1635,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_viewportArray.Length > 0)
             {
-                GL.ViewportArray(0, 1, _viewportArray);
+                _gd.Api.ViewportArray(0, 1, _viewportArray);
             }
         }
 
@@ -1616,16 +1652,16 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (texBase != null)
                 {
-                    SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+                    InternalFormat format = (InternalFormat)FormatTable.GetImageFormat(imageFormat);
 
                     if (format != 0)
                     {
-                        GL.BindImageTexture(i, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+                        _gd.Api.BindImageTexture((uint)i, texBase.Handle, 0, true, 0, BufferAccessARB.ReadWrite, format);
                         continue;
                     }
                 }
 
-                GL.BindImageTexture(i, 0, 0, true, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+                _gd.Api.BindImageTexture((uint)i, 0, 0, true, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
             }
         }
 
@@ -1649,7 +1685,7 @@ namespace Ryujinx.Graphics.OpenGL
                         return false;
                     }
 
-                    GL.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderType.QueryNoWaitInverted : ConditionalRenderType.QueryNoWait);
+                    _gd.Api.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderMode.NoWaitInverted : ConditionalRenderMode.NoWait);
                     _activeConditionalRender = evt;
 
                     return true;
@@ -1658,19 +1694,19 @@ namespace Ryujinx.Graphics.OpenGL
 
             // The GPU will flush the queries to CPU and evaluate the condition there instead.
 
-            GL.Flush(); // The thread will be stalled manually flushing the counter, so flush GL commands now.
+            _gd.Api.Flush(); // The thread will be stalled manually flushing the counter, so flush GL commands now.
             return false;
         }
 
         public bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual)
         {
-            GL.Flush(); // The GPU thread will be stalled manually flushing the counter, so flush GL commands now.
+            _gd.Api.Flush(); // The GPU thread will be stalled manually flushing the counter, so flush GL commands now.
             return false; // We don't currently have a way to compare two counters for conditional rendering.
         }
 
         public void EndHostConditionalRendering()
         {
-            GL.EndConditionalRender();
+            _gd.Api.EndConditionalRender();
 
             _activeConditionalRender?.ReleaseHostAccess();
             _activeConditionalRender = null;
@@ -1682,7 +1718,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 if (_tfbs[i] != BufferHandle.Null)
                 {
-                    Buffer.Delete(_tfbs[i]);
+                    Buffer.Delete(_gd.Api, _tfbs[i]);
                     _tfbs[i] = BufferHandle.Null;
                 }
             }
@@ -1690,7 +1726,7 @@ namespace Ryujinx.Graphics.OpenGL
             _activeConditionalRender?.ReleaseHostAccess();
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
-            _drawTexture.Dispose();
+            _drawTexture.Dispose(_gd.Api);
         }
     }
 }

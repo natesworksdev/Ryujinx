@@ -1,25 +1,25 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
 {
-    internal partial class SmaaPostProcessingEffect : IPostProcessingEffect
+    internal class SmaaPostProcessingEffect : IPostProcessingEffect
     {
         public const int AreaWidth = 160;
         public const int AreaHeight = 560;
         public const int SearchWidth = 64;
         public const int SearchHeight = 16;
 
-        private readonly OpenGLRenderer _renderer;
+        private readonly OpenGLRenderer _gd;
         private TextureStorage _outputTexture;
         private TextureStorage _searchTexture;
         private TextureStorage _areaTexture;
-        private int[] _edgeShaderPrograms;
-        private int[] _blendShaderPrograms;
-        private int[] _neighbourShaderPrograms;
+        private uint[] _edgeShaderPrograms;
+        private uint[] _blendShaderPrograms;
+        private uint[] _neighbourShaderPrograms;
         private TextureStorage _edgeOutputTexture;
         private TextureStorage _blendOutputTexture;
         private readonly string[] _qualities;
@@ -39,15 +39,15 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
                 _quality = Math.Clamp(value, 0, _qualities.Length - 1);
             }
         }
-        public SmaaPostProcessingEffect(OpenGLRenderer renderer, int quality)
+        public SmaaPostProcessingEffect(OpenGLRenderer gd, int quality)
         {
-            _renderer = renderer;
+            _gd = gd;
 
-            _edgeShaderPrograms = Array.Empty<int>();
-            _blendShaderPrograms = Array.Empty<int>();
-            _neighbourShaderPrograms = Array.Empty<int>();
+            _edgeShaderPrograms = Array.Empty<uint>();
+            _blendShaderPrograms = Array.Empty<uint>();
+            _neighbourShaderPrograms = Array.Empty<uint>();
 
-            _qualities = new string[] { "SMAA_PRESET_LOW", "SMAA_PRESET_MEDIUM", "SMAA_PRESET_HIGH", "SMAA_PRESET_ULTRA" };
+            _qualities = ["SMAA_PRESET_LOW", "SMAA_PRESET_MEDIUM", "SMAA_PRESET_HIGH", "SMAA_PRESET_ULTRA"];
 
             Quality = quality;
 
@@ -69,9 +69,9 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
         {
             for (int i = 0; i < _edgeShaderPrograms.Length; i++)
             {
-                GL.DeleteProgram(_edgeShaderPrograms[i]);
-                GL.DeleteProgram(_blendShaderPrograms[i]);
-                GL.DeleteProgram(_neighbourShaderPrograms[i]);
+                _gd.Api.DeleteProgram(_edgeShaderPrograms[i]);
+                _gd.Api.DeleteProgram(_blendShaderPrograms[i]);
+                _gd.Api.DeleteProgram(_neighbourShaderPrograms[i]);
             }
         }
 
@@ -80,9 +80,9 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             string baseShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa.hlsl");
             var pixelSizeDefine = $"#define SMAA_RT_METRICS float4(1.0 / {width}.0, 1.0 / {height}.0, {width}, {height}) \n";
 
-            _edgeShaderPrograms = new int[_qualities.Length];
-            _blendShaderPrograms = new int[_qualities.Length];
-            _neighbourShaderPrograms = new int[_qualities.Length];
+            _edgeShaderPrograms = new uint[_qualities.Length];
+            _blendShaderPrograms = new uint[_qualities.Length];
+            _neighbourShaderPrograms = new uint[_qualities.Length];
 
             for (int i = 0; i < +_edgeShaderPrograms.Length; i++)
             {
@@ -93,25 +93,25 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
                 var neighbourShaderData = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/smaa_neighbour.glsl");
 
                 var shaders = new string[] { presets, edgeShaderData };
-                var edgeProgram = ShaderHelper.CompileProgram(shaders, ShaderType.ComputeShader);
+                var edgeProgram = ShaderHelper.CompileProgram(_gd.Api, shaders, ShaderType.ComputeShader);
 
                 shaders[1] = blendShaderData;
-                var blendProgram = ShaderHelper.CompileProgram(shaders, ShaderType.ComputeShader);
+                var blendProgram = ShaderHelper.CompileProgram(_gd.Api, shaders, ShaderType.ComputeShader);
 
                 shaders[1] = neighbourShaderData;
-                var neighbourProgram = ShaderHelper.CompileProgram(shaders, ShaderType.ComputeShader);
+                var neighbourProgram = ShaderHelper.CompileProgram(_gd.Api, shaders, ShaderType.ComputeShader);
 
                 _edgeShaderPrograms[i] = edgeProgram;
                 _blendShaderPrograms[i] = blendProgram;
                 _neighbourShaderPrograms[i] = neighbourProgram;
             }
 
-            _inputUniform = GL.GetUniformLocation(_edgeShaderPrograms[0], "inputTexture");
-            _outputUniform = GL.GetUniformLocation(_edgeShaderPrograms[0], "imgOutput");
-            _samplerAreaUniform = GL.GetUniformLocation(_blendShaderPrograms[0], "samplerArea");
-            _samplerSearchUniform = GL.GetUniformLocation(_blendShaderPrograms[0], "samplerSearch");
-            _samplerBlendUniform = GL.GetUniformLocation(_neighbourShaderPrograms[0], "samplerBlend");
-            _resolutionUniform = GL.GetUniformLocation(_edgeShaderPrograms[0], "invResolution");
+            _inputUniform = _gd.Api.GetUniformLocation(_edgeShaderPrograms[0], "inputTexture");
+            _outputUniform = _gd.Api.GetUniformLocation(_edgeShaderPrograms[0], "imgOutput");
+            _samplerAreaUniform = _gd.Api.GetUniformLocation(_blendShaderPrograms[0], "samplerArea");
+            _samplerSearchUniform = _gd.Api.GetUniformLocation(_blendShaderPrograms[0], "samplerSearch");
+            _samplerBlendUniform = _gd.Api.GetUniformLocation(_neighbourShaderPrograms[0], "samplerBlend");
+            _resolutionUniform = _gd.Api.GetUniformLocation(_edgeShaderPrograms[0], "invResolution");
         }
 
         private void Initialize()
@@ -148,8 +148,8 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
                 SwizzleComponent.Blue,
                 SwizzleComponent.Alpha);
 
-            _areaTexture = new TextureStorage(_renderer, areaInfo);
-            _searchTexture = new TextureStorage(_renderer, searchInfo);
+            _areaTexture = new TextureStorage(_gd, areaInfo);
+            _searchTexture = new TextureStorage(_gd, searchInfo);
 
             var areaTexture = EmbeddedResources.ReadFileToRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaAreaTexture.bin");
             var searchTexture = EmbeddedResources.ReadFileToRentedMemory("Ryujinx.Graphics.OpenGL/Effects/Textures/SmaaSearchTexture.bin");
@@ -166,11 +166,11 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             if (_outputTexture == null || _outputTexture.Info.Width != view.Width || _outputTexture.Info.Height != view.Height)
             {
                 _outputTexture?.Dispose();
-                _outputTexture = new TextureStorage(_renderer, view.Info);
+                _outputTexture = new TextureStorage(_gd, view.Info);
                 _outputTexture.CreateDefaultView();
-                _edgeOutputTexture = new TextureStorage(_renderer, view.Info);
+                _edgeOutputTexture = new TextureStorage(_gd, view.Info);
                 _edgeOutputTexture.CreateDefaultView();
-                _blendOutputTexture = new TextureStorage(_renderer, view.Info);
+                _blendOutputTexture = new TextureStorage(_gd, view.Info);
                 _blendOutputTexture.CreateDefaultView();
 
                 DeleteShaders();
@@ -184,77 +184,77 @@ namespace Ryujinx.Graphics.OpenGL.Effects.Smaa
             var areaTexture = _areaTexture.DefaultView as TextureView;
             var searchTexture = _searchTexture.DefaultView as TextureView;
 
-            var previousFramebuffer = GL.GetInteger(GetPName.FramebufferBinding);
-            int previousUnit = GL.GetInteger(GetPName.ActiveTexture);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            int previousTextureBinding0 = GL.GetInteger(GetPName.TextureBinding2D);
-            GL.ActiveTexture(TextureUnit.Texture1);
-            int previousTextureBinding1 = GL.GetInteger(GetPName.TextureBinding2D);
-            GL.ActiveTexture(TextureUnit.Texture2);
-            int previousTextureBinding2 = GL.GetInteger(GetPName.TextureBinding2D);
+            uint previousFramebuffer = (uint)_gd.Api.GetInteger(GLEnum.DrawFramebufferBinding);
+            int previousUnit = _gd.Api.GetInteger(GLEnum.ActiveTexture);
+            _gd.Api.ActiveTexture(TextureUnit.Texture0);
+            uint previousTextureBinding0 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
+            _gd.Api.ActiveTexture(TextureUnit.Texture1);
+            uint previousTextureBinding1 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
+            _gd.Api.ActiveTexture(TextureUnit.Texture2);
+            uint previousTextureBinding2 = (uint)_gd.Api.GetInteger(GLEnum.TextureBinding2D);
 
-            var framebuffer = new Framebuffer();
+            var framebuffer = new Framebuffer(_gd.Api);
             framebuffer.Bind();
             framebuffer.AttachColor(0, edgeOutput);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.ClearColor(0, 0, 0, 0);
+            _gd.Api.Clear(ClearBufferMask.ColorBufferBit);
+            _gd.Api.ClearColor(0, 0, 0, 0);
             framebuffer.AttachColor(0, blendOutput);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.ClearColor(0, 0, 0, 0);
+            _gd.Api.Clear(ClearBufferMask.ColorBufferBit);
+            _gd.Api.ClearColor(0, 0, 0, 0);
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebuffer);
+            _gd.Api.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebuffer);
 
             framebuffer.Dispose();
 
-            var dispatchX = BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
-            var dispatchY = BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
+            uint dispatchX = (uint)BitUtils.DivRoundUp(view.Width, IPostProcessingEffect.LocalGroupSize);
+            uint dispatchY = (uint)BitUtils.DivRoundUp(view.Height, IPostProcessingEffect.LocalGroupSize);
 
-            int previousProgram = GL.GetInteger(GetPName.CurrentProgram);
-            GL.BindImageTexture(0, edgeOutput.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
-            GL.UseProgram(_edgeShaderPrograms[Quality]);
+            uint previousProgram = (uint)_gd.Api.GetInteger(GLEnum.CurrentProgram);
+            _gd.Api.BindImageTexture(0, edgeOutput.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
+            _gd.Api.UseProgram(_edgeShaderPrograms[Quality]);
             view.Bind(0);
-            GL.Uniform1(_inputUniform, 0);
-            GL.Uniform1(_outputUniform, 0);
-            GL.Uniform2(_resolutionUniform, (float)view.Width, (float)view.Height);
-            GL.DispatchCompute(dispatchX, dispatchY, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+            _gd.Api.Uniform1(_inputUniform, 0);
+            _gd.Api.Uniform1(_outputUniform, 0);
+            _gd.Api.Uniform2(_resolutionUniform, view.Width, view.Height);
+            _gd.Api.DispatchCompute(dispatchX, dispatchY, 1);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
-            GL.BindImageTexture(0, blendOutput.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
-            GL.UseProgram(_blendShaderPrograms[Quality]);
+            _gd.Api.BindImageTexture(0, blendOutput.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
+            _gd.Api.UseProgram(_blendShaderPrograms[Quality]);
             edgeOutput.Bind(0);
             areaTexture.Bind(1);
             searchTexture.Bind(2);
-            GL.Uniform1(_inputUniform, 0);
-            GL.Uniform1(_outputUniform, 0);
-            GL.Uniform1(_samplerAreaUniform, 1);
-            GL.Uniform1(_samplerSearchUniform, 2);
-            GL.Uniform2(_resolutionUniform, (float)view.Width, (float)view.Height);
-            GL.DispatchCompute(dispatchX, dispatchY, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+            _gd.Api.Uniform1(_inputUniform, 0);
+            _gd.Api.Uniform1(_outputUniform, 0);
+            _gd.Api.Uniform1(_samplerAreaUniform, 1);
+            _gd.Api.Uniform1(_samplerSearchUniform, 2);
+            _gd.Api.Uniform2(_resolutionUniform, view.Width, view.Height);
+            _gd.Api.DispatchCompute(dispatchX, dispatchY, 1);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
-            GL.BindImageTexture(0, textureView.Handle, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
-            GL.UseProgram(_neighbourShaderPrograms[Quality]);
+            _gd.Api.BindImageTexture(0, textureView.Handle, 0, false, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
+            _gd.Api.UseProgram(_neighbourShaderPrograms[Quality]);
             view.Bind(0);
             blendOutput.Bind(1);
-            GL.Uniform1(_inputUniform, 0);
-            GL.Uniform1(_outputUniform, 0);
-            GL.Uniform1(_samplerBlendUniform, 1);
-            GL.Uniform2(_resolutionUniform, (float)view.Width, (float)view.Height);
-            GL.DispatchCompute(dispatchX, dispatchY, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+            _gd.Api.Uniform1(_inputUniform, 0);
+            _gd.Api.Uniform1(_outputUniform, 0);
+            _gd.Api.Uniform1(_samplerBlendUniform, 1);
+            _gd.Api.Uniform2(_resolutionUniform, view.Width, view.Height);
+            _gd.Api.DispatchCompute(dispatchX, dispatchY, 1);
+            _gd.Api.MemoryBarrier(MemoryBarrierMask.ShaderImageAccessBarrierBit);
 
-            (_renderer.Pipeline as Pipeline).RestoreImages1And2();
+            (_gd.Pipeline as Pipeline).RestoreImages1And2();
 
-            GL.UseProgram(previousProgram);
+            _gd.Api.UseProgram(previousProgram);
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, previousTextureBinding0);
-            GL.ActiveTexture(TextureUnit.Texture1);
-            GL.BindTexture(TextureTarget.Texture2D, previousTextureBinding1);
-            GL.ActiveTexture(TextureUnit.Texture2);
-            GL.BindTexture(TextureTarget.Texture2D, previousTextureBinding2);
+            _gd.Api.ActiveTexture(TextureUnit.Texture0);
+            _gd.Api.BindTexture(TextureTarget.Texture2D, previousTextureBinding0);
+            _gd.Api.ActiveTexture(TextureUnit.Texture1);
+            _gd.Api.BindTexture(TextureTarget.Texture2D, previousTextureBinding1);
+            _gd.Api.ActiveTexture(TextureUnit.Texture2);
+            _gd.Api.BindTexture(TextureTarget.Texture2D, previousTextureBinding2);
 
-            GL.ActiveTexture((TextureUnit)previousUnit);
+            _gd.Api.ActiveTexture((TextureUnit)previousUnit);
 
             return textureView;
         }

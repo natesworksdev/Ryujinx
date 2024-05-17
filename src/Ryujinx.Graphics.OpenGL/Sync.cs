@@ -1,5 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,24 +14,30 @@ namespace Ryujinx.Graphics.OpenGL
             public IntPtr Handle;
         }
 
-        private ulong _firstHandle = 0;
-        private static ClientWaitSyncFlags SyncFlags => HwCapabilities.RequiresSyncFlush ? ClientWaitSyncFlags.None : ClientWaitSyncFlags.SyncFlushCommandsBit;
+        private ulong _firstHandle;
+        private SyncObjectMask SyncFlags => _gd.Capabilities.RequiresSyncFlush ? 0 : SyncObjectMask.Bit;
 
         private readonly List<SyncHandle> _handles = new();
+        private readonly OpenGLRenderer _gd;
+
+        public Sync(OpenGLRenderer gd)
+        {
+            _gd = gd;
+        }
 
         public void Create(ulong id)
         {
             SyncHandle handle = new()
             {
                 ID = id,
-                Handle = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None),
+                Handle = _gd.Api.FenceSync(SyncCondition.SyncGpuCommandsComplete, SyncBehaviorFlags.None),
             };
 
 
-            if (HwCapabilities.RequiresSyncFlush)
+            if (_gd.Capabilities.RequiresSyncFlush)
             {
                 // Force commands to flush up to the syncpoint.
-                GL.ClientWaitSync(handle.Handle, ClientWaitSyncFlags.SyncFlushCommandsBit, 0);
+                _gd.Api.ClientWaitSync(handle.Handle, SyncObjectMask.Bit, 0);
             }
 
             lock (_handles)
@@ -57,9 +63,9 @@ namespace Ryujinx.Graphics.OpenGL
 
                         if (handle.ID > lastHandle)
                         {
-                            WaitSyncStatus syncResult = GL.ClientWaitSync(handle.Handle, SyncFlags, 0);
+                            GLEnum syncResult = _gd.Api.ClientWaitSync(handle.Handle, SyncFlags, 0);
 
-                            if (syncResult == WaitSyncStatus.AlreadySignaled)
+                            if (syncResult == GLEnum.AlreadySignaled)
                             {
                                 lastHandle = handle.ID;
                             }
@@ -101,9 +107,9 @@ namespace Ryujinx.Graphics.OpenGL
                         return;
                     }
 
-                    WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, SyncFlags, 1000000000);
+                    GLEnum syncResult = _gd.Api.ClientWaitSync(result.Handle, SyncFlags, 1000000000);
 
-                    if (syncResult == WaitSyncStatus.TimeoutExpired)
+                    if (syncResult == GLEnum.TimeoutExpired)
                     {
                         Logger.Error?.PrintMsg(LogClass.Gpu, $"GL Sync Object {result.ID} failed to signal within 1000ms. Continuing...");
                     }
@@ -128,9 +134,9 @@ namespace Ryujinx.Graphics.OpenGL
                     break;
                 }
 
-                WaitSyncStatus syncResult = GL.ClientWaitSync(first.Handle, SyncFlags, 0);
+                GLEnum syncResult = _gd.Api.ClientWaitSync(first.Handle, SyncFlags, 0);
 
-                if (syncResult == WaitSyncStatus.AlreadySignaled)
+                if (syncResult == GLEnum.AlreadySignaled)
                 {
                     // Delete the sync object.
                     lock (_handles)
@@ -139,7 +145,7 @@ namespace Ryujinx.Graphics.OpenGL
                         {
                             _firstHandle = first.ID + 1;
                             _handles.RemoveAt(0);
-                            GL.DeleteSync(first.Handle);
+                            _gd.Api.DeleteSync(first.Handle);
                             first.Handle = IntPtr.Zero;
                         }
                     }
@@ -160,7 +166,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     lock (handle)
                     {
-                        GL.DeleteSync(handle.Handle);
+                        _gd.Api.DeleteSync(handle.Handle);
                         handle.Handle = IntPtr.Zero;
                     }
                 }

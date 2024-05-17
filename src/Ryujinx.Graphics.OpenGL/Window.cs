@@ -1,22 +1,22 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Effects;
 using Ryujinx.Graphics.OpenGL.Effects.Smaa;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
     class Window : IWindow, IDisposable
     {
-        private readonly OpenGLRenderer _renderer;
+        private readonly OpenGLRenderer _gd;
 
         private bool _initialized;
 
         private int _width;
         private int _height;
         private bool _updateSize;
-        private int _copyFramebufferHandle;
+        private uint _copyFramebufferHandle;
         private IPostProcessingEffect _antiAliasing;
         private IScalingFilter _scalingFilter;
         private bool _isLinear;
@@ -32,26 +32,26 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal bool ScreenCaptureRequested { get; set; }
 
-        public Window(OpenGLRenderer renderer)
+        public Window(OpenGLRenderer gd)
         {
-            _renderer = renderer;
+            _gd = gd;
         }
 
         public void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
         {
-            GL.Disable(EnableCap.FramebufferSrgb);
+            _gd.Api.Disable(EnableCap.FramebufferSrgb);
 
-            (int oldDrawFramebufferHandle, int oldReadFramebufferHandle) = ((Pipeline)_renderer.Pipeline).GetBoundFramebuffers();
+            (uint oldDrawFramebufferHandle, uint oldReadFramebufferHandle) = ((Pipeline)_gd.Pipeline).GetBoundFramebuffers();
 
             CopyTextureToFrameBufferRGB(0, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop, swapBuffersCallback);
 
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
+            _gd.Api.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
+            _gd.Api.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
-            GL.Enable(EnableCap.FramebufferSrgb);
+            _gd.Api.Enable(EnableCap.FramebufferSrgb);
 
             // Restore unpack alignment to 4, as performance overlays such as RTSS may change this to load their resources.
-            GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
+            _gd.Api.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
         }
 
         public void ChangeVSyncMode(bool vsyncEnabled) { }
@@ -64,12 +64,12 @@ namespace Ryujinx.Graphics.OpenGL
             _updateSize = true;
         }
 
-        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop, Action swapBuffersCallback)
+        private void CopyTextureToFrameBufferRGB(uint drawFramebuffer, uint readFramebuffer, TextureView view, ImageCrop crop, Action swapBuffersCallback)
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
+            _gd.Api.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
+            _gd.Api.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
-            TextureView viewConverted = view.Format.IsBgr() ? _renderer.TextureCopy.BgraSwap(view) : view;
+            TextureView viewConverted = view.Format.IsBgr() ? _gd.TextureCopy.BgraSwap(view) : view;
 
             UpdateEffect();
 
@@ -81,9 +81,9 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (viewConverted.Format.IsBgr())
                 {
-                    var swappedView = _renderer.TextureCopy.BgraSwap(viewConverted);
+                    var swappedView = _gd.TextureCopy.BgraSwap(viewConverted);
 
-                    viewConverted?.Dispose();
+                    viewConverted.Dispose();
 
                     viewConverted = swappedView;
                 }
@@ -94,21 +94,21 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
+            _gd.Api.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
+            _gd.Api.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
-            GL.FramebufferTexture(
+            _gd.Api.FramebufferTexture(
                 FramebufferTarget.ReadFramebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 viewConverted.Handle,
                 0);
 
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+            _gd.Api.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
-            GL.Disable(EnableCap.RasterizerDiscard);
-            GL.Disable(IndexedEnableCap.ScissorTest, 0);
+            _gd.Api.Disable(EnableCap.RasterizerDiscard);
+            _gd.Api.Disable(EnableCap.ScissorTest, 0);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            _gd.Api.Clear(ClearBufferMask.ColorBufferBit);
 
             int srcX0, srcX1, srcY0, srcY1;
 
@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (ScreenCaptureRequested)
             {
-                CaptureFrame(srcX0, srcY0, srcX1, srcY1, view.Format.IsBgr(), crop.FlipX, crop.FlipY);
+                CaptureFrame(srcX0, srcY0, (uint)srcX1, (uint)srcY1, view.Format.IsBgr(), crop.FlipX, crop.FlipY);
 
                 ScreenCaptureRequested = false;
             }
@@ -185,14 +185,14 @@ namespace Ryujinx.Graphics.OpenGL
                 srcX1 = dstX1;
                 srcY1 = dstY1;
 
-                GL.FramebufferTexture(
+                _gd.Api.FramebufferTexture(
                     FramebufferTarget.ReadFramebuffer,
                     FramebufferAttachment.ColorAttachment0,
                     _upscaledTexture.Handle,
                     0);
             }
 
-            GL.BlitFramebuffer(
+            _gd.Api.BlitFramebuffer(
                 srcX0,
                 srcY0,
                 srcX1,
@@ -205,26 +205,26 @@ namespace Ryujinx.Graphics.OpenGL
                 _isLinear ? BlitFramebufferFilter.Linear : BlitFramebufferFilter.Nearest);
 
             // Remove Alpha channel
-            GL.ColorMask(false, false, false, true);
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            _gd.Api.ColorMask(false, false, false, true);
+            _gd.Api.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            _gd.Api.Clear(ClearBufferMask.ColorBufferBit);
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
-                ((Pipeline)_renderer.Pipeline).RestoreComponentMask(i);
+                ((Pipeline)_gd.Pipeline).RestoreComponentMask(i);
             }
 
             // Set clip control, viewport and the framebuffer to the output to placate overlays and OBS capture.
-            GL.ClipControl(ClipOrigin.LowerLeft, ClipDepthMode.NegativeOneToOne);
-            GL.Viewport(0, 0, _width, _height);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, drawFramebuffer);
+            _gd.Api.ClipControl(ClipControlOrigin.LowerLeft, ClipControlDepth.NegativeOneToOne);
+            _gd.Api.Viewport(0, 0, (uint)_width, (uint)_height);
+            _gd.Api.BindFramebuffer(FramebufferTarget.Framebuffer, drawFramebuffer);
 
             swapBuffersCallback();
 
-            ((Pipeline)_renderer.Pipeline).RestoreClipControl();
-            ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
-            ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
-            ((Pipeline)_renderer.Pipeline).RestoreViewport0();
+            ((Pipeline)_gd.Pipeline).RestoreClipControl();
+            ((Pipeline)_gd.Pipeline).RestoreScissor0Enable();
+            ((Pipeline)_gd.Pipeline).RestoreRasterizerDiscard();
+            ((Pipeline)_gd.Pipeline).RestoreViewport0();
 
             if (viewConverted != view)
             {
@@ -232,13 +232,13 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private int GetCopyFramebufferHandleLazy()
+        private uint GetCopyFramebufferHandleLazy()
         {
-            int handle = _copyFramebufferHandle;
+            uint handle = _copyFramebufferHandle;
 
             if (handle == 0)
             {
-                handle = GL.GenFramebuffer();
+                handle = _gd.Api.GenFramebuffer();
 
                 _copyFramebufferHandle = handle;
             }
@@ -252,14 +252,15 @@ namespace Ryujinx.Graphics.OpenGL
             _initialized = true;
         }
 
-        public void CaptureFrame(int x, int y, int width, int height, bool isBgra, bool flipX, bool flipY)
+        public unsafe void CaptureFrame(int x, int y, uint width, uint height, bool isBgra, bool flipX, bool flipY)
         {
-            long size = Math.Abs(4 * width * height);
-            byte[] bitmap = new byte[size];
+            long size = 4 * width * height;
 
-            GL.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, bitmap);
+            _gd.Api.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, out int data);
 
-            _renderer.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
+            var bitmap = new Span<byte>((void*)data, (int)size).ToArray();
+
+            _gd.OnScreenCaptured(new ScreenCaptureImageInfo((int)width, (int)height, isBgra, bitmap, flipX, flipY));
         }
 
         public void Dispose()
@@ -273,7 +274,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_copyFramebufferHandle != 0)
             {
-                GL.DeleteFramebuffer(_copyFramebufferHandle);
+                _gd.Api.DeleteFramebuffer(_copyFramebufferHandle);
 
                 _copyFramebufferHandle = 0;
             }
@@ -319,7 +320,7 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     case AntiAliasing.Fxaa:
                         _antiAliasing?.Dispose();
-                        _antiAliasing = new FxaaPostProcessingEffect(_renderer);
+                        _antiAliasing = new FxaaPostProcessingEffect(_gd);
                         break;
                     case AntiAliasing.None:
                         _antiAliasing?.Dispose();
@@ -337,7 +338,7 @@ namespace Ryujinx.Graphics.OpenGL
                         else
                         {
                             _antiAliasing?.Dispose();
-                            _antiAliasing = new SmaaPostProcessingEffect(_renderer, quality);
+                            _antiAliasing = new SmaaPostProcessingEffect(_gd, quality);
                         }
                         break;
                 }
@@ -368,7 +369,7 @@ namespace Ryujinx.Graphics.OpenGL
                         if (_scalingFilter is not FsrScalingFilter)
                         {
                             _scalingFilter?.Dispose();
-                            _scalingFilter = new FsrScalingFilter(_renderer);
+                            _scalingFilter = new FsrScalingFilter(_gd);
                         }
                         _isLinear = false;
                         _scalingFilter.Level = _scalingFilterLevel;
@@ -401,7 +402,7 @@ namespace Ryujinx.Graphics.OpenGL
                 SwizzleComponent.Alpha);
 
             _isBgra = forceBgra;
-            _upscaledTexture = _renderer.CreateTexture(info) as TextureView;
+            _upscaledTexture = _gd.CreateTexture(info) as TextureView;
         }
 
         public void SetScalingFilterLevel(float level)

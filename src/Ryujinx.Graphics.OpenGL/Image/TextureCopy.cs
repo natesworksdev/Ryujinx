@@ -1,26 +1,26 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureCopy : IDisposable
     {
-        private readonly OpenGLRenderer _renderer;
+        private readonly OpenGLRenderer _gd;
 
-        private int _srcFramebuffer;
-        private int _dstFramebuffer;
+        private uint _srcFramebuffer;
+        private uint _dstFramebuffer;
 
-        private int _copyPboHandle;
+        private uint _copyPboHandle;
         private int _copyPboSize;
 
         public IntermediatePool IntermediatePool { get; }
 
-        public TextureCopy(OpenGLRenderer renderer)
+        public TextureCopy(OpenGLRenderer gd)
         {
-            _renderer = renderer;
-            IntermediatePool = new IntermediatePool(renderer);
+            _gd = gd;
+            IntermediatePool = new IntermediatePool(gd);
         }
 
         public void Copy(
@@ -55,10 +55,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView srcConverted = src.Format.IsBgr() != dst.Format.IsBgr() ? BgraSwap(src) : src;
 
-            (int oldDrawFramebufferHandle, int oldReadFramebufferHandle) = ((Pipeline)_renderer.Pipeline).GetBoundFramebuffers();
+            (uint oldDrawFramebufferHandle, uint oldReadFramebufferHandle) = ((Pipeline)_gd.Pipeline).GetBoundFramebuffers();
 
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, GetSrcFramebufferLazy());
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, GetDstFramebufferLazy());
+            _gd.Api.BindFramebuffer(FramebufferTarget.ReadFramebuffer, GetSrcFramebufferLazy());
+            _gd.Api.BindFramebuffer(FramebufferTarget.DrawFramebuffer, GetDstFramebufferLazy());
 
             if (srcLevel != 0)
             {
@@ -76,13 +76,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 {
                     if ((srcLayer | dstLayer) != 0 || layers > 1)
                     {
-                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, srcLevel + level, srcLayer + layer);
-                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, dstLevel + level, dstLayer + layer);
+                        Attach(_gd.Api, FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, srcLevel + level, srcLayer + layer);
+                        Attach(_gd.Api, FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, dstLevel + level, dstLayer + layer);
                     }
                     else
                     {
-                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, srcLevel + level);
-                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, dstLevel + level);
+                        Attach(_gd.Api, FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, srcLevel + level);
+                        Attach(_gd.Api, FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, dstLevel + level);
                     }
 
                     ClearBufferMask mask = GetMask(src.Format);
@@ -96,13 +96,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         ? BlitFramebufferFilter.Linear
                         : BlitFramebufferFilter.Nearest;
 
-                    GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-                    GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+                    _gd.Api.ReadBuffer(ReadBufferMode.ColorAttachment0);
+                    _gd.Api.DrawBuffer(DrawBufferMode.ColorAttachment0);
 
-                    GL.Disable(EnableCap.RasterizerDiscard);
-                    GL.Disable(IndexedEnableCap.ScissorTest, 0);
+                    _gd.Api.Disable(EnableCap.RasterizerDiscard);
+                    _gd.Api.Disable(EnableCap.ScissorTest, 0);
 
-                    GL.BlitFramebuffer(
+                    _gd.Api.BlitFramebuffer(
                         srcRegion.X1,
                         srcRegion.Y1,
                         srcRegion.X2,
@@ -122,14 +122,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
             }
 
-            Attach(FramebufferTarget.ReadFramebuffer, src.Format, 0);
-            Attach(FramebufferTarget.DrawFramebuffer, dst.Format, 0);
+            Attach(_gd.Api, FramebufferTarget.ReadFramebuffer, src.Format, 0);
+            Attach(_gd.Api, FramebufferTarget.DrawFramebuffer, dst.Format, 0);
 
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
+            _gd.Api.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
+            _gd.Api.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
-            ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
-            ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
+            ((Pipeline)_gd.Pipeline).RestoreScissor0Enable();
+            ((Pipeline)_gd.Pipeline).RestoreRasterizerDiscard();
 
             if (srcConverted != src)
             {
@@ -178,8 +178,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureCreateInfo srcInfo = src.Info;
             TextureCreateInfo dstInfo = dst.Info;
 
-            int srcHandle = src.Handle;
-            int dstHandle = dst.Handle;
+            uint srcHandle = src.Handle;
+            uint dstHandle = dst.Handle;
 
             int srcWidth = srcInfo.Width;
             int srcHeight = srcInfo.Height;
@@ -238,28 +238,28 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
                     int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
 
-                    if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows)
+                    if (_gd.Capabilities.GpuVendor == GpuVendor.IntelWindows)
                     {
-                        GL.CopyImageSubData(
+                        _gd.Api.CopyImageSubData(
                             src.Storage.Handle,
                             src.Storage.Info.Target.ConvertToImageTarget(),
-                            src.FirstLevel + srcLevel + level,
+                            (int)src.FirstLevel + srcLevel + level,
                             0,
                             0,
-                            src.FirstLayer + srcLayer,
+                            (int)src.FirstLayer + srcLayer,
                             dst.Storage.Handle,
                             dst.Storage.Info.Target.ConvertToImageTarget(),
-                            dst.FirstLevel + dstLevel + level,
+                            (int)dst.FirstLevel + dstLevel + level,
                             0,
                             0,
-                            dst.FirstLayer + dstLayer,
-                            copyWidth,
-                            copyHeight,
-                            depth);
+                            (int)dst.FirstLayer + dstLayer,
+                            (uint)copyWidth,
+                            (uint)copyHeight,
+                            (uint)depth);
                     }
                     else
                     {
-                        GL.CopyImageSubData(
+                        _gd.Api.CopyImageSubData(
                             srcHandle,
                             srcInfo.Target.ConvertToImageTarget(),
                             srcLevel + level,
@@ -272,9 +272,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             0,
                             0,
                             dstLayer,
-                            copyWidth,
-                            copyHeight,
-                            depth);
+                            (uint)copyWidth,
+                            (uint)copyHeight,
+                            (uint)depth);
                     }
                 }
 
@@ -308,18 +308,18 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        private static void Attach(FramebufferTarget target, Format format, int handle, int level = 0)
+        private static void Attach(GL api, FramebufferTarget target, Format format, uint handle, int level = 0)
         {
             FramebufferAttachment attachment = AttachmentForFormat(format);
 
-            GL.FramebufferTexture(target, attachment, handle, level);
+            api.FramebufferTexture(target, attachment, handle, level);
         }
 
-        private static void Attach(FramebufferTarget target, Format format, int handle, int level, int layer)
+        private static void Attach(GL api, FramebufferTarget target, Format format, uint handle, int level, int layer)
         {
             FramebufferAttachment attachment = AttachmentForFormat(format);
 
-            GL.FramebufferTextureLayer(target, attachment, handle, level, layer);
+            api.FramebufferTextureLayer(target, attachment, handle, level, layer);
         }
 
         private static ClearBufferMask GetMask(Format format)
@@ -344,20 +344,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public TextureView BgraSwap(TextureView from)
         {
-            TextureView to = (TextureView)_renderer.CreateTexture(from.Info);
+            TextureView to = (TextureView)_gd.CreateTexture(from.Info);
 
             EnsurePbo(from);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
 
             from.WriteToPbo(0, forceBgra: true);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelUnpackBuffer, _copyPboHandle);
 
             to.ReadFromPbo(0, _copyPboSize);
 
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelUnpackBuffer, 0);
 
             return to;
         }
@@ -393,7 +393,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             EnsurePbo(from);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
 
             // The source texture is written out in full, then the destination is taken as a slice from the data using unpack params.
             // The offset points to the base at which the requested layer is at.
@@ -407,42 +407,42 @@ namespace Ryujinx.Graphics.OpenGL.Image
             if (slice)
             {
                 // Set unpack parameters to take a slice of width/height:
-                GL.PixelStore(PixelStoreParameter.UnpackRowLength, unpackWidth);
-                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, unpackHeight);
+                _gd.Api.PixelStore(PixelStoreParameter.UnpackRowLength, unpackWidth);
+                _gd.Api.PixelStore(PixelStoreParameter.UnpackImageHeight, unpackHeight);
 
                 if (to.Info.IsCompressed)
                 {
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, to.Info.BlockWidth);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, to.Info.BlockHeight);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 1);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockWidth, to.Info.BlockWidth);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockHeight, to.Info.BlockHeight);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockDepth, 1);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
                 }
             }
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelUnpackBuffer, _copyPboHandle);
 
             to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight);
 
             if (slice)
             {
                 // Reset unpack parameters
-                GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
-                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, 0);
+                _gd.Api.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+                _gd.Api.PixelStore(PixelStoreParameter.UnpackImageHeight, 0);
 
                 if (to.Info.IsCompressed)
                 {
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 0);
-                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, 0);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockWidth, 0);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockHeight, 0);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockDepth, 0);
+                    _gd.Api.PixelStore(GLEnum.UnpackCompressedBlockSize, 0);
                 }
             }
 
-            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+            _gd.Api.BindBuffer(BufferTargetARB.PixelUnpackBuffer, 0);
         }
 
-        private void EnsurePbo(TextureView view)
+        private unsafe void EnsurePbo(TextureView view)
         {
             int requiredSize = 0;
 
@@ -453,36 +453,36 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (_copyPboSize < requiredSize && _copyPboHandle != 0)
             {
-                GL.DeleteBuffer(_copyPboHandle);
+                _gd.Api.DeleteBuffer(_copyPboHandle);
 
                 _copyPboHandle = 0;
             }
 
             if (_copyPboHandle == 0)
             {
-                _copyPboHandle = GL.GenBuffer();
+                _copyPboHandle = _gd.Api.GenBuffer();
                 _copyPboSize = requiredSize;
 
-                GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
-                GL.BufferData(BufferTarget.PixelPackBuffer, requiredSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
+                _gd.Api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyPboHandle);
+                _gd.Api.BufferData(BufferTargetARB.PixelPackBuffer, (uint)requiredSize, null, BufferUsageARB.DynamicCopy);
             }
         }
 
-        private int GetSrcFramebufferLazy()
+        private uint GetSrcFramebufferLazy()
         {
             if (_srcFramebuffer == 0)
             {
-                _srcFramebuffer = GL.GenFramebuffer();
+                _srcFramebuffer = _gd.Api.GenFramebuffer();
             }
 
             return _srcFramebuffer;
         }
 
-        private int GetDstFramebufferLazy()
+        private uint GetDstFramebufferLazy()
         {
             if (_dstFramebuffer == 0)
             {
-                _dstFramebuffer = GL.GenFramebuffer();
+                _dstFramebuffer = _gd.Api.GenFramebuffer();
             }
 
             return _dstFramebuffer;
@@ -492,21 +492,21 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             if (_srcFramebuffer != 0)
             {
-                GL.DeleteFramebuffer(_srcFramebuffer);
+                _gd.Api.DeleteFramebuffer(_srcFramebuffer);
 
                 _srcFramebuffer = 0;
             }
 
             if (_dstFramebuffer != 0)
             {
-                GL.DeleteFramebuffer(_dstFramebuffer);
+                _gd.Api.DeleteFramebuffer(_dstFramebuffer);
 
                 _dstFramebuffer = 0;
             }
 
             if (_copyPboHandle != 0)
             {
-                GL.DeleteBuffer(_copyPboHandle);
+                _gd.Api.DeleteBuffer(_copyPboHandle);
 
                 _copyPboHandle = 0;
             }

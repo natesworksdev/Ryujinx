@@ -1,6 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
-using System;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
@@ -8,18 +7,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
     {
         private record struct TextureRef
         {
-            public int Handle;
+            public uint Handle;
             public Format Format;
         }
 
         private readonly TextureRef[] _images;
+        private readonly GL _api;
 
-        public ImageArray(int size)
+        public ImageArray(GL api, int size)
         {
+            _api = api;
             _images = new TextureRef[size];
         }
 
-        public void SetFormats(int index, GAL.Format[] imageFormats)
+        public void SetFormats(int index, Format[] imageFormats)
         {
             for (int i = 0; i < imageFormats.Length; i++)
             {
@@ -44,21 +45,21 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void Bind(int baseBinding)
+        public void Bind(uint baseBinding)
         {
             for (int i = 0; i < _images.Length; i++)
             {
                 if (_images[i].Handle == 0)
                 {
-                    GL.BindImageTexture(baseBinding + i, 0, 0, true, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+                    _api.BindImageTexture((uint)(baseBinding + i), 0, 0, true, 0, BufferAccessARB.ReadWrite, InternalFormat.Rgba8);
                 }
                 else
                 {
-                    SizedInternalFormat format = FormatTable.GetImageFormat(_images[i].Format);
+                    InternalFormat format = (InternalFormat)FormatTable.GetImageFormat(_images[i].Format);
 
                     if (format != 0)
                     {
-                        GL.BindImageTexture(baseBinding + i, _images[i].Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+                        _api.BindImageTexture((uint)(baseBinding + i), _images[i].Handle, 0, true, 0, BufferAccessARB.ReadWrite, format);
                     }
                 }
             }

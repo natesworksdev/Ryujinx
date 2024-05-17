@@ -1,9 +1,9 @@
-using OpenTK;
-using OpenTK.Graphics.OpenGL;
+// using OpenTK;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Input.HLE;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using static SDL2.SDL;
 
@@ -38,22 +38,16 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STEREO, 0));
         }
 
-        private class OpenToolkitBindingsContext : IBindingsContext
-        {
-            public IntPtr GetProcAddress(string procName)
-            {
-                return SDL_GL_GetProcAddress(procName);
-            }
-        }
-
         private class SDL2OpenGLContext : IOpenGLContext
         {
+            public readonly GL Api;
             private readonly IntPtr _context;
             private readonly IntPtr _window;
             private readonly bool _shouldDisposeWindow;
 
-            public SDL2OpenGLContext(IntPtr context, IntPtr window, bool shouldDisposeWindow = true)
+            public SDL2OpenGLContext(GL api, IntPtr context, IntPtr window, bool shouldDisposeWindow = true)
             {
+                Api = api;
                 _context = context;
                 _window = window;
                 _shouldDisposeWindow = shouldDisposeWindow;
@@ -68,13 +62,13 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                 IntPtr windowHandle = SDL_CreateWindow("Ryujinx background context window", 0, 0, 1, 1, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
                 IntPtr context = SDL_GL_CreateContext(windowHandle);
 
-                GL.LoadBindings(new OpenToolkitBindingsContext());
+                GL api = GL.GetApi((_ => context));
 
                 CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0));
 
                 CheckResult(SDL_GL_MakeCurrent(windowHandle, IntPtr.Zero));
 
-                return new SDL2OpenGLContext(context, windowHandle);
+                return new SDL2OpenGLContext(api, context, windowHandle);
             }
 
             public void MakeCurrent()
@@ -111,6 +105,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
         private readonly GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
+        public GL Api => _openGLContext.Api;
 
         public OpenGLWindow(
             InputManager inputManager,
@@ -142,15 +137,15 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             }
 
             // NOTE: The window handle needs to be disposed by the thread that created it and is handled separately.
-            _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
+            _openGLContext = new SDL2OpenGLContext(GL.GetApi((_ => context)), context, WindowHandle, false);
 
             // First take exclusivity on the OpenGL context.
             ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
 
-            GL.ClearColor(0, 0, 0, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            _openGLContext.Api.ClearColor(0, 0, 0, 1.0f);
+            _openGLContext.Api.Clear(ClearBufferMask.ColorBufferBit);
             SwapBuffers();
 
             if (IsExclusiveFullscreen)

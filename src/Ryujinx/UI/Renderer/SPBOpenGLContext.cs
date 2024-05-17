@@ -1,4 +1,3 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.OpenGL;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
@@ -38,9 +37,6 @@ namespace Ryujinx.Ava.UI.Renderer
 
             context.Initialize(window);
             context.MakeCurrent(window);
-
-            GL.LoadBindings(new OpenTKBindingsContext(context.GetProcAddress));
-
             context.MakeCurrent(null);
 
             return new SPBOpenGLContext(context, window);

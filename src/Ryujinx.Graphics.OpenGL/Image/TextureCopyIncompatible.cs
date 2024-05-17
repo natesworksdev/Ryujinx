@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -67,15 +67,15 @@ void main()
     imageStore(dst, ivec2(coords), uvec4(r, g, b, a));
 }";
 
-        private readonly OpenGLRenderer _renderer;
-        private readonly Dictionary<int, int> _shorteningProgramHandles;
-        private readonly Dictionary<int, int> _wideningProgramHandles;
+        private readonly OpenGLRenderer _gd;
+        private readonly Dictionary<int, uint> _shorteningProgramHandles;
+        private readonly Dictionary<int, uint> _wideningProgramHandles;
 
-        public TextureCopyIncompatible(OpenGLRenderer renderer)
+        public TextureCopyIncompatible(OpenGLRenderer gd)
         {
-            _renderer = renderer;
-            _shorteningProgramHandles = new Dictionary<int, int>();
-            _wideningProgramHandles = new Dictionary<int, int>();
+            _gd = gd;
+            _shorteningProgramHandles = new Dictionary<int, uint>();
+            _wideningProgramHandles = new Dictionary<int, uint>();
         }
 
         public void CopyIncompatibleFormats(ITextureInfo src, ITextureInfo dst, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int depth, int levels)
@@ -91,10 +91,10 @@ void main()
             int srcComponentsCount = srcBpp / componentSize;
             int dstComponentsCount = dstBpp / componentSize;
 
-            var srcFormat = GetFormat(componentSize, srcComponentsCount);
-            var dstFormat = GetFormat(componentSize, dstComponentsCount);
+            var srcFormat = (InternalFormat)GetFormat(componentSize, srcComponentsCount);
+            var dstFormat = (InternalFormat)GetFormat(componentSize, dstComponentsCount);
 
-            GL.UseProgram(srcBpp < dstBpp
+            _gd.Api.UseProgram(srcBpp < dstBpp
                 ? GetWideningShader(componentSize, srcComponentsCount, dstComponentsCount)
                 : GetShorteningShader(componentSize, srcComponentsCount, dstComponentsCount));
 
@@ -106,19 +106,19 @@ void main()
                 int dstWidth = Math.Max(1, dst.Info.Width >> l);
                 int dstHeight = Math.Max(1, dst.Info.Height >> l);
 
-                int width = Math.Min(srcWidth, dstWidth);
-                int height = Math.Min(srcHeight, dstHeight);
+                uint width = (uint)Math.Min(srcWidth, dstWidth);
+                uint height = (uint)Math.Min(srcHeight, dstHeight);
 
                 for (int z = 0; z < depth; z++)
                 {
-                    GL.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, TextureAccess.ReadOnly, srcFormat);
-                    GL.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, TextureAccess.WriteOnly, dstFormat);
+                    _gd.Api.BindImageTexture(0, src.Handle, srcLevel + l, false, srcLayer + z, BufferAccessARB.ReadOnly, srcFormat);
+                    _gd.Api.BindImageTexture(1, dst.Handle, dstLevel + l, false, dstLayer + z, BufferAccessARB.WriteOnly, dstFormat);
 
-                    GL.DispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
+                    _gd.Api.DispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
                 }
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -131,7 +131,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R8ui,
-                    2 => SizedInternalFormat.Rg8ui,
+                    2 => SizedInternalFormat.RG8ui,
                     4 => SizedInternalFormat.Rgba8ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
@@ -141,7 +141,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R16ui,
-                    2 => SizedInternalFormat.Rg16ui,
+                    2 => SizedInternalFormat.RG16ui,
                     4 => SizedInternalFormat.Rgba16ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
@@ -151,7 +151,7 @@ void main()
                 return componentsCount switch
                 {
                     1 => SizedInternalFormat.R32ui,
-                    2 => SizedInternalFormat.Rg32ui,
+                    2 => SizedInternalFormat.RG32ui,
                     4 => SizedInternalFormat.Rgba32ui,
                     _ => throw new ArgumentException($"Invalid components count {componentsCount}."),
                 };
@@ -162,19 +162,19 @@ void main()
             }
         }
 
-        private int GetShorteningShader(int componentSize, int srcComponentsCount, int dstComponentsCount)
+        private uint GetShorteningShader(int componentSize, int srcComponentsCount, int dstComponentsCount)
         {
             return GetShader(ComputeShaderShortening, _shorteningProgramHandles, componentSize, srcComponentsCount, dstComponentsCount);
         }
 
-        private int GetWideningShader(int componentSize, int srcComponentsCount, int dstComponentsCount)
+        private uint GetWideningShader(int componentSize, int srcComponentsCount, int dstComponentsCount)
         {
             return GetShader(ComputeShaderWidening, _wideningProgramHandles, componentSize, srcComponentsCount, dstComponentsCount);
         }
 
-        private static int GetShader(
+        private uint GetShader(
             string code,
-            Dictionary<int, int> programHandles,
+            Dictionary<int, uint> programHandles,
             int componentSize,
             int srcComponentsCount,
             int dstComponentsCount)
@@ -186,11 +186,11 @@ void main()
 
             int key = srcIndex | (dstIndex << 8);
 
-            if (!programHandles.TryGetValue(key, out int programHandle))
+            if (!programHandles.TryGetValue(key, out uint programHandle))
             {
-                int csHandle = GL.CreateShader(ShaderType.ComputeShader);
+                uint csHandle = _gd.Api.CreateShader(ShaderType.ComputeShader);
 
-                string[] formatTable = new[] { "r8ui", "r16ui", "r32ui", "rg8ui", "rg16ui", "rg32ui", "rgba8ui", "rgba16ui", "rgba32ui" };
+                string[] formatTable = ["r8ui", "r16ui", "r32ui", "rg8ui", "rg16ui", "rg32ui", "rgba8ui", "rgba16ui", "rgba32ui"];
 
                 string srcFormat = formatTable[srcIndex];
                 string dstFormat = formatTable[dstIndex];
@@ -201,25 +201,25 @@ void main()
                 int ratio = srcBpp < dstBpp ? dstBpp / srcBpp : srcBpp / dstBpp;
                 int ratioLog2 = BitOperations.Log2((uint)ratio);
 
-                GL.ShaderSource(csHandle, code
+                _gd.Api.ShaderSource(csHandle, code
                     .Replace("$SRC_FORMAT$", srcFormat)
                     .Replace("$DST_FORMAT$", dstFormat)
                     .Replace("$RATIO_LOG2$", ratioLog2.ToString(CultureInfo.InvariantCulture)));
 
-                GL.CompileShader(csHandle);
+                _gd.Api.CompileShader(csHandle);
 
-                programHandle = GL.CreateProgram();
+                programHandle = _gd.Api.CreateProgram();
 
-                GL.AttachShader(programHandle, csHandle);
-                GL.LinkProgram(programHandle);
-                GL.DetachShader(programHandle, csHandle);
-                GL.DeleteShader(csHandle);
+                _gd.Api.AttachShader(programHandle, csHandle);
+                _gd.Api.LinkProgram(programHandle);
+                _gd.Api.DetachShader(programHandle, csHandle);
+                _gd.Api.DeleteShader(csHandle);
 
-                GL.GetProgram(programHandle, GetProgramParameterName.LinkStatus, out int status);
+                _gd.Api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
 
                 if (status == 0)
                 {
-                    throw new Exception(GL.GetProgramInfoLog(programHandle));
+                    throw new Exception(_gd.Api.GetProgramInfoLog(programHandle));
                 }
 
                 programHandles.Add(key, programHandle);
@@ -230,16 +230,16 @@ void main()
 
         public void Dispose()
         {
-            foreach (int handle in _shorteningProgramHandles.Values)
+            foreach (uint handle in _shorteningProgramHandles.Values)
             {
-                GL.DeleteProgram(handle);
+                _gd.Api.DeleteProgram(handle);
             }
 
             _shorteningProgramHandles.Clear();
 
-            foreach (int handle in _wideningProgramHandles.Values)
+            foreach (uint handle in _wideningProgramHandles.Values)
             {
-                GL.DeleteProgram(handle);
+                _gd.Api.DeleteProgram(handle);
             }
 
             _wideningProgramHandles.Clear();

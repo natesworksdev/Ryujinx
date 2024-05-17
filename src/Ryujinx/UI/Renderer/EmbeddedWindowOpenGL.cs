@@ -1,9 +1,9 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.UI.Common.Configuration;
+using Silk.NET.OpenGL.Legacy;
 using SPB.Graphics;
 using SPB.Graphics.Exceptions;
 using SPB.Graphics.OpenGL;
@@ -44,6 +44,13 @@ namespace Ryujinx.Ava.UI.Renderer
                 throw new PlatformNotSupportedException();
             }
 
+            Context.Initialize(_window);
+            Context.MakeCurrent(_window);
+            Context.MakeCurrent(null);
+        }
+
+        public GL CreateApi()
+        {
             var flags = OpenGLContextFlags.Compat;
             if (ConfigurationState.Instance.Logger.GraphicsDebugLevel != GraphicsDebugLevel.None)
             {
@@ -54,12 +61,7 @@ namespace Ryujinx.Ava.UI.Renderer
 
             Context = PlatformHelper.CreateOpenGLContext(graphicsMode, 3, 3, flags);
 
-            Context.Initialize(_window);
-            Context.MakeCurrent(_window);
-
-            GL.LoadBindings(new OpenTKBindingsContext(Context.GetProcAddress));
-
-            Context.MakeCurrent(null);
+            return GL.GetApi(Context.GetProcAddress);
         }
 
         public void MakeCurrent(bool unbind = false, bool shouldThrow = true)

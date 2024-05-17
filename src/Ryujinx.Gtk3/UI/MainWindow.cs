@@ -504,7 +504,7 @@ namespace Ryujinx.UI
             }
             else
             {
-                renderer = new Graphics.OpenGL.OpenGLRenderer();
+                renderer = new Graphics.OpenGL.OpenGLRenderer(((OpenGLRenderer)RendererWidget).GetApi());
             }
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;

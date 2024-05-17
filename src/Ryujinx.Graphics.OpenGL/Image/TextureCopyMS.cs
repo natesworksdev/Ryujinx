@@ -1,5 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Numerics;
 
@@ -93,15 +93,15 @@ void main()
     imageStore(imgOut, ivec2(int(coords.x) >> samplesInXLog2, int(coords.y) >> samplesInYLog2), sampleIdx, value);
 }";
 
-        private readonly OpenGLRenderer _renderer;
-        private readonly int[] _msToNonMSProgramHandles;
-        private readonly int[] _nonMSToMSProgramHandles;
+        private readonly OpenGLRenderer _gd;
+        private readonly uint[] _msToNonMSProgramHandles;
+        private readonly uint[] _nonMSToMSProgramHandles;
 
-        public TextureCopyMS(OpenGLRenderer renderer)
+        public TextureCopyMS(OpenGLRenderer gd)
         {
-            _renderer = renderer;
-            _msToNonMSProgramHandles = new int[5];
-            _nonMSToMSProgramHandles = new int[5];
+            _gd = gd;
+            _msToNonMSProgramHandles = new uint[5];
+            _nonMSToMSProgramHandles = new uint[5];
         }
 
         public void CopyMSToNonMS(ITextureInfo src, ITextureInfo dst, int srcLayer, int dstLayer, int depth)
@@ -109,23 +109,23 @@ void main()
             TextureCreateInfo srcInfo = src.Info;
             TextureCreateInfo dstInfo = dst.Info;
 
-            int srcHandle = CreateViewIfNeeded(src);
-            int dstHandle = CreateViewIfNeeded(dst);
+            uint srcHandle = CreateViewIfNeeded(src);
+            uint dstHandle = CreateViewIfNeeded(dst);
 
-            int dstWidth = dstInfo.Width;
-            int dstHeight = dstInfo.Height;
+            uint dstWidth = (uint)dstInfo.Width;
+            uint dstHeight = (uint)dstInfo.Height;
 
-            GL.UseProgram(GetMSToNonMSShader(srcInfo.BytesPerPixel));
+            _gd.Api.UseProgram(GetMSToNonMSShader(srcInfo.BytesPerPixel));
 
             for (int z = 0; z < depth; z++)
             {
-                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, TextureAccess.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
-                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, TextureAccess.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
 
-                GL.DispatchCompute((dstWidth + 31) / 32, (dstHeight + 31) / 32, 1);
+                _gd.Api.DispatchCompute((dstWidth + 31) / 32, (dstHeight + 31) / 32, 1);
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -139,23 +139,23 @@ void main()
             TextureCreateInfo srcInfo = src.Info;
             TextureCreateInfo dstInfo = dst.Info;
 
-            int srcHandle = CreateViewIfNeeded(src);
-            int dstHandle = CreateViewIfNeeded(dst);
+            uint srcHandle = CreateViewIfNeeded(src);
+            uint dstHandle = CreateViewIfNeeded(dst);
 
-            int srcWidth = srcInfo.Width;
-            int srcHeight = srcInfo.Height;
+            uint srcWidth = (uint)srcInfo.Width;
+            uint srcHeight = (uint)srcInfo.Height;
 
-            GL.UseProgram(GetNonMSToMSShader(srcInfo.BytesPerPixel));
+            _gd.Api.UseProgram(GetNonMSToMSShader(srcInfo.BytesPerPixel));
 
             for (int z = 0; z < depth; z++)
             {
-                GL.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, TextureAccess.ReadOnly, GetFormat(srcInfo.BytesPerPixel));
-                GL.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, TextureAccess.WriteOnly, GetFormat(dstInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(0, srcHandle, 0, false, srcLayer + z, BufferAccessARB.ReadOnly, (InternalFormat)GetFormat(srcInfo.BytesPerPixel));
+                _gd.Api.BindImageTexture(1, dstHandle, 0, false, dstLayer + z, BufferAccessARB.WriteOnly, (InternalFormat)GetFormat(dstInfo.BytesPerPixel));
 
-                GL.DispatchCompute((srcWidth + 31) / 32, (srcHeight + 31) / 32, 1);
+                _gd.Api.DispatchCompute((srcWidth + 31) / 32, (srcHeight + 31) / 32, 1);
             }
 
-            Pipeline pipeline = (Pipeline)_renderer.Pipeline;
+            Pipeline pipeline = (Pipeline)_gd.Pipeline;
 
             pipeline.RestoreProgram();
             pipeline.RestoreImages1And2();
@@ -171,29 +171,29 @@ void main()
                 1 => SizedInternalFormat.R8ui,
                 2 => SizedInternalFormat.R16ui,
                 4 => SizedInternalFormat.R32ui,
-                8 => SizedInternalFormat.Rg32ui,
+                8 => SizedInternalFormat.RG32ui,
                 16 => SizedInternalFormat.Rgba32ui,
                 _ => throw new ArgumentException($"Invalid bytes per pixel {bytesPerPixel}."),
             };
         }
 
-        private static int CreateViewIfNeeded(ITextureInfo texture)
+        private uint CreateViewIfNeeded(ITextureInfo texture)
         {
             // Binding sRGB textures as images doesn't work on NVIDIA,
             // we need to create and bind a RGBA view for it to work.
             if (texture.Info.Format == Format.R8G8B8A8Srgb)
             {
-                int handle = GL.GenTexture();
+                uint handle = _gd.Api.GenTexture();
 
-                GL.TextureView(
+                _gd.Api.TextureView(
                     handle,
                     texture.Info.Target.Convert(),
                     texture.Storage.Handle,
-                    PixelInternalFormat.Rgba8,
+                    SizedInternalFormat.Rgba8,
                     texture.FirstLevel,
                     1,
                     texture.FirstLayer,
-                    texture.Info.GetLayers());
+                    (uint)texture.Info.GetLayers());
 
                 return handle;
             }
@@ -201,49 +201,49 @@ void main()
             return texture.Handle;
         }
 
-        private static void DestroyViewIfNeeded(ITextureInfo info, int handle)
+        private void DestroyViewIfNeeded(ITextureInfo info, uint handle)
         {
             if (info.Handle != handle)
             {
-                GL.DeleteTexture(handle);
+                _gd.Api.DeleteTexture(handle);
             }
         }
 
-        private int GetMSToNonMSShader(int bytesPerPixel)
+        private uint GetMSToNonMSShader(int bytesPerPixel)
         {
             return GetShader(ComputeShaderMSToNonMS, _msToNonMSProgramHandles, bytesPerPixel);
         }
 
-        private int GetNonMSToMSShader(int bytesPerPixel)
+        private uint GetNonMSToMSShader(int bytesPerPixel)
         {
             return GetShader(ComputeShaderNonMSToMS, _nonMSToMSProgramHandles, bytesPerPixel);
         }
 
-        private static int GetShader(string code, int[] programHandles, int bytesPerPixel)
+        private uint GetShader(string code, uint[] programHandles, int bytesPerPixel)
         {
             int index = BitOperations.Log2((uint)bytesPerPixel);
 
             if (programHandles[index] == 0)
             {
-                int csHandle = GL.CreateShader(ShaderType.ComputeShader);
+                uint csHandle = _gd.Api.CreateShader(ShaderType.ComputeShader);
 
                 string format = new[] { "r8ui", "r16ui", "r32ui", "rg32ui", "rgba32ui" }[index];
 
-                GL.ShaderSource(csHandle, code.Replace("$FORMAT$", format));
-                GL.CompileShader(csHandle);
+                _gd.Api.ShaderSource(csHandle, code.Replace("$FORMAT$", format));
+                _gd.Api.CompileShader(csHandle);
 
-                int programHandle = GL.CreateProgram();
+                uint programHandle = _gd.Api.CreateProgram();
 
-                GL.AttachShader(programHandle, csHandle);
-                GL.LinkProgram(programHandle);
-                GL.DetachShader(programHandle, csHandle);
-                GL.DeleteShader(csHandle);
+                _gd.Api.AttachShader(programHandle, csHandle);
+                _gd.Api.LinkProgram(programHandle);
+                _gd.Api.DetachShader(programHandle, csHandle);
+                _gd.Api.DeleteShader(csHandle);
 
-                GL.GetProgram(programHandle, GetProgramParameterName.LinkStatus, out int status);
+                _gd.Api.GetProgram(programHandle, ProgramPropertyARB.LinkStatus, out int status);
 
                 if (status == 0)
                 {
-                    throw new Exception(GL.GetProgramInfoLog(programHandle));
+                    throw new Exception(_gd.Api.GetProgramInfoLog(programHandle));
                 }
 
                 programHandles[index] = programHandle;
@@ -258,7 +258,7 @@ void main()
             {
                 if (_msToNonMSProgramHandles[i] != 0)
                 {
-                    GL.DeleteProgram(_msToNonMSProgramHandles[i]);
+                    _gd.Api.DeleteProgram(_msToNonMSProgramHandles[i]);
                     _msToNonMSProgramHandles[i] = 0;
                 }
             }
@@ -267,7 +267,7 @@ void main()
             {
                 if (_nonMSToMSProgramHandles[i] != 0)
                 {
-                    GL.DeleteProgram(_nonMSToMSProgramHandles[i]);
+                    _gd.Api.DeleteProgram(_nonMSToMSProgramHandles[i]);
                     _nonMSToMSProgramHandles[i] = 0;
                 }
             }

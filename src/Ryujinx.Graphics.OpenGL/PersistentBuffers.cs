@@ -1,7 +1,7 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -11,12 +11,20 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class PersistentBuffers : IDisposable
     {
-        private readonly PersistentBuffer _main = new();
-        private readonly PersistentBuffer _background = new();
+        private readonly GL _api;
+        private readonly PersistentBuffer _main;
+        private readonly PersistentBuffer _background;
 
         private readonly Dictionary<BufferHandle, IntPtr> _maps = new();
 
         public PersistentBuffer Default => BackgroundContextWorker.InBackground ? _background : _main;
+
+        public PersistentBuffers(GL api)
+        {
+            _api = api;
+            _main = new(_api);
+            _background = new(_api);
+        }
 
         public void Dispose()
         {
@@ -24,20 +32,20 @@ namespace Ryujinx.Graphics.OpenGL
             _background?.Dispose();
         }
 
-        public void Map(BufferHandle handle, int size)
+        public unsafe void Map(BufferHandle handle, int size)
         {
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-            IntPtr ptr = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, size, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
+            _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
+            void* ptr = _api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)size, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit);
 
-            _maps[handle] = ptr;
+            _maps[handle] = (IntPtr)ptr;
         }
 
         public void Unmap(BufferHandle handle)
         {
             if (_maps.ContainsKey(handle))
             {
-                GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-                GL.UnmapBuffer(BufferTarget.CopyWriteBuffer);
+                _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
+                _api.UnmapBuffer(BufferTargetARB.CopyWriteBuffer);
 
                 _maps.Remove(handle);
             }
@@ -51,31 +59,37 @@ namespace Ryujinx.Graphics.OpenGL
 
     class PersistentBuffer : IDisposable
     {
+        private readonly GL _api;
         private IntPtr _bufferMap;
-        private int _copyBufferHandle;
+        private uint _copyBufferHandle;
         private int _copyBufferSize;
 
         private byte[] _data;
         private IntPtr _dataMap;
 
-        private void EnsureBuffer(int requiredSize)
+        public PersistentBuffer(GL api)
+        {
+            _api = api;
+        }
+
+        private unsafe void EnsureBuffer(int requiredSize)
         {
             if (_copyBufferSize < requiredSize && _copyBufferHandle != 0)
             {
-                GL.DeleteBuffer(_copyBufferHandle);
+                _api.DeleteBuffer(_copyBufferHandle);
 
                 _copyBufferHandle = 0;
             }
 
             if (_copyBufferHandle == 0)
             {
-                _copyBufferHandle = GL.GenBuffer();
+                _copyBufferHandle = _api.GenBuffer();
                 _copyBufferSize = requiredSize;
 
-                GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
-                GL.BufferStorage(BufferTarget.CopyWriteBuffer, requiredSize, IntPtr.Zero, BufferStorageFlags.MapReadBit | BufferStorageFlags.MapPersistentBit);
+                _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
+                _api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)requiredSize, null, BufferStorageMask.MapReadBit | BufferStorageMask.MapPersistentBit);
 
-                _bufferMap = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, requiredSize, BufferAccessMask.MapReadBit | BufferAccessMask.MapPersistentBit);
+                _bufferMap = (IntPtr)_api.MapBufferRange(BufferTargetARB.CopyWriteBuffer, IntPtr.Zero, (uint)requiredSize, MapBufferAccessMask.ReadBit | MapBufferAccessMask.PersistentBit);
             }
         }
 
@@ -91,30 +105,30 @@ namespace Ryujinx.Graphics.OpenGL
             return _dataMap;
         }
 
-        private static void Sync()
+        private void Sync()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+            _api.MemoryBarrier(MemoryBarrierMask.ClientMappedBufferBarrierBit);
 
-            IntPtr sync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-            WaitSyncStatus syncResult = GL.ClientWaitSync(sync, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
+            IntPtr sync = _api.FenceSync(SyncCondition.SyncGpuCommandsComplete, SyncBehaviorFlags.None);
+            GLEnum syncResult = _api.ClientWaitSync(sync, SyncObjectMask.Bit, 1000000000);
 
-            if (syncResult == WaitSyncStatus.TimeoutExpired)
+            if (syncResult == GLEnum.TimeoutExpired)
             {
                 Logger.Error?.PrintMsg(LogClass.Gpu, $"Failed to sync persistent buffer state within 1000ms. Continuing...");
             }
 
-            GL.DeleteSync(sync);
+            _api.DeleteSync(sync);
         }
 
         public unsafe ReadOnlySpan<byte> GetTextureData(TextureView view, int size)
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
+            _api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyBufferHandle);
 
             view.WriteToPbo(0, false);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            _api.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
 
             Sync();
 
@@ -125,11 +139,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
+            _api.BindBuffer(BufferTargetARB.PixelPackBuffer, _copyBufferHandle);
 
             int offset = view.WriteToPbo2D(0, layer, level);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            _api.BindBuffer(BufferTargetARB.PixelPackBuffer, 0);
 
             Sync();
 
@@ -140,12 +154,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureBuffer(size);
 
-            GL.BindBuffer(BufferTarget.CopyReadBuffer, buffer.ToInt32());
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
+            _api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
+            _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, _copyBufferHandle);
 
-            GL.CopyBufferSubData(BufferTarget.CopyReadBuffer, BufferTarget.CopyWriteBuffer, (IntPtr)offset, IntPtr.Zero, size);
+            _api.CopyBufferSubData(CopyBufferSubDataTarget.CopyReadBuffer, CopyBufferSubDataTarget.CopyWriteBuffer, offset, IntPtr.Zero, (uint)size);
 
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, 0);
+            _api.BindBuffer(BufferTargetARB.CopyWriteBuffer, 0);
 
             Sync();
 
@@ -156,7 +170,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_copyBufferHandle != 0)
             {
-                GL.DeleteBuffer(_copyBufferHandle);
+                _api.DeleteBuffer(_copyBufferHandle);
             }
         }
     }

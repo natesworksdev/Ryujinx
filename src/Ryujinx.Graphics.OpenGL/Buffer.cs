@@ -1,14 +1,14 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
     static class Buffer
     {
-        public static void Clear(BufferHandle destination, int offset, int size, uint value)
+        public static void Clear(GL api, BufferHandle destination, int offset, uint size, uint value)
         {
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, destination.ToInt32());
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, destination.ToUInt32());
 
             unsafe
             {
@@ -16,106 +16,97 @@ namespace Ryujinx.Graphics.OpenGL
 
                 valueArr[0] = value;
 
-                GL.ClearBufferSubData(
-                    BufferTarget.CopyWriteBuffer,
-                    PixelInternalFormat.Rgba8ui,
-                    (IntPtr)offset,
-                    (IntPtr)size,
+                api.ClearBufferSubData(
+                    BufferTargetARB.CopyWriteBuffer,
+                    SizedInternalFormat.Rgba8ui,
+                    offset,
+                    size,
                     PixelFormat.RgbaInteger,
                     PixelType.UnsignedByte,
-                    (IntPtr)valueArr);
+                    valueArr);
             }
         }
 
-        public static BufferHandle Create()
+        public static BufferHandle Create(GL api)
         {
-            return Handle.FromInt32<BufferHandle>(GL.GenBuffer());
+            return Handle.FromUInt32<BufferHandle>(api.GenBuffer());
         }
 
-        public static BufferHandle Create(int size)
+        public unsafe static BufferHandle Create(GL api, int size)
         {
-            int handle = GL.GenBuffer();
+            uint handle = api.GenBuffer();
 
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle);
-            GL.BufferData(BufferTarget.CopyWriteBuffer, size, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, null, BufferUsageARB.DynamicDraw);
 
-            return Handle.FromInt32<BufferHandle>(handle);
+            return Handle.FromUInt32<BufferHandle>(handle);
         }
 
-        public static BufferHandle CreatePersistent(int size)
+        public unsafe static BufferHandle CreatePersistent(GL api, int size)
         {
-            int handle = GL.GenBuffer();
+            uint handle = api.GenBuffer();
 
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle);
-            GL.BufferStorage(BufferTarget.CopyWriteBuffer, size, IntPtr.Zero,
-                BufferStorageFlags.MapPersistentBit |
-                BufferStorageFlags.MapCoherentBit |
-                BufferStorageFlags.ClientStorageBit |
-                BufferStorageFlags.MapReadBit);
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle);
+            api.BufferStorage(BufferStorageTarget.CopyWriteBuffer, (uint)size, null,
+                BufferStorageMask.MapPersistentBit |
+                BufferStorageMask.MapCoherentBit |
+                BufferStorageMask.ClientStorageBit |
+                BufferStorageMask.MapReadBit);
 
-            return Handle.FromInt32<BufferHandle>(handle);
+            return Handle.FromUInt32<BufferHandle>(handle);
         }
 
-        public static void Copy(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
+        public static void Copy(GL api, BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
         {
-            GL.BindBuffer(BufferTarget.CopyReadBuffer, source.ToInt32());
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, destination.ToInt32());
+            api.BindBuffer(BufferTargetARB.CopyReadBuffer, source.ToUInt32());
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, destination.ToUInt32());
 
-            GL.CopyBufferSubData(
-                BufferTarget.CopyReadBuffer,
-                BufferTarget.CopyWriteBuffer,
-                (IntPtr)srcOffset,
-                (IntPtr)dstOffset,
-                (IntPtr)size);
+            api.CopyBufferSubData(
+                CopyBufferSubDataTarget.CopyReadBuffer,
+                CopyBufferSubDataTarget.CopyWriteBuffer,
+                srcOffset,
+                dstOffset,
+                (uint)size);
         }
 
-        public static unsafe PinnedSpan<byte> GetData(OpenGLRenderer renderer, BufferHandle buffer, int offset, int size)
+        public static unsafe PinnedSpan<byte> GetData(OpenGLRenderer gd, BufferHandle buffer, int offset, int size)
         {
             // Data in the persistent buffer and host array is guaranteed to be available
             // until the next time the host thread requests data.
 
-            if (renderer.PersistentBuffers.TryGet(buffer, out IntPtr ptr))
+            if (gd.PersistentBuffers.TryGet(buffer, out IntPtr ptr))
             {
                 return new PinnedSpan<byte>(IntPtr.Add(ptr, offset).ToPointer(), size);
             }
-            else if (HwCapabilities.UsePersistentBufferForFlush)
+
+            if (gd.Capabilities.UsePersistentBufferForFlush)
             {
-                return PinnedSpan<byte>.UnsafeFromSpan(renderer.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
+                return PinnedSpan<byte>.UnsafeFromSpan(gd.PersistentBuffers.Default.GetBufferData(buffer, offset, size));
             }
-            else
-            {
-                IntPtr target = renderer.PersistentBuffers.Default.GetHostArray(size);
 
-                GL.BindBuffer(BufferTarget.CopyReadBuffer, buffer.ToInt32());
+            IntPtr target = gd.PersistentBuffers.Default.GetHostArray(size);
 
-                GL.GetBufferSubData(BufferTarget.CopyReadBuffer, (IntPtr)offset, size, target);
+            gd.Api.BindBuffer(BufferTargetARB.CopyReadBuffer, buffer.ToUInt32());
+            gd.Api.GetBufferSubData(BufferTargetARB.CopyReadBuffer, offset, (uint)size, (void*)target);
 
-                return new PinnedSpan<byte>(target.ToPointer(), size);
-            }
+            return new PinnedSpan<byte>(target.ToPointer(), size);
         }
 
-        public static void Resize(BufferHandle handle, int size)
+        public unsafe static void Resize(GL api, BufferHandle handle, int size)
         {
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-            GL.BufferData(BufferTarget.CopyWriteBuffer, size, IntPtr.Zero, BufferUsageHint.StreamCopy);
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, handle.ToUInt32());
+            api.BufferData(BufferTargetARB.CopyWriteBuffer, (uint)size, null, BufferUsageARB.StreamCopy);
         }
 
-        public static void SetData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
+        public static void SetData(GL api, BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
         {
-            GL.BindBuffer(BufferTarget.CopyWriteBuffer, buffer.ToInt32());
-
-            unsafe
-            {
-                fixed (byte* ptr = data)
-                {
-                    GL.BufferSubData(BufferTarget.CopyWriteBuffer, (IntPtr)offset, data.Length, (IntPtr)ptr);
-                }
-            }
+            api.BindBuffer(BufferTargetARB.CopyWriteBuffer, buffer.ToUInt32());
+            api.BufferSubData(BufferTargetARB.CopyWriteBuffer, offset, (uint)data.Length, data);
         }
 
-        public static void Delete(BufferHandle buffer)
+        public static void Delete(GL api, BufferHandle buffer)
         {
-            GL.DeleteBuffer(buffer.ToInt32());
+            api.DeleteBuffer(buffer.ToUInt32());
         }
     }
 }

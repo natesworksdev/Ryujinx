@@ -1,5 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -12,50 +12,53 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         private const long DefaultValue = -1;
         private const ulong HighMask = 0xFFFFFFFF00000000;
 
-        public int Query { get; }
+        public uint Query { get; }
 
-        private readonly int _buffer;
+        private readonly uint _buffer;
         private readonly IntPtr _bufferMap;
         private readonly QueryTarget _type;
+        private readonly GL _api;
 
-        public BufferedQuery(QueryTarget type)
+        public BufferedQuery(GL api, QueryTarget type)
         {
-            _buffer = GL.GenBuffer();
-            Query = GL.GenQuery();
+            _api = api;
+            _buffer = _api.GenBuffer();
+            Query = _api.GenQuery();
             _type = type;
 
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
+            _api.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
+
+            var defaultValue = DefaultValue;
+            _api.BufferStorage(BufferStorageTarget.QueryBuffer, sizeof(long), in defaultValue, BufferStorageMask.MapReadBit | BufferStorageMask.MapWriteBit | BufferStorageMask.MapPersistentBit);
 
             unsafe
             {
-                long defaultValue = DefaultValue;
-                GL.BufferStorage(BufferTarget.QueryBuffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageFlags.MapReadBit | BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit);
+                _bufferMap = (IntPtr)_api.MapBufferRange(BufferTargetARB.QueryBuffer, IntPtr.Zero, sizeof(long), MapBufferAccessMask.ReadBit | MapBufferAccessMask.WriteBit | MapBufferAccessMask.PersistentBit);
             }
-            _bufferMap = GL.MapBufferRange(BufferTarget.QueryBuffer, IntPtr.Zero, sizeof(long), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit);
         }
 
         public void Reset()
         {
-            GL.EndQuery(_type);
-            GL.BeginQuery(_type, Query);
+            _api.EndQuery(_type);
+            _api.BeginQuery(_type, Query);
         }
 
         public void Begin()
         {
-            GL.BeginQuery(_type, Query);
+            _api.BeginQuery(_type, Query);
         }
 
         public unsafe void End(bool withResult)
         {
-            GL.EndQuery(_type);
+            _api.EndQuery(_type);
 
             if (withResult)
             {
-                GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
+                _api.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
 
                 Marshal.WriteInt64(_bufferMap, -1L);
-                GL.GetQueryObject(Query, GetQueryObjectParam.QueryResult, (long*)0);
-                GL.MemoryBarrier(MemoryBarrierFlags.QueryBufferBarrierBit | MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+                _api.GetQueryObject(Query, QueryObjectParameterName.Result, (long*)0);
+                _api.MemoryBarrier(MemoryBarrierMask.QueryBufferBarrierBit | MemoryBarrierMask.ClientMappedBufferBarrierBit);
             }
             else
             {
@@ -111,10 +114,10 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public void Dispose()
         {
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
-            GL.UnmapBuffer(BufferTarget.QueryBuffer);
-            GL.DeleteBuffer(_buffer);
-            GL.DeleteQuery(Query);
+            _api.BindBuffer(BufferTargetARB.QueryBuffer, _buffer);
+            _api.UnmapBuffer(BufferTargetARB.QueryBuffer);
+            _api.DeleteBuffer(_buffer);
+            _api.DeleteQuery(Query);
         }
     }
 }

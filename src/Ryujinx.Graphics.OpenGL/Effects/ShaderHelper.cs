@@ -1,37 +1,38 @@
-using OpenTK.Graphics.OpenGL;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {
     internal static class ShaderHelper
     {
-        public static int CompileProgram(string shaderCode, ShaderType shaderType)
+        public static uint CompileProgram(GL api, string shaderCode, ShaderType shaderType)
         {
-            var shader = GL.CreateShader(shaderType);
-            GL.ShaderSource(shader, shaderCode);
-            GL.CompileShader(shader);
+            var shader = api.CreateShader(shaderType);
+            api.ShaderSource(shader, shaderCode);
+            api.CompileShader(shader);
 
-            var program = GL.CreateProgram();
-            GL.AttachShader(program, shader);
-            GL.LinkProgram(program);
+            var program = api.CreateProgram();
+            api.AttachShader(program, shader);
+            api.LinkProgram(program);
 
-            GL.DetachShader(program, shader);
-            GL.DeleteShader(shader);
+            api.DetachShader(program, shader);
+            api.DeleteShader(shader);
 
             return program;
         }
 
-        public static int CompileProgram(string[] shaders, ShaderType shaderType)
+        public static uint CompileProgram(GL api, string[] shaders, ShaderType shaderType)
         {
-            var shader = GL.CreateShader(shaderType);
-            GL.ShaderSource(shader, shaders.Length, shaders, (int[])null);
-            GL.CompileShader(shader);
+            var shader = api.CreateShader(shaderType);
+            var length = 0;
+            api.ShaderSource(shader, (uint)shaders.Length, shaders, in length);
+            api.CompileShader(shader);
 
-            var program = GL.CreateProgram();
-            GL.AttachShader(program, shader);
-            GL.LinkProgram(program);
+            var program = api.CreateProgram();
+            api.AttachShader(program, shader);
+            api.LinkProgram(program);
 
-            GL.DetachShader(program, shader);
-            GL.DeleteShader(shader);
+            api.DetachShader(program, shader);
+            api.DeleteShader(shader);
 
             return program;
         }

@@ -1,7 +1,7 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Input.HLE;
+using Silk.NET.OpenGL.Legacy;
 using SPB.Graphics;
 using SPB.Graphics.Exceptions;
 using SPB.Graphics.OpenGL;
@@ -96,9 +96,16 @@ namespace Ryujinx.UI
 
             _openGLContext.MakeCurrent(_nativeWindow);
 
-            GL.ClearColor(0, 0, 0, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            var api = GetApi();
+
+            api.ClearColor(0, 0, 0, 1.0f);
+            api.Clear(ClearBufferMask.ColorBufferBit);
             SwapBuffers();
+        }
+
+        public GL GetApi()
+        {
+            return GL.GetApi(_openGLContext.GetProcAddress);
         }
 
         public override void SwapBuffers()

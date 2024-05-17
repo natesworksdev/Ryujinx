@@ -6,7 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK.Graphics" />
+    <PackageReference Include="Silk.NET.OpenGL.Legacy" />
+    <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.ARB" />
+    <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.EXT" />
+    <PackageReference Include="Silk.NET.OpenGL.Legacy.Extensions.NV" />
   </ItemGroup>
 
   <ItemGroup>

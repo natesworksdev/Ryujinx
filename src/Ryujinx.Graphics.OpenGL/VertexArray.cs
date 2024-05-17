@@ -1,5 +1,6 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.NV;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -8,7 +9,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class VertexArray : IDisposable
     {
-        public int Handle { get; private set; }
+        public uint Handle { get; private set; }
 
         private readonly VertexAttribDescriptor[] _vertexAttribs;
         private readonly VertexBufferDescriptor[] _vertexBuffers;
@@ -23,20 +24,22 @@ namespace Ryujinx.Graphics.OpenGL
         private readonly BufferHandle _tempIndexBuffer;
         private BufferHandle _tempVertexBuffer;
         private int _tempVertexBufferSize;
+        private readonly GL _api;
 
-        public VertexArray()
+        public VertexArray(GL api)
         {
-            Handle = GL.GenVertexArray();
+            _api = api;
+            Handle = _api.GenVertexArray();
 
             _vertexAttribs = new VertexAttribDescriptor[Constants.MaxVertexAttribs];
             _vertexBuffers = new VertexBufferDescriptor[Constants.MaxVertexBuffers];
 
-            _tempIndexBuffer = Buffer.Create();
+            _tempIndexBuffer = Buffer.Create(_api);
         }
 
         public void Bind()
         {
-            GL.BindVertexArray(Handle);
+            _api.BindVertexArray(Handle);
         }
 
         public void SetVertexBuffers(ReadOnlySpan<VertexBufferDescriptor> vertexBuffers)
@@ -56,15 +59,15 @@ namespace Ryujinx.Graphics.OpenGL
                         minVertexCount = vertexCount;
                     }
 
-                    GL.BindVertexBuffer(bindingIndex, vb.Buffer.Handle.ToInt32(), (IntPtr)vb.Buffer.Offset, vb.Stride);
-                    GL.VertexBindingDivisor(bindingIndex, vb.Divisor);
+                    _api.BindVertexBuffer((uint)bindingIndex, vb.Buffer.Handle.ToUInt32(), vb.Buffer.Offset, (uint)vb.Stride);
+                    _api.VertexBindingDivisor((uint)bindingIndex, (uint)vb.Divisor);
                     _vertexBuffersInUse |= 1u << bindingIndex;
                 }
                 else
                 {
                     if ((_vertexBuffersInUse & (1u << bindingIndex)) != 0)
                     {
-                        GL.BindVertexBuffer(bindingIndex, 0, IntPtr.Zero, 0);
+                        _api.BindVertexBuffer((uint)bindingIndex, 0, 0, 0);
                         _vertexBuffersInUse &= ~(1u << bindingIndex);
                     }
                 }
@@ -105,22 +108,22 @@ namespace Ryujinx.Graphics.OpenGL
                 int size = fmtInfo.Components;
 
                 bool isFloat = fmtInfo.PixelType == PixelType.Float ||
-                               fmtInfo.PixelType == PixelType.HalfFloat;
+                               fmtInfo.PixelType == (PixelType)NV.HalfFloatNV;
 
                 if (isFloat || fmtInfo.Normalized || fmtInfo.Scaled)
                 {
                     VertexAttribType type = (VertexAttribType)fmtInfo.PixelType;
 
-                    GL.VertexAttribFormat(index, size, type, fmtInfo.Normalized, offset);
+                    _api.VertexAttribFormat((uint)index, size, type, fmtInfo.Normalized, (uint)offset);
                 }
                 else
                 {
-                    VertexAttribIntegerType type = (VertexAttribIntegerType)fmtInfo.PixelType;
+                    VertexAttribIType type = (VertexAttribIType)fmtInfo.PixelType;
 
-                    GL.VertexAttribIFormat(index, size, type, offset);
+                    _api.VertexAttribIFormat((uint)index, size, type, (uint)offset);
                 }
 
-                GL.VertexAttribBinding(index, attrib.BufferIndex);
+                _api.VertexAttribBinding((uint)index, (uint)attrib.BufferIndex);
 
                 _vertexAttribs[index] = attrib;
             }
@@ -134,19 +137,19 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetIndexBuffer(BufferRange range)
         {
             _indexBuffer = range;
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, range.Handle.ToInt32());
+            _api.BindBuffer(BufferTargetARB.ElementArrayBuffer, range.Handle.ToUInt32());
         }
 
         public void SetRangeOfIndexBuffer()
         {
-            Buffer.Resize(_tempIndexBuffer, _indexBuffer.Size);
-            Buffer.Copy(_indexBuffer.Handle, _tempIndexBuffer, _indexBuffer.Offset, 0, _indexBuffer.Size);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _tempIndexBuffer.ToInt32());
+            Buffer.Resize(_api, _tempIndexBuffer, _indexBuffer.Size);
+            Buffer.Copy(_api, _indexBuffer.Handle, _tempIndexBuffer, _indexBuffer.Offset, 0, _indexBuffer.Size);
+            _api.BindBuffer(BufferTargetARB.ElementArrayBuffer, _tempIndexBuffer.ToUInt32());
         }
 
         public void RestoreIndexBuffer()
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.Handle.ToInt32());
+            _api.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer.Handle.ToUInt32());
         }
 
         public void PreDraw(int vertexCount)
@@ -185,10 +188,10 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     BufferHandle tempVertexBuffer = EnsureTempVertexBufferSize(currentTempVbOffset + requiredSize);
 
-                    Buffer.Copy(vb.Buffer.Handle, tempVertexBuffer, vb.Buffer.Offset, currentTempVbOffset, vb.Buffer.Size);
-                    Buffer.Clear(tempVertexBuffer, currentTempVbOffset + vb.Buffer.Size, requiredSize - vb.Buffer.Size, 0);
+                    Buffer.Copy(_api, vb.Buffer.Handle, tempVertexBuffer, vb.Buffer.Offset, currentTempVbOffset, vb.Buffer.Size);
+                    Buffer.Clear(_api, tempVertexBuffer, currentTempVbOffset + vb.Buffer.Size, (uint)(requiredSize - vb.Buffer.Size), 0);
 
-                    GL.BindVertexBuffer(vbIndex, tempVertexBuffer.ToInt32(), (IntPtr)currentTempVbOffset, vb.Stride);
+                    _api.BindVertexBuffer((uint)vbIndex, tempVertexBuffer.ToUInt32(), currentTempVbOffset, (uint)vb.Stride);
 
                     currentTempVbOffset += requiredSize;
                     _vertexBuffersLimited |= 1u << vbIndex;
@@ -208,12 +211,12 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (tempVertexBuffer == BufferHandle.Null)
                 {
-                    tempVertexBuffer = Buffer.Create(size);
+                    tempVertexBuffer = Buffer.Create(_api, size);
                     _tempVertexBuffer = tempVertexBuffer;
                     return tempVertexBuffer;
                 }
 
-                Buffer.Resize(_tempVertexBuffer, size);
+                Buffer.Resize(_api, _tempVertexBuffer, size);
             }
 
             return tempVertexBuffer;
@@ -234,7 +237,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 ref var vb = ref _vertexBuffers[vbIndex];
 
-                GL.BindVertexBuffer(vbIndex, vb.Buffer.Handle.ToInt32(), (IntPtr)vb.Buffer.Offset, vb.Stride);
+                _api.BindVertexBuffer((uint)vbIndex, vb.Buffer.Handle.ToUInt32(), vb.Buffer.Offset, (uint)vb.Stride);
 
                 buffersLimited &= ~(1u << vbIndex);
             }
@@ -250,7 +253,7 @@ namespace Ryujinx.Graphics.OpenGL
             if ((_vertexAttribsInUse & mask) == 0)
             {
                 _vertexAttribsInUse |= mask;
-                GL.EnableVertexAttribArray(index);
+                _api.EnableVertexAttribArray((uint)index);
             }
         }
 
@@ -262,8 +265,8 @@ namespace Ryujinx.Graphics.OpenGL
             if ((_vertexAttribsInUse & mask) != 0)
             {
                 _vertexAttribsInUse &= ~mask;
-                GL.DisableVertexAttribArray(index);
-                GL.VertexAttrib4(index, 0f, 0f, 0f, 1f);
+                _api.DisableVertexAttribArray((uint)index);
+                _api.VertexAttrib4((uint)index, 0f, 0f, 0f, 1f);
             }
         }
 
@@ -271,7 +274,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (Handle != 0)
             {
-                GL.DeleteVertexArray(Handle);
+                _api.DeleteVertexArray(Handle);
 
                 Handle = 0;
             }

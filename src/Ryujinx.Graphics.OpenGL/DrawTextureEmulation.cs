@@ -1,6 +1,7 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.OpenGL.Image;
+using Silk.NET.OpenGL.Legacy;
 using System;
+using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -35,9 +36,9 @@ void main()
     colour = texture(tex, texcoord);
 }";
 
-        private int _vsHandle;
-        private int _fsHandle;
-        private int _programHandle;
+        private uint _vsHandle;
+        private uint _fsHandle;
+        private uint _programHandle;
         private int _uniformSrcX0Location;
         private int _uniformSrcY0Location;
         private int _uniformSrcX1Location;
@@ -45,6 +46,7 @@ void main()
         private bool _initialized;
 
         public void Draw(
+            GL api,
             TextureView texture,
             Sampler sampler,
             float x0,
@@ -56,9 +58,9 @@ void main()
             float s1,
             float t1)
         {
-            EnsureInitialized();
+            EnsureInitialized(api);
 
-            GL.UseProgram(_programHandle);
+            api.UseProgram(_programHandle);
 
             texture.Bind(0);
             sampler.Bind(0);
@@ -73,17 +75,17 @@ void main()
                 (t1, t0) = (t0, t1);
             }
 
-            GL.Uniform1(_uniformSrcX0Location, s0);
-            GL.Uniform1(_uniformSrcY0Location, t0);
-            GL.Uniform1(_uniformSrcX1Location, s1);
-            GL.Uniform1(_uniformSrcY1Location, t1);
+            api.Uniform1(_uniformSrcX0Location, s0);
+            api.Uniform1(_uniformSrcY0Location, t0);
+            api.Uniform1(_uniformSrcX1Location, s1);
+            api.Uniform1(_uniformSrcY1Location, t1);
 
-            GL.ViewportIndexed(0, MathF.Min(x0, x1), MathF.Min(y0, y1), MathF.Abs(x1 - x0), MathF.Abs(y1 - y0));
+            api.ViewportIndexed(0, MathF.Min(x0, x1), MathF.Min(y0, y1), MathF.Abs(x1 - x0), MathF.Abs(y1 - y0));
 
-            GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+            api.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
         }
 
-        private void EnsureInitialized()
+        private void EnsureInitialized(GL api)
         {
             if (_initialized)
             {
@@ -92,41 +94,41 @@ void main()
 
             _initialized = true;
 
-            _vsHandle = GL.CreateShader(ShaderType.VertexShader);
-            _fsHandle = GL.CreateShader(ShaderType.FragmentShader);
+            _vsHandle = api.CreateShader(ShaderType.VertexShader);
+            _fsHandle = api.CreateShader(ShaderType.FragmentShader);
 
-            GL.ShaderSource(_vsHandle, VertexShader);
-            GL.ShaderSource(_fsHandle, FragmentShader);
+            api.ShaderSource(_vsHandle, VertexShader);
+            api.ShaderSource(_fsHandle, FragmentShader);
 
-            GL.CompileShader(_vsHandle);
-            GL.CompileShader(_fsHandle);
+            api.CompileShader(_vsHandle);
+            api.CompileShader(_fsHandle);
 
-            _programHandle = GL.CreateProgram();
+            _programHandle = api.CreateProgram();
 
-            GL.AttachShader(_programHandle, _vsHandle);
-            GL.AttachShader(_programHandle, _fsHandle);
+            api.AttachShader(_programHandle, _vsHandle);
+            api.AttachShader(_programHandle, _fsHandle);
 
-            GL.LinkProgram(_programHandle);
+            api.LinkProgram(_programHandle);
 
-            GL.DetachShader(_programHandle, _vsHandle);
-            GL.DetachShader(_programHandle, _fsHandle);
+            api.DetachShader(_programHandle, _vsHandle);
+            api.DetachShader(_programHandle, _fsHandle);
 
-            _uniformSrcX0Location = GL.GetUniformLocation(_programHandle, "srcX0");
-            _uniformSrcY0Location = GL.GetUniformLocation(_programHandle, "srcY0");
-            _uniformSrcX1Location = GL.GetUniformLocation(_programHandle, "srcX1");
-            _uniformSrcY1Location = GL.GetUniformLocation(_programHandle, "srcY1");
+            _uniformSrcX0Location = api.GetUniformLocation(_programHandle, "srcX0");
+            _uniformSrcY0Location = api.GetUniformLocation(_programHandle, "srcY0");
+            _uniformSrcX1Location = api.GetUniformLocation(_programHandle, "srcX1");
+            _uniformSrcY1Location = api.GetUniformLocation(_programHandle, "srcY1");
         }
 
-        public void Dispose()
+        public void Dispose(GL api)
         {
             if (!_initialized)
             {
                 return;
             }
 
-            GL.DeleteShader(_vsHandle);
-            GL.DeleteShader(_fsHandle);
-            GL.DeleteProgram(_programHandle);
+            api.DeleteShader(_vsHandle);
+            api.DeleteShader(_fsHandle);
+            api.DeleteProgram(_programHandle);
 
             _initialized = false;
         }

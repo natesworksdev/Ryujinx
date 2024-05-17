@@ -1,5 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Threading;
 
@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public QueryTarget Type { get; }
         public bool ClearCounter { get; private set; }
-        public int Query => _counter.Query;
+        public uint Query => _counter.Query;
 
         public bool Disposed { get; private set; }
         public bool Invalid { get; set; }
@@ -28,11 +28,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         private ulong _result = ulong.MaxValue;
         private double _divisor = 1f;
 
-        public CounterQueueEvent(CounterQueue queue, QueryTarget type, ulong drawIndex)
+        public CounterQueueEvent(GL api, CounterQueue queue, QueryTarget type, ulong drawIndex)
         {
             _queue = queue;
 
-            _counter = queue.GetQueryObject();
+            _counter = queue.GetQueryObject(api);
             Type = type;
 
             DrawIndex = drawIndex;
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                     return true;
                 }
 
-                if (ClearCounter || Type == QueryTarget.Timestamp)
+                if (ClearCounter || Type == (QueryTarget)GLEnum.Timestamp)
                 {
                     result = 0;
                 }

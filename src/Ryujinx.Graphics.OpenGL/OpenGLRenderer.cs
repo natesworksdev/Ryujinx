@@ -1,16 +1,20 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader.Translation;
+using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL.Legacy.Extensions.ARB;
 using System;
+using System.Runtime.InteropServices;
+using Sampler = Ryujinx.Graphics.OpenGL.Image.Sampler;
 
 namespace Ryujinx.Graphics.OpenGL
 {
     public sealed class OpenGLRenderer : IRenderer
     {
+        public readonly GL Api;
         private readonly Pipeline _pipeline;
 
         public IPipeline Pipeline => _pipeline;
@@ -37,45 +41,46 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal int BufferCount { get; private set; }
 
+        internal HardwareCapabilities Capabilities;
+
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
 
         public bool PreferThreading => true;
 
-        public OpenGLRenderer()
+        public OpenGLRenderer(GL api)
         {
-            _pipeline = new Pipeline();
-            _counters = new Counters();
+            Api = api;
+            _pipeline = new Pipeline(this);
+            _counters = new Counters(Api);
             _window = new Window(this);
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
             TextureCopyIncompatible = new TextureCopyIncompatible(this);
             TextureCopyMS = new TextureCopyMS(this);
-            _sync = new Sync();
-            PersistentBuffers = new PersistentBuffers();
+            _sync = new Sync(this);
+            PersistentBuffers = new PersistentBuffers(Api);
             ResourcePool = new ResourcePool();
         }
 
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access)
+        public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
             BufferCount++;
 
-            if (access.HasFlag(GAL.BufferAccess.FlushPersistent))
+            if (access.HasFlag(BufferAccess.FlushPersistent))
             {
-                BufferHandle handle = Buffer.CreatePersistent(size);
+                BufferHandle handle = Buffer.CreatePersistent(Api, size);
 
                 PersistentBuffers.Map(handle, size);
 
                 return handle;
             }
-            else
-            {
-                return Buffer.Create(size);
-            }
+
+            return Buffer.Create(Api, size);
         }
 
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access, BufferHandle storageHint)
+        public BufferHandle CreateBuffer(int size, BufferAccess access, BufferHandle storageHint)
         {
             return CreateBuffer(size, access);
         }
@@ -92,17 +97,17 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IImageArray CreateImageArray(int size, bool isBuffer)
         {
-            return new ImageArray(size);
+            return new ImageArray(Api, size);
         }
 
         public IProgram CreateProgram(ShaderSource[] shaders, ShaderInfo info)
         {
-            return new Program(shaders, info.FragmentOutputMap);
+            return new Program(this, shaders, info.FragmentOutputMap);
         }
 
         public ISampler CreateSampler(SamplerCreateInfo info)
         {
-            return new Sampler(info);
+            return new Sampler(this, info);
         }
 
         public ITexture CreateTexture(TextureCreateInfo info)
@@ -111,22 +116,20 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return new TextureBuffer(this, info);
             }
-            else
-            {
-                return ResourcePool.GetTextureOrNull(info) ?? new TextureStorage(this, info).CreateDefaultView();
-            }
+
+            return ResourcePool.GetTextureOrNull(info) ?? new TextureStorage(this, info).CreateDefaultView();
         }
 
         public ITextureArray CreateTextureArray(int size, bool isBuffer)
         {
-            return new TextureArray(size);
+            return new TextureArray(Api, size);
         }
 
         public void DeleteBuffer(BufferHandle buffer)
         {
             PersistentBuffers.Unmap(buffer);
 
-            Buffer.Delete(buffer);
+            Buffer.Delete(Api, buffer);
         }
 
         public HardwareInfo GetHardwareInfo()
@@ -141,9 +144,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Capabilities GetCapabilities()
         {
-            bool intelWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows;
-            bool intelUnix = HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelUnix;
-            bool amdWindows = HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows;
+            bool intelWindows = Capabilities.GpuVendor == OpenGL.GpuVendor.IntelWindows;
+            bool intelUnix = Capabilities.GpuVendor == OpenGL.GpuVendor.IntelUnix;
+            bool amdWindows = Capabilities.GpuVendor == OpenGL.GpuVendor.AmdWindows;
 
             return new Capabilities(
                 api: TargetApi.OpenGL,
@@ -152,9 +155,9 @@ namespace Ryujinx.Graphics.OpenGL
                 hasVectorIndexingBug: amdWindows,
                 needsFragmentOutputSpecialization: false,
                 reduceShaderPrecision: false,
-                supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
-                supportsBc123Compression: HwCapabilities.SupportsTextureCompressionS3tc,
-                supportsBc45Compression: HwCapabilities.SupportsTextureCompressionRgtc,
+                supportsAstcCompression: Capabilities.SupportsAstcCompression,
+                supportsBc123Compression: Capabilities.SupportsTextureCompressionS3tc,
+                supportsBc45Compression: Capabilities.SupportsTextureCompressionRgtc,
                 supportsBc67Compression: true, // Should check BPTC extension, but for some reason NVIDIA is not exposing the extension.
                 supportsEtc2Compression: true,
                 supports3DTextureCompression: false,
@@ -165,45 +168,45 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsSnormBufferTextureFormat: false,
                 supports5BitComponentFormat: true,
                 supportsSparseBuffer: false,
-                supportsBlendEquationAdvanced: HwCapabilities.SupportsBlendEquationAdvanced,
-                supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
-                supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
+                supportsBlendEquationAdvanced: Capabilities.SupportsBlendEquationAdvanced,
+                supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
+                supportsFragmentShaderOrderingIntel: Capabilities.SupportsFragmentShaderOrdering,
                 supportsGeometryShader: true,
-                supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
+                supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
                 supportsTransformFeedback: true,
-                supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
-                supportsLayerVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
-                supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
+                supportsImageLoadFormatted: Capabilities.SupportsImageLoadFormatted,
+                supportsLayerVertexTessellation: Capabilities.SupportsShaderViewportLayerArray,
+                supportsMismatchingViewFormat: Capabilities.SupportsMismatchingViewFormat,
                 supportsCubemapView: true,
-                supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
-                supportsQuads: HwCapabilities.SupportsQuads,
+                supportsNonConstantTextureOffset: Capabilities.SupportsNonConstantTextureOffset,
+                supportsQuads: Capabilities.SupportsQuads,
                 supportsSeparateSampler: false,
-                supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
+                supportsShaderBallot: Capabilities.SupportsShaderBallot,
                 supportsShaderBarrierDivergence: !(intelWindows || intelUnix),
                 supportsShaderFloat64: true,
                 supportsTextureGatherOffsets: true,
-                supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,
+                supportsTextureShadowLod: Capabilities.SupportsTextureShadowLod,
                 supportsVertexStoreAndAtomics: true,
-                supportsViewportIndexVertexTessellation: HwCapabilities.SupportsShaderViewportLayerArray,
-                supportsViewportMask: HwCapabilities.SupportsViewportArray2,
-                supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
-                supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
+                supportsViewportIndexVertexTessellation: Capabilities.SupportsShaderViewportLayerArray,
+                supportsViewportMask: Capabilities.SupportsViewportArray2,
+                supportsViewportSwizzle: Capabilities.SupportsViewportSwizzle,
+                supportsIndirectParameters: Capabilities.SupportsIndirectParameters,
                 supportsDepthClipControl: true,
                 maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?
                 maximumStorageBuffersPerStage: 16,
                 maximumTexturesPerStage: 32,
                 maximumImagesPerStage: 8,
-                maximumComputeSharedMemorySize: HwCapabilities.MaximumComputeSharedMemorySize,
-                maximumSupportedAnisotropy: HwCapabilities.MaximumSupportedAnisotropy,
+                maximumComputeSharedMemorySize: Capabilities.MaximumComputeSharedMemorySize,
+                maximumSupportedAnisotropy: Capabilities.MaximumSupportedAnisotropy,
                 shaderSubgroupSize: Constants.MaxSubgroupSize,
-                storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment,
-                textureBufferOffsetAlignment: HwCapabilities.TextureBufferOffsetAlignment,
+                storageBufferOffsetAlignment: Capabilities.StorageBufferOffsetAlignment,
+                textureBufferOffsetAlignment: Capabilities.TextureBufferOffsetAlignment,
                 gatherBiasPrecision: intelWindows || amdWindows ? 8 : 0); // Precision is 8 for these vendors on Vulkan.
         }
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
         {
-            Buffer.SetData(buffer, offset, data);
+            Buffer.SetData(Api, buffer, offset, data);
         }
 
         public void UpdateCounters()
@@ -224,13 +227,17 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Initialize(GraphicsDebugLevel glLogLevel)
         {
-            Debugger.Initialize(glLogLevel);
+            Debugger.Initialize(Api, glLogLevel);
+
+            LoadFeatures();
 
             PrintGpuInformation();
 
-            if (HwCapabilities.SupportsParallelShaderCompile)
+            if (Capabilities.SupportsParallelShaderCompile)
             {
-                GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
+                Api.TryGetExtension(out ArbParallelShaderCompile arbParallelShaderCompile);
+
+                arbParallelShaderCompile.MaxShaderCompilerThreads((uint)Math.Min(Environment.ProcessorCount, 8));
             }
 
             _counters.Initialize();
@@ -238,15 +245,46 @@ namespace Ryujinx.Graphics.OpenGL
             // This is required to disable [0, 1] clamping for SNorm outputs on compatibility profiles.
             // This call is expected to fail if we're running with a core profile,
             // as this clamp target was deprecated, but that's fine as a core profile
-            // should already have the desired behaviour were outputs are not clamped.
-            GL.ClampColor(ClampColorTarget.ClampFragmentColor, ClampColorMode.False);
+            // should already have the desired behaviour when outputs are not clamped.
+            Api.ClampColor(ClampColorTargetARB.FragmentColorArb, ClampColorModeARB.False);
         }
 
-        private void PrintGpuInformation()
+        private void LoadFeatures()
         {
-            GpuVendor = GL.GetString(StringName.Vendor);
-            GpuRenderer = GL.GetString(StringName.Renderer);
-            GpuVersion = GL.GetString(StringName.Version);
+            Capabilities = new HardwareCapabilities(
+                HardwareCapabilities.HasExtension(Api, "GL_NV_alpha_to_coverage_dither_control"),
+                HardwareCapabilities.HasExtension(Api, "GL_KHR_texture_compression_astc_ldr"),
+                HardwareCapabilities.HasExtension(Api, "GL_NV_blend_equation_advanced"),
+                HardwareCapabilities.HasExtension(Api, "GL_NV_draw_texture"),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_fragment_shader_interlock"),
+                HardwareCapabilities.HasExtension(Api, "GL_INTEL_fragment_shader_ordering"),
+                HardwareCapabilities.HasExtension(Api, "GL_NV_geometry_shader_passthrough"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_shader_image_load_formatted"),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_indirect_parameters"),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_parallel_shader_compile"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_polygon_offset_clamp"),
+                HardwareCapabilities.SupportsQuadsCheck(Api),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_seamless_cubemap_per_texture"),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_shader_ballot"),
+                HardwareCapabilities.HasExtension(Api, "GL_ARB_shader_viewport_layer_array"),
+                HardwareCapabilities.HasExtension(Api, "GL_NV_viewport_array2"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_texture_compression_bptc"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_texture_compression_rgtc"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_texture_compression_s3tc"),
+                HardwareCapabilities.HasExtension(Api, "GL_EXT_texture_shadow_lod"),
+                HardwareCapabilities.HasExtension(Api, "GL_NV_viewport_swizzle"),
+                Api.GetInteger(GLEnum.MaxComputeSharedMemorySize),
+                Api.GetInteger(GLEnum.ShaderStorageBufferOffsetAlignment),
+                Api.GetInteger(GLEnum.TextureBufferOffsetAlignment),
+                Api.GetFloat(GLEnum.MaxTextureMaxAnisotropy),
+                HardwareCapabilities.GetGpuVendor(Api));
+        }
+
+        private unsafe void PrintGpuInformation()
+        {
+            GpuVendor = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Vendor));
+            GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Renderer));
+            GpuVersion = Marshal.PtrToStringAnsi((IntPtr)Api.GetString(StringName.Version));
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
@@ -290,7 +328,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IProgram LoadProgramBinary(byte[] programBinary, bool hasFragmentShader, ShaderInfo info)
         {
-            return new Program(programBinary, hasFragmentShader, info.FragmentOutputMap);
+            return new Program(this, programBinary, hasFragmentShader, info.FragmentOutputMap);
         }
 
         public void CreateSync(ulong id, bool strict)

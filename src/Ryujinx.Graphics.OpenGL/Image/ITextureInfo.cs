@@ -5,9 +5,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
     interface ITextureInfo
     {
         ITextureInfo Storage { get; }
-        int Handle { get; }
-        int FirstLayer => 0;
-        int FirstLevel => 0;
+        uint Handle { get; }
+        uint FirstLayer => 0;
+        uint FirstLevel => 0;
 
         TextureCreateInfo Info { get; }
     }

@@ -1,11 +1,12 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBase
     {
-        public int Handle { get; protected set; }
+        private readonly protected OpenGLRenderer _gd;
+        public uint Handle { get; protected set; }
 
         public TextureCreateInfo Info { get; }
 
@@ -15,28 +16,29 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public Target Target => Info.Target;
         public Format Format => Info.Format;
 
-        public TextureBase(TextureCreateInfo info)
+        public TextureBase(OpenGLRenderer gd, TextureCreateInfo info)
         {
+            _gd = gd;
             Info = info;
 
-            Handle = GL.GenTexture();
+            Handle = _gd.Api.GenTexture();
         }
 
-        public void Bind(int unit)
+        public void Bind(uint unit)
         {
             Bind(Target.Convert(), unit);
         }
 
-        protected void Bind(TextureTarget target, int unit)
+        protected void Bind(TextureTarget target, uint unit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + unit);
-            GL.BindTexture(target, Handle);
+            _gd.Api.ActiveTexture((TextureUnit)((uint)TextureUnit.Texture0 + unit));
+            _gd.Api.BindTexture(target, Handle);
         }
 
-        public static void ClearBinding(int unit)
+        public static void ClearBinding(GL api, uint unit)
         {
-            GL.ActiveTexture(TextureUnit.Texture0 + unit);
-            GL.BindTextureUnit(unit, 0);
+            api.ActiveTexture((TextureUnit)((uint)TextureUnit.Texture0 + unit));
+            api.BindTextureUnit(unit, 0);
         }
     }
 }

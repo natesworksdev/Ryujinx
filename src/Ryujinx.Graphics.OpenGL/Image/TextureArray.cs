@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Silk.NET.OpenGL.Legacy;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
@@ -11,9 +12,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         private readonly TextureRef[] _textureRefs;
+        private readonly GL _api;
 
-        public TextureArray(int size)
+        public TextureArray(GL api, int size)
         {
+            _api = api;
             _textureRefs = new TextureRef[size];
         }
 
@@ -33,9 +36,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void Bind(int baseBinding)
+        public void Bind(uint baseBinding)
         {
-            for (int i = 0; i < _textureRefs.Length; i++)
+            for (uint i = 0; i < _textureRefs.Length; i++)
             {
                 if (_textureRefs[i].Texture != null)
                 {
@@ -44,7 +47,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
                 else
                 {
-                    TextureBase.ClearBinding(baseBinding + i);
+                    TextureBase.ClearBinding(_api, baseBinding + i);
                 }
             }
         }
