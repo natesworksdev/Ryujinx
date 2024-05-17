@@ -693,9 +693,9 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState._stencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState._depthtestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState._depthwriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _supportExtDynamic ? DynamicState. Topology : _newState.Topology;
+                var oldTopology = _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
-                var oldViewportsCount = _newState.ViewportsCount;
+                var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
                 if (_supportExtDynamic)
                 {
@@ -726,7 +726,6 @@ namespace Ryujinx.Graphics.Vulkan
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
-                    DynamicState.SetPrimitiveTopology(oldTopology);
                 }
                 else
                 {
@@ -734,12 +733,13 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.StencilTestEnable = oldStencilTestEnable;
                     _newState.DepthTestEnable = oldDepthTestEnable;
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
-                    _newState.Topology = oldTopology;
+                    _newState.ViewportsCount = oldViewportsCount;
                 }
+                
+                _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
-                _newState.ViewportsCount = oldViewportsCount;
                 SignalStateChange();
             }
         }
@@ -1022,14 +1022,8 @@ namespace Ryujinx.Graphics.Vulkan
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
-            if (_supportExtDynamic)
-            {
-                DynamicState.SetPrimitiveTopology(vkTopology);
-            }
-            else
-            {
-                _newState.Topology = vkTopology;
-            }
+            
+            _newState.Topology = vkTopology;
             
             SignalStateChange();
         }
@@ -1437,8 +1431,11 @@ namespace Ryujinx.Graphics.Vulkan
                     Clamp(viewport.DepthNear),
                     Clamp(viewport.DepthFar)));
             }
-
-            _newState.ViewportsCount = (uint)count;
+            
+            if (!_supportExtDynamic)
+            {
+                _newState.ViewportsCount = (uint)count;
+            }            
             SignalStateChange();
         }
 

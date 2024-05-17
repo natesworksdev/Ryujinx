@@ -22,12 +22,12 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             return level switch
             {
-                AvaLogLevel.Verbose => RyuLogger.Debug,
-                AvaLogLevel.Debug => RyuLogger.Debug,
-                AvaLogLevel.Information => RyuLogger.Debug,
-                AvaLogLevel.Warning => RyuLogger.Debug,
-                AvaLogLevel.Error => RyuLogger.Error,
-                AvaLogLevel.Fatal => RyuLogger.Error,
+                AvaLogLevel.Verbose => RyuLogger.Trace,
+                AvaLogLevel.Debug => RyuLogger.Trace,
+                AvaLogLevel.Information => RyuLogger.Trace,
+                AvaLogLevel.Warning => RyuLogger.Trace,
+                AvaLogLevel.Error => RyuLogger.Trace,
+                AvaLogLevel.Fatal => RyuLogger.Trace,
                 _ => throw new ArgumentOutOfRangeException(nameof(level), level, null),
             };
         }

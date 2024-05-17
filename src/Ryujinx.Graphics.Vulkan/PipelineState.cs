@@ -455,17 +455,13 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     primitiveRestartEnable = true;
                 }
-
+                
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                     PrimitiveRestartEnable = primitiveRestartEnable,
+                    Topology = Topology,
                 };
-
-                if (!supportsExtDynamicState)
-                {
-                    inputAssemblyState.Topology = Topology;
-                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
@@ -492,13 +488,17 @@ namespace Ryujinx.Graphics.Vulkan
                     rasterizationState.CullMode = CullMode;
                     rasterizationState.FrontFace = FrontFace;
                 }
-
+                
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
                     SType = StructureType.PipelineViewportStateCreateInfo,
-                    ViewportCount = ViewportsCount,
-                    ScissorCount = ScissorsCount,
                 };
+                
+                if (!supportsExtDynamicState)
+                {
+                    viewportState.ViewportCount = ViewportsCount;
+                    viewportState.ScissorCount = ScissorsCount;
+                }
 
                 if (gd.Capabilities.SupportsDepthClipControl)
                 {
@@ -604,7 +604,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 16 : 17) : (isMoltenVk ? 7 : 8);
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 17 : 18) : (isMoltenVk ? 7 : 8);
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -623,7 +623,7 @@ namespace Ryujinx.Graphics.Vulkan
                 
                 if (supportsExtDynamicState)
                 {
-                    int index = 8;
+                    int index = (isMoltenVk ? 7 : 8);
                     if (!isMoltenVk) {
                         dynamicStates[index++] = DynamicState.VertexInputBindingStrideExt;
                     }
@@ -633,7 +633,8 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[index++] = DynamicState.DepthWriteEnableExt;
                     dynamicStates[index++] = DynamicState.DepthCompareOpExt;
                     dynamicStates[index++] = DynamicState.StencilTestEnableExt;
-                    dynamicStates[index++] = DynamicState.PrimitiveTopologyExt;
+                    dynamicStates[index++] = DynamicState.ViewportWithCountExt;
+                    dynamicStates[index++] = DynamicState.ScissorWithCountExt;
                     dynamicStates[index] = DynamicState.StencilOpExt;
                 }
 
