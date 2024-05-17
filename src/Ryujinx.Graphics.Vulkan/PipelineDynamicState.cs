@@ -1,5 +1,6 @@
 using Ryujinx.Common.Memory;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using System;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -220,66 +221,66 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void ReplayIfDirty(Vk api, CommandBuffer commandBuffer)
+        public void ReplayIfDirty(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             if (_dirty.HasFlag(DirtyFlags.Blend))
             {
-                RecordBlend(api, commandBuffer);
+                RecordBlend(gd.Api, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.DepthBias))
             {
-                RecordDepthBias(api, commandBuffer);
+                RecordDepthBias(gd.Api, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Scissor))
             {
-                RecordScissor(api, commandBuffer);
+                RecordScissor(gd.Api, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Stencil))
             {
-                RecordStencil(api, commandBuffer);
+                RecordStencil(gd.Api, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Viewport))
             {
-                RecordViewport(api, commandBuffer);
+                RecordViewport(gd.Api, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.CullMode))
             {
-                RecordCullMode(api, commandBuffer);
+                RecordCullMode(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.FrontFace))
             {
-                RecordFrontFace(api, commandBuffer);
+                RecordFrontFace(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.DepthTestBool))
             {
-                RecordDepthTestBool(api, commandBuffer);
+                RecordDepthTestBool(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.DepthTestCompareOp))
             {
-                RecordDepthTestCompareOp(api, commandBuffer);
+                RecordDepthTestCompareOp(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.StencilTestEnable))
             {
-                RecordStencilTestEnable(api, commandBuffer);
+                RecordStencilTestEnable(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.Toplogy))
             {
-                RecordPrimitiveTopology(api, commandBuffer);
+                RecordPrimitiveTopology(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.LineWidth))
             {
-                RecordLineWidth(api, commandBuffer);
+                RecordLineWidth(gd.Api, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -321,7 +322,7 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontReference);
         }
         
-        private readonly void RecordStencilTestEnable(Vk api, CommandBuffer commandBuffer)
+        private readonly void RecordStencilTestEnable(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetStencilTestEnable(commandBuffer, _stencilTestEnable);
         }
@@ -334,28 +335,28 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
         
-        private void RecordCullMode(Vk api, CommandBuffer commandBuffer)
+        private void RecordCullMode(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetCullMode(commandBuffer, CullMode);
         }
         
-        private void RecordFrontFace(Vk api, CommandBuffer commandBuffer)
+        private void RecordFrontFace(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetFrontFace(commandBuffer, FrontFace);
         }
         
-        private void RecordDepthTestBool(Vk api, CommandBuffer commandBuffer)
+        private void RecordDepthTestBool(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthTestEnable(commandBuffer, _depthtestEnable);
             api.CmdSetDepthWriteEnable(commandBuffer, _depthwriteEnable);
         }
         
-        private void RecordDepthTestCompareOp(Vk api, CommandBuffer commandBuffer)
+        private void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthCompareOp(commandBuffer, _depthCompareOp);
         }
         
-        private void RecordPrimitiveTopology(Vk api, CommandBuffer commandBuffer)
+        private void RecordPrimitiveTopology(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetPrimitiveTopology(commandBuffer, Topology);
         }

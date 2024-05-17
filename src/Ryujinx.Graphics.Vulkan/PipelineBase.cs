@@ -1645,7 +1645,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Gd.FlushAllCommands();
             }
 
-            DynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
+            DynamicState.ReplayIfDirty(Gd, CommandBuffer);
 
             if (_needsIndexBufferRebind && _indexBufferPattern == null)
             {
