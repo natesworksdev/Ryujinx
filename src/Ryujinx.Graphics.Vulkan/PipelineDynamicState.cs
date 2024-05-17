@@ -63,8 +63,9 @@ namespace Ryujinx.Graphics.Vulkan
             DepthTestCompareOp = 1 << 8,
             StencilTestEnable = 1 << 9,
             Toplogy = 1 << 10,
-            LineWidth = 1 <<11,
-            All = Blend | DepthBias | Scissor | Stencil | Viewport | CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | Toplogy | LineWidth,
+            LineWidth = 1 << 11,
+            Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
+            Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | Toplogy,
         }
 
         private DirtyFlags _dirty;
@@ -204,9 +205,19 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.LineWidth;
         }
 
-        public void ForceAllDirty()
+        public void ForceAllDirty(VulkanRenderer gd)
         {
-            _dirty = DirtyFlags.All;
+            _dirty = DirtyFlags.Standard;
+
+            if (gd.Capabilities.SupportsExtendedDynamicState)
+            {
+                _dirty = DirtyFlags.Standard | DirtyFlags.Extended;
+            }
+
+            if (gd.IsMoltenVk)
+            {
+                _dirty &= ~DirtyFlags.LineWidth;
+            }
         }
 
         public void ReplayIfDirty(Vk api, CommandBuffer commandBuffer)
@@ -351,7 +362,10 @@ namespace Ryujinx.Graphics.Vulkan
         
         private void RecordLineWidth(Vk api, CommandBuffer commandBuffer)
         {
-            api.CmdSetLineWidth(commandBuffer, _linewidth);
+            if (!OperatingSystem.IsMacOS())
+            {
+                api.CmdSetLineWidth(commandBuffer, _linewidth);
+            }
         }
     }
 }
