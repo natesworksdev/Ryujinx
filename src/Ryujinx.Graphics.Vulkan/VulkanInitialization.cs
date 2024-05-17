@@ -310,6 +310,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 features2.PNext = &supportedFeaturesCustomBorderColor;
             }
+            
+            PhysicalDeviceExtendedDynamicState2FeaturesEXT supportedFeaturesExtExtendedDynamicState2 = new()
+            {
+                SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
+                PNext = features2.PNext,
+            };
+
+            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName))
+            {
+                features2.PNext = &supportedFeaturesExtExtendedDynamicState2;
+            }
 
             PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT supportedFeaturesPrimitiveTopologyListRestart = new()
             {
@@ -445,6 +456,8 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
                 PNext = pExtendedFeatures,
                 ExtendedDynamicState2 = physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
+                ExtendedDynamicState2LogicOp = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
+                ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints,
             };
 
             pExtendedFeatures = &featuresExtendedDynamicState2;
