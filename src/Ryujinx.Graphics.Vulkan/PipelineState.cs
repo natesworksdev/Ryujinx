@@ -407,6 +407,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
             bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
+            bool supportsExtDynamicState3 = gd.Capabilities.SupportsExtendedDynamicState3;
 
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
@@ -468,15 +469,23 @@ namespace Ryujinx.Graphics.Vulkan
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
                     SType = StructureType.PipelineTessellationStateCreateInfo,
-                    PatchControlPoints = PatchControlPoints,
                 };
+
+                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                {
+                    tessellationState.PatchControlPoints = PatchControlPoints;
+                }
 
                 var rasterizationState = new PipelineRasterizationStateCreateInfo
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
-                    DepthClampEnable = DepthClampEnable,
                     PolygonMode = PolygonMode,
                 };
+
+                if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
+                {
+                    rasterizationState.DepthClampEnable = DepthClampEnable;
+                }
 
                 if (isMoltenVk)
                 {
@@ -523,9 +532,17 @@ namespace Ryujinx.Graphics.Vulkan
                     SampleShadingEnable = false,
                     RasterizationSamples = TextureStorage.ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, SamplesCount),
                     MinSampleShading = 1,
-                    AlphaToCoverageEnable = AlphaToCoverageEnable,
-                    AlphaToOneEnable = AlphaToOneEnable,
                 };
+
+                if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
+                {
+                    multisampleState.AlphaToCoverageEnable = AlphaToCoverageEnable;
+                }
+
+                if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
+                {
+                    multisampleState.AlphaToOneEnable = AlphaToOneEnable;
+                }
 
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
@@ -541,19 +558,13 @@ namespace Ryujinx.Graphics.Vulkan
                         StencilFrontFailOp,
                         StencilFrontPassOp,
                         StencilFrontDepthFailOp,
-                        StencilFrontCompareOp,
-                        null,
-                        null,
-                        null);
+                        StencilFrontCompareOp);
 
                     var stencilBack = new StencilOpState(
                         StencilBackFailOp,
                         StencilBackPassOp,
                         StencilBackDepthFailOp,
-                        StencilBackCompareOp,
-                        null,
-                        null,
-                        null);
+                        StencilBackCompareOp);
 
                     depthStencilState.Front = stencilFront;
                     depthStencilState.Back = stencilBack;
@@ -587,14 +598,18 @@ namespace Ryujinx.Graphics.Vulkan
                 var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
-                    LogicOpEnable = LogicOpEnable,
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
                 };
 
-                if (!(supportsExtDynamicState2 && gd.ExtendedLogicOp))
+                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
                 {
                     colorBlendState.LogicOp = LogicOp;
+                }
+
+                if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
+                {
+                    colorBlendState.LogicOpEnable = LogicOpEnable;
                 }
 
                 PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
@@ -624,13 +639,37 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState)
                 {
-                    additionalDynamicStatesCount += isMoltenVk ? 11 : 12;
+                    additionalDynamicStatesCount += isMoltenVk ? 10 : 11;
                 }
 
                 if (supportsExtDynamicState2)
                 {
                     additionalDynamicStatesCount += 2;
-                    if (gd.ExtendedLogicOp)
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                }
+
+                if (supportsExtDynamicState3)
+                {
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
                     {
                         additionalDynamicStatesCount++;
                     }
@@ -676,9 +715,33 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.DepthBiasEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
 
-                    if (gd.ExtendedLogicOp)
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
                     {
                         dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
+                    }
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.PatchControlPointsExt;
+                    }
+                }
+
+                if (supportsExtDynamicState3)
+                {
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.DepthClampEnableExt;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.LogicOpEnableExt;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.AlphaToCoverageEnableExt;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.AlphaToOneEnableExt;
                     }
                 }
 
@@ -688,6 +751,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DynamicStateCount = (uint)dynamicStatesCount,
                     PDynamicStates = dynamicStates,
                 };
+
 
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
