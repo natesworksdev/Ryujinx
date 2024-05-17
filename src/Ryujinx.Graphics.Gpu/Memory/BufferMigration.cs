@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -26,6 +27,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public readonly ulong SyncNumber;
 
+        /// <summary>
+        /// Number of active users there are traversing this migration's spans.
+        /// </summary>
+        private int _refCount;
+
+        /// <summary>
+        /// Create a new buffer migration.
+        /// </summary>
+        /// <param name="spans">Source spans for the migration</param>
+        /// <param name="destination">Destination buffer range list</param>
+        /// <param name="syncNumber">Sync number where this migration will be complete</param>
         public BufferMigration(BufferMigrationSpan[] spans, BufferModifiedRangeList destination, ulong syncNumber)
         {
             Spans = spans;
@@ -71,6 +83,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
+                Interlocked.Increment(ref _refCount);
+
                 ulong prevAddress = offset;
                 ulong endAddress = offset + size;
 
@@ -98,11 +112,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     // There's a gap at the end of the range with no migration. Flush the range using the parent action.
                     rangeAction(prevAddress, endAddress - prevAddress, syncNumber);
                 }
+
+                Interlocked.Decrement(ref _refCount);
             }
         }
 
+        /// <summary>
+        /// Dispose the buffer migration. This removes the reference from the destination range list,
+        /// and runs all the dispose buffers for the migration spans. (typically disposes the source buffer)
+        /// </summary>
         public void Dispose()
         {
+            while (Volatile.Read(ref _refCount) > 0)
+            {
+                // Coming into this method, the sync for the migration will be met, so nothing can increment the ref count.
+                // However, an existing traversal of the spans for data flush could still be in progress.
+                // Spin if this is ever the case, so they don't get disposed before the operation is complete.
+            }
+
             Destination.RemoveMigration(this);
 
             foreach (BufferMigrationSpan span in Spans)
