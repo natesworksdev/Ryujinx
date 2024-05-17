@@ -16,6 +16,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
+using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Configuration.System;
 using System;
@@ -33,6 +34,8 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager _contentManager;
+        private readonly ApplicationData _applicationData;
+
         private TimeZoneContentManager _timeZoneContentManager;
 
         private readonly List<string> _validTzRegions;
@@ -55,6 +58,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private int _networkInterfaceIndex;
         private int _multiplayerModeIndex;
 
+        internal ApplicationData ApplicationData => _applicationData;
+
         public int ResolutionScale
         {
             get => _resolutionScale;
@@ -74,7 +79,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _graphicsBackendMultithreadingIndex = value;
 
-                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance.Graphics.BackendThreading.Value)
+                if (_graphicsBackendMultithreadingIndex != (int)ConfigurationState.Instance(IsTitleSpecificSettings).Graphics.BackendThreading.Value)
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
                          ContentDialogHelper.CreateInfoDialog(LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningMessage],
@@ -219,7 +224,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState.Instance.System.AudioVolume.Value = _volume / 100;
+                ConfigurationState.Instance(IsTitleSpecificSettings).System.AudioVolume.Value = _volume / 100;
 
                 OnPropertyChanged();
             }
@@ -231,6 +236,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         internal AvaloniaList<TimeZone> TimeZones { get; set; }
         public AvaloniaList<string> GameDirectories { get; set; }
         public ObservableCollection<ComboBoxItem> AvailableGpus { get; set; }
+
+        public bool IsTitleSpecificSettings => _applicationData != null;
 
         public AvaloniaList<string> NetworkInterfaceList
         {
@@ -245,7 +252,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _networkInterfaceIndex = value != -1 ? value : 0;
-                ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value = _networkInterfaces[NetworkInterfaceList[_networkInterfaceIndex]];
+                ConfigurationState.Instance(IsTitleSpecificSettings).Multiplayer.LanInterfaceId.Value = _networkInterfaces[NetworkInterfaceList[_networkInterfaceIndex]];
             }
         }
 
@@ -255,7 +262,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             set
             {
                 _multiplayerModeIndex = value;
-                ConfigurationState.Instance.Multiplayer.Mode.Value = (MultiplayerMode)_multiplayerModeIndex;
+                ConfigurationState.Instance(IsTitleSpecificSettings).Multiplayer.Mode.Value = (MultiplayerMode)_multiplayerModeIndex;
             }
         }
 
@@ -269,11 +276,23 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, ApplicationData applicationData) : this(applicationData)
+        {
+            _virtualFileSystem = virtualFileSystem;
+            _contentManager = contentManager;
+
+            if (Program.PreviewerDetached)
+            {
+                Task.Run(LoadTimeZones);
+            }
+        }
+
+        public SettingsViewModel(ApplicationData applicationData = null)
         {
             GameDirectories = new AvaloniaList<string>();
             TimeZones = new AvaloniaList<TimeZone>();
             AvailableGpus = new ObservableCollection<ComboBoxItem>();
+            _applicationData = applicationData;
             _validTzRegions = new List<string>();
             _networkInterfaces = new Dictionary<string, string>();
 
@@ -326,8 +345,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             // GPU configuration needs to be loaded during the async method or it will always return 0.
-            PreferredGpuIndex = _gpuIds.Contains(ConfigurationState.Instance.Graphics.PreferredGpu) ?
-                                _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
+            ConfigurationState config = ConfigurationState.Instance(IsTitleSpecificSettings);
+            PreferredGpuIndex = _gpuIds.Contains(config.Graphics.PreferredGpu) ?
+                                _gpuIds.IndexOf(config.Graphics.PreferredGpu) : 0;
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
         }
@@ -370,7 +390,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             // Network interface index  needs to be loaded during the async method or it will always return 0.
-            NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+            NetworkInterfaceIndex = _networkInterfaces.Values.ToList().IndexOf(ConfigurationState.Instance(IsTitleSpecificSettings).Multiplayer.LanInterfaceId.Value);
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(NetworkInterfaceIndex)));
         }
@@ -385,9 +405,19 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadCurrentConfiguration()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+            ConfigurationState config;
+            if (IsTitleSpecificSettings)
+            {
+                ConfigurationState.LoadOrCreateConfigurationStateForTitle(_applicationData.TitleId);
+                config = ConfigurationState.Title;
+            }
+            else
+            {
+                config = ConfigurationState.Shared;
+            }
 
             // User Interface
+            // Note: These settings are ignored if set in title-specific configurations, only the shared config's UI settings will be used.
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
@@ -477,7 +507,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SaveSettings()
         {
-            ConfigurationState config = ConfigurationState.Instance;
+            ConfigurationState config = ConfigurationState.Instance(IsTitleSpecificSettings);
 
             // User Interface
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
@@ -543,7 +573,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Graphics.ScalingFilter.Value = (ScalingFilter)ScalingFilter;
             config.Graphics.ScalingFilterLevel.Value = ScalingFilterLevel;
 
-            if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
+            if (config.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
                 DriverUtilities.ToggleOGLThreading(GraphicsBackendMultithreadingIndex == (int)BackendThreading.Off);
             }
@@ -581,7 +611,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Multiplayer.LanInterfaceId.Value = _networkInterfaces[NetworkInterfaceList[NetworkInterfaceIndex]];
             config.Multiplayer.Mode.Value = (MultiplayerMode)MultiplayerModeIndex;
 
-            config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            config.ToFileFormat().SaveConfig(IsTitleSpecificSettings
+                ? ConfigurationState.ConfigurationFilePathForTitle(_applicationData.TitleId)
+                : Program.ConfigurationPath);
 
             MainWindow.UpdateGraphicsConfig();
 

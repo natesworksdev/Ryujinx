@@ -40,13 +40,13 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private void DockedStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
+            ConfigurationState.Shared.System.EnableDockedMode.Value = !ConfigurationState.Shared.System.EnableDockedMode.Value;
         }
 
         private void AspectRatioStatus_OnClick(object sender, RoutedEventArgs e)
         {
-            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
-            ConfigurationState.Instance.Graphics.AspectRatio.Value = (int)aspectRatio + 1 > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
+            AspectRatio aspectRatio = ConfigurationState.Shared.Graphics.AspectRatio.Value;
+            ConfigurationState.Shared.Graphics.AspectRatio.Value = (int)aspectRatio + 1 > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
         }
 
         private void Refresh_OnClick(object sender, RoutedEventArgs e)
