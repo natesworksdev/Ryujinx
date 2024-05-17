@@ -17,6 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         private const int DeactivateCopyThreshold = 200;
 
+        /// <summary>
+        /// Value that indicates whether a page has been flushed or copied before.
+        /// </summary>
         private enum PreFlushState
         {
             None,
@@ -24,6 +27,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             HasCopied
         }
 
+        /// <summary>
+        /// Flush state for each page of the buffer.
+        /// Controls whether data should be copied to the flush buffer, what sync is expected
+        /// and unflushed copy counting for stopping copies that are no longer needed.
+        /// </summary>
         private struct PreFlushPage
         {
             public PreFlushState State;
@@ -59,7 +67,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _flushAction = flushAction;
         }
 
-        public void EnsureFlushBuffer()
+        /// <summary>
+        /// Ensure that the flush buffer exists.
+        /// </summary>
+        private void EnsureFlushBuffer()
         {
             if (_flushBuffer == BufferHandle.Null)
             {
@@ -67,6 +78,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Gets a page range from an address and size byte range.
+        /// </summary>
+        /// <param name="address">Range address</param>
+        /// <param name="size">Range size</param>
+        /// <returns>A page index and count</returns>
         private (int index, int count) GetPageRange(ulong address, ulong size)
         {
             ulong offset = address - _address;
@@ -78,6 +95,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return (basePage, 1 + endPage - basePage);
         }
 
+        /// <summary>
+        /// Gets an offset and size range in the parent buffer from a page index and count.
+        /// </summary>
+        /// <param name="startPage">Range start page</param>
+        /// <param name="count">Range page count</param>
+        /// <returns>Offset and size range</returns>
         private (int offset, int size) GetOffset(int startPage, int count)
         {
             int offset = (int)((ulong)startPage * PageSize - _misalignment);
@@ -89,6 +112,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return (offset, endOffset - offset);
         }
 
+        /// <summary>
+        /// Copy a range of pages from the parent buffer into the flush buffer.
+        /// </summary>
+        /// <param name="startPage">Range start page</param>
+        /// <param name="count">Range page count</param>
         private void CopyPageRange(int startPage, int count)
         {
             (int offset, int size) = GetOffset(startPage, count);
@@ -98,6 +126,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.Renderer.Pipeline.CopyBuffer(_buffer.Handle, _flushBuffer, offset, offset, size);
         }
 
+        /// <summary>
+        /// Copy a modified range into the flush buffer if it's marked as flushed.
+        /// Any pages the range overlaps are copied, and copies aren't repeated in the same sync number.
+        /// </summary>
+        /// <param name="address">Range address</param>
+        /// <param name="size">Range size</param>
         public void CopyModified(ulong address, ulong size)
         {
             (int baseIndex, int count) = GetPageRange(address, size);
@@ -148,6 +182,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Flush the given page range back into guest memory, optionally using data from the flush buffer.
+        /// The actual flushed range is an intersection of the page range and the address range.
+        /// </summary>
+        /// <param name="address">Address range start</param>
+        /// <param name="size">Address range size</param>
+        /// <param name="startPage">Page range start</param>
+        /// <param name="count">Page range count</param>
+        /// <param name="preFlush">True if the data should come from the flush buffer</param>
         private void FlushPageRange(ulong address, ulong size, int startPage, int count, bool preFlush)
         {
             (int pageOffset, int pageSize) = GetOffset(startPage, count);
@@ -165,6 +208,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Flush the given address range back into guest memory, optionally using data from the flush buffer.
+        /// When a copy has been performed on or before the waited sync number, the data can come from the flush buffer.
+        /// Otherwise, it flushes the parent buffer directly.
+        /// </summary>
+        /// <param name="address">Range address</param>
+        /// <param name="size">Range size</param>
+        /// <param name="syncNumber">Sync number that has been waited for</param>
         public void FlushWithAction(ulong address, ulong size, ulong syncNumber)
         {
             // Copy the parts of the range that have pre-flush copies that have been completed.
@@ -230,6 +281,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Dispose the flush buffer, if present.
+        /// </summary>
         public void Dispose()
         {
             if (_flushBuffer != BufferHandle.Null)
