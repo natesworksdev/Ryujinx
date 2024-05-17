@@ -406,6 +406,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
             
             bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
+            bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
+
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions2 = &_vertexAttributeDescriptions2[0])
@@ -473,9 +475,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
                     DepthClampEnable = DepthClampEnable,
-                    RasterizerDiscardEnable = RasterizerDiscardEnable,
                     PolygonMode = PolygonMode,
-                    DepthBiasEnable = DepthBiasEnable,
                 };
 
                 if (isMoltenVk)
@@ -487,6 +487,12 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     rasterizationState.CullMode = CullMode;
                     rasterizationState.FrontFace = FrontFace;
+                }
+
+                if (!supportsExtDynamicState2)
+                {
+                    rasterizationState.DepthBiasEnable = DepthBiasEnable;
+                    rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
                 }
                 
                 var viewportState = new PipelineViewportStateCreateInfo
@@ -586,7 +592,7 @@ namespace Ryujinx.Graphics.Vulkan
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
                 };
-
+                
                 PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
 
                 if (!AdvancedBlendSrcPreMultiplied ||
@@ -604,7 +610,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 17 : 18) : (isMoltenVk ? 7 : 8);
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 18 : 19) : (isMoltenVk ? 7 : 8);
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -636,6 +642,12 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[index++] = DynamicState.ViewportWithCountExt;
                     dynamicStates[index++] = DynamicState.ScissorWithCountExt;
                     dynamicStates[index] = DynamicState.StencilOpExt;
+                }
+
+                if (supportsExtDynamicState2)
+                {
+                    dynamicStates[16] = DynamicState.DepthBiasEnableExt;
+                    dynamicStates[17] = DynamicState.RasterizerDiscardEnableExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo

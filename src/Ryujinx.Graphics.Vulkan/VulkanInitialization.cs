@@ -23,6 +23,7 @@ namespace Ryujinx.Graphics.Vulkan
         private static readonly string[] _desirableExtensions = {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
+            ExtExtendedDynamicState2.ExtensionName,
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
@@ -290,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceFeatures2,
             };
-
+            
             PhysicalDeviceVulkan11Features supportedFeaturesVk11 = new()
             {
                 SType = StructureType.PhysicalDeviceVulkan11Features,
@@ -438,6 +439,15 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             pExtendedFeatures = &featuresExtendedDynamicState;
+            
+            var featuresExtendedDynamicState2 = new PhysicalDeviceExtendedDynamicState2FeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
+                PNext = pExtendedFeatures,
+                ExtendedDynamicState2 = physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
+            };
+
+            pExtendedFeatures = &featuresExtendedDynamicState2;
 
             var featuresVk11 = new PhysicalDeviceVulkan11Features
             {
