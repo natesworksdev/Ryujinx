@@ -910,7 +910,7 @@ namespace Ryujinx.Ava
                 }
             }
 
-            IHardwareDeviceDriver InitializeAudioBackend<T>(AudioBackend backend, AudioBackend nextBackend) where T : IHardwareDeviceDriver, new()
+            static IHardwareDeviceDriver InitializeAudioBackend<T>(AudioBackend backend, AudioBackend nextBackend) where T : IHardwareDeviceDriver, new()
             {
                 if (T.IsSupported)
                 {
