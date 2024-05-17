@@ -10,6 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
         private float _depthBiasSlopeFactor;
         private float _depthBiasConstantFactor;
         private float _depthBiasClamp;
+        private bool _depthBiasEnable;
 
         public int ScissorsCount;
         private Array16<Rect2D> _scissors;
@@ -47,6 +48,8 @@ namespace Ryujinx.Graphics.Vulkan
         public CullModeFlags CullMode;
         public FrontFace FrontFace;
 
+        private bool _discard;
+        
         [Flags]
         private enum DirtyFlags
         {
@@ -62,8 +65,10 @@ namespace Ryujinx.Graphics.Vulkan
             DepthTestCompareOp = 1 << 8,
             StencilTestEnable = 1 << 9,
             LineWidth = 1 << 10,
+            RasterDiscard = 1 << 11,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
+            Extended2 = RasterDiscard,
         }
 
         private DirtyFlags _dirty;
@@ -78,11 +83,12 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.Blend;
         }
 
-        public void SetDepthBias(float slopeFactor, float constantFactor, float clamp)
+        public void SetDepthBias(float slopeFactor, float constantFactor, float clamp, bool enable)
         {
             _depthBiasSlopeFactor = slopeFactor;
             _depthBiasConstantFactor = constantFactor;
             _depthBiasClamp = clamp;
+            _depthBiasEnable = enable;
 
             _dirty |= DirtyFlags.DepthBias;
         }
@@ -195,6 +201,13 @@ namespace Ryujinx.Graphics.Vulkan
             
             _dirty |= DirtyFlags.LineWidth;
         }
+        
+        public void SetRasterizerDiscard(bool discard)
+        {
+            _discard = discard;
+            
+            _dirty |= DirtyFlags.RasterDiscard;
+        }
 
         public void ForceAllDirty(VulkanRenderer gd)
         {
@@ -203,6 +216,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (gd.Capabilities.SupportsExtendedDynamicState)
             {
                 _dirty = DirtyFlags.Standard | DirtyFlags.Extended;
+            }
+
+            if (gd.Capabilities.SupportsExtendedDynamicState2)
+            {
+                _dirty = DirtyFlags.Standard | DirtyFlags.Extended | DirtyFlags.Extended2;
             }
 
             if (gd.IsMoltenVk)
@@ -220,7 +238,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.DepthBias))
             {
-                RecordDepthBias(gd.Api, commandBuffer);
+                RecordDepthBias(gd, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Scissor))
@@ -267,7 +285,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 RecordLineWidth(gd.Api, commandBuffer);
             }
-
+            
+            if (_dirty.HasFlag(DirtyFlags.RasterDiscard))
+            {
+                RecordRasterizationDiscard(gd, commandBuffer);
+            }
+            
             _dirty = DirtyFlags.None;
         }
 
@@ -276,9 +299,14 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetBlendConstants(commandBuffer, _blendConstants.AsSpan());
         }
 
-        private readonly void RecordDepthBias(Vk api, CommandBuffer commandBuffer)
+        private readonly void RecordDepthBias(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
+            gd.Api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
+            
+            if (gd.Capabilities.SupportsExtendedDynamicState2)
+            {
+                gd.ExtendedDynamicState2Api.CmdSetDepthBiasEnable(commandBuffer, _depthBiasEnable);
+            }
         }
 
         private void RecordScissor(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -361,6 +389,11 @@ namespace Ryujinx.Graphics.Vulkan
         private void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthCompareOp(commandBuffer, _depthCompareOp);
+        }
+        
+        private void RecordRasterizationDiscard(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState2Api.CmdSetRasterizerDiscardEnable(commandBuffer, _discard);
         }
         
         private void RecordLineWidth(Vk api, CommandBuffer commandBuffer)

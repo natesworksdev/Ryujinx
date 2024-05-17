@@ -85,6 +85,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfActive;
 
         private bool _supportExtDynamic;
+        private bool _supportExtDynamic2;
 
         private readonly PipelineColorBlendAttachmentState[] _storedBlend;
 
@@ -125,6 +126,9 @@ namespace Ryujinx.Graphics.Vulkan
             _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
 
             _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
+            
+            _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2;
+
 
             _newState.Initialize();
         }
@@ -868,9 +872,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            DynamicState.SetDepthBias(factor, units, clamp);
+            DynamicState.SetDepthBias(factor, units, clamp, (enables != 0));
 
-            _newState.DepthBiasEnable = enables != 0;
+            if (!_supportExtDynamic2)
+            {
+                _newState.DepthBiasEnable = enables != 0;
+            }
+            
             SignalStateChange();
         }
 
@@ -983,6 +991,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _newState.LogicOpEnable = enable;
             _newState.LogicOp = op.Convert();
+
             SignalStateChange();
         }
 
@@ -1071,7 +1080,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetRasterizerDiscard(bool discard)
         {
-            _newState.RasterizerDiscardEnable = discard;
+            if (!_supportExtDynamic2)
+            {
+                _newState.RasterizerDiscardEnable = discard;
+            }
+            else
+            {
+                DynamicState.SetRasterizerDiscard(discard);
+            }
             SignalStateChange();
         }
 

@@ -35,6 +35,8 @@ namespace Ryujinx.Graphics.Vulkan
         internal KhrSwapchain SwapchainApi { get; private set; }
         internal ExtConditionalRendering ConditionalRenderingApi { get; private set; }
         internal ExtExtendedDynamicState ExtendedDynamicStateApi { get; private set; }
+        internal ExtExtendedDynamicState2 ExtendedDynamicState2Api { get; private set; }
+
         internal KhrPushDescriptor PushDescriptorApi { get; private set; }
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
         internal KhrDrawIndirectCount DrawIndirectCountApi { get; private set; }
@@ -130,6 +132,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
             {
                 ExtendedDynamicStateApi = extendedDynamicStateApi;
+            }
+            
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState2 extendedDynamicState2Api))
+            {
+                ExtendedDynamicState2Api = extendedDynamicState2Api;
             }
 
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrPushDescriptor pushDescriptorApi))
@@ -382,6 +389,7 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.Features.ShaderStorageImageMultisample,
                 _physicalDevice.IsDeviceExtensionPresent(ExtConditionalRendering.ExtensionName),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState.ExtensionName),
+                _physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
                 features2.Features.MultiViewport && !(IsMoltenVk && Vendor == Vendor.Amd), // Workaround for AMD on MoltenVK issue
                 featuresRobustness2.NullDescriptor || IsMoltenVk,
                 supportsPushDescriptors && !IsMoltenVk,
