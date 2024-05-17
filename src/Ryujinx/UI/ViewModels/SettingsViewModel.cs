@@ -418,11 +418,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             // User Interface
             // Note: These settings are ignored if set in title-specific configurations, only the shared config's UI settings will be used.
-            EnableDiscordIntegration = config.EnableDiscordIntegration;
-            CheckUpdatesOnStart = config.CheckUpdatesOnStart;
-            ShowConfirmExit = config.ShowConfirmExit;
-            RememberWindowState = config.RememberWindowState;
-            HideCursor = (int)config.HideCursor.Value;
+            EnableDiscordIntegration = ConfigurationState.Shared.EnableDiscordIntegration;
+            CheckUpdatesOnStart = ConfigurationState.Shared.CheckUpdatesOnStart;
+            ShowConfirmExit = ConfigurationState.Shared.ShowConfirmExit;
+            RememberWindowState = ConfigurationState.Shared.RememberWindowState;
+            HideCursor = (int)ConfigurationState.Shared.HideCursor.Value;
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
@@ -490,17 +490,18 @@ namespace Ryujinx.Ava.UI.ViewModels
             // LAN interface index is loaded asynchronously in PopulateNetworkInterfaces()
 
             // Logging
-            EnableFileLog = config.Logger.EnableFileLog;
-            EnableStub = config.Logger.EnableStub;
-            EnableInfo = config.Logger.EnableInfo;
-            EnableWarn = config.Logger.EnableWarn;
-            EnableError = config.Logger.EnableError;
-            EnableTrace = config.Logger.EnableTrace;
-            EnableGuest = config.Logger.EnableGuest;
-            EnableDebug = config.Logger.EnableDebug;
-            EnableFsAccessLog = config.Logger.EnableFsAccessLog;
-            FsGlobalAccessLogMode = config.System.FsGlobalAccessLogMode;
-            OpenglDebugLevel = (int)config.Logger.GraphicsDebugLevel.Value;
+            // Note: These settings are ignored if set in title-specific configurations, only the shared config's logging settings will be used.
+            EnableFileLog = ConfigurationState.Shared.Logger.EnableFileLog;
+            EnableStub = ConfigurationState.Shared.Logger.EnableStub;
+            EnableInfo = ConfigurationState.Shared.Logger.EnableInfo;
+            EnableWarn = ConfigurationState.Shared.Logger.EnableWarn;
+            EnableError = ConfigurationState.Shared.Logger.EnableError;
+            EnableTrace = ConfigurationState.Shared.Logger.EnableTrace;
+            EnableGuest = ConfigurationState.Shared.Logger.EnableGuest;
+            EnableDebug = ConfigurationState.Shared.Logger.EnableDebug;
+            EnableFsAccessLog = ConfigurationState.Shared.Logger.EnableFsAccessLog;
+            FsGlobalAccessLogMode = ConfigurationState.Shared.System.FsGlobalAccessLogMode;
+            OpenglDebugLevel = (int)ConfigurationState.Shared.Logger.GraphicsDebugLevel.Value;
 
             MultiplayerModeIndex = (int)config.Multiplayer.Mode.Value;
         }
