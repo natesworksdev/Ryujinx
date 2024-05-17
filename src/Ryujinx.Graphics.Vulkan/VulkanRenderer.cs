@@ -99,6 +99,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool PreferThreading => true;
 
+        public bool ExtendedLogicOp;
+
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
         public VulkanRenderer(Vk api, Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
@@ -133,7 +135,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 ExtendedDynamicStateApi = extendedDynamicStateApi;
             }
-            
+
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExtendedDynamicState2 extendedDynamicState2Api))
             {
                 ExtendedDynamicState2Api = extendedDynamicState2Api;
@@ -454,7 +456,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(Api, _physicalDevice, _surface, out uint maxQueueCount);
 
-            _device = VulkanInitialization.CreateDevice(Api, _physicalDevice, queueFamilyIndex, maxQueueCount);
+            _device = VulkanInitialization.CreateDevice(Api, _physicalDevice, queueFamilyIndex, maxQueueCount, out bool extendedLogicOp);
+
+            ExtendedLogicOp = extendedLogicOp;
 
             if (Api.TryGetDeviceExtension(_instance.Instance, _device, out KhrSwapchain swapchainApi))
             {

@@ -584,19 +584,19 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
-                // so we need to force disable them here.
-                bool logicOpEnable = LogicOpEnable && (gd.Vendor == Vendor.Nvidia || Internal.LogicOpsAllowed);
-
                 var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
-                    LogicOpEnable = logicOpEnable,
-                    LogicOp = LogicOp,
+                    LogicOpEnable = LogicOpEnable,
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
                 };
-                
+
+                if (!(supportsExtDynamicState2 && gd.ExtendedLogicOp))
+                {
+                    colorBlendState.LogicOp = LogicOp;
+                }
+
                 PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
 
                 if (!AdvancedBlendSrcPreMultiplied ||
