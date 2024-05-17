@@ -38,9 +38,7 @@ namespace Ryujinx.Graphics.Vulkan
         public bool _depthtestEnable;
         public bool _depthwriteEnable;
         private CompareOp _depthCompareOp;
-
-        public PrimitiveTopology Topology;
-
+        
         private Array4<float> _blendConstants;
 
         public uint ViewportsCount;
@@ -63,10 +61,9 @@ namespace Ryujinx.Graphics.Vulkan
             DepthTestBool = 1 << 7, 
             DepthTestCompareOp = 1 << 8,
             StencilTestEnable = 1 << 9,
-            Toplogy = 1 << 10,
-            LineWidth = 1 << 11,
+            LineWidth = 1 << 10,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
-            Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | Toplogy,
+            Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
         }
 
         private DirtyFlags _dirty;
@@ -110,13 +107,6 @@ namespace Ryujinx.Graphics.Vulkan
             _depthCompareOp = depthTestOp;
 
             _dirty |= DirtyFlags.DepthTestCompareOp;
-        }
-        
-        public void SetPrimitiveTopology(PrimitiveTopology topology)
-        {
-            Topology = topology;
-
-            _dirty |= DirtyFlags.Toplogy;
         }
         
         public void SetStencilOp(StencilOp backFailOp,
@@ -235,17 +225,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.Scissor))
             {
-                RecordScissor(gd.Api, commandBuffer);
+                RecordScissor(gd, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Stencil))
             {
-                RecordStencil(gd.Api, commandBuffer);
+                RecordStencil(gd, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Viewport))
             {
-                RecordViewport(gd.Api, commandBuffer);
+                RecordViewport(gd, commandBuffer);
             }
             
             if (_dirty.HasFlag(DirtyFlags.CullMode))
@@ -273,11 +263,6 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordStencilTestEnable(gd.ExtendedDynamicStateApi, commandBuffer);
             }
             
-            if (_dirty.HasFlag(DirtyFlags.Toplogy))
-            {
-                RecordPrimitiveTopology(gd.ExtendedDynamicStateApi, commandBuffer);
-            }
-            
             if (_dirty.HasFlag(DirtyFlags.LineWidth))
             {
                 RecordLineWidth(gd.Api, commandBuffer);
@@ -296,30 +281,40 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
         }
 
-        private void RecordScissor(Vk api, CommandBuffer commandBuffer)
+        private void RecordScissor(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             if (ScissorsCount != 0)
             {
-                api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors.AsSpan());
+                if (gd.Capabilities.SupportsExtendedDynamicState)
+                {
+
+                    gd.ExtendedDynamicStateApi.CmdSetScissorWithCount(commandBuffer, (uint)ScissorsCount,
+                        _scissors.AsSpan());
+                }
+                else
+                {
+                    gd.Api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount,
+                        _scissors.AsSpan());
+                }
             }
         }
         
-        private readonly void RecordStencil(Vk api, CommandBuffer commandBuffer)
+        private readonly void RecordStencil(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             if (_opToo)
             {
-                api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
+                gd.ExtendedDynamicStateApi.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
                     _backdepthfailop, _backcompareop);
-                api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontfailop, _frontpassop,
+                gd.ExtendedDynamicStateApi.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontfailop, _frontpassop,
                     _frontdepthfailop, _frontcompareop);
             }
             
-            api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backCompareMask);
-            api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backWriteMask);
-            api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceBackBit, _backReference);
-            api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontCompareMask);
-            api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontWriteMask);
-            api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontReference);
+            gd.Api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backCompareMask);
+            gd.Api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceBackBit, _backWriteMask);
+            gd.Api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceBackBit, _backReference);
+            gd.Api.CmdSetStencilCompareMask(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontCompareMask);
+            gd.Api.CmdSetStencilWriteMask(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontWriteMask);
+            gd.Api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontReference);
         }
         
         private readonly void RecordStencilTestEnable(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
@@ -327,11 +322,23 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetStencilTestEnable(commandBuffer, _stencilTestEnable);
         }
         
-        private void RecordViewport(Vk api, CommandBuffer commandBuffer)
+        private void RecordViewport(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (ViewportsCount != 0)
+            if (ViewportsCount == 0)
             {
-                api.CmdSetViewport(commandBuffer, 0, ViewportsCount, Viewports.AsSpan());
+                return;
+            }
+
+            if (gd.Capabilities.SupportsExtendedDynamicState)
+            {
+
+                gd.ExtendedDynamicStateApi.CmdSetViewportWithCount(commandBuffer, ViewportsCount,
+                    Viewports.AsSpan());
+            }
+            else
+            {
+                gd.Api.CmdSetViewport(commandBuffer, 0, ViewportsCount,
+                    Viewports.AsSpan());
             }
         }
         
@@ -354,11 +361,6 @@ namespace Ryujinx.Graphics.Vulkan
         private void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthCompareOp(commandBuffer, _depthCompareOp);
-        }
-        
-        private void RecordPrimitiveTopology(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
-        {
-            api.CmdSetPrimitiveTopology(commandBuffer, Topology);
         }
         
         private void RecordLineWidth(Vk api, CommandBuffer commandBuffer)
