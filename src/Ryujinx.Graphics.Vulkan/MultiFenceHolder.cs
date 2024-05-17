@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             int fenceCount = 0;
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < fences.Length; i++)
             {
                 if (fenceHolders[i].TryGet(out Fence fence))
                 {
