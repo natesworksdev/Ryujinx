@@ -404,7 +404,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 UpdateVertexAttributeDescriptions(gd);
             }
-            
+
             bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
             bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
 
@@ -457,7 +457,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     primitiveRestartEnable = true;
                 }
-                
+
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
@@ -494,12 +494,12 @@ namespace Ryujinx.Graphics.Vulkan
                     rasterizationState.DepthBiasEnable = DepthBiasEnable;
                     rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
                 }
-                
+
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
                     SType = StructureType.PipelineViewportStateCreateInfo,
                 };
-                
+
                 if (!supportsExtDynamicState)
                 {
                     viewportState.ViewportCount = ViewportsCount;
@@ -534,7 +534,7 @@ namespace Ryujinx.Graphics.Vulkan
                     MinDepthBounds = MinDepthBounds,
                     MaxDepthBounds = MaxDepthBounds,
                 };
-                
+
                 if (!supportsExtDynamicState)
                 {
                     var stencilFront = new StencilOpState(
@@ -588,11 +588,15 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
                     LogicOpEnable = LogicOpEnable,
-                    LogicOp = LogicOp,
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
                 };
-                
+
+                if (!(supportsExtDynamicState2 && gd.ExtendedLogicOp))
+                {
+                    colorBlendState.LogicOp = LogicOp;
+                }
+
                 PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
 
                 if (!AdvancedBlendSrcPreMultiplied ||
@@ -609,9 +613,30 @@ namespace Ryujinx.Graphics.Vulkan
 
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
-                
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 18 : 19) : (isMoltenVk ? 7 : 8);
 
+                int baseDynamicStatesCount = 7;
+                int additionalDynamicStatesCount = 0;
+
+                if (!isMoltenVk)
+                {
+                    baseDynamicStatesCount++;
+                }
+
+                if (supportsExtDynamicState)
+                {
+                    additionalDynamicStatesCount += isMoltenVk ? 11 : 12;
+                }
+
+                if (supportsExtDynamicState2)
+                {
+                    additionalDynamicStatesCount += 2;
+                    if (gd.ExtendedLogicOp)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
+                }
+
+                int dynamicStatesCount = baseDynamicStatesCount + additionalDynamicStatesCount;
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
                 dynamicStates[0] = DynamicState.Viewport;
@@ -621,33 +646,40 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[4] = DynamicState.StencilWriteMask;
                 dynamicStates[5] = DynamicState.StencilReference;
                 dynamicStates[6] = DynamicState.BlendConstants;
-                
-                if(!isMoltenVk)
+
+                int currentIndex = 7;
+
+                if (!isMoltenVk)
                 {
-                    dynamicStates[7] = DynamicState.LineWidth;
+                    dynamicStates[currentIndex++] = DynamicState.LineWidth;
                 }
-                
+
                 if (supportsExtDynamicState)
                 {
-                    int index = (isMoltenVk ? 7 : 8);
-                    if (!isMoltenVk) {
-                        dynamicStates[index++] = DynamicState.VertexInputBindingStrideExt;
+                    if (!isMoltenVk)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.VertexInputBindingStrideExt;
                     }
-                    dynamicStates[index++] = DynamicState.CullModeExt;
-                    dynamicStates[index++] = DynamicState.FrontFaceExt;
-                    dynamicStates[index++] = DynamicState.DepthTestEnableExt;
-                    dynamicStates[index++] = DynamicState.DepthWriteEnableExt;
-                    dynamicStates[index++] = DynamicState.DepthCompareOpExt;
-                    dynamicStates[index++] = DynamicState.StencilTestEnableExt;
-                    dynamicStates[index++] = DynamicState.ViewportWithCountExt;
-                    dynamicStates[index++] = DynamicState.ScissorWithCountExt;
-                    dynamicStates[index] = DynamicState.StencilOpExt;
+                    dynamicStates[currentIndex++] = DynamicState.CullModeExt;
+                    dynamicStates[currentIndex++] = DynamicState.FrontFaceExt;
+                    dynamicStates[currentIndex++] = DynamicState.DepthTestEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
+                    dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.ViewportWithCountExt;
+                    dynamicStates[currentIndex++] = DynamicState.ScissorWithCountExt;
+                    dynamicStates[currentIndex++] = DynamicState.StencilOpExt;
                 }
 
                 if (supportsExtDynamicState2)
                 {
-                    dynamicStates[16] = DynamicState.DepthBiasEnableExt;
-                    dynamicStates[17] = DynamicState.RasterizerDiscardEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.DepthBiasEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
+
+                    if (gd.ExtendedLogicOp)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
+                    }
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo

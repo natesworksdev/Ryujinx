@@ -84,8 +84,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfEnabled;
         private bool _tfActive;
 
-        private bool _supportExtDynamic;
-        private bool _supportExtDynamic2;
+        private readonly bool _supportExtDynamic;
+        private readonly bool _supportExtDynamic2;
 
         private readonly PipelineColorBlendAttachmentState[] _storedBlend;
 
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Vulkan
             _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
 
             _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
-            
+
             _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2;
 
 
@@ -714,7 +714,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.DepthTestEnable = false;
                     _newState.DepthWriteEnable = false;
                 }
-                
+
                 SignalStateChange();
 
                 Gd.HelperShader.DrawTexture(
@@ -739,7 +739,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
                     _newState.ViewportsCount = oldViewportsCount;
                 }
-                
+
                 _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
@@ -880,7 +880,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _newState.DepthBiasEnable = enables != 0;
             }
-            
+
             SignalStateChange();
         }
 
@@ -913,7 +913,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.DepthWriteEnable = depthTest.WriteEnable;
                 _newState.DepthCompareOp = depthTest.Func.Convert();
             }
-            
+
             SignalStateChange();
         }
 
@@ -980,14 +980,22 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 DynamicState.SetLineWidth(Gd.Capabilities.SupportsWideLines ? width : 1.0f);
             }
-            
+
             SignalStateChange();
         }
 
         public void SetLogicOpState(bool enable, LogicalOp op)
         {
+            if (_supportExtDynamic2 && Gd.ExtendedLogicOp)
+            {
+                DynamicState.SetLogicOp(op.Convert());
+            }
+            else
+            {
+                _newState.LogicOp = op.Convert();
+            }
+
             _newState.LogicOpEnable = enable;
-            _newState.LogicOp = op.Convert();
 
             SignalStateChange();
         }
@@ -1031,9 +1039,9 @@ namespace Ryujinx.Graphics.Vulkan
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
-            
+
             _newState.Topology = vkTopology;
-            
+
             SignalStateChange();
         }
 
@@ -1194,7 +1202,7 @@ namespace Ryujinx.Graphics.Vulkan
                     stencilTest.FrontDpPass.Convert(),
                     stencilTest.FrontDpFail.Convert(),
                     stencilTest.FrontFunc.Convert());
-                
+
                 DynamicState.SetStencilTest(stencilTest.TestEnable);
             }
             else
@@ -1209,7 +1217,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.StencilFrontCompareOp = stencilTest.FrontFunc.Convert();
                 _newState.StencilTestEnable = stencilTest.TestEnable;
             }
-            
+
             DynamicState.SetStencilMask((uint)stencilTest.BackFuncMask,
                 (uint)stencilTest.BackMask,
                 (uint)stencilTest.BackFuncRef,
@@ -1450,11 +1458,11 @@ namespace Ryujinx.Graphics.Vulkan
                     Clamp(viewport.DepthNear),
                     Clamp(viewport.DepthFar)));
             }
-            
+
             if (!_supportExtDynamic)
             {
                 _newState.ViewportsCount = (uint)count;
-            }            
+            }
             SignalStateChange();
         }
 

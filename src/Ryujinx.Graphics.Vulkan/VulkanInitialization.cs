@@ -263,7 +263,7 @@ namespace Ryujinx.Graphics.Vulkan
             return InvalidIndex;
         }
 
-        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount)
+        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount, out bool extendedLogicOp)
         {
             if (queueCount > QueuesCount)
             {
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceFeatures2,
             };
-            
+
             PhysicalDeviceVulkan11Features supportedFeaturesVk11 = new()
             {
                 SType = StructureType.PhysicalDeviceVulkan11Features,
@@ -310,7 +310,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 features2.PNext = &supportedFeaturesCustomBorderColor;
             }
-            
+
             PhysicalDeviceExtendedDynamicState2FeaturesEXT supportedFeaturesExtExtendedDynamicState2 = new()
             {
                 SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
@@ -450,7 +450,7 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             pExtendedFeatures = &featuresExtendedDynamicState;
-            
+
             var featuresExtendedDynamicState2 = new PhysicalDeviceExtendedDynamicState2FeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
@@ -459,6 +459,8 @@ namespace Ryujinx.Graphics.Vulkan
                 ExtendedDynamicState2LogicOp = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
                 ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints,
             };
+
+            extendedLogicOp = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp;
 
             pExtendedFeatures = &featuresExtendedDynamicState2;
 
