@@ -482,6 +482,11 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBiasEnable = DepthBiasEnable,
                 };
 
+                if (isMoltenVk)
+                {
+                    rasterizationState.LineWidth = 1.0f;
+                }
+
                 if (!supportsExtDynamicState)
                 {
                     rasterizationState.CullMode = CullMode;
@@ -599,7 +604,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
                 
-                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 16 : 17) : 8;
+                int dynamicStatesCount = supportsExtDynamicState ? (isMoltenVk ? 16 : 17) : (isMoltenVk ? 7 : 8);
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
@@ -610,8 +615,11 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[4] = DynamicState.StencilWriteMask;
                 dynamicStates[5] = DynamicState.StencilReference;
                 dynamicStates[6] = DynamicState.BlendConstants;
-                dynamicStates[7] = DynamicState.LineWidth;
-
+                
+                if(!isMoltenVk)
+                {
+                    dynamicStates[7] = DynamicState.LineWidth;
+                }
                 
                 if (supportsExtDynamicState)
                 {

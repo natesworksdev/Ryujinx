@@ -968,8 +968,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetLineParameters(float width, bool smooth)
         {
-            DynamicState.SetLineWidth(Gd.Capabilities.SupportsWideLines ? width : 1.0f);
-
+            if (!Gd.IsMoltenVk)
+            {
+                DynamicState.SetLineWidth(Gd.Capabilities.SupportsWideLines ? width : 1.0f);
+            }
+            
             SignalStateChange();
         }
 
@@ -1502,7 +1505,7 @@ namespace Ryujinx.Graphics.Vulkan
             _vertexBuffersDirty = ulong.MaxValue >> (64 - _vertexBuffers.Length);
 
             _descriptorSetUpdater.SignalCommandBufferChange();
-            DynamicState.ForceAllDirty();
+            DynamicState.ForceAllDirty(Gd);
             _currentPipelineHandle = 0;
         }
 
