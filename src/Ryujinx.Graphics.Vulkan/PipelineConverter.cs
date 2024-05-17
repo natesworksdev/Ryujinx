@@ -168,7 +168,6 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
             
             pipeline.HasDepthStencil = state.DepthStencilEnable;
-            pipeline.LineWidth = state.LineWidth;
             pipeline.LogicOpEnable = state.LogicOpEnable;
             pipeline.LogicOp = state.LogicOp.Convert();
 
@@ -180,17 +179,6 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
             pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
             pipeline.SamplesCount = (uint)state.SamplesCount;
-
-            if (gd.Capabilities.SupportsMultiView)
-            {
-                pipeline.ScissorsCount = Constants.MaxViewports;
-                pipeline.ViewportsCount = Constants.MaxViewports;
-            }
-            else
-            {
-                pipeline.ScissorsCount = 1;
-                pipeline.ViewportsCount = 1;
-            }
 
             pipeline.DepthBiasEnable = state.BiasEnable != 0;
 
@@ -205,6 +193,17 @@ namespace Ryujinx.Graphics.Vulkan
                 
                 pipeline.FrontFace = state.FrontFace.Convert();
                 
+                if (gd.Capabilities.SupportsMultiView)
+                {
+                    pipeline.ScissorsCount = Constants.MaxViewports;
+                    pipeline.ViewportsCount = Constants.MaxViewports;
+                }
+                else
+                {
+                    pipeline.ScissorsCount = 1;
+                    pipeline.ViewportsCount = 1;
+                }
+                
                 pipeline.StencilFrontFailOp = state.StencilTest.FrontSFail.Convert();
                 pipeline.StencilFrontPassOp = state.StencilTest.FrontDpPass.Convert();
                 pipeline.StencilFrontDepthFailOp = state.StencilTest.FrontDpFail.Convert();
@@ -216,9 +215,9 @@ namespace Ryujinx.Graphics.Vulkan
                 pipeline.StencilBackCompareOp = state.StencilTest.BackFunc.Convert();
                 
                 pipeline.StencilTestEnable = state.StencilTest.TestEnable;
-                
-                pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
             }
+            
+            pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
             
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);

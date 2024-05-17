@@ -1159,7 +1159,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             DynamicState.ScissorsCount = count;
 
-            _newState.ScissorsCount = (uint)count;
+            if (!_supportExtDynamic)
+            {
+                _newState.ScissorsCount = (uint)count;
+            }
             SignalStateChange();
         }
 
