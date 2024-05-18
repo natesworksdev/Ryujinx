@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private const float Epsilon = 1e-6f;
 
-        private bool FloatCompare(float a, float b)
+        private readonly bool FloatCompare(float a, float b)
         {
             return Math.Abs(a - b) < Epsilon;
         }
@@ -155,12 +155,12 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetStencilOp(StencilOp backFailOp, StencilOp backPassOp, StencilOp backDepthFailOp, 
-            CompareOp backCompareOp, StencilOp frontFailOp, StencilOp frontPassOp, StencilOp frontDepthFailOp, 
+        public void SetStencilOp(StencilOp backFailOp, StencilOp backPassOp, StencilOp backDepthFailOp,
+            CompareOp backCompareOp, StencilOp frontFailOp, StencilOp frontPassOp, StencilOp frontDepthFailOp,
             CompareOp frontCompareOp)
         {
-            if (_backfailop != backFailOp || _backpassop != backPassOp || _backdepthfailop != backDepthFailOp || 
-                _backcompareop != backCompareOp || _frontfailop != frontFailOp || _frontpassop != frontPassOp || 
+            if (_backfailop != backFailOp || _backpassop != backPassOp || _backdepthfailop != backDepthFailOp ||
+                _backcompareop != backCompareOp || _frontfailop != frontFailOp || _frontpassop != frontPassOp ||
                 _frontdepthfailop != frontDepthFailOp || _frontcompareop != frontCompareOp)
             {
                 _backfailop = backFailOp;
@@ -175,11 +175,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetStencilMask(uint backCompareMask, uint backWriteMask, uint backReference, 
+        public void SetStencilMask(uint backCompareMask, uint backWriteMask, uint backReference,
             uint frontCompareMask, uint frontWriteMask, uint frontReference)
         {
-            if (_backCompareMask != backCompareMask || _backWriteMask != backWriteMask || 
-                _backReference != backReference || _frontCompareMask != frontCompareMask || 
+            if (_backCompareMask != backCompareMask || _backWriteMask != backWriteMask ||
+                _backReference != backReference || _frontCompareMask != frontCompareMask ||
                 _frontWriteMask != frontWriteMask || _frontReference != frontReference)
             {
                 _backCompareMask = backCompareMask;
@@ -465,7 +465,7 @@ namespace Ryujinx.Graphics.Vulkan
             api.CmdSetBlendConstants(commandBuffer, _blendConstants.AsSpan());
         }
 
-        private void RecordDepthBias(VulkanRenderer gd, CommandBuffer commandBuffer)
+        private readonly void RecordDepthBias(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.Api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
 
@@ -568,7 +568,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return;
             }
-            
+
             gd.ExtendedDynamicState2Api.CmdSetLogicOp(commandBuffer, _logicOp);
         }
 

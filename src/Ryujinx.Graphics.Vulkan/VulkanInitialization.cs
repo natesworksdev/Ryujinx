@@ -502,7 +502,7 @@ namespace Ryujinx.Graphics.Vulkan
             supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
             supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable = false;
 
-            
+
             extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
 
             var featuresVk11 = new PhysicalDeviceVulkan11Features
