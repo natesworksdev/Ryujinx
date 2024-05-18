@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtExtendedDynamicState2.ExtensionName,
+            ExtExtendedDynamicState3.ExtensionName,
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
@@ -496,12 +497,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 pExtendedFeatures = &featuresExtendedDynamicState3;
             }
-
-            //Seems to be a error in Silk.Net bidings investigate further later
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable = false;
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable = false;
-
 
             extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
 
