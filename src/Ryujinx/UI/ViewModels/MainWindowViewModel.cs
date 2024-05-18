@@ -557,6 +557,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
+                ConfigurationState config = ConfigurationState.Instance(SelectedApplication != null);
+                config.System.AudioVolume.Value = value;
+
                 if (_isGameRunning)
                 {
                     AppHost.Device.SetVolume(_volume);
@@ -1324,7 +1327,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SetAspectRatio(AspectRatio aspectRatio)
         {
-            ConfigurationState.Shared.Graphics.AspectRatio.Value = aspectRatio;
+            ConfigurationState.Instance(SelectedApplication != null).Graphics.AspectRatio.Value = aspectRatio;
         }
 
         public async Task InstallFirmwareFromFile()
