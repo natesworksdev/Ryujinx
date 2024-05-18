@@ -497,10 +497,11 @@ namespace Ryujinx.Graphics.Vulkan
                 pExtendedFeatures = &featuresExtendedDynamicState3;
             }
 
-            //Seems to be a error in Silk.Net bidings investigate further later
+            //Need To Enable the extension, once this is fixed
             supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable = false;
             supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
             supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable = false;
+            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
 
 
             extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
