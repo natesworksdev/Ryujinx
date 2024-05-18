@@ -408,7 +408,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             ConfigurationState config;
             if (IsTitleSpecificSettings)
             {
-                ConfigurationState.LoadOrCreateConfigurationStateForTitle(_applicationData.TitleId);
+                if (!ConfigurationState.Title?.TitleId.Equals(_applicationData.TitleId) ?? true)
+                {
+                    ConfigurationState.LoadOrCreateConfigurationStateForTitle(_applicationData.TitleId);
+                }
+
                 config = ConfigurationState.Title;
             }
             else
