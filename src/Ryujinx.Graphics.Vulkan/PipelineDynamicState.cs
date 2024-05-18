@@ -329,12 +329,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _dirty = DirtyFlags.Standard | DirtyFlags.Extended | DirtyFlags.Extended2;
             }
-            
+
             if (gd.Capabilities.SupportsExtendedDynamicState3)
             {
                 _dirty = DirtyFlags.Standard | DirtyFlags.Extended | DirtyFlags.Extended2 | DirtyFlags.Extended3;
             }
-            
+
             if (gd.IsMoltenVk)
             {
                 _dirty &= ~DirtyFlags.LineWidth;
