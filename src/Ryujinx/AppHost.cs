@@ -1253,41 +1253,45 @@ namespace Ryujinx.Ava
         {
             KeyboardHotkeyState state = KeyboardHotkeyState.None;
 
-            KeyboardHotkeys hotkeys = ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys.Value;
+            ReactiveObject<KeyboardHotkeys> hotkeys = ConfigurationState.Instance(UseTitleConfiguration).Hid.Hotkeys;
+            if (hotkeys.Value == null)
+            {
+                Thread.Sleep(500);
+            }
 
-            if (_keyboardInterface.IsPressed((Key)hotkeys.ToggleVsync))
+            if (_keyboardInterface.IsPressed((Key)hotkeys.Value!.ToggleVsync))
             {
                 state = KeyboardHotkeyState.ToggleVSync;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.Screenshot))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.Screenshot))
             {
                 state = KeyboardHotkeyState.Screenshot;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.ShowUI))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.ShowUI))
             {
                 state = KeyboardHotkeyState.ShowUI;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.Pause))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.Pause))
             {
                 state = KeyboardHotkeyState.Pause;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.ToggleMute))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.ToggleMute))
             {
                 state = KeyboardHotkeyState.ToggleMute;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.ResScaleUp))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.ResScaleUp))
             {
                 state = KeyboardHotkeyState.ResScaleUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.ResScaleDown))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.ResScaleDown))
             {
                 state = KeyboardHotkeyState.ResScaleDown;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.VolumeUp))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.VolumeUp))
             {
                 state = KeyboardHotkeyState.VolumeUp;
             }
-            else if (_keyboardInterface.IsPressed((Key)hotkeys.VolumeDown))
+            else if (_keyboardInterface.IsPressed((Key)hotkeys.Value.VolumeDown))
             {
                 state = KeyboardHotkeyState.VolumeDown;
             }
