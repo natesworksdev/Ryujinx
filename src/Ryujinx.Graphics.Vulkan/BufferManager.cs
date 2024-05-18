@@ -165,10 +165,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (TryGetBuffer(range.Handle, out var existingHolder))
                 {
-                    // Since this buffer now also owns the memory from the referenced buffer,
-                    // we pin it to ensure the memory location will not change.
-                    existingHolder.Pin();
-
                     (var memory, var offset) = existingHolder.GetDeviceMemoryAndOffset();
 
                     memoryBinds[index] = new SparseMemoryBind()

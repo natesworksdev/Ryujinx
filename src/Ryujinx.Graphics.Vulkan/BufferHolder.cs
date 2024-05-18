@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _lastAccessIsWrite;
 
-        private BufferAllocationType _baseType;
+        private readonly BufferAllocationType _baseType;
         private readonly BufferAllocationType _activeType;
 
         private readonly ReaderWriterLockSlim _flushLock;
@@ -109,14 +109,6 @@ namespace Ryujinx.Graphics.Vulkan
             _activeType = BufferAllocationType.Sparse;
 
             _flushLock = new ReaderWriterLockSlim();
-        }
-
-        public void Pin()
-        {
-            if (_baseType == BufferAllocationType.Auto)
-            {
-                _baseType = _activeType;
-            }
         }
 
         public unsafe Auto<DisposableBufferView> CreateView(VkFormat format, int offset, int size, Action invalidateView)

@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Initialize the buffer backing state for a given parent buffer.
         /// </summary>
-        /// <param name="context">Gpu context</param>
+        /// <param name="context">GPU context</param>
         /// <param name="parent">Parent buffer</param>
         /// <param name="stage">Initial buffer stage</param>
         /// <param name="baseBuffers">Buffers to inherit state from</param>

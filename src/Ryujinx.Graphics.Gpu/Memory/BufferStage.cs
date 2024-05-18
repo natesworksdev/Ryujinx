@@ -81,13 +81,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BufferStage TextureBuffer(ShaderStage shaderStage, TextureUsageFlags flags)
         {
-            return (BufferStage)shaderStage | FromUsage(flags);
+            return FromShaderStage(shaderStage) | FromUsage(flags);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BufferStage GraphicsStorage(int stageIndex, BufferUsageFlags flags)
         {
-            return (BufferStage)(stageIndex + 1) | FromUsage(flags);
+            return FromShaderStage(stageIndex) | FromUsage(flags);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
