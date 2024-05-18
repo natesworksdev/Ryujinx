@@ -481,6 +481,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (isMoltenVk)
                 {
+                    //When widelines feature is not supported it must be 1.0f per spec. 
                     rasterizationState.LineWidth = 1.0f;
                 }
 
@@ -684,7 +685,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (!isMoltenVk)
                     {
-                        //Requires Metal 3.1
+                        //Requires Metal 3.1 and new MoltenVK
                         dynamicStates[currentIndex++] = DynamicState.VertexInputBindingStrideExt;
                     }
                     dynamicStates[currentIndex++] = DynamicState.CullModeExt;
