@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Vulkan
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtExtendedDynamicState2.ExtensionName,
+            ExtExtendedDynamicState3.ExtensionName,
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
@@ -496,13 +497,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 pExtendedFeatures = &featuresExtendedDynamicState3;
             }
-
-            //Need To Enable the extension, once this is fixed
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable = false;
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable = false;
-            supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable = false;
-
 
             extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
 
