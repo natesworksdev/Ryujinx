@@ -629,6 +629,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
         }
 
+        /// <summary>
+        /// Flushes a range of the buffer.
+        /// This writes the range data back into guest memory.
+        /// </summary>
+        /// <param name="handle">Buffer handle to flush data from</param>
+        /// <param name="address">Start address of the range</param>
+        /// <param name="size">Size in bytes of the range</param>
         private void FlushImpl(BufferHandle handle, ulong address, ulong size)
         {
             int offset = (int)(address - Address);
@@ -639,13 +646,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _physicalMemory.WriteUntracked(address, CopyFromDependantVirtualBuffers(data.Get(), address, size));
         }
 
+        /// <summary>
+        /// Flushes a range of the buffer.
+        /// This writes the range data back into guest memory.
+        /// </summary>
+        /// <param name="address">Start address of the range</param>
+        /// <param name="size">Size in bytes of the range</param>
         private void FlushImpl(ulong address, ulong size)
         {
             FlushImpl(Handle, address, size);
         }
 
         /// <summary>
-        /// Flushes a range of the buffer.
+        /// Flushes a range of the buffer from the most optimal source.
         /// This writes the range data back into guest memory.
         /// </summary>
         /// <param name="address">Start address of the range</param>
