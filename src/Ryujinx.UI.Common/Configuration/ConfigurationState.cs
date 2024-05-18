@@ -588,6 +588,8 @@ namespace Ryujinx.UI.Common.Configuration
         /// </summary>
         public static ConfigurationState Title { get; private set; }
 
+        public string TitleId { get; private set; } = null;
+
         /// <summary>
         /// The UI section
         /// </summary>
@@ -1681,7 +1683,7 @@ namespace Ryujinx.UI.Common.Configuration
                 string globalAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"Config.json");
                 string globalConfigurationPath = File.Exists(globalLocalConfigurationPath) ? globalLocalConfigurationPath : File.Exists(globalAppDataConfigurationPath) ? globalAppDataConfigurationPath : null;
 
-                Title = new ConfigurationState();
+                Title = new ConfigurationState { TitleId = titleId };
 
                 // No configuration, we load the shared config values and save it to disk.
                 if (ConfigurationFileFormat.TryLoad(globalConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
@@ -1698,7 +1700,7 @@ namespace Ryujinx.UI.Common.Configuration
             {
                 if (!LoadConfigurationStateForTitle(titleId))
                 {
-                    Title = new ConfigurationState();
+                    Title = new ConfigurationState { TitleId = titleId };
                     Title.LoadDefault();
                 }
             }
@@ -1718,7 +1720,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (ConfigurationFileFormat.TryLoad(gameConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
             {
-                Title = new ConfigurationState();
+                Title = new ConfigurationState { TitleId = titleId };
                 Title.Load(configurationFileFormat, gameConfigurationPath);
 
                 return true;
