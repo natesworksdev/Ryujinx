@@ -452,6 +452,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 primitiveRestartEnable &= topologySupportsRestart;
 
+                //Cannot disable primitveRestartEnable for these Topoligies on MacOS
                 if ((Topology == PrimitiveTopology.LineStrip || Topology == PrimitiveTopology.TriangleStrip ||
                      Topology == PrimitiveTopology.LineStripWithAdjacency ||
                      Topology == PrimitiveTopology.TriangleStripWithAdjacency) && isMoltenVk)
@@ -690,6 +691,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!isMoltenVk)
                 {
+                    //LineWidth is only supported on MacOS when using Metal Private API on newer version of MoltenVK
                     dynamicStates[currentIndex++] = DynamicState.LineWidth;
                 }
 
@@ -697,6 +699,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (!isMoltenVk)
                     {
+                        //Requires Metal 3.1
                         dynamicStates[currentIndex++] = DynamicState.VertexInputBindingStrideExt;
                     }
                     dynamicStates[currentIndex++] = DynamicState.CullModeExt;
