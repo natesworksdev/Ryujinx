@@ -517,17 +517,13 @@ namespace Ryujinx.Graphics.Vulkan
                     viewportState.ScissorCount = ScissorsCount;
                 }
 
-                if (gd.Capabilities.SupportsDepthClipControl)
+                if (gd.Capabilities.SupportsDepthClipControl && !gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
                 {
                     var viewportDepthClipControlState = new PipelineViewportDepthClipControlCreateInfoEXT
                     {
                         SType = StructureType.PipelineViewportDepthClipControlCreateInfoExt,
+                        NegativeOneToOne = DepthMode,
                     };
-
-                    if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
-                    {
-                        viewportDepthClipControlState.NegativeOneToOne = DepthMode;
-                    }
 
                     viewportState.PNext = &viewportDepthClipControlState;
                 }
