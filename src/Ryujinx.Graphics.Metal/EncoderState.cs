@@ -5,6 +5,25 @@ using System.Runtime.Versioning;
 
 namespace Ryujinx.Graphics.Metal
 {
+    public struct DirtyFlags
+    {
+        public bool Pipeline = false;
+        public bool DepthStencil = false;
+
+        public DirtyFlags() { }
+
+        public void MarkAll() {
+            Pipeline = true;
+            DepthStencil = true;
+        }
+
+        public void Clear()
+        {
+            Pipeline = false;
+            DepthStencil = false;
+        }
+    }
+
     [SupportedOSPlatform("macos")]
     public struct EncoderState
     {
@@ -51,6 +70,9 @@ namespace Ryujinx.Graphics.Metal
 
         public VertexBufferDescriptor[] VertexBuffers = [];
         public VertexAttribDescriptor[] VertexAttribs = [];
+
+        // Dirty flags
+        public DirtyFlags Dirty = new();
 
         public EncoderState() { }
     }
