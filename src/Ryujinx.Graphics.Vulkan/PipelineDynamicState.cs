@@ -473,12 +473,17 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordDepthBias(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            gd.Api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
-
             if (gd.Capabilities.SupportsExtendedDynamicState2)
             {
                 gd.ExtendedDynamicState2Api.CmdSetDepthBiasEnable(commandBuffer, _depthBiasEnable);
+
+                if (!_depthBiasEnable)
+                {
+                    return;
+                }
             }
+
+            gd.Api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
         }
 
         private void RecordScissor(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -501,7 +506,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordStencil(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (_opToo)
+            if (_opToo && _stencilTestEnable)
             {
                 gd.ExtendedDynamicStateApi.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
                     _backdepthfailop, _backcompareop);
@@ -555,6 +560,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordDepthTestBool(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetDepthTestEnable(commandBuffer, _depthtestEnable);
+
             api.CmdSetDepthWriteEnable(commandBuffer, _depthwriteEnable);
         }
 
@@ -570,7 +576,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (!_logicOpEnable)
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable && !_logicOpEnable)
             {
                 return;
             }
