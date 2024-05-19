@@ -439,11 +439,6 @@ namespace Ryujinx.Graphics.Vulkan
                     Topology = Topology,
                 };
 
-                if (!supportsExtDynamicState)
-                {
-                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
-                }
-
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
                     SType = StructureType.PipelineTessellationStateCreateInfo,
@@ -470,12 +465,7 @@ namespace Ryujinx.Graphics.Vulkan
                     //When widelines feature is not supported it must be 1.0f per spec. 
                     rasterizationState.LineWidth = 1.0f;
                 }
-
-                if (!supportsExtDynamicState)
-                {
-                    rasterizationState.CullMode = CullMode;
-                    rasterizationState.FrontFace = FrontFace;
-                }
+                
 
                 if (!supportsExtDynamicState2)
                 {
@@ -487,12 +477,6 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineViewportStateCreateInfo,
                 };
-
-                if (!supportsExtDynamicState)
-                {
-                    viewportState.ViewportCount = ViewportsCount;
-                    viewportState.ScissorCount = ScissorsCount;
-                }
 
                 if (gd.Capabilities.SupportsDepthClipControl && !gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
                 {
@@ -533,6 +517,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!supportsExtDynamicState)
                 {
+                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
+                    
+                    rasterizationState.CullMode = CullMode;
+                    rasterizationState.FrontFace = FrontFace;
+                    
+                    viewportState.ViewportCount = ViewportsCount;
+                    viewportState.ScissorCount = ScissorsCount;
+                    
                     var stencilFront = new StencilOpState(
                         StencilFrontFailOp,
                         StencilFrontPassOp,
