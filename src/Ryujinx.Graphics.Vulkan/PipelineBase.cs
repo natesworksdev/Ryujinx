@@ -909,7 +909,7 @@ namespace Ryujinx.Graphics.Vulkan
                 oldMode = _newState.DepthMode;
                 _newState.DepthMode = mode == DepthMode.MinusOneToOne;
             }
-            
+
             if ((Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne ? DynamicState.DepthMode : _newState.DepthMode) != oldMode)
             {
                 SignalStateChange();
