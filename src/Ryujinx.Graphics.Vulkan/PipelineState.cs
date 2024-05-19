@@ -433,39 +433,16 @@ namespace Ryujinx.Graphics.Vulkan
                     return null;
                 }
 
-                bool primitiveRestartEnable = PrimitiveRestartEnable;
-
-                bool topologySupportsRestart;
-
-                if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
-                {
-                    topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart || Topology != PrimitiveTopology.PatchList;
-                }
-                else
-                {
-                    topologySupportsRestart = Topology == PrimitiveTopology.LineStrip ||
-                                              Topology == PrimitiveTopology.TriangleStrip ||
-                                              Topology == PrimitiveTopology.TriangleFan ||
-                                              Topology == PrimitiveTopology.LineStripWithAdjacency ||
-                                              Topology == PrimitiveTopology.TriangleStripWithAdjacency;
-                }
-
-                primitiveRestartEnable &= topologySupportsRestart;
-
-                //Cannot disable primitveRestartEnable for these Topoligies on MacOS
-                if ((Topology == PrimitiveTopology.LineStrip || Topology == PrimitiveTopology.TriangleStrip ||
-                     Topology == PrimitiveTopology.LineStripWithAdjacency ||
-                     Topology == PrimitiveTopology.TriangleStripWithAdjacency) && isMoltenVk)
-                {
-                    primitiveRestartEnable = true;
-                }
-
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    PrimitiveRestartEnable = primitiveRestartEnable,
                     Topology = Topology,
                 };
+
+                if (!supportsExtDynamicState)
+                {
+                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
+                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
@@ -646,7 +623,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState2)
                 {
-                    additionalDynamicStatesCount += 2;
+                    additionalDynamicStatesCount += 3;
                     if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
                     {
                         additionalDynamicStatesCount++;
@@ -718,6 +695,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     dynamicStates[currentIndex++] = DynamicState.DepthBiasEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
+                    dynamicStates[currentIndex++] = DynamicState.PrimitiveRestartEnableExt;
 
                     if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
                     {
