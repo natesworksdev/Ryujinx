@@ -32,12 +32,12 @@ namespace Ryujinx.Graphics.Vulkan
         private StencilOp _frontdepthfailop;
         private CompareOp _frontcompareop;
 
-        private float _linewidth;
+        private float _lineWidth;
 
-        public bool _stencilTestEnable;
+        public bool StencilTestEnable;
 
-        public bool _depthtestEnable;
-        public bool _depthwriteEnable;
+        public bool DepthTestEnable;
+        public bool DepthWriteEnable;
         private CompareOp _depthCompareOp;
 
         private Array4<float> _blendConstants;
@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Vulkan
         public Array16<Viewport> Viewports;
 
         public CullModeFlags CullMode;
-        public FrontFace FrontFace;
+        private FrontFace _frontFace;
 
         private bool _discard;
 
@@ -62,6 +62,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _alphaToOneEnable;
 
         public bool DepthMode;
+
+        private bool _primitiveRestartEnable;
 
         [Flags]
         private enum DirtyFlags
@@ -86,9 +88,10 @@ namespace Ryujinx.Graphics.Vulkan
             AlphaToOne = 1 << 16,
             PatchControlPoints = 1 << 17,
             DepthMode = 1 << 18,
+            PrimitiveRestart = 1 << 19,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
-            Extended2 = RasterDiscard | LogicOp | PatchControlPoints,
+            Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart,
             Extended3 = DepthClampEnable | LogicOpEnable | AlphaToCover | AlphaToOne | DepthMode,
         }
 
@@ -142,10 +145,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthTestBool(bool testEnable, bool writeEnable)
         {
-            if (_depthtestEnable != testEnable || _depthwriteEnable != writeEnable)
+            if (DepthTestEnable != testEnable || DepthWriteEnable != writeEnable)
             {
-                _depthtestEnable = testEnable;
-                _depthwriteEnable = writeEnable;
+                DepthTestEnable = testEnable;
+                DepthWriteEnable = writeEnable;
                 _dirty |= DirtyFlags.DepthTestBool;
             }
         }
@@ -198,13 +201,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStencilTest(bool stencilTestEnable)
         {
-            if (_stencilTestEnable != stencilTestEnable)
+            if (StencilTestEnable != stencilTestEnable)
             {
-                _stencilTestEnable = stencilTestEnable;
+                StencilTestEnable = stencilTestEnable;
                 _dirty |= DirtyFlags.StencilTestEnable;
             }
         }
-
 
         public void SetViewport(int index, Viewport viewport)
         {
@@ -239,18 +241,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetFrontFace(FrontFace frontFace)
         {
-            if (FrontFace != frontFace)
+            if (_frontFace != frontFace)
             {
-                FrontFace = frontFace;
+                _frontFace = frontFace;
                 _dirty |= DirtyFlags.FrontFace;
             }
         }
 
         public void SetLineWidth(float width)
         {
-            if (!FloatCompare(_linewidth, width))
+            if (!FloatCompare(_lineWidth, width))
             {
-                _linewidth = width;
+                _lineWidth = width;
 
                 _dirty |= DirtyFlags.LineWidth;
             }
@@ -262,6 +264,15 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _discard = discard;
                 _dirty |= DirtyFlags.RasterDiscard;
+            }
+        }
+
+        public void SetPrimitiveRestartEnable(bool primitiveRestart)
+        {
+            if (_primitiveRestartEnable != primitiveRestart)
+            {
+                _primitiveRestartEnable = primitiveRestart;
+                _dirty |= DirtyFlags.PrimitiveRestart;
             }
         }
 
@@ -450,6 +461,11 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordRasterizationDiscard(gd, commandBuffer);
             }
 
+            if (_dirty.HasFlag(DirtyFlags.PrimitiveRestart))
+            {
+                RecordPrimitiveRestartEnable(gd, commandBuffer);
+            }
+
             if (_dirty.HasFlag(DirtyFlags.LogicOp))
             {
                 RecordLogicOp(gd, commandBuffer);
@@ -528,7 +544,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordStencil(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (_opToo && _stencilTestEnable)
+            if (_opToo && StencilTestEnable)
             {
                 gd.ExtendedDynamicStateApi.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
                     _backdepthfailop, _backcompareop);
@@ -546,7 +562,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordStencilTestEnable(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
-            api.CmdSetStencilTestEnable(commandBuffer, _stencilTestEnable);
+            api.CmdSetStencilTestEnable(commandBuffer, StencilTestEnable);
         }
 
         private void RecordViewport(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -576,14 +592,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordFrontFace(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
-            api.CmdSetFrontFace(commandBuffer, FrontFace);
+            api.CmdSetFrontFace(commandBuffer, _frontFace);
         }
 
         private readonly void RecordDepthTestBool(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
-            api.CmdSetDepthTestEnable(commandBuffer, _depthtestEnable);
+            api.CmdSetDepthTestEnable(commandBuffer, DepthTestEnable);
 
-            api.CmdSetDepthWriteEnable(commandBuffer, _depthwriteEnable);
+            api.CmdSetDepthWriteEnable(commandBuffer, DepthWriteEnable);
         }
 
         private readonly void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
@@ -594,6 +610,11 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordRasterizationDiscard(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.ExtendedDynamicState2Api.CmdSetRasterizerDiscardEnable(commandBuffer, _discard);
+        }
+
+        private readonly void RecordPrimitiveRestartEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState2Api.CmdSetPrimitiveRestartEnable(commandBuffer, _primitiveRestartEnable);
         }
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -640,7 +661,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (!OperatingSystem.IsMacOS())
             {
-                api.CmdSetLineWidth(commandBuffer, _linewidth);
+                api.CmdSetLineWidth(commandBuffer, _lineWidth);
             }
         }
     }
