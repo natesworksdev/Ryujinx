@@ -456,7 +456,7 @@ namespace Ryujinx.Graphics.Vulkan
                     //When widelines feature is not supported it must be 1.0f per spec. 
                     rasterizationState.LineWidth = 1.0f;
                 }
-                
+
 
                 if (!supportsExtDynamicState2)
                 {
@@ -501,13 +501,13 @@ namespace Ryujinx.Graphics.Vulkan
                 if (!supportsExtDynamicState)
                 {
                     inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
-                    
+
                     rasterizationState.CullMode = CullMode;
                     rasterizationState.FrontFace = FrontFace;
-                    
+
                     viewportState.ViewportCount = ViewportsCount;
                     viewportState.ScissorCount = ScissorsCount;
-                    
+
                     var stencilFront = new StencilOpState(
                         StencilFrontFailOp,
                         StencilFrontPassOp,
