@@ -637,6 +637,10 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         additionalDynamicStatesCount++;
                     }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
                 }
 
                 int dynamicStatesCount = baseDynamicStatesCount + additionalDynamicStatesCount;
@@ -709,6 +713,10 @@ namespace Ryujinx.Graphics.Vulkan
                     if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
                     {
                         dynamicStates[currentIndex++] = DynamicState.AlphaToOneEnableExt;
+                    }
+                    if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.DepthClipNegativeOneToOneExt;
                     }
                 }
 

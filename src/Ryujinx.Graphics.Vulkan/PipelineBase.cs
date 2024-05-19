@@ -899,8 +899,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetDepthMode(DepthMode mode)
         {
             bool oldMode;
-            bool supportsDepthClipandDynamicState = Gd.Capabilities.SupportsDepthClipControl &&
-                        Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne;
+            bool supportsDepthClipandDynamicState = Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne;
             if (supportsDepthClipandDynamicState)
             {
                 oldMode = DynamicState.DepthMode;
