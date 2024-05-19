@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 
@@ -44,8 +45,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private ulong _entrypoint;
         private ThreadStart _customThreadStart;
         private bool _forcedUnschedulable;
+        private bool _isDummy;
 
-        public bool IsSchedulable => _customThreadStart == null && !_forcedUnschedulable;
+        public bool IsSchedulable => _customThreadStart == null && !_isDummy && !_forcedUnschedulable;
 
         public ulong MutexAddress { get; set; }
         public int KernelWaitersCount { get; private set; }
@@ -143,7 +145,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             PreferredCore = cpuCore;
             AffinityMask |= 1UL << cpuCore;
 
-            SchedFlags = type == ThreadType.Dummy
+            _isDummy = type == ThreadType.Dummy;
+
+            SchedFlags = _isDummy
                 ? ThreadSchedState.Running
                 : ThreadSchedState.None;
 
@@ -183,7 +187,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 is64Bits = true;
             }
 
-            HostThread = new Thread(ThreadStart);
+            if (!_isDummy)
+            {
+                HostThread = new Thread(ThreadStart);
+            }
 
             Context = owner?.CreateExecutionContext() ?? new ProcessExecutionContext();
 
@@ -207,7 +214,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             ThreadUid = KernelContext.NewThreadUid();
 
-            HostThread.Name = customThreadStart != null ? $"HLE.OsThread.{ThreadUid}" : $"HLE.GuestThread.{ThreadUid}";
+            if (!_isDummy)
+            {
+                HostThread.Name = customThreadStart != null ? $"HLE.OsThread.{ThreadUid}" : $"HLE.GuestThread.{ThreadUid}";
+            }
 
             _hasBeenInitialized = true;
 
@@ -1055,6 +1065,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // If the thread is not schedulable, we want to just run or pause
                     // it directly as we don't care about priority or the core it is
                     // running on in this case.
+
+                    Debug.Assert(!_isDummy);
+
                     if (SchedFlags == ThreadSchedState.Running)
                     {
                         _schedulerWaitEvent.Set();
@@ -1231,6 +1244,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public void StartHostThread()
         {
+            if (_isDummy)
+            {
+                throw new InvalidOperationException("Dummy threads can't start a host thread.");
+            }
+
             if (_schedulerWaitEvent == null)
             {
                 var schedulerWaitEvent = new ManualResetEvent(false);
