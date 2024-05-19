@@ -61,6 +61,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _alphaToCoverEnable;
         private bool _alphaToOneEnable;
 
+        public bool DepthMode;
+
         [Flags]
         private enum DirtyFlags
         {
@@ -83,10 +85,11 @@ namespace Ryujinx.Graphics.Vulkan
             AlphaToCover = 1 << 15,
             AlphaToOne = 1 << 16,
             PatchControlPoints = 1 << 17,
+            DepthMode = 1 << 18,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
             Extended2 = RasterDiscard | LogicOp | PatchControlPoints,
-            Extended3 = DepthClampEnable | LogicOpEnable | AlphaToCover | AlphaToOne,
+            Extended3 = DepthClampEnable | LogicOpEnable | AlphaToCover | AlphaToOne | DepthMode,
         }
 
         private DirtyFlags _dirty;
@@ -315,6 +318,15 @@ namespace Ryujinx.Graphics.Vulkan
                 _dirty |= DirtyFlags.AlphaToOne;
             }
         }
+        
+        public void SetDepthMode(bool mode)
+        {
+            if (DepthMode != mode)
+            {
+                DepthMode = mode;
+                _dirty |= DirtyFlags.DepthMode;
+            }
+        }
 
         public void ForceAllDirty(VulkanRenderer gd)
         {
@@ -368,6 +380,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
             {
                 _dirty &= ~DirtyFlags.LogicOpEnable;
+            }
+            
+            if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
+            {
+                _dirty &= ~DirtyFlags.DepthMode;
             }
         }
 
@@ -461,6 +478,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_dirty.HasFlag(DirtyFlags.AlphaToOne))
             {
                 RecordAlphaToOneEnable(gd, commandBuffer);
+            }
+            
+            if (_dirty.HasFlag(DirtyFlags.DepthMode))
+            {
+                RecordDepthMode(gd, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -607,6 +629,11 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordPatchControlPoints(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.ExtendedDynamicState2Api.CmdSetPatchControlPoints(commandBuffer, _patchControlPoints);
+        }
+        
+        private readonly void RecordDepthMode(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicState3Api.CmdSetDepthClipNegativeOneToOne(commandBuffer, DepthMode);
         }
 
         private readonly void RecordLineWidth(Vk api, CommandBuffer commandBuffer)

@@ -522,8 +522,12 @@ namespace Ryujinx.Graphics.Vulkan
                     var viewportDepthClipControlState = new PipelineViewportDepthClipControlCreateInfoEXT
                     {
                         SType = StructureType.PipelineViewportDepthClipControlCreateInfoExt,
-                        NegativeOneToOne = DepthMode,
                     };
+
+                    if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
+                    {
+                        viewportDepthClipControlState.NegativeOneToOne = DepthMode;
+                    }
 
                     viewportState.PNext = &viewportDepthClipControlState;
                 }
