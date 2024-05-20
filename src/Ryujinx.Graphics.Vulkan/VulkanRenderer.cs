@@ -510,12 +510,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), default, access == BufferAccess.Stream);
-        }
-
-        public BufferHandle CreateBuffer(int size, BufferAccess access, BufferHandle storageHint)
-        {
-            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), storageHint);
+            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), access.HasFlag(BufferAccess.Stream));
         }
 
         public BufferHandle CreateBuffer(nint pointer, int size)
@@ -699,9 +694,23 @@ namespace Ryujinx.Graphics.Vulkan
             var limits = _physicalDevice.PhysicalDeviceProperties.Limits;
             var mainQueueProperties = _physicalDevice.QueueFamilyProperties[QueueFamilyIndex];
 
+            SystemMemoryType memoryType;
+
+            if (IsSharedMemory)
+            {
+                memoryType = SystemMemoryType.UnifiedMemory;
+            }
+            else
+            {
+                memoryType = Vendor == Vendor.Nvidia ?
+                    SystemMemoryType.DedicatedMemorySlowStorage :
+                    SystemMemoryType.DedicatedMemory;
+            }
+
             return new Capabilities(
                 api: TargetApi.Vulkan,
                 GpuVendor,
+                memoryType: memoryType,
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 needsFragmentOutputSpecialization: IsMoltenVk,
