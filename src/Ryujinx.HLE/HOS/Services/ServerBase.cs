@@ -515,14 +515,11 @@ namespace Ryujinx.HLE.HOS.Services
         {
             if (disposing && _selfThread != null)
             {
-                if (_selfThread.HostThread != null)
+                if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(_threadJoinTimeout) == false)
                 {
-                    if (_selfThread.HostThread.ManagedThreadId != Environment.CurrentManagedThreadId && _selfThread.HostThread.Join(_threadJoinTimeout) == false)
-                    {
-                        Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {_threadJoinTimeout:g}, waiting longer.");
+                    Logger.Warning?.Print(LogClass.Service, $"The ServerBase thread didn't terminate within {_threadJoinTimeout:g}, waiting longer.");
 
-                        _selfThread.HostThread.Join(Timeout.Infinite);
-                    }
+                    _selfThread.HostThread.Join(Timeout.Infinite);
                 }
 
                 if (Interlocked.Exchange(ref _isDisposed, 1) == 0)

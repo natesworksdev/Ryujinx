@@ -1,7 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 
@@ -294,8 +293,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             {
                 return;
             }
-
-            Debug.Assert(currentThread != null);
 
             currentThread.SchedulerWaitEvent.Reset();
             currentThread.ThreadContext.Unlock();
