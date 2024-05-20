@@ -236,7 +236,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private void ActivateIdleThread()
         {
             while (Interlocked.CompareExchange(ref _coreIdleLock, 1, 0) != 0)
-            { }
+            {
+                Thread.SpinWait(1);
+            }
 
             Thread.MemoryBarrier();
 
@@ -251,7 +253,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private void NotifyIdleThread()
         {
             while (Interlocked.CompareExchange(ref _coreIdleLock, 1, 0) != 0)
-            { }
+            {
+                Thread.SpinWait(1);
+            }
 
             Thread.MemoryBarrier();
 
