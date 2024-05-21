@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     stream.Dispose();
                     break;
                 case CompressionAlgorithm.Brotli:
-                    stream = new BrotliStream(stream, CompressionLevel.Optimal, true);
+                    stream = new BrotliStream(stream, CompressionLevel.Fastest, true);
                     stream.Write(data);
                     stream.Dispose();
                     break;
