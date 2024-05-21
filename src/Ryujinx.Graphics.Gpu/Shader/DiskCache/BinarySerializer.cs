@@ -135,6 +135,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 case CompressionAlgorithm.Brotli:
                     _activeStream = new BrotliStream(_stream, CompressionMode.Decompress, true);
                     break;
+                default:
+                    throw new ArgumentException($"Invalid compression algorithm \"{algorithm}\"");
             }
         }
 
