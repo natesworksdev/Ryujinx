@@ -610,7 +610,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState)
                 {
-                    additionalDynamicStatesCount += isMoltenVk ? 10 : 11;
+                    additionalDynamicStatesCount += isMoltenVk ? 7 : 8;
                 }
 
                 if (supportsExtDynamicState2)
@@ -676,14 +676,14 @@ namespace Ryujinx.Graphics.Vulkan
                         //Requires Metal 3.1 and new MoltenVK
                         dynamicStates[currentIndex++] = DynamicState.VertexInputBindingStrideExt;
                     }
+                    dynamicStates[0] = DynamicState.ViewportWithCountExt;
+                    dynamicStates[1] = DynamicState.ScissorWithCountExt;
                     dynamicStates[currentIndex++] = DynamicState.CullModeExt;
                     dynamicStates[currentIndex++] = DynamicState.FrontFaceExt;
                     dynamicStates[currentIndex++] = DynamicState.DepthTestEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.ViewportWithCountExt;
-                    dynamicStates[currentIndex++] = DynamicState.ScissorWithCountExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilOpExt;
                 }
 
