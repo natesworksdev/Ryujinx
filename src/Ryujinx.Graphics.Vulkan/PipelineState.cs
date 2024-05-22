@@ -435,8 +435,12 @@ namespace Ryujinx.Graphics.Vulkan
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    Topology = Topology,
                 };
+
+                if (!gd.SupportsUnrestrictedDynamicTopology)
+                {
+                    inputAssemblyState.Topology = Topology;
+                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
@@ -633,6 +637,11 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         additionalDynamicStatesCount++;
                     }
+
+                    if (gd.SupportsUnrestrictedDynamicTopology)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
                 }
 
                 int dynamicStatesCount = baseDynamicStatesCount + additionalDynamicStatesCount;
@@ -709,6 +718,11 @@ namespace Ryujinx.Graphics.Vulkan
                     if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne)
                     {
                         dynamicStates[currentIndex++] = DynamicState.DepthClipNegativeOneToOneExt;
+                    }
+
+                    if (gd.SupportsUnrestrictedDynamicTopology)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.PrimitiveTopology;
                     }
                 }
 

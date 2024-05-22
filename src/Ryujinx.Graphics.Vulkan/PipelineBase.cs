@@ -697,7 +697,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _newState.Topology;
+                var oldTopology = Gd.SupportsUnrestrictedDynamicTopology ? DynamicState.Topology : _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -740,7 +740,14 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.ViewportsCount = oldViewportsCount;
                 }
 
-                _newState.Topology = oldTopology;
+                if (Gd.SupportsUnrestrictedDynamicTopology)
+                {
+                    DynamicState.SetPrimitiveTopology(oldTopology);
+                }
+                else
+                {
+                    _newState.Topology = oldTopology;
+                }
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
@@ -1128,7 +1135,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
 
-            _newState.Topology = vkTopology;
+            if (Gd.SupportsUnrestrictedDynamicTopology)
+            {
+                DynamicState.SetPrimitiveTopology(vkTopology);
+            }
+            else
+            {
+                _newState.Topology = vkTopology;
+            }
 
             SignalStateChange();
         }

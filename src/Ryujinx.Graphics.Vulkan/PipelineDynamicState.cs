@@ -65,6 +65,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _primitiveRestartEnable;
 
+        public PrimitiveTopology Topology;
+
         [Flags]
         private enum DirtyFlags
         {
@@ -89,10 +91,11 @@ namespace Ryujinx.Graphics.Vulkan
             PatchControlPoints = 1 << 17,
             DepthMode = 1 << 18,
             PrimitiveRestart = 1 << 19,
+            PrimitiveTopology = 1 << 20,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
             Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart,
-            Extended3 = DepthClampEnable | LogicOpEnable | AlphaToCover | AlphaToOne | DepthMode,
+            Extended3 = DepthClampEnable | LogicOpEnable | AlphaToCover | AlphaToOne | DepthMode | PrimitiveTopology,
         }
 
         private DirtyFlags _dirty;
@@ -218,6 +221,12 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.PrimitiveRestart;
         }
 
+        public void SetPrimitiveTopology(PrimitiveTopology topology)
+        {
+            Topology = topology;
+            _dirty |= DirtyFlags.PrimitiveTopology;
+        }
+
         public void SetLogicOp(LogicOp op)
         {
             _logicOp = op;
@@ -318,6 +327,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _dirty &= ~DirtyFlags.DepthMode;
             }
+
+            if (!gd.SupportsUnrestrictedDynamicTopology)
+            {
+                _dirty &= ~DirtyFlags.PrimitiveTopology;
+            }
         }
 
         public void ReplayIfDirty(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -387,6 +401,11 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordPrimitiveRestartEnable(gd, commandBuffer);
             }
 
+            if (_dirty.HasFlag(DirtyFlags.PrimitiveTopology))
+            {
+                RecordPrimitiveRestartEnable(gd, commandBuffer);
+            }
+
             if (_dirty.HasFlag(DirtyFlags.LogicOp))
             {
                 RecordLogicOp(gd, commandBuffer);
@@ -420,6 +439,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_dirty.HasFlag(DirtyFlags.DepthMode))
             {
                 RecordDepthMode(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.PrimitiveTopology))
+            {
+                RecordPrimitiveTopology(gd, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -536,6 +560,11 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordPrimitiveRestartEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.ExtendedDynamicState2Api.CmdSetPrimitiveRestartEnable(commandBuffer, _primitiveRestartEnable);
+        }
+
+        private readonly void RecordPrimitiveTopology(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, Topology);
         }
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
