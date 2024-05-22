@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Globalization;
@@ -14,12 +15,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
             bool isOutput,
             bool isPerPatch)
         {
-            return ioVariable switch
+            var returnValue = ioVariable switch
             {
                 IoVariable.BaseInstance => ("base_instance", AggregateType.S32),
                 IoVariable.BaseVertex => ("base_vertex", AggregateType.S32),
                 IoVariable.ClipDistance => ("clip_distance", AggregateType.Array | AggregateType.FP32),
-                IoVariable.FragmentOutputColor => ("out.color", AggregateType.Vector4 | AggregateType.FP32),
+                IoVariable.FragmentOutputColor => ($"out.color{location}", AggregateType.Vector4 | AggregateType.FP32),
                 IoVariable.FragmentOutputDepth => ("depth", AggregateType.FP32),
                 IoVariable.FrontFacing => ("front_facing", AggregateType.Bool),
                 IoVariable.InstanceId => ("instance_id", AggregateType.S32),
@@ -29,10 +30,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
                 IoVariable.PrimitiveId => ("primitive_id", AggregateType.S32),
                 IoVariable.UserDefined => GetUserDefinedVariableName(definitions, location, component, isOutput, isPerPatch),
                 IoVariable.VertexId => ("vertex_id", AggregateType.S32),
+                IoVariable.GlobalId => ("global_id", AggregateType.Vector3 | AggregateType.U32),
+                // gl_VertexIndex does not have a direct equivalent in MSL
+                IoVariable.VertexIndex => ("vertex_index", AggregateType.U32),
                 IoVariable.ViewportIndex => ("viewport_array_index", AggregateType.S32),
                 IoVariable.FragmentCoord => ("in.position", AggregateType.Vector4 | AggregateType.FP32),
                 _ => (null, AggregateType.Invalid),
             };
+
+            if (returnValue.Item2 == AggregateType.Invalid)
+            {
+                Logger.Warning?.PrintMsg(LogClass.Gpu, $"Unable to find type for IoVariable {ioVariable}!");
+            }
+
+            return returnValue;
         }
 
         private static (string, AggregateType) GetUserDefinedVariableName(ShaderDefinitions definitions, int location, int component, bool isOutput, bool isPerPatch)

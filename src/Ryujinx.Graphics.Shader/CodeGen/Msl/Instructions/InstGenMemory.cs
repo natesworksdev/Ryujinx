@@ -175,19 +175,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
             }
             else
             {
-                texCall += "sample(";
+                texCall += "sample";
 
-                texCall += $"samp_{samplerName}";
+                if (isGather)
+                {
+                    texCall += "_gather";
+                }
+
+                if (isShadow)
+                {
+                    texCall += "_compare";
+                }
+
+                texCall += $"(samp_{samplerName}";
             }
 
             int coordsCount = texOp.Type.GetDimensions();
 
             int pCount = coordsCount;
-
-            if (isShadow && !isGather)
-            {
-                pCount++;
-            }
 
             void Append(string str)
             {
@@ -223,6 +228,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
             {
                 texCall += ", " + Src(AggregateType.S32);
             }
+
+            if (isShadow)
+            {
+                texCall += ", " + Src(AggregateType.S32);
+            }
+
+            // TODO: Support offsets
 
             texCall += ")" + (colorIsVector ? GetMaskMultiDest(texOp.Index) : "");
 
@@ -267,7 +279,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
                 return NumberFormatter.FormatInt(0);
             }
 
-            string textureName = "texture";
+            string samplerName = GetSamplerName(context.Properties, texOp);
+            string textureName = $"tex_{samplerName}";
             string texCall = textureName + ".";
             texCall += $"get_num_samples()";
 
@@ -278,7 +291,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
-            string textureName = "texture";
+            string samplerName = GetSamplerName(context.Properties, texOp);
+            string textureName = $"tex_{samplerName}";
             string texCall = textureName + ".";
 
             if (texOp.Index == 3)
@@ -314,7 +328,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
                     texCall += $"{lodExpr}";
                 }
 
-                texCall += $"){GetMask(texOp.Index)}";
+                texCall += $")";
             }
 
             return texCall;
