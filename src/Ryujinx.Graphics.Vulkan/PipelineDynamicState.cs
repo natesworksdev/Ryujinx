@@ -97,124 +97,81 @@ namespace Ryujinx.Graphics.Vulkan
 
         private DirtyFlags _dirty;
 
-        private const float Epsilon = 1e-6f;
-
-        private readonly bool FloatCompare(float a, float b)
-        {
-            return Math.Abs(a - b) < Epsilon;
-        }
-
         public void SetBlendConstants(float r, float g, float b, float a)
         {
-            if (!FloatCompare(_blendConstants[0], r) ||
-                !FloatCompare(_blendConstants[1], g) ||
-                !FloatCompare(_blendConstants[2], b) ||
-                !FloatCompare(_blendConstants[3], a))
-            {
-                _blendConstants[0] = r;
-                _blendConstants[1] = g;
-                _blendConstants[2] = b;
-                _blendConstants[3] = a;
-                _dirty |= DirtyFlags.Blend;
-            }
+            _blendConstants[0] = r;
+            _blendConstants[1] = g;
+            _blendConstants[2] = b;
+            _blendConstants[3] = a;
+            _dirty |= DirtyFlags.Blend;
         }
 
         public void SetDepthBias(float slopeFactor, float constantFactor, float clamp, bool enable)
         {
-            if (!FloatCompare(_depthBiasSlopeFactor, slopeFactor) ||
-                !FloatCompare(_depthBiasConstantFactor, constantFactor) ||
-                !FloatCompare(_depthBiasClamp, clamp) ||
-                _depthBiasEnable != enable)
-            {
-                _depthBiasSlopeFactor = slopeFactor;
-                _depthBiasConstantFactor = constantFactor;
-                _depthBiasClamp = clamp;
-                _depthBiasEnable = enable;
-                _dirty |= DirtyFlags.DepthBias;
-            }
+            _depthBiasSlopeFactor = slopeFactor;
+            _depthBiasConstantFactor = constantFactor;
+            _depthBiasClamp = clamp;
+
+            _depthBiasEnable = enable;
+            _dirty |= DirtyFlags.DepthBias;
         }
 
         public void SetScissor(int index, Rect2D scissor)
         {
-            if (!_scissors[index].Equals(scissor))
-            {
-                _scissors[index] = scissor;
-                _dirty |= DirtyFlags.Scissor;
-            }
+            _scissors[index] = scissor;
+            _dirty |= DirtyFlags.Scissor;
         }
 
         public void SetDepthTestBool(bool testEnable, bool writeEnable)
         {
-            if (DepthTestEnable != testEnable || DepthWriteEnable != writeEnable)
-            {
-                DepthTestEnable = testEnable;
-                DepthWriteEnable = writeEnable;
-                _dirty |= DirtyFlags.DepthTestBool;
-            }
+            DepthTestEnable = testEnable;
+            DepthWriteEnable = writeEnable;
+            _dirty |= DirtyFlags.DepthTestBool;
         }
 
         public void SetDepthTestCompareOp(CompareOp depthTestOp)
         {
-            if (_depthCompareOp != depthTestOp)
-            {
-                _depthCompareOp = depthTestOp;
-                _dirty |= DirtyFlags.DepthTestCompareOp;
-            }
+            _depthCompareOp = depthTestOp;
+            _dirty |= DirtyFlags.DepthTestCompareOp;
         }
 
         public void SetStencilOp(StencilOp backFailOp, StencilOp backPassOp, StencilOp backDepthFailOp,
             CompareOp backCompareOp, StencilOp frontFailOp, StencilOp frontPassOp, StencilOp frontDepthFailOp,
             CompareOp frontCompareOp)
         {
-            if (_backfailop != backFailOp || _backpassop != backPassOp || _backdepthfailop != backDepthFailOp ||
-                _backcompareop != backCompareOp || _frontfailop != frontFailOp || _frontpassop != frontPassOp ||
-                _frontdepthfailop != frontDepthFailOp || _frontcompareop != frontCompareOp)
-            {
-                _backfailop = backFailOp;
-                _backpassop = backPassOp;
-                _backdepthfailop = backDepthFailOp;
-                _backcompareop = backCompareOp;
-                _frontfailop = frontFailOp;
-                _frontpassop = frontPassOp;
-                _frontdepthfailop = frontDepthFailOp;
-                _frontcompareop = frontCompareOp;
-                _opToo = true;
-            }
+            _backfailop = backFailOp;
+            _backpassop = backPassOp;
+            _backdepthfailop = backDepthFailOp;
+            _backcompareop = backCompareOp;
+            _frontfailop = frontFailOp;
+            _frontpassop = frontPassOp;
+            _frontdepthfailop = frontDepthFailOp;
+            _frontcompareop = frontCompareOp;
+            _opToo = true;
         }
 
         public void SetStencilMask(uint backCompareMask, uint backWriteMask, uint backReference,
             uint frontCompareMask, uint frontWriteMask, uint frontReference)
         {
-            if (_backCompareMask != backCompareMask || _backWriteMask != backWriteMask ||
-                _backReference != backReference || _frontCompareMask != frontCompareMask ||
-                _frontWriteMask != frontWriteMask || _frontReference != frontReference)
-            {
-                _backCompareMask = backCompareMask;
-                _backWriteMask = backWriteMask;
-                _backReference = backReference;
-                _frontCompareMask = frontCompareMask;
-                _frontWriteMask = frontWriteMask;
-                _frontReference = frontReference;
-                _dirty |= DirtyFlags.Stencil;
-            }
+            _backCompareMask = backCompareMask;
+            _backWriteMask = backWriteMask;
+            _backReference = backReference;
+            _frontCompareMask = frontCompareMask;
+            _frontWriteMask = frontWriteMask;
+            _frontReference = frontReference;
+            _dirty |= DirtyFlags.Stencil;
         }
 
         public void SetStencilTest(bool stencilTestEnable)
         {
-            if (StencilTestEnable != stencilTestEnable)
-            {
-                StencilTestEnable = stencilTestEnable;
-                _dirty |= DirtyFlags.StencilTestEnable;
-            }
+            StencilTestEnable = stencilTestEnable;
+            _dirty |= DirtyFlags.StencilTestEnable;
         }
 
         public void SetViewport(int index, Viewport viewport)
         {
-            if (!Viewports[index].Equals(viewport))
-            {
-                Viewports[index] = viewport;
-                _dirty |= DirtyFlags.Viewport;
-            }
+            Viewports[index] = viewport;
+            _dirty |= DirtyFlags.Viewport;
         }
 
         public void SetViewports(ref Array16<Viewport> viewports, uint viewportsCount)
@@ -232,111 +189,75 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetCullMode(CullModeFlags cullMode)
         {
-            if (CullMode != cullMode)
-            {
-                CullMode = cullMode;
-                _dirty |= DirtyFlags.CullMode;
-            }
+            CullMode = cullMode;
+            _dirty |= DirtyFlags.CullMode;
         }
 
         public void SetFrontFace(FrontFace frontFace)
         {
-            if (_frontFace != frontFace)
-            {
-                _frontFace = frontFace;
-                _dirty |= DirtyFlags.FrontFace;
-            }
+            _frontFace = frontFace;
+            _dirty |= DirtyFlags.FrontFace;
         }
 
         public void SetLineWidth(float width)
         {
-            if (!FloatCompare(_lineWidth, width))
-            {
-                _lineWidth = width;
+            _lineWidth = width;
 
-                _dirty |= DirtyFlags.LineWidth;
-            }
+            _dirty |= DirtyFlags.LineWidth;
         }
 
         public void SetRasterizerDiscard(bool discard)
         {
-            if (_discard != discard)
-            {
-                _discard = discard;
-                _dirty |= DirtyFlags.RasterDiscard;
-            }
+            _discard = discard;
+            _dirty |= DirtyFlags.RasterDiscard;
         }
 
         public void SetPrimitiveRestartEnable(bool primitiveRestart)
         {
-            if (_primitiveRestartEnable != primitiveRestart)
-            {
-                _primitiveRestartEnable = primitiveRestart;
-                _dirty |= DirtyFlags.PrimitiveRestart;
-            }
+            _primitiveRestartEnable = primitiveRestart;
+            _dirty |= DirtyFlags.PrimitiveRestart;
         }
 
         public void SetLogicOp(LogicOp op)
         {
-            if (_logicOp != op)
-            {
-                _logicOp = op;
-                _dirty |= DirtyFlags.LogicOp;
-            }
+            _logicOp = op;
+            _dirty |= DirtyFlags.LogicOp;
         }
 
         public void SetPatchControlPoints(uint points)
         {
-            if (_patchControlPoints != points)
-            {
-                _patchControlPoints = points;
-                _dirty |= DirtyFlags.PatchControlPoints;
-            }
+            _patchControlPoints = points;
+            _dirty |= DirtyFlags.PatchControlPoints;
         }
 
         public void SetLogicOpEnable(bool logicOpEnable)
         {
-            if (_logicOpEnable != logicOpEnable)
-            {
-                _logicOpEnable = logicOpEnable;
-                _dirty |= DirtyFlags.LogicOpEnable;
-            }
+            _logicOpEnable = logicOpEnable;
+            _dirty |= DirtyFlags.LogicOpEnable;
         }
 
         public void SetDepthClampEnable(bool depthClampEnable)
         {
-            if (_depthClampEnable != depthClampEnable)
-            {
-                _depthClampEnable = depthClampEnable;
-                _dirty |= DirtyFlags.DepthClampEnable;
-            }
+            _depthClampEnable = depthClampEnable;
+            _dirty |= DirtyFlags.DepthClampEnable;
         }
 
         public void SetAlphaToCoverEnable(bool alphaToCoverEnable)
         {
-            if (_alphaToCoverEnable != alphaToCoverEnable)
-            {
-                _alphaToCoverEnable = alphaToCoverEnable;
-                _dirty |= DirtyFlags.AlphaToCover;
-            }
+            _alphaToCoverEnable = alphaToCoverEnable;
+            _dirty |= DirtyFlags.AlphaToCover;
         }
 
         public void SetAlphaToOneEnable(bool alphaToOneEnable)
         {
-            if (_alphaToOneEnable != alphaToOneEnable)
-            {
-                _alphaToOneEnable = alphaToOneEnable;
-                _dirty |= DirtyFlags.AlphaToOne;
-            }
+            _alphaToOneEnable = alphaToOneEnable;
+            _dirty |= DirtyFlags.AlphaToOne;
         }
 
         public void SetDepthMode(bool mode)
         {
-            if (DepthMode != mode)
-            {
-                DepthMode = mode;
-                _dirty |= DirtyFlags.DepthMode;
-            }
+            DepthMode = mode;
+            _dirty |= DirtyFlags.DepthMode;
         }
 
         public void ForceAllDirty(VulkanRenderer gd)
@@ -619,6 +540,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
+            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable && !_logicOpEnable)
+            {
+                return;
+            }
+
             gd.ExtendedDynamicState2Api.CmdSetLogicOp(commandBuffer, _logicOp);
         }
 
