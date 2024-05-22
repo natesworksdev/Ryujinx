@@ -104,6 +104,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public PhysicalDeviceExtendedDynamicState3FeaturesEXT ExtendedDynamicState3Features;
 
+        public bool SupportsUnrestrictedDynamicTopology;
+
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
@@ -209,6 +211,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 propertiesTransformFeedback.PNext = properties2.PNext;
                 properties2.PNext = &propertiesTransformFeedback;
+            }
+
+            PhysicalDeviceExtendedDynamicState3PropertiesEXT propertiesExtendedDynamicState3 = new()
+            {
+                SType = StructureType.PhysicalDeviceExtendedDynamicState3PropertiesExt,
+            };
+
+            if (_physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName))
+            {
+                propertiesExtendedDynamicState3.PNext = properties2.PNext;
+                properties2.PNext = &propertiesExtendedDynamicState3;
             }
 
             PhysicalDevicePortabilitySubsetPropertiesKHR propertiesPortabilitySubset = new()
@@ -424,6 +437,8 @@ namespace Ryujinx.Graphics.Vulkan
                 vertexBufferAlignment,
                 properties.Limits.SubTexelPrecisionBits,
                 minResourceAlignment);
+
+            SupportsUnrestrictedDynamicTopology = propertiesExtendedDynamicState3.DynamicPrimitiveTopologyUnrestricted;
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 
