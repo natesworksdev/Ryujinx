@@ -370,7 +370,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
             {
-                _dirty &= ~DirtyFlags.LogicOp;
+                _dirty &= ~DirtyFlags.PatchControlPoints;
             }
 
             if (!gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
