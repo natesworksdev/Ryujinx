@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Metal
         private readonly IProgram _programColorClearSI;
         private readonly IProgram _programColorClearUI;
         private readonly IProgram _programDepthStencilClear;
+        private readonly IProgram _programStrideChange;
 
         public HelperShader(MTLDevice device, Pipeline pipeline)
         {
@@ -38,6 +39,12 @@ namespace Ryujinx.Graphics.Metal
             [
                 new ShaderSource(blitSource, ShaderStage.Fragment, TargetLanguage.Msl),
                 new ShaderSource(blitSource, ShaderStage.Vertex, TargetLanguage.Msl)
+            ], device);
+
+            var strideChangeSource = ReadMsl("ChangeBufferStride.metal");
+            _programStrideChange = new Program(
+            [
+                new ShaderSource(strideChangeSource, ShaderStage.Compute, TargetLanguage.Msl)
             ], device);
 
             // var colorClearFSource = ReadMsl("ColorClearF.metal");
