@@ -711,5 +711,36 @@ namespace Ryujinx.Graphics.GAL
         {
             return format.IsUint() || format.IsSint();
         }
+
+        /// <summary>
+        /// Checks if the texture format is a float or sRGB color format.
+        /// </summary>
+        /// <remarks>
+        /// Does not include normalized formats. Also does not include depth formats.
+        /// Float and sRGB formats do not participate in logical operations.
+        /// </remarks>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static bool IsFloatOrSrgb(this Format format)
+        {
+            switch (format)
+            {
+                case Format.R8G8B8A8Srgb:
+                case Format.B8G8R8A8Srgb:
+                case Format.R16Float:
+                case Format.R16G16Float:
+                case Format.R16G16B16Float:
+                case Format.R16G16B16A16Float:
+                case Format.R32Float:
+                case Format.R32G32Float:
+                case Format.R32G32B32Float:
+                case Format.R32G32B32A32Float:
+                case Format.R11G11B10Float:
+                case Format.R9G9B9E5Float:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
