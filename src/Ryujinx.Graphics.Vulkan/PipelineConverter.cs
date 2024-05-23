@@ -297,6 +297,7 @@ namespace Ryujinx.Graphics.Vulkan
             int attachmentCount = 0;
             int maxColorAttachmentIndex = -1;
             uint attachmentIntegerFormatMask = 0;
+            bool allFormatsFloatOrSrgb = true;
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
@@ -309,6 +310,8 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         attachmentIntegerFormatMask |= 1u << i;
                     }
+
+                    allFormatsFloatOrSrgb &= state.AttachmentFormats[i].IsFloatOrSrgb();
                 }
             }
 
@@ -320,6 +323,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.ColorBlendAttachmentStateCount = (uint)(maxColorAttachmentIndex + 1);
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
+            pipeline.Internal.LogicOpsAllowed = attachmentCount == 0 || !allFormatsFloatOrSrgb;
 
             return pipeline;
         }
