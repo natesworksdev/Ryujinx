@@ -560,7 +560,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                // vendors other than nvidia have a bug where it enables logical operations even for float formats,
+                // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
                 // so we need to force disable them here.
                 bool logicOpEnable = LogicOpEnable && (gd.Vendor == Vendor.Nvidia || Internal.LogicOpsAllowed);
 
