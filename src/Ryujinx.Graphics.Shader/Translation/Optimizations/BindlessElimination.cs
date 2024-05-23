@@ -38,6 +38,12 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     // If we can't do bindless elimination, remove the texture operation.
                     // Set any destination variables to zero.
 
+                    string typeName = texOp.Inst.IsImage()
+                        ? texOp.Type.ToGlslImageType(texOp.Format.GetComponentType())
+                        : texOp.Type.ToGlslTextureType();
+
+                    gpuAccessor.Log($"Failed to find handle source for bindless access of type \"{typeName}\".");
+
                     for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
                     {
                         block.Operations.AddBefore(node, new Operation(Instruction.Copy, texOp.GetDest(destIndex), OperandHelper.Const(0)));
