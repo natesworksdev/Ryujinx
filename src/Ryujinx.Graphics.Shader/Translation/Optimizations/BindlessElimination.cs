@@ -64,15 +64,20 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             Operand nvHandle = texOp.GetSource(0);
 
-            if (nvHandle.AsgOp is not Operation handleOp ||
-                handleOp.Inst != Instruction.Load ||
-                (handleOp.StorageKind != StorageKind.Input && handleOp.StorageKind != StorageKind.StorageBuffer))
+            if (nvHandle.AsgOp is PhiNode phi)
             {
-                // Right now, we only allow bindless access when the handle comes from a shader input or storage buffer.
-                // This is an artificial limitation to prevent it from being used in cases where it
-                // would have a large performance impact of loading all textures in the pool.
-                // It might be removed in the future, if we can mitigate the performance impact.
+                for (int srcIndex = 0; srcIndex < phi.SourcesCount; srcIndex++)
+                {
+                    Operand phiSource = phi.GetSource(srcIndex);
 
+                    if (phiSource.AsgOp is not PhiNode && !IsBindlessAccessAllowed(phiSource))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (!IsBindlessAccessAllowed(nvHandle))
+            {
                 return false;
             }
 
@@ -125,6 +130,30 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             else
             {
                 texOp.TurnIntoArray(textureSetAndBinding);
+            }
+
+            return true;
+        }
+
+        private static bool IsBindlessAccessAllowed(Operand nvHandle)
+        {
+            if (nvHandle.Type == OperandType.ConstantBuffer)
+            {
+                // Bindless access with handles from constant buffer is allowed.
+
+                return true;
+            }
+
+            if (nvHandle.AsgOp is not Operation handleOp ||
+                handleOp.Inst != Instruction.Load ||
+                (handleOp.StorageKind != StorageKind.Input && handleOp.StorageKind != StorageKind.StorageBuffer))
+            {
+                // Right now, we only allow bindless access when the handle comes from a shader input or storage buffer.
+                // This is an artificial limitation to prevent it from being used in cases where it
+                // would have a large performance impact of loading all textures in the pool.
+                // It might be removed in the future, if we can mitigate the performance impact.
+
+                return false;
             }
 
             return true;
