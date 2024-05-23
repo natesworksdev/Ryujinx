@@ -489,7 +489,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordStencil(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (_opToo && StencilTestEnable)
+            if (_opToo)
             {
                 gd.ExtendedDynamicStateApi.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backfailop, _backpassop,
                     _backdepthfailop, _backcompareop);
@@ -569,11 +569,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable && !_logicOpEnable)
-            {
-                return;
-            }
-
             gd.ExtendedDynamicState2Api.CmdSetLogicOp(commandBuffer, _logicOp);
         }
 
