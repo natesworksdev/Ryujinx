@@ -716,11 +716,11 @@ namespace Ryujinx.Graphics.GAL
         /// Checks if the texture format is a float or sRGB color format.
         /// </summary>
         /// <remarks>
-        /// Does not include normalized formats. Also does not include depth formats.
+        /// Does not include normalized, compressed or depth formats.
         /// Float and sRGB formats do not participate in logical operations.
         /// </remarks>
-        /// <param name="format"></param>
-        /// <returns></returns>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the format is a float or sRGB color format, false otherwise</returns>
         public static bool IsFloatOrSrgb(this Format format)
         {
             switch (format)
