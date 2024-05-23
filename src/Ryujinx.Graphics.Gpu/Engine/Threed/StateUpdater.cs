@@ -44,6 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private ProgramPipelineState _pipeline;
 
         private bool _fsReadsFragCoord;
+        private bool _fsAlwaysDiscards;
         private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
@@ -487,6 +488,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool changedScale = false;
             uint rtNoAlphaMask = 0;
 
+            bool rtModifiable = updateFlags.HasFlag(RenderTargetUpdateFlags.ForClear) || !_fsAlwaysDiscards;
+
             for (int index = 0; index < Constants.TotalRenderTargets; index++)
             {
                 int rtIndex = useControl ? rtControl.UnpackPermutationIndex(index) : index;
@@ -495,7 +498,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (index >= count || !IsRtEnabled(colorState) || (singleColor && index != singleUse))
                 {
-                    changedScale |= _channel.TextureManager.SetRenderTargetColor(index, null);
+                    changedScale |= _channel.TextureManager.SetRenderTargetColor(index, null, rtModifiable);
 
                     continue;
                 }
@@ -514,7 +517,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     samplesInY,
                     sizeHint);
 
-                changedScale |= _channel.TextureManager.SetRenderTargetColor(index, color);
+                changedScale |= _channel.TextureManager.SetRenderTargetColor(index, color, rtModifiable);
 
                 if (color != null)
                 {
@@ -568,7 +571,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 }
             }
 
-            changedScale |= _channel.TextureManager.SetRenderTargetDepthStencil(depthStencil);
+            changedScale |= _channel.TextureManager.SetRenderTargetDepthStencil(depthStencil, rtModifiable);
 
             if (changedScale)
             {
@@ -1488,20 +1491,38 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _currentProgramInfo[stageIndex] = info;
             }
 
-            if (gs.Shaders[5]?.Info.UsesFragCoord == true)
-            {
-                // Make sure we update the viewport size on the support buffer if it will be consumed on the new shader.
+            _fsReadsFragCoord = false;
 
-                if (!_fsReadsFragCoord && _state.State.YControl.HasFlag(YControl.NegateY))
+            ShaderProgramInfo fragmentShaderInfo = gs.Shaders[5]?.Info;
+
+            if (fragmentShaderInfo != null)
+            {
+                if (fragmentShaderInfo.UsesFragCoord)
                 {
-                    UpdateSupportBufferViewportSize();
+                    // Make sure we update the viewport size on the support buffer if it will be consumed on the new shader.
+
+                    if (!_fsReadsFragCoord && _state.State.YControl.HasFlag(YControl.NegateY))
+                    {
+                        UpdateSupportBufferViewportSize();
+                    }
+
+                    _fsReadsFragCoord = true;
                 }
 
-                _fsReadsFragCoord = true;
+                if (_fsAlwaysDiscards != fragmentShaderInfo.HasUnconditionalDiscard)
+                {
+                    _fsAlwaysDiscards = fragmentShaderInfo.HasUnconditionalDiscard;
+
+                    if (!_fsAlwaysDiscards)
+                    {
+                        _channel.TextureManager.RefreshModifiedTextures();
+                        _channel.TextureManager.SignalRenderTargetsModifiable();
+                    }
+                }
             }
             else
             {
-                _fsReadsFragCoord = false;
+                _fsAlwaysDiscards = false;
             }
 
             if (gs.VertexAsCompute != null)

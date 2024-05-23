@@ -1479,11 +1479,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="bound">True if the texture has been bound, false if it has been unbound</param>
         public void SignalModifying(bool bound)
         {
-            if (bound)
-            {
-                _scaledSetScore = Math.Max(0, _scaledSetScore - 1);
-            }
-
             if (_modifiedStale || Group.HasCopyDependencies || Group.HasFlushBuffer)
             {
                 _modifiedStale = false;
@@ -1491,9 +1486,18 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             _physicalMemory.TextureCache.Lift(this);
+        }
 
+        /// <summary>
+        /// Signals that a render target texture has been either bound or unbound.
+        /// </summary>
+        /// <param name="bound">True if the texture has been bound, false if it has been unbound</param>
+        public void SignalBindingChange(bool bound)
+        {
             if (bound)
             {
+                _scaledSetScore = Math.Max(0, _scaledSetScore - 1);
+
                 IncrementReferenceCount();
             }
             else
