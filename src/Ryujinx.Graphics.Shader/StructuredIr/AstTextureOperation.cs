@@ -35,5 +35,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             SamplerSet = samplerSet;
             SamplerBinding = samplerBinding;
         }
+
+        public SetBindingPair GetTextureSetAndBinding()
+        {
+            return new SetBindingPair(Set, Binding);
+        }
+
+        public SetBindingPair GetSamplerSetAndBinding()
+        {
+            return new SetBindingPair(SamplerSet, SamplerBinding);
+        }
     }
 }
