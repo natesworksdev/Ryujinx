@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private struct TextureMeta
         {
+            public int Set;
             public int Binding;
             public bool AccurateType;
             public SamplerType Type;
@@ -149,10 +150,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             int binding = _cbSlotToBindingMap[slot];
             if (binding < 0)
             {
-                binding = _gpuAccessor.CreateConstantBufferBinding(slot);
+                SetBindingPair setAndBinding = _gpuAccessor.CreateConstantBufferBinding(slot);
+                binding = setAndBinding.Binding;
                 _cbSlotToBindingMap[slot] = binding;
                 string slotNumber = slot.ToString(CultureInfo.InvariantCulture);
-                AddNewConstantBuffer(binding, $"{_stagePrefix}_c{slotNumber}");
+                AddNewConstantBuffer(setAndBinding.SetIndex, binding, $"{_stagePrefix}_c{slotNumber}");
             }
 
             return binding;
@@ -170,10 +172,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (binding < 0)
             {
-                binding = _gpuAccessor.CreateStorageBufferBinding(slot);
+                SetBindingPair setAndBinding = _gpuAccessor.CreateStorageBufferBinding(slot);
+                binding = setAndBinding.Binding;
                 _sbSlotToBindingMap[slot] = binding;
                 string slotNumber = slot.ToString(CultureInfo.InvariantCulture);
-                AddNewStorageBuffer(binding, $"{_stagePrefix}_s{slotNumber}");
+                AddNewStorageBuffer(setAndBinding.SetIndex, binding, $"{_stagePrefix}_s{slotNumber}");
             }
 
             if (write)
@@ -311,21 +314,26 @@ namespace Ryujinx.Graphics.Shader.Translation
                 UsageFlags = usageFlags,
             };
 
+            int setIndex;
             int binding;
 
             if (dict.TryGetValue(info, out var existingMeta))
             {
                 dict[info] = MergeTextureMeta(meta, existingMeta);
+                setIndex = existingMeta.Set;
                 binding = existingMeta.Binding;
             }
             else
             {
                 bool isBuffer = (type & SamplerType.Mask) == SamplerType.TextureBuffer;
 
-                binding = isImage
+                SetBindingPair setAndBinding = isImage
                     ? _gpuAccessor.CreateImageBinding(arrayLength, isBuffer)
                     : _gpuAccessor.CreateTextureBinding(arrayLength, isBuffer);
 
+                setIndex = setAndBinding.SetIndex;
+                binding = setAndBinding.Binding;
+                meta.Set = setIndex;
                 meta.Binding = binding;
 
                 dict.Add(info, meta);
@@ -355,7 +363,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             var definition = new TextureDefinition(
-                isImage ? 3 : 2,
+                setIndex,
                 binding,
                 arrayLength,
                 separate,
@@ -378,6 +386,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static TextureMeta MergeTextureMeta(TextureMeta meta, TextureMeta existingMeta)
         {
+            meta.Set = existingMeta.Set;
             meta.Binding = existingMeta.Binding;
             meta.UsageFlags |= existingMeta.UsageFlags;
 
@@ -587,24 +596,24 @@ namespace Ryujinx.Graphics.Shader.Translation
             return false;
         }
 
-        private void AddNewConstantBuffer(int binding, string name)
+        private void AddNewConstantBuffer(int setIndex, int binding, string name)
         {
             StructureType type = new(new[]
             {
                 new StructureField(AggregateType.Array | AggregateType.Vector4 | AggregateType.FP32, "data", Constants.ConstantBufferSize / 16),
             });
 
-            Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, 0, binding, name, type));
+            Properties.AddOrUpdateConstantBuffer(new(BufferLayout.Std140, setIndex, binding, name, type));
         }
 
-        private void AddNewStorageBuffer(int binding, string name)
+        private void AddNewStorageBuffer(int setIndex, int binding, string name)
         {
             StructureType type = new(new[]
             {
                 new StructureField(AggregateType.Array | AggregateType.U32, "data", 0),
             });
 
-            Properties.AddOrUpdateStorageBuffer(new(BufferLayout.Std430, 1, binding, name, type));
+            Properties.AddOrUpdateStorageBuffer(new(BufferLayout.Std430, setIndex, binding, name, type));
         }
 
         public static string GetShaderStagePrefix(ShaderStage stage)
