@@ -221,7 +221,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return false;
         }
 
-        public int GetTextureOrImageBinding(
+        public SetBindingPair GetTextureOrImageBinding(
             Instruction inst,
             SamplerType type,
             TextureFormat format,
@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 format = TextureFormat.Unknown;
             }
 
-            int binding = GetTextureOrImageBinding(
+            SetBindingPair setAndBinding = GetTextureOrImageBinding(
                 cbufSlot,
                 handle,
                 arrayLength,
@@ -258,10 +258,10 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             _gpuAccessor.RegisterTexture(handle, cbufSlot);
 
-            return binding;
+            return setAndBinding;
         }
 
-        private int GetTextureOrImageBinding(
+        private SetBindingPair GetTextureOrImageBinding(
             int cbufSlot,
             int handle,
             int arrayLength,
@@ -381,7 +381,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 Properties.AddOrUpdateTexture(definition);
             }
 
-            return binding;
+            return new SetBindingPair(setIndex, binding);
         }
 
         private static TextureMeta MergeTextureMeta(TextureMeta meta, TextureMeta existingMeta)
