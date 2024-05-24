@@ -3,7 +3,6 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 using System.Collections.Generic;
-using System.Management;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
