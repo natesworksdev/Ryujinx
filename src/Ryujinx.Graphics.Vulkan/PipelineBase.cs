@@ -1021,9 +1021,9 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.LogicOp = op.Convert();
             }
 
-            // AMD has a bug where it enables logical operations even for float formats,
+            // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
             // so we need to force disable them here.
-            bool logicOpEnable = enable && (Gd.Vendor != Vendor.Amd || _newState.Internal.LogicOpsAllowed);
+            bool logicOpEnable = enable && (Gd.Vendor == Vendor.Nvidia || _newState.Internal.LogicOpsAllowed);
 
             if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
             {
