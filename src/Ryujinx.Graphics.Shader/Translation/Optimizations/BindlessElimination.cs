@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 using System.Collections.Generic;
+using System.Management;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 {
@@ -35,15 +36,31 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 if (!TryConvertBindless(block, resourceManager, gpuAccessor, texOp) &&
                     !GenerateBindlessAccess(block, resourceManager, gpuAccessor, texOp, node))
                 {
-                    // If we can't do bindless elimination, remove the texture operation.
-                    // Set any destination variables to zero.
+                    string typeName = texOp.Inst.IsImage()
+                        ? texOp.Type.ToGlslImageType(texOp.Format.GetComponentType())
+                        : texOp.Type.ToGlslTextureType();
 
-                    for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
+                    if (TryConvertBindlessAnySource(block, resourceManager, gpuAccessor, texOp))
                     {
-                        block.Operations.AddBefore(node, new Operation(Instruction.Copy, texOp.GetDest(destIndex), OperandHelper.Const(0)));
-                    }
+                        // Bindless elimination was done for a constant buffer source, but
+                        // there are other sources that were not accounted for. Result might be incorrect in some cases.
 
-                    Utils.DeleteNode(node, texOp);
+                        gpuAccessor.Log($"Failed to find all handle sources for bindless access of type \"{typeName}\".");
+                    }
+                    else
+                    {
+                        // If we can't do bindless elimination, remove the texture operation.
+                        // Set any destination variables to zero.
+
+                        gpuAccessor.Log($"Failed to find handle source for bindless access of type \"{typeName}\".");
+
+                        for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
+                        {
+                            block.Operations.AddBefore(node, new Operation(Instruction.Copy, texOp.GetDest(destIndex), OperandHelper.Const(0)));
+                        }
+
+                        Utils.DeleteNode(node, texOp);
+                    }
                 }
             }
         }
@@ -130,12 +147,53 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return true;
         }
 
+        private static bool TryConvertBindlessAnySource(BasicBlock block, ResourceManager resourceManager, IGpuAccessor gpuAccessor, TextureOperation texOp)
+        {
+            Operand bindlessHandle = texOp.GetSource(0);
+
+            if (bindlessHandle.AsgOp is PhiNode handlePhi)
+            {
+                HashSet<PhiNode> phiVisited = new HashSet<PhiNode>();
+                Queue<PhiNode> phiQueue = new Queue<PhiNode>();
+
+                phiVisited.Add(handlePhi);
+                phiQueue.Enqueue(handlePhi);
+
+                while (phiQueue.TryDequeue(out PhiNode phi))
+                {
+                    for (int srcIndex = 0; srcIndex < phi.SourcesCount; srcIndex++)
+                    {
+                        Operand phiSource = phi.GetSource(srcIndex);
+
+                        if (phiSource.Type == OperandType.ConstantBuffer)
+                        {
+                            return TryConvertBindless(block, resourceManager, gpuAccessor, texOp, phiSource);
+                        }
+                        else if (phiSource.AsgOp is PhiNode childPhi && phiVisited.Add(childPhi))
+                        {
+                            phiQueue.Enqueue(childPhi);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private static bool TryConvertBindless(BasicBlock block, ResourceManager resourceManager, IGpuAccessor gpuAccessor, TextureOperation texOp)
+        {
+            return TryConvertBindless(block, resourceManager, gpuAccessor, texOp, texOp.GetSource(0));
+        }
+
+        private static bool TryConvertBindless(
+            BasicBlock block,
+            ResourceManager resourceManager,
+            IGpuAccessor gpuAccessor,
+            TextureOperation texOp,
+            Operand bindlessHandle)
         {
             if (texOp.Inst == Instruction.TextureSample || texOp.Inst.IsTextureQuery())
             {
-                Operand bindlessHandle = texOp.GetSource(0);
-
                 // In some cases the compiler uses a shuffle operation to get the handle,
                 // for some textureGrad implementations. In those cases, we can skip the shuffle.
                 if (bindlessHandle.AsgOp is Operation shuffleOp && shuffleOp.Inst == Instruction.Shuffle)
@@ -288,7 +346,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
             else if (texOp.Inst.IsImage())
             {
-                Operand src0 = Utils.FindLastOperation(texOp.GetSource(0), block);
+                Operand src0 = Utils.FindLastOperation(bindlessHandle, block);
 
                 if (src0.Type == OperandType.ConstantBuffer)
                 {
