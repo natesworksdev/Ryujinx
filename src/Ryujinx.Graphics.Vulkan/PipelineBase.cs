@@ -903,6 +903,11 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetImageArray(Cbs, stage, binding, array);
         }
 
+        public void SetImageArray(ShaderStage stage, int setIndex, int binding, IImageArray array)
+        {
+            _descriptorSetUpdater.SetImageArray(Cbs, stage, setIndex, binding, array);
+        }
+
         public void SetIndexBuffer(BufferRange buffer, IndexType type)
         {
             if (buffer.Handle != BufferHandle.Null)
@@ -1154,6 +1159,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetTextureArray(ShaderStage stage, int binding, ITextureArray array)
         {
             _descriptorSetUpdater.SetTextureArray(Cbs, stage, binding, array);
+        }
+
+        public void SetTextureArray(ShaderStage stage, int setIndex, int binding, ITextureArray array)
+        {
+            _descriptorSetUpdater.SetTextureArray(Cbs, stage, setIndex, binding, array);
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)

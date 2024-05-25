@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Shader
@@ -36,8 +37,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _reservedTextures;
         private readonly int _reservedImages;
 
-        private readonly List<ResourceDescriptor>[] _resourceDescriptors;
-        private readonly List<ResourceUsage>[] _resourceUsages;
+        private List<ResourceDescriptor>[] _resourceDescriptors;
+        private List<ResourceUsage>[] _resourceUsages;
 
         /// <summary>
         /// Creates a new shader info builder.
@@ -132,13 +133,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
             AddDualDescriptor(stages, ResourceType.TextureAndSampler, ResourceType.BufferTexture, TextureSetIndex, textureBinding, texturesPerStage);
             AddDualDescriptor(stages, ResourceType.Image, ResourceType.BufferImage, ImageSetIndex, imageBinding, imagesPerStage);
 
-            AddArrayDescriptors(info.Textures, stages, TextureSetIndex, isImage: false);
-            AddArrayDescriptors(info.Images, stages, TextureSetIndex, isImage: true);
+            AddArrayDescriptors(info.Textures, stages, isImage: false);
+            AddArrayDescriptors(info.Images, stages, isImage: true);
 
-            AddUsage(info.CBuffers, stages, UniformSetIndex, isStorage: false);
-            AddUsage(info.SBuffers, stages, StorageSetIndex, isStorage: true);
-            AddUsage(info.Textures, stages, TextureSetIndex, isImage: false);
-            AddUsage(info.Images, stages, ImageSetIndex, isImage: true);
+            AddUsage(info.CBuffers, stages, isStorage: false);
+            AddUsage(info.SBuffers, stages, isStorage: true);
+            AddUsage(info.Textures, stages, isImage: false);
+            AddUsage(info.Images, stages, isImage: true);
         }
 
         /// <summary>
@@ -177,9 +178,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="textures">Textures to be added</param>
         /// <param name="stages">Stages where the textures are used</param>
-        /// <param name="setIndex">Descriptor set index where the textures will be bound</param>
         /// <param name="isImage">True for images, false for textures</param>
-        private void AddArrayDescriptors(IEnumerable<TextureDescriptor> textures, ResourceStages stages, int setIndex, bool isImage)
+        private void AddArrayDescriptors(IEnumerable<TextureDescriptor> textures, ResourceStages stages, bool isImage)
         {
             foreach (TextureDescriptor texture in textures)
             {
@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 {
                     ResourceType type = GetTextureResourceType(texture, isImage);
 
-                    _resourceDescriptors[setIndex].Add(new ResourceDescriptor(texture.Binding, texture.ArrayLength, type, stages));
+                    GetDescriptors(texture.Set).Add(new ResourceDescriptor(texture.Binding, texture.ArrayLength, type, stages));
                 }
             }
         }
@@ -213,13 +213,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="buffers">Buffers to be added</param>
         /// <param name="stages">Stages where the buffers are used</param>
-        /// <param name="setIndex">Descriptor set index where the buffers will be bound</param>
         /// <param name="isStorage">True for storage buffers, false for uniform buffers</param>
-        private void AddUsage(IEnumerable<BufferDescriptor> buffers, ResourceStages stages, int setIndex, bool isStorage)
+        private void AddUsage(IEnumerable<BufferDescriptor> buffers, ResourceStages stages, bool isStorage)
         {
             foreach (BufferDescriptor buffer in buffers)
             {
-                _resourceUsages[setIndex].Add(new ResourceUsage(
+                GetUsages(buffer.Set).Add(new ResourceUsage(
                     buffer.Binding,
                     1,
                     isStorage ? ResourceType.StorageBuffer : ResourceType.UniformBuffer,
@@ -232,16 +231,47 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="textures">Textures to be added</param>
         /// <param name="stages">Stages where the textures are used</param>
-        /// <param name="setIndex">Descriptor set index where the textures will be bound</param>
         /// <param name="isImage">True for images, false for textures</param>
-        private void AddUsage(IEnumerable<TextureDescriptor> textures, ResourceStages stages, int setIndex, bool isImage)
+        private void AddUsage(IEnumerable<TextureDescriptor> textures, ResourceStages stages, bool isImage)
         {
             foreach (TextureDescriptor texture in textures)
             {
                 ResourceType type = GetTextureResourceType(texture, isImage);
 
-                _resourceUsages[setIndex].Add(new ResourceUsage(texture.Binding, texture.ArrayLength, type, stages));
+                GetUsages(texture.Set).Add(new ResourceUsage(texture.Binding, texture.ArrayLength, type, stages));
             }
+        }
+
+        private List<ResourceDescriptor> GetDescriptors(int setIndex)
+        {
+            if (_resourceDescriptors.Length <= setIndex)
+            {
+                int oldLength = _resourceDescriptors.Length;
+                Array.Resize(ref _resourceDescriptors, setIndex + 1);
+
+                for (int index = oldLength; index <= setIndex; index++)
+                {
+                    _resourceDescriptors[index] = new();
+                }
+            }
+
+            return _resourceDescriptors[setIndex];
+        }
+
+        private List<ResourceUsage> GetUsages(int setIndex)
+        {
+            if (_resourceUsages.Length <= setIndex)
+            {
+                int oldLength = _resourceUsages.Length;
+                Array.Resize(ref _resourceUsages, setIndex + 1);
+
+                for (int index = oldLength; index <= setIndex; index++)
+                {
+                    _resourceUsages[index] = new();
+                }
+            }
+
+            return _resourceUsages[setIndex];
         }
 
         private static ResourceType GetTextureResourceType(TextureDescriptor texture, bool isImage)
@@ -278,10 +308,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Shader information</returns>
         public ShaderInfo Build(ProgramPipelineState? pipeline, bool fromCache = false)
         {
-            var descriptors = new ResourceDescriptorCollection[TotalSets];
-            var usages = new ResourceUsageCollection[TotalSets];
+            int totalSets = _resourceDescriptors.Length;
 
-            for (int index = 0; index < TotalSets; index++)
+            var descriptors = new ResourceDescriptorCollection[totalSets];
+            var usages = new ResourceUsageCollection[totalSets];
+
+            for (int index = 0; index < totalSets; index++)
             {
                 descriptors[index] = new ResourceDescriptorCollection(_resourceDescriptors[index].ToArray().AsReadOnly());
                 usages[index] = new ResourceUsageCollection(_resourceUsages[index].ToArray().AsReadOnly());

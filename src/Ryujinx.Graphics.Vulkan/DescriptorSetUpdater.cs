@@ -81,6 +81,20 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        private record struct ArrayExtraRef<T>
+        {
+            public ShaderStage Stage;
+            public T Array;
+            public int Binding;
+
+            public ArrayExtraRef(ShaderStage stage, T array, int binding)
+            {
+                Stage = stage;
+                Array = array;
+                Binding = binding;
+            }
+        }
+
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
         private readonly PipelineBase _pipeline;
@@ -96,6 +110,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ArrayRef<TextureArray>[] _textureArrayRefs;
         private ArrayRef<ImageArray>[] _imageArrayRefs;
+
+        private ArrayExtraRef<TextureArray>[] _textureArrayExtraRefs;
+        private ArrayExtraRef<ImageArray>[] _imageArrayExtraRefs;
 
         private readonly DescriptorBufferInfo[] _uniformBuffers;
         private readonly DescriptorBufferInfo[] _storageBuffers;
@@ -151,6 +168,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             _textureArrayRefs = Array.Empty<ArrayRef<TextureArray>>();
             _imageArrayRefs = Array.Empty<ArrayRef<ImageArray>>();
+
+            _textureArrayExtraRefs = Array.Empty<ArrayExtraRef<TextureArray>>();
+            _imageArrayExtraRefs = Array.Empty<ArrayExtraRef<ImageArray>>();
 
             _uniformBuffers = new DescriptorBufferInfo[Constants.MaxUniformBufferBindings];
             _storageBuffers = new DescriptorBufferInfo[Constants.MaxStorageBufferBindings];
@@ -519,6 +539,29 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public void SetTextureArray(CommandBufferScoped cbs, ShaderStage stage, int setIndex, int binding, ITextureArray array)
+        {
+            ref ArrayExtraRef<TextureArray> arrayRef = ref GetExtraArrayRef(ref _textureArrayExtraRefs, setIndex, binding);
+
+            if (arrayRef.Stage != stage || arrayRef.Array != array)
+            {
+                if (arrayRef.Array != null)
+                {
+                    arrayRef.Array.Bound = false;
+                }
+
+                if (array is TextureArray textureArray)
+                {
+                    textureArray.Bound = true;
+                    textureArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
+                }
+
+                arrayRef = new ArrayExtraRef<TextureArray>(stage, array as TextureArray, binding);
+
+                SignalDirty(DirtyFlags.Texture);
+            }
+        }
+
         public void SetImageArray(CommandBufferScoped cbs, ShaderStage stage, int binding, IImageArray array)
         {
             if (_imageArrayRefs.Length <= binding)
@@ -543,6 +586,44 @@ namespace Ryujinx.Graphics.Vulkan
 
                 SignalDirty(DirtyFlags.Image);
             }
+        }
+
+        public void SetImageArray(CommandBufferScoped cbs, ShaderStage stage, int setIndex, int binding, IImageArray array)
+        {
+            ref ArrayExtraRef<ImageArray> arrayRef = ref GetExtraArrayRef(ref _imageArrayExtraRefs, setIndex, binding);
+
+            if (arrayRef.Stage != stage || arrayRef.Array != array)
+            {
+                if (arrayRef.Array != null)
+                {
+                    arrayRef.Array.Bound = false;
+                }
+
+                if (array is ImageArray imageArray)
+                {
+                    imageArray.Bound = true;
+                    imageArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
+                }
+
+                arrayRef = new ArrayExtraRef<ImageArray>(stage, array as ImageArray, binding);
+
+                SignalDirty(DirtyFlags.Image);
+            }
+        }
+
+        private static ref ArrayExtraRef<T> GetExtraArrayRef<T>(ref ArrayExtraRef<T>[] array, int setIndex, int binding)
+        {
+            setIndex -= PipelineBase.DescriptorSetLayouts;
+
+            ArgumentOutOfRangeException.ThrowIfNegative(setIndex);
+            ArgumentOutOfRangeException.ThrowIfNegative(binding);
+
+            if (array.Length <= setIndex)
+            {
+                Array.Resize(ref array, setIndex + 1);
+            }
+
+            return ref array[setIndex];
         }
 
         public void SetUniformBuffers(CommandBuffer commandBuffer, ReadOnlySpan<BufferAssignment> buffers)
@@ -594,31 +675,85 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
+            var program = _program;
+
             if (_dirty.HasFlag(DirtyFlags.Uniform))
             {
-                if (_program.UsePushDescriptors)
+                if (program.UsePushDescriptors)
                 {
                     UpdateAndBindUniformBufferPd(cbs, pbp);
                 }
                 else
                 {
-                    UpdateAndBind(cbs, PipelineBase.UniformSetIndex, pbp);
+                    UpdateAndBind(cbs, program, PipelineBase.UniformSetIndex, pbp);
                 }
             }
 
             if (_dirty.HasFlag(DirtyFlags.Storage))
             {
-                UpdateAndBind(cbs, PipelineBase.StorageSetIndex, pbp);
+                UpdateAndBind(cbs, program, PipelineBase.StorageSetIndex, pbp);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Texture))
             {
-                UpdateAndBind(cbs, PipelineBase.TextureSetIndex, pbp);
+                UpdateAndBind(cbs, program, PipelineBase.TextureSetIndex, pbp);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Image))
             {
-                UpdateAndBind(cbs, PipelineBase.ImageSetIndex, pbp);
+                UpdateAndBind(cbs, program, PipelineBase.ImageSetIndex, pbp);
+            }
+
+            if (program.BindingSegments.Length > PipelineBase.DescriptorSetLayouts)
+            {
+                // Program is using extra sets, we need to bind those too.
+
+                for (int setIndex = PipelineBase.DescriptorSetLayouts; setIndex < program.BindingSegments.Length; setIndex++)
+                {
+                    var bindingSegments = program.BindingSegments[setIndex];
+
+                    if (bindingSegments.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    ResourceBindingSegment segment = bindingSegments[0];
+
+                    if (segment.IsArray)
+                    {
+                        DescriptorSet[] sets = null;
+
+                        if (segment.Type == ResourceType.Texture ||
+                            segment.Type == ResourceType.Sampler ||
+                            segment.Type == ResourceType.TextureAndSampler ||
+                            segment.Type == ResourceType.BufferTexture)
+                        {
+                            sets = _textureArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
+                                _device,
+                                cbs,
+                                _templateUpdater,
+                                program,
+                                setIndex,
+                                _dummyTexture,
+                                _dummySampler);
+                        }
+                        else if (segment.Type == ResourceType.Image || segment.Type == ResourceType.BufferImage)
+                        {
+                            sets = _imageArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
+                                _device,
+                                cbs,
+                                _templateUpdater,
+                                program,
+                                setIndex,
+                                _dummyTexture);
+                        }
+
+                        if (sets != null)
+                        {
+                            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
+                        }
+                    }
+                }
             }
 
             _dirty = DirtyFlags.None;
@@ -658,9 +793,8 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, PipelineBindPoint pbp)
+        private void UpdateAndBind(CommandBufferScoped cbs, ShaderCollection program, int setIndex, PipelineBindPoint pbp)
         {
-            var program = _program;
             var bindingSegments = program.BindingSegments[setIndex];
 
             if (bindingSegments.Length == 0)

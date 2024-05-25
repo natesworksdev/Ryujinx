@@ -24,6 +24,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private HashSet<TextureStorage> _storages;
 
+        private DescriptorSet[] _cachedDescriptorSets;
+
         private int _cachedCommandBufferIndex;
         private int _cachedSubmissionCount;
 
@@ -97,6 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _cachedCommandBufferIndex = -1;
             _storages = null;
+            _cachedDescriptorSets = null;
 
             _gd.PipelineInternal.ForceImageDirty();
         }
@@ -174,6 +177,53 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return bufferTextures;
+        }
+
+        public DescriptorSet[] GetDescriptorSets(
+            Device device,
+            CommandBufferScoped cbs,
+            DescriptorSetTemplateUpdater templateUpdater,
+            ShaderCollection program,
+            int setIndex,
+            TextureView dummyTexture)
+        {
+            if (_cachedDescriptorSets != null)
+            {
+                // We still need to ensure the current command buffer holds a reference to all used textures.
+
+                if (!_isBuffer)
+                {
+                    GetImageInfos(_gd, cbs, dummyTexture);
+                }
+                else
+                {
+                    GetBufferViews(cbs);
+                }
+
+                return _cachedDescriptorSets;
+            }
+
+            program.UpdateDescriptorCacheCommandBufferIndex(cbs.CommandBufferIndex);
+            var dsc = program.GetNewDescriptorSetCollection(setIndex, out _).Get(cbs);
+
+            DescriptorSetTemplate template = program.Templates[setIndex];
+
+            DescriptorSetTemplateWriter tu = templateUpdater.Begin(template);
+
+            if (!_isBuffer)
+            {
+                tu.Push(GetImageInfos(_gd, cbs, dummyTexture));
+            }
+            else
+            {
+                tu.Push(GetBufferViews(cbs));
+            }
+
+            var sets = dsc.GetSets();
+            templateUpdater.Commit(_gd, device, sets[0]);
+            _cachedDescriptorSets = sets;
+
+            return sets;
         }
     }
 }

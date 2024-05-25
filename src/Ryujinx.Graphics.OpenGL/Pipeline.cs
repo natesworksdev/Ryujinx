@@ -963,6 +963,11 @@ namespace Ryujinx.Graphics.OpenGL
             (array as ImageArray).Bind(binding);
         }
 
+        public void SetImageArray(ShaderStage stage, int setIndex, int binding, IImageArray array)
+        {
+            throw new NotSupportedException("OpenGL does not support descriptor sets.");
+        }
+
         public void SetIndexBuffer(BufferRange buffer, IndexType type)
         {
             _elementsType = type.Convert();
@@ -1310,6 +1315,11 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetTextureArray(ShaderStage stage, int binding, ITextureArray array)
         {
             (array as TextureArray).Bind(binding);
+        }
+
+        public void SetTextureArray(ShaderStage stage, int setIndex, int binding, ITextureArray array)
+        {
+            throw new NotSupportedException("OpenGL does not support descriptor sets.");
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
