@@ -969,7 +969,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="array">Texture array</param>
         private void SetTextureArray(ShaderStage stage, in TextureBindingInfo bindingInfo, ITextureArray array)
         {
-            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex)
+            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex && _context.Capabilities.MaximumExtraSets != 0)
             {
                 _context.Renderer.Pipeline.SetTextureArraySeparate(stage, bindingInfo.Set, array);
             }
@@ -987,7 +987,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="array">Image array</param>
         private void SetImageArray(ShaderStage stage, in TextureBindingInfo bindingInfo, IImageArray array)
         {
-            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex)
+            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex && _context.Capabilities.MaximumExtraSets != 0)
             {
                 _context.Renderer.Pipeline.SetImageArraySeparate(stage, bindingInfo.Set, array);
             }
