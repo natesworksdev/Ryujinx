@@ -69,31 +69,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private record struct ArrayRef<T>
-        {
-            public ShaderStage Stage;
-            public T Array;
-
-            public ArrayRef(ShaderStage stage, T array)
-            {
-                Stage = stage;
-                Array = array;
-            }
-        }
-
-        private record struct ArrayExtraRef<T>
-        {
-            public ShaderStage Stage;
-            public T Array;
-            public int Binding;
-
-            public ArrayExtraRef(ShaderStage stage, T array, int binding)
-            {
-                Stage = stage;
-                Array = array;
-                Binding = binding;
-            }
-        }
+        private readonly record struct ArrayRef<T>(ShaderStage Stage, T Array);
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
@@ -111,8 +87,8 @@ namespace Ryujinx.Graphics.Vulkan
         private ArrayRef<TextureArray>[] _textureArrayRefs;
         private ArrayRef<ImageArray>[] _imageArrayRefs;
 
-        private ArrayExtraRef<TextureArray>[] _textureArrayExtraRefs;
-        private ArrayExtraRef<ImageArray>[] _imageArrayExtraRefs;
+        private ArrayRef<TextureArray>[] _textureArrayExtraRefs;
+        private ArrayRef<ImageArray>[] _imageArrayExtraRefs;
 
         private readonly DescriptorBufferInfo[] _uniformBuffers;
         private readonly DescriptorBufferInfo[] _storageBuffers;
@@ -169,8 +145,8 @@ namespace Ryujinx.Graphics.Vulkan
             _textureArrayRefs = Array.Empty<ArrayRef<TextureArray>>();
             _imageArrayRefs = Array.Empty<ArrayRef<ImageArray>>();
 
-            _textureArrayExtraRefs = Array.Empty<ArrayExtraRef<TextureArray>>();
-            _imageArrayExtraRefs = Array.Empty<ArrayExtraRef<ImageArray>>();
+            _textureArrayExtraRefs = Array.Empty<ArrayRef<TextureArray>>();
+            _imageArrayExtraRefs = Array.Empty<ArrayRef<ImageArray>>();
 
             _uniformBuffers = new DescriptorBufferInfo[Constants.MaxUniformBufferBindings];
             _storageBuffers = new DescriptorBufferInfo[Constants.MaxStorageBufferBindings];
@@ -515,48 +491,39 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetTextureArray(CommandBufferScoped cbs, ShaderStage stage, int binding, ITextureArray array)
         {
-            if (_textureArrayRefs.Length <= binding)
-            {
-                Array.Resize(ref _textureArrayRefs, binding + ArrayGrowthSize);
-            }
+            ref ArrayRef<TextureArray> arrayRef = ref GetArrayRef(ref _textureArrayRefs, binding, ArrayGrowthSize);
 
-            if (_textureArrayRefs[binding].Stage != stage || _textureArrayRefs[binding].Array != array)
+            if (arrayRef.Stage != stage || arrayRef.Array != array)
             {
-                if (_textureArrayRefs[binding].Array != null)
-                {
-                    _textureArrayRefs[binding].Array.Bound = false;
-                }
+                arrayRef.Array?.DecrementBindCount();
 
                 if (array is TextureArray textureArray)
                 {
-                    textureArray.Bound = true;
+                    textureArray.IncrementBindCount();
                     textureArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
                 }
 
-                _textureArrayRefs[binding] = new ArrayRef<TextureArray>(stage, array as TextureArray);
+                arrayRef = new ArrayRef<TextureArray>(stage, array as TextureArray);
 
                 SignalDirty(DirtyFlags.Texture);
             }
         }
 
-        public void SetTextureArray(CommandBufferScoped cbs, ShaderStage stage, int setIndex, int binding, ITextureArray array)
+        public void SetTextureArraySeparate(CommandBufferScoped cbs, ShaderStage stage, int setIndex, ITextureArray array)
         {
-            ref ArrayExtraRef<TextureArray> arrayRef = ref GetExtraArrayRef(ref _textureArrayExtraRefs, setIndex, binding);
+            ref ArrayRef<TextureArray> arrayRef = ref GetArrayRef(ref _textureArrayExtraRefs, setIndex - PipelineBase.DescriptorSetLayouts);
 
             if (arrayRef.Stage != stage || arrayRef.Array != array)
             {
-                if (arrayRef.Array != null)
-                {
-                    arrayRef.Array.Bound = false;
-                }
+                arrayRef.Array?.DecrementBindCount();
 
                 if (array is TextureArray textureArray)
                 {
-                    textureArray.Bound = true;
+                    textureArray.IncrementBindCount();
                     textureArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
                 }
 
-                arrayRef = new ArrayExtraRef<TextureArray>(stage, array as TextureArray, binding);
+                arrayRef = new ArrayRef<TextureArray>(stage, array as TextureArray);
 
                 SignalDirty(DirtyFlags.Texture);
             }
@@ -564,66 +531,54 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetImageArray(CommandBufferScoped cbs, ShaderStage stage, int binding, IImageArray array)
         {
-            if (_imageArrayRefs.Length <= binding)
-            {
-                Array.Resize(ref _imageArrayRefs, binding + ArrayGrowthSize);
-            }
-
-            if (_imageArrayRefs[binding].Stage != stage || _imageArrayRefs[binding].Array != array)
-            {
-                if (_imageArrayRefs[binding].Array != null)
-                {
-                    _imageArrayRefs[binding].Array.Bound = false;
-                }
-
-                if (array is ImageArray imageArray)
-                {
-                    imageArray.Bound = true;
-                    imageArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
-                }
-
-                _imageArrayRefs[binding] = new ArrayRef<ImageArray>(stage, array as ImageArray);
-
-                SignalDirty(DirtyFlags.Image);
-            }
-        }
-
-        public void SetImageArray(CommandBufferScoped cbs, ShaderStage stage, int setIndex, int binding, IImageArray array)
-        {
-            ref ArrayExtraRef<ImageArray> arrayRef = ref GetExtraArrayRef(ref _imageArrayExtraRefs, setIndex, binding);
+            ref ArrayRef<ImageArray> arrayRef = ref GetArrayRef(ref _imageArrayRefs, binding, ArrayGrowthSize);
 
             if (arrayRef.Stage != stage || arrayRef.Array != array)
             {
-                if (arrayRef.Array != null)
-                {
-                    arrayRef.Array.Bound = false;
-                }
+                arrayRef.Array?.DecrementBindCount();
 
                 if (array is ImageArray imageArray)
                 {
-                    imageArray.Bound = true;
+                    imageArray.IncrementBindCount();
                     imageArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
                 }
 
-                arrayRef = new ArrayExtraRef<ImageArray>(stage, array as ImageArray, binding);
+                arrayRef = new ArrayRef<ImageArray>(stage, array as ImageArray);
 
                 SignalDirty(DirtyFlags.Image);
             }
         }
 
-        private static ref ArrayExtraRef<T> GetExtraArrayRef<T>(ref ArrayExtraRef<T>[] array, int setIndex, int binding)
+        public void SetImageArraySeparate(CommandBufferScoped cbs, ShaderStage stage, int setIndex, IImageArray array)
         {
-            setIndex -= PipelineBase.DescriptorSetLayouts;
+            ref ArrayRef<ImageArray> arrayRef = ref GetArrayRef(ref _imageArrayExtraRefs, setIndex - PipelineBase.DescriptorSetLayouts);
 
-            ArgumentOutOfRangeException.ThrowIfNegative(setIndex);
-            ArgumentOutOfRangeException.ThrowIfNegative(binding);
-
-            if (array.Length <= setIndex)
+            if (arrayRef.Stage != stage || arrayRef.Array != array)
             {
-                Array.Resize(ref array, setIndex + 1);
+                arrayRef.Array?.DecrementBindCount();
+
+                if (array is ImageArray imageArray)
+                {
+                    imageArray.IncrementBindCount();
+                    imageArray.QueueWriteToReadBarriers(cbs, stage.ConvertToPipelineStageFlags());
+                }
+
+                arrayRef = new ArrayRef<ImageArray>(stage, array as ImageArray);
+
+                SignalDirty(DirtyFlags.Image);
+            }
+        }
+
+        private static ref ArrayRef<T> GetArrayRef<T>(ref ArrayRef<T>[] array, int index, int growthSize = 1)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
+
+            if (array.Length <= index)
+            {
+                Array.Resize(ref array, index + growthSize);
             }
 
-            return ref array[setIndex];
+            return ref array[index];
         }
 
         public void SetUniformBuffers(CommandBuffer commandBuffer, ReadOnlySpan<BufferAssignment> buffers)

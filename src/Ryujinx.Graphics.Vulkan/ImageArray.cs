@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly bool _isBuffer;
 
-        public bool Bound;
+        private int _bindCount;
 
         public ImageArray(VulkanRenderer gd, int size, bool isBuffer)
         {
@@ -101,7 +101,10 @@ namespace Ryujinx.Graphics.Vulkan
             _storages = null;
             _cachedDescriptorSets = null;
 
-            _gd.PipelineInternal.ForceImageDirty();
+            if (_bindCount != 0)
+            {
+                _gd.PipelineInternal.ForceImageDirty();
+            }
         }
 
         public void QueueWriteToReadBarriers(CommandBufferScoped cbs, PipelineStageFlags stageFlags)
@@ -224,6 +227,21 @@ namespace Ryujinx.Graphics.Vulkan
             _cachedDescriptorSets = sets;
 
             return sets;
+        }
+
+        public void IncrementBindCount()
+        {
+            _bindCount++;
+        }
+
+        public void DecrementBindCount()
+        {
+            int newBindCount = --_bindCount;
+
+            if (newBindCount < 0)
+            {
+                throw new Exception("huh?");
+            }
         }
     }
 }

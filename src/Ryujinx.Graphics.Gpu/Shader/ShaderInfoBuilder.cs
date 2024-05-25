@@ -10,13 +10,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class ShaderInfoBuilder
     {
-        private const int TotalSets = 4;
-
-        private const int UniformSetIndex = 0;
-        private const int StorageSetIndex = 1;
-        private const int TextureSetIndex = 2;
-        private const int ImageSetIndex = 3;
-
         private const ResourceStages SupportBufferStages =
             ResourceStages.Compute |
             ResourceStages.Vertex |
@@ -52,17 +45,27 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             _fragmentOutputMap = -1;
 
-            _resourceDescriptors = new List<ResourceDescriptor>[TotalSets];
-            _resourceUsages = new List<ResourceUsage>[TotalSets];
+            int uniformSetIndex = context.Capabilities.UniformBufferSetIndex;
+            int storageSetIndex = context.Capabilities.StorageBufferSetIndex;
+            int textureSetIndex = context.Capabilities.TextureSetIndex;
+            int imageSetIndex = context.Capabilities.ImageSetIndex;
 
-            for (int index = 0; index < TotalSets; index++)
+            int totalSets = Math.Max(uniformSetIndex, storageSetIndex);
+            totalSets = Math.Max(totalSets, textureSetIndex);
+            totalSets = Math.Max(totalSets, imageSetIndex);
+            totalSets++;
+
+            _resourceDescriptors = new List<ResourceDescriptor>[totalSets];
+            _resourceUsages = new List<ResourceUsage>[totalSets];
+
+            for (int index = 0; index < totalSets; index++)
             {
                 _resourceDescriptors[index] = new();
                 _resourceUsages[index] = new();
             }
 
-            AddDescriptor(SupportBufferStages, ResourceType.UniformBuffer, UniformSetIndex, 0, 1);
-            AddUsage(SupportBufferStages, ResourceType.UniformBuffer, UniformSetIndex, 0, 1);
+            AddDescriptor(SupportBufferStages, ResourceType.UniformBuffer, uniformSetIndex, 0, 1);
+            AddUsage(SupportBufferStages, ResourceType.UniformBuffer, uniformSetIndex, 0, 1);
 
             ResourceReservationCounts rrc = new(!context.Capabilities.SupportsTransformFeedback && tfEnabled, vertexAsCompute);
 
@@ -74,12 +77,20 @@ namespace Ryujinx.Graphics.Gpu.Shader
             // TODO: Handle that better? Maybe we should only set the binding that are really needed on each shader.
             ResourceStages stages = vertexAsCompute ? ResourceStages.Compute | ResourceStages.Vertex : VtgStages;
 
-            PopulateDescriptorAndUsages(stages, ResourceType.UniformBuffer, UniformSetIndex, 1, rrc.ReservedConstantBuffers - 1);
-            PopulateDescriptorAndUsages(stages, ResourceType.StorageBuffer, StorageSetIndex, 0, rrc.ReservedStorageBuffers);
-            PopulateDescriptorAndUsages(stages, ResourceType.BufferTexture, TextureSetIndex, 0, rrc.ReservedTextures);
-            PopulateDescriptorAndUsages(stages, ResourceType.BufferImage, ImageSetIndex, 0, rrc.ReservedImages);
+            PopulateDescriptorAndUsages(stages, ResourceType.UniformBuffer, uniformSetIndex, 1, rrc.ReservedConstantBuffers - 1);
+            PopulateDescriptorAndUsages(stages, ResourceType.StorageBuffer, storageSetIndex, 0, rrc.ReservedStorageBuffers);
+            PopulateDescriptorAndUsages(stages, ResourceType.BufferTexture, textureSetIndex, 0, rrc.ReservedTextures);
+            PopulateDescriptorAndUsages(stages, ResourceType.BufferImage, imageSetIndex, 0, rrc.ReservedImages);
         }
 
+        /// <summary>
+        /// Populates descriptors and usages for vertex as compute and transform feedback emulation reserved resources.
+        /// </summary>
+        /// <param name="stages">Shader stages where the resources are used</param>
+        /// <param name="type">Resource type</param>
+        /// <param name="setIndex">Resource set index where the resources are used</param>
+        /// <param name="start">First binding number</param>
+        /// <param name="count">Amount of bindings</param>
         private void PopulateDescriptorAndUsages(ResourceStages stages, ResourceType type, int setIndex, int start, int count)
         {
             AddDescriptor(stages, type, setIndex, start, count);
@@ -128,10 +139,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
             int textureBinding = _reservedTextures + stageIndex * texturesPerStage * 2;
             int imageBinding = _reservedImages + stageIndex * imagesPerStage * 2;
 
-            AddDescriptor(stages, ResourceType.UniformBuffer, UniformSetIndex, uniformBinding, uniformsPerStage);
-            AddDescriptor(stages, ResourceType.StorageBuffer, StorageSetIndex, storageBinding, storagesPerStage);
-            AddDualDescriptor(stages, ResourceType.TextureAndSampler, ResourceType.BufferTexture, TextureSetIndex, textureBinding, texturesPerStage);
-            AddDualDescriptor(stages, ResourceType.Image, ResourceType.BufferImage, ImageSetIndex, imageBinding, imagesPerStage);
+            int uniformSetIndex = _context.Capabilities.UniformBufferSetIndex;
+            int storageSetIndex = _context.Capabilities.StorageBufferSetIndex;
+            int textureSetIndex = _context.Capabilities.TextureSetIndex;
+            int imageSetIndex = _context.Capabilities.ImageSetIndex;
+
+            AddDescriptor(stages, ResourceType.UniformBuffer, uniformSetIndex, uniformBinding, uniformsPerStage);
+            AddDescriptor(stages, ResourceType.StorageBuffer, storageSetIndex, storageBinding, storagesPerStage);
+            AddDualDescriptor(stages, ResourceType.TextureAndSampler, ResourceType.BufferTexture, textureSetIndex, textureBinding, texturesPerStage);
+            AddDualDescriptor(stages, ResourceType.Image, ResourceType.BufferImage, imageSetIndex, imageBinding, imagesPerStage);
 
             AddArrayDescriptors(info.Textures, stages, isImage: false);
             AddArrayDescriptors(info.Images, stages, isImage: true);
@@ -242,6 +258,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
+        /// <summary>
+        /// Gets the list of resource descriptors for a given set index. A new list will be created if needed.
+        /// </summary>
+        /// <param name="setIndex">Resource set index</param>
+        /// <returns>List of resource descriptors</returns>
         private List<ResourceDescriptor> GetDescriptors(int setIndex)
         {
             if (_resourceDescriptors.Length <= setIndex)
@@ -258,6 +279,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return _resourceDescriptors[setIndex];
         }
 
+        /// <summary>
+        /// Gets the list of resource usages for a given set index. A new list will be created if needed.
+        /// </summary>
+        /// <param name="setIndex">Resource set index</param>
+        /// <returns>List of resource usages</returns>
         private List<ResourceUsage> GetUsages(int setIndex)
         {
             if (_resourceUsages.Length <= setIndex)
@@ -274,6 +300,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return _resourceUsages[setIndex];
         }
 
+        /// <summary>
+        /// Gets a resource type from a texture descriptor.
+        /// </summary>
+        /// <param name="texture">Texture descriptor</param>
+        /// <param name="isImage">Whether the texture is a image texture (writable) or not (sampled)</param>
+        /// <returns>Resource type</returns>
         private static ResourceType GetTextureResourceType(TextureDescriptor texture, bool isImage)
         {
             bool isBuffer = (texture.Type & SamplerType.Mask) == SamplerType.TextureBuffer;

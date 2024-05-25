@@ -961,11 +961,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Updates a texture array binding on the host.
+        /// </summary>
+        /// <param name="stage">Shader stage where the array is used</param>
+        /// <param name="bindingInfo">Array binding information</param>
+        /// <param name="array">Texture array</param>
         private void SetTextureArray(ShaderStage stage, in TextureBindingInfo bindingInfo, ITextureArray array)
         {
             if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex)
             {
-                _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Set, bindingInfo.Binding, array);
+                _context.Renderer.Pipeline.SetTextureArraySeparate(stage, bindingInfo.Set, array);
             }
             else
             {
@@ -973,11 +979,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Updates a image array binding on the host.
+        /// </summary>
+        /// <param name="stage">Shader stage where the array is used</param>
+        /// <param name="bindingInfo">Array binding information</param>
+        /// <param name="array">Image array</param>
         private void SetImageArray(ShaderStage stage, in TextureBindingInfo bindingInfo, IImageArray array)
         {
             if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex)
             {
-                _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Set, bindingInfo.Binding, array);
+                _context.Renderer.Pipeline.SetImageArraySeparate(stage, bindingInfo.Set, array);
             }
             else
             {

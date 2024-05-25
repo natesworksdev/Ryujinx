@@ -189,9 +189,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetImageArray(ShaderStage stage, int setIndex, int binding, IImageArray array)
+        public void SetImageArraySeparate(ShaderStage stage, int setIndex, IImageArray array)
         {
-            _renderer.New<SetImageArrayCommand>().Set(stage, setIndex, binding, Ref(array));
+            _renderer.New<SetImageArraySeparateCommand>().Set(stage, setIndex, Ref(array));
             _renderer.QueueCommand();
         }
 
@@ -303,9 +303,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetTextureArray(ShaderStage stage, int setIndex, int binding, ITextureArray array)
+        public void SetTextureArraySeparate(ShaderStage stage, int setIndex, ITextureArray array)
         {
-            _renderer.New<SetTextureArrayCommand>().Set(stage, setIndex, binding, Ref(array));
+            _renderer.New<SetTextureArraySeparateCommand>().Set(stage, setIndex, Ref(array));
             _renderer.QueueCommand();
         }
 
