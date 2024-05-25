@@ -326,6 +326,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 if (arrayLength > 1 && (setIndex = _gpuAccessor.CreateExtraSet()) >= 0)
                 {
+                    // We reserved an "extra set" for the array.
+                    // In this case the binding is always the first one (0).
+                    // Using separate sets for array is better as we need to do less descriptor set updates.
+
                     binding = 0;
                 }
                 else

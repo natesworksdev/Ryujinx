@@ -2,6 +2,7 @@ using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -28,6 +29,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         private int _cachedCommandBufferIndex;
         private int _cachedSubmissionCount;
+
+        private ShaderCollection _cachedDscProgram;
+        private int _cachedDscSetIndex;
+        private int _cachedDscIndex;
 
         private readonly bool _isBuffer;
 
@@ -222,8 +227,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return _cachedDescriptorSets;
             }
 
-            program.UpdateDescriptorCacheCommandBufferIndex(cbs.CommandBufferIndex);
-            var dsc = program.GetNewDescriptorSetCollection(setIndex, out _).Get(cbs);
+            _cachedDscProgram?.ReleaseManualDescriptorSetCollection(_cachedDscSetIndex, _cachedDscIndex);
+            var dsc = program.GetNewManualDescriptorSetCollection(cbs.CommandBufferIndex, setIndex, out _cachedDscIndex).Get(cbs);
 
             DescriptorSetTemplate template = program.Templates[setIndex];
 
@@ -241,6 +246,8 @@ namespace Ryujinx.Graphics.Vulkan
             var sets = dsc.GetSets();
             templateUpdater.Commit(_gd, device, sets[0]);
             _cachedDescriptorSets = sets;
+            _cachedDscProgram = program;
+            _cachedDscSetIndex = setIndex;
 
             return sets;
         }
@@ -253,11 +260,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void DecrementBindCount()
         {
             int newBindCount = --_bindCount;
-
-            if (newBindCount < 0)
-            {
-                throw new Exception("huh?");
-            }
+            Debug.Assert(newBindCount >= 0);
         }
     }
 }
