@@ -636,7 +636,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (program.UsePushDescriptors)
                 {
-                    UpdateAndBindUniformBufferPd(cbs, pbp);
+                    UpdateAndBindUniformBufferPd(cbs);
                 }
                 else
                 {
@@ -663,52 +663,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // Program is using extra sets, we need to bind those too.
 
-                for (int setIndex = PipelineBase.DescriptorSetLayouts; setIndex < program.BindingSegments.Length; setIndex++)
-                {
-                    var bindingSegments = program.BindingSegments[setIndex];
-
-                    if (bindingSegments.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    ResourceBindingSegment segment = bindingSegments[0];
-
-                    if (segment.IsArray)
-                    {
-                        DescriptorSet[] sets = null;
-
-                        if (segment.Type == ResourceType.Texture ||
-                            segment.Type == ResourceType.Sampler ||
-                            segment.Type == ResourceType.TextureAndSampler ||
-                            segment.Type == ResourceType.BufferTexture)
-                        {
-                            sets = _textureArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
-                                _device,
-                                cbs,
-                                _templateUpdater,
-                                program,
-                                setIndex,
-                                _dummyTexture,
-                                _dummySampler);
-                        }
-                        else if (segment.Type == ResourceType.Image || segment.Type == ResourceType.BufferImage)
-                        {
-                            sets = _imageArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
-                                _device,
-                                cbs,
-                                _templateUpdater,
-                                program,
-                                setIndex,
-                                _dummyTexture);
-                        }
-
-                        if (sets != null)
-                        {
-                            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
-                        }
-                    }
-                }
+                BindExtraSets(cbs, program, pbp);
             }
 
             _dirty = DirtyFlags.None;
@@ -958,7 +913,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateAndBindUniformBufferPd(CommandBufferScoped cbs, PipelineBindPoint pbp)
+        private void UpdateAndBindUniformBufferPd(CommandBufferScoped cbs)
         {
             int sequence = _pdSequence;
             var bindingSegments = _program.BindingSegments[PipelineBase.UniformSetIndex];
@@ -1020,6 +975,56 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 dsc.InitializeBuffers(0, segment.Binding, segment.Count, segment.Type.Convert(), dummyBuffer);
             }
+        }
+
+        private void BindExtraSets(CommandBufferScoped cbs, ShaderCollection program, PipelineBindPoint pbp)
+        {
+            for (int setIndex = PipelineBase.DescriptorSetLayouts; setIndex < program.BindingSegments.Length; setIndex++)
+                {
+                    var bindingSegments = program.BindingSegments[setIndex];
+
+                    if (bindingSegments.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    ResourceBindingSegment segment = bindingSegments[0];
+
+                    if (segment.IsArray)
+                    {
+                        DescriptorSet[] sets = null;
+
+                        if (segment.Type == ResourceType.Texture ||
+                            segment.Type == ResourceType.Sampler ||
+                            segment.Type == ResourceType.TextureAndSampler ||
+                            segment.Type == ResourceType.BufferTexture)
+                        {
+                            sets = _textureArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
+                                _device,
+                                cbs,
+                                _templateUpdater,
+                                program,
+                                setIndex,
+                                _dummyTexture,
+                                _dummySampler);
+                        }
+                        else if (segment.Type == ResourceType.Image || segment.Type == ResourceType.BufferImage)
+                        {
+                            sets = _imageArrayExtraRefs[setIndex - PipelineBase.DescriptorSetLayouts].Array.GetDescriptorSets(
+                                _device,
+                                cbs,
+                                _templateUpdater,
+                                program,
+                                setIndex,
+                                _dummyTexture);
+                        }
+
+                        if (sets != null)
+                        {
+                            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
+                        }
+                    }
+                }
         }
 
         public void SignalCommandBufferChange()
