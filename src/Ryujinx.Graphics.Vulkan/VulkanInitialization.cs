@@ -24,7 +24,6 @@ namespace Ryujinx.Graphics.Vulkan
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtExtendedDynamicState2.ExtensionName,
-            ExtExtendedDynamicState3.ExtensionName,
             ExtTransformFeedback.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
             KhrPushDescriptor.ExtensionName,
@@ -264,7 +263,7 @@ namespace Ryujinx.Graphics.Vulkan
             return InvalidIndex;
         }
 
-        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount, out PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2Features, out PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedDynamicState3Features)
+        internal static Device CreateDevice(Vk api, VulkanPhysicalDevice physicalDevice, uint queueFamilyIndex, uint queueCount, out PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2Features)
         {
             if (queueCount > QueuesCount)
             {
@@ -321,17 +320,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName))
             {
                 features2.PNext = &supportedFeaturesExtExtendedDynamicState2;
-            }
-
-            PhysicalDeviceExtendedDynamicState3FeaturesEXT supportedFeaturesExtExtendedDynamicState3 = new()
-            {
-                SType = StructureType.PhysicalDeviceExtendedDynamicState3FeaturesExt,
-                PNext = features2.PNext,
-            };
-
-            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName))
-            {
-                features2.PNext = &supportedFeaturesExtExtendedDynamicState3;
             }
 
             PhysicalDevicePrimitiveTopologyListRestartFeaturesEXT supportedFeaturesPrimitiveTopologyListRestart = new()
@@ -482,24 +470,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             extendedDynamicState2Features = supportedFeaturesExtExtendedDynamicState2;
 
-
-            if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState3.ExtensionName))
-            {
-                var featuresExtendedDynamicState3 = new PhysicalDeviceExtendedDynamicState3FeaturesEXT()
-                {
-                    SType = StructureType.PhysicalDeviceExtendedDynamicState3FeaturesExt,
-                    PNext = pExtendedFeatures,
-                    ExtendedDynamicState3LogicOpEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3LogicOpEnable,
-                    ExtendedDynamicState3AlphaToCoverageEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToCoverageEnable,
-                    ExtendedDynamicState3AlphaToOneEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3AlphaToOneEnable,
-                    ExtendedDynamicState3DepthClampEnable = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClampEnable,
-                    ExtendedDynamicState3DepthClipNegativeOneToOne = supportedFeaturesExtExtendedDynamicState3.ExtendedDynamicState3DepthClipNegativeOneToOne,
-                };
-
-                pExtendedFeatures = &featuresExtendedDynamicState3;
-            }
-
-            extendedDynamicState3Features = supportedFeaturesExtExtendedDynamicState3;
 
             var featuresVk11 = new PhysicalDeviceVulkan11Features
             {

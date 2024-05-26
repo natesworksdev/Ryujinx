@@ -129,7 +129,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2;
 
-
             _newState.Initialize();
         }
 
@@ -697,7 +696,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = Gd.SupportsUnrestrictedDynamicTopology ? DynamicState.Topology : _newState.Topology;
+                var oldTopology = _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -740,14 +739,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.ViewportsCount = oldViewportsCount;
                 }
 
-                if (Gd.SupportsUnrestrictedDynamicTopology)
-                {
-                    DynamicState.SetPrimitiveTopology(oldTopology);
-                }
-                else
-                {
-                    _newState.Topology = oldTopology;
-                }
+                _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
@@ -891,14 +883,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthClamp(bool clamp)
         {
-            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClampEnable)
-            {
-                DynamicState.SetDepthClampEnable(clamp);
-            }
-            else
-            {
-                _newState.DepthClampEnable = clamp;
-            }
+            _newState.DepthClampEnable = clamp;
 
             SignalStateChange();
         }
@@ -906,19 +891,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetDepthMode(DepthMode mode)
         {
             bool oldMode;
-            bool supportsDepthClipandDynamicState = Gd.ExtendedDynamicState3Features.ExtendedDynamicState3DepthClipNegativeOneToOne;
-            if (supportsDepthClipandDynamicState)
-            {
-                oldMode = DynamicState.DepthMode;
-                DynamicState.SetDepthMode(mode == DepthMode.MinusOneToOne);
-            }
-            else
-            {
-                oldMode = _newState.DepthMode;
-                _newState.DepthMode = mode == DepthMode.MinusOneToOne;
-            }
 
-            if ((supportsDepthClipandDynamicState ? DynamicState.DepthMode : _newState.DepthMode) != oldMode)
+            oldMode = _newState.DepthMode;
+            _newState.DepthMode = mode == DepthMode.MinusOneToOne;
+
+            if (_newState.DepthMode != oldMode)
             {
                 SignalStateChange();
             }
@@ -1028,38 +1005,16 @@ namespace Ryujinx.Graphics.Vulkan
             // so we need to force disable them here.
             bool logicOpEnable = enable && (Gd.Vendor == Vendor.Nvidia || _newState.Internal.LogicOpsAllowed);
 
-            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3LogicOpEnable)
-            {
-                DynamicState.SetLogicOpEnable(logicOpEnable);
-
-            }
-            else
-            {
-                _newState.LogicOpEnable = logicOpEnable;
-            }
+            _newState.LogicOpEnable = logicOpEnable;
 
             SignalStateChange();
         }
 
         public void SetMultisampleState(MultisampleDescriptor multisample)
         {
-            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToCoverageEnable)
-            {
-                DynamicState.SetAlphaToCoverEnable(multisample.AlphaToCoverageEnable);
-            }
-            else
-            {
-                _newState.AlphaToCoverageEnable = multisample.AlphaToCoverageEnable;
-            }
+            _newState.AlphaToCoverageEnable = multisample.AlphaToCoverageEnable;
 
-            if (Gd.ExtendedDynamicState3Features.ExtendedDynamicState3AlphaToOneEnable)
-            {
-                DynamicState.SetAlphaToOneEnable(multisample.AlphaToOneEnable);
-            }
-            else
-            {
-                _newState.AlphaToOneEnable = multisample.AlphaToOneEnable;
-            }
+            _newState.AlphaToOneEnable = multisample.AlphaToOneEnable;
 
             SignalStateChange();
         }
@@ -1139,14 +1094,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
 
-            if (Gd.SupportsUnrestrictedDynamicTopology)
-            {
-                DynamicState.SetPrimitiveTopology(vkTopology);
-            }
-            else
-            {
-                _newState.Topology = vkTopology;
-            }
+            _newState.Topology = vkTopology;
 
             SignalStateChange();
         }

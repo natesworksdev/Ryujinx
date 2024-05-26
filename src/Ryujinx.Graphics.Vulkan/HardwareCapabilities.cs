@@ -32,7 +32,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsConditionalRendering;
         public readonly bool SupportsExtendedDynamicState;
         public readonly bool SupportsExtendedDynamicState2;
-        public readonly bool SupportsExtendedDynamicState3;
         public readonly bool SupportsMultiView;
         public readonly bool SupportsNullDescriptors;
         public readonly bool SupportsPushDescriptors;
@@ -73,7 +72,6 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
             bool supportsExtendedDynamicState2,
-            bool supportsExtendedDynamicState3,
             bool supportsMultiView,
             bool supportsNullDescriptors,
             bool supportsPushDescriptors,
@@ -113,7 +111,6 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsExtendedDynamicState2 = supportsExtendedDynamicState2;
-            SupportsExtendedDynamicState3 = supportsExtendedDynamicState3;
             SupportsMultiView = supportsMultiView;
             SupportsNullDescriptors = supportsNullDescriptors;
             SupportsPushDescriptors = supportsPushDescriptors;
