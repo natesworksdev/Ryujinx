@@ -68,9 +68,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 return false;
             }
 
-            Operand nvHandle = texOp.GetSource(0);
+            Operand bindlessHandle = texOp.GetSource(0);
 
-            if (nvHandle.AsgOp is PhiNode phi)
+            if (bindlessHandle.AsgOp is PhiNode phi)
             {
                 for (int srcIndex = 0; srcIndex < phi.SourcesCount; srcIndex++)
                 {
@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     }
                 }
             }
-            else if (!IsBindlessAccessAllowed(nvHandle))
+            else if (!IsBindlessAccessAllowed(bindlessHandle))
             {
                 return false;
             }
@@ -91,8 +91,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             Operand samplerHandle = OperandHelper.Local();
             Operand textureIndex = OperandHelper.Local();
 
-            block.Operations.AddBefore(node, new Operation(Instruction.BitwiseAnd, textureHandle, nvHandle, OperandHelper.Const(0xfffff)));
-            block.Operations.AddBefore(node, new Operation(Instruction.ShiftRightU32, samplerHandle, nvHandle, OperandHelper.Const(20)));
+            block.Operations.AddBefore(node, new Operation(Instruction.BitwiseAnd, textureHandle, bindlessHandle, OperandHelper.Const(0xfffff)));
+            block.Operations.AddBefore(node, new Operation(Instruction.ShiftRightU32, samplerHandle, bindlessHandle, OperandHelper.Const(20)));
 
             int texturePoolLength = Math.Max(BindlessToArray.MinimumArrayLength, gpuAccessor.QueryTextureArrayLengthFromPool());
 
@@ -143,13 +143,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static bool IsBindlessAccessAllowed(Operand nvHandle)
         {
-            if (nvHandle.Type == OperandType.ConstantBuffer)
-            {
-                // Bindless access with handles from constant buffer is allowed.
-
-                return true;
-            }
-
             if (nvHandle.AsgOp is not Operation handleOp ||
                 handleOp.Inst != Instruction.Load ||
                 (handleOp.StorageKind != StorageKind.Input && handleOp.StorageKind != StorageKind.StorageBuffer))
