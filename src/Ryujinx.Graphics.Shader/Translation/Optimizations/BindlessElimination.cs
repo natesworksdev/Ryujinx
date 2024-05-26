@@ -143,6 +143,13 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static bool IsBindlessAccessAllowed(Operand nvHandle)
         {
+            if (nvHandle.Type == OperandType.ConstantBuffer)
+            {
+                // Bindless access with handles from constant buffer is allowed.
+
+                return true;
+            }
+
             if (nvHandle.AsgOp is not Operation handleOp ||
                 handleOp.Inst != Instruction.Load ||
                 (handleOp.StorageKind != StorageKind.Input && handleOp.StorageKind != StorageKind.StorageBuffer))
