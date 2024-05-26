@@ -112,6 +112,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string TitleName { get; set; }
         internal AppHost AppHost { get; set; }
 
+        private bool UseTitleConfiguration
+        {
+            get
+            {
+                return ConfigurationState.HasConfigurationForTitle(SelectedApplication?.TitleId);
+            }
+        }
+
         public MainWindowViewModel()
         {
             Applications = new ObservableCollection<ApplicationData>();
@@ -557,7 +565,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
-                ConfigurationState config = ConfigurationState.Instance(SelectedApplication != null);
+                ConfigurationState config = ConfigurationState.Instance(UseTitleConfiguration);
                 config.System.AudioVolume.Value = value;
 
                 if (_isGameRunning)
@@ -1327,7 +1335,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SetAspectRatio(AspectRatio aspectRatio)
         {
-            ConfigurationState.Instance(SelectedApplication != null).Graphics.AspectRatio.Value = aspectRatio;
+            ConfigurationState.Instance(UseTitleConfiguration).Graphics.AspectRatio.Value = aspectRatio;
         }
 
         public async Task InstallFirmwareFromFile()
