@@ -230,12 +230,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (gd.Capabilities.SupportsExtendedDynamicState)
             {
-                _dirty = DirtyFlags.Standard | DirtyFlags.Extended;
+                _dirty |= DirtyFlags.Extended;
             }
 
             if (gd.Capabilities.SupportsExtendedDynamicState2)
             {
-                _dirty = DirtyFlags.Standard | DirtyFlags.Extended | DirtyFlags.Extended2;
+                _dirty |= DirtyFlags.Extended2;
             }
 
             if (gd.IsMoltenVk)

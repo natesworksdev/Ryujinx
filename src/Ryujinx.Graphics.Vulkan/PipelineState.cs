@@ -391,11 +391,6 @@ namespace Ryujinx.Graphics.Vulkan
             RenderPass renderPass,
             bool throwOnError = false)
         {
-            if (program.TryGetGraphicsPipeline(ref Internal, out var pipeline))
-            {
-                return pipeline;
-            }
-
             // Using patches topology without a tessellation shader is invalid.
             // If we find such a case, return null pipeline to skip the draw.
             if (Topology == PrimitiveTopology.PatchList && !HasTessellationControlShader)
@@ -403,6 +398,11 @@ namespace Ryujinx.Graphics.Vulkan
                 program.AddGraphicsPipeline(ref Internal, null);
 
                 return null;
+            }
+
+            if (program.TryGetGraphicsPipeline(ref Internal, out var pipeline))
+            {
+                return pipeline;
             }
 
             Pipeline pipelineHandle = default;
@@ -426,6 +426,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineVertexInputStateCreateInfo,
                     VertexAttributeDescriptionCount = VertexAttributeDescriptionsCount,
+                    PVertexAttributeDescriptions = isMoltenVk ? pVertexAttributeDescriptions2 : pVertexAttributeDescriptions,
                     VertexBindingDescriptionCount = VertexBindingDescriptionsCount,
                     PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
@@ -455,8 +456,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (isMoltenVk)
                 {
-                    vertexInputState.PVertexAttributeDescriptions = pVertexAttributeDescriptions2;
-
                     //When widelines feature is not supported it must be 1.0f per spec. 
                     rasterizationState.LineWidth = 1.0f;
                 }
@@ -585,8 +584,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!isMoltenVk)
                 {
-                    vertexInputState.PVertexAttributeDescriptions = pVertexAttributeDescriptions;
-
                     baseDynamicStatesCount++;
                 }
 

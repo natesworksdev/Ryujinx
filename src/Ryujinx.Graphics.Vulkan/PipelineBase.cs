@@ -2,6 +2,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -1067,7 +1068,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             primitiveRestartEnable &= topologySupportsRestart;
 
-            //Cannot disable primitveRestartEnable for these Topoligies on MacOS
+            //Cannot disable primitiveRestartEnable for these Topologies on MacOS
             if ((_newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStrip || _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip ||
                  _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency ||
                  _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency) && Gd.IsMoltenVk)
@@ -1093,19 +1094,15 @@ namespace Ryujinx.Graphics.Vulkan
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
-
-            var currentTopologyClass = GetTopologyClass(_newState.Topology);
             var newTopologyClass = GetTopologyClass(vkTopology);
+            var currentTopologyClass = GetTopologyClass(_newState.Topology);
 
             if (_supportExtDynamic)
             {
                 DynamicState.SetPrimitiveTopology(vkTopology);
-                if (currentTopologyClass != newTopologyClass)
-                {
-                    _newState.Topology = vkTopology;
-                }
             }
-            else
+
+            if (!_supportExtDynamic || currentTopologyClass != newTopologyClass)
             {
                 _newState.Topology = vkTopology;
             }
@@ -1115,22 +1112,23 @@ namespace Ryujinx.Graphics.Vulkan
 
         private TopologyClass GetTopologyClass(Silk.NET.Vulkan.PrimitiveTopology topology)
         {
-            return topology switch
-            {
-                Silk.NET.Vulkan.PrimitiveTopology.PointList => TopologyClass.Point,
-                Silk.NET.Vulkan.PrimitiveTopology.LineList => TopologyClass.Line,
-                Silk.NET.Vulkan.PrimitiveTopology.LineStrip => TopologyClass.Line,
-                Silk.NET.Vulkan.PrimitiveTopology.LineListWithAdjacency => TopologyClass.Line,
-                Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency => TopologyClass.Line,
-                Silk.NET.Vulkan.PrimitiveTopology.TriangleList => TopologyClass.Triangle,
-                Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip => TopologyClass.Triangle,
-                Silk.NET.Vulkan.PrimitiveTopology.TriangleFan => TopologyClass.Triangle,
-                Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency => TopologyClass.Triangle,
-                Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency => TopologyClass.Triangle,
-                Silk.NET.Vulkan.PrimitiveTopology.PatchList => TopologyClass.Patch,
-                _ => throw new ArgumentOutOfRangeException(nameof(topology), topology, null)
-            };
+            return topologyClassMapping.TryGetValue(topology, out var topologyClass) ? topologyClass : throw new ArgumentOutOfRangeException(nameof(topology), topology, null);
         }
+
+        private static readonly Dictionary<Silk.NET.Vulkan.PrimitiveTopology, TopologyClass> topologyClassMapping = new()
+        {
+            { Silk.NET.Vulkan.PrimitiveTopology.PointList, TopologyClass.Point },
+            { Silk.NET.Vulkan.PrimitiveTopology.LineList, TopologyClass.Line },
+            { Silk.NET.Vulkan.PrimitiveTopology.LineStrip, TopologyClass.Line },
+            { Silk.NET.Vulkan.PrimitiveTopology.LineListWithAdjacency, TopologyClass.Line },
+            { Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency, TopologyClass.Line },
+            { Silk.NET.Vulkan.PrimitiveTopology.TriangleList, TopologyClass.Triangle },
+            { Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip, TopologyClass.Triangle },
+            { Silk.NET.Vulkan.PrimitiveTopology.TriangleFan, TopologyClass.Triangle },
+            { Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency, TopologyClass.Triangle },
+            { Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency, TopologyClass.Triangle },
+            { Silk.NET.Vulkan.PrimitiveTopology.PatchList, TopologyClass.Patch }
+        };
 
         private enum TopologyClass
         {
