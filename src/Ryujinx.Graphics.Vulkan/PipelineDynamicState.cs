@@ -54,6 +54,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint _patchControlPoints;
 
+        public PrimitiveTopology Topology;
+
         private bool _primitiveRestartEnable;
 
         [Flags]
@@ -75,8 +77,9 @@ namespace Ryujinx.Graphics.Vulkan
             LogicOp = 1 << 12,
             PatchControlPoints = 1 << 13,
             PrimitiveRestart = 1 << 14,
+            PrimitiveTopology = 1 << 15,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
-            Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable,
+            Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnable | PrimitiveTopology,
             Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart,
         }
 
@@ -203,6 +206,12 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.PrimitiveRestart;
         }
 
+        public void SetPrimitiveTopology(PrimitiveTopology primitiveTopology)
+        {
+            Topology = primitiveTopology;
+            _dirty |= DirtyFlags.PrimitiveTopology;
+        }
+
         public void SetLogicOp(LogicOp op)
         {
             _logicOp = op;
@@ -312,9 +321,9 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordPrimitiveRestartEnable(gd, commandBuffer);
             }
 
-            if (_dirty.HasFlag(DirtyFlags.PrimitiveRestart))
+            if (_dirty.HasFlag(DirtyFlags.PrimitiveTopology))
             {
-                RecordPrimitiveRestartEnable(gd, commandBuffer);
+                RecordPrimitiveTopology(gd, commandBuffer);
             }
 
             if (_dirty.HasFlag(DirtyFlags.LogicOp))
@@ -441,6 +450,11 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordPrimitiveRestartEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
             gd.ExtendedDynamicState2Api.CmdSetPrimitiveRestartEnable(commandBuffer, _primitiveRestartEnable);
+        }
+
+        private readonly void RecordPrimitiveTopology(VulkanRenderer gd, CommandBuffer commandBuffer)
+        {
+            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, Topology);
         }
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)

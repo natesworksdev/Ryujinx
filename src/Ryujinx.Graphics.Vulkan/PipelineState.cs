@@ -592,7 +592,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState)
                 {
-                    additionalDynamicStatesCount += isMoltenVk ? 7 : 8;
+                    additionalDynamicStatesCount += isMoltenVk ? 8 : 9;
                 }
 
                 if (supportsExtDynamicState2)
@@ -643,6 +643,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilOpExt;
+                    dynamicStates[currentIndex++] = DynamicState.PrimitiveTopologyExt;
                 }
 
                 if (supportsExtDynamicState2)
