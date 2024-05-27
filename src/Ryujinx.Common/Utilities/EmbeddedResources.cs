@@ -97,7 +97,7 @@ namespace Ryujinx.Common
 
         public async static Task<string> ReadAllTextAsync(Assembly assembly, string filename)
         {
-            await using var stream = GetStream(assembly, filename);
+            using var stream = GetStream(assembly, filename);
             if (stream == null)
             {
                 return null;
