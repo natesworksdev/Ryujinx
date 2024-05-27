@@ -479,7 +479,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (response.IsSuccessStatusCode)
             {
                 byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                await using MemoryStream memoryStream = new(amiiboPreviewBytes);
+                using MemoryStream memoryStream = new(amiiboPreviewBytes);
 
                 Bitmap bitmap = new(memoryStream);
 
