@@ -460,7 +460,6 @@ namespace Ryujinx.Graphics.Vulkan
                     rasterizationState.LineWidth = 1.0f;
                 }
 
-
                 if (!supportsExtDynamicState2)
                 {
                     rasterizationState.DepthBiasEnable = DepthBiasEnable;
@@ -551,10 +550,6 @@ namespace Ryujinx.Graphics.Vulkan
                         attachmentIntegerFormatMask &= ~(1u << i);
                     }
                 }
-
-                // AMD has a bug where it enables logical operations even for float formats,
-                // so we need to force disable them here.
-                bool logicOpEnable = LogicOpEnable && (gd.Vendor != Vendor.Amd || Internal.LogicOpsAllowed);
 
                 var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
