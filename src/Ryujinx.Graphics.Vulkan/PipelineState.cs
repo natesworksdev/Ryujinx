@@ -564,13 +564,11 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.LogicOp = LogicOp;
                 }
 
-                PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState;
-
                 if (!AdvancedBlendSrcPreMultiplied ||
                     !AdvancedBlendDstPreMultiplied ||
                     AdvancedBlendOverlap != BlendOverlapEXT.UncorrelatedExt)
                 {
-                    colorBlendAdvancedState = new PipelineColorBlendAdvancedStateCreateInfoEXT
+                    PipelineColorBlendAdvancedStateCreateInfoEXT colorBlendAdvancedState = new PipelineColorBlendAdvancedStateCreateInfoEXT
                     {
                         SType = StructureType.PipelineColorBlendAdvancedStateCreateInfoExt,
                         SrcPremultiplied = AdvancedBlendSrcPreMultiplied,
@@ -622,7 +620,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!isMoltenVk)
                 {
-                    //LineWidth is only supported on MacOS when using Metal Private API on newer version of MoltenVK
+                    //LineWidth is only supported on macOS when using Metal Private API on newer version of MoltenVK
                     dynamicStates[currentIndex++] = DynamicState.LineWidth;
                 }
 
