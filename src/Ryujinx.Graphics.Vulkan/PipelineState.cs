@@ -396,6 +396,15 @@ namespace Ryujinx.Graphics.Vulkan
                 return pipeline;
             }
 
+            // Using patches topology without a tessellation shader is invalid.
+            // If we find such a case, return null pipeline to skip the draw.
+            if (Topology == PrimitiveTopology.PatchList && !HasTessellationControlShader)
+            {
+                program.AddGraphicsPipeline(ref Internal, null);
+
+                return null;
+            }
+
             Pipeline pipelineHandle = default;
 
             bool isMoltenVk = gd.IsMoltenVk;
@@ -417,19 +426,9 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineVertexInputStateCreateInfo,
                     VertexAttributeDescriptionCount = VertexAttributeDescriptionsCount,
-                    PVertexAttributeDescriptions = isMoltenVk ? pVertexAttributeDescriptions2 : pVertexAttributeDescriptions,
                     VertexBindingDescriptionCount = VertexBindingDescriptionsCount,
                     PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
-
-                // Using patches topology without a tessellation shader is invalid.
-                // If we find such a case, return null pipeline to skip the draw.
-                if (Topology == PrimitiveTopology.PatchList && !HasTessellationControlShader)
-                {
-                    program.AddGraphicsPipeline(ref Internal, null);
-
-                    return null;
-                }
 
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
@@ -456,6 +455,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (isMoltenVk)
                 {
+                    vertexInputState.PVertexAttributeDescriptions = pVertexAttributeDescriptions2;
+
                     //When widelines feature is not supported it must be 1.0f per spec. 
                     rasterizationState.LineWidth = 1.0f;
                 }
@@ -584,6 +585,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!isMoltenVk)
                 {
+                    vertexInputState.PVertexAttributeDescriptions = pVertexAttributeDescriptions;
+
                     baseDynamicStatesCount++;
                 }
 
