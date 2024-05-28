@@ -1102,7 +1102,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DynamicState.SetPrimitiveTopology(vkTopology);
             }
 
-            if (!_supportExtDynamic || currentTopologyClass != newTopologyClass)
+            if (!_supportExtDynamic || (currentTopologyClass != newTopologyClass))
             {
                 _newState.Topology = vkTopology;
             }
@@ -1112,10 +1112,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         private TopologyClass GetTopologyClass(Silk.NET.Vulkan.PrimitiveTopology topology)
         {
-            return topologyClassMapping.TryGetValue(topology, out var topologyClass) ? topologyClass : throw new ArgumentOutOfRangeException(nameof(topology), topology, null);
+            return _topologyClassMapping.TryGetValue(topology, out var topologyClass) ? topologyClass : throw new ArgumentOutOfRangeException(nameof(topology), topology, null);
         }
 
-        private static readonly Dictionary<Silk.NET.Vulkan.PrimitiveTopology, TopologyClass> topologyClassMapping = new()
+        private static readonly Dictionary<Silk.NET.Vulkan.PrimitiveTopology, TopologyClass> _topologyClassMapping = new()
         {
             { Silk.NET.Vulkan.PrimitiveTopology.PointList, TopologyClass.Point },
             { Silk.NET.Vulkan.PrimitiveTopology.LineList, TopologyClass.Line },
