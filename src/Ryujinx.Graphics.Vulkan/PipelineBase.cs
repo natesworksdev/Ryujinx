@@ -727,10 +727,18 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
+                    var oldTopologyClass = GetTopologyClass(oldTopology);
+                    var newTopologyClass = GetTopologyClass(DynamicState.Topology);
+                    
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
                     DynamicState.SetPrimitiveTopology(oldTopology);
+
+                    if (oldTopologyClass != newTopologyClass)
+                    {
+                        _newState.Topology = oldTopology;
+                    }
                 }
                 else
                 {
