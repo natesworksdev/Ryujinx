@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Device _device;
 
         public DescriptorSetLayout[] DescriptorSetLayouts { get; }
+        public bool[] DescriptorSetLayoutsUpdateAfterBind { get; }
         public PipelineLayout PipelineLayout { get; }
 
         private readonly int[] _consumedDescriptorsPerSet;
@@ -98,7 +99,11 @@ namespace Ryujinx.Graphics.Vulkan
             ReadOnlyCollection<ResourceDescriptorCollection> setDescriptors,
             bool usePushDescriptors) : this(gd, device, setDescriptors.Count)
         {
-            (DescriptorSetLayouts, PipelineLayout) = PipelineLayoutFactory.Create(gd, device, setDescriptors, usePushDescriptors);
+            ResourceLayouts layouts = PipelineLayoutFactory.Create(gd, device, setDescriptors, usePushDescriptors);
+
+            DescriptorSetLayouts = layouts.DescriptorSetLayouts;
+            DescriptorSetLayoutsUpdateAfterBind = layouts.DescriptorSetLayoutsUpdateAfterBind;
+            PipelineLayout = layouts.PipelineLayout;
 
             _consumedDescriptorsPerSet = new int[setDescriptors.Count];
             _poolSizes = new DescriptorPoolSize[setDescriptors.Count][];
@@ -153,7 +158,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _poolSizes[setIndex],
                     setIndex,
                     _consumedDescriptorsPerSet[setIndex],
-                    false);
+                    DescriptorSetLayoutsUpdateAfterBind[setIndex]);
 
                 list.Add(dsc);
                 isNew = true;
@@ -196,7 +201,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _poolSizes[setIndex],
                 setIndex,
                 _consumedDescriptorsPerSet[setIndex],
-                false);
+                DescriptorSetLayoutsUpdateAfterBind[setIndex]);
 
             cacheIndex = list.Count;
             list.Add(new ManualDescriptorSetEntry(dsc, cbs.CommandBufferIndex));

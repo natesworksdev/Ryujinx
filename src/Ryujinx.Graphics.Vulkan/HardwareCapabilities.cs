@@ -52,6 +52,12 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly uint VertexBufferAlignment;
         public readonly uint SubTexelPrecisionBits;
         public readonly ulong MinResourceAlignment;
+        public readonly uint MaxPerStageSampledImages;
+        public readonly uint MaxPerStageSamplers;
+        public readonly uint MaxPerStageStorageBuffers;
+        public readonly uint MaxPerStageStorageImages;
+        public readonly uint MaxPerStageUniformBuffers;
+        public readonly uint MaxPerStageResources;
 
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
@@ -89,7 +95,13 @@ namespace Ryujinx.Graphics.Vulkan
             PortabilitySubsetFlags portabilitySubset,
             uint vertexBufferAlignment,
             uint subTexelPrecisionBits,
-            ulong minResourceAlignment)
+            ulong minResourceAlignment,
+            uint maxPerStageSampledImages,
+            uint maxPerStageSamplers,
+            uint maxPerStageStorageBuffers,
+            uint maxPerStageStorageImages,
+            uint maxPerStageUniformBuffers,
+            uint maxPerStageResources)
         {
             SupportsIndexTypeUint8 = supportsIndexTypeUint8;
             SupportsCustomBorderColor = supportsCustomBorderColor;
@@ -127,6 +139,12 @@ namespace Ryujinx.Graphics.Vulkan
             VertexBufferAlignment = vertexBufferAlignment;
             SubTexelPrecisionBits = subTexelPrecisionBits;
             MinResourceAlignment = minResourceAlignment;
+            MaxPerStageSampledImages = maxPerStageSampledImages;
+            MaxPerStageSamplers = maxPerStageSamplers;
+            MaxPerStageStorageBuffers = maxPerStageStorageBuffers;
+            MaxPerStageStorageImages = maxPerStageStorageImages;
+            MaxPerStageUniformBuffers = maxPerStageUniformBuffers;
+            MaxPerStageResources = maxPerStageResources;
         }
     }
 }
