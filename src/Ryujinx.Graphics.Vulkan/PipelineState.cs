@@ -559,7 +559,7 @@ namespace Ryujinx.Graphics.Vulkan
                     LogicOpEnable = LogicOpEnable,
                 };
 
-                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && LogicOpEnable)
                 {
                     colorBlendState.LogicOp = LogicOp;
                 }
