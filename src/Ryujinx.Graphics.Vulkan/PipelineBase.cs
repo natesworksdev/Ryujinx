@@ -729,7 +729,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     var oldTopologyClass = GetTopologyClass(oldTopology);
                     var newTopologyClass = GetTopologyClass(DynamicState.Topology);
-                    
+
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
@@ -1006,7 +1006,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool logicOpEnable = enable && (Gd.Vendor == Vendor.Nvidia || _newState.Internal.LogicOpsAllowed);
 
             _newState.LogicOpEnable = logicOpEnable;
-            
+
             if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && logicOpEnable)
             {
                 DynamicState.SetLogicOp(op.Convert());
