@@ -155,7 +155,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, buffer.Range) });
             _pipeline.SetImage(ShaderStage.Compute, 0, _intermediaryTexture, FormatTable.ConvertRgba8SrgbToUnorm(view.Info.Format));
-            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1, 0, 0, 0);
             _pipeline.ComputeBarrier();
 
             // Sharpening pass
@@ -163,7 +163,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, _intermediaryTexture, _sampler);
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(4, sharpeningBuffer.Range) });
             _pipeline.SetImage(0, destinationTexture);
-            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1, 0, 0, 0);
             _pipeline.ComputeBarrier();
 
             _pipeline.Finish();

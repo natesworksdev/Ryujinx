@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             buffer.Holder.SetDataUnchecked(buffer.Offset, resolutionBuffer);
             _pipeline.SetUniformBuffers(stackalloc[] { new BufferAssignment(2, buffer.Range) });
             _pipeline.SetImage(ShaderStage.Compute, 0, _edgeOutputTexture, FormatTable.ConvertRgba8SrgbToUnorm(view.Info.Format));
-            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1, 0, 0, 0);
             _pipeline.ComputeBarrier();
 
             // Blend pass
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 3, _areaTexture, _samplerLinear);
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 4, _searchTexture, _samplerLinear);
             _pipeline.SetImage(ShaderStage.Compute, 0, _blendOutputTexture, FormatTable.ConvertRgba8SrgbToUnorm(view.Info.Format));
-            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1, 0, 0, 0);
             _pipeline.ComputeBarrier();
 
             // Neighbour pass
@@ -239,7 +239,7 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 3, _blendOutputTexture, _samplerLinear);
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _samplerLinear);
             _pipeline.SetImage(ShaderStage.Compute, 0, _outputTexture, FormatTable.ConvertRgba8SrgbToUnorm(view.Info.Format));
-            _pipeline.DispatchCompute(dispatchX, dispatchY, 1);
+            _pipeline.DispatchCompute(dispatchX, dispatchY, 1, 0, 0, 0);
             _pipeline.ComputeBarrier();
 
             _pipeline.Finish();
