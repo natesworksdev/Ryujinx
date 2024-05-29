@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private struct PendingManualDsConsumption
+        private readonly struct PendingManualDsConsumption
         {
             public FenceHolder Fence { get; }
             public int CommandBufferIndex { get; }
