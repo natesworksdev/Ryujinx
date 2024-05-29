@@ -434,7 +434,10 @@ namespace Ryujinx.Graphics.Vulkan
         {
             api.CmdSetDepthTestEnable(commandBuffer, DepthTestEnable);
 
-            api.CmdSetDepthWriteEnable(commandBuffer, DepthWriteEnable);
+            if (DepthTestEnable)
+            {
+                api.CmdSetDepthWriteEnable(commandBuffer, DepthWriteEnable);
+            }
         }
 
         private readonly void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)

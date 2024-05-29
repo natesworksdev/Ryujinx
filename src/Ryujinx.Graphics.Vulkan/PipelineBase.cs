@@ -880,12 +880,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            DynamicState.SetDepthBias(factor, units, clamp, (enables != 0));
+            bool enable = enables != 0;
+            DynamicState.SetDepthBias(factor, units, clamp, enable);
 
-            if (!_supportExtDynamic2)
-            {
-                _newState.DepthBiasEnable = enables != 0;
-            }
+            _newState.DepthBiasEnable = enable;
 
             SignalStateChange();
         }
@@ -919,10 +917,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _newState.DepthTestEnable = depthTest.TestEnable;
                 _newState.DepthWriteEnable = depthTest.WriteEnable;
                 _newState.DepthCompareOp = depthTest.Func.Convert();
             }
+
+            _newState.DepthTestEnable = depthTest.TestEnable;
 
             SignalStateChange();
         }

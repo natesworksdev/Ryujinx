@@ -526,7 +526,10 @@ namespace Ryujinx.Graphics.Vulkan
                     depthStencilState.Back = stencilBack;
                     depthStencilState.StencilTestEnable = StencilTestEnable;
                     depthStencilState.DepthTestEnable = DepthTestEnable;
-                    depthStencilState.DepthWriteEnable = DepthWriteEnable;
+                    if (DepthTestEnable)
+                    {
+                        depthStencilState.DepthWriteEnable = DepthWriteEnable;
+                    }
                     depthStencilState.DepthCompareOp = DepthCompareOp;
                 }
 
@@ -579,7 +582,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
 
-                int baseDynamicStatesCount = 7;
+                int baseDynamicStatesCount = 6;
                 int additionalDynamicStatesCount = 0;
 
                 if (!isMoltenVk)
@@ -587,9 +590,19 @@ namespace Ryujinx.Graphics.Vulkan
                     baseDynamicStatesCount++;
                 }
 
+                if (DepthBiasEnable)
+                {
+                    baseDynamicStatesCount++;
+                }
+
                 if (supportsExtDynamicState)
                 {
-                    additionalDynamicStatesCount += isMoltenVk ? 8 : 9;
+                    additionalDynamicStatesCount += isMoltenVk ? 7 : 8;
+
+                    if (DepthTestEnable)
+                    {
+                        additionalDynamicStatesCount++;
+                    }
                 }
 
                 if (supportsExtDynamicState2)
@@ -610,13 +623,16 @@ namespace Ryujinx.Graphics.Vulkan
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
-                dynamicStates[2] = DynamicState.DepthBias;
-                dynamicStates[3] = DynamicState.StencilCompareMask;
-                dynamicStates[4] = DynamicState.StencilWriteMask;
-                dynamicStates[5] = DynamicState.StencilReference;
-                dynamicStates[6] = DynamicState.BlendConstants;
+                dynamicStates[2] = DynamicState.StencilCompareMask;
+                dynamicStates[3] = DynamicState.StencilWriteMask;
+                dynamicStates[4] = DynamicState.StencilReference;
+                dynamicStates[5] = DynamicState.BlendConstants;
 
-                int currentIndex = 7;
+                if (DepthBiasEnable)
+                {
+                    dynamicStates[6] = DynamicState.DepthBias;
+                }
+                int currentIndex = DepthBiasEnable ? 7 : 6;
 
                 if (!isMoltenVk)
                 {
@@ -636,7 +652,12 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.CullModeExt;
                     dynamicStates[currentIndex++] = DynamicState.FrontFaceExt;
                     dynamicStates[currentIndex++] = DynamicState.DepthTestEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
+
+                    if (DepthTestEnable)
+                    {
+                        dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
+                    }
+
                     dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilOpExt;
