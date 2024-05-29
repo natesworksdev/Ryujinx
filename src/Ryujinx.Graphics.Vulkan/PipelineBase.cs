@@ -1001,20 +1001,20 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetLogicOpState(bool enable, LogicalOp op)
         {
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
-            {
-                DynamicState.SetLogicOp(op.Convert());
-            }
-            else
-            {
-                _newState.LogicOp = op.Convert();
-            }
-
             // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
             // so we need to force disable them here.
             bool logicOpEnable = enable && (Gd.Vendor == Vendor.Nvidia || _newState.Internal.LogicOpsAllowed);
 
             _newState.LogicOpEnable = logicOpEnable;
+            
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && logicOpEnable)
+            {
+                DynamicState.SetLogicOp(op.Convert());
+            }
+            else if (logicOpEnable)
+            {
+                _newState.LogicOp = op.Convert();
+            }
 
             SignalStateChange();
         }

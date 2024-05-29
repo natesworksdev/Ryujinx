@@ -595,7 +595,7 @@ namespace Ryujinx.Graphics.Vulkan
                 if (supportsExtDynamicState2)
                 {
                     additionalDynamicStatesCount += 3;
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && LogicOpEnable)
                     {
                         additionalDynamicStatesCount++;
                     }
@@ -649,7 +649,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.PrimitiveRestartEnableExt;
 
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && LogicOpEnable)
                     {
                         dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
                     }
