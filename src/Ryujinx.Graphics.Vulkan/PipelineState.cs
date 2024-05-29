@@ -131,6 +131,8 @@ namespace Ryujinx.Graphics.Vulkan
             set => Internal.Id7 = (Internal.Id7 & 0xFFFFFFFFFFF0FFFF) | ((ulong)value << 16);
         }
 
+        public PrimitiveTopology TopologyClass;
+        
         public LogicOp LogicOp
         {
             readonly get => (LogicOp)((Internal.Id7 >> 20) & 0xF);
@@ -436,6 +438,15 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
                     Topology = Topology,
                 };
+
+                if (supportsExtDynamicState)
+                {
+                    inputAssemblyState.Topology = TopologyClass;
+                }
+                else
+                {
+                    inputAssemblyState.Topology = Topology;
+                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
