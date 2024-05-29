@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public PrimitiveTopology TopologyClass;
-        
+
         public LogicOp LogicOp
         {
             readonly get => (LogicOp)((Internal.Id7 >> 20) & 0xF);

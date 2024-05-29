@@ -748,7 +748,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
                     _newState.ViewportsCount = oldViewportsCount;
                 }
-                
+
                 _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
@@ -1114,7 +1114,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _newState.TopologyClass = vkTopology;
             }
-            
+
             _newState.Topology = vkTopology;
 
             SignalStateChange();
