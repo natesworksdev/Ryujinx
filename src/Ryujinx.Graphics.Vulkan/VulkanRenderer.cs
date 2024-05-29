@@ -402,13 +402,7 @@ namespace Ryujinx.Graphics.Vulkan
                 portabilityFlags,
                 vertexBufferAlignment,
                 properties.Limits.SubTexelPrecisionBits,
-                minResourceAlignment,
-                properties.Limits.MaxPerStageDescriptorSampledImages,
-                properties.Limits.MaxPerStageDescriptorSamplers,
-                properties.Limits.MaxPerStageDescriptorStorageBuffers,
-                properties.Limits.MaxPerStageDescriptorStorageImages,
-                properties.Limits.MaxPerStageDescriptorUniformBuffers,
-                properties.Limits.MaxPerStageResources);
+                minResourceAlignment);
 
             IsSharedMemory = MemoryAllocator.IsDeviceMemoryShared(_physicalDevice);
 

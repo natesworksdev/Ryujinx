@@ -95,13 +95,7 @@ namespace Ryujinx.Graphics.Vulkan
             PortabilitySubsetFlags portabilitySubset,
             uint vertexBufferAlignment,
             uint subTexelPrecisionBits,
-            ulong minResourceAlignment,
-            uint maxPerStageSampledImages,
-            uint maxPerStageSamplers,
-            uint maxPerStageStorageBuffers,
-            uint maxPerStageStorageImages,
-            uint maxPerStageUniformBuffers,
-            uint maxPerStageResources)
+            ulong minResourceAlignment)
         {
             SupportsIndexTypeUint8 = supportsIndexTypeUint8;
             SupportsCustomBorderColor = supportsCustomBorderColor;
@@ -139,12 +133,6 @@ namespace Ryujinx.Graphics.Vulkan
             VertexBufferAlignment = vertexBufferAlignment;
             SubTexelPrecisionBits = subTexelPrecisionBits;
             MinResourceAlignment = minResourceAlignment;
-            MaxPerStageSampledImages = maxPerStageSampledImages;
-            MaxPerStageSamplers = maxPerStageSamplers;
-            MaxPerStageStorageBuffers = maxPerStageStorageBuffers;
-            MaxPerStageStorageImages = maxPerStageStorageImages;
-            MaxPerStageUniformBuffers = maxPerStageUniformBuffers;
-            MaxPerStageResources = maxPerStageResources;
         }
     }
 }
