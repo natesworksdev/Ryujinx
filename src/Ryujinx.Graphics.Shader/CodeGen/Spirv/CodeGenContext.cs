@@ -1,4 +1,4 @@
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+﻿using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using Spv.Generator;
@@ -97,11 +97,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             HostCapabilities = parameters.HostCapabilities;
             Logger = parameters.Logger;
             TargetApi = parameters.TargetApi;
-
-            AddCapability(Capability.Shader);
-            AddCapability(Capability.Float64);
-
-            SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
 
             Delegates = new SpirvDelegates(this);
         }
