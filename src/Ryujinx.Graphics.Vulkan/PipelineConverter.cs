@@ -180,9 +180,6 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.LogicOpEnable = state.LogicOpEnable;
             pipeline.LogicOp = state.LogicOp.Convert();
 
-            pipeline.MinDepthBounds = 0f; // Not implemented.
-            pipeline.MaxDepthBounds = 0f; // Not implemented.
-
             pipeline.PatchControlPoints = state.PatchControlPoints;
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
             pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
