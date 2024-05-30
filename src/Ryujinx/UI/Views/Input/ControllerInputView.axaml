@@ -343,11 +343,7 @@
                                     Height="{Binding UiCanvasSize}"
                                     Width="{Binding UiCanvasSize}"
                                     Background="{DynamicResource ThemeBackgroundColor}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
                                     <Ellipse
-                                        Grid.Column="1"
                                         HorizontalAlignment="Center"
                                         Stroke="Black"
                                         StrokeThickness="1"
@@ -356,7 +352,6 @@
                                         Canvas.Bottom="2"
                                         Canvas.Left="2" />
                                     <Ellipse
-                                        Grid.Column="1"
                                         HorizontalAlignment="Center"
                                         Fill="Gray"
                                         Opacity="100"
@@ -385,11 +380,7 @@
                                     Height="{Binding UiCanvasSize}"
                                     Width="{Binding UiCanvasSize}"
                                     Background="{DynamicResource ThemeBackgroundColor}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
                                     <Ellipse
-                                        Grid.Column="1"
                                         HorizontalAlignment="Center"
                                         Stroke="Black"
                                         StrokeThickness="1"
@@ -398,7 +389,6 @@
                                         Canvas.Bottom="2"
                                         Canvas.Left="2" />
                                     <Ellipse
-                                        Grid.Column="1"
                                         HorizontalAlignment="Center"
                                         Fill="Gray"
                                         Opacity="100"
