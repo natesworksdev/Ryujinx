@@ -18,14 +18,10 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private const int DrawStickCanvasSize = 100;
         private const int DrawStickBorderSize = DrawStickCanvasSize + 5;
         private const float DrawStickCanvasCenter = (DrawStickCanvasSize - DrawStickCircumference) / 2;
-        
+
         private const float MaxVectorLength = DrawStickCanvasSize / 2;
 
         private IGamepad _selectedGamepad;
-
-        // Offset from origin for UI stick visualization.
-        private (float, float) _uiStickLeft;
-        private (float, float) _uiStickRight;
 
         private float _vectorLength;
         private float _vectorMultiplier;
@@ -81,6 +77,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
+        private (float, float) _uiStickLeft;
         public (float, float) UiStickLeft
         {
             get => (_uiStickLeft.Item1 * DrawStickScaleFactor, _uiStickLeft.Item2 * DrawStickScaleFactor);
@@ -95,6 +92,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
+        private (float, float) _uiStickRight;
         public (float, float) UiStickRight
         {
             get => (_uiStickRight.Item1 * DrawStickScaleFactor, _uiStickRight.Item2 * DrawStickScaleFactor);
@@ -133,15 +131,15 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         {
             get
             {
-               _vectorMultiplier = 1;
-               _vectorLength = GetVectorLength(UiStickLeft);
+                _vectorMultiplier = 1;
+                _vectorLength = GetVectorLength(UiStickLeft);
 
                 if (_vectorLength > MaxVectorLength)
                 {
                     _vectorMultiplier = MaxVectorLength / _vectorLength;
                 }
 
-                return (UiStickLeft.Item2 * _vectorMultiplier) + DrawStickCanvasCenter; 
+                return (UiStickLeft.Item2 * _vectorMultiplier) + DrawStickCanvasCenter;
             }
         }
 
@@ -149,15 +147,15 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         {
             get
             {
-               _vectorMultiplier = 1;
-               _vectorLength = GetVectorLength(UiStickRight);
+                _vectorMultiplier = 1;
+                _vectorLength = GetVectorLength(UiStickRight);
 
                 if (_vectorLength > MaxVectorLength)
                 {
                     _vectorMultiplier = MaxVectorLength / _vectorLength;
                 }
 
-                return (UiStickRight.Item1 * _vectorMultiplier) + DrawStickCanvasCenter; 
+                return (UiStickRight.Item1 * _vectorMultiplier) + DrawStickCanvasCenter;
             }
         }
 
@@ -165,15 +163,15 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         {
             get
             {
-               _vectorMultiplier = 1;
-               _vectorLength = GetVectorLength(UiStickRight);
+                _vectorMultiplier = 1;
+                _vectorLength = GetVectorLength(UiStickRight);
 
                 if (_vectorLength > MaxVectorLength)
                 {
                     _vectorMultiplier = MaxVectorLength / _vectorLength;
                 }
 
-                return (UiStickRight.Item2 * _vectorMultiplier) + DrawStickCanvasCenter; 
+                return (UiStickRight.Item2 * _vectorMultiplier) + DrawStickCanvasCenter;
             }
         }
 
