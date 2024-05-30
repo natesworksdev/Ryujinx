@@ -169,24 +169,41 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.HasDepthStencil = state.DepthStencilEnable;
             pipeline.LogicOpEnable = state.LogicOpEnable;
-            pipeline.LogicOp = state.LogicOp.Convert();
 
             pipeline.MinDepthBounds = 0f; // Not implemented.
             pipeline.MaxDepthBounds = 0f; // Not implemented.
 
-            pipeline.PatchControlPoints = state.PatchControlPoints;
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
-            pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
-            pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
-            pipeline.SamplesCount = (uint)state.SamplesCount;
 
-            pipeline.DepthBiasEnable = state.BiasEnable != 0;
+            if (!gd.Capabilities.SupportsExtendedDynamicState2)
+            {
+                pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
+                pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
+                pipeline.DepthBiasEnable = state.BiasEnable != 0;
+            }
+
+            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+            {
+                pipeline.LogicOp = state.LogicOp.Convert();
+            }
+
+            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+            {
+                pipeline.PatchControlPoints = state.PatchControlPoints;
+            }
+
+            pipeline.SamplesCount = (uint)state.SamplesCount;
 
             // Stencil masks and ref are dynamic, so are 0 in the Vulkan pipeline.
             if (!gd.Capabilities.SupportsExtendedDynamicState)
             {
                 pipeline.DepthTestEnable = state.DepthTest.TestEnable;
-                pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
+
+                if (pipeline.DepthTestEnable)
+                {
+                    pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
+                }
+
                 pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
 
                 pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
