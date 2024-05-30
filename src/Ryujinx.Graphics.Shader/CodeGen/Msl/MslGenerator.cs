@@ -136,6 +136,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                     args = args.Append("uint3 threadgroup_position_in_grid [[threadgroup_position_in_grid]]").ToArray();
                     args = args.Append("uint3 thread_position_in_grid [[thread_position_in_grid]]").ToArray();
                     args = args.Append("uint3 thread_position_in_threadgroup [[thread_position_in_threadgroup]]").ToArray();
+                    args = args.Append("uint thread_index_in_simdgroup [[thread_index_in_simdgroup]]").ToArray();
                 }
 
                 foreach (var constantBuffer in context.Properties.ConstantBuffers.Values)
