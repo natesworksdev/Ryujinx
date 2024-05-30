@@ -333,15 +333,15 @@
                             BorderBrush="{DynamicResource ThemeControlBorderColor}"
                             BorderThickness="1"
                             CornerRadius="5"
-                            Height="105"
-                            Width="105">
+                            Height="{Binding UiStickBorderSize}"
+                            Width="{Binding UiStickBorderSize}">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
-                                Height="100"
-                                Width="100">
+                                Height="{Binding UiCanvasSize}"
+                                Width="{Binding UiCanvasSize}">
                                 <Grid
-                                    Height="100"
-                                    Width="100"
+                                    Height="{Binding UiCanvasSize}"
+                                    Width="{Binding UiCanvasSize}"
                                     Background="{DynamicResource ThemeBackgroundColor}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -351,8 +351,8 @@
                                         HorizontalAlignment="Center"
                                         Stroke="Black"
                                         StrokeThickness="1"
-                                        Width="100"
-                                        Height="100"
+                                        Width="{Binding UiCanvasSize}"
+                                        Height="{Binding UiCanvasSize}"
                                         Canvas.Bottom="2"
                                         Canvas.Left="2" />
                                     <Ellipse
@@ -365,8 +365,8 @@
                                 </Grid>
                                 <Ellipse
                                         Fill="Red" 
-                                        Width="5" 
-                                        Height="5" 
+                                        Width="{Binding UiStickCircumference}" 
+                                        Height="{Binding UiStickCircumference}" 
                                         Canvas.Bottom="{Binding UiStickLeftY}" 
                                         Canvas.Left="{Binding UiStickLeftX}" />
                             </Canvas>
@@ -375,15 +375,15 @@
                             BorderBrush="{DynamicResource ThemeControlBorderColor}"
                             BorderThickness="1"
                             CornerRadius="5"
-                            Height="105"
-                            Width="105">
+                            Height="{Binding UiStickBorderSize}"
+                            Width="{Binding UiStickBorderSize}">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
-                                Height="100"
-                                Width="100">
+                                Height="{Binding UiCanvasSize}"
+                                Width="{Binding UiCanvasSize}">
                                 <Grid
-                                    Height="100"
-                                    Width="100"
+                                    Height="{Binding UiCanvasSize}"
+                                    Width="{Binding UiCanvasSize}"
                                     Background="{DynamicResource ThemeBackgroundColor}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -393,8 +393,8 @@
                                         HorizontalAlignment="Center"
                                         Stroke="Black"
                                         StrokeThickness="1"
-                                        Width="100"
-                                        Height="100"
+                                        Width="{Binding UiCanvasSize}"
+                                        Height="{Binding UiCanvasSize}"
                                         Canvas.Bottom="2"
                                         Canvas.Left="2" />
                                     <Ellipse
@@ -407,8 +407,8 @@
                                 </Grid>
                                 <Ellipse
                                         Fill="Red" 
-                                        Width="5" 
-                                        Height="5" 
+                                        Width="{Binding UiStickCircumference}" 
+                                        Height="{Binding UiStickCircumference}" 
                                         Canvas.Bottom="{Binding UiStickRightY}" 
                                         Canvas.Left="{Binding UiStickRightX}" />
                             </Canvas>
