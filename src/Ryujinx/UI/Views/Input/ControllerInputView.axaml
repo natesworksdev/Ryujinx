@@ -318,7 +318,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <!-- Controller Picture -->
-                 <Border
+                <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
                     CornerRadius="5"
@@ -334,7 +334,8 @@
                             BorderThickness="1"
                             CornerRadius="5"
                             Height="{Binding UiStickBorderSize}"
-                            Width="{Binding UiStickBorderSize}">
+                            Width="{Binding UiStickBorderSize}"
+                            IsVisible="{Binding IsLeft}">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
                                 Height="{Binding UiCanvasSize}"
@@ -348,9 +349,7 @@
                                         Stroke="Black"
                                         StrokeThickness="1"
                                         Width="{Binding UiCanvasSize}"
-                                        Height="{Binding UiCanvasSize}"
-                                        Canvas.Bottom="2"
-                                        Canvas.Left="2" />
+                                        Height="{Binding UiCanvasSize}"/>
                                     <Ellipse
                                         HorizontalAlignment="Center"
                                         Fill="Gray"
@@ -366,12 +365,13 @@
                                         Canvas.Left="{Binding UiStickLeftX}" />
                             </Canvas>
                         </Border>        
-                            <Border
+                        <Border
                             BorderBrush="{DynamicResource ThemeControlBorderColor}"
                             BorderThickness="1"
                             CornerRadius="5"
                             Height="{Binding UiStickBorderSize}"
-                            Width="{Binding UiStickBorderSize}">
+                            Width="{Binding UiStickBorderSize}"
+                            IsVisible="{Binding IsRight}">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
                                 Height="{Binding UiCanvasSize}"
@@ -385,9 +385,7 @@
                                         Stroke="Black"
                                         StrokeThickness="1"
                                         Width="{Binding UiCanvasSize}"
-                                        Height="{Binding UiCanvasSize}"
-                                        Canvas.Bottom="2"
-                                        Canvas.Left="2" />
+                                        Height="{Binding UiCanvasSize}"/>
                                     <Ellipse
                                         HorizontalAlignment="Center"
                                         Fill="Gray"
