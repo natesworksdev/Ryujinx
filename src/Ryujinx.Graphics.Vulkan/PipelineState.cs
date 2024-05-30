@@ -436,17 +436,8 @@ namespace Ryujinx.Graphics.Vulkan
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    Topology = Topology,
+                    Topology = supportsExtDynamicState ? TopologyClass : Topology,
                 };
-
-                if (supportsExtDynamicState)
-                {
-                    inputAssemblyState.Topology = TopologyClass;
-                }
-                else
-                {
-                    inputAssemblyState.Topology = Topology;
-                }
 
                 var tessellationState = new PipelineTessellationStateCreateInfo
                 {
