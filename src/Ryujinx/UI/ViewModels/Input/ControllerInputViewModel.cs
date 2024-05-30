@@ -3,6 +3,7 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Models.Input;
 using Ryujinx.Ava.UI.Views.Input;
 using Ryujinx.Input;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,19 +11,24 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 {
     public class ControllerInputViewModel : BaseModel
     {
-        private const int StickUiPollMs = 50; // Milliseconds per poll.
-        private const int StickCircumference = 5;
+        private const int DrawStickPollRate = 50; // Milliseconds per poll.
+        private const int DrawStickCircumference = 5;
+        private const float DrawStickScaleFactor = DrawStickCanvasCenter;
 
-        private const int CanvasSize = 100;
-        private const int StickBorderSize = CanvasSize + 5;
-        private const float CanvasCenterOffset = (CanvasSize - StickCircumference) / 2;
-        private const int StickScaleFactor = 45;
+        private const int DrawStickCanvasSize = 100;
+        private const int DrawStickBorderSize = DrawStickCanvasSize + 5;
+        private const float DrawStickCanvasCenter = (DrawStickCanvasSize - DrawStickCircumference) / 2;
+        
+        private const float MaxVectorLength = DrawStickCanvasSize / 2;
 
         private IGamepad _selectedGamepad;
 
         // Offset from origin for UI stick visualization.
         private (float, float) _uiStickLeft;
         private (float, float) _uiStickRight;
+
+        private float _vectorLength;
+        private float _vectorMultiplier;
 
         internal CancellationTokenSource _pollTokenSource = new();
         private readonly CancellationToken _pollToken;
@@ -77,7 +83,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public (float, float) UiStickLeft
         {
-            get => (_uiStickLeft.Item1 * StickScaleFactor, _uiStickLeft.Item2 * StickScaleFactor);
+            get => (_uiStickLeft.Item1 * DrawStickScaleFactor, _uiStickLeft.Item2 * DrawStickScaleFactor);
             set
             {
                 _uiStickLeft = value;
@@ -91,7 +97,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public (float, float) UiStickRight
         {
-            get => (_uiStickRight.Item1 * StickScaleFactor, _uiStickRight.Item2 * StickScaleFactor);
+            get => (_uiStickRight.Item1 * DrawStickScaleFactor, _uiStickRight.Item2 * DrawStickScaleFactor);
             set
             {
                 _uiStickRight = value;
@@ -103,17 +109,76 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             }
         }
 
-        public int UiStickCircumference => StickCircumference;
-        public int UiCanvasSize => CanvasSize;
-        public int UiStickBorderSize => StickBorderSize;
+        public int UiStickCircumference => DrawStickCircumference;
+        public int UiCanvasSize => DrawStickCanvasSize;
+        public int UiStickBorderSize => DrawStickBorderSize;
 
-        public float UiStickLeftX => UiStickLeft.Item1 + CanvasCenterOffset;
-        public float UiStickLeftY => UiStickLeft.Item2 + CanvasCenterOffset;
-        public float UiStickRightX => UiStickRight.Item1 + CanvasCenterOffset;
-        public float UiStickRightY => UiStickRight.Item2 + CanvasCenterOffset;
+        public float UiStickLeftX
+        {
+            get
+            {
+                _vectorMultiplier = 1;
+                _vectorLength = GetVectorLength(UiStickLeft);
 
-        public float UiDeadzoneLeft => Config.DeadzoneLeft * (CanvasSize - StickCircumference);
-        public float UiDeadzoneRight => Config.DeadzoneRight * (CanvasSize - StickCircumference);
+                if (_vectorLength > MaxVectorLength)
+                {
+                    _vectorMultiplier = MaxVectorLength / _vectorLength;
+                }
+
+                return (UiStickLeft.Item1 * _vectorMultiplier) + DrawStickCanvasCenter;
+            }
+        }
+
+        public float UiStickLeftY
+        {
+            get
+            {
+               _vectorMultiplier = 1;
+               _vectorLength = GetVectorLength(UiStickLeft);
+
+                if (_vectorLength > MaxVectorLength)
+                {
+                    _vectorMultiplier = MaxVectorLength / _vectorLength;
+                }
+
+                return (UiStickLeft.Item2 * _vectorMultiplier) + DrawStickCanvasCenter; 
+            }
+        }
+
+        public float UiStickRightX
+        {
+            get
+            {
+               _vectorMultiplier = 1;
+               _vectorLength = GetVectorLength(UiStickRight);
+
+                if (_vectorLength > MaxVectorLength)
+                {
+                    _vectorMultiplier = MaxVectorLength / _vectorLength;
+                }
+
+                return (UiStickRight.Item1 * _vectorMultiplier) + DrawStickCanvasCenter; 
+            }
+        }
+
+        public float UiStickRightY
+        {
+            get
+            {
+               _vectorMultiplier = 1;
+               _vectorLength = GetVectorLength(UiStickRight);
+
+                if (_vectorLength > MaxVectorLength)
+                {
+                    _vectorMultiplier = MaxVectorLength / _vectorLength;
+                }
+
+                return (UiStickRight.Item2 * _vectorMultiplier) + DrawStickCanvasCenter; 
+            }
+        }
+
+        public float UiDeadzoneLeft => Config.DeadzoneLeft * DrawStickCanvasSize - DrawStickCircumference;
+        public float UiDeadzoneRight => Config.DeadzoneRight * DrawStickCanvasSize - DrawStickCircumference;
 
         public readonly InputViewModel ParentModel;
 
@@ -152,10 +217,15 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                     UiStickRight = _selectedGamepad.GetStick(StickInputId.Right);
                 }
 
-                await Task.Delay(StickUiPollMs, token);
+                await Task.Delay(DrawStickPollRate, token);
             }
 
             _pollTokenSource.Dispose();
+        }
+
+        private float GetVectorLength((float, float) raw)
+        {
+            return (float)Math.Sqrt((raw.Item1 * raw.Item1) + (raw.Item2 * raw.Item2));
         }
 
         public void OnParentModelChanged()
