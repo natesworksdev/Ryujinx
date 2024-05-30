@@ -618,7 +618,6 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicState = &pipelineDynamicStateCreateInfo,
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
-                    BasePipelineIndex = -1,
                 };
 
                 Result result = gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle);
