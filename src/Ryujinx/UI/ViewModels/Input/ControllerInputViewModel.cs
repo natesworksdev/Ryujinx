@@ -111,69 +111,10 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public int UiCanvasSize => DrawStickCanvasSize;
         public int UiStickBorderSize => DrawStickBorderSize;
 
-        public float UiStickLeftX
-        {
-            get
-            {
-                _vectorMultiplier = 1;
-                _vectorLength = GetVectorLength(UiStickLeft);
-
-                if (_vectorLength > MaxVectorLength)
-                {
-                    _vectorMultiplier = MaxVectorLength / _vectorLength;
-                }
-
-                return (UiStickLeft.Item1 * _vectorMultiplier) + DrawStickCanvasCenter;
-            }
-        }
-
-        public float UiStickLeftY
-        {
-            get
-            {
-                _vectorMultiplier = 1;
-                _vectorLength = GetVectorLength(UiStickLeft);
-
-                if (_vectorLength > MaxVectorLength)
-                {
-                    _vectorMultiplier = MaxVectorLength / _vectorLength;
-                }
-
-                return (UiStickLeft.Item2 * _vectorMultiplier) + DrawStickCanvasCenter;
-            }
-        }
-
-        public float UiStickRightX
-        {
-            get
-            {
-                _vectorMultiplier = 1;
-                _vectorLength = GetVectorLength(UiStickRight);
-
-                if (_vectorLength > MaxVectorLength)
-                {
-                    _vectorMultiplier = MaxVectorLength / _vectorLength;
-                }
-
-                return (UiStickRight.Item1 * _vectorMultiplier) + DrawStickCanvasCenter;
-            }
-        }
-
-        public float UiStickRightY
-        {
-            get
-            {
-                _vectorMultiplier = 1;
-                _vectorLength = GetVectorLength(UiStickRight);
-
-                if (_vectorLength > MaxVectorLength)
-                {
-                    _vectorMultiplier = MaxVectorLength / _vectorLength;
-                }
-
-                return (UiStickRight.Item2 * _vectorMultiplier) + DrawStickCanvasCenter;
-            }
-        }
+        public float UiStickLeftX => ClampVector(UiStickLeft).Item1;
+        public float UiStickLeftY => ClampVector(UiStickLeft).Item2;
+        public float UiStickRightX => ClampVector(UiStickRight).Item1;
+        public float UiStickRightY => ClampVector(UiStickRight).Item2;
 
         public float UiDeadzoneLeft => Config.DeadzoneLeft * DrawStickCanvasSize - DrawStickCircumference;
         public float UiDeadzoneRight => Config.DeadzoneRight * DrawStickCanvasSize - DrawStickCircumference;
@@ -221,9 +162,20 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             _pollTokenSource.Dispose();
         }
 
-        private float GetVectorLength((float, float) raw)
+        private (float, float) ClampVector((float, float) vect)
         {
-            return (float)Math.Sqrt((raw.Item1 * raw.Item1) + (raw.Item2 * raw.Item2));
+            _vectorMultiplier = 1;
+            _vectorLength = MathF.Sqrt((vect.Item1 * vect.Item1) + (vect.Item2 * vect.Item2));
+
+            if (_vectorLength > MaxVectorLength)
+            {
+                _vectorMultiplier = MaxVectorLength / _vectorLength;
+            }
+
+            vect.Item1 = vect.Item1 * _vectorMultiplier + DrawStickCanvasCenter;
+            vect.Item2 = vect.Item2 * _vectorMultiplier + DrawStickCanvasCenter;
+
+            return vect;
         }
 
         public void OnParentModelChanged()
