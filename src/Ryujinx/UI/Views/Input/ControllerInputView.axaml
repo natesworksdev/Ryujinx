@@ -318,12 +318,75 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <!-- Controller Picture -->
-                <Image
+                 <Border
+                    BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="5"
                     Margin="0,10"
-                    MaxHeight="300"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Source="{Binding Image}" />
+                    MinHeight="90">
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Horizontal"
+                        Spacing="20"
+                        HorizontalAlignment="Center">
+                        <Border
+                            BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Height="100"
+                            Width="100">
+                            <Canvas
+                                Background="{DynamicResource ThemeBackgroundColor}"
+                                Height="100"
+                                Width="100">
+                                <Ellipse 
+                                    Fill="Gray" 
+                                    Stroke="Blue"
+                                    StrokeThickness="1"
+                                    Width="25" 
+                                    Height="25" 
+                                    Canvas.Bottom="{Binding UiStickLeftY}" 
+                                    Canvas.Left="{Binding UiStickLeftX}" />
+                                <Ellipse
+                                    Stroke="Black"
+                                    StrokeThickness="1"
+                                    StrokeDashOffset="2"
+                                    Width="96"
+                                    Height="96"
+                                    Canvas.Bottom="2"
+                                    Canvas.Left="2" />
+                            </Canvas>
+                        </Border>        
+                            <Border
+                            BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Height="100"
+                            Width="100">
+                            <Canvas
+                                Background="{DynamicResource ThemeBackgroundColor}"
+                                Height="100"
+                                Width="100">
+                                <Ellipse 
+                                    Fill="Gray" 
+                                    Stroke="Blue"
+                                    StrokeThickness="1"
+                                    Width="25" 
+                                    Height="25" 
+                                    Canvas.Bottom="{Binding UiStickRightY}" 
+                                    Canvas.Left="{Binding UiStickRightX}"/>
+                                <Ellipse
+                                    Stroke="Black"
+                                    StrokeThickness="1"
+                                    StrokeDashOffset="2"
+                                    Width="96"
+                                    Height="96"
+                                    Canvas.Bottom="2"
+                                    Canvas.Left="2" />
+                            </Canvas>
+                        </Border>        
+                    </StackPanel>
+                </Border>            
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"
