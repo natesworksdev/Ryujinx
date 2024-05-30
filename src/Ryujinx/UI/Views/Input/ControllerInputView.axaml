@@ -333,56 +333,84 @@
                             BorderBrush="{DynamicResource ThemeControlBorderColor}"
                             BorderThickness="1"
                             CornerRadius="5"
-                            Height="100"
-                            Width="100">
+                            Height="105"
+                            Width="105">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
                                 Height="100"
                                 Width="100">
-                                <Ellipse 
-                                    Fill="Gray" 
-                                    Stroke="Blue"
-                                    StrokeThickness="1"
-                                    Width="25" 
-                                    Height="25" 
-                                    Canvas.Bottom="{Binding UiStickLeftY}" 
-                                    Canvas.Left="{Binding UiStickLeftX}" />
+                                <Grid
+                                    Height="100"
+                                    Width="100"
+                                    Background="{DynamicResource ThemeBackgroundColor}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Stroke="Black"
+                                        StrokeThickness="1"
+                                        Width="100"
+                                        Height="100"
+                                        Canvas.Bottom="2"
+                                        Canvas.Left="2" />
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Fill="Gray"
+                                        Opacity="100"
+                                        Height="{Binding UiDeadzoneLeft}"
+                                        Width="{Binding UiDeadzoneLeft}"/>
+                                </Grid>
                                 <Ellipse
-                                    Stroke="Black"
-                                    StrokeThickness="1"
-                                    StrokeDashOffset="2"
-                                    Width="96"
-                                    Height="96"
-                                    Canvas.Bottom="2"
-                                    Canvas.Left="2" />
+                                        Fill="Red" 
+                                        Width="5" 
+                                        Height="5" 
+                                        Canvas.Bottom="{Binding UiStickLeftY}" 
+                                        Canvas.Left="{Binding UiStickLeftX}" />
                             </Canvas>
                         </Border>        
                             <Border
                             BorderBrush="{DynamicResource ThemeControlBorderColor}"
                             BorderThickness="1"
                             CornerRadius="5"
-                            Height="100"
-                            Width="100">
+                            Height="105"
+                            Width="105">
                             <Canvas
                                 Background="{DynamicResource ThemeBackgroundColor}"
                                 Height="100"
                                 Width="100">
-                                <Ellipse 
-                                    Fill="Gray" 
-                                    Stroke="Blue"
-                                    StrokeThickness="1"
-                                    Width="25" 
-                                    Height="25" 
-                                    Canvas.Bottom="{Binding UiStickRightY}" 
-                                    Canvas.Left="{Binding UiStickRightX}"/>
+                                <Grid
+                                    Height="100"
+                                    Width="100"
+                                    Background="{DynamicResource ThemeBackgroundColor}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Stroke="Black"
+                                        StrokeThickness="1"
+                                        Width="100"
+                                        Height="100"
+                                        Canvas.Bottom="2"
+                                        Canvas.Left="2" />
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Fill="Gray"
+                                        Opacity="100"
+                                        Height="{Binding UiDeadzoneRight}"
+                                        Width="{Binding UiDeadzoneRight}"/>
+                                </Grid>
                                 <Ellipse
-                                    Stroke="Black"
-                                    StrokeThickness="1"
-                                    StrokeDashOffset="2"
-                                    Width="96"
-                                    Height="96"
-                                    Canvas.Bottom="2"
-                                    Canvas.Left="2" />
+                                        Fill="Red" 
+                                        Width="5" 
+                                        Height="5" 
+                                        Canvas.Bottom="{Binding UiStickRightY}" 
+                                        Canvas.Left="{Binding UiStickRightX}" />
                             </Canvas>
                         </Border>        
                     </StackPanel>
