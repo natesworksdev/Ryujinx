@@ -19,7 +19,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private const int StickScaleFactor = 45;
 
         private IGamepad _selectedGamepad;
-        
+
         // Offset from origin for UI stick visualization.
         private (float, float) _uiStickLeft;
         private (float, float) _uiStickRight;
@@ -88,7 +88,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 OnPropertyChanged(nameof(UiDeadzoneRight));
             }
         }
-        
+
         public (float, float) UiStickRight
         {
             get => (_uiStickRight.Item1 * StickScaleFactor, _uiStickRight.Item2 * StickScaleFactor);
