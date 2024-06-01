@@ -52,12 +52,6 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly uint VertexBufferAlignment;
         public readonly uint SubTexelPrecisionBits;
         public readonly ulong MinResourceAlignment;
-        public readonly uint MaxPerStageSampledImages;
-        public readonly uint MaxPerStageSamplers;
-        public readonly uint MaxPerStageStorageBuffers;
-        public readonly uint MaxPerStageStorageImages;
-        public readonly uint MaxPerStageUniformBuffers;
-        public readonly uint MaxPerStageResources;
 
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
