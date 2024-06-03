@@ -107,7 +107,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleTurboHotkey}" Width="230" />
                     <ToggleButton Name="ToggleTurbo">
                         <TextBlock
-                            Text="{Binding KeyboardHotkeys.ToggleTurbo, Mode=TwoWay, Converter={StaticResource Key}}"
+                            Text="{Binding KeyboardHotkey.ToggleTurbo, Mode=TwoWay, Converter={StaticResource Key}}"
                             TextAlignment="Center" />
                     </ToggleButton>
                 </StackPanel>
@@ -115,7 +115,7 @@
                     <TextBlock Text="{locale:Locale SettingsTabHotkeysToggleTurboToggle}"
                                ToolTip.Tip="{locale:Locale SettingsTabHotkeysToggleTurboToggleTooltip}"
                                 Width="230" />
-                    <CheckBox IsChecked="{Binding KeyboardHotkeys.TurboWhileHeld}" />
+                    <CheckBox IsChecked="{Binding KeyboardHotkey.TurboWhileHeld}" />
                 </StackPanel>
             </StackPanel>
         </Border>
