@@ -159,7 +159,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                 VolumeDown = VolumeDown,
                 ToggleTurbo = ToggleTurbo,
                 TurboWhileHeld = TurboWhileHeld,
-        };
+            };
 
             return config;
         }
