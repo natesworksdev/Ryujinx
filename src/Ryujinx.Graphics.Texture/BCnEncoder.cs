@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Texture
                 size += w * h * 16 * Math.Max(1, depth >> l) * layers;
             }
 
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(size);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(size);
             Memory<byte> outputMemory = output.Memory;
 
             int imageBaseIOffs = 0;

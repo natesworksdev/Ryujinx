@@ -121,8 +121,8 @@ namespace Ryujinx.Graphics.Texture
                 blockHeight,
                 bytesPerPixel);
 
-            IMemoryOwner<byte> outputOwner = ByteMemoryPool.Rent(outSize);
-            Span<byte> output = outputOwner.Memory.Span;
+            MemoryOwner<byte> outputOwner = MemoryOwner<byte>.Rent(outSize);
+            Span<byte> output = outputOwner.Span;
 
             int outOffs = 0;
 
@@ -265,8 +265,8 @@ namespace Ryujinx.Graphics.Texture
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
             lineSize = Math.Min(lineSize, outStride);
 
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(h * outStride);
-            Span<byte> outSpan = output.Memory.Span;
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(h * outStride);
+            Span<byte> outSpan = output.Span;
 
             int outOffs = 0;
             int inOffs = 0;

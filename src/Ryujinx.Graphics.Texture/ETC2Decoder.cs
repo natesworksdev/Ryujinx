@@ -57,9 +57,9 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(CalculateOutputSize(width, height, depth, levels, layers));
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(CalculateOutputSize(width, height, depth, levels, layers));
 
-            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Span);
             Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;
@@ -119,9 +119,9 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(CalculateOutputSize(width, height, depth, levels, layers));
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(CalculateOutputSize(width, height, depth, levels, layers));
 
-            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Span);
             Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;
@@ -176,9 +176,9 @@ namespace Ryujinx.Graphics.Texture
 
             int inputOffset = 0;
 
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(CalculateOutputSize(width, height, depth, levels, layers));
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(CalculateOutputSize(width, height, depth, levels, layers));
 
-            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputUint = MemoryMarshal.Cast<byte, uint>(output.Span);
             Span<uint> tile = stackalloc uint[BlockWidth * BlockHeight];
 
             int imageBaseOOffs = 0;

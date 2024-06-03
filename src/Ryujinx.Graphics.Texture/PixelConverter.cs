@@ -23,7 +23,8 @@ namespace Ryujinx.Graphics.Texture
 
         public unsafe static IMemoryOwner<byte> ConvertR4G4ToR4G4B4A4(ReadOnlySpan<byte> data, int width)
         {
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(data.Length * 2);
+            Span<byte> outputSpan = output.Span;
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 1, 2);
 
@@ -74,14 +75,14 @@ namespace Ryujinx.Graphics.Texture
 
         public static IMemoryOwner<byte> ConvertR5G6B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(data.Length * 2);
             int offset = 0;
             int outOffset = 0;
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 2, 4);
 
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
-            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Span);
 
             for (int y = 0; y < height; y++)
             {
@@ -111,14 +112,14 @@ namespace Ryujinx.Graphics.Texture
 
         public static IMemoryOwner<byte> ConvertR5G5B5ToR8G8B8A8(ReadOnlySpan<byte> data, int width, bool forceAlpha)
         {
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(data.Length * 2);
             int offset = 0;
             int outOffset = 0;
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 2, 4);
 
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
-            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Span);
 
             for (int y = 0; y < height; y++)
             {
@@ -148,14 +149,14 @@ namespace Ryujinx.Graphics.Texture
 
         public static IMemoryOwner<byte> ConvertA1B5G5R5ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(data.Length * 2);
             int offset = 0;
             int outOffset = 0;
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 2, 4);
 
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
-            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Span);
 
             for (int y = 0; y < height; y++)
             {
@@ -185,14 +186,14 @@ namespace Ryujinx.Graphics.Texture
 
         public static IMemoryOwner<byte> ConvertR4G4B4A4ToR8G8B8A8(ReadOnlySpan<byte> data, int width)
         {
-            IMemoryOwner<byte> output = ByteMemoryPool.Rent(data.Length * 2);
+            MemoryOwner<byte> output = MemoryOwner<byte>.Rent(data.Length * 2);
             int offset = 0;
             int outOffset = 0;
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 2, 4);
 
             ReadOnlySpan<ushort> inputSpan = MemoryMarshal.Cast<byte, ushort>(data);
-            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Memory.Span);
+            Span<uint> outputSpan = MemoryMarshal.Cast<byte, uint>(output.Span);
 
             for (int y = 0; y < height; y++)
             {

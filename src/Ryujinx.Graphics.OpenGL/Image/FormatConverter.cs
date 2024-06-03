@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
     {
         public unsafe static IMemoryOwner<byte> ConvertS8D24ToD24S8(ReadOnlySpan<byte> data)
         {
-            IMemoryOwner<byte> outputMemory = ByteMemoryPool.Rent(data.Length);
+            MemoryOwner<byte> outputMemory = MemoryOwner<byte>.Rent(data.Length);
 
             Span<byte> output = outputMemory.Memory.Span;
 
