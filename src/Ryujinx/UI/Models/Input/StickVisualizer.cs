@@ -1,10 +1,13 @@
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.ViewModels.Input;
+using Ryujinx.Input;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Models.Input
 {
-    public class StickVisualizer : BaseModel
+    public class StickVisualizer : BaseModel, IDisposable
     {
         public const int DrawStickPollRate = 50; // Milliseconds per poll.
         public const int DrawStickCircumference = 5;
@@ -14,11 +17,25 @@ namespace Ryujinx.Ava.UI.Models.Input
         public const float DrawStickCanvasCenter = (DrawStickCanvasSize - DrawStickCircumference) / 2;
         public const float MaxVectorLength = DrawStickCanvasSize / 2;
 
-        public CancellationTokenSource PollTokenSource = new();
+        public CancellationTokenSource PollTokenSource;
         public CancellationToken PollToken;
 
         private static float _vectorLength;
         private static float _vectorMultiplier;
+
+        private bool disposedValue;
+
+        private DeviceType _type;
+        public DeviceType Type
+        {
+            get => _type;
+            set
+            {
+                _type = value;
+
+                OnPropertyChanged();
+            }
+        }
 
         private GamepadInputConfig _gamepadConfig;
         public GamepadInputConfig GamepadConfig
@@ -86,22 +103,119 @@ namespace Ryujinx.Ava.UI.Models.Input
         public float? UiDeadzoneLeft => _gamepadConfig?.DeadzoneLeft * DrawStickCanvasSize - DrawStickCircumference;
         public float? UiDeadzoneRight => _gamepadConfig?.DeadzoneRight * DrawStickCanvasSize - DrawStickCircumference;
 
+        private InputViewModel Parent;
+
+        public StickVisualizer(InputViewModel parent)
+        {
+            Parent = parent;
+
+            PollTokenSource = new CancellationTokenSource();
+            PollToken = PollTokenSource.Token;
+
+            Task.Run(Initialize, PollToken);
+        }
+
         public void UpdateConfig(object config)
         {
-            if (config is GamepadInputConfig padConfig)
+            if (config is ControllerInputViewModel padConfig)
             {
-                GamepadConfig = padConfig;
+                GamepadConfig = padConfig.Config;
+                Type = DeviceType.Controller;
 
                 return;
             }
-            else if (config is KeyboardInputConfig keyConfig)
+            else if (config is KeyboardInputViewModel keyConfig)
             {
-                KeyboardConfig = keyConfig;
+                KeyboardConfig = keyConfig.Config;
+                Type = DeviceType.Keyboard;
 
                 return;
             }
 
-            throw new ArgumentException($"Invalid configuration: {config}");
+            Type = DeviceType.None;
+        }
+
+        public async Task Initialize()
+        {
+            (float, float) leftBuffer;
+            (float, float) rightBuffer;
+
+            while (!PollToken.IsCancellationRequested)
+            {
+                leftBuffer = (0f, 0f);
+                rightBuffer = (0f, 0f);
+
+                switch (Type)
+                {
+                    case DeviceType.Keyboard:
+                        IKeyboard keyboard = (IKeyboard)Parent.AvaloniaKeyboardDriver.GetGamepad("0");
+
+                        if (keyboard != null)
+                        {
+                            KeyboardStateSnapshot snapshot = keyboard.GetKeyboardStateSnapshot();
+
+                            if (snapshot.IsPressed((Key)KeyboardConfig.LeftStickRight))
+                            {
+                                leftBuffer.Item1 += 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.LeftStickLeft))
+                            {
+                                leftBuffer.Item1 -= 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.LeftStickUp))
+                            {
+                                leftBuffer.Item2 += 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.LeftStickDown))
+                            {
+                                leftBuffer.Item2 -= 1;
+                            }
+
+                            if (snapshot.IsPressed((Key)KeyboardConfig.RightStickRight))
+                            {
+                                rightBuffer.Item1 += 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.RightStickLeft))
+                            {
+                                rightBuffer.Item1 -= 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.RightStickUp))
+                            {
+                                rightBuffer.Item2 += 1;
+                            }
+                            if (snapshot.IsPressed((Key)KeyboardConfig.RightStickDown))
+                            {
+                                rightBuffer.Item2 -= 1;
+                            }
+
+                            UiStickLeft = leftBuffer;
+                            UiStickRight = rightBuffer;
+                        }
+                        break;
+
+                    case DeviceType.Controller:
+                        IGamepad controller = Parent.SelectedGamepad;
+
+                        if (controller != null)
+                        {
+                            leftBuffer = controller.GetStick((StickInputId)GamepadConfig.LeftJoystick);
+                            rightBuffer = controller.GetStick((StickInputId)GamepadConfig.RightJoystick);
+                        }
+                        break;
+
+                    case DeviceType.None:
+                        break;
+                    default:
+                        throw new ArgumentException($"Unable to poll device type \"{Type}\"");
+                }
+
+                UiStickLeft = leftBuffer;
+                UiStickRight = rightBuffer;
+
+                await Task.Delay(DrawStickPollRate, PollToken);
+            }
+
+            PollTokenSource.Dispose();
         }
 
         public static (float, float) ClampVector((float, float) vect)
@@ -118,6 +232,29 @@ namespace Ryujinx.Ava.UI.Models.Input
             vect.Item2 = vect.Item2 * _vectorMultiplier + DrawStickCanvasCenter;
 
             return vect;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    PollTokenSource.Cancel();
+                }
+
+                KeyboardConfig = null;
+                GamepadConfig = null;
+                Parent = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
