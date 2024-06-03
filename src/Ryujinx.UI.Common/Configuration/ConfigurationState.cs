@@ -1491,7 +1491,7 @@ namespace Ryujinx.UI.Common.Configuration
             if (configurationFileFormat.Version < 52)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 52.");
-              
+
                 configurationFileFormat.TurboMultiplier = 200;
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
