@@ -89,13 +89,6 @@ namespace Ryujinx.UI.Widgets
 
             return (ResponseType)gtkDialog.Run();
         }
-        
-        internal static ResponseType CreateCustomDialog(string title, string mainText, string secondaryText, Widget widget, MessageType messageType = MessageType.Other)
-        {
-            GtkDialog gtkDialog = new(title, mainText, secondaryText, messageType, ButtonsType.None);
-            gtkDialog.AddActionWidget(widget,ResponseType.Apply);
-            return (ResponseType)gtkDialog.Run();
-        }        
 
         internal static string CreateInputDialog(Window parent, string title, string mainText, uint inputMax)
         {
