@@ -697,7 +697,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _supportExtDynamic ? DynamicState.Topology : _newState.Topology;
+                var oldTopology = _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -728,14 +728,13 @@ namespace Ryujinx.Graphics.Vulkan
                 if (_supportExtDynamic)
                 {
                     var oldTopologyClass = GetTopologyClass(oldTopology);
-                    var newTopologyClass = GetTopologyClass(DynamicState.Topology);
 
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
                     DynamicState.SetPrimitiveTopology(oldTopology);
 
-                    if (oldTopologyClass != newTopologyClass)
+                    if (oldTopologyClass != TopologyClass.Triangle)
                     {
                         _newState.TopologyClass = oldTopology;
                     }
@@ -1296,7 +1295,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_supportExtDynamic)
             {
-                DynamicState.SetStencilOp(
+                DynamicState.SetStencilTestandOp(
                     stencilTest.BackSFail.Convert(),
                     stencilTest.BackDpPass.Convert(),
                     stencilTest.BackDpFail.Convert(),
@@ -1304,9 +1303,8 @@ namespace Ryujinx.Graphics.Vulkan
                     stencilTest.FrontSFail.Convert(),
                     stencilTest.FrontDpPass.Convert(),
                     stencilTest.FrontDpFail.Convert(),
-                    stencilTest.FrontFunc.Convert());
-
-                DynamicState.SetStencilTest(stencilTest.TestEnable);
+                    stencilTest.FrontFunc.Convert(),
+                    stencilTest.TestEnable);
             }
             else
             {
