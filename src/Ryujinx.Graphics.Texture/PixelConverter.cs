@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Texture
 
             (int remainder, int outRemainder, int height) = GetLineRemainders(data.Length, width, 1, 2);
 
-            Span<ushort> outputSpan = MemoryMarshal.Cast<byte, ushort>(output.Memory.Span);
+            Span<ushort> outputSpanUInt16 = MemoryMarshal.Cast<byte, ushort>(outputSpan);
 
             if (remainder == 0)
             {
@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Texture
                     int sizeTrunc = data.Length & ~7;
                     start = sizeTrunc;
 
-                    fixed (byte* inputPtr = data, outputPtr = output.Memory.Span)
+                    fixed (byte* inputPtr = data, outputPtr = outputSpan)
                     {
                         for (ulong offset = 0; offset < (ulong)sizeTrunc; offset += 8)
                         {
@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.Texture
 
                 for (int i = start; i < data.Length; i++)
                 {
-                    outputSpan[i] = data[i];
+                    outputSpanUInt16[i] = data[i];
                 }
             }
             else
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Texture
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        outputSpan[outOffset++] = data[offset++];
+                        outputSpanUInt16[outOffset++] = data[offset++];
                     }
 
                     offset += remainder;
