@@ -891,7 +891,6 @@ namespace Ryujinx.UI
         {
             var window = new UserProfilesSelectorWindow(_accountManager, _contentManager, _virtualFileSystem);
             window.Show();
-            //GtkDialog.CreateCustomDialog("", "", "", widget);
         }
 
         public void RunApplication(string path, bool startFullscreen = false)
