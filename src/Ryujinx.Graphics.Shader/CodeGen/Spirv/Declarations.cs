@@ -160,49 +160,61 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 int setIndex = context.TargetApi == TargetApi.Vulkan ? sampler.Set : 0;
 
-                var dim = (sampler.Type & SamplerType.Mask) switch
+                SpvInstruction imageType;
+                SpvInstruction sampledImageType;
+
+                if (sampler.Type != SamplerType.None)
                 {
-                    SamplerType.Texture1D => Dim.Dim1D,
-                    SamplerType.Texture2D => Dim.Dim2D,
-                    SamplerType.Texture3D => Dim.Dim3D,
-                    SamplerType.TextureCube => Dim.Cube,
-                    SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{sampler.Type & SamplerType.Mask}\"."),
-                };
+                    var dim = (sampler.Type & SamplerType.Mask) switch
+                    {
+                        SamplerType.Texture1D => Dim.Dim1D,
+                        SamplerType.Texture2D => Dim.Dim2D,
+                        SamplerType.Texture3D => Dim.Dim3D,
+                        SamplerType.TextureCube => Dim.Cube,
+                        SamplerType.TextureBuffer => Dim.Buffer,
+                        _ => throw new InvalidOperationException($"Invalid sampler type \"{sampler.Type & SamplerType.Mask}\"."),
+                    };
 
-                var imageType = context.TypeImage(
-                    context.TypeFP32(),
-                    dim,
-                    sampler.Type.HasFlag(SamplerType.Shadow),
-                    sampler.Type.HasFlag(SamplerType.Array),
-                    sampler.Type.HasFlag(SamplerType.Multisample),
-                    1,
-                    ImageFormat.Unknown);
+                    imageType = context.TypeImage(
+                        context.TypeFP32(),
+                        dim,
+                        sampler.Type.HasFlag(SamplerType.Shadow),
+                        sampler.Type.HasFlag(SamplerType.Array),
+                        sampler.Type.HasFlag(SamplerType.Multisample),
+                        1,
+                        ImageFormat.Unknown);
 
-                var sampledImageType = context.TypeSampledImage(imageType);
-                var sampledImagePointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageType);
+                    sampledImageType = context.TypeSampledImage(imageType);
+                }
+                else
+                {
+                    imageType = sampledImageType = context.TypeSampler();
+                }
+
+                var sampledOrSeparateImageType = sampler.Separate ? imageType : sampledImageType;
+                var sampledImagePointerType = context.TypePointer(StorageClass.UniformConstant, sampledOrSeparateImageType);
                 var sampledImageArrayPointerType = sampledImagePointerType;
 
                 if (sampler.ArrayLength == 0)
                 {
-                    var sampledImageArrayType = context.TypeRuntimeArray(sampledImageType);
+                    var sampledImageArrayType = context.TypeRuntimeArray(sampledOrSeparateImageType);
                     sampledImageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageArrayType);
                 }
                 else if (sampler.ArrayLength != 1)
                 {
-                    var sampledImageArrayType = context.TypeArray(sampledImageType, context.Constant(context.TypeU32(), sampler.ArrayLength));
+                    var sampledImageArrayType = context.TypeArray(sampledOrSeparateImageType, context.Constant(context.TypeU32(), sampler.ArrayLength));
                     sampledImageArrayPointerType = context.TypePointer(StorageClass.UniformConstant, sampledImageArrayType);
                 }
 
                 var sampledImageVariable = context.Variable(sampledImageArrayPointerType, StorageClass.UniformConstant);
 
-                context.Samplers.Add(sampler.Binding, new SamplerDeclaration(
+                context.Samplers.Add(new(sampler.Set, sampler.Binding), new SamplerDeclaration(
                     imageType,
                     sampledImageType,
                     sampledImagePointerType,
                     sampledImageVariable,
                     sampler.ArrayLength != 1));
-                context.SamplersTypes.Add(sampler.Binding, sampler.Type);
+                context.SamplersTypes.Add(new(sampler.Set, sampler.Binding), sampler.Type);
 
                 context.Name(sampledImageVariable, sampler.Name);
                 context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
@@ -244,7 +256,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 var imageVariable = context.Variable(imageArrayPointerType, StorageClass.UniformConstant);
 
-                context.Images.Add(image.Binding, new ImageDeclaration(imageType, imagePointerType, imageVariable, image.ArrayLength != 1));
+                context.Images.Add(new(image.Set, image.Binding), new ImageDeclaration(imageType, imagePointerType, imageVariable, image.ArrayLength != 1));
 
                 context.Name(imageVariable, image.Name);
                 context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);

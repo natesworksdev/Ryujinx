@@ -3,7 +3,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     enum CommandType : byte
     {
         Action,
-        CreateBuffer,
         CreateBufferAccess,
         CreateBufferSparse,
         CreateHostBuffer,
@@ -85,6 +84,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         SetUniformBuffers,
         SetImage,
         SetImageArray,
+        SetImageArraySeparate,
         SetIndexBuffer,
         SetLineParameters,
         SetLogicOpState,
@@ -102,6 +102,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         SetStencilTest,
         SetTextureAndSampler,
         SetTextureArray,
+        SetTextureArraySeparate,
         SetUserClipDistance,
         SetVertexAttribs,
         SetVertexBuffers,

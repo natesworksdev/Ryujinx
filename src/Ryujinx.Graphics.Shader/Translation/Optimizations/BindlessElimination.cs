@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.Shader.Instructions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation.Optimizations
@@ -31,10 +32,17 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     continue;
                 }
 
-                if (!TryConvertBindless(block, resourceManager, gpuAccessor, texOp))
+                if (!TryConvertBindless(block, resourceManager, gpuAccessor, texOp) &&
+                    !GenerateBindlessAccess(block, resourceManager, gpuAccessor, texOp, node))
                 {
                     // If we can't do bindless elimination, remove the texture operation.
                     // Set any destination variables to zero.
+
+                    string typeName = texOp.Inst.IsImage()
+                        ? texOp.Type.ToGlslImageType(texOp.Format.GetComponentType())
+                        : texOp.Type.ToGlslTextureType();
+
+                    gpuAccessor.Log($"Failed to find handle source for bindless access of type \"{typeName}\".");
 
                     for (int destIndex = 0; destIndex < texOp.DestsCount; destIndex++)
                     {
@@ -44,6 +52,117 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     Utils.DeleteNode(node, texOp);
                 }
             }
+        }
+
+        private static bool GenerateBindlessAccess(
+            BasicBlock block,
+            ResourceManager resourceManager,
+            IGpuAccessor gpuAccessor,
+            TextureOperation texOp,
+            LinkedListNode<INode> node)
+        {
+            if (!gpuAccessor.QueryHostSupportsSeparateSampler())
+            {
+                // We depend on combining samplers and textures in the shader being supported for this.
+
+                return false;
+            }
+
+            Operand bindlessHandle = texOp.GetSource(0);
+
+            if (bindlessHandle.AsgOp is PhiNode phi)
+            {
+                for (int srcIndex = 0; srcIndex < phi.SourcesCount; srcIndex++)
+                {
+                    Operand phiSource = phi.GetSource(srcIndex);
+
+                    if (phiSource.AsgOp is not PhiNode && !IsBindlessAccessAllowed(phiSource))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (!IsBindlessAccessAllowed(bindlessHandle))
+            {
+                return false;
+            }
+
+            Operand textureHandle = OperandHelper.Local();
+            Operand samplerHandle = OperandHelper.Local();
+            Operand textureIndex = OperandHelper.Local();
+
+            block.Operations.AddBefore(node, new Operation(Instruction.BitwiseAnd, textureHandle, bindlessHandle, OperandHelper.Const(0xfffff)));
+            block.Operations.AddBefore(node, new Operation(Instruction.ShiftRightU32, samplerHandle, bindlessHandle, OperandHelper.Const(20)));
+
+            int texturePoolLength = Math.Max(BindlessToArray.MinimumArrayLength, gpuAccessor.QueryTextureArrayLengthFromPool());
+
+            block.Operations.AddBefore(node, new Operation(Instruction.MinimumU32, textureIndex, textureHandle, OperandHelper.Const(texturePoolLength - 1)));
+
+            texOp.SetSource(0, textureIndex);
+
+            bool hasSampler = !texOp.Inst.IsImage();
+
+            SetBindingPair textureSetAndBinding = resourceManager.GetTextureOrImageBinding(
+                texOp.Inst,
+                texOp.Type,
+                texOp.Format,
+                texOp.Flags & ~TextureFlags.Bindless,
+                0,
+                TextureHandle.PackOffsets(0, 0, TextureHandleType.Direct),
+                texturePoolLength,
+                hasSampler);
+
+            if (hasSampler)
+            {
+                Operand samplerIndex = OperandHelper.Local();
+
+                int samplerPoolLength = Math.Max(BindlessToArray.MinimumArrayLength, gpuAccessor.QuerySamplerArrayLengthFromPool());
+
+                block.Operations.AddBefore(node, new Operation(Instruction.MinimumU32, samplerIndex, samplerHandle, OperandHelper.Const(samplerPoolLength - 1)));
+
+                texOp.InsertSource(1, samplerIndex);
+
+                SetBindingPair samplerSetAndBinding = resourceManager.GetTextureOrImageBinding(
+                    texOp.Inst,
+                    SamplerType.None,
+                    texOp.Format,
+                    TextureFlags.None,
+                    0,
+                    TextureHandle.PackOffsets(0, 0, TextureHandleType.Direct),
+                    samplerPoolLength);
+
+                texOp.TurnIntoArray(textureSetAndBinding, samplerSetAndBinding);
+            }
+            else
+            {
+                texOp.TurnIntoArray(textureSetAndBinding);
+            }
+
+            return true;
+        }
+
+        private static bool IsBindlessAccessAllowed(Operand nvHandle)
+        {
+            if (nvHandle.Type == OperandType.ConstantBuffer)
+            {
+                // Bindless access with handles from constant buffer is allowed.
+
+                return true;
+            }
+
+            if (nvHandle.AsgOp is not Operation handleOp ||
+                handleOp.Inst != Instruction.Load ||
+                (handleOp.StorageKind != StorageKind.Input && handleOp.StorageKind != StorageKind.StorageBuffer))
+            {
+                // Right now, we only allow bindless access when the handle comes from a shader input or storage buffer.
+                // This is an artificial limitation to prevent it from being used in cases where it
+                // would have a large performance impact of loading all textures in the pool.
+                // It might be removed in the future, if we can mitigate the performance impact.
+
+                return false;
+            }
+
+            return true;
         }
 
         private static bool TryConvertBindless(BasicBlock block, ResourceManager resourceManager, IGpuAccessor gpuAccessor, TextureOperation texOp)
@@ -361,7 +480,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
 
-            int binding = resourceManager.GetTextureOrImageBinding(
+            SetBindingPair setAndBinding = resourceManager.GetTextureOrImageBinding(
                 texOp.Inst,
                 texOp.Type,
                 texOp.Format,
@@ -369,7 +488,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 cbufSlot,
                 cbufOffset);
 
-            texOp.SetBinding(binding);
+            texOp.SetBinding(setAndBinding);
         }
     }
 }
