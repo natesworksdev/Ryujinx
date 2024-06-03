@@ -144,6 +144,22 @@
                                   </packing>
                                 </child>
                                 <child>
+                                  <object class="GtkCheckButton" id="_showProfileToggle">
+                                    <property name="label" translatable="yes">Show Profiles on Launch</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="draw-indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>								
+                                <child>
                                   <object class="GtkCheckButton" id="_showConfirmExitToggle">
                                     <property name="label" translatable="yes">Show "Confirm Exit" Dialog</property>
                                     <property name="visible">True</property>
@@ -156,7 +172,7 @@
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
-                                    <property name="position">2</property>
+                                    <property name="position">3</property>
                                   </packing>
                                 </child>
                                 <child>

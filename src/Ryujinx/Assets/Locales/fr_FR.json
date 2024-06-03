@@ -95,6 +95,7 @@
   "SettingsTabGeneralGeneral": "Général",
   "SettingsTabGeneralEnableDiscordRichPresence": "Activer Discord Rich Presence",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Vérifier les mises à jour au démarrage",
+  "SettingsTabGeneralShoProfilesAtStartup": "Afficher les profiles au démarrage",
   "SettingsTabGeneralShowConfirmExitDialog": "Afficher le message de \"Confirmation de sortie\"",
   "SettingsTabGeneralRememberWindowState": "Remember Window Size/Position",
   "SettingsTabGeneralHideCursor": "Masquer le Curseur :",

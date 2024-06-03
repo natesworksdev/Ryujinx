@@ -165,4 +165,10 @@
   <ItemGroup>
     <AdditionalFiles Include="Assets\Locales\en_US.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="UI\Views\User\UserSimpleSelectorView.axaml.cs">
+      <DependentUpon>UserSimpleSelectorView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

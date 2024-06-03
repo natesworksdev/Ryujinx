@@ -187,6 +187,12 @@ namespace Ryujinx.UI.Common.Configuration
             /// </summary>
             public ReactiveObject<bool> IsAscendingOrder { get; private set; }
 
+            /// <summary>
+            /// Sets if Grid is ordered in Ascending Order
+            /// </summary>
+            public ReactiveObject<bool> ShowProfilesAtStartup { get; private set; }
+
+
             public UISection()
             {
                 GuiColumns = new Columns();
@@ -205,6 +211,7 @@ namespace Ryujinx.UI.Common.Configuration
                 IsAscendingOrder = new ReactiveObject<bool>();
                 LanguageCode = new ReactiveObject<string>();
                 ShowConsole = new ReactiveObject<bool>();
+                ShowProfilesAtStartup = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
         }
@@ -766,6 +773,7 @@ namespace Ryujinx.UI.Common.Configuration
                 PreferredGpu = Graphics.PreferredGpu,
                 MultiplayerLanInterfaceId = Multiplayer.LanInterfaceId,
                 MultiplayerMode = Multiplayer.Mode,
+                ShowProfilesAtStartup = UI.ShowProfilesAtStartup,
             };
 
             return configurationFile;
@@ -853,6 +861,7 @@ namespace Ryujinx.UI.Common.Configuration
             UI.IsAscendingOrder.Value = true;
             UI.StartFullscreen.Value = false;
             UI.ShowConsole.Value = true;
+            UI.ShowProfilesAtStartup.Value = false;
             UI.WindowStartup.WindowSizeWidth.Value = 1280;
             UI.WindowStartup.WindowSizeHeight.Value = 760;
             UI.WindowStartup.WindowPositionX.Value = 0;
@@ -1477,6 +1486,15 @@ namespace Ryujinx.UI.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 52)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 52.");
+
+                configurationFileFormat.ShowProfilesAtStartup = false;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
@@ -1555,6 +1573,7 @@ namespace Ryujinx.UI.Common.Configuration
             UI.ApplicationSort.Value = configurationFileFormat.ApplicationSort;
             UI.StartFullscreen.Value = configurationFileFormat.StartFullscreen;
             UI.ShowConsole.Value = configurationFileFormat.ShowConsole;
+            UI.ShowProfilesAtStartup.Value = configurationFileFormat.ShowProfilesAtStartup;
             UI.WindowStartup.WindowSizeWidth.Value = configurationFileFormat.WindowStartup.WindowSizeWidth;
             UI.WindowStartup.WindowSizeHeight.Value = configurationFileFormat.WindowStartup.WindowSizeHeight;
             UI.WindowStartup.WindowPositionX.Value = configurationFileFormat.WindowStartup.WindowPositionX;

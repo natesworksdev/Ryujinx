@@ -15,7 +15,7 @@ namespace Ryujinx.UI.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 51;
+        public const int CurrentVersion = 52;
 
         /// <summary>
         /// Version of the configuration file format
@@ -161,6 +161,11 @@ namespace Ryujinx.UI.Common.Configuration
         /// Show "Confirm Exit" Dialog
         /// </summary>
         public bool ShowConfirmExit { get; set; }
+
+        /// <summary>
+        /// Show Profiles Dialog at Startup
+        /// </summary>
+        public bool ShowProfilesAtStartup { get; set; }
 
         /// <summary>
         /// Enables or disables save window size, position and state on close.

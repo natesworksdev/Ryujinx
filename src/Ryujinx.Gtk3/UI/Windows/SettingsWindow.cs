@@ -52,6 +52,7 @@ namespace Ryujinx.UI.Windows
         [GUI] CheckButton _dockedModeToggle;
         [GUI] CheckButton _discordToggle;
         [GUI] CheckButton _checkUpdatesToggle;
+        [GUI] CheckButton _showProfileToggle;
         [GUI] CheckButton _showConfirmExitToggle;
         [GUI] RadioButton _hideCursorNever;
         [GUI] RadioButton _hideCursorOnIdle;
@@ -223,6 +224,11 @@ namespace Ryujinx.UI.Windows
             if (ConfigurationState.Instance.CheckUpdatesOnStart)
             {
                 _checkUpdatesToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.UI.ShowProfilesAtStartup)
+            {
+                _showProfileToggle.Click();
             }
 
             if (ConfigurationState.Instance.ShowConfirmExit)
@@ -626,6 +632,7 @@ namespace Ryujinx.UI.Windows
             ConfigurationState.Instance.System.EnableDockedMode.Value = _dockedModeToggle.Active;
             ConfigurationState.Instance.EnableDiscordIntegration.Value = _discordToggle.Active;
             ConfigurationState.Instance.CheckUpdatesOnStart.Value = _checkUpdatesToggle.Active;
+            ConfigurationState.Instance.UI.ShowProfilesAtStartup.Value = _showProfileToggle.Active;
             ConfigurationState.Instance.ShowConfirmExit.Value = _showConfirmExitToggle.Active;
             ConfigurationState.Instance.HideCursor.Value = hideCursor;
             ConfigurationState.Instance.Graphics.EnableVsync.Value = _vSyncToggle.Active;

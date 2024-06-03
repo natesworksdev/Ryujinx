@@ -130,6 +130,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
+
+        public bool ShowProfilesAtStartup { get; set; }
         public bool ShowConfirmExit { get; set; }
         public bool RememberWindowState { get; set; }
         public int HideCursor { get; set; }
@@ -391,6 +393,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
+            ShowProfilesAtStartup = config.UI.ShowProfilesAtStartup;
             RememberWindowState = config.RememberWindowState;
             HideCursor = (int)config.HideCursor.Value;
 
@@ -483,6 +486,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
             config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
             config.ShowConfirmExit.Value = ShowConfirmExit;
+            config.UI.ShowProfilesAtStartup.Value = ShowProfilesAtStartup;
             config.RememberWindowState.Value = RememberWindowState;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
 
