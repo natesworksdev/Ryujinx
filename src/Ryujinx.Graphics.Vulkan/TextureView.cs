@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 shaderUsage |= ImageUsageFlags.StorageBit;
             }
-            
+
             _imageView = CreateImageView(componentMapping, subresourceRange, type, shaderUsage);
 
             // Framebuffer attachments and storage images requires a identity component mapping.
