@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Textures.Add(this);
 
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
-            var usage = TextureStorage.GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
+            var usage = storage.StorageImageUsageFlags;
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
 
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType, ImageUsageFlags usageFlags)
             {
-                var usage = new ImageViewUsageCreateInfo
+                var imageViewUsage = new ImageViewUsageCreateInfo
                 {
                     SType = StructureType.ImageViewUsageCreateInfo,
                     Usage = usageFlags,
@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Format = format,
                     Components = cm,
                     SubresourceRange = sr,
-                    PNext = &usage,
+                    PNext = &imageViewUsage,
                 };
 
                 gd.Api.CreateImageView(device, imageCreateInfo, null, out var imageView).ThrowOnError();
@@ -123,11 +123,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             ImageUsageFlags shaderUsage = ImageUsageFlags.SampledBit;
 
-            if (info.Format.IsImageCompatible())
+            if (storage.Info.Format.IsImageCompatible())
             {
                 shaderUsage |= ImageUsageFlags.StorageBit;
             }
-
+            
             _imageView = CreateImageView(componentMapping, subresourceRange, type, shaderUsage);
 
             // Framebuffer attachments and storage images requires a identity component mapping.
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
                 else
                 {
-                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);
+                    subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, 1, (uint)firstLayer, (uint)info.Depth);
 
                     _imageView2dArray = CreateImageView(identityComponentMapping, subresourceRange, ImageViewType.Type2DArray, usage);
                 }
