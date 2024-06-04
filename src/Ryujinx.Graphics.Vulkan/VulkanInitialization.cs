@@ -355,13 +355,13 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 features2.PNext = &supportedFeaturesDepthClipControl;
             }
-            
+
             PhysicalDeviceVulkan12Features supportedPhysicalDeviceVulkan12Features = new()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
                 PNext = features2.PNext,
             };
-            
+
             features2.PNext = &supportedPhysicalDeviceVulkan12Features;
 
             api.GetPhysicalDeviceFeatures2(physicalDevice.PhysicalDevice, &features2);
@@ -466,7 +466,7 @@ namespace Ryujinx.Graphics.Vulkan
                 UniformBufferStandardLayout = physicalDevice.IsDeviceExtensionPresent("VK_KHR_uniform_buffer_standard_layout"),
                 UniformAndStorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage"),
                 StorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage") || supportedPhysicalDeviceVulkan12Features.StorageBuffer8BitAccess,
-                
+
             };
 
             pExtendedFeatures = &featuresVk12;
