@@ -45,8 +45,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void Close()
         {
             CloseWindow?.Invoke();
-            GC.SuppressFinalize(this);
         }
-
     }
 }
