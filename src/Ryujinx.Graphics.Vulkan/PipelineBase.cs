@@ -1006,7 +1006,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.LogicOpEnable = logicOpEnable;
 
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && logicOpEnable)
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
             {
                 DynamicState.SetLogicOp(op.Convert());
             }
