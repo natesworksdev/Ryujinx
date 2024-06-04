@@ -309,7 +309,7 @@ namespace Ryujinx.Ava.UI.Windows
                     DataContext = content.ViewModel,
                     Content = content,
                     Padding = new Thickness(0),
-                };                    
+                };
                 content.ViewModel.CloseWindow += contentDialog.Hide;
                 Style footer = new(x => x.Name("DialogSpace").Child().OfType<Border>());
                 footer.Setters.Add(new Setter(IsVisibleProperty, false));
@@ -317,7 +317,7 @@ namespace Ryujinx.Ava.UI.Windows
                 contentDialog.Styles.Add(footer);
 
                 await contentDialog.ShowAsync();
-            });            
+            });
         }
 
         private async Task CheckLaunchState()

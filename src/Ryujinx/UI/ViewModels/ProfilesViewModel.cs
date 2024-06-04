@@ -10,28 +10,28 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
 
         private UserProfile _selectedProfile;
-        
+
         public event Action CloseWindow;
         public event Action ApplyProfile;
 
         public ProfilesViewModel()
         {
             Profiles = new AvaloniaList<UserProfile>();
-            Profiles.Clear(); 
+            Profiles.Clear();
         }
-        
+
         public ProfilesViewModel(IEnumerable<UserProfile> profiles)
         {
             Profiles = new AvaloniaList<UserProfile>();
-            Profiles.Clear();             
+            Profiles.Clear();
             Profiles.AddRange(profiles);
         }
 
         public AvaloniaList<UserProfile> Profiles
         {
-            get; set; 
+            get; set;
         }
-        
+
         public UserProfile SelectedProfile
         {
             get => _selectedProfile;
@@ -40,13 +40,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _selectedProfile = value;
                 OnPropertyChanged();
             }
-        }  
+        }
 
         public void Close()
         {
             CloseWindow?.Invoke();
             GC.SuppressFinalize(this);
         }
-        
+
     }
 }

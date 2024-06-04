@@ -106,11 +106,11 @@ namespace Ryujinx.UI.Windows
 
             string userName = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[0];
             string userId = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[1];
-            
+
 
             // Open the selected one.
             _accountManager.OpenUser(new UserId(userId));
-            
+
             Close();
         }
 

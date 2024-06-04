@@ -26,9 +26,9 @@ namespace Ryujinx.Ava.UI.Views.User
             ViewModel = new ProfilesViewModel();
             var profiles = _accountManager
                 .GetAllUsers()
-                .Select(p => new Models.UserProfile(p,null))
-                .OrderBy(p => p.Name);            
-            
+                .Select(p => new Models.UserProfile(p, null))
+                .OrderBy(p => p.Name);
+
             ViewModel.Profiles.AddRange(profiles);
             InitializeComponent();
         }
@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.UI.Views.User
                 {
                     if (ViewModel.Profiles[selectedIndex] is UserProfile userProfile)
                     {
-                       _accountManager?.OpenUser(userProfile.UserId);
+                        _accountManager?.OpenUser(userProfile.UserId);
 
                         foreach (BaseModel profile in ViewModel.Profiles)
                         {

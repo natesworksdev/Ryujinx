@@ -324,7 +324,7 @@ namespace Ryujinx
             {
                 mainWindow.ShowProfilesSelector();
             }
-            
+
             if (CommandLineState.LaunchPathArg != null)
             {
                 mainWindow.RunApplication(CommandLineState.LaunchPathArg, CommandLineState.StartFullscreenArg);
