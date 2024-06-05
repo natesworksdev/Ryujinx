@@ -20,8 +20,6 @@ namespace Ryujinx.Graphics.Vulkan
             ImageUsageFlags.TransferSrcBit |
             ImageUsageFlags.TransferDstBit;
 
-        public readonly ImageUsageFlags StorageImageUsageFlags;
-
         public const AccessFlags DefaultAccessMask =
             AccessFlags.ShaderReadBit |
             AccessFlags.ShaderWriteBit |
@@ -80,9 +78,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
-            StorageImageUsageFlags = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
+            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
 
-            var flags = ImageCreateFlags.CreateMutableFormatBit;
+            var flags = ImageCreateFlags.CreateMutableFormatBit | ImageCreateFlags.CreateExtendedUsageBit;
 
             // This flag causes mipmapped texture arrays to break on AMD GCN, so for that copy dependencies are forced for aliasing as cube.
             bool isCube = info.Target == Target.Cubemap || info.Target == Target.CubemapArray;
@@ -108,7 +106,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ArrayLayers = layers,
                 Samples = sampleCountFlags,
                 Tiling = ImageTiling.Optimal,
-                Usage = StorageImageUsageFlags,
+                Usage = usage,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
                 Flags = flags,

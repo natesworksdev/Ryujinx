@@ -43,6 +43,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_KHR_portability_subset", // As per spec, we should enable this if present.
             "VK_EXT_4444_formats",
             "VK_KHR_8bit_storage",
+            "VK_KHR_maintenance2",
         };
 
         private static readonly string[] _requiredExtensions = {
@@ -466,7 +467,6 @@ namespace Ryujinx.Graphics.Vulkan
                 UniformBufferStandardLayout = physicalDevice.IsDeviceExtensionPresent("VK_KHR_uniform_buffer_standard_layout"),
                 UniformAndStorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage"),
                 StorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage") || supportedPhysicalDeviceVulkan12Features.StorageBuffer8BitAccess,
-
             };
 
             pExtendedFeatures = &featuresVk12;

@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Textures.Add(this);
 
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
-            var usage = storage.StorageImageUsageFlags;
+            var usage = TextureStorage.GetImageUsage(info.Format, info.Target, gd.Capabilities.SupportsShaderStorageImageMultisample);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
 
@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             ImageUsageFlags shaderUsage = ImageUsageFlags.SampledBit;
 
-            if (storage.Info.Format.IsImageCompatible())
+            if (info.Format.IsImageCompatible())
             {
                 shaderUsage |= ImageUsageFlags.StorageBit;
             }
