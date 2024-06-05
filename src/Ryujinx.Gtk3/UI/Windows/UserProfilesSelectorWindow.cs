@@ -18,8 +18,6 @@ namespace Ryujinx.UI.Windows
 {
     public partial class UserProfilesSelectorWindow : Window
     {
-        private const uint MaxProfileNameLength = 0x20;
-
         private readonly AccountManager _accountManager;
         private readonly ContentManager _contentManager;
 
@@ -102,11 +100,7 @@ namespace Ryujinx.UI.Windows
             // Get selected item informations.
             _usersTreeView.Selection.GetSelected(out TreeIter selectedIter);
 
-            Gdk.Pixbuf userPicture = (Gdk.Pixbuf)_tableStore.GetValue(selectedIter, 1);
-
-            string userName = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[0];
             string userId = _tableStore.GetValue(selectedIter, 2).ToString().Split("\n")[1];
-
 
             // Open the selected one.
             _accountManager.OpenUser(new UserId(userId));
