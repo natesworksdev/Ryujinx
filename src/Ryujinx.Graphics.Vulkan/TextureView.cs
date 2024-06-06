@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             ImageUsageFlags shaderUsage = ImageUsageFlags.SampledBit;
 
-            if (info.Format.IsImageCompatible())
+            if (info.Format.IsImageCompatible() && (_gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample()))
             {
                 shaderUsage |= ImageUsageFlags.StorageBit;
             }
