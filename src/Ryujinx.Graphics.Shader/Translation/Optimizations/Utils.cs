@@ -45,6 +45,24 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return x == y || x.Type == OperandType.Constant || x.Type == OperandType.ConstantBuffer;
         }
 
+        private static bool AreAllSourcesEqual(INode node, INode otherNode)
+        {
+            if (node.SourcesCount != otherNode.SourcesCount)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < node.SourcesCount; index++)
+            {
+                if (!IsSameOperand(node.GetSource(index), otherNode.GetSource(index)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool AreAllSourcesTheSameOperand(INode node)
         {
             Operand firstSrc = node.GetSource(0);
@@ -81,6 +99,19 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return inst == Instruction.BranchIfFalse || inst == Instruction.BranchIfTrue;
         }
 
+        private static bool IsSameCondition(Operand currentCondition, Operand queryCondition)
+        {
+            if (currentCondition == queryCondition)
+            {
+                return true;
+            }
+
+            return currentCondition.AsgOp is Operation currentOperation &&
+                queryCondition.AsgOp is Operation queryOperation &&
+                currentOperation.Inst == queryOperation.Inst &&
+                AreAllSourcesEqual(currentOperation, queryOperation);
+        }
+
         private static bool BlockConditionsMatch(BasicBlock currentBlock, BasicBlock queryBlock)
         {
             // Check if all the conditions for the query block are satisfied by the current block.
@@ -96,7 +127,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
             return currentBranch != null && queryBranch != null &&
                    currentBranch.Inst == queryBranch.Inst &&
-                   currentCondition == queryCondition;
+                   IsSameCondition(currentCondition, queryCondition);
         }
 
         public static Operand FindLastOperation(Operand source, BasicBlock block, bool recurse = true)
