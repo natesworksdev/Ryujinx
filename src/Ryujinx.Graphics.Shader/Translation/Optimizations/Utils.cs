@@ -34,6 +34,32 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             return elemIndexSrc.Type == OperandType.Constant && elemIndexSrc.Value == elemIndex;
         }
 
+        private static bool IsSameOperand(Operand x, Operand y)
+        {
+            if (x.Type != y.Type || x.Value != y.Value)
+            {
+                return false;
+            }
+
+            // TODO: Handle Load operations with the same storage and the same constant parameters.
+            return x == y || x.Type == OperandType.Constant || x.Type == OperandType.ConstantBuffer;
+        }
+
+        public static bool AreAllSourcesTheSameOperand(INode node)
+        {
+            Operand firstSrc = node.GetSource(0);
+
+            for (int index = 1; index < node.SourcesCount; index++)
+            {
+                if (!IsSameOperand(firstSrc, node.GetSource(index)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private static Operation FindBranchSource(BasicBlock block)
         {
             foreach (BasicBlock sourceBlock in block.Predecessors)
@@ -73,7 +99,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                    currentCondition == queryCondition;
         }
 
-        public static Operand FindLastOperation(Operand source, BasicBlock block)
+        public static Operand FindLastOperation(Operand source, BasicBlock block, bool recurse = true)
         {
             if (source.AsgOp is PhiNode phiNode)
             {
@@ -84,10 +110,23 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 for (int i = phiNode.SourcesCount - 1; i >= 0; i--)
                 {
                     BasicBlock phiBlock = phiNode.GetBlock(i);
+                    Operand phiSource = phiNode.GetSource(i);
 
                     if (BlockConditionsMatch(block, phiBlock))
                     {
-                        return phiNode.GetSource(i);
+                        return phiSource;
+                    }
+                    else if (recurse && phiSource.AsgOp is PhiNode)
+                    {
+                        // Phi source is another phi.
+                        // Let's check if that phi has a block that matches our condition.
+
+                        Operand match = FindLastOperation(phiSource, block, false);
+
+                        if (match != phiSource)
+                        {
+                            return match;
+                        }
                     }
                 }
             }
