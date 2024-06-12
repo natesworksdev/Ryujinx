@@ -215,7 +215,7 @@ namespace Ryujinx.Ava
             if (executablePath != null)
             {
                 Logger.Notice.Print(LogClass.Application, $"Ryujinx Path: {executablePath}");
-            } 
+            }
             else
             {
                 Logger.Warning?.Print(LogClass.Application, "Can't determine executable path. It might have been renamed or deleted after launch.");
