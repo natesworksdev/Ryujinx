@@ -1,5 +1,6 @@
 using Ryujinx.Common.Logging.Targets;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Common.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,6 +25,7 @@ namespace Ryujinx.Common.Logging
         public readonly struct Log
         {
             private static readonly string _homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            private static readonly string _homeDirShort = WindowsNative.GetShortPathName(_homeDir); // empty string on non-windows platforms
             private static readonly string _homeDirRedacted = Path.Combine(Directory.GetParent(_homeDir).FullName, "[redacted]");
 
             internal readonly LogLevel Level;
@@ -106,6 +108,10 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static string FormatMessage(LogClass logClass, string caller, string message)
             {
+                if (_homeDirShort != "")
+                {
+                    message = message.Replace(_homeDirShort, _homeDirRedacted);
+                }
                 message = message.Replace(_homeDir, _homeDirRedacted);
 
                 return $"{logClass} {caller}: {message}";
