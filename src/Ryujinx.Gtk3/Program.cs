@@ -4,6 +4,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.UI;
@@ -340,6 +341,12 @@ namespace Ryujinx
         {
             Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
             SystemInfo.Gather().Print();
+
+            string avName = AVUtils.GetAVName();
+            if (avName != null)
+            {
+                Logger.Notice.Print(LogClass.Application, $"Detected AV: {avName}");
+            }
 
             var enabledLogs = Logger.GetEnabledLevels();
             Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogs.Count == 0 ? "<None>" : string.Join(", ", enabledLogs))}");
