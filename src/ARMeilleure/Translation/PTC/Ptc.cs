@@ -40,6 +40,8 @@ namespace ARMeilleure.Translation.PTC
         public static readonly Symbol PageTableSymbol = new(SymbolType.Special, 1);
         public static readonly Symbol CountTableSymbol = new(SymbolType.Special, 2);
         public static readonly Symbol DispatchStubSymbol = new(SymbolType.Special, 3);
+        public static readonly Symbol FunctionTableSymbol = new(SymbolType.Special, 4);
+        public static readonly Symbol DispatchFallbackSymbol = new(SymbolType.Special, 5);
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -704,6 +706,14 @@ namespace ARMeilleure.Translation.PTC
                 else if (symbol == DispatchStubSymbol)
                 {
                     imm = translator.Stubs.DispatchStub;
+                }
+                else if (symbol == FunctionTableSymbol)
+                {
+                    imm = translator.FunctionTable.Base;
+                }
+                else if (symbol == DispatchFallbackSymbol)
+                {
+                    imm = translator.FunctionTable.Fallback;
                 }
 
                 if (imm == null)

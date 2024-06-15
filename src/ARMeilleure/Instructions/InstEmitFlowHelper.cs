@@ -193,6 +193,8 @@ namespace ARMeilleure.Instructions
 
             Operand hostAddress;
 
+            var table = context.FunctionTable;
+
             // If address is mapped onto the function table, we can skip the table walk. Otherwise we fallback
             // onto the dispatch stub.
             if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsValid(guestAddress.Value))
@@ -202,6 +204,45 @@ namespace ARMeilleure.Instructions
                     Const(ref context.FunctionTable.GetValue(guestAddress.Value), new Symbol(SymbolType.FunctionTable, guestAddress.Value));
 
                 hostAddress = context.Load(OperandType.I64, hostAddressAddr);
+            }
+            else if (table.Levels.Length == 2)
+            {
+                // Inline table lookup. Only enabled when the sparse function table is enabled with 2 levels.
+                // Deliberately attempts to avoid branches.
+
+                var level0 = table.Levels[0];
+
+                // Currently no bounds check. Maybe conditionally do this for unsafe host mapped.
+                Operand index = context.ShiftLeft(context.ShiftRightUI(guestAddress, Const(level0.Index)), Const(3));
+
+                Operand tableBase = !context.HasPtc ?
+                    Const(table.Base) :
+                    Const(table.Base, Ptc.FunctionTableSymbol);
+
+                Operand page = context.Load(OperandType.I64, context.Add(tableBase, index));
+
+                // Second level
+                var level1 = table.Levels[1];
+
+                int clearBits = 64 - (level1.Index + level1.Length);
+
+                Operand index2 = context.ShiftLeft(
+                    context.ShiftRightUI(context.ShiftLeft(guestAddress, Const(clearBits)), Const(clearBits + level1.Index)),
+                    Const(3)
+                    );
+
+                // TODO: could possibly make a fallback page that level 1 is filled with that contains dispatch stub on all pages
+                // Would save this load and the comparisons
+                // 16MB of the same value is a bit wasteful so it could replicate with remapping.
+
+                Operand fallback = !context.HasPtc ?
+                    Const((long)context.FunctionTable.Fallback) :
+                    Const((long)context.FunctionTable.Fallback, Ptc.DispatchFallbackSymbol);
+
+                Operand pageIsZero = context.ICompareEqual(page, Const(0L));
+
+                // Small trick to keep this branchless - if the page is zero, load a fallback table entry that always contains the dispatch stub.
+                hostAddress = context.Load(OperandType.I64, context.ConditionalSelect(pageIsZero, fallback, context.Add(page, index2)));
             }
             else
             {

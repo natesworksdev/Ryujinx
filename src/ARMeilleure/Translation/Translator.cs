@@ -22,6 +22,8 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+        private const bool UseSparseTable = true;
+
         private static readonly AddressTable<ulong>.Level[] _levels64Bit =
             new AddressTable<ulong>.Level[]
             {
@@ -40,6 +42,20 @@ namespace ARMeilleure.Translation
                 new(15,  8),
                 new( 7,  8),
                 new( 1,  6),
+            };
+
+        private static readonly AddressTable<ulong>.Level[] _levels64BitSparse =
+            new AddressTable<ulong>.Level[]
+            {
+                new(23, 16),
+                new( 2, 21),
+            };
+
+        private static readonly AddressTable<ulong>.Level[] _levels32BitSparse =
+            new AddressTable<ulong>.Level[]
+            {
+                new(22, 10),
+                new( 1, 21),
             };
 
         private readonly IJitMemoryAllocator _allocator;
@@ -70,9 +86,20 @@ namespace ARMeilleure.Translation
 
             JitCache.Initialize(allocator);
 
+            AddressTable<ulong>.Level[] levels;
+
+            if (UseSparseTable)
+            {
+                levels = for64Bits ? _levels64BitSparse : _levels32BitSparse;
+            }
+            else
+            {
+                levels = for64Bits ? _levels64Bit : _levels32Bit;
+            }
+
             CountTable = new EntryTable<uint>();
             Functions = new TranslatorCache<TranslatedFunction>();
-            FunctionTable = new AddressTable<ulong>(for64Bits ? _levels64Bit : _levels32Bit);
+            FunctionTable = new AddressTable<ulong>(levels);
             Stubs = new TranslatorStubs(FunctionTable);
 
             FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;

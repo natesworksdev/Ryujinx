@@ -56,6 +56,8 @@ namespace ARMeilleure.Common
         private bool _disposed;
         private TEntry** _table;
         private readonly List<IntPtr> _pages;
+        private readonly TEntry* _fallbackTable;
+        private TEntry _fill;
 
         /// <summary>
         /// Gets the bits used by the <see cref="Levels"/> of the <see cref="AddressTable{TEntry}"/> instance.
@@ -70,7 +72,18 @@ namespace ARMeilleure.Common
         /// <summary>
         /// Gets or sets the default fill value of newly created leaf pages.
         /// </summary>
-        public TEntry Fill { get; set; }
+        public TEntry Fill
+        {
+            get
+            {
+                return _fill;
+            }
+            set
+            {
+                *_fallbackTable = value;
+                _fill = value;
+            }
+        }
 
         /// <summary>
         /// Gets the base address of the <see cref="EntryTable{TEntry}"/>.
@@ -86,6 +99,19 @@ namespace ARMeilleure.Common
                 {
                     return (IntPtr)GetRootPage();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets a pointer to a single entry table containing only the leaf fill value.
+        /// </summary>
+        public IntPtr Fallback
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+
+                return (IntPtr)_fallbackTable;
             }
         }
 
@@ -113,6 +139,8 @@ namespace ARMeilleure.Common
             {
                 Mask |= level.Mask;
             }
+
+            _fallbackTable = (TEntry*)NativeAllocator.Instance.Allocate((ulong)sizeof(TEntry));
         }
 
         /// <summary>
@@ -236,6 +264,8 @@ namespace ARMeilleure.Common
                 {
                     Marshal.FreeHGlobal(page);
                 }
+
+                Marshal.FreeHGlobal((IntPtr)_fallbackTable);
 
                 _disposed = true;
             }
