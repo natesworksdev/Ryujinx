@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class ImageArray : IImageArray
+    class ImageArray : ResourceArray, IImageArray
     {
         private readonly VulkanRenderer _gd;
 
@@ -28,8 +28,6 @@ namespace Ryujinx.Graphics.Vulkan
         private int _cachedSubmissionCount;
 
         private readonly bool _isBuffer;
-
-        public bool Bound;
 
         public ImageArray(VulkanRenderer gd, int size, bool isBuffer)
         {
@@ -97,8 +95,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _cachedCommandBufferIndex = -1;
             _storages = null;
-
-            _gd.PipelineInternal.ForceImageDirty();
+            SetDirty(_gd);
         }
 
         public void QueueWriteToReadBarriers(CommandBufferScoped cbs, PipelineStageFlags stageFlags)
@@ -174,6 +171,48 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return bufferTextures;
+        }
+
+        public DescriptorSet[] GetDescriptorSets(
+            Device device,
+            CommandBufferScoped cbs,
+            DescriptorSetTemplateUpdater templateUpdater,
+            ShaderCollection program,
+            int setIndex,
+            TextureView dummyTexture)
+        {
+            if (TryGetCachedDescriptorSets(cbs, program, setIndex, out DescriptorSet[] sets))
+            {
+                // We still need to ensure the current command buffer holds a reference to all used textures.
+
+                if (!_isBuffer)
+                {
+                    GetImageInfos(_gd, cbs, dummyTexture);
+                }
+                else
+                {
+                    GetBufferViews(cbs);
+                }
+
+                return sets;
+            }
+
+            DescriptorSetTemplate template = program.Templates[setIndex];
+
+            DescriptorSetTemplateWriter tu = templateUpdater.Begin(template);
+
+            if (!_isBuffer)
+            {
+                tu.Push(GetImageInfos(_gd, cbs, dummyTexture));
+            }
+            else
+            {
+                tu.Push(GetBufferViews(cbs));
+            }
+
+            templateUpdater.Commit(_gd, device, sets[0]);
+
+            return sets;
         }
     }
 }

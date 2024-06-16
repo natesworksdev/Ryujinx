@@ -58,15 +58,17 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 TextureBindings[i] = stage.Info.Textures.Select(descriptor =>
                 {
-                    Target target = ShaderTexture.GetTarget(descriptor.Type);
+                    Target target = descriptor.Type != SamplerType.None ? ShaderTexture.GetTarget(descriptor.Type) : default;
 
                     var result = new TextureBindingInfo(
                         target,
+                        descriptor.Set,
                         descriptor.Binding,
                         descriptor.ArrayLength,
                         descriptor.CbufSlot,
                         descriptor.HandleIndex,
-                        descriptor.Flags);
+                        descriptor.Flags,
+                        descriptor.Type == SamplerType.None);
 
                     if (descriptor.ArrayLength <= 1)
                     {
@@ -89,6 +91,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     var result = new TextureBindingInfo(
                         target,
                         format,
+                        descriptor.Set,
                         descriptor.Binding,
                         descriptor.ArrayLength,
                         descriptor.CbufSlot,

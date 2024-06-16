@@ -65,7 +65,7 @@ namespace Ryujinx.UI.App.Common
             Stream resourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
             byte[] resourceByteArray = new byte[resourceStream.Length];
 
-            resourceStream.Read(resourceByteArray);
+            resourceStream.ReadExactly(resourceByteArray);
 
             return resourceByteArray;
         }
@@ -106,7 +106,7 @@ namespace Ryujinx.UI.App.Common
 
                     if (!Directory.Exists(appDir))
                     {
-                        Logger.Warning?.Print(LogClass.Application, $"The \"game_dirs\" section in \"{ReleaseInformation.ConfigName}\" contains an invalid directory: \"{appDir}\"");
+                        Logger.Warning?.Print(LogClass.Application, $"The specified game directory \"{appDir}\" does not exist.");
 
                         continue;
                     }

@@ -25,32 +25,32 @@ namespace Ryujinx.ShaderTools
                 _imagesCount = 0;
             }
 
-            public int CreateConstantBufferBinding(int index)
+            public SetBindingPair CreateConstantBufferBinding(int index)
             {
-                return index + 1;
+                return new SetBindingPair(0, index + 1);
             }
 
-            public int CreateImageBinding(int count, bool isBuffer)
+            public SetBindingPair CreateImageBinding(int count, bool isBuffer)
             {
                 int binding = _imagesCount;
 
                 _imagesCount += count;
 
-                return binding;
+                return new SetBindingPair(3, binding);
             }
 
-            public int CreateStorageBufferBinding(int index)
+            public SetBindingPair CreateStorageBufferBinding(int index)
             {
-                return index;
+                return new SetBindingPair(1, index);
             }
 
-            public int CreateTextureBinding(int count, bool isBuffer)
+            public SetBindingPair CreateTextureBinding(int count, bool isBuffer)
             {
                 int binding = _texturesCount;
 
                 _texturesCount += count;
 
-                return binding;
+                return new SetBindingPair(2, binding);
             }
 
             public ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
@@ -58,7 +58,17 @@ namespace Ryujinx.ShaderTools
                 return MemoryMarshal.Cast<byte, ulong>(new ReadOnlySpan<byte>(_data)[(int)address..]);
             }
 
+            public int QuerySamplerArrayLengthFromPool()
+            {
+                return DefaultArrayLength;
+            }
+
             public int QueryTextureArrayLengthFromBuffer(int slot)
+            {
+                return DefaultArrayLength;
+            }
+
+            public int QueryTextureArrayLengthFromPool()
             {
                 return DefaultArrayLength;
             }

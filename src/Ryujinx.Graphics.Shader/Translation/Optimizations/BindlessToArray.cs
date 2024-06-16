@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         private const int HardcodedArrayLengthOgl = 4;
 
         // 1 and 0 elements are not considered arrays anymore.
-        private const int MinimumArrayLength = 2;
+        public const int MinimumArrayLength = 2;
 
         public static void RunPassOgl(BasicBlock block, ResourceManager resourceManager)
         {
@@ -221,7 +221,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static void TurnIntoArray(ResourceManager resourceManager, TextureOperation texOp, int cbufSlot, int handleIndex, int length)
         {
-            int binding = resourceManager.GetTextureOrImageBinding(
+            SetBindingPair setAndBinding = resourceManager.GetTextureOrImageBinding(
                 texOp.Inst,
                 texOp.Type,
                 texOp.Format,
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 handleIndex,
                 length);
 
-            texOp.TurnIntoArray(binding);
+            texOp.TurnIntoArray(setAndBinding);
         }
     }
 }
