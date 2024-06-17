@@ -85,20 +85,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             CopySource = copySource;
         }
 
-        public bool TryGetCopySource(out LiveInterval copySource)
-        {
-            if (CopySource._data != null)
-            {
-                copySource = CopySource;
-
-                return true;
-            }
-
-            copySource = default;
-
-            return false;
-        }
-
         public bool TryGetCopySourceRegister(out int copySourceRegIndex)
         {
             if (CopySource._data != null)
