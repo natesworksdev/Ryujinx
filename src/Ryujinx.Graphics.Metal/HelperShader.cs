@@ -268,7 +268,7 @@ namespace Ryujinx.Graphics.Metal
 
             // TODO: Flush
 
-            using var buffer = _renderer.BufferManager.ReserveOrCreate(_pipeline.CurrentCommandBuffer, ClearColorBufferSize);
+            using var buffer = _renderer.BufferManager.ReserveOrCreate(_pipeline.Cbs, ClearColorBufferSize);
             buffer.Holder.SetDataUnchecked(buffer.Offset, clearColor);
             _pipeline.SetUniformBuffers([new BufferAssignment(0, buffer.Range)]);
 

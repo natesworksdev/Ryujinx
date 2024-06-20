@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Metal
         public void CopyTo(BufferRange range, int layer, int level, int stride)
         {
             var blitCommandEncoder = _pipeline.GetOrCreateBlitEncoder();
-            var cbs = _pipeline.CurrentCommandBuffer;
+            var cbs = _pipeline.Cbs;
 
             int outSize = Info.GetMipSize(level);
 
