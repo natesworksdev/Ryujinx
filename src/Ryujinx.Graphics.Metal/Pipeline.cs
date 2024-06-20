@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Metal
             CommandBuffer = (Cbs = _renderer.CommandBufferPool.Rent()).CommandBuffer;
         }
 
-        public void InitEncoderStateManager(BufferManager bufferManager)
+        internal void InitEncoderStateManager(BufferManager bufferManager)
         {
             _encoderStateManager = new EncoderStateManager(_device, bufferManager, this);
         }
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Metal
             }
         }
 
-        public MTLRenderCommandEncoder BeginRenderPass()
+        private MTLRenderCommandEncoder BeginRenderPass()
         {
             EndCurrentPass();
 
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Metal
             return renderCommandEncoder;
         }
 
-        public MTLBlitCommandEncoder BeginBlitPass()
+        private MTLBlitCommandEncoder BeginBlitPass()
         {
             EndCurrentPass();
 
@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Metal
             return blitCommandEncoder;
         }
 
-        public MTLComputeCommandEncoder BeginComputePass()
+        private MTLComputeCommandEncoder BeginComputePass()
         {
             EndCurrentPass();
 
@@ -536,7 +536,7 @@ namespace Ryujinx.Graphics.Metal
             _encoderStateManager.UpdateStorageBuffers(buffers);
         }
 
-        public void SetStorageBuffers(int first, ReadOnlySpan<Auto<DisposableBuffer>> buffers)
+        internal void SetStorageBuffers(int first, ReadOnlySpan<Auto<DisposableBuffer>> buffers)
         {
             _encoderStateManager.UpdateStorageBuffers(first, buffers);
         }

@@ -10,7 +10,7 @@ using System.Runtime.Versioning;
 namespace Ryujinx.Graphics.Metal
 {
     [SupportedOSPlatform("macos")]
-    public class HelperShader : IDisposable
+    class HelperShader : IDisposable
     {
         private const int ConvertElementsPerWorkgroup = 32 * 100; // Work group size of 32 times 100 elements.
         private const string ShadersSourcePath = "/Ryujinx.Graphics.Metal/Shaders";
