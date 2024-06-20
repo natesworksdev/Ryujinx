@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Metal
     }
 
     [SupportedOSPlatform("macos")]
-    public class Pipeline : IPipeline, IDisposable
+    class Pipeline : IPipeline, IDisposable
     {
         private readonly MTLDevice _device;
         private readonly MetalRenderer _renderer;
