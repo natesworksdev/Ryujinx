@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
                 switch (inst & Instruction.Mask)
                 {
                     case Instruction.Barrier:
-                        return "|| BARRIER ||";
+                        return "threadgroup_barrier(mem_flags::mem_threadgroup)";
                     case Instruction.Call:
                         return Call(context, operation);
                     case Instruction.FSIBegin:
