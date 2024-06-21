@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
             context.AppendLine(GetFunctionSignature(context, function, stage, isMainFunc));
             context.EnterScope();
 
-            Declarations.DeclareLocals(context, function, stage);
+            Declarations.DeclareLocals(context, function, stage, isMainFunc);
 
             PrintBlock(context, function.MainBlock, isMainFunc);
 

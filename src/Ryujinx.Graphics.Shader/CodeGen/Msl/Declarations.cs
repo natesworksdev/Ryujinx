@@ -64,9 +64,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
             return ioDefinition.StorageKind == storageKind && ioDefinition.IoVariable == IoVariable.UserDefined;
         }
 
-        public static void DeclareLocals(CodeGenContext context, StructuredFunction function, ShaderStage stage)
+        public static void DeclareLocals(CodeGenContext context, StructuredFunction function, ShaderStage stage, bool isMainFunc = false)
         {
-            DeclareMemories(context, context.Properties.LocalMemories.Values, isShared: false);
+            if (isMainFunc)
+            {
+                DeclareMemories(context, context.Properties.LocalMemories.Values, isShared: false);
+                DeclareMemories(context, context.Properties.SharedMemories.Values, isShared: true);
+            }
+
             switch (stage)
             {
                 case ShaderStage.Vertex:
@@ -112,6 +117,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
 
         private static void DeclareMemories(CodeGenContext context, IEnumerable<MemoryDefinition> memories, bool isShared)
         {
+            string prefix = isShared ? "threadgroup " : string.Empty;
+
             foreach (var memory in memories)
             {
                 string arraySize = "";
@@ -120,7 +127,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                     arraySize = $"[{memory.ArrayLength}]";
                 }
                 var typeName = GetVarTypeName(context, memory.Type & ~AggregateType.Array);
-                context.AppendLine($"{typeName} {memory.Name}{arraySize};");
+                context.AppendLine($"{prefix}{typeName} {memory.Name}{arraySize};");
             }
         }
 
