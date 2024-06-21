@@ -135,7 +135,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
         {
             foreach (BufferDefinition buffer in buffers)
             {
-                context.AppendLine($"struct Struct_{buffer.Name}");
+                context.AppendLine($"struct struct_{buffer.Name}");
                 context.EnterScope();
 
                 foreach (StructureField field in buffer.Type.Fields)
