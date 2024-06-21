@@ -73,11 +73,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                 if (stage != ShaderStage.Compute)
                 {
                     args[0] = stage == ShaderStage.Vertex ? "VertexIn in" : "FragmentIn in";
-                    args[1] = "constant Struct_support_buffer* support_buffer";
+                    args[1] = $"constant {DefaultNames.StructPrefix}_support_buffer* support_buffer";
                 }
                 else
                 {
-                    args[0] = "constant Struct_support_buffer* support_buffer";
+                    args[0] = $"constant {DefaultNames.StructPrefix}_support_buffer* support_buffer";
                 }
             }
 
@@ -148,13 +148,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
 
                 foreach (var constantBuffer in context.Properties.ConstantBuffers.Values)
                 {
-                    args = args.Append($"constant Struct_{constantBuffer.Name}* {constantBuffer.Name} [[buffer({constantBuffer.Binding})]]").ToArray();
+                    args = args.Append($"constant {DefaultNames.StructPrefix}_{constantBuffer.Name}* {constantBuffer.Name} [[buffer({constantBuffer.Binding})]]").ToArray();
                 }
 
                 foreach (var storageBuffers in context.Properties.StorageBuffers.Values)
                 {
                     // Offset the binding by 15 to avoid clashing with the constant buffers
-                    args = args.Append($"device Struct_{storageBuffers.Name}* {storageBuffers.Name} [[buffer({storageBuffers.Binding + 15})]]").ToArray();
+                    args = args.Append($"device {DefaultNames.StructPrefix}_{storageBuffers.Name}* {storageBuffers.Name} [[buffer({storageBuffers.Binding + 15})]]").ToArray();
                 }
 
                 foreach (var texture in context.Properties.Textures.Values)
