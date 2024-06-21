@@ -140,19 +140,23 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
 
                 foreach (StructureField field in buffer.Type.Fields)
                 {
-                    if (field.Type.HasFlag(AggregateType.Array) && field.ArrayLength > 0)
-                    {
-                        string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
+                    string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
+                    string arraySuffix = "";
 
-                        context.AppendLine($"{typeName} {field.Name}[{field.ArrayLength}];");
-                    }
-                    else
+                    if (field.Type.HasFlag(AggregateType.Array))
                     {
-                        string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
-
-                        // Probably UB, but this is the approach that MVK takes
-                        context.AppendLine($"{typeName} {field.Name}[1];");
+                        if (field.ArrayLength > 0)
+                        {
+                            arraySuffix = $"[{field.ArrayLength}]";
+                        }
+                        else
+                        {
+                            // Probably UB, but this is the approach that MVK takes
+                            arraySuffix = "[1]";
+                        }
                     }
+
+                    context.AppendLine($"{typeName} {field.Name}{arraySuffix};");
                 }
 
                 context.LeaveScope(";");
