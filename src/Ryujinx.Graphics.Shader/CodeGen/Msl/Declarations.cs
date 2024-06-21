@@ -203,6 +203,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                             IoVariable.GlobalId => "uint3",
                             IoVariable.VertexId => "uint",
                             IoVariable.VertexIndex => "uint",
+                            IoVariable.PointCoord => "float2",
                             _ => GetVarTypeName(context, context.Definitions.GetUserDefinedType(ioDefinition.Location, isOutput: false))
                         };
                         string name = ioDefinition.IoVariable switch
@@ -211,6 +212,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                             IoVariable.GlobalId => "global_id",
                             IoVariable.VertexId => "vertex_id",
                             IoVariable.VertexIndex => "vertex_index",
+                            IoVariable.PointCoord => "point_coord",
                             _ => $"{DefaultNames.IAttributePrefix}{ioDefinition.Location}"
                         };
                         string suffix = ioDefinition.IoVariable switch
@@ -220,6 +222,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                             IoVariable.VertexId => "[[vertex_id]]",
                             // TODO: Avoid potential redeclaration
                             IoVariable.VertexIndex => "[[vertex_id]]",
+                            IoVariable.PointCoord => "[[point_coord]]",
                             IoVariable.UserDefined => context.Definitions.Stage == ShaderStage.Fragment ? $"[[user(loc{ioDefinition.Location})]]" : $"[[attribute({ioDefinition.Location})]]",
                             _ => ""
                         };
