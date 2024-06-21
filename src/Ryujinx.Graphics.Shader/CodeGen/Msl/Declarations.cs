@@ -150,7 +150,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                     {
                         string typeName = GetVarTypeName(context, field.Type & ~AggregateType.Array);
 
-                        context.AppendLine($"{typeName} {field.Name};");
+                        // Probably UB, but this is the approach that MVK takes
+                        context.AppendLine($"{typeName} {field.Name}[1];");
                     }
                 }
 
