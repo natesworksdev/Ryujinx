@@ -63,15 +63,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
             ShaderStage stage,
             bool isMainFunc = false)
         {
-            int additionalArgCount = isMainFunc ? 0 : CodeGenContext.AdditionalArgCount;
+            int additionalArgCount = isMainFunc ? 0 : CodeGenContext.AdditionalArgCount + (context.Definitions.Stage != ShaderStage.Compute ? 1 : 0);
 
             string[] args = new string[additionalArgCount + function.InArguments.Length + function.OutArguments.Length];
 
             // All non-main functions need to be able to access the support_buffer as well
             if (!isMainFunc)
             {
-                args[0] = "FragmentIn in";
-                args[1] = "constant Struct_support_buffer* support_buffer";
+                if (stage != ShaderStage.Compute)
+                {
+                    args[0] = stage == ShaderStage.Vertex ? "VertexIn in" : "FragmentIn in";
+                    args[1] = "constant Struct_support_buffer* support_buffer";
+                }
+                else
+                {
+                    args[0] = "constant Struct_support_buffer* support_buffer";
+                }
             }
 
             int argIndex = additionalArgCount;
