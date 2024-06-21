@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
                 IoVariable.GlobalId => ("thread_position_in_grid", AggregateType.Vector3 | AggregateType.U32),
                 IoVariable.InstanceId => ("instance_id", AggregateType.S32),
                 IoVariable.InvocationId => ("INVOCATION_ID", AggregateType.S32),
-                IoVariable.PointCoord => ("point_coord", AggregateType.Vector2),
+                IoVariable.PointCoord => ("point_coord", AggregateType.Vector2 | AggregateType.FP32),
                 IoVariable.PointSize => ("out.point_size", AggregateType.FP32),
                 IoVariable.Position => ("out.position", AggregateType.Vector4 | AggregateType.FP32),
                 IoVariable.PrimitiveId => ("primitive_id", AggregateType.S32),
