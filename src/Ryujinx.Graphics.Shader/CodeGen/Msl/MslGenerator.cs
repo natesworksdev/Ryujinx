@@ -169,7 +169,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                 }
             }
 
-            return $"{funcKeyword} {returnType} {funcName ?? function.Name}({string.Join(", ", args)})";
+            var funcPrefix = $"{funcKeyword} {returnType} {funcName ?? function.Name}(";
+            var indent = new string(' ', funcPrefix.Length);
+
+            return $"{funcPrefix}{string.Join($", \n{indent}", args)})";
         }
 
         private static void PrintBlock(CodeGenContext context, AstBlock block, bool isMainFunction)
