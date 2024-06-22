@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Text;
+using static Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions.InstGenBallot;
 using static Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions.InstGenCall;
 using static Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions.InstGenHelper;
 using static Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions.InstGenMemory;
@@ -118,6 +119,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
             {
                 switch (inst & Instruction.Mask)
                 {
+                    case Instruction.Ballot:
+                        return Ballot(context, operation);
                     case Instruction.Barrier:
                         return "threadgroup_barrier(mem_flags::mem_threadgroup)";
                     case Instruction.Call:
