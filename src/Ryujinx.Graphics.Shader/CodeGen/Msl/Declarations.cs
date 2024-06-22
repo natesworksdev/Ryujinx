@@ -80,6 +80,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
                         context.AppendLine("FragmentOut out;");
                         break;
                 }
+
+                // TODO: Only add if necessary
+                if (stage != ShaderStage.Compute)
+                {
+                    // MSL does not give us access to [[thread_index_in_simdgroup]]
+                    // outside compute. But we may still need to provide this value in frag/vert.
+                    context.AppendLine("uint thread_index_in_simdgroup = simd_prefix_exclusive_sum(1);");
+                }
             }
 
             foreach (AstOperand decl in function.Locals)
