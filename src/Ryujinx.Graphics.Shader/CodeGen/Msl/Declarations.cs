@@ -70,16 +70,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
             {
                 DeclareMemories(context, context.Properties.LocalMemories.Values, isShared: false);
                 DeclareMemories(context, context.Properties.SharedMemories.Values, isShared: true);
-            }
 
-            switch (stage)
-            {
-                case ShaderStage.Vertex:
-                    context.AppendLine("VertexOut out;");
-                    break;
-                case ShaderStage.Fragment:
-                    context.AppendLine("FragmentOut out;");
-                    break;
+                switch (stage)
+                {
+                    case ShaderStage.Vertex:
+                        context.AppendLine("VertexOut out;");
+                        break;
+                    case ShaderStage.Fragment:
+                        context.AppendLine("FragmentOut out;");
+                        break;
+                }
             }
 
             foreach (AstOperand decl in function.Locals)
