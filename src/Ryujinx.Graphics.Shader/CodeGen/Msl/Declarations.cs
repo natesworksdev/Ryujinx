@@ -98,15 +98,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl
             }
         }
 
-        public static string GetVarTypeName(CodeGenContext context, AggregateType type)
+        public static string GetVarTypeName(CodeGenContext context, AggregateType type, bool atomic = false)
         {
+            var s32 = atomic ? "atomic_int" : "int";
+            var u32 = atomic ? "atomic_uint" : "uint";
+
             return type switch
             {
                 AggregateType.Void => "void",
                 AggregateType.Bool => "bool",
                 AggregateType.FP32 => "float",
-                AggregateType.S32 => "int",
-                AggregateType.U32 => "uint",
+                AggregateType.S32 => s32,
+                AggregateType.U32 => u32,
                 AggregateType.Vector2 | AggregateType.Bool => "bool2",
                 AggregateType.Vector2 | AggregateType.FP32 => "float2",
                 AggregateType.Vector2 | AggregateType.S32 => "int2",

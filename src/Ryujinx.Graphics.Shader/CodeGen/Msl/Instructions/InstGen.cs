@@ -44,15 +44,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Msl.Instructions
 
                 if (atomic && (operation.StorageKind == StorageKind.StorageBuffer || operation.StorageKind == StorageKind.SharedMemory))
                 {
-                    builder.Append(GenerateLoadOrStore(context, operation, isStore: false));
-
                     AggregateType dstType = operation.Inst == Instruction.AtomicMaxS32 || operation.Inst == Instruction.AtomicMinS32
                         ? AggregateType.S32
                         : AggregateType.U32;
 
+                    builder.Append($"(device {Declarations.GetVarTypeName(context, dstType, true)}*)&{GenerateLoadOrStore(context, operation, isStore: false)}");
+
+
                     for (int argIndex = operation.SourcesCount - arity + 2; argIndex < operation.SourcesCount; argIndex++)
                     {
-                        builder.Append($", {GetSourceExpr(context, operation.GetSource(argIndex), dstType)}");
+                        builder.Append($", {GetSourceExpr(context, operation.GetSource(argIndex), dstType)}, memory_order_relaxed");
                     }
                 }
                 else
