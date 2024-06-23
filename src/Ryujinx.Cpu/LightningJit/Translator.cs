@@ -16,8 +16,6 @@ namespace Ryujinx.Cpu.LightningJit
 {
     class Translator : IDisposable
     {
-        private const bool UseSparseTable = true;
-
         // Should be enabled on platforms that enforce W^X.
         private static bool IsNoWxPlatform => false;
 
@@ -78,9 +76,11 @@ namespace Ryujinx.Cpu.LightningJit
                 JitCache.Initialize(new JitMemoryAllocator(forJit: true));
             }
 
+            bool useSparseTable = AddressTable<ulong>.UseSparseTable;
+
             AddressTable<ulong>.Level[] levels;
 
-            if (UseSparseTable)
+            if (useSparseTable)
             {
                 levels = for64Bits ? _levels64BitSparse : _levels32BitSparse;
             }
@@ -90,7 +90,7 @@ namespace Ryujinx.Cpu.LightningJit
             }
 
             Functions = new TranslatorCache<TranslatedFunction>();
-            FunctionTable = new AddressTable<ulong>(levels);
+            FunctionTable = new AddressTable<ulong>(levels, useSparseTable);
             Stubs = new TranslatorStubs(FunctionTable, _noWxCache);
 
             FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;

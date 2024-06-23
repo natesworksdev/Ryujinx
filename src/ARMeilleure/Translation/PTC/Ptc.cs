@@ -29,7 +29,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 26950; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 26957; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -41,7 +41,6 @@ namespace ARMeilleure.Translation.PTC
         public static readonly Symbol CountTableSymbol = new(SymbolType.Special, 2);
         public static readonly Symbol DispatchStubSymbol = new(SymbolType.Special, 3);
         public static readonly Symbol FunctionTableSymbol = new(SymbolType.Special, 4);
-        public static readonly Symbol DispatchFallbackSymbol = new(SymbolType.Special, 5);
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -710,10 +709,6 @@ namespace ARMeilleure.Translation.PTC
                 else if (symbol == FunctionTableSymbol)
                 {
                     imm = translator.FunctionTable.Base;
-                }
-                else if (symbol == DispatchFallbackSymbol)
-                {
-                    imm = translator.FunctionTable.Fallback;
                 }
 
                 if (imm == null)

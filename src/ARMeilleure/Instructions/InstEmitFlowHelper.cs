@@ -231,18 +231,7 @@ namespace ARMeilleure.Instructions
                     Const(3)
                     );
 
-                // TODO: could possibly make a fallback page that level 1 is filled with that contains dispatch stub on all pages
-                // Would save this load and the comparisons
-                // 16MB of the same value is a bit wasteful so it could replicate with remapping.
-
-                Operand fallback = !context.HasPtc ?
-                    Const((long)context.FunctionTable.Fallback) :
-                    Const((long)context.FunctionTable.Fallback, Ptc.DispatchFallbackSymbol);
-
-                Operand pageIsZero = context.ICompareEqual(page, Const(0L));
-
-                // Small trick to keep this branchless - if the page is zero, load a fallback table entry that always contains the dispatch stub.
-                hostAddress = context.Load(OperandType.I64, context.ConditionalSelect(pageIsZero, fallback, context.Add(page, index2)));
+                hostAddress = context.Load(OperandType.I64, context.Add(page, index2));
             }
             else
             {

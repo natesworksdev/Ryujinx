@@ -385,12 +385,6 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
                 // Index into the page.
                 asm.Add(rn, rn, indexReg);
 
-                // Reuse the index register for the fallback
-                ulong fallback = (ulong)funcTable.Fallback;
-                asm.Mov(indexReg, fallback);
-
-                asm.Csel(rn, indexReg, rn, ArmCondition.Eq);
-
                 // Load the final branch address
                 asm.LdrRiUn(rn, rn, 0);
 
