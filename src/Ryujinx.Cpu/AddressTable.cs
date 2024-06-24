@@ -1,6 +1,5 @@
 using ARMeilleure.Memory;
 using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
 using System;
@@ -54,8 +53,6 @@ namespace ARMeilleure.Common
 
                 _trackingEvent = (ulong address, ulong size, bool write) =>
                 {
-                    Logger.Error?.PrintMsg(LogClass.Cpu, $"Triggered from exception");
-
                     ulong pointer = (ulong)block.Block.Pointer + address;
 
                     ensureMapped((IntPtr)pointer);
@@ -355,9 +352,6 @@ namespace ARMeilleure.Common
             return _table;
         }
 
-        private int initedSize = 0;
-        private int reservedSize = 0;
-
         /// <summary>
         /// Initialize a leaf page with the fill value.
         /// </summary>
@@ -365,10 +359,6 @@ namespace ARMeilleure.Common
         private void InitLeafPage(Span<byte> page)
         {
             MemoryMarshal.Cast<byte, TEntry>(page).Fill(_fill);
-
-            initedSize += page.Length;
-
-            Ryujinx.Common.Logging.Logger.Info?.PrintMsg(LogClass.Cpu, $"Using memory {initedSize}/{reservedSize} bytes");
         }
 
         /// <summary>
@@ -396,8 +386,6 @@ namespace ARMeilleure.Common
         private IntPtr Allocate<T>(int length, T fill, bool leaf) where T : unmanaged
         {
             var size = sizeof(T) * length;
-
-            reservedSize += size;
 
             AddressTablePage page;
 
