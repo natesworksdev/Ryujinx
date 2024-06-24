@@ -14,7 +14,7 @@ namespace Ryujinx.Cpu.LightningJit
         public LightningJitCpuContext(ITickSource tickSource, IMemoryManager memory, bool for64Bit)
         {
             _tickSource = tickSource;
-            _functionTable = AddressTable<ulong>.CreateForArm(for64Bit);
+            _functionTable = AddressTable<ulong>.CreateForArm(for64Bit, memory.Type);
 
             _translator = new Translator(memory, _functionTable);
 

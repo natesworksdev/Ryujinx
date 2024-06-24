@@ -1,3 +1,4 @@
+using ARMeilleure.Memory;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu.Signal;
@@ -17,12 +18,6 @@ namespace ARMeilleure.Common
     /// <typeparam name="TEntry">Type of the value</typeparam>
     public unsafe class AddressTable<TEntry> : IAddressTable<TEntry> where TEntry : unmanaged
     {
-        /// <summary>
-        /// If true, the sparse 2-level table should be used to improve performance.
-        /// If false, the platform doesn't properly support it, or will be negatively impacted.
-        /// </summary>
-        public static bool UseSparseTable => true;
-
         private readonly struct AddressTablePage
         {
             public readonly bool IsSparse;
@@ -177,13 +172,15 @@ namespace ARMeilleure.Common
 
         /// <summary>
         /// Create an <see cref="AddressTable{TEntry}"/> instance for an ARM function table.
-        /// Selects the best table structure for A32/A64, taking into account whether sparse mapping is supported.
+        /// Selects the best table structure for A32/A64, taking into account the selected memory manager type.
         /// </summary>
         /// <param name="for64Bits">True if the guest is A64, false otherwise</param>
+        /// <param name="type">Memory manager type</param>
         /// <returns>An <see cref="AddressTable{TEntry}"/> for ARM function lookup</returns>
-        public static AddressTable<TEntry> CreateForArm(bool for64Bits)
+        public static AddressTable<TEntry> CreateForArm(bool for64Bits, MemoryManagerType type)
         {
-            bool sparse = UseSparseTable;
+            // Assume software memory means that we don't want to use any signal handlers.
+            bool sparse = type != MemoryManagerType.SoftwareMmu && type != MemoryManagerType.SoftwarePageTable;
 
             return new AddressTable<TEntry>(AddressTablePresets.GetArmPreset(for64Bits, sparse), sparse);
         }

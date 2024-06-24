@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu.Jit
         public JitCpuContext(ITickSource tickSource, IMemoryManager memory, bool for64Bit)
         {
             _tickSource = tickSource;
-            _functionTable = AddressTable<ulong>.CreateForArm(for64Bit);
+            _functionTable = AddressTable<ulong>.CreateForArm(for64Bit, memory.Type);
 
             _translator = new Translator(new JitMemoryAllocator(forJit: true), memory, _functionTable);
 

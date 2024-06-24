@@ -5,12 +5,6 @@ namespace ARMeilleure.Common
     public interface IAddressTable<TEntry> : IDisposable where TEntry : unmanaged
     {
         /// <summary>
-        /// If true, the sparse 2-level table should be used to improve performance.
-        /// If false, the platform doesn't properly support it, or will be negatively impacted.
-        /// </summary>
-        static bool UseSparseTable { get; }
-
-        /// <summary>
         /// Gets the bits used by the <see cref="Levels"/> of the <see cref="AddressTable{TEntry}"/> instance.
         /// </summary>
         ulong Mask { get; }
