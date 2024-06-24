@@ -379,9 +379,6 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
                 asm.Ubfx(indexReg, guestAddress, level1.Index, level1.Length);
                 asm.Lsl(indexReg, indexReg, Const(3));
 
-                // Is the page address zero? Make sure to use the fallback if it is.
-                asm.Tst(rn, rn);
-
                 // Index into the page.
                 asm.Add(rn, rn, indexReg);
 
