@@ -462,11 +462,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
                 PNext = pExtendedFeatures,
-                DescriptorIndexing = physicalDevice.IsDeviceExtensionPresent("VK_EXT_descriptor_indexing") || supportedPhysicalDeviceVulkan12Features.DescriptorIndexing,
-                DrawIndirectCount = physicalDevice.IsDeviceExtensionPresent(KhrDrawIndirectCount.ExtensionName) || supportedPhysicalDeviceVulkan12Features.DrawIndirectCount,
-                UniformBufferStandardLayout = physicalDevice.IsDeviceExtensionPresent("VK_KHR_uniform_buffer_standard_layout"),
-                UniformAndStorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage"),
-                StorageBuffer8BitAccess = physicalDevice.IsDeviceExtensionPresent("VK_KHR_8bit_storage") || supportedPhysicalDeviceVulkan12Features.StorageBuffer8BitAccess,
+                DescriptorIndexing = supportedPhysicalDeviceVulkan12Features.DescriptorIndexing,
+                DrawIndirectCount = supportedPhysicalDeviceVulkan12Features.DrawIndirectCount,
+                UniformBufferStandardLayout = supportedPhysicalDeviceVulkan12Features.UniformBufferStandardLayout,
+                UniformAndStorageBuffer8BitAccess = supportedPhysicalDeviceVulkan12Features.UniformAndStorageBuffer8BitAccess,
+                StorageBuffer8BitAccess = supportedPhysicalDeviceVulkan12Features.StorageBuffer8BitAccess,
             };
 
             pExtendedFeatures = &featuresVk12;
