@@ -1,10 +1,12 @@
-using ARMeilleure.Diagnostics;
+using Ryujinx.Common.Logging;
+using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using static Ryujinx.Cpu.MemoryEhMeilleure;
 
 namespace ARMeilleure.Common
 {
@@ -12,55 +14,13 @@ namespace ARMeilleure.Common
     /// Represents a table of guest address to a value.
     /// </summary>
     /// <typeparam name="TEntry">Type of the value</typeparam>
-    public unsafe class AddressTable<TEntry> : IDisposable where TEntry : unmanaged
+    public unsafe class AddressTable<TEntry> : IAddressTable<TEntry> where TEntry : unmanaged
     {
         /// <summary>
         /// If true, the sparse 2-level table should be used to improve performance.
         /// If false, the platform doesn't properly support it, or will be negatively impacted.
         /// </summary>
         public static bool UseSparseTable => true;
-
-        /// <summary>
-        /// Represents a level in an <see cref="AddressTable{TEntry}"/>.
-        /// </summary>
-        public readonly struct Level
-        {
-            /// <summary>
-            /// Gets the index of the <see cref="Level"/> in the guest address.
-            /// </summary>
-            public int Index { get; }
-
-            /// <summary>
-            /// Gets the length of the <see cref="Level"/> in the guest address.
-            /// </summary>
-            public int Length { get; }
-
-            /// <summary>
-            /// Gets the mask which masks the bits used by the <see cref="Level"/>.
-            /// </summary>
-            public ulong Mask => ((1ul << Length) - 1) << Index;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Level"/> structure with the specified
-            /// <paramref name="index"/> and <paramref name="length"/>.
-            /// </summary>
-            /// <param name="index">Index of the <see cref="Level"/></param>
-            /// <param name="length">Length of the <see cref="Level"/></param>
-            public Level(int index, int length)
-            {
-                (Index, Length) = (index, length);
-            }
-
-            /// <summary>
-            /// Gets the value of the <see cref="Level"/> from the specified guest <paramref name="address"/>.
-            /// </summary>
-            /// <param name="address">Guest address</param>
-            /// <returns>Value of the <see cref="Level"/> from the specified guest <paramref name="address"/></returns>
-            public int GetValue(ulong address)
-            {
-                return (int)((address & Mask) >> Index);
-            }
-        }
 
         private readonly struct AddressTablePage
         {
@@ -74,6 +34,50 @@ namespace ARMeilleure.Common
             }
         }
 
+        /// <summary>
+        /// A sparsely mapped block of memory with a signal handler to map pages as they're accessed.
+        /// </summary>
+        private readonly struct TableSparseBlock : IDisposable
+        {
+            public readonly SparseMemoryBlock Block;
+            public readonly TrackingEventDelegate TrackingEvent;
+
+            public TableSparseBlock(ulong size, Action<IntPtr> ensureMapped, PageInitDelegate pageInit)
+            {
+                var block = new SparseMemoryBlock(size, pageInit, null);
+
+                TrackingEvent = (ulong address, ulong size, bool write) =>
+                {
+                    Logger.Error?.PrintMsg(LogClass.Cpu, $"Triggered from exception");
+
+                    ulong pointer = (ulong)block.Block.Pointer + address;
+
+                    ensureMapped((IntPtr)pointer);
+
+                    return pointer;
+                };
+
+                bool added = NativeSignalHandler.AddTrackedRegion(
+                    (nuint)block.Block.Pointer,
+                    (nuint)(block.Block.Pointer + (IntPtr)block.Block.Size),
+                    Marshal.GetFunctionPointerForDelegate(TrackingEvent));
+
+                if (!added)
+                {
+                    throw new InvalidOperationException("Number of allowed tracked regions exceeded.");
+                }
+
+                Block = block;
+            }
+
+            public void Dispose()
+            {
+                NativeSignalHandler.RemoveTrackedRegion((nuint)Block.Block.Pointer);
+
+                Block.Dispose();
+            }
+        }
+
         private bool _disposed;
         private TEntry** _table;
         private readonly List<AddressTablePage> _pages;
@@ -84,24 +88,19 @@ namespace ARMeilleure.Common
         private readonly SparseMemoryBlock _fillBottomLevel;
         private readonly TEntry* _fillBottomLevelPtr;
 
-        private readonly List<SparseMemoryBlock> _sparseReserved;
+        private readonly List<TableSparseBlock> _sparseReserved;
         private readonly ulong _sparseBlockSize;
         private readonly ReaderWriterLockSlim _sparseLock;
+
         private ulong _sparseReservedOffset;
 
-        /// <summary>
-        /// Gets the bits used by the <see cref="Levels"/> of the <see cref="AddressTable{TEntry}"/> instance.
-        /// </summary>
+        /// <inheritdoc/>
         public ulong Mask { get; }
 
-        /// <summary>
-        /// Gets the <see cref="Level"/>s used by the <see cref="AddressTable{TEntry}"/> instance.
-        /// </summary>
-        public Level[] Levels { get; }
+        /// <inheritdoc/>
+        public AddressTableLevel[] Levels { get; }
 
-        /// <summary>
-        /// Gets or sets the default fill value of newly created leaf pages.
-        /// </summary>
+        /// <inheritdoc/>
         public TEntry Fill
         {
             get
@@ -114,10 +113,7 @@ namespace ARMeilleure.Common
             }
         }
 
-        /// <summary>
-        /// Gets the base address of the <see cref="EntryTable{TEntry}"/>.
-        /// </summary>
-        /// <exception cref="ObjectDisposedException"><see cref="EntryTable{TEntry}"/> instance was disposed</exception>
+        /// <inheritdoc/>
         public IntPtr Base
         {
             get
@@ -139,7 +135,7 @@ namespace ARMeilleure.Common
         /// <param name="sparse">True if the bottom page should be sparsely mapped</param>
         /// <exception cref="ArgumentNullException"><paramref name="levels"/> is null</exception>
         /// <exception cref="ArgumentException">Length of <paramref name="levels"/> is less than 2</exception>
-        public AddressTable(Level[] levels, bool sparse)
+        public AddressTable(AddressTableLevel[] levels, bool sparse)
         {
             ArgumentNullException.ThrowIfNull(levels);
 
@@ -171,13 +167,30 @@ namespace ARMeilleure.Common
                 _fillBottomLevel = new SparseMemoryBlock(bottomLevelSize, null, _sparseFill);
                 _fillBottomLevelPtr = (TEntry*)_fillBottomLevel.Block.Pointer;
 
-                _sparseReserved = new List<SparseMemoryBlock>();
+                _sparseReserved = new List<TableSparseBlock>();
                 _sparseLock = new ReaderWriterLockSlim();
 
                 _sparseBlockSize = bottomLevelSize << 3;
             }
         }
 
+        /// <summary>
+        /// Create an <see cref="AddressTable{TEntry}"/> instance for an ARM function table.
+        /// Selects the best table structure for A32/A64, taking into account whether sparse mapping is supported.
+        /// </summary>
+        /// <param name="for64Bits">True if the guest is A64, false otherwise</param>
+        /// <returns>An <see cref="AddressTable{TEntry}"/> for ARM function lookup</returns>
+        public static AddressTable<TEntry> CreateForArm(bool for64Bits)
+        {
+            bool sparse = UseSparseTable;
+
+            return new AddressTable<TEntry>(AddressTablePresets.GetArmPreset(for64Bits, sparse), sparse);
+        }
+
+        /// <summary>
+        /// Update the fill value for the bottom level of the table.
+        /// </summary>
+        /// <param name="fillValue">New fill value</param>
         private void UpdateFill(TEntry fillValue)
         {
             if (_sparseFill != null)
@@ -189,24 +202,13 @@ namespace ARMeilleure.Common
             _fill = fillValue;
         }
 
-        /// <summary>
-        /// Determines if the specified <paramref name="address"/> is in the range of the
-        /// <see cref="AddressTable{TEntry}"/>.
-        /// </summary>
-        /// <param name="address">Guest address</param>
-        /// <returns><see langword="true"/> if is valid; otherwise <see langword="false"/></returns>
+        /// <inheritdoc/>
         public bool IsValid(ulong address)
         {
             return (address & ~Mask) == 0;
         }
 
-        /// <summary>
-        /// Gets a reference to the value at the specified guest <paramref name="address"/>.
-        /// </summary>
-        /// <param name="address">Guest address</param>
-        /// <returns>Reference to the value at the specified guest <paramref name="address"/></returns>
-        /// <exception cref="ObjectDisposedException"><see cref="EntryTable{TEntry}"/> instance was disposed</exception>
-        /// <exception cref="ArgumentException"><paramref name="address"/> is not mapped</exception>
+        /// <inheritdoc/>
         public ref TEntry GetValue(ulong address)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -239,12 +241,12 @@ namespace ARMeilleure.Common
 
             for (int i = 0; i < Levels.Length - 1; i++)
             {
-                ref Level level = ref Levels[i];
+                ref AddressTableLevel level = ref Levels[i];
                 ref TEntry* nextPage = ref page[level.GetValue(address)];
 
                 if (nextPage == null || nextPage == _fillBottomLevelPtr)
                 {
-                    ref Level nextLevel = ref Levels[i + 1];
+                    ref AddressTableLevel nextLevel = ref Levels[i + 1];
 
                     if (i == Levels.Length - 2)
                     {
@@ -273,8 +275,10 @@ namespace ARMeilleure.Common
 
                 try
                 {
-                    foreach (SparseMemoryBlock sparse in _sparseReserved)
+                    foreach (TableSparseBlock reserved in _sparseReserved)
                     {
+                        SparseMemoryBlock sparse = reserved.Block;
+
                         if (ptr >= sparse.Block.Pointer && ptr < sparse.Block.Pointer + (IntPtr)sparse.Block.Size)
                         {
                             sparse.EnsureMapped((ulong)(ptr - sparse.Block.Pointer));
@@ -290,6 +294,11 @@ namespace ARMeilleure.Common
             }
         }
 
+        /// <summary>
+        /// Get the fill value for a non-leaf level of the table.
+        /// </summary>
+        /// <param name="level">Level to get the fill value for</param>
+        /// <returns>The fill value</returns>
         private IntPtr GetFillValue(int level)
         {
             if (_fillBottomLevel != null && level == Levels.Length - 2)
@@ -316,9 +325,28 @@ namespace ARMeilleure.Common
             return _table;
         }
 
+        private int initedSize = 0;
+        private int reservedSize = 0;
+
+        /// <summary>
+        /// Initialize a leaf page with the fill value.
+        /// </summary>
+        /// <param name="page">Page to initialize</param>
         private void InitLeafPage(Span<byte> page)
         {
             MemoryMarshal.Cast<byte, TEntry>(page).Fill(_fill);
+
+            initedSize += page.Length;
+
+            Ryujinx.Common.Logging.Logger.Info?.PrintMsg(LogClass.Cpu, $"Using memory {initedSize}/{reservedSize} bytes");
+        }
+
+        private void ReserveNewSparseBlock()
+        {
+            var block = new TableSparseBlock(_sparseBlockSize, EnsureMapped, InitLeafPage);
+
+            _sparseReserved.Add(block);
+            _sparseReservedOffset = 0;
         }
 
         /// <summary>
@@ -333,6 +361,8 @@ namespace ARMeilleure.Common
         {
             var size = sizeof(T) * length;
 
+            reservedSize += size;
+
             AddressTablePage page;
 
             if (_sparse && leaf)
@@ -341,12 +371,10 @@ namespace ARMeilleure.Common
 
                 if (_sparseReserved.Count == 0 || _sparseReservedOffset == _sparseBlockSize)
                 {
-                    _sparseReserved.Add(new SparseMemoryBlock(_sparseBlockSize, InitLeafPage, _sparseFill));
-
-                    _sparseReservedOffset = 0;
+                    ReserveNewSparseBlock();
                 }
 
-                SparseMemoryBlock block = _sparseReserved.Last();
+                SparseMemoryBlock block = _sparseReserved.Last().Block;
 
                 page = new AddressTablePage(true, block.Block.Pointer + (IntPtr)_sparseReservedOffset);
 
@@ -365,7 +393,7 @@ namespace ARMeilleure.Common
 
             _pages.Add(page);
 
-            TranslatorEventSource.Log.AddressTableAllocated(size, leaf);
+            //TranslatorEventSource.Log.AddressTableAllocated(size, leaf);
 
             return page.Address;
         }
@@ -398,10 +426,12 @@ namespace ARMeilleure.Common
 
                 if (_sparse)
                 {
-                    foreach (SparseMemoryBlock block in _sparseReserved)
+                    foreach (TableSparseBlock block in _sparseReserved)
                     {
                         block.Dispose();
                     }
+
+                    _sparseReserved.Clear();
 
                     _fillBottomLevel.Dispose();
                     _sparseFill.Dispose();

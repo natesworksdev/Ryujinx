@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.Memory;
 using Ryujinx.Cpu.Jit;
 using Ryujinx.Cpu.LightningJit.State;
@@ -8,11 +9,15 @@ namespace Ryujinx.Cpu.LightningJit
     {
         private readonly ITickSource _tickSource;
         private readonly Translator _translator;
+        private readonly AddressTable<ulong> _functionTable;
 
         public LightningJitCpuContext(ITickSource tickSource, IMemoryManager memory, bool for64Bit)
         {
             _tickSource = tickSource;
-            _translator = new Translator(memory, for64Bit);
+            _functionTable = AddressTable<ulong>.CreateForArm(for64Bit);
+
+            _translator = new Translator(memory, _functionTable);
+
             memory.UnmapEvent += UnmapHandler;
         }
 

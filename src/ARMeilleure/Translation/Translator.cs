@@ -22,47 +22,13 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
-        private static readonly AddressTable<ulong>.Level[] _levels64Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(31, 17),
-                new(23,  8),
-                new(15,  8),
-                new( 7,  8),
-                new( 2,  5),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels32Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(31, 17),
-                new(23,  8),
-                new(15,  8),
-                new( 7,  8),
-                new( 1,  6),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels64BitSparse =
-            new AddressTable<ulong>.Level[]
-            {
-                new(23, 16),
-                new( 2, 21),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels32BitSparse =
-            new AddressTable<ulong>.Level[]
-            {
-                new(22, 10),
-                new( 1, 21),
-            };
-
         private readonly IJitMemoryAllocator _allocator;
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
 
         private readonly Ptc _ptc;
 
         internal TranslatorCache<TranslatedFunction> Functions { get; }
-        internal AddressTable<ulong> FunctionTable { get; }
+        internal IAddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
         internal TranslatorStubs Stubs { get; }
         internal TranslatorQueue Queue { get; }
@@ -71,7 +37,7 @@ namespace ARMeilleure.Translation
         private Thread[] _backgroundTranslationThreads;
         private volatile int _threadCount;
 
-        public Translator(IJitMemoryAllocator allocator, IMemoryManager memory, bool for64Bits)
+        public Translator(IJitMemoryAllocator allocator, IMemoryManager memory, IAddressTable<ulong> functionTable)
         {
             _allocator = allocator;
             Memory = memory;
@@ -84,22 +50,9 @@ namespace ARMeilleure.Translation
 
             JitCache.Initialize(allocator);
 
-            AddressTable<ulong>.Level[] levels;
-
-            bool useSparseTable = AddressTable<ulong>.UseSparseTable;
-
-            if (useSparseTable)
-            {
-                levels = for64Bits ? _levels64BitSparse : _levels32BitSparse;
-            }
-            else
-            {
-                levels = for64Bits ? _levels64Bit : _levels32Bit;
-            }
-
             CountTable = new EntryTable<uint>();
             Functions = new TranslatorCache<TranslatedFunction>();
-            FunctionTable = new AddressTable<ulong>(levels, useSparseTable);
+            FunctionTable = functionTable;
             Stubs = new TranslatorStubs(FunctionTable);
 
             FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;

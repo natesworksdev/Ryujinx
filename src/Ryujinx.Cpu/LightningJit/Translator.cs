@@ -19,39 +19,6 @@ namespace Ryujinx.Cpu.LightningJit
         // Should be enabled on platforms that enforce W^X.
         private static bool IsNoWxPlatform => false;
 
-        private static readonly AddressTable<ulong>.Level[] _levels64Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(31, 17),
-                new(23,  8),
-                new(15,  8),
-                new( 7,  8),
-                new( 2,  5),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels32Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(23, 9),
-                new(15, 8),
-                new( 7, 8),
-                new( 1, 6),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels64BitSparse =
-            new AddressTable<ulong>.Level[]
-            {
-                new(23, 16),
-                new( 2, 21),
-            };
-
-        private static readonly AddressTable<ulong>.Level[] _levels32BitSparse =
-            new AddressTable<ulong>.Level[]
-            {
-                new(22, 10),
-                new( 1, 21),
-            };
-
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
         private readonly NoWxCache _noWxCache;
         private bool _disposed;
@@ -61,7 +28,7 @@ namespace Ryujinx.Cpu.LightningJit
         internal TranslatorStubs Stubs { get; }
         internal IMemoryManager Memory { get; }
 
-        public Translator(IMemoryManager memory, bool for64Bits)
+        public Translator(IMemoryManager memory, AddressTable<ulong> functionTable)
         {
             Memory = memory;
 
@@ -76,21 +43,8 @@ namespace Ryujinx.Cpu.LightningJit
                 JitCache.Initialize(new JitMemoryAllocator(forJit: true));
             }
 
-            bool useSparseTable = AddressTable<ulong>.UseSparseTable;
-
-            AddressTable<ulong>.Level[] levels;
-
-            if (useSparseTable)
-            {
-                levels = for64Bits ? _levels64BitSparse : _levels32BitSparse;
-            }
-            else
-            {
-                levels = for64Bits ? _levels64Bit : _levels32Bit;
-            }
-
             Functions = new TranslatorCache<TranslatedFunction>();
-            FunctionTable = new AddressTable<ulong>(levels, useSparseTable);
+            FunctionTable = functionTable;
             Stubs = new TranslatorStubs(FunctionTable, _noWxCache);
 
             FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;

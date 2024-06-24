@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Ryujinx.Memory
 {
@@ -66,15 +67,15 @@ namespace Ryujinx.Memory
             {
                 // Need to map some more memory.
 
-                block = new MemoryBlock(MapGranularity, MemoryAllocationFlags.Mirrorable | MemoryAllocationFlags.NoMap);
+                block = new MemoryBlock(MapGranularity, MemoryAllocationFlags.Mirrorable);
 
                 _mappedBlocks.Add(block);
 
                 _mappedBlockUsage = 0;
             }
 
+            _pageInit(block.GetSpan(_mappedBlockUsage, (int)_pageSize));
             _reservedBlock.MapView(block, _mappedBlockUsage, pageOffset, _pageSize);
-            _pageInit(_reservedBlock.GetSpan(pageOffset, (int)_pageSize));
 
             _mappedBlockUsage += _pageSize;
         }
@@ -87,7 +88,7 @@ namespace Ryujinx.Memory
             ref ulong entry = ref _mappedPageBitmap[bitmapIndex];
             ulong bit = 1UL << (pageIndex & 63);
 
-            if ((entry & bit) == 0)
+            if ((Volatile.Read(ref entry) & bit) == 0)
             {
                 // Not mapped.
 
@@ -95,11 +96,15 @@ namespace Ryujinx.Memory
                 {
                     // Check the bit while locked to make sure that this only happens once.
 
-                    if ((entry & bit) == 0)
+                    ulong lockedEntry = Volatile.Read(ref entry);
+
+                    if ((lockedEntry & bit) == 0)
                     {
                         MapPage(offset & ~(_pageSize - 1));
 
-                        entry |= bit;
+                        lockedEntry |= bit;
+
+                        Interlocked.Exchange(ref entry, lockedEntry);
                     }
                 }
             }
