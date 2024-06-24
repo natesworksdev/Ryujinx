@@ -211,9 +211,12 @@ namespace ARMeilleure.Instructions
                 // Deliberately attempts to avoid branches.
 
                 var level0 = table.Levels[0];
+                int clearBits0 = 64 - (level0.Index + level0.Length);
 
-                // Currently no bounds check. Maybe conditionally do this for unsafe host mapped.
-                Operand index = context.ShiftLeft(context.ShiftRightUI(guestAddress, Const(level0.Index)), Const(3));
+                Operand index = context.ShiftLeft(
+                    context.ShiftRightUI(context.ShiftLeft(guestAddress, Const(clearBits0)), Const(clearBits0 + level0.Index)),
+                    Const(3)
+                    );
 
                 Operand tableBase = !context.HasPtc ?
                     Const(table.Base) :
@@ -223,11 +226,10 @@ namespace ARMeilleure.Instructions
 
                 // Second level
                 var level1 = table.Levels[1];
-
-                int clearBits = 64 - (level1.Index + level1.Length);
+                int clearBits1 = 64 - (level1.Index + level1.Length);
 
                 Operand index2 = context.ShiftLeft(
-                    context.ShiftRightUI(context.ShiftLeft(guestAddress, Const(clearBits)), Const(clearBits + level1.Index)),
+                    context.ShiftRightUI(context.ShiftLeft(guestAddress, Const(clearBits1)), Const(clearBits1 + level1.Index)),
                     Const(3)
                     );
 
