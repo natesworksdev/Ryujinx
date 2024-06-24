@@ -59,6 +59,7 @@ namespace Ryujinx.Cpu.Jit
         /// <inheritdoc/>
         public void PrepareCodeRange(ulong address, ulong size)
         {
+            _functionTable.SignalCodeRange(address, size);
             _translator.PrepareCodeRange(address, size);
         }
 

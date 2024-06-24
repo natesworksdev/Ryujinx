@@ -53,6 +53,7 @@ namespace Ryujinx.Cpu.LightningJit
         /// <inheritdoc/>
         public void PrepareCodeRange(ulong address, ulong size)
         {
+            _functionTable.SignalCodeRange(address, size);
         }
 
         public void Dispose()

@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu.Signal;
 using Ryujinx.Memory;
@@ -89,9 +90,9 @@ namespace ARMeilleure.Common
         private readonly TEntry* _fillBottomLevelPtr;
 
         private readonly List<TableSparseBlock> _sparseReserved;
-        private readonly ulong _sparseBlockSize;
         private readonly ReaderWriterLockSlim _sparseLock;
 
+        private ulong _sparseBlockSize;
         private ulong _sparseReservedOffset;
 
         /// <inheritdoc/>
@@ -170,7 +171,7 @@ namespace ARMeilleure.Common
                 _sparseReserved = new List<TableSparseBlock>();
                 _sparseLock = new ReaderWriterLockSlim();
 
-                _sparseBlockSize = bottomLevelSize << 3;
+                _sparseBlockSize = bottomLevelSize;
             }
         }
 
@@ -200,6 +201,23 @@ namespace ARMeilleure.Common
             }
 
             _fill = fillValue;
+        }
+
+        /// <summary>
+        /// Signal that the given code range exists.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="size"></param>
+        public void SignalCodeRange(ulong address, ulong size)
+        {
+            AddressTableLevel bottom = Levels.Last();
+            ulong bottomLevelEntries = 1ul << bottom.Length;
+
+            ulong entryIndex = address >> bottom.Index;
+            ulong entries = size >> bottom.Index;
+            entries += entryIndex - BitUtils.AlignDown(entryIndex, bottomLevelEntries);
+
+            _sparseBlockSize = Math.Max(_sparseBlockSize, BitUtils.AlignUp(entries, bottomLevelEntries) * (ulong)sizeof(TEntry));
         }
 
         /// <inheritdoc/>
@@ -341,12 +359,14 @@ namespace ARMeilleure.Common
             Ryujinx.Common.Logging.Logger.Info?.PrintMsg(LogClass.Cpu, $"Using memory {initedSize}/{reservedSize} bytes");
         }
 
-        private void ReserveNewSparseBlock()
+        private TableSparseBlock ReserveNewSparseBlock()
         {
             var block = new TableSparseBlock(_sparseBlockSize, EnsureMapped, InitLeafPage);
 
             _sparseReserved.Add(block);
             _sparseReservedOffset = 0;
+
+            return block;
         }
 
         /// <summary>
@@ -369,12 +389,21 @@ namespace ARMeilleure.Common
             {
                 _sparseLock.EnterWriteLock();
 
-                if (_sparseReserved.Count == 0 || _sparseReservedOffset == _sparseBlockSize)
-                {
-                    ReserveNewSparseBlock();
-                }
+                SparseMemoryBlock block;
 
-                SparseMemoryBlock block = _sparseReserved.Last().Block;
+                if (_sparseReserved.Count == 0)
+                {
+                    block = ReserveNewSparseBlock().Block;
+                }
+                else
+                {
+                    block = _sparseReserved.Last().Block;
+
+                    if (_sparseReservedOffset == block.Block.Size)
+                    {
+                        block = ReserveNewSparseBlock().Block;
+                    }
+                }
 
                 page = new AddressTablePage(true, block.Block.Pointer + (IntPtr)_sparseReservedOffset);
 
