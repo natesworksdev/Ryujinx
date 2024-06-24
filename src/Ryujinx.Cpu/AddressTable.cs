@@ -18,9 +18,19 @@ namespace ARMeilleure.Common
     /// <typeparam name="TEntry">Type of the value</typeparam>
     public unsafe class AddressTable<TEntry> : IAddressTable<TEntry> where TEntry : unmanaged
     {
+        /// <summary>
+        /// Represents a page of the address table.
+        /// </summary>
         private readonly struct AddressTablePage
         {
+            /// <summary>
+            /// True if the allocation belongs to a sparse block, false otherwise.
+            /// </summary>
             public readonly bool IsSparse;
+
+            /// <summary>
+            /// Base address for the page.
+            /// </summary>
             public readonly IntPtr Address;
 
             public AddressTablePage(bool isSparse, IntPtr address)
@@ -36,13 +46,13 @@ namespace ARMeilleure.Common
         private readonly struct TableSparseBlock : IDisposable
         {
             public readonly SparseMemoryBlock Block;
-            public readonly TrackingEventDelegate TrackingEvent;
+            private readonly TrackingEventDelegate _trackingEvent;
 
             public TableSparseBlock(ulong size, Action<IntPtr> ensureMapped, PageInitDelegate pageInit)
             {
                 var block = new SparseMemoryBlock(size, pageInit, null);
 
-                TrackingEvent = (ulong address, ulong size, bool write) =>
+                _trackingEvent = (ulong address, ulong size, bool write) =>
                 {
                     Logger.Error?.PrintMsg(LogClass.Cpu, $"Triggered from exception");
 
@@ -56,7 +66,7 @@ namespace ARMeilleure.Common
                 bool added = NativeSignalHandler.AddTrackedRegion(
                     (nuint)block.Block.Pointer,
                     (nuint)(block.Block.Pointer + (IntPtr)block.Block.Size),
-                    Marshal.GetFunctionPointerForDelegate(TrackingEvent));
+                    Marshal.GetFunctionPointerForDelegate(_trackingEvent));
 
                 if (!added)
                 {
@@ -79,7 +89,6 @@ namespace ARMeilleure.Common
         private readonly List<AddressTablePage> _pages;
         private TEntry _fill;
 
-        private readonly bool _sparse;
         private readonly MemoryBlock _sparseFill;
         private readonly SparseMemoryBlock _fillBottomLevel;
         private readonly TEntry* _fillBottomLevelPtr;
@@ -89,6 +98,8 @@ namespace ARMeilleure.Common
 
         private ulong _sparseBlockSize;
         private ulong _sparseReservedOffset;
+
+        public bool Sparse { get; }
 
         /// <inheritdoc/>
         public ulong Mask { get; }
@@ -150,7 +161,7 @@ namespace ARMeilleure.Common
                 Mask |= level.Mask;
             }
 
-            _sparse = sparse;
+            Sparse = sparse;
 
             if (sparse)
             {
@@ -279,9 +290,13 @@ namespace ARMeilleure.Common
             return (TEntry*)page;
         }
 
+        /// <summary>
+        /// Ensure the given pointer is mapped in any overlapping sparse reservations.
+        /// </summary>
+        /// <param name="ptr">Pointer to be mapped</param>
         private void EnsureMapped(IntPtr ptr)
         {
-            if (_sparse)
+            if (Sparse)
             {
                 // Check sparse allocations to see if the pointer is in any of them.
                 // Ensure the page is committed if there's a match.
@@ -356,6 +371,10 @@ namespace ARMeilleure.Common
             Ryujinx.Common.Logging.Logger.Info?.PrintMsg(LogClass.Cpu, $"Using memory {initedSize}/{reservedSize} bytes");
         }
 
+        /// <summary>
+        /// Reserve a new sparse block, and add it to the list.
+        /// </summary>
+        /// <returns>The new sparse block that was added</returns>
         private TableSparseBlock ReserveNewSparseBlock()
         {
             var block = new TableSparseBlock(_sparseBlockSize, EnsureMapped, InitLeafPage);
@@ -382,7 +401,7 @@ namespace ARMeilleure.Common
 
             AddressTablePage page;
 
-            if (_sparse && leaf)
+            if (Sparse && leaf)
             {
                 _sparseLock.EnterWriteLock();
 
@@ -450,7 +469,7 @@ namespace ARMeilleure.Common
                     }
                 }
 
-                if (_sparse)
+                if (Sparse)
                 {
                     foreach (TableSparseBlock block in _sparseReserved)
                     {

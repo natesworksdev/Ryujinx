@@ -5,12 +5,18 @@ namespace ARMeilleure.Common
     public interface IAddressTable<TEntry> : IDisposable where TEntry : unmanaged
     {
         /// <summary>
-        /// Gets the bits used by the <see cref="Levels"/> of the <see cref="AddressTable{TEntry}"/> instance.
+        /// True if the address table's bottom level is sparsely mapped.
+        /// This also ensures the second bottom level is filled with a dummy page rather than 0.
+        /// </summary>
+        bool Sparse { get; }
+
+        /// <summary>
+        /// Gets the bits used by the <see cref="Levels"/> of the <see cref="IAddressTable{TEntry}"/> instance.
         /// </summary>
         ulong Mask { get; }
 
         /// <summary>
-        /// Gets the <see cref="Level"/>s used by the <see cref="AddressTable{TEntry}"/> instance.
+        /// Gets the <see cref="AddressTableLevel"/>s used by the <see cref="IAddressTable{TEntry}"/> instance.
         /// </summary>
         AddressTableLevel[] Levels { get; }
 
@@ -27,7 +33,7 @@ namespace ARMeilleure.Common
 
         /// <summary>
         /// Determines if the specified <paramref name="address"/> is in the range of the
-        /// <see cref="AddressTable{TEntry}"/>.
+        /// <see cref="IAddressTable{TEntry}"/>.
         /// </summary>
         /// <param name="address">Guest address</param>
         /// <returns><see langword="true"/> if is valid; otherwise <see langword="false"/></returns>
