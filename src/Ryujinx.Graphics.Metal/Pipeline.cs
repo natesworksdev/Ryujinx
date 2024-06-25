@@ -5,6 +5,7 @@ using SharpMetal.Foundation;
 using SharpMetal.Metal;
 using SharpMetal.QuartzCore;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Versioning;
 
 namespace Ryujinx.Graphics.Metal
@@ -24,6 +25,8 @@ namespace Ryujinx.Graphics.Metal
 
         private readonly MTLDevice _device;
         private readonly MetalRenderer _renderer;
+        private readonly List<BufferHolder> _activeBufferMirrors;
+
         private EncoderStateManager _encoderStateManager;
         private ulong _byteWeight;
 
@@ -40,6 +43,7 @@ namespace Ryujinx.Graphics.Metal
         {
             _device = device;
             _renderer = renderer;
+            _activeBufferMirrors = new();
 
             EndRenderPassDelegate = EndCurrentPass;
 
@@ -201,11 +205,28 @@ namespace Ryujinx.Graphics.Metal
 
             CommandBuffer = (Cbs = _renderer.CommandBufferPool.ReturnAndRent(Cbs)).CommandBuffer;
 
+            // Restore per-command buffer state.
+            foreach (BufferHolder buffer in _activeBufferMirrors)
+            {
+                buffer.ClearMirrors();
+            }
+            _activeBufferMirrors.Clear();
+
             // TODO: Auto flush counting
             _renderer.SyncManager.GetAndResetWaitTicks();
 
             // Cleanup
             dst.Dispose();
+        }
+
+        public void RegisterActiveMirror(BufferHolder buffer)
+        {
+            _activeBufferMirrors.Add(buffer);
+        }
+
+        public void Rebind(Auto<DisposableBuffer> buffer, int offset, int size)
+        {
+            _encoderStateManager.Rebind(buffer, offset, size);
         }
 
         public void FlushCommandsIfWeightExceeding(IAuto disposedResource, ulong byteWeight)

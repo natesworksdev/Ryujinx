@@ -1,3 +1,4 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using SharpMetal.Metal;
 using System;
@@ -66,6 +67,11 @@ namespace Ryujinx.Graphics.Metal
 
         public BufferRef[] UniformBuffers = new BufferRef[Constants.MaxUniformBuffersPerStage];
         public BufferRef[] StorageBuffers = new BufferRef[Constants.MaxStorageBuffersPerStage];
+
+        public BitMapStruct<Array2<long>> UniformSet;
+        public BitMapStruct<Array2<long>> StorageSet;
+        public BitMapStruct<Array2<long>> UniformMirrored;
+        public BitMapStruct<Array2<long>> StorageMirrored;
 
         public Auto<DisposableBuffer> IndexBuffer = default;
         public MTLIndexType IndexType = MTLIndexType.UInt16;

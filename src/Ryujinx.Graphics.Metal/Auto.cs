@@ -19,6 +19,12 @@ namespace Ryujinx.Graphics.Metal
         void AddCommandBufferDependencies(CommandBufferScoped cbs);
     }
 
+    interface IMirrorable<T> where T : IDisposable
+    {
+        Auto<T> GetMirrorable(CommandBufferScoped cbs, ref int offset, int size, out bool mirrored);
+        void ClearMirrors(CommandBufferScoped cbs, int offset, int size);
+    }
+
     [SupportedOSPlatform("macos")]
     class Auto<T> : IAutoPrivate, IDisposable where T : IDisposable
     {
@@ -27,6 +33,7 @@ namespace Ryujinx.Graphics.Metal
 
         private readonly BitMap _cbOwnership;
         private readonly MultiFenceHolder _waitable;
+        private readonly IMirrorable<T> _mirrorable;
 
         private bool _disposed;
         private bool _destroyed;
@@ -38,13 +45,22 @@ namespace Ryujinx.Graphics.Metal
             _cbOwnership = new BitMap(CommandBufferPool.MaxCommandBuffers);
         }
 
-        public Auto(T value, MultiFenceHolder waitable) : this(value)
+        public Auto(T value, IMirrorable<T> mirrorable, MultiFenceHolder waitable) : this(value)
         {
+            _mirrorable = mirrorable;
             _waitable = waitable;
+        }
+
+        public T GetMirrorable(CommandBufferScoped cbs, ref int offset, int size, out bool mirrored)
+        {
+            var mirror = _mirrorable.GetMirrorable(cbs, ref offset, size, out mirrored);
+            mirror._waitable?.AddBufferUse(cbs.CommandBufferIndex, offset, size, false);
+            return mirror.Get(cbs);
         }
 
         public T Get(CommandBufferScoped cbs, int offset, int size, bool write = false)
         {
+            _mirrorable?.ClearMirrors(cbs, offset, size);
             _waitable?.AddBufferUse(cbs.CommandBufferIndex, offset, size, write);
             return Get(cbs);
         }

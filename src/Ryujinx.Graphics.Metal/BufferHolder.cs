@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.GAL;
 using SharpMetal.Metal;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
@@ -8,7 +9,7 @@ using System.Threading;
 namespace Ryujinx.Graphics.Metal
 {
     [SupportedOSPlatform("macos")]
-    class BufferHolder : IDisposable
+    class BufferHolder : IDisposable, IMirrorable<DisposableBuffer>
     {
         private CacheByRange<BufferHolder> _cachedConvertedBuffers;
 
@@ -25,17 +26,97 @@ namespace Ryujinx.Graphics.Metal
         private FenceHolder _flushFence;
         private int _flushWaiting;
 
+        private byte[] _pendingData;
+        private BufferMirrorRangeList _pendingDataRanges;
+        private Dictionary<ulong, StagingBufferReserved> _mirrors;
+
         public BufferHolder(MetalRenderer renderer, Pipeline pipeline, MTLBuffer buffer, int size)
         {
             _renderer = renderer;
             _pipeline = pipeline;
             _map = buffer.Contents;
             _waitable = new MultiFenceHolder(size);
-            _buffer = new Auto<DisposableBuffer>(new(buffer), _waitable);
+            _buffer = new Auto<DisposableBuffer>(new(buffer), this, _waitable);
 
             _flushLock = new ReaderWriterLockSlim();
 
             Size = size;
+        }
+
+        private static ulong ToMirrorKey(int offset, int size)
+        {
+            return ((ulong)offset << 32) | (uint)size;
+        }
+
+        private static (int offset, int size) FromMirrorKey(ulong key)
+        {
+            return ((int)(key >> 32), (int)key);
+        }
+
+        private unsafe bool TryGetMirror(CommandBufferScoped cbs, ref int offset, int size, out Auto<DisposableBuffer> buffer)
+        {
+            size = Math.Min(size, Size - offset);
+
+            // Does this binding need to be mirrored?
+
+            if (!_pendingDataRanges.OverlapsWith(offset, size))
+            {
+                buffer = null;
+                return false;
+            }
+
+            var key = ToMirrorKey(offset, size);
+
+            if (_mirrors.TryGetValue(key, out StagingBufferReserved reserved))
+            {
+                buffer = reserved.Buffer.GetBuffer();
+                offset = reserved.Offset;
+
+                return true;
+            }
+
+            // Is this mirror allowed to exist? Can't be used for write in any in-flight write.
+            if (_waitable.IsBufferRangeInUse(offset, size, true))
+            {
+                // Some of the data is not mirrorable, so upload the whole range.
+                ClearMirrors(cbs, offset, size);
+
+                buffer = null;
+                return false;
+            }
+
+            // Build data for the new mirror.
+
+            var baseData = new Span<byte>((void*)(_map + offset), size);
+            var modData = _pendingData.AsSpan(offset, size);
+
+            StagingBufferReserved? newMirror = _renderer.BufferManager.StagingBuffer.TryReserveData(cbs, size);
+
+            if (newMirror != null)
+            {
+                var mirror = newMirror.Value;
+                _pendingDataRanges.FillData(baseData, modData, offset, new Span<byte>((void*)(mirror.Buffer._map + mirror.Offset), size));
+
+                if (_mirrors.Count == 0)
+                {
+                    _pipeline.RegisterActiveMirror(this);
+                }
+
+                _mirrors.Add(key, mirror);
+
+                buffer = mirror.Buffer.GetBuffer();
+                offset = mirror.Offset;
+
+                return true;
+            }
+            else
+            {
+                // Data could not be placed on the mirror, likely out of space. Force the data to flush.
+                ClearMirrors(cbs, offset, size);
+
+                buffer = null;
+                return false;
+            }
         }
 
         public Auto<DisposableBuffer> GetBuffer()
@@ -61,6 +142,74 @@ namespace Ryujinx.Graphics.Metal
             }
 
             return _buffer;
+        }
+
+        public Auto<DisposableBuffer> GetMirrorable(CommandBufferScoped cbs, ref int offset, int size, out bool mirrored)
+        {
+            if (_pendingData != null && TryGetMirror(cbs, ref offset, size, out Auto<DisposableBuffer> result))
+            {
+                mirrored = true;
+                return result;
+            }
+
+            mirrored = false;
+            return _buffer;
+        }
+
+        public void ClearMirrors()
+        {
+            // Clear mirrors without forcing a flush. This happens when the command buffer is switched,
+            // as all reserved areas on the staging buffer are released.
+
+            if (_pendingData != null)
+            {
+                _mirrors.Clear();
+            }
+        }
+
+        public void ClearMirrors(CommandBufferScoped cbs, int offset, int size)
+        {
+            // Clear mirrors in the given range, and submit overlapping pending data.
+
+            if (_pendingData != null)
+            {
+                bool hadMirrors = _mirrors.Count > 0 && RemoveOverlappingMirrors(offset, size);
+
+                if (_pendingDataRanges.Count() != 0)
+                {
+                    UploadPendingData(cbs, offset, size);
+                }
+
+                if (hadMirrors)
+                {
+                    _pipeline.Rebind(_buffer, offset, size);
+                }
+            }
+        }
+
+        private void UploadPendingData(CommandBufferScoped cbs, int offset, int size)
+        {
+            var ranges = _pendingDataRanges.FindOverlaps(offset, size);
+
+            if (ranges != null)
+            {
+                _pendingDataRanges.Remove(offset, size);
+
+                foreach (var range in ranges)
+                {
+                    int rangeOffset = Math.Max(offset, range.Offset);
+                    int rangeSize = Math.Min(offset + size, range.End) - rangeOffset;
+
+                    if (_pipeline.Cbs.CommandBuffer == cbs.CommandBuffer)
+                    {
+                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, _pipeline.EndRenderPassDelegate, false);
+                    }
+                    else
+                    {
+                        SetData(rangeOffset, _pendingData.AsSpan(rangeOffset, rangeSize), cbs, null, false);
+                    }
+                }
+            }
         }
 
         public void SignalWrite(int offset, int size)
@@ -162,6 +311,33 @@ namespace Ryujinx.Graphics.Metal
             throw new InvalidOperationException("The buffer is not mapped.");
         }
 
+        public bool RemoveOverlappingMirrors(int offset, int size)
+        {
+            List<ulong> toRemove = null;
+            foreach (var key in _mirrors.Keys)
+            {
+                (int keyOffset, int keySize) = FromMirrorKey(key);
+                if (!(offset + size <= keyOffset || offset >= keyOffset + keySize))
+                {
+                    toRemove ??= new List<ulong>();
+
+                    toRemove.Add(key);
+                }
+            }
+
+            if (toRemove != null)
+            {
+                foreach (var key in toRemove)
+                {
+                    _mirrors.Remove(key);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         public unsafe void SetData(int offset, ReadOnlySpan<byte> data, CommandBufferScoped? cbs = null, Action endRenderPass = null, bool allowCbsWait = true)
         {
             int dataSize = Math.Min(data.Length, Size - offset);
@@ -169,6 +345,8 @@ namespace Ryujinx.Graphics.Metal
             {
                 return;
             }
+
+            bool allowMirror = allowCbsWait && cbs != null;
 
             if (_map != IntPtr.Zero)
             {
@@ -188,6 +366,32 @@ namespace Ryujinx.Graphics.Metal
 
                     return;
                 }
+            }
+
+            // If the buffer does not have an in-flight write (including an inline update), then upload data to a pendingCopy.
+            if (allowMirror && !_waitable.IsBufferRangeInUse(offset, dataSize, true))
+            {
+                if (_pendingData == null)
+                {
+                    _pendingData = new byte[Size];
+                    _mirrors = new Dictionary<ulong, StagingBufferReserved>();
+                }
+
+                data[..dataSize].CopyTo(_pendingData.AsSpan(offset, dataSize));
+                _pendingDataRanges.Add(offset, dataSize);
+
+                // Remove any overlapping mirrors.
+                RemoveOverlappingMirrors(offset, dataSize);
+
+                // Tell the graphics device to rebind any constant buffer that overlaps the newly modified range, as it should access a mirror.
+                _pipeline.Rebind(_buffer, offset, dataSize);
+
+                return;
+            }
+
+            if (_pendingData != null)
+            {
+                _pendingDataRanges.Remove(offset, dataSize);
             }
 
             if (cbs != null &&

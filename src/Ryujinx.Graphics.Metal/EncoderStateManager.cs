@@ -81,6 +81,8 @@ namespace Ryujinx.Graphics.Metal
 
                 // Mark the other state as dirty
                 _currentState.Dirty |= DirtyFlags.All;
+                _currentState.UniformSet.Clear();
+                _currentState.StorageSet.Clear();
             }
             else
             {
@@ -366,6 +368,73 @@ namespace Ryujinx.Graphics.Metal
             var pipelineState = _computePipelineCache.GetOrCreate(_currentState.ComputeFunction.Value);
 
             computeCommandEncoder.SetComputePipelineState(pipelineState);
+        }
+
+        private static bool BindingOverlaps(BufferRange info, int offset, int size)
+        {
+            return offset < info.Offset + info.Size && (offset + size) > info.Offset;
+        }
+
+        public void Rebind(Auto<DisposableBuffer> buffer, int offset, int size)
+        {
+            if (_pipeline.CurrentEncoder == null)
+            {
+                return;
+            }
+
+            // Check stage bindings
+
+            var currentState = _currentState;
+
+            _currentState.UniformMirrored.Union(_currentState.UniformSet).SignalSet((int binding, int count) =>
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    ref BufferRef bufferRef = ref currentState.UniformBuffers[binding];
+                    if (bufferRef.Buffer == buffer)
+                    {
+                        if (bufferRef.Range != null)
+                        {
+                            if (!BindingOverlaps(bufferRef.Range.Value, offset, size))
+                            {
+                                binding++;
+                                continue;
+                            }
+                        }
+
+                        currentState.UniformSet.Clear(binding);
+                        currentState.Dirty |= DirtyFlags.Buffers;
+                    }
+
+                    binding++;
+                }
+            });
+
+            _currentState.StorageMirrored.Union(_currentState.StorageSet).SignalSet((int binding, int count) =>
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    ref BufferRef bufferRef = ref currentState.StorageBuffers[binding];
+                    if (bufferRef.Buffer == buffer)
+                    {
+                        if (bufferRef.Range != null)
+                        {
+                            if (!BindingOverlaps(bufferRef.Range.Value, offset, size))
+                            {
+                                binding++;
+                                continue;
+                            }
+                        }
+
+                        currentState.StorageSet.Clear(binding);
+                        currentState.Dirty |= DirtyFlags.Buffers;
+                    }
+
+                    binding++;
+                }
+            });
+
+            _currentState = currentState;
         }
 
         public void UpdateIndexBuffer(BufferRange buffer, IndexType type)
@@ -702,7 +771,16 @@ namespace Ryujinx.Graphics.Metal
                     ? null
                     : _bufferManager.GetBuffer(buffer.Handle, buffer.Write);
 
-                _currentState.UniformBuffers[index] = new BufferRef(mtlBuffer, ref buffer);
+                ref BufferRef currentBufferRef = ref _currentState.UniformBuffers[index];
+
+                BufferRef newRef = new(mtlBuffer, ref buffer);
+
+                if (!currentBufferRef.Equals(newRef))
+                {
+                    _currentState.UniformSet.Clear(index);
+
+                    currentBufferRef = newRef;
+                }
             }
 
             _currentState.Dirty |= DirtyFlags.Buffers;
@@ -719,7 +797,16 @@ namespace Ryujinx.Graphics.Metal
                     ? null
                     : _bufferManager.GetBuffer(buffer.Handle, buffer.Write);
 
-                _currentState.StorageBuffers[index] = new BufferRef(mtlBuffer, ref buffer);
+                ref BufferRef currentBufferRef = ref _currentState.StorageBuffers[index];
+
+                BufferRef newRef = new(mtlBuffer, ref buffer);
+
+                if (!currentBufferRef.Equals(newRef))
+                {
+                    _currentState.StorageSet.Clear(index);
+
+                    currentBufferRef = newRef;
+                }
             }
 
             _currentState.Dirty |= DirtyFlags.Buffers;
@@ -986,7 +1073,7 @@ namespace Ryujinx.Graphics.Metal
             renderCommandEncoder.SetVertexBuffer(zeroMtlBuffer, 0, Constants.ZeroBufferIndex);
         }
 
-        private readonly void SetRenderBuffers(MTLRenderCommandEncoder renderCommandEncoder, BufferRef[] uniformBuffers, BufferRef[] storageBuffers)
+        private void SetRenderBuffers(MTLRenderCommandEncoder renderCommandEncoder, BufferRef[] uniformBuffers, BufferRef[] storageBuffers)
         {
             var uniformArgBufferRange = CreateArgumentBufferForRenderEncoder(renderCommandEncoder, uniformBuffers, true);
             var uniformArgBuffer = _bufferManager.GetBuffer(uniformArgBufferRange.Handle, false).Get(_pipeline.Cbs).Value;
@@ -1001,7 +1088,7 @@ namespace Ryujinx.Graphics.Metal
             renderCommandEncoder.SetFragmentBuffer(storageArgBuffer, (ulong)storageArgBufferRange.Offset, Constants.StorageBuffersIndex);
         }
 
-        private readonly void SetComputeBuffers(MTLComputeCommandEncoder computeCommandEncoder, BufferRef[] uniformBuffers, BufferRef[] storageBuffers)
+        private void SetComputeBuffers(MTLComputeCommandEncoder computeCommandEncoder, BufferRef[] uniformBuffers, BufferRef[] storageBuffers)
         {
             var uniformArgBufferRange = CreateArgumentBufferForComputeEncoder(computeCommandEncoder, uniformBuffers, true);
             var uniformArgBuffer = _bufferManager.GetBuffer(uniformArgBufferRange.Handle, false).Get(_pipeline.Cbs).Value;
@@ -1015,7 +1102,7 @@ namespace Ryujinx.Graphics.Metal
             computeCommandEncoder.SetBuffer(storageArgBuffer, (ulong)storageArgBufferRange.Offset, Constants.StorageBuffersIndex);
         }
 
-        private readonly BufferRange CreateArgumentBufferForRenderEncoder(MTLRenderCommandEncoder renderCommandEncoder, BufferRef[] buffers, bool constant)
+        private BufferRange CreateArgumentBufferForRenderEncoder(MTLRenderCommandEncoder renderCommandEncoder, BufferRef[] buffers, bool constant)
         {
             var usage = constant ? MTLResourceUsage.Read : MTLResourceUsage.Write;
 
@@ -1037,8 +1124,16 @@ namespace Ryujinx.Graphics.Metal
                 if (range.HasValue)
                 {
                     offset = range.Value.Offset;
-                    mtlBuffer = autoBuffer.Get(_pipeline.Cbs, offset, range.Value.Size, range.Value.Write).Value;
+                    mtlBuffer = autoBuffer.GetMirrorable(_pipeline.Cbs, ref offset, range.Value.Size, out bool mirrored).Value;
 
+                    if (constant)
+                    {
+                        _currentState.UniformMirrored.Set(i, mirrored);
+                    }
+                    else
+                    {
+                        _currentState.StorageMirrored.Set(i, mirrored);
+                    }
                 }
                 else
                 {
@@ -1057,7 +1152,7 @@ namespace Ryujinx.Graphics.Metal
             return argBuffer.Range;
         }
 
-        private readonly BufferRange CreateArgumentBufferForComputeEncoder(MTLComputeCommandEncoder computeCommandEncoder, BufferRef[] buffers, bool constant)
+        private BufferRange CreateArgumentBufferForComputeEncoder(MTLComputeCommandEncoder computeCommandEncoder, BufferRef[] buffers, bool constant)
         {
             var usage = constant ? MTLResourceUsage.Read : MTLResourceUsage.Write;
 
@@ -1079,8 +1174,16 @@ namespace Ryujinx.Graphics.Metal
                 if (range.HasValue)
                 {
                     offset = range.Value.Offset;
-                    mtlBuffer = autoBuffer.Get(_pipeline.Cbs, offset, range.Value.Size, range.Value.Write).Value;
+                    mtlBuffer = autoBuffer.GetMirrorable(_pipeline.Cbs, ref offset, range.Value.Size, out bool mirrored).Value;
 
+                    if (constant)
+                    {
+                        _currentState.UniformMirrored.Set(i, mirrored);
+                    }
+                    else
+                    {
+                        _currentState.StorageMirrored.Set(i, mirrored);
+                    }
                 }
                 else
                 {
