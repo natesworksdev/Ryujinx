@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 timeout = TimeSpan.FromSeconds(1);
             }
 
-            using ManualResetEvent waitEvent = new(false);
+            using ManualResetEventSlim waitEvent = new(false);
             var info = _syncpoints[id].RegisterCallback(threshold, (x) => waitEvent.Set());
 
             if (info == null)
@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 return false;
             }
 
-            bool signaled = waitEvent.WaitOne(timeout);
+            bool signaled = waitEvent.WaitHandle.WaitOne(timeout);
 
             if (!signaled && info != null)
             {

@@ -36,7 +36,7 @@ namespace Ryujinx.UI.Applet
 
         public bool DisplayMessageDialog(string title, string message)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool okPressed = false;
 
@@ -76,14 +76,14 @@ namespace Ryujinx.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
 
             return okPressed;
         }
 
         public bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool okPressed = false;
             bool error = false;
@@ -129,7 +129,7 @@ namespace Ryujinx.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
             ((MainWindow)_parent).RendererWidget.NpadManager.UnblockInputUpdates();
 
             userText = error ? null : inputText;
@@ -145,7 +145,7 @@ namespace Ryujinx.UI.Applet
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttons)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool showDetails = false;
 
@@ -190,7 +190,7 @@ namespace Ryujinx.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
 
             return showDetails;
         }

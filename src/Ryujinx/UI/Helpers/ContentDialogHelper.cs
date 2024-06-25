@@ -27,7 +27,7 @@ namespace Ryujinx.Ava.UI.Helpers
              string secondaryButton,
              string closeButton,
              UserResult primaryButtonResult = UserResult.Ok,
-             ManualResetEvent deferResetEvent = null,
+             ManualResetEventSlim deferResetEvent = null,
              TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             UserResult result = UserResult.None;
@@ -76,7 +76,7 @@ namespace Ryujinx.Ava.UI.Helpers
             string closeButton,
             int iconSymbol,
             UserResult primaryButtonResult = UserResult.Ok,
-            ManualResetEvent deferResetEvent = null,
+            ManualResetEventSlim deferResetEvent = null,
             TypedEventHandler<ContentDialog, ContentDialogButtonClickEventArgs> deferCloseAction = null)
         {
             Grid content = CreateTextDialogContent(primaryText, secondaryText, iconSymbol);
@@ -93,7 +93,7 @@ namespace Ryujinx.Ava.UI.Helpers
             string secondaryButton,
             string closeButton,
             int iconSymbol,
-            ManualResetEvent deferResetEvent,
+            ManualResetEventSlim deferResetEvent,
             Func<Window, Task> doWhileDeferred = null)
         {
             bool startedDeferring = false;
@@ -127,7 +127,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
                 _ = Task.Run(() =>
                 {
-                    deferResetEvent.WaitOne();
+                    deferResetEvent.WaitHandle.WaitOne();
 
                     Dispatcher.UIThread.Post(() =>
                     {

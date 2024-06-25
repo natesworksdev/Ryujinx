@@ -28,7 +28,7 @@ namespace Ryujinx.UI.Windows
 
         private Gdk.RGBA _selectedColor;
 
-        private readonly ManualResetEvent _avatarsPreloadingEvent = new(false);
+        private readonly ManualResetEventSlim _avatarsPreloadingEvent = new(false);
 
         public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage User Profiles")
         {
@@ -256,7 +256,7 @@ namespace Ryujinx.UI.Windows
         {
             if (_contentManager.GetCurrentFirmwareVersion() != null)
             {
-                _avatarsPreloadingEvent.WaitOne();
+                _avatarsPreloadingEvent.WaitHandle.WaitOne();
             }
 
             SelectProfileImage();

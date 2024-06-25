@@ -72,8 +72,8 @@ namespace Ryujinx.Headless.SDL2
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
-        private readonly ManualResetEvent _exitEvent;
-        private readonly ManualResetEvent _gpuDoneEvent;
+        private readonly ManualResetEventSlim _exitEvent;
+        private readonly ManualResetEventSlim _gpuDoneEvent;
 
         private long _ticks;
         private bool _isActive;
@@ -102,8 +102,8 @@ namespace Ryujinx.Headless.SDL2
             _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
             _gpuCancellationTokenSource = new CancellationTokenSource();
-            _exitEvent = new ManualResetEvent(false);
-            _gpuDoneEvent = new ManualResetEvent(false);
+            _exitEvent = new ManualResetEventSlim(false);
+            _gpuDoneEvent = new ManualResetEventSlim(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
             HostUITheme = new HeadlessHostUiTheme();
@@ -347,7 +347,7 @@ namespace Ryujinx.Headless.SDL2
             _isStopped = true;
             _isActive = false;
 
-            _exitEvent.WaitOne();
+            _exitEvent.WaitHandle.WaitOne();
             _exitEvent.Dispose();
         }
 
@@ -458,7 +458,7 @@ namespace Ryujinx.Headless.SDL2
 
             // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
-            _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.WaitHandle.WaitOne();
             _gpuDoneEvent.Dispose();
             nvidiaStutterWorkaround?.Join();
 

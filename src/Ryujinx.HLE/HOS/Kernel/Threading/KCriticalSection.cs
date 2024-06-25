@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // even if they are not scheduled on guest cores.
                     if (currentThread != null && !currentThread.IsSchedulable && currentThread.Context.Running)
                     {
-                        currentThread.SchedulerWaitEvent.WaitOne();
+                        currentThread.SchedulerWaitEvent.WaitHandle.WaitOne();
                     }
                 }
             }

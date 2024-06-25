@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Event signaled when the host emulation context is ready to be used by the gpu context.
         /// </summary>
-        public ManualResetEvent HostInitalized { get; }
+        public ManualResetEventSlim HostInitalized { get; }
 
         /// <summary>
         /// Host renderer.
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Gpu
         private long _modifiedSequence;
         private readonly ulong _firstTimestamp;
 
-        private readonly ManualResetEvent _gpuReadyEvent;
+        private readonly ManualResetEventSlim _gpuReadyEvent;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
@@ -123,8 +123,8 @@ namespace Ryujinx.Graphics.Gpu
 
             Window = new Window(this);
 
-            HostInitalized = new ManualResetEvent(false);
-            _gpuReadyEvent = new ManualResetEvent(false);
+            HostInitalized = new ManualResetEventSlim(false);
+            _gpuReadyEvent = new ManualResetEventSlim(false);
 
             SyncActions = new List<ISyncActionHandler>();
             SyncpointActions = new List<ISyncActionHandler>();
@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void InitializeShaderCache(CancellationToken cancellationToken)
         {
-            HostInitalized.WaitOne();
+            HostInitalized.WaitHandle.WaitOne();
 
             foreach (var physicalMemory in PhysicalMemoryRegistry.Values)
             {
@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void WaitUntilGpuReady()
         {
-            _gpuReadyEvent.WaitOne();
+            _gpuReadyEvent.WaitHandle.WaitOne();
         }
 
         /// <summary>

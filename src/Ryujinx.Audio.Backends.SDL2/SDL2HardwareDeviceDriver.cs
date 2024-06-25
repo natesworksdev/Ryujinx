@@ -14,8 +14,8 @@ namespace Ryujinx.Audio.Backends.SDL2
 {
     public class SDL2HardwareDeviceDriver : IHardwareDeviceDriver
     {
-        private readonly ManualResetEvent _updateRequiredEvent;
-        private readonly ManualResetEvent _pauseEvent;
+        private readonly ManualResetEventSlim _updateRequiredEvent;
+        private readonly ManualResetEventSlim _pauseEvent;
         private readonly ConcurrentDictionary<SDL2HardwareDeviceSession, byte> _sessions;
 
         private readonly bool _supportSurroundConfiguration;
@@ -31,8 +31,8 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public SDL2HardwareDeviceDriver()
         {
-            _updateRequiredEvent = new ManualResetEvent(false);
-            _pauseEvent = new ManualResetEvent(true);
+            _updateRequiredEvent = new ManualResetEventSlim(false);
+            _pauseEvent = new ManualResetEventSlim(true);
             _sessions = new ConcurrentDictionary<SDL2HardwareDeviceSession, byte>();
 
             SDL2Driver.Instance.Initialize();
@@ -68,12 +68,12 @@ namespace Ryujinx.Audio.Backends.SDL2
             return device != 0;
         }
 
-        public ManualResetEvent GetUpdateRequiredEvent()
+        public ManualResetEventSlim GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
         }
 
-        public ManualResetEvent GetPauseEvent()
+        public ManualResetEventSlim GetPauseEvent()
         {
             return _pauseEvent;
         }

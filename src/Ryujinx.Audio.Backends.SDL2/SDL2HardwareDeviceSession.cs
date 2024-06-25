@@ -18,7 +18,7 @@ namespace Ryujinx.Audio.Backends.SDL2
         private readonly ConcurrentQueue<SDL2AudioBuffer> _queuedBuffers;
         private readonly DynamicRingBuffer _ringBuffer;
         private ulong _playedSampleCount;
-        private readonly ManualResetEvent _updateRequiredEvent;
+        private readonly ManualResetEventSlim _updateRequiredEvent;
         private uint _outputStream;
         private bool _hasSetupError;
         private readonly SDL_AudioCallback _callbackDelegate;

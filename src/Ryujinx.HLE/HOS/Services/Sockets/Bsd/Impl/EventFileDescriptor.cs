@@ -14,8 +14,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
         public bool Blocking { get => !_flags.HasFlag(EventFdFlags.NonBlocking); set => throw new NotSupportedException(); }
 
-        public ManualResetEvent WriteEvent { get; }
-        public ManualResetEvent ReadEvent { get; }
+        public ManualResetEventSlim WriteEvent { get; }
+        public ManualResetEventSlim ReadEvent { get; }
 
         public EventFileDescriptor(ulong value, EventFdFlags flags)
         {
@@ -27,8 +27,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             _value = value;
             _flags = flags;
 
-            WriteEvent = new ManualResetEvent(false);
-            ReadEvent = new ManualResetEvent(false);
+            WriteEvent = new ManualResetEventSlim(false);
+            ReadEvent = new ManualResetEventSlim(false);
             UpdateEventStates();
         }
 

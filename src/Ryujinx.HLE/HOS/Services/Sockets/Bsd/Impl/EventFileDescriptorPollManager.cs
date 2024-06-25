@@ -1,6 +1,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
@@ -28,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
         {
             updatedCount = 0;
 
-            List<ManualResetEvent> waiters = new();
+            List<ManualResetEventSlim> waiters = new();
 
             for (int i = 0; i < events.Count; i++)
             {
@@ -60,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
                 }
             }
 
-            int index = WaitHandle.WaitAny(waiters.ToArray(), timeoutMilliseconds);
+            int index = WaitHandle.WaitAny(waiters.Select(x => x.WaitHandle).ToArray(), timeoutMilliseconds);
 
             if (index != WaitHandle.WaitTimeout)
             {
@@ -72,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
                     EventFileDescriptor socket = (EventFileDescriptor)evnt.FileDescriptor;
 
-                    if (socket.ReadEvent.WaitOne(0))
+                    if (socket.ReadEvent.WaitHandle.WaitOne(0))
                     {
                         if (evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Input))
                         {
@@ -86,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
                     }
 
                     if ((evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Output))
-                        && socket.WriteEvent.WaitOne(0))
+                        && socket.WriteEvent.WaitHandle.WaitOne(0))
                     {
                         outputEvents |= PollEventTypeMask.Output;
                     }

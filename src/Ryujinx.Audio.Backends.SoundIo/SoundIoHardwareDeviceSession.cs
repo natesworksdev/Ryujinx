@@ -19,7 +19,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
         private SoundIoOutStreamContext _outputStream;
         private readonly DynamicRingBuffer _ringBuffer;
         private ulong _playedSampleCount;
-        private readonly ManualResetEvent _updateRequiredEvent;
+        private readonly ManualResetEventSlim _updateRequiredEvent;
         private float _volume;
         private int _disposeState;
 

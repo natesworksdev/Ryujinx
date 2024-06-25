@@ -9,8 +9,8 @@ namespace Ryujinx.Audio.Backends.Dummy
 {
     public class DummyHardwareDeviceDriver : IHardwareDeviceDriver
     {
-        private readonly ManualResetEvent _updateRequiredEvent;
-        private readonly ManualResetEvent _pauseEvent;
+        private readonly ManualResetEventSlim _updateRequiredEvent;
+        private readonly ManualResetEventSlim _pauseEvent;
 
         public static bool IsSupported => true;
 
@@ -18,8 +18,8 @@ namespace Ryujinx.Audio.Backends.Dummy
 
         public DummyHardwareDeviceDriver()
         {
-            _updateRequiredEvent = new ManualResetEvent(false);
-            _pauseEvent = new ManualResetEvent(true);
+            _updateRequiredEvent = new ManualResetEventSlim(false);
+            _pauseEvent = new ManualResetEventSlim(true);
 
             Volume = 1f;
         }
@@ -44,12 +44,12 @@ namespace Ryujinx.Audio.Backends.Dummy
             return new DummyHardwareDeviceSessionInput(this, memoryManager);
         }
 
-        public ManualResetEvent GetUpdateRequiredEvent()
+        public ManualResetEventSlim GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
         }
 
-        public ManualResetEvent GetPauseEvent()
+        public ManualResetEventSlim GetPauseEvent()
         {
             return _pauseEvent;
         }

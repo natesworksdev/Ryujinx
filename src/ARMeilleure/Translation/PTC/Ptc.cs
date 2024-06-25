@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation.PTC
         private readonly ulong _outerHeaderMagic;
         private readonly ulong _innerHeaderMagic;
 
-        private readonly ManualResetEvent _waitEvent;
+        private readonly ManualResetEventSlim _waitEvent;
 
         private readonly object _lock;
 
@@ -85,7 +85,7 @@ namespace ARMeilleure.Translation.PTC
             _outerHeaderMagic = BinaryPrimitives.ReadUInt64LittleEndian(EncodingCache.UTF8NoBOM.GetBytes(OuterHeaderMagicString).AsSpan());
             _innerHeaderMagic = BinaryPrimitives.ReadUInt64LittleEndian(EncodingCache.UTF8NoBOM.GetBytes(InnerHeaderMagicString).AsSpan());
 
-            _waitEvent = new ManualResetEvent(true);
+            _waitEvent = new ManualResetEventSlim(true);
 
             _lock = new object();
 
@@ -1123,7 +1123,7 @@ namespace ARMeilleure.Translation.PTC
 
         private void Wait()
         {
-            _waitEvent.WaitOne();
+            _waitEvent.WaitHandle.WaitOne();
         }
 
         public void Dispose()

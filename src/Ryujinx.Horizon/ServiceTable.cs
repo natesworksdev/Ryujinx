@@ -26,7 +26,7 @@ namespace Ryujinx.Horizon
         private int _readyServices;
         private int _totalServices;
 
-        private readonly ManualResetEvent _servicesReadyEvent = new(false);
+        private readonly ManualResetEventSlim _servicesReadyEvent = new(false);
 
         public IReader ArpReader { get; internal set; }
         public IWriter ArpWriter { get; internal set; }
@@ -74,7 +74,7 @@ namespace Ryujinx.Horizon
 
         public void WaitServicesReady()
         {
-            _servicesReadyEvent.WaitOne();
+            _servicesReadyEvent.WaitHandle.WaitOne();
         }
 
         protected virtual void Dispose(bool disposing)

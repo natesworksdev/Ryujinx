@@ -18,9 +18,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public const int MaxWaitSyncObjects = 64;
 
-        private ManualResetEvent _schedulerWaitEvent;
+        private ManualResetEventSlim _schedulerWaitEvent;
 
-        public ManualResetEvent SchedulerWaitEvent => _schedulerWaitEvent;
+        public ManualResetEventSlim SchedulerWaitEvent => _schedulerWaitEvent;
 
         public Thread HostThread { get; private set; }
 
@@ -1232,7 +1232,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             if (_schedulerWaitEvent == null)
             {
-                var schedulerWaitEvent = new ManualResetEvent(false);
+                var schedulerWaitEvent = new ManualResetEventSlim(false);
 
                 if (Interlocked.Exchange(ref _schedulerWaitEvent, schedulerWaitEvent) == null)
                 {
@@ -1247,7 +1247,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private void ThreadStart()
         {
-            _schedulerWaitEvent.WaitOne();
+            _schedulerWaitEvent.WaitHandle.WaitOne();
             KernelStatic.SetKernelContext(KernelContext, this);
 
             if (_customThreadStart != null)

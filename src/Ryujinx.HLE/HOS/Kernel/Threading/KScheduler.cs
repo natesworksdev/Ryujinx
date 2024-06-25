@@ -312,11 +312,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 if (nextThread == null)
                 {
                     ActivateIdleThread();
-                    currentThread.SchedulerWaitEvent.WaitOne();
+                    currentThread.SchedulerWaitEvent.WaitHandle.WaitOne();
                 }
                 else
                 {
-                    WaitHandle.SignalAndWait(nextThread.SchedulerWaitEvent, currentThread.SchedulerWaitEvent);
+                    WaitHandle.SignalAndWait(nextThread.SchedulerWaitEvent.WaitHandle, currentThread.SchedulerWaitEvent.WaitHandle);
                 }
             }
             else

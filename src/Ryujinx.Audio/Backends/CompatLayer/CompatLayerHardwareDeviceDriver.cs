@@ -33,12 +33,12 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             _realDriver.Dispose();
         }
 
-        public ManualResetEvent GetUpdateRequiredEvent()
+        public ManualResetEventSlim GetUpdateRequiredEvent()
         {
             return _realDriver.GetUpdateRequiredEvent();
         }
 
-        public ManualResetEvent GetPauseEvent()
+        public ManualResetEventSlim GetPauseEvent()
         {
             return _realDriver.GetPauseEvent();
         }

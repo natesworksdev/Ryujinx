@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Audio
@@ -16,7 +17,7 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Events signaled when the driver played audio buffers.
         /// </summary>
-        private readonly ManualResetEvent[] _updateRequiredEvents;
+        private readonly ManualResetEventSlim[] _updateRequiredEvents;
 
         /// <summary>
         /// Action to execute when the driver played audio buffers.
@@ -35,12 +36,12 @@ namespace Ryujinx.Audio
         /// </summary>
         public AudioManager()
         {
-            _updateRequiredEvents = new ManualResetEvent[2];
+            _updateRequiredEvents = new ManualResetEventSlim[2];
             _actions = new Action[2];
             _isRunning = false;
 
             // Termination event.
-            _updateRequiredEvents[1] = new ManualResetEvent(false);
+            _updateRequiredEvents[1] = new ManualResetEventSlim(false);
 
             _workerThread = new Thread(Update)
             {
@@ -68,7 +69,7 @@ namespace Ryujinx.Audio
         /// <param name="updatedRequiredEvent ">The driver event that will get signaled by the device driver when an audio buffer finished playing/being captured</param>
         /// <param name="outputCallback">The callback to call when an audio buffer finished playing</param>
         /// <param name="inputCallback">The callback to call when an audio buffer was captured</param>
-        public void Initialize(ManualResetEvent updatedRequiredEvent, Action outputCallback, Action inputCallback)
+        public void Initialize(ManualResetEventSlim updatedRequiredEvent, Action outputCallback, Action inputCallback)
         {
             lock (_lock)
             {
@@ -85,7 +86,7 @@ namespace Ryujinx.Audio
         {
             while (_isRunning)
             {
-                int index = WaitHandle.WaitAny(_updateRequiredEvents);
+                int index = WaitHandle.WaitAny(_updateRequiredEvents.Select(x => x.WaitHandle).ToArray());
 
                 // Last index is here to indicate thread termination.
                 if (index + 1 == _updateRequiredEvents.Length)

@@ -14,8 +14,8 @@ namespace Ryujinx.Audio.Backends.SoundIo
     {
         private readonly SoundIoContext _audioContext;
         private readonly SoundIoDeviceContext _audioDevice;
-        private readonly ManualResetEvent _updateRequiredEvent;
-        private readonly ManualResetEvent _pauseEvent;
+        private readonly ManualResetEventSlim _updateRequiredEvent;
+        private readonly ManualResetEventSlim _pauseEvent;
         private readonly ConcurrentDictionary<SoundIoHardwareDeviceSession, byte> _sessions;
         private int _disposeState;
 
@@ -41,8 +41,8 @@ namespace Ryujinx.Audio.Backends.SoundIo
         public SoundIoHardwareDeviceDriver()
         {
             _audioContext = SoundIoContext.Create();
-            _updateRequiredEvent = new ManualResetEvent(false);
-            _pauseEvent = new ManualResetEvent(true);
+            _updateRequiredEvent = new ManualResetEventSlim(false);
+            _pauseEvent = new ManualResetEventSlim(true);
             _sessions = new ConcurrentDictionary<SoundIoHardwareDeviceSession, byte>();
 
             _audioContext.Connect();
@@ -131,12 +131,12 @@ namespace Ryujinx.Audio.Backends.SoundIo
             return fallback ? defaultAudioDevice : null;
         }
 
-        public ManualResetEvent GetUpdateRequiredEvent()
+        public ManualResetEventSlim GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
         }
 
-        public ManualResetEvent GetPauseEvent()
+        public ManualResetEventSlim GetPauseEvent()
         {
             return _pauseEvent;
         }

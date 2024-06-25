@@ -1044,7 +1044,7 @@ namespace Ryujinx.UI
 
             RendererWidget.Initialize(_emulationContext);
 
-            RendererWidget.WaitEvent.WaitOne();
+            RendererWidget.WaitEvent.WaitHandle.WaitOne();
 
             RendererWidget.Start();
 

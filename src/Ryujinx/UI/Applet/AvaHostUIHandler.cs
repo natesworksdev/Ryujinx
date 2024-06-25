@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.Applet
 
         public bool DisplayMessageDialog(ControllerAppletUIArgs args)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool okPressed = false;
 
@@ -44,14 +44,14 @@ namespace Ryujinx.Ava.UI.Applet
                 dialogCloseEvent.Set();
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
 
             return okPressed;
         }
 
         public bool DisplayMessageDialog(string title, string message)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool okPressed = false;
 
@@ -59,7 +59,7 @@ namespace Ryujinx.Ava.UI.Applet
             {
                 try
                 {
-                    ManualResetEvent deferEvent = new(false);
+                    ManualResetEventSlim deferEvent = new(false);
 
                     bool opened = false;
 
@@ -105,14 +105,14 @@ namespace Ryujinx.Ava.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
 
             return okPressed;
         }
 
         public bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool okPressed = false;
             bool error = false;
@@ -143,7 +143,7 @@ namespace Ryujinx.Ava.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
             _parent.ViewModel.AppHost.NpadManager.UnblockInputUpdates();
 
             userText = error ? null : inputText;
@@ -159,7 +159,7 @@ namespace Ryujinx.Ava.UI.Applet
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttons)
         {
-            ManualResetEvent dialogCloseEvent = new(false);
+            ManualResetEventSlim dialogCloseEvent = new(false);
 
             bool showDetails = false;
 
@@ -193,7 +193,7 @@ namespace Ryujinx.Ava.UI.Applet
                 }
             });
 
-            dialogCloseEvent.WaitOne();
+            dialogCloseEvent.WaitHandle.WaitOne();
 
             return showDetails;
         }

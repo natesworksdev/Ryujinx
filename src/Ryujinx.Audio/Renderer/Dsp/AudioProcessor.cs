@@ -36,13 +36,13 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
         private long _lastTime;
         private long _playbackEnds;
-        private readonly ManualResetEvent _event;
+        private readonly ManualResetEventSlim _event;
 
-        private ManualResetEvent _pauseEvent;
+        private ManualResetEventSlim _pauseEvent;
 
         public AudioProcessor()
         {
-            _event = new ManualResetEvent(false);
+            _event = new ManualResetEventSlim(false);
         }
 
         private static uint GetHardwareChannelCount(IHardwareDeviceDriver deviceDriver)
@@ -157,7 +157,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             while (timeNow < _lastTime + increment)
             {
-                _event.WaitOne(1);
+                _event.WaitHandle.WaitOne(1);
 
                 timeNow = PerformanceCounter.ElapsedNanoseconds;
             }
@@ -189,7 +189,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             while (true)
             {
-                _pauseEvent?.WaitOne();
+                _pauseEvent?.WaitHandle.WaitOne();
 
                 MailboxMessage message = _mailbox.ReceiveMessage();
 
@@ -204,10 +204,11 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
                     for (int i = 0; i < _sessionCommandList.Length; i++)
                     {
-                        if (_sessionCommandList[i] != null)
+                        RendererSession rendererSession = _sessionCommandList[i];
+                        if (rendererSession != null)
                         {
-                            _sessionCommandList[i].CommandList.Process(OutputDevices[i]);
-                            _sessionCommandList[i].CommandList.Dispose();
+                            rendererSession.CommandList.Process(OutputDevices[i]);
+                            rendererSession.CommandList.Dispose();
                             _sessionCommandList[i] = null;
                         }
                     }

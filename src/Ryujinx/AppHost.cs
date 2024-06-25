@@ -110,7 +110,7 @@ namespace Ryujinx.Ava
         private bool _isActive;
         private bool _renderingStarted;
 
-        private readonly ManualResetEvent _gpuDoneEvent;
+        private readonly ManualResetEventSlim _gpuDoneEvent;
 
         private IRenderer _renderer;
         private readonly Thread _renderingThread;
@@ -207,7 +207,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Multiplayer.Mode.Event += UpdateMultiplayerModeState;
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
-            _gpuDoneEvent = new ManualResetEvent(false);
+            _gpuDoneEvent = new ManualResetEventSlim(false);
         }
 
         private void TopLevel_PointerEnteredOrMoved(object sender, PointerEventArgs e)
@@ -513,7 +513,7 @@ namespace Ryujinx.Ava
 
             // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
-            _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.WaitHandle.WaitOne();
             _gpuDoneEvent.Dispose();
 
             DisplaySleep.Restore();

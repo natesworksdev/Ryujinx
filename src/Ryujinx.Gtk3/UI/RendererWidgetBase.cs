@@ -37,7 +37,7 @@ namespace Ryujinx.UI
         private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
         private const float VolumeDelta = 0.05f;
 
-        public ManualResetEvent WaitEvent { get; set; }
+        public ManualResetEventSlim WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
         public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; private set; }
@@ -64,8 +64,8 @@ namespace Ryujinx.UI
 
         private KeyboardHotkeyState _prevHotkeyState;
 
-        private readonly ManualResetEvent _exitEvent;
-        private readonly ManualResetEvent _gpuDoneEvent;
+        private readonly ManualResetEventSlim _exitEvent;
+        private readonly ManualResetEventSlim _gpuDoneEvent;
 
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
 
@@ -91,7 +91,7 @@ namespace Ryujinx.UI
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
-            WaitEvent = new ManualResetEvent(false);
+            WaitEvent = new ManualResetEventSlim(false);
 
             _glLogLevel = glLogLevel;
 
@@ -110,8 +110,8 @@ namespace Ryujinx.UI
                           | EventMask.KeyPressMask
                           | EventMask.KeyReleaseMask));
 
-            _exitEvent = new ManualResetEvent(false);
-            _gpuDoneEvent = new ManualResetEvent(false);
+            _exitEvent = new ManualResetEventSlim(false);
+            _gpuDoneEvent = new ManualResetEventSlim(false);
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
 
@@ -552,7 +552,7 @@ namespace Ryujinx.UI
 
             // NOTE: The render loop is allowed to stay alive until the renderer itself is disposed, as it may handle resource dispose.
             // We only need to wait for all commands submitted during the main gpu loop to be processed.
-            _gpuDoneEvent.WaitOne();
+            _gpuDoneEvent.WaitHandle.WaitOne();
             _gpuDoneEvent.Dispose();
             nvidiaStutterWorkaround?.Join();
 
@@ -577,7 +577,7 @@ namespace Ryujinx.UI
             {
                 _isActive = false;
 
-                _exitEvent.WaitOne();
+                _exitEvent.WaitHandle.WaitOne();
                 _exitEvent.Dispose();
             }
         }

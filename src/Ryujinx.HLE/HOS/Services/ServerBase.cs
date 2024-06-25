@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private int _isDisposed = 0;
 
-        public ManualResetEvent InitDone { get; }
+        public ManualResetEventSlim InitDone { get; }
         public string Name { get; }
         public Func<IpcService> SmObjectFactory { get; }
 
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services
             _responseDataStream = MemoryStreamManager.Shared.GetStream();
             _responseDataWriter = new BinaryWriter(_responseDataStream);
 
-            InitDone = new ManualResetEvent(false);
+            InitDone = new ManualResetEventSlim(false);
             Name = name;
             SmObjectFactory = smObjectFactory;
 
@@ -104,7 +104,7 @@ namespace Ryujinx.HLE.HOS.Services
         public void AddSessionObj(KServerSession serverSession, IpcService obj)
         {
             // Ensure that the sever loop is running.
-            InitDone.WaitOne();
+            InitDone.WaitHandle.WaitOne();
 
             _selfProcess.HandleTable.GenerateHandle(serverSession, out int serverSessionHandle);
 
