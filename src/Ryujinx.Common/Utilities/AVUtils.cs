@@ -6,11 +6,11 @@ namespace Ryujinx.Common.Utilities
 {
     public static class AVUtils
     {
-        public static string GetAVName()
+        public static bool IsRunningThirdPartyAV()
         {
             if (!OperatingSystem.IsWindows())
             {
-                return null;
+                return false;
             }
 
             ManagementObjectSearcher wmiData = new ManagementObjectSearcher(@"root\SecurityCenter2", "SELECT * FROM AntiVirusProduct");
@@ -23,7 +23,7 @@ namespace Ryujinx.Common.Utilities
                     string displayName = (string)dataObj["displayName"];
                     if (displayName != "Windows Defender")
                     {
-                        return displayName;
+                        return true;
                     }
                 }
                 catch (ManagementException)
@@ -32,7 +32,7 @@ namespace Ryujinx.Common.Utilities
                 }
             }
 
-            return null;
+            return false;
         }
     }
 }

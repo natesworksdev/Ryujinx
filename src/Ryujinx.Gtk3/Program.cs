@@ -342,10 +342,9 @@ namespace Ryujinx
             Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
             SystemInfo.Gather().Print();
 
-            string avName = AVUtils.GetAVName();
-            if (avName != null)
+            if (AVUtils.IsRunningThirdPartyAV())
             {
-                Logger.Notice.Print(LogClass.Application, $"Detected AV: {avName}");
+                Logger.Notice.Print(LogClass.Application, $"Third-Party AV active");
             }
 
             var enabledLogs = Logger.GetEnabledLevels();
