@@ -7,6 +7,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.UI.Common;
@@ -213,6 +214,11 @@ namespace Ryujinx.Ava
         {
             Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
             SystemInfo.Gather().Print();
+
+            if (AVUtils.IsRunningThirdPartyAV())
+            {
+                Logger.Notice.Print(LogClass.Application, $"Third-Party AV active");
+            }
 
             Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(Logger.GetEnabledLevels().Count == 0 ? "<None>" : string.Join(", ", Logger.GetEnabledLevels()))}");
 
