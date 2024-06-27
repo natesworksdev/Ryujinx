@@ -338,6 +338,16 @@ namespace Ryujinx
 
         private static void PrintSystemInfo()
         {
+            string executablePath = Environment.ProcessPath;
+            if (executablePath != null)
+            {
+                Logger.Notice.Print(LogClass.Application, $"Ryujinx Path: {executablePath}");
+            }
+            else
+            {
+                Logger.Warning?.Print(LogClass.Application, "Can't determine executable path. It might have been renamed or deleted after launch.");
+            }
+
             Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
             SystemInfo.Gather().Print();
 
