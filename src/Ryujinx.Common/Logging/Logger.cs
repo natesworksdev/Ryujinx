@@ -108,7 +108,7 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static string FormatMessage(LogClass logClass, string caller, string message)
             {
-                if (_homeDirShort != "")
+                if (!string.IsNullOrEmpty(_homeDirShort))
                 {
                     message = message.Replace(_homeDirShort, _homeDirRedacted);
                 }

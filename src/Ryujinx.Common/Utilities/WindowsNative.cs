@@ -1,15 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 
 namespace Ryujinx.Common.Utilities
 {
     public static partial class WindowsNative
     {
         [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufferSize);
+        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        internal static partial int GetShortPathNameW(string longPath, char[] shortPath, int bufferSize);
 
         private const int ShortPathBufferLength = 256;
 
@@ -20,8 +19,8 @@ namespace Ryujinx.Common.Utilities
                 return "";
             }
 
-            StringBuilder shortPathBuffer = new StringBuilder(ShortPathBufferLength);
-            int result = GetShortPathName(longPath, shortPathBuffer, ShortPathBufferLength);
+            char[] shortPathBuffer = new char[ShortPathBufferLength];
+            int result = GetShortPathNameW(longPath, shortPathBuffer, shortPathBuffer.Length);
             if (result == 0)
             {
                 int errCode = Marshal.GetLastWin32Error();
@@ -29,7 +28,7 @@ namespace Ryujinx.Common.Utilities
                 return "";
             }
 
-            return shortPathBuffer.ToString();
+            return new string(shortPathBuffer[..result]);
         }
     }
 }
