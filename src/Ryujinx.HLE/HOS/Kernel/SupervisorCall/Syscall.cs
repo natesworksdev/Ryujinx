@@ -616,7 +616,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 }
             }
 
-            ArrayPool<KSynchronizationObject>.Shared.Return(syncObjsArray);
+            ArrayPool<KSynchronizationObject>.Shared.Return(syncObjsArray, true);
 
             return result;
         }
@@ -1546,8 +1546,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 #pragma warning disable CA1822 // Mark member as static
         public Result SetProcessMemoryPermission(
             int handle,
-            [PointerSized] ulong src,
-            [PointerSized] ulong size,
+            ulong src,
+            ulong size,
             KMemoryPermission permission)
         {
             if (!PageAligned(src))

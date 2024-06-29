@@ -126,7 +126,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     continue;
                 }
 
-                if (texOp.GetSource(0).AsgOp is not Operation handleAsgOp)
+                Operand bindlessHandle = Utils.FindLastOperation(texOp.GetSource(0), block);
+
+                if (bindlessHandle.AsgOp is not Operation handleAsgOp)
                 {
                     continue;
                 }
@@ -137,8 +139,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 if (handleAsgOp.Inst == Instruction.BitwiseOr)
                 {
-                    Operand src0 = handleAsgOp.GetSource(0);
-                    Operand src1 = handleAsgOp.GetSource(1);
+                    Operand src0 = Utils.FindLastOperation(handleAsgOp.GetSource(0), block);
+                    Operand src1 = Utils.FindLastOperation(handleAsgOp.GetSource(1), block);
 
                     if (src0.Type == OperandType.ConstantBuffer && src1.AsgOp is Operation)
                     {
@@ -221,7 +223,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
         private static void TurnIntoArray(ResourceManager resourceManager, TextureOperation texOp, int cbufSlot, int handleIndex, int length)
         {
-            int binding = resourceManager.GetTextureOrImageBinding(
+            SetBindingPair setAndBinding = resourceManager.GetTextureOrImageBinding(
                 texOp.Inst,
                 texOp.Type,
                 texOp.Format,
@@ -230,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 handleIndex,
                 length);
 
-            texOp.TurnIntoArray(binding);
+            texOp.TurnIntoArray(setAndBinding);
         }
     }
 }
