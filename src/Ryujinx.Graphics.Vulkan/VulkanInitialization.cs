@@ -43,6 +43,8 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_depth_clip_control",
             "VK_KHR_portability_subset", // As per spec, we should enable this if present.
             "VK_EXT_4444_formats",
+            "VK_KHR_8bit_storage",
+            "VK_KHR_maintenance2",
         };
 
         private static readonly string[] _requiredExtensions = {
@@ -367,6 +369,14 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesDepthClipControl;
             }
 
+            PhysicalDeviceVulkan12Features supportedPhysicalDeviceVulkan12Features = new()
+            {
+                SType = StructureType.PhysicalDeviceVulkan12Features,
+                PNext = features2.PNext,
+            };
+
+            features2.PNext = &supportedPhysicalDeviceVulkan12Features;
+
             api.GetPhysicalDeviceFeatures2(physicalDevice.PhysicalDevice, &features2);
 
             var supportedFeatures = features2.Features;
@@ -395,6 +405,7 @@ namespace Ryujinx.Graphics.Vulkan
                 VertexPipelineStoresAndAtomics = supportedFeatures.VertexPipelineStoresAndAtomics,
                 RobustBufferAccess = useRobustBufferAccess,
                 WideLines = supportedFeatures.WideLines,
+                SampleRateShading = supportedFeatures.SampleRateShading,
             };
 
             void* pExtendedFeatures = null;
@@ -484,9 +495,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
                 PNext = pExtendedFeatures,
-                DescriptorIndexing = physicalDevice.IsDeviceExtensionPresent("VK_EXT_descriptor_indexing"),
-                DrawIndirectCount = physicalDevice.IsDeviceExtensionPresent(KhrDrawIndirectCount.ExtensionName),
-                UniformBufferStandardLayout = physicalDevice.IsDeviceExtensionPresent("VK_KHR_uniform_buffer_standard_layout"),
+                DescriptorIndexing = supportedPhysicalDeviceVulkan12Features.DescriptorIndexing,
+                DrawIndirectCount = supportedPhysicalDeviceVulkan12Features.DrawIndirectCount,
+                UniformBufferStandardLayout = supportedPhysicalDeviceVulkan12Features.UniformBufferStandardLayout,
+                UniformAndStorageBuffer8BitAccess = supportedPhysicalDeviceVulkan12Features.UniformAndStorageBuffer8BitAccess,
+                StorageBuffer8BitAccess = supportedPhysicalDeviceVulkan12Features.StorageBuffer8BitAccess,
             };
 
             pExtendedFeatures = &featuresVk12;

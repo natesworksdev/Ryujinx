@@ -170,9 +170,6 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.HasDepthStencil = state.DepthStencilEnable;
             pipeline.LogicOpEnable = state.LogicOpEnable;
 
-            pipeline.MinDepthBounds = 0f; // Not implemented.
-            pipeline.MaxDepthBounds = 0f; // Not implemented.
-
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
 
             if (!gd.Capabilities.SupportsExtendedDynamicState2)
