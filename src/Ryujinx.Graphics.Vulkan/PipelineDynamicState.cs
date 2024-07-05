@@ -77,9 +77,10 @@ namespace Ryujinx.Graphics.Vulkan
             PatchControlPoints = 1 << 13,
             PrimitiveRestart = 1 << 14,
             PrimitiveTopology = 1 << 15,
+            DepthBiasEnable = 1 << 16,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnableandStencilOp | PrimitiveTopology,
-            Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart,
+            Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart | DepthBiasEnable,
         }
 
         private DirtyFlags _dirty;
@@ -93,14 +94,19 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.Blend;
         }
 
-        public void SetDepthBias(float slopeFactor, float constantFactor, float clamp, bool enable)
+        public void SetDepthBias(float slopeFactor, float constantFactor, float clamp)
         {
             _depthBiasSlopeFactor = slopeFactor;
             _depthBiasConstantFactor = constantFactor;
             _depthBiasClamp = clamp;
 
-            _depthBiasEnable = enable;
             _dirty |= DirtyFlags.DepthBias;
+        }
+
+        public void SetDepthBiasEnable(bool enable)
+        {
+            _depthBiasEnable = enable;
+            _dirty |= DirtyFlags.DepthBiasEnable;
         }
 
         public void SetScissor(int index, Rect2D scissor)
@@ -299,6 +305,11 @@ namespace Ryujinx.Graphics.Vulkan
                 RecordDepthTestBool(gd.ExtendedDynamicStateApi, commandBuffer);
             }
 
+            if (_dirty.HasFlag(DirtyFlags.DepthBiasEnable))
+            {
+                RecordDepthBiasEnable(gd.ExtendedDynamicState2Api, commandBuffer);
+            }
+
             if (_dirty.HasFlag(DirtyFlags.DepthTestCompareOp))
             {
                 RecordDepthTestCompareOp(gd.ExtendedDynamicStateApi, commandBuffer);
@@ -349,17 +360,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordDepthBias(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            if (gd.Capabilities.SupportsExtendedDynamicState2)
-            {
-                gd.ExtendedDynamicState2Api.CmdSetDepthBiasEnable(commandBuffer, _depthBiasEnable);
-
-                if (!_depthBiasEnable)
-                {
-                    return;
-                }
-            }
-
             gd.Api.CmdSetDepthBias(commandBuffer, _depthBiasConstantFactor, _depthBiasClamp, _depthBiasSlopeFactor);
+        }
+
+        private readonly void RecordDepthBiasEnable(ExtExtendedDynamicState2 gd, CommandBuffer commandBuffer)
+        {
+            gd.CmdSetDepthBiasEnable(commandBuffer, _depthBiasEnable);
         }
 
         private void RecordScissor(VulkanRenderer gd, CommandBuffer commandBuffer)
