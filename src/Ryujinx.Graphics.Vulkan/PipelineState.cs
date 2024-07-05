@@ -485,9 +485,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
                     SType = StructureType.PipelineDepthStencilStateCreateInfo,
-                    DepthBoundsTestEnable = DepthBoundsTestEnable,
-                    MinDepthBounds = MinDepthBounds,
-                    MaxDepthBounds = MaxDepthBounds,
+                    DepthBoundsTestEnable = false,
                 };
 
                 if (!supportsExtDynamicState)
