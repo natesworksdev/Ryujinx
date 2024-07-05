@@ -141,9 +141,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
+        public void SetDepthBias(float factor, float units, float clamp)
         {
-            _renderer.New<SetDepthBiasCommand>().Set(enables, factor, units, clamp);
+            _renderer.New<SetDepthBiasCommand>().Set(factor, units, clamp);
+            _renderer.QueueCommand();
+        }
+
+        public void SetDepthBiasEnable(PolygonModeMask enables)
+        {
+            _renderer.New<SetDepthBiasEnableCommand>().Set(enables);
             _renderer.QueueCommand();
         }
 

@@ -849,12 +849,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             PolygonModeMask enables;
 
-            enables = (depthBias.PointEnable ? PolygonModeMask.Point : 0);
-            enables |= (depthBias.LineEnable ? PolygonModeMask.Line : 0);
-            enables |= (depthBias.FillEnable ? PolygonModeMask.Fill : 0);
+            if (factor == 0 && units == 0)
+            {
+                enables = 0;
+            }
+            else
+            {
+                enables = (depthBias.PointEnable ? PolygonModeMask.Point : 0);
+                enables |= (depthBias.LineEnable ? PolygonModeMask.Line : 0);
+                enables |= (depthBias.FillEnable ? PolygonModeMask.Fill : 0);
+            }
 
             _pipeline.BiasEnable = enables;
-            _context.Renderer.Pipeline.SetDepthBias(enables, factor, units / 2f, clamp);
+
+            _context.Renderer.Pipeline.SetDepthBiasEnable(enables);
+
+            if (enables != 0)
+            {
+                _context.Renderer.Pipeline.SetDepthBias(factor, units / 2f, clamp);
+            }
         }
 
         /// <summary>

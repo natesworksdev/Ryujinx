@@ -76,6 +76,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         SetBlendStateAdvanced,
         SetBlendState,
         SetDepthBias,
+        SetDepthBiasEnable,
         SetDepthClamp,
         SetDepthMode,
         SetDepthTest,

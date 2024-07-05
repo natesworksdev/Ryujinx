@@ -564,21 +564,29 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-                int dynamicStatesCount = supportsExtDynamicState ? 8 : 7;
+                int dynamicStatesCount = supportsExtDynamicState ? 7 : 6;
+                if (DepthBiasEnable)
+                {
+                    dynamicStatesCount++;
+                }
 
                 DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
-                dynamicStates[2] = DynamicState.DepthBias;
-                dynamicStates[3] = DynamicState.StencilCompareMask;
-                dynamicStates[4] = DynamicState.StencilWriteMask;
-                dynamicStates[5] = DynamicState.StencilReference;
-                dynamicStates[6] = DynamicState.BlendConstants;
+                dynamicStates[2] = DynamicState.StencilCompareMask;
+                dynamicStates[3] = DynamicState.StencilWriteMask;
+                dynamicStates[4] = DynamicState.StencilReference;
+                dynamicStates[5] = DynamicState.BlendConstants;
+
+                if (DepthBiasEnable)
+                {
+                    dynamicStates[6] = DynamicState.DepthBias;
+                }
 
                 if (supportsExtDynamicState)
                 {
-                    dynamicStates[7] = DynamicState.VertexInputBindingStrideExt;
+                    dynamicStates[dynamicStatesCount - 1] = DynamicState.VertexInputBindingStrideExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
