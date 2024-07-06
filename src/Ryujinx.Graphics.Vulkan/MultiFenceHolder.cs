@@ -207,7 +207,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < fenceCount; i++)
             {
-                fenceHolders[i].Put();
+                fenceHolders[i].PutLock();
             }
 
             return signaled;
