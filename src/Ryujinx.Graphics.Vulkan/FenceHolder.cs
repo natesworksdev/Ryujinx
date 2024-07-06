@@ -107,31 +107,44 @@ namespace Ryujinx.Graphics.Vulkan
             if (_concurrentWaitUnsupported)
             {
                 AcquireLock();
+
+                try
+                {
+                    FenceHelper.WaitAllIndefinitely(_api, _device, stackalloc Fence[] { _fence });
+                }
+                finally
+                {
+                    ReleaseLock();
+                }
             }
-
-            FenceHelper.WaitAllIndefinitely(_api, _device, stackalloc Fence[] { _fence });
-
-            if (_concurrentWaitUnsupported)
+            else
             {
-                ReleaseLock();
+                FenceHelper.WaitAllIndefinitely(_api, _device, stackalloc Fence[] { _fence });
             }
         }
 
         public bool IsSignaled()
         {
-            if (_concurrentWaitUnsupported && !TryAcquireLock())
-            {
-                return false;
-            }
-
-            bool result = FenceHelper.AllSignaled(_api, _device, stackalloc Fence[] { _fence });
-
             if (_concurrentWaitUnsupported)
             {
-                ReleaseLock();
-            }
+                if (!TryAcquireLock())
+                {
+                    return false;
+                }
 
-            return result;
+                try
+                {
+                    return FenceHelper.AllSignaled(_api, _device, stackalloc Fence[] { _fence });
+                }
+                finally
+                {
+                    ReleaseLock();
+                }
+            }
+            else
+            {
+                return FenceHelper.AllSignaled(_api, _device, stackalloc Fence[] { _fence });
+            }
         }
 
         public void Dispose()
