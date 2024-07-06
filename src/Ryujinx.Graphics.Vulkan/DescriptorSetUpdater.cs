@@ -696,14 +696,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.Image))
             {
-                if (program.UpdateImagesWithoutTemplate)
-                {
-                    UpdateAndBindImagesWithoutTemplate(cbs, program, pbp);
-                }
-                else
-                {
-                    UpdateAndBind(cbs, program, PipelineBase.ImageSetIndex, pbp);
-                }
+                UpdateAndBind(cbs, program, PipelineBase.ImageSetIndex, pbp);
             }
 
             if (program.BindingSegments.Length > PipelineBase.DescriptorSetLayouts)
@@ -1010,99 +1003,6 @@ namespace Ryujinx.Graphics.Vulkan
             var sets = dsc.GetSets();
 
             _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
-        }
-
-        private void UpdateAndBindImagesWithoutTemplate(CommandBufferScoped cbs, ShaderCollection program, PipelineBindPoint pbp)
-        {
-            int setIndex = PipelineBase.ImageSetIndex;
-            var bindingSegments = program.BindingSegments[setIndex];
-
-            if (bindingSegments.Length == 0)
-            {
-                return;
-            }
-
-            if (_updateDescriptorCacheCbIndex)
-            {
-                _updateDescriptorCacheCbIndex = false;
-                program.UpdateDescriptorCacheCommandBufferIndex(cbs.CommandBufferIndex);
-            }
-
-            var dsc = program.GetNewDescriptorSetCollection(setIndex, out _).Get(cbs);
-
-            foreach (ResourceBindingSegment segment in bindingSegments)
-            {
-                int binding = segment.Binding;
-                int count = segment.Count;
-
-                if (!segment.IsArray)
-                {
-                    if (segment.Type != ResourceType.BufferImage)
-                    {
-                        Span<DescriptorImageInfo> images = _images;
-
-                        for (int i = 0; i < count; i++)
-                        {
-                            images[i].ImageView = _imageRefs[binding + i].View?.Get(cbs).Value ?? default;
-                        }
-
-                        dsc.UpdateImages(0, binding, images[..count], DescriptorType.StorageImage);
-                    }
-                    else
-                    {
-                        Span<BufferView> bufferImages = _bufferImages;
-
-                        for (int i = 0; i < count; i++)
-                        {
-                            bufferImages[i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i], true) ?? default;
-                        }
-
-                        dsc.UpdateBufferImages(0, binding, bufferImages[..count], DescriptorType.StorageTexelBuffer);
-                    }
-                }
-                else
-                {
-                    if (segment.Type != ResourceType.BufferTexture)
-                    {
-                        dsc.UpdateImages(0, binding, _imageArrayRefs[binding].Array.GetImageInfos(_gd, cbs, _dummyTexture), DescriptorType.StorageImage);
-                    }
-                    else
-                    {
-                        dsc.UpdateBufferImages(0, binding, _imageArrayRefs[binding].Array.GetBufferViews(cbs), DescriptorType.StorageTexelBuffer);
-                    }
-                }
-            }
-
-            var sets = dsc.GetSets();
-
-            _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
-        }
-
-        private unsafe void UpdateBuffers(
-            CommandBufferScoped cbs,
-            PipelineBindPoint pbp,
-            int baseBinding,
-            ReadOnlySpan<DescriptorBufferInfo> bufferInfo,
-            DescriptorType type)
-        {
-            if (bufferInfo.Length == 0)
-            {
-                return;
-            }
-
-            fixed (DescriptorBufferInfo* pBufferInfo = bufferInfo)
-            {
-                var writeDescriptorSet = new WriteDescriptorSet
-                {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstBinding = (uint)baseBinding,
-                    DescriptorType = type,
-                    DescriptorCount = (uint)bufferInfo.Length,
-                    PBufferInfo = pBufferInfo,
-                };
-
-                _gd.PushDescriptorApi.CmdPushDescriptorSet(cbs.CommandBuffer, pbp, _program.PipelineLayout, 0, 1, &writeDescriptorSet);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

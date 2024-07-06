@@ -24,7 +24,6 @@ namespace Ryujinx.Graphics.Vulkan
         public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
 
         public bool UpdateTexturesWithoutTemplate { get; }
-        public bool UpdateImagesWithoutTemplate { get; }
 
         public uint Stages { get; }
 
@@ -144,10 +143,7 @@ namespace Ryujinx.Graphics.Vulkan
                         if (bindingSegment.Type == ResourceType.BufferTexture)
                         {
                             UpdateTexturesWithoutTemplate = true;
-                        }
-                        else if (bindingSegment.Type == ResourceType.BufferImage)
-                        {
-                            UpdateImagesWithoutTemplate = true;
+                            break;
                         }
                     }
                 }
