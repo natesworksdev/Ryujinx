@@ -129,25 +129,11 @@ namespace Ryujinx.Graphics.Vulkan
             Stages = stages;
 
             ClearSegments = BuildClearSegments(sets);
-            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
+            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages, out bool usesBufferTextures);
             Templates = BuildTemplates(usePushDescriptors);
 
-            if (gd.Vendor == Vendor.Qualcomm)
-            {
-                // Updating buffer bindings using template updates crashes the Adreno driver on Windows.
-
-                foreach (ResourceBindingSegment[] stageSegments in BindingSegments)
-                {
-                    foreach (ResourceBindingSegment bindingSegment in stageSegments)
-                    {
-                        if (bindingSegment.Type == ResourceType.BufferTexture)
-                        {
-                            UpdateTexturesWithoutTemplate = true;
-                            break;
-                        }
-                    }
-                }
-            }
+            // Updating buffer texture bindings using template updates crashes the Adreno driver on Windows.
+            UpdateTexturesWithoutTemplate = gd.Vendor == Vendor.Qualcomm && usesBufferTextures;
 
             _compileTask = Task.CompletedTask;
             _firstBackgroundUse = false;
@@ -299,8 +285,10 @@ namespace Ryujinx.Graphics.Vulkan
             return segments;
         }
 
-        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages, out bool usesBufferTextures)
         {
+            usesBufferTextures = false;
+
             ResourceBindingSegment[][] segments = new ResourceBindingSegment[setUsages.Count][];
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
@@ -313,6 +301,11 @@ namespace Ryujinx.Graphics.Vulkan
                 for (int index = 0; index < setUsages[setIndex].Usages.Count; index++)
                 {
                     ResourceUsage usage = setUsages[setIndex].Usages[index];
+
+                    if (usage.Type == ResourceType.BufferTexture)
+                    {
+                        usesBufferTextures = true;
+                    }
 
                     if (currentUsage.Binding + currentCount != usage.Binding ||
                         currentUsage.Type != usage.Type ||
