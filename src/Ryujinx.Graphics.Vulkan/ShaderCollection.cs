@@ -23,6 +23,9 @@ namespace Ryujinx.Graphics.Vulkan
         public bool IsCompute { get; }
         public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
 
+        public bool UpdateTexturesWithoutTemplate { get; }
+        public bool UpdateImagesWithoutTemplate { get; }
+
         public uint Stages { get; }
 
         public ResourceBindingSegment[][] ClearSegments { get; }
@@ -129,6 +132,26 @@ namespace Ryujinx.Graphics.Vulkan
             ClearSegments = BuildClearSegments(sets);
             BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
             Templates = BuildTemplates(usePushDescriptors);
+
+            if (gd.Vendor == Vendor.Qualcomm)
+            {
+                // Updating buffer bindings using template updates crashes the Adreno driver on Windows.
+
+                foreach (ResourceBindingSegment[] stageSegments in BindingSegments)
+                {
+                    foreach (ResourceBindingSegment bindingSegment in stageSegments)
+                    {
+                        if (bindingSegment.Type == ResourceType.BufferTexture)
+                        {
+                            UpdateTexturesWithoutTemplate = true;
+                        }
+                        else if (bindingSegment.Type == ResourceType.BufferImage)
+                        {
+                            UpdateImagesWithoutTemplate = true;
+                        }
+                    }
+                }
+            }
 
             _compileTask = Task.CompletedTask;
             _firstBackgroundUse = false;
