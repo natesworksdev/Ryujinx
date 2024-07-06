@@ -73,7 +73,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly VulkanRenderer _gd;
         private readonly Device _device;
-        private readonly PipelineBase _pipeline;
         private ShaderCollection _program;
 
         private readonly BufferRef[] _uniformBufferRefs;
@@ -125,11 +124,10 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly TextureView _dummyTexture;
         private readonly SamplerHolder _dummySampler;
 
-        public DescriptorSetUpdater(VulkanRenderer gd, Device device, PipelineBase pipeline)
+        public DescriptorSetUpdater(VulkanRenderer gd, Device device)
         {
             _gd = gd;
             _device = device;
-            _pipeline = pipeline;
 
             // Some of the bindings counts needs to be multiplied by 2 because we have buffer and
             // regular textures/images interleaved on the same descriptor set.
