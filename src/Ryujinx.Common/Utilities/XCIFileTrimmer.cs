@@ -57,7 +57,7 @@ namespace Ryujinx.Common.Utilities
 
         public static bool CanTrim(string filename, ILog log = null)
         {
-            if (System.IO.Path.GetExtension(filename).ToUpperInvariant() == ".XCI")
+            if (Path.GetExtension(filename).Equals(".XCI", StringComparison.InvariantCultureIgnoreCase))
             {
                 var trimmer = new XCIFileTrimmer(filename, log);
                 return trimmer.CanBeTrimmed;
@@ -161,34 +161,12 @@ namespace Ryujinx.Common.Utilities
                     try
                     {
                         this.Pos = this.TrimmedFileSizeB;
-                        var buffer = new byte[BufferSize];
+                        var freeSpaceValid = true;
                         var readSizeB = this.FileSizeB - this.TrimmedFileSizeB;
-                        var reads = readSizeB / XCIFileTrimmer.BufferSize;
-                        long read = 0;
 
                         var time = Performance.Measure(() =>
                         {
-                            try
-                            {
-                                while (true)
-                                {
-                                    var bytes = _fileStream.Read(buffer, 0, XCIFileTrimmer.BufferSize);
-                                    if (bytes == 0)
-                                        break;
-
-                                    if (buffer.Take(bytes).AsParallel().Any(b => b != XCIFileTrimmer.PaddingByte))
-                                    {
-                                        Log?.Write(LogType.Warn, "Free space is NOT valid");
-                                        return;
-                                    }
-                                    Log?.Progress(read, reads, "Verifying file can be trimmed", false);
-                                    read++;
-                                }
-                            }
-                            finally
-                            {
-                                Log?.Progress(reads, reads, "Verifying file can be trimmed", true);
-                            }
+                            freeSpaceValid = CheckPadding(readSizeB);
                         });
 
                         if (time.TotalSeconds > 0)
@@ -196,8 +174,8 @@ namespace Ryujinx.Common.Utilities
                             Log?.Write(LogType.Info, $"Checked at {readSizeB / (double)XCIFileTrimmer.BytesInAMegabyte / time.TotalSeconds:N} Mb/sec");
                         }
 
-                        Log?.Write(LogType.Info, "Free space is valid");
-                        this._freeSpaceValid = true;
+                        if (freeSpaceValid) Log?.Write(LogType.Info, "Free space is valid");
+                        this._freeSpaceValid = freeSpaceValid;
                     }
                     finally
                     {
@@ -215,6 +193,31 @@ namespace Ryujinx.Common.Utilities
             {
                 this._freeSpaceChecked = true;
             }
+        }
+
+        private bool CheckPadding(long readSizeB)
+        {
+            var maxReads = readSizeB / XCIFileTrimmer.BufferSize;
+            long read = 0;
+            var buffer = new byte[BufferSize];
+
+            while (true)
+            {
+                var bytes = _fileStream.Read(buffer, 0, XCIFileTrimmer.BufferSize);
+                if (bytes == 0)
+                    break;
+
+                Log?.Progress(read, maxReads, "Verifying file can be trimmed", false);
+                if (buffer.Take(bytes).AsParallel().Any(b => b != XCIFileTrimmer.PaddingByte))
+                {
+                    Log?.Write(LogType.Warn, "Free space is NOT valid");
+                    return false;
+                }
+
+                read++;
+            }
+
+            return true;
         }
 
         protected void Reset()
@@ -329,32 +332,13 @@ namespace Ryujinx.Common.Utilities
                 }
 
                 var outfileStream = new FileStream(this._filename, FileMode.Append, FileAccess.Write, FileShare.Write);
-                var buffer = new byte[BufferSize];
-                Array.Fill<byte>(buffer, XCIFileTrimmer.PaddingByte);
                 var bytesToWriteB = this.UntrimmedFileSizeB - this.FileSizeB;
-                var bytesLeftToWriteB = bytesToWriteB;
-                var writes = bytesLeftToWriteB / XCIFileTrimmer.BufferSize;
-                var write = 0;
 
                 try
                 {
                     var time = Performance.Measure(() =>
                     {
-                        try
-                        {
-                            while (bytesLeftToWriteB > 0)
-                            {
-                                var bytesToWrite = Math.Min(XCIFileTrimmer.BufferSize, bytesLeftToWriteB);
-                                outfileStream.Write(buffer, 0, (int)bytesToWrite);
-                                bytesLeftToWriteB -= bytesToWrite;
-                                Log?.Progress(write, writes, "Writing padding data...", false);
-                                write++;
-                            }
-                        }
-                        finally
-                        {
-                            Log?.Progress(write, writes, "Writing padding data...", true);
-                        }
+                        WritePadding(outfileStream, bytesToWriteB);
                     });
 
                     if (time.TotalSeconds > 0)
@@ -374,6 +358,32 @@ namespace Ryujinx.Common.Utilities
             {
                 Log?.Write(LogType.Error, e.ToString());
                 return OperationOutcome.FileIOWriteError;
+            }
+        }
+
+        private void WritePadding(FileStream outfileStream, long bytesToWriteB)
+        {
+            var bytesLeftToWriteB = bytesToWriteB;
+            var writes = bytesLeftToWriteB / XCIFileTrimmer.BufferSize;
+            var write = 0;
+
+            try
+            {
+                var buffer = new byte[BufferSize];
+                Array.Fill<byte>(buffer, XCIFileTrimmer.PaddingByte);
+
+                while (bytesLeftToWriteB > 0)
+                {
+                    var bytesToWrite = Math.Min(XCIFileTrimmer.BufferSize, bytesLeftToWriteB);
+                    outfileStream.Write(buffer, 0, (int)bytesToWrite);
+                    bytesLeftToWriteB -= bytesToWrite;
+                    Log?.Progress(write, writes, "Writing padding data...", false);
+                    write++;
+                }
+            }
+            finally
+            {
+                Log?.Progress(write, writes, "Writing padding data...", true);
             }
         }
 
