@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                if (inRenderPass && _memoryBarriers.Count > 0 && _gd.IsTBDR)
+                if (inRenderPass && _memoryBarriers.Count > 0)
                 {
                     PipelineStageFlags allFlags = PipelineStageFlags.None;
 
@@ -342,9 +342,10 @@ namespace Ryujinx.Graphics.Vulkan
                         allFlags |= barrier.Flags.Dest;
                     }
 
-                    if (!_gd.SupportsRenderPassBarrier(allFlags))
+                    if (allFlags.HasFlag(PipelineStageFlags.DrawIndirectBit) || !_gd.SupportsRenderPassBarrier(allFlags))
                     {
                         endRenderPass();
+                        inRenderPass = false;
                     }
                 }
 
