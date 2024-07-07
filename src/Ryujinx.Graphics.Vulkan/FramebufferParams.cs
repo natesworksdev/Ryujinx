@@ -286,10 +286,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             _depthStencil?.Storage?.QueueLoadOpBarrier(cbs, true);
 
-            gd.Barriers.Flush(cbs.CommandBuffer, false, null);
+            gd.Barriers.Flush(cbs, false, null, null);
         }
 
-        public (Auto<DisposableRenderPass> renderPass, Auto<DisposableFramebuffer> framebuffer) GetPassAndFramebuffer(
+        public (RenderPassHolder rpHolder, Auto<DisposableFramebuffer> framebuffer) GetPassAndFramebuffer(
             VulkanRenderer gd,
             Device device,
             CommandBufferScoped cbs)

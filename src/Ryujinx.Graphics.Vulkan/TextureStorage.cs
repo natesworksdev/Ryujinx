@@ -38,6 +38,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public TextureCreateInfo Info => _info;
 
+        public bool Disposed { get; private set; }
+
         private readonly Image _image;
         private readonly Auto<DisposableImage> _imageAuto;
         private readonly Auto<MemoryAllocation> _allocationAuto;
@@ -458,7 +460,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _info.GetLayers(),
                     _info.Levels);
 
-                _gd.Barriers.QueueBarrier(barrier, srcStageFlags, dstStageFlags);
+                _gd.Barriers.QueueBarrier(barrier, this, srcStageFlags, dstStageFlags);
 
                 _lastReadStage = PipelineStageFlags.None;
                 _lastReadAccess = AccessFlags.None;
@@ -491,7 +493,7 @@ namespace Ryujinx.Graphics.Vulkan
                     _info.GetLayers(),
                     _info.Levels);
 
-                _gd.Barriers.QueueBarrier(barrier, _lastModificationStage, dstStageFlags);
+                _gd.Barriers.QueueBarrier(barrier, this, _lastModificationStage, dstStageFlags);
 
                 _lastModificationAccess = AccessFlags.None;
             }
@@ -514,6 +516,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            Disposed = true;
+
             if (_aliasedStorages != null)
             {
                 foreach (var storage in _aliasedStorages.Values)
