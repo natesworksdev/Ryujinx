@@ -435,6 +435,17 @@ namespace Ryujinx.Graphics.Vulkan
             return FormatCapabilities.IsD24S8(Info.Format) && VkFormat == VkFormat.D32SfloatS8Uint;
         }
 
+        public void AddStoreOpUsage(bool depthStencil)
+        {
+            _lastModificationStage = depthStencil ?
+                PipelineStageFlags.LateFragmentTestsBit :
+                PipelineStageFlags.ColorAttachmentOutputBit;
+
+            _lastModificationAccess = depthStencil ?
+                AccessFlags.DepthStencilAttachmentWriteBit :
+                AccessFlags.ColorAttachmentWriteBit;
+        }
+
         public void QueueLoadOpBarrier(CommandBufferScoped cbs, bool depthStencil)
         {
             PipelineStageFlags srcStageFlags = _lastReadStage | _lastModificationStage;

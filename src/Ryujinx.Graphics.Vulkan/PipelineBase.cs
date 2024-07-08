@@ -1639,6 +1639,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (RenderPassActive)
             {
+                FramebufferParams.AddStoreOpUsage();
+
                 PauseTransformFeedbackInternal();
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
                 SignalRenderPassEnd();

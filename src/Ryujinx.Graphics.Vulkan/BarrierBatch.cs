@@ -298,19 +298,41 @@ namespace Ryujinx.Graphics.Vulkan
                     // Generally, we want to avoid this from happening in the future, so flag the texture to immediately
                     // emit a barrier whenever the current render pass is bound again.
 
+                    bool anyIsNonAttachment = false;
+
                     foreach (BarrierWithStageFlags<ImageMemoryBarrier, TextureStorage> barrier in _imageBarriers)
                     {
-                        rpHolder.AddForcedFence(barrier.Resource, barrier.Flags.Dest);
+                        // If the binding is an attachment, don't add it as a forced fence.
+                        bool isAttachment = rpHolder.ContainsAttachment(barrier.Resource);
+
+                        if (!isAttachment)
+                        {
+                            rpHolder.AddForcedFence(barrier.Resource, barrier.Flags.Dest);
+                            anyIsNonAttachment = true;
+                        }
                     }
 
                     if (_gd.IsTBDR)
                     {
                         if (!_gd.IsMoltenVk)
                         {
-                            // TBDR GPUs are sensitive to barriers, so we need to end the pass to ensure the data is available.
-                            // Metal already has hazard tracking so MVK doesn't need this.
-                            endRenderPass();
-                            inRenderPass = false;
+                            if (!anyIsNonAttachment)
+                            {
+                                // This case is a feedback loop. To prevent this from causing an absolute performance disaster,
+                                // remove the barriers entirely.
+                                // If this is not here, there will be a lot of single draw render passes.
+                                // TODO: explicit handling for feedback loops, likely outside this class.
+
+                                _queuedBarrierCount -= _imageBarriers.Count;
+                                _imageBarriers.Clear();
+                            }
+                            else
+                            {
+                                // TBDR GPUs are sensitive to barriers, so we need to end the pass to ensure the data is available.
+                                // Metal already has hazard tracking so MVK doesn't need this.
+                                endRenderPass();
+                                inRenderPass = false;
+                            }
                         }
                     }
                     else

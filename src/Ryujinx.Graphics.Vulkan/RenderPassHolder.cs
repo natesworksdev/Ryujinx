@@ -192,6 +192,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public bool ContainsAttachment(TextureStorage storage)
+        {
+            return _textures.Any(view => view.Storage == storage);
+        }
+
         public void Dispose()
         {
             // Dispose all framebuffers.

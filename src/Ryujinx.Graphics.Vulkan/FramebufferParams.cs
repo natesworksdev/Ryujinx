@@ -289,6 +289,19 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Barriers.Flush(cbs, false, null, null);
         }
 
+        public void AddStoreOpUsage()
+        {
+            if (_colors != null)
+            {
+                foreach (var color in _colors)
+                {
+                    color.Storage?.AddStoreOpUsage(false);
+                }
+            }
+
+            _depthStencil?.Storage?.AddStoreOpUsage(true);
+        }
+
         public (RenderPassHolder rpHolder, Auto<DisposableFramebuffer> framebuffer) GetPassAndFramebuffer(
             VulkanRenderer gd,
             Device device,
