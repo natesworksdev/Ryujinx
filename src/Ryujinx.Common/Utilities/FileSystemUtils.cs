@@ -52,5 +52,36 @@ namespace Ryujinx.Common.Utilities
             var reservedChars = new HashSet<char>(Path.GetInvalidFileNameChars());
             return string.Concat(fileName.Select(c => reservedChars.Contains(c) ? '_' : c));
         }
+
+        public static string ResolveFullPath(string path, bool isDirectory)
+        {
+            FileSystemInfo pathInfo = isDirectory ? new DirectoryInfo(path) : new FileInfo(path);
+
+            return pathInfo.ResolveLinkTarget(true)?.FullName ?? pathInfo.FullName;
+        }
+
+        public static FileInfo GetActualFileInfo(this FileInfo fileInfo)
+        {
+            return (FileInfo)(fileInfo.ResolveLinkTarget(true) ?? fileInfo);
+        }
+
+        public static FileInfo GetActualFileInfo(string filePath)
+        {
+            FileInfo fileInfo = new(filePath);
+
+            return (FileInfo)(fileInfo.ResolveLinkTarget(true) ?? fileInfo);
+        }
+
+        public static DirectoryInfo GetActualDirectoryInfo(this DirectoryInfo directoryInfo)
+        {
+            return (DirectoryInfo)(directoryInfo.ResolveLinkTarget(true) ?? directoryInfo);
+        }
+
+        public static DirectoryInfo GetActualDirectoryInfo(string directoryPath)
+        {
+            DirectoryInfo directoryInfo = new(directoryPath);
+
+            return (DirectoryInfo)(directoryInfo.ResolveLinkTarget(true) ?? directoryInfo);
+        }
     }
 }
