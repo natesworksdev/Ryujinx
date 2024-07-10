@@ -86,8 +86,6 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfActive;
 
         private readonly PipelineColorBlendAttachmentState[] _storedBlend;
-
-        private ulong _drawCountSinceBarrier;
         public ulong DrawCount { get; private set; }
         public bool RenderPassActive { get; private set; }
 
