@@ -346,7 +346,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     IsNvidiaPreTuring = gpuNumber < 2000;
                 }
-                else if (GpuDriver.Contains("TITAN") && !GpuDriver.Contains("RTX"))
+                else if (GpuRenderer.Contains("TITAN") && !GpuRenderer.Contains("RTX"))
                 {
                     IsNvidiaPreTuring = true;
                 }
