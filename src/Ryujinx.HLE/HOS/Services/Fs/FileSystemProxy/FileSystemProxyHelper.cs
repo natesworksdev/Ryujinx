@@ -10,6 +10,7 @@ using LibHac.Tools.Es;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Common.Utilities;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -78,17 +79,21 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             DirectoryInfo archivePath = new DirectoryInfo(fullPath).Parent;
 
-            while (string.IsNullOrWhiteSpace(archivePath.Extension))
+            while (archivePath != null && string.IsNullOrWhiteSpace(archivePath.Extension))
             {
                 archivePath = archivePath.Parent;
             }
 
-            if (archivePath.Extension == ".nsp" && File.Exists(archivePath.FullName))
+            if (archivePath == null)
             {
-                FileStream pfsFile = new(
-                    archivePath.FullName.TrimEnd(Path.DirectorySeparatorChar),
-                    FileMode.Open,
-                    FileAccess.Read);
+                return ResultCode.PathDoesNotExist;
+            }
+
+            FileInfo archiveInfo = FileSystemUtils.GetActualFileInfo(Path.TrimEndingDirectorySeparator(archivePath.FullName));
+
+            if (archivePath.Extension.ToLower() == ".nsp" && archiveInfo.Exists)
+            {
+                FileStream pfsFile = archiveInfo.Open(FileMode.Open, FileAccess.Read);
 
                 try
                 {
@@ -97,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
                     ImportTitleKeysFromNsp(nsp, context.Device.System.KeySet);
 
-                    string filename = fullPath.Replace(archivePath.FullName, string.Empty).TrimStart('\\');
+                    string filename = fullPath.Replace(archivePath.FullName, string.Empty).TrimStart(Path.DirectorySeparatorChar);
 
                     using var ncaFile = new UniqueRef<LibHac.Fs.Fsa.IFile>();
 
