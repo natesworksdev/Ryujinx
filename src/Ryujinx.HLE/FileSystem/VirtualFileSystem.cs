@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             FileInfo fileInfo = FileSystemUtils.GetActualFileInfo(fileName);
 
-            var romfsStream =  fileInfo.Open(FileMode.Open, FileAccess.Read);
+            var romfsStream = fileInfo.Open(FileMode.Open, FileAccess.Read);
 
             _romFsByPid.AddOrUpdate(pid, romfsStream, (pid, oldStream) =>
             {

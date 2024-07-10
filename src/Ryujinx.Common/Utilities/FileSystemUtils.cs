@@ -57,31 +57,46 @@ namespace Ryujinx.Common.Utilities
         {
             FileSystemInfo pathInfo = isDirectory ? new DirectoryInfo(path) : new FileInfo(path);
 
-            return pathInfo.ResolveLinkTarget(true)?.FullName ?? pathInfo.FullName;
+            if (pathInfo.Exists)
+            {
+                return pathInfo.ResolveLinkTarget(true)?.FullName ?? pathInfo.FullName;
+            }
+
+            return pathInfo.FullName;
         }
 
         public static FileInfo GetActualFileInfo(this FileInfo fileInfo)
         {
-            return (FileInfo)(fileInfo.ResolveLinkTarget(true) ?? fileInfo);
+            if (fileInfo.Exists)
+            {
+                return (FileInfo)(fileInfo.ResolveLinkTarget(true) ?? fileInfo);
+            }
+
+            return fileInfo;
         }
 
         public static FileInfo GetActualFileInfo(string filePath)
         {
             FileInfo fileInfo = new(filePath);
 
-            return (FileInfo)(fileInfo.ResolveLinkTarget(true) ?? fileInfo);
+            return fileInfo.GetActualFileInfo();
         }
 
         public static DirectoryInfo GetActualDirectoryInfo(this DirectoryInfo directoryInfo)
         {
-            return (DirectoryInfo)(directoryInfo.ResolveLinkTarget(true) ?? directoryInfo);
+            if (directoryInfo.Exists)
+            {
+                return (DirectoryInfo)(directoryInfo.ResolveLinkTarget(true) ?? directoryInfo);
+            }
+
+            return directoryInfo;
         }
 
         public static DirectoryInfo GetActualDirectoryInfo(string directoryPath)
         {
             DirectoryInfo directoryInfo = new(directoryPath);
 
-            return (DirectoryInfo)(directoryInfo.ResolveLinkTarget(true) ?? directoryInfo);
+            return directoryInfo.GetActualDirectoryInfo();
         }
     }
 }
