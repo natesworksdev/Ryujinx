@@ -98,14 +98,14 @@ namespace Ryujinx.HLE.FileSystem
             }
             else
             {
-                return null;
+                throw new ArgumentException($"The filename does not start with '/': {fileName}", nameof(fileName));
             }
 
             string fullPath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
             if (!fullPath.StartsWith(AppDataManager.BaseDirPath))
             {
-                return null;
+                throw new ArgumentException($"The path is not located inside the Ryujinx directory: {fullPath}", nameof(basePath));
             }
 
             return fullPath;
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (parts.Length != 2)
             {
-                return null;
+                throw new ArgumentException($"Invalid switch fs path provided: {switchPath}", nameof(switchPath));
             }
 
             return GetFullPath(MakeFullPath(parts[0]), parts[1]);
