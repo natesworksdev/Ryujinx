@@ -11,6 +11,7 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
 using System;
 using System.IO;
@@ -18,6 +19,7 @@ using static Ryujinx.HLE.Utilities.StringUtils;
 using GameCardHandle = System.UInt32;
 using IFileSystem = LibHac.FsSrv.Sf.IFileSystem;
 using IStorage = LibHac.FsSrv.Sf.IStorage;
+using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
@@ -52,13 +54,13 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             ulong titleId = context.RequestData.ReadUInt64();
 #pragma warning restore IDE0059
             string switchPath = ReadUtf8String(context);
-            string fullPath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(switchPath);
+            FileInfo realPathInfo = FileSystemUtils.GetActualFileInfo(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(switchPath));
 
-            if (!File.Exists(fullPath))
+            if (!realPathInfo.Exists)
             {
-                if (fullPath.Contains('.'))
+                if (realPathInfo.FullName.Contains('.'))
                 {
-                    ResultCode result = FileSystemProxyHelper.OpenFileSystemFromInternalFile(context, fullPath, out FileSystemProxy.IFileSystem fileSystem);
+                    ResultCode result = FileSystemProxyHelper.OpenFileSystemFromInternalFile(context, realPathInfo.FullName, out FileSystemProxy.IFileSystem fileSystem);
 
                     if (result == ResultCode.Success)
                     {
@@ -71,12 +73,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 return ResultCode.PathDoesNotExist;
             }
 
-            FileStream fileStream = new(fullPath, FileMode.Open, FileAccess.Read);
-            string extension = System.IO.Path.GetExtension(fullPath);
+            FileStream fileStream = realPathInfo.Open(FileMode.Open, FileAccess.Read);
+            string extension = realPathInfo.Extension.ToLower();
 
             if (extension == ".nca")
             {
-                ResultCode result = FileSystemProxyHelper.OpenNcaFs(context, fullPath, fileStream.AsStorage(), out FileSystemProxy.IFileSystem fileSystem);
+                ResultCode result = FileSystemProxyHelper.OpenNcaFs(context, realPathInfo.FullName, fileStream.AsStorage(), out FileSystemProxy.IFileSystem fileSystem);
 
                 if (result == ResultCode.Success)
                 {
@@ -87,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             }
             else if (extension == ".nsp")
             {
-                ResultCode result = FileSystemProxyHelper.OpenNsp(context, fullPath, out FileSystemProxy.IFileSystem fileSystem);
+                ResultCode result = FileSystemProxyHelper.OpenNsp(context, realPathInfo.FullName, out FileSystemProxy.IFileSystem fileSystem);
 
                 if (result == ResultCode.Success)
                 {
@@ -832,17 +834,16 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             if (installedStorage != StorageId.None)
             {
                 string contentPath = context.Device.System.ContentManager.GetInstalledContentPath(titleId, storageId, contentType);
-                string installPath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
-                if (!string.IsNullOrWhiteSpace(installPath))
+                if (!string.IsNullOrWhiteSpace(contentPath))
                 {
-                    string ncaPath = installPath;
+                    FileInfo ncaInfo = FileSystemUtils.GetActualFileInfo(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath));
 
-                    if (File.Exists(ncaPath))
+                    if (ncaInfo.Exists)
                     {
                         try
                         {
-                            LibHac.Fs.IStorage ncaStorage = new LocalStorage(ncaPath, FileAccess.Read, FileMode.Open);
+                            LibHac.Fs.IStorage ncaStorage = new LocalStorage(ncaInfo.FullName, FileAccess.Read, FileMode.Open);
                             Nca nca = new(context.Device.System.KeySet, ncaStorage);
                             LibHac.Fs.IStorage romfsStorage = nca.OpenStorage(NcaSectionType.Data, context.Device.System.FsIntegrityCheckLevel);
                             using var sharedStorage = new SharedRef<LibHac.Fs.IStorage>(romfsStorage);
@@ -859,12 +860,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                     }
                     else
                     {
-                        throw new FileNotFoundException($"No Nca found in Path `{ncaPath}`.");
+                        throw new FileNotFoundException($"No Nca found at path `{ncaInfo.FullName}`.");
                     }
                 }
                 else
                 {
-                    throw new DirectoryNotFoundException($"Path for title id {titleId:x16} on Storage {storageId} was not found in Path {installPath}.");
+                    throw new DirectoryNotFoundException($"Path for title id {titleId:x16} on Storage {storageId} was not found at path {contentPath}.");
                 }
             }
 

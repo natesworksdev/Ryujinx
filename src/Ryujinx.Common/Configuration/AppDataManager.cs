@@ -44,7 +44,7 @@ namespace Ryujinx.Common.Configuration
 
         static AppDataManager()
         {
-            KeysDirPathUser = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch");
+            KeysDirPathUser = FileSystemUtils.ResolveFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch"), true);
         }
 
         public static void Initialize(string baseDirPath)
@@ -56,23 +56,23 @@ namespace Ryujinx.Common.Configuration
                 appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             }
 
-            string userProfilePath = Path.Combine(appDataPath, DefaultBaseDir);
-            string portablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultPortableDir);
+            string userProfilePath = FileSystemUtils.ResolveFullPath(Path.Combine(appDataPath, DefaultBaseDir), true);
+            DirectoryInfo portableInfo = FileSystemUtils.GetActualDirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultPortableDir));
 
             // On macOS, check for a portable directory next to the app bundle as well.
-            if (OperatingSystem.IsMacOS() && !Directory.Exists(portablePath))
+            if (OperatingSystem.IsMacOS() && !portableInfo.Exists)
             {
                 string bundlePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", ".."));
                 // Make sure we're actually running within an app bundle.
                 if (bundlePath.EndsWith(".app"))
                 {
-                    portablePath = Path.GetFullPath(Path.Combine(bundlePath, "..", DefaultPortableDir));
+                    portableInfo = FileSystemUtils.GetActualDirectoryInfo(Path.Combine(bundlePath, "..", DefaultPortableDir));
                 }
             }
 
-            if (Directory.Exists(portablePath))
+            if (portableInfo.Exists)
             {
-                BaseDirPath = portablePath;
+                BaseDirPath = portableInfo.FullName;
                 Mode = LaunchMode.Portable;
             }
             else
@@ -83,22 +83,17 @@ namespace Ryujinx.Common.Configuration
 
             if (baseDirPath != null && baseDirPath != userProfilePath)
             {
-                if (!Directory.Exists(baseDirPath))
+                DirectoryInfo baseDirInfo = FileSystemUtils.GetActualDirectoryInfo(baseDirPath);
+
+                if (!baseDirInfo.Exists)
                 {
                     Logger.Error?.Print(LogClass.Application, $"Custom Data Directory '{baseDirPath}' does not exist. Falling back to {Mode}...");
                 }
                 else
                 {
-                    BaseDirPath = baseDirPath;
+                    BaseDirPath = baseDirInfo.FullName;
                     Mode = LaunchMode.Custom;
                 }
-            }
-
-            BaseDirPath = Path.GetFullPath(BaseDirPath); // convert relative paths
-
-            if (IsPathSymlink(BaseDirPath))
-            {
-                Logger.Warning?.Print(LogClass.Application, $"Application data directory is a symlink. This may be unintended.");
             }
 
             SetupBasePaths();
@@ -217,16 +212,16 @@ namespace Ryujinx.Common.Configuration
                 }
             }
 
-            return logDir;
+            return FileSystemUtils.ResolveFullPath(logDir, true);
         }
 
         private static void SetupBasePaths()
         {
             Directory.CreateDirectory(BaseDirPath);
             LogsDirPath = SetUpLogsDir();
-            Directory.CreateDirectory(GamesDirPath = Path.Combine(BaseDirPath, GamesDir));
-            Directory.CreateDirectory(ProfilesDirPath = Path.Combine(BaseDirPath, ProfilesDir));
-            Directory.CreateDirectory(KeysDirPath = Path.Combine(BaseDirPath, KeysDir));
+            Directory.CreateDirectory(GamesDirPath = FileSystemUtils.ResolveFullPath(Path.Combine(BaseDirPath, GamesDir), true));
+            Directory.CreateDirectory(ProfilesDirPath = FileSystemUtils.ResolveFullPath(Path.Combine(BaseDirPath, ProfilesDir), true));
+            Directory.CreateDirectory(KeysDirPath = FileSystemUtils.ResolveFullPath(Path.Combine(BaseDirPath, KeysDir), true));
         }
 
         // Check if existing old baseDirPath is a symlink, to prevent possible errors.
@@ -320,7 +315,7 @@ namespace Ryujinx.Common.Configuration
             }
         }
 
-        public static string GetModsPath() => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
-        public static string GetSdModsPath() => CustomSdModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultSdcardDir, "atmosphere")).FullName;
+        public static string GetModsPath() => CustomModsPath ?? Directory.CreateDirectory(FileSystemUtils.ResolveFullPath(Path.Combine(BaseDirPath, DefaultModsDir), true)).FullName;
+        public static string GetSdModsPath() => CustomSdModsPath ?? Directory.CreateDirectory(FileSystemUtils.ResolveFullPath(Path.Combine(BaseDirPath, DefaultSdcardDir, "atmosphere"), true)).FullName;
     }
 }

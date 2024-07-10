@@ -5,6 +5,7 @@ using LibHac.Ns;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -654,13 +655,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             if (Interlocked.Exchange(ref _jitLoaded, 1) == 0)
             {
-                string jitPath = context.Device.System.ContentManager.GetInstalledContentPath(0x010000000000003B, StorageId.BuiltInSystem, NcaContentType.Program);
-                string filePath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(jitPath);
+                const ulong JitApplicationId = 0x010000000000003B;
+                string jitPath = context.Device.System.ContentManager.GetInstalledContentPath(JitApplicationId, StorageId.BuiltInSystem, NcaContentType.Program);
 
-                if (string.IsNullOrWhiteSpace(filePath))
+                if (string.IsNullOrWhiteSpace(jitPath))
                 {
-                    throw new InvalidSystemResourceException("JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
+                    throw new InvalidSystemResourceException($"JIT ({JitApplicationId:X16}) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
                 }
+
+                string filePath = FileSystemUtils.ResolveFullPath(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(jitPath), false);
 
                 context.Device.LoadNca(filePath);
 

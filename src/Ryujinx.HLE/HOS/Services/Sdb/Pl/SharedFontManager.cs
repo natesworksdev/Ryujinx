@@ -6,6 +6,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Memory;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -65,10 +66,10 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
                     if (contentManager.TryGetFontTitle(name, out ulong fontTitle) && contentManager.TryGetFontFilename(name, out string fontFilename))
                     {
                         string contentPath = contentManager.GetInstalledContentPath(fontTitle, StorageId.BuiltInSystem, NcaContentType.Data);
-                        string fontPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
-                        if (!string.IsNullOrWhiteSpace(fontPath))
+                        if (!string.IsNullOrWhiteSpace(contentPath))
                         {
+                            string fontPath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(contentPath), false);
                             byte[] data;
 
                             using (IStorage ncaFileStream = new LocalStorage(fontPath, FileAccess.Read, FileMode.Open))

@@ -523,13 +523,12 @@ namespace Ryujinx.UI.App.Common
                                 return;
                             }
 
-                            var fileInfo = new FileInfo(app);
+                            var fileInfo = FileSystemUtils.GetActualFileInfo(app);
                             string extension = fileInfo.Extension.ToLower();
 
                             if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
                             {
-                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
-                                applicationPaths.Add(fullPath);
+                                applicationPaths.Add(fileInfo.FullName);
                                 numApplicationsFound++;
                             }
                         }

@@ -7,6 +7,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
@@ -89,7 +90,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             if (HasTimeZoneBinaryTitle())
             {
-                using IStorage ncaFileStream = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+                string timeZoneBinPath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), false);
+                using IStorage ncaFileStream = new LocalStorage(timeZoneBinPath, FileAccess.Read, FileMode.Open);
 
                 Nca nca = new(_virtualFileSystem.KeySet, ncaFileStream);
                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
@@ -129,7 +131,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             List<(int Offset, string Location, string Abbr)> outList = new();
             var now = DateTimeOffset.Now.ToUnixTimeSeconds();
-            using (IStorage ncaStorage = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), FileAccess.Read, FileMode.Open))
+            string tzBinaryPath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), false);
+            using (IStorage ncaStorage = new LocalStorage(tzBinaryPath, FileAccess.Read, FileMode.Open))
             using (IFileSystem romfs = new Nca(_virtualFileSystem.KeySet, ncaStorage).OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel))
             {
                 foreach (string locName in LocationNameCache)
@@ -264,7 +267,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 return ResultCode.TimeZoneNotFound;
             }
 
-            ncaFile = new LocalStorage(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open);
+            string timeZoneBinPath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), false);
+            ncaFile = new LocalStorage(timeZoneBinPath, FileAccess.Read, FileMode.Open);
 
             Nca nca = new(_virtualFileSystem.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel);
