@@ -941,7 +941,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool SupportsRenderPassBarrier(PipelineStageFlags flags)
         {
-            return !(IsMoltenVk || Vendor == Vendor.Qualcomm);
+            return !(IsMoltenVk || IsQualcommProprietary);
         }
 
         public unsafe void Dispose()
