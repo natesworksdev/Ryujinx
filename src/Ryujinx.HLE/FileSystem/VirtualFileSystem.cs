@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (!fullPath.StartsWith(AppDataManager.BaseDirPath))
             {
-                throw new ArgumentException($"The path is not located inside the Ryujinx directory: {fullPath}", nameof(basePath));
+                Logger.Warning?.Print(LogClass.ServiceFs, $"The path is not located inside the Ryujinx directory: {fullPath}");
             }
 
             return fullPath;
