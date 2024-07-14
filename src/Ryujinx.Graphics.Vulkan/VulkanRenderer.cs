@@ -87,9 +87,11 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool IsAmdGcn { get; private set; }
         internal bool IsNvidiaPreTuring { get; private set; }
         internal bool IsIntelArc { get; private set; }
+        internal bool IsQualcommProprietary { get; private set; }
         internal bool IsMoltenVk { get; private set; }
         internal bool IsTBDR { get; private set; }
         internal bool IsSharedMemory { get; private set; }
+
         public string GpuVendor { get; private set; }
         public string GpuDriver { get; private set; }
         public string GpuRenderer { get; private set; }
@@ -344,7 +346,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     IsNvidiaPreTuring = gpuNumber < 2000;
                 }
-                else if (GpuDriver.Contains("TITAN") && !GpuDriver.Contains("RTX"))
+                else if (GpuRenderer.Contains("TITAN") && !GpuRenderer.Contains("RTX"))
                 {
                     IsNvidiaPreTuring = true;
                 }
@@ -353,6 +355,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 IsIntelArc = GpuRenderer.StartsWith("Intel(R) Arc(TM)");
             }
+
+            IsQualcommProprietary = hasDriverProperties && driverProperties.DriverID == DriverId.QualcommProprietary;
 
             ulong minResourceAlignment = Math.Max(
                 Math.Max(
@@ -411,7 +415,7 @@ namespace Ryujinx.Graphics.Vulkan
             Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtExternalMemoryHost hostMemoryApi);
             HostMemoryAllocator = new HostMemoryAllocator(MemoryAllocator, Api, hostMemoryApi, _device);
 
-            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
+            CommandBufferPool = new CommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex, IsQualcommProprietary);
 
             PipelineLayoutCache = new PipelineLayoutCache();
 
@@ -486,12 +490,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size, BufferAccess access)
         {
-            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), default, access == BufferAccess.Stream);
-        }
-
-        public BufferHandle CreateBuffer(int size, BufferAccess access, BufferHandle storageHint)
-        {
-            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), storageHint);
+            return BufferManager.CreateWithHandle(this, size, access.HasFlag(BufferAccess.SparseCompatible), access.Convert(), access.HasFlag(BufferAccess.Stream));
         }
 
         public BufferHandle CreateBuffer(nint pointer, int size)
@@ -675,11 +674,25 @@ namespace Ryujinx.Graphics.Vulkan
             var limits = _physicalDevice.PhysicalDeviceProperties.Limits;
             var mainQueueProperties = _physicalDevice.QueueFamilyProperties[QueueFamilyIndex];
 
+            SystemMemoryType memoryType;
+
+            if (IsSharedMemory)
+            {
+                memoryType = SystemMemoryType.UnifiedMemory;
+            }
+            else
+            {
+                memoryType = Vendor == Vendor.Nvidia ?
+                    SystemMemoryType.DedicatedMemorySlowStorage :
+                    SystemMemoryType.DedicatedMemory;
+            }
+
             return new Capabilities(
                 api: TargetApi.Vulkan,
                 GpuVendor,
+                memoryType: memoryType,
                 hasFrontFacingBug: IsIntelWindows,
-                hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
+                hasVectorIndexingBug: IsQualcommProprietary,
                 needsFragmentOutputSpecialization: IsMoltenVk,
                 reduceShaderPrecision: IsMoltenVk,
                 supportsAstcCompression: features2.Features.TextureCompressionAstcLdr && supportsAstcFormats,
@@ -719,6 +732,12 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsViewportSwizzle: false,
                 supportsIndirectParameters: true,
                 supportsDepthClipControl: Capabilities.SupportsDepthClipControl,
+                uniformBufferSetIndex: PipelineBase.UniformSetIndex,
+                storageBufferSetIndex: PipelineBase.StorageSetIndex,
+                textureSetIndex: PipelineBase.TextureSetIndex,
+                imageSetIndex: PipelineBase.ImageSetIndex,
+                extraSetBaseIndex: PipelineBase.DescriptorSetLayouts,
+                maximumExtraSets: Math.Max(0, (int)limits.MaxBoundDescriptorSets - PipelineBase.DescriptorSetLayouts),
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
                 maximumStorageBuffersPerStage: Constants.MaxStorageBuffersPerStage,
                 maximumTexturesPerStage: Constants.MaxTexturesPerStage,

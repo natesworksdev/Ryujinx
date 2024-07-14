@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.GAL
     {
         public readonly TargetApi Api;
         public readonly string VendorName;
+        public readonly SystemMemoryType MemoryType;
 
         public readonly bool HasFrontFacingBug;
         public readonly bool HasVectorIndexingBug;
@@ -50,6 +51,13 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsIndirectParameters;
         public readonly bool SupportsDepthClipControl;
 
+        public readonly int UniformBufferSetIndex;
+        public readonly int StorageBufferSetIndex;
+        public readonly int TextureSetIndex;
+        public readonly int ImageSetIndex;
+        public readonly int ExtraSetBaseIndex;
+        public readonly int MaximumExtraSets;
+
         public readonly uint MaximumUniformBuffersPerStage;
         public readonly uint MaximumStorageBuffersPerStage;
         public readonly uint MaximumTexturesPerStage;
@@ -66,6 +74,7 @@ namespace Ryujinx.Graphics.GAL
         public Capabilities(
             TargetApi api,
             string vendorName,
+            SystemMemoryType memoryType,
             bool hasFrontFacingBug,
             bool hasVectorIndexingBug,
             bool needsFragmentOutputSpecialization,
@@ -107,6 +116,12 @@ namespace Ryujinx.Graphics.GAL
             bool supportsViewportSwizzle,
             bool supportsIndirectParameters,
             bool supportsDepthClipControl,
+            int uniformBufferSetIndex,
+            int storageBufferSetIndex,
+            int textureSetIndex,
+            int imageSetIndex,
+            int extraSetBaseIndex,
+            int maximumExtraSets,
             uint maximumUniformBuffersPerStage,
             uint maximumStorageBuffersPerStage,
             uint maximumTexturesPerStage,
@@ -120,6 +135,7 @@ namespace Ryujinx.Graphics.GAL
         {
             Api = api;
             VendorName = vendorName;
+            MemoryType = memoryType;
             HasFrontFacingBug = hasFrontFacingBug;
             HasVectorIndexingBug = hasVectorIndexingBug;
             NeedsFragmentOutputSpecialization = needsFragmentOutputSpecialization;
@@ -161,6 +177,12 @@ namespace Ryujinx.Graphics.GAL
             SupportsViewportSwizzle = supportsViewportSwizzle;
             SupportsIndirectParameters = supportsIndirectParameters;
             SupportsDepthClipControl = supportsDepthClipControl;
+            UniformBufferSetIndex = uniformBufferSetIndex;
+            StorageBufferSetIndex = storageBufferSetIndex;
+            TextureSetIndex = textureSetIndex;
+            ImageSetIndex = imageSetIndex;
+            ExtraSetBaseIndex = extraSetBaseIndex;
+            MaximumExtraSets = maximumExtraSets;
             MaximumUniformBuffersPerStage = maximumUniformBuffersPerStage;
             MaximumStorageBuffersPerStage = maximumStorageBuffersPerStage;
             MaximumTexturesPerStage = maximumTexturesPerStage;
