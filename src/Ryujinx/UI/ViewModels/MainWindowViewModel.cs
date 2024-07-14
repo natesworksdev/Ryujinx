@@ -111,6 +111,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         private string TitleName { get; set; }
         internal AppHost AppHost { get; set; }
 
+        private bool UseTitleConfiguration
+        {
+            get
+            {
+                return ConfigurationState.HasConfigurationForTitle(SelectedApplication?.TitleId);
+            }
+        }
+
         public MainWindowViewModel()
         {
             Applications = new ObservableCollection<ApplicationData>();
@@ -126,7 +134,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 LoadConfigurableHotKeys();
 
-                Volume = ConfigurationState.Instance.System.AudioVolume;
+                Volume = ConfigurationState.Shared.System.AudioVolume;
             }
         }
 
@@ -556,6 +564,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 _volume = value;
 
+                ConfigurationState config = ConfigurationState.Instance(UseTitleConfiguration);
+                config.System.AudioVolume.Value = value;
+
                 if (_isGameRunning)
                 {
                     AppHost.Device.SetVolume(_volume);
@@ -697,12 +708,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool StartGamesInFullscreen
         {
-            get => ConfigurationState.Instance.UI.StartFullscreen;
+            get => ConfigurationState.Shared.UI.StartFullscreen;
             set
             {
-                ConfigurationState.Instance.UI.StartFullscreen.Value = value;
+                ConfigurationState.Shared.UI.StartFullscreen.Value = value;
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
                 OnPropertyChanged();
             }
@@ -710,12 +721,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool ShowConsole
         {
-            get => ConfigurationState.Instance.UI.ShowConsole;
+            get => ConfigurationState.Shared.UI.ShowConsole;
             set
             {
-                ConfigurationState.Instance.UI.ShowConsole.Value = value;
+                ConfigurationState.Shared.UI.ShowConsole.Value = value;
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 
                 OnPropertyChanged();
             }
@@ -755,44 +766,44 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public Glyph Glyph
         {
-            get => (Glyph)ConfigurationState.Instance.UI.GameListViewMode.Value;
+            get => (Glyph)ConfigurationState.Shared.UI.GameListViewMode.Value;
             set
             {
-                ConfigurationState.Instance.UI.GameListViewMode.Value = (int)value;
+                ConfigurationState.Shared.UI.GameListViewMode.Value = (int)value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGrid));
                 OnPropertyChanged(nameof(IsList));
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
         public bool ShowNames
         {
-            get => ConfigurationState.Instance.UI.ShowNames && ConfigurationState.Instance.UI.GridSize > 1; set
+            get => ConfigurationState.Shared.UI.ShowNames && ConfigurationState.Shared.UI.GridSize > 1; set
             {
-                ConfigurationState.Instance.UI.ShowNames.Value = value;
+                ConfigurationState.Shared.UI.ShowNames.Value = value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(GridSizeScale));
                 OnPropertyChanged(nameof(GridItemSelectorSize));
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
         internal ApplicationSort SortMode
         {
-            get => (ApplicationSort)ConfigurationState.Instance.UI.ApplicationSort.Value;
+            get => (ApplicationSort)ConfigurationState.Shared.UI.ApplicationSort.Value;
             private set
             {
-                ConfigurationState.Instance.UI.ApplicationSort.Value = (int)value;
+                ConfigurationState.Shared.UI.ApplicationSort.Value = (int)value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SortName));
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
@@ -800,7 +811,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                return ConfigurationState.Instance.UI.GridSize.Value switch
+                return ConfigurationState.Shared.UI.GridSize.Value switch
                 {
                     1 => 78,
                     2 => 100,
@@ -815,7 +826,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             get
             {
-                return ConfigurationState.Instance.UI.GridSize.Value switch
+                return ConfigurationState.Shared.UI.GridSize.Value switch
                 {
                     1 => 120,
                     2 => ShowNames ? 210 : 150,
@@ -828,10 +839,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public int GridSizeScale
         {
-            get => ConfigurationState.Instance.UI.GridSize;
+            get => ConfigurationState.Shared.UI.GridSize;
             set
             {
-                ConfigurationState.Instance.UI.GridSize.Value = value;
+                ConfigurationState.Shared.UI.GridSize.Value = value;
 
                 if (value < 2)
                 {
@@ -847,7 +858,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(GridItemSelectorSize));
                 OnPropertyChanged(nameof(ShowNames));
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
@@ -872,16 +883,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsAscending
         {
-            get => ConfigurationState.Instance.UI.IsAscendingOrder;
+            get => ConfigurationState.Shared.UI.IsAscendingOrder;
             private set
             {
-                ConfigurationState.Instance.UI.IsAscendingOrder.Value = value;
+                ConfigurationState.Shared.UI.IsAscendingOrder.Value = value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SortMode));
                 OnPropertyChanged(nameof(SortName));
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
@@ -940,10 +951,10 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool IsSortedByType => SortMode == ApplicationSort.FileType;
         public bool IsSortedBySize => SortMode == ApplicationSort.FileSize;
         public bool IsSortedByPath => SortMode == ApplicationSort.Path;
-        public bool IsGridSmall => ConfigurationState.Instance.UI.GridSize == 1;
-        public bool IsGridMedium => ConfigurationState.Instance.UI.GridSize == 2;
-        public bool IsGridLarge => ConfigurationState.Instance.UI.GridSize == 3;
-        public bool IsGridHuge => ConfigurationState.Instance.UI.GridSize == 4;
+        public bool IsGridSmall => ConfigurationState.Shared.UI.GridSize == 1;
+        public bool IsGridMedium => ConfigurationState.Shared.UI.GridSize == 2;
+        public bool IsGridLarge => ConfigurationState.Shared.UI.GridSize == 3;
+        public bool IsGridHuge => ConfigurationState.Shared.UI.GridSize == 4;
 
         #endregion
 
@@ -1275,17 +1286,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Shared.Hid.Hotkeys.Value.ShowUI, out var showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Shared.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
             {
                 ScreenshotKey = new KeyGesture(screenshotKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Shared.Hid.Hotkeys.Value.Pause, out var pauseKey))
             {
                 PauseKey = new KeyGesture(pauseKey);
             }
@@ -1323,7 +1334,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SetAspectRatio(AspectRatio aspectRatio)
         {
-            ConfigurationState.Instance.Graphics.AspectRatio.Value = aspectRatio;
+            ConfigurationState.Instance(UseTitleConfiguration).Graphics.AspectRatio.Value = aspectRatio;
         }
 
         public async Task InstallFirmwareFromFile()
@@ -1391,7 +1402,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             if (IsGameRunning)
             {
-                ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
+                ConfigurationState.Shared.System.EnableDockedMode.Value = !ConfigurationState.Shared.System.EnableDockedMode.Value;
             }
         }
 
@@ -1415,8 +1426,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (Program.PreviewerDetached)
             {
-                ConfigurationState.Instance.UI.LanguageCode.Value = (string)languageCode;
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                ConfigurationState.Shared.UI.LanguageCode.Value = (string)languageCode;
+                ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
@@ -1513,6 +1524,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task LoadApplication(string path, bool startFullscreen = false, string titleName = "")
         {
+            bool useTitleConfiguration = false;
+            if (SelectedApplication?.TitleId != null)
+            {
+                if (ConfigurationState.HasConfigurationForTitle(SelectedApplication.TitleId))
+                {
+                    useTitleConfiguration = true;
+                    ConfigurationState.LoadConfigurationStateForTitle(SelectedApplication.TitleId);
+                }
+            }
+
             if (AppHost != null)
             {
                 await ContentDialogHelper.CreateInfoDialog(
@@ -1531,11 +1552,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Logger.RestartTime();
 
-            SelectedIcon ??= ApplicationLibrary.GetApplicationIcon(path, ConfigurationState.Instance.System.Language);
+            SelectedIcon ??= ApplicationLibrary.GetApplicationIcon(path, ConfigurationState.Shared.System.Language);
 
             PrepareLoadScreen();
 
-            RendererHostControl = new RendererHost();
+            RendererHostControl = new RendererHost(ConfigurationState.Instance(useTitleConfiguration).Graphics.GraphicsBackend);
 
             AppHost = new AppHost(
                 RendererHostControl,
@@ -1688,12 +1709,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public static void SaveConfig()
         {
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            ConfigurationState.Shared.ToFileFormat().SaveConfig(Program.ConfigurationPath);
         }
 
         public static async Task PerformanceCheck()
         {
-            if (ConfigurationState.Instance.Logger.EnableTrace.Value)
+            if (ConfigurationState.Shared.Logger.EnableTrace.Value)
             {
                 string mainMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckLoggingEnabledMessage];
                 string secondaryMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckLoggingEnabledConfirmMessage];
@@ -1707,13 +1728,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (result == UserResult.Yes)
                 {
-                    ConfigurationState.Instance.Logger.EnableTrace.Value = false;
+                    ConfigurationState.Shared.Logger.EnableTrace.Value = false;
 
                     SaveConfig();
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
+            if (!string.IsNullOrWhiteSpace(ConfigurationState.Shared.Graphics.ShadersDumpPath.Value))
             {
                 string mainMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckShaderDumpEnabledMessage];
                 string secondaryMessage = LocaleManager.Instance[LocaleKeys.DialogPerformanceCheckShaderDumpEnabledConfirmMessage];
@@ -1727,7 +1748,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 if (result == UserResult.Yes)
                 {
-                    ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
+                    ConfigurationState.Shared.Graphics.ShadersDumpPath.Value = "";
 
                     SaveConfig();
                 }
