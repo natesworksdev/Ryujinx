@@ -833,6 +833,15 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetDepthBias(float factor, float units, float clamp)
         {
+            if (factor == 0 && units == 0)
+            {
+                GL.Disable(EnableCap.PolygonOffsetPoint);
+                GL.Disable(EnableCap.PolygonOffsetLine);
+                GL.Disable(EnableCap.PolygonOffsetFill);
+
+                return;
+            }
+
             if (HwCapabilities.SupportsPolygonOffsetClamp)
             {
                 GL.PolygonOffsetClamp(factor, units, clamp);
