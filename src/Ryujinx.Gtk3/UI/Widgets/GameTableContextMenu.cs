@@ -54,9 +54,18 @@ namespace Ryujinx.UI.Widgets
             _horizonClient = horizonClient;
             _applicationData = applicationData;
 
-            _openSaveUserDirMenuItem.Sensitive = !Utilities.IsZeros(_applicationData.ControlHolder.ByteSpan) && _applicationData.ControlHolder.Value.UserAccountSaveDataSize > 0;
-            _openSaveDeviceDirMenuItem.Sensitive = !Utilities.IsZeros(_applicationData.ControlHolder.ByteSpan) && _applicationData.ControlHolder.Value.DeviceSaveDataSize > 0;
-            _openSaveBcatDirMenuItem.Sensitive = !Utilities.IsZeros(_applicationData.ControlHolder.ByteSpan) && _applicationData.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
+            if (!_applicationData.ControlHolder.ByteSpan.IsZeros())
+            {
+                _openSaveUserDirMenuItem.Sensitive = _applicationData.ControlHolder.Value.UserAccountSaveDataSize > 0;
+                _openSaveDeviceDirMenuItem.Sensitive = _applicationData.ControlHolder.Value.DeviceSaveDataSize > 0;
+                _openSaveBcatDirMenuItem.Sensitive = _applicationData.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
+            }
+            else
+            {
+                _openSaveUserDirMenuItem.Sensitive = false;
+                _openSaveDeviceDirMenuItem.Sensitive = false;
+                _openSaveBcatDirMenuItem.Sensitive = false;
+            }
 
             string fileExt = System.IO.Path.GetExtension(_applicationData.Path).ToLower();
             bool hasNca = fileExt == ".nca" || fileExt == ".nsp" || fileExt == ".pfs0" || fileExt == ".xci";
