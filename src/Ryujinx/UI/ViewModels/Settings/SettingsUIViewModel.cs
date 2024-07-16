@@ -43,6 +43,17 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
             }
         }
 
+        private bool _rememberWindowState;
+        public bool RememberWindowState
+        {
+            get => _rememberWindowState;
+            set
+            {
+                _rememberWindowState = value;
+                DirtyEvent?.Invoke();
+            }
+        }
+
         private int _hideCursor;
         public int HideCursor
         {
@@ -78,13 +89,20 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
+            RememberWindowState = config.RememberWindowState;
             HideCursor = (int)config.HideCursor.Value;
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
             GameDirectories.CollectionChanged += (_, _) => DirtyEvent?.Invoke();
 
-            BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
+            BaseStyleIndex = config.UI.BaseStyle.Value switch
+            {
+                "Auto" => 0,
+                "Light" => 1,
+                "Dark" => 2,
+                _ => 0
+            };
         }
 
         public bool CheckIfModified(ConfigurationState config)
@@ -96,9 +114,16 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
             isDirty |= config.EnableDiscordIntegration.Value != EnableDiscordIntegration;
             isDirty |= config.CheckUpdatesOnStart.Value != CheckUpdatesOnStart;
             isDirty |= config.ShowConfirmExit.Value != ShowConfirmExit;
+            isDirty |= config.RememberWindowState.Value != RememberWindowState;
             isDirty |= config.HideCursor.Value != (HideCursorMode)HideCursor;
             isDirty |= DirsChanged;
-            isDirty |= config.UI.BaseStyle.Value != (BaseStyleIndex == 0 ? "Light" : "Dark");
+            isDirty |= config.UI.BaseStyle.Value != BaseStyleIndex switch
+            {
+                0 => "Auto",
+                1 => "Light",
+                2 => "Dark",
+                _ => "Auto"
+            };
 
             return isDirty;
         }
@@ -108,9 +133,16 @@ namespace Ryujinx.Ava.UI.ViewModels.Settings
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
             config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
             config.ShowConfirmExit.Value = ShowConfirmExit;
+            config.RememberWindowState.Value = RememberWindowState;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
             config.UI.GameDirs.Value = GameDirectories.ToList();
-            config.UI.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            config.UI.BaseStyle.Value = BaseStyleIndex switch
+            {
+                0 => "Auto",
+                1 => "Light",
+                2 => "Dark",
+                _ => "Auto"
+            };
         }
     }
 }
