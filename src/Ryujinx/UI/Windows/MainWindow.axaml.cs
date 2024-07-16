@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
@@ -11,6 +12,7 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Applet;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Views.User;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
@@ -292,8 +294,38 @@ namespace Ryujinx.Ava.UI.Windows
             }
         }
 
+        private async Task ShowProfilesDialog()
+        {
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                //await ContentDialogHelper.ShowWindowAsync(new ProfilesWindows(AccountManager)));
+                var content = new UserSimpleSelectorView(AccountManager);
+                ContentDialog contentDialog = new()
+                {
+                    Title = LocaleManager.Instance[LocaleKeys.UserProfileWindowTitle],
+                    PrimaryButtonText = "",
+                    SecondaryButtonText = "",
+                    CloseButtonText = "",
+                    DataContext = content.ViewModel,
+                    Content = content,
+                    Padding = new Thickness(0),
+                };
+                content.ViewModel.CloseWindow += contentDialog.Hide;
+                Style footer = new(x => x.Name("DialogSpace").Child().OfType<Border>());
+                footer.Setters.Add(new Setter(IsVisibleProperty, false));
+
+                contentDialog.Styles.Add(footer);
+
+                await contentDialog.ShowAsync();
+            });
+        }
+
         private async Task CheckLaunchState()
         {
+            if (ConfigurationState.Instance.UI.ShowProfilesAtStartup)
+            {
+                await ShowProfilesDialog();
+            }
             if (OperatingSystem.IsLinux() && LinuxHelper.VmMaxMapCount < LinuxHelper.RecommendedVmMaxMapCount)
             {
                 Logger.Warning?.Print(LogClass.Application, $"The value of vm.max_map_count is lower than {LinuxHelper.RecommendedVmMaxMapCount}. ({LinuxHelper.VmMaxMapCount})");

@@ -96,6 +96,7 @@
   "SettingsTabGeneralEnableDiscordRichPresence": "تمكين وجود ديسكورد الغني",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "التحقق من وجود تحديثات عند التشغيل",
   "SettingsTabGeneralShowConfirmExitDialog": "إظهار مربع حوار \"تأكيد الخروج\"",
+  "SettingsTabGeneralShoProfilesAtStartup": "Show Profiles at Startup",
   "SettingsTabGeneralRememberWindowState": "تذكر حجم/موضع النافذة",
   "SettingsTabGeneralHideCursor": "إخفاء المؤشر:",
   "SettingsTabGeneralHideCursorNever": "مطلقا",

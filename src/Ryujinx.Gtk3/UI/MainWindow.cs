@@ -887,6 +887,12 @@ namespace Ryujinx.UI
             return false;
         }
 
+        public void ShowProfilesSelector()
+        {
+            var window = new UserProfilesSelectorWindow(_accountManager, _contentManager, _virtualFileSystem);
+            window.Show();
+        }
+
         public void RunApplication(string path, bool startFullscreen = false)
         {
             if (_gameLoaded)
