@@ -9,7 +9,6 @@ using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
@@ -117,19 +116,28 @@ namespace Ryujinx.UI.App.Common
                 {
                     using UniqueRef<IFile> ncaFile = new();
 
-                    pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                    Nca nca = new(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
-                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
-
-                    // Some main NCAs don't have a data partition, so check if the partition exists before opening it
-                    if (nca.Header.ContentType == NcaContentType.Program &&
-                        !(nca.SectionExists(NcaSectionType.Data) &&
-                          nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                    try
                     {
-                        hasMainNca = true;
+                        pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                        break;
+                        Nca nca = new(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
+                        int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                        // Some main NCAs don't have a data partition, so check if the partition exists before opening it
+                        if (nca.Header.ContentType == NcaContentType.Program &&
+                            !(nca.SectionExists(NcaSectionType.Data) &&
+                              nca.Header.GetFsHeader(dataIndex).IsPatchSection()))
+                        {
+                            hasMainNca = true;
+
+                            break;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Logger.Warning?.Print(LogClass.Application, $"Encountered an error while trying to load applications from file '{filePath}': {exception}");
+
+                        return null;
                     }
                 }
                 else if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
