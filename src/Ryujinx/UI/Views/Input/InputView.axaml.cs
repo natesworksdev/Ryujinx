@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                     LocaleManager.Instance[LocaleKeys.InputDialogYes],
                     LocaleManager.Instance[LocaleKeys.InputDialogNo],
                     LocaleManager.Instance[LocaleKeys.RyujinxConfirm],
-                    parent: (Window)this.VisualRoot);
+                    parent: (Window)VisualRoot);
 
                 if (result == UserResult.Yes)
                 {

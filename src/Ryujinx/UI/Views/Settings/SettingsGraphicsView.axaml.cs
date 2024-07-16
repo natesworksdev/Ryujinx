@@ -30,7 +30,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
                         "",
                         LocaleManager.Instance[LocaleKeys.InputDialogOk],
                         LocaleManager.Instance[LocaleKeys.DialogSettingsBackendThreadingWarningTitle],
-                        parent: this.VisualRoot as Window)
+                        parent: (Window)VisualRoot)
                 );
             }
         }
