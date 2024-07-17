@@ -135,17 +135,23 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             list.Sort((first, second) =>
             {
-                if (string.IsNullOrEmpty(first.Control.DisplayVersionString.ToString()))
+                var firstVersionString = first.Control.DisplayVersionString.ToString();
+                var secondVersionString = second.Control.DisplayVersionString.ToString();
+
+                if (string.IsNullOrEmpty(firstVersionString))
                 {
                     return -1;
                 }
 
-                if (string.IsNullOrEmpty(second.Control.DisplayVersionString.ToString()))
+                if (string.IsNullOrEmpty(secondVersionString))
                 {
                     return 1;
                 }
 
-                return Version.Parse(first.Control.DisplayVersionString.ToString()).CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
+                var firstVersion = Version.Parse(firstVersionString.Where(x => char.IsDigit(x) || x == '.').ToArray());
+                var secondVersion = Version.Parse(secondVersionString.Where(x => char.IsDigit(x) || x == '.').ToArray());
+
+                return firstVersion.CompareTo(secondVersion) * -1;
             });
 
             Views.Clear();
