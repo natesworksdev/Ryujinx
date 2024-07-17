@@ -11,6 +11,15 @@
     <PackageReference Include="NUnit3TestAdapter" />
   </ItemGroup>
 
+  <!--
+    NUnit 4+ moved the original/non-constraint Asserts into ClassicAssert namespace, To be transparent with the test code, we alias it to Assert.
+    https://docs.nunit.org/articles/nunit/release-notes/Nunit4.0-MigrationGuide.html
+    https://docs.nunit.org/articles/nunit/writing-tests/assertions/assertions.html
+  -->
+  <ItemGroup>
+    <Using Include="NUnit.Framework.Legacy.ClassicAssert" Alias="Assert" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Memory\Ryujinx.Memory.csproj" />
   </ItemGroup>

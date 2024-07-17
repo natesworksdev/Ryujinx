@@ -191,7 +191,7 @@ namespace Ryujinx.Tests.Memory
             Assert.False(alignedAfterTriggers);
         }
 
-        [Test, Explicit, Timeout(1000)]
+        [Test, Explicit, CancelAfter(1000)]
         public void Multithreading()
         {
             // Multithreading sanity test
