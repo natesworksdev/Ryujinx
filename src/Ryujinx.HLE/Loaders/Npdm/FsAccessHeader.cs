@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.Loaders.Npdm
         public ulong PermissionsBitmask { get; private set; }
 
         /// <exception cref="InvalidNpdmException">The stream contains invalid data.</exception>
-        /// <exception cref="NotImplementedException">The ContentOwnerId section is not implemented.s</exception>
+        /// <exception cref="NotImplementedException">The ContentOwnerId section is not implemented.</exception>
         /// <exception cref="ArgumentException">The stream does not support reading, is <see langword="null"/>, or is already closed.</exception>
         /// <exception cref="EndOfStreamException">The end of the stream is reached.</exception>
         /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
