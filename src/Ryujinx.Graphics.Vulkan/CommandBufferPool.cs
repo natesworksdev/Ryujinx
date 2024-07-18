@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Device _device;
         private readonly Queue _queue;
         private readonly object _queueLock;
+        private readonly bool _concurrentFenceWaitUnsupported;
         private readonly CommandPool _pool;
         private readonly Thread _owner;
 
@@ -30,11 +31,9 @@ namespace Ryujinx.Graphics.Vulkan
             public int SubmissionCount;
             public CommandBuffer CommandBuffer;
             public FenceHolder Fence;
-            public SemaphoreHolder Semaphore;
 
             public List<IAuto> Dependants;
             public List<MultiFenceHolder> Waitables;
-            public HashSet<SemaphoreHolder> Dependencies;
 
             public void Initialize(Vk api, Device device, CommandPool pool)
             {
@@ -50,7 +49,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 Dependants = new List<IAuto>();
                 Waitables = new List<MultiFenceHolder>();
-                Dependencies = new HashSet<SemaphoreHolder>();
             }
         }
 
@@ -61,12 +59,20 @@ namespace Ryujinx.Graphics.Vulkan
         private int _queuedCount;
         private int _inUseCount;
 
-        public unsafe CommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex, bool isLight = false)
+        public unsafe CommandBufferPool(
+            Vk api,
+            Device device,
+            Queue queue,
+            object queueLock,
+            uint queueFamilyIndex,
+            bool concurrentFenceWaitUnsupported,
+            bool isLight = false)
         {
             _api = api;
             _device = device;
             _queue = queue;
             _queueLock = queueLock;
+            _concurrentFenceWaitUnsupported = concurrentFenceWaitUnsupported;
             _owner = Thread.CurrentThread;
 
             var commandPoolCreateInfo = new CommandPoolCreateInfo
@@ -132,14 +138,6 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
             }
-        }
-
-        public void AddDependency(int cbIndex, CommandBufferScoped dependencyCbs)
-        {
-            Debug.Assert(_commandBuffers[cbIndex].InUse);
-            var semaphoreHolder = _commandBuffers[dependencyCbs.CommandBufferIndex].Semaphore;
-            semaphoreHolder.Get();
-            _commandBuffers[cbIndex].Dependencies.Add(semaphoreHolder);
         }
 
         public void AddWaitable(int cbIndex, MultiFenceHolder waitable)
@@ -345,19 +343,13 @@ namespace Ryujinx.Graphics.Vulkan
                 waitable.RemoveBufferUses(cbIndex);
             }
 
-            foreach (var dependency in entry.Dependencies)
-            {
-                dependency.Put();
-            }
-
             entry.Dependants.Clear();
             entry.Waitables.Clear();
-            entry.Dependencies.Clear();
             entry.Fence?.Dispose();
 
             if (refreshFence)
             {
-                entry.Fence = new FenceHolder(_api, _device);
+                entry.Fence = new FenceHolder(_api, _device, _concurrentFenceWaitUnsupported);
             }
             else
             {

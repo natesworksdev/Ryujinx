@@ -40,20 +40,17 @@ using Ryujinx.UI.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using Silk.NET.Vulkan;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using SPB.Graphics.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using static Ryujinx.Ava.UI.Helpers.Win32NativeInterop;
 using AntiAliasing = Ryujinx.Common.Configuration.AntiAliasing;
-using Image = SixLabors.ImageSharp.Image;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using IRenderer = Ryujinx.Graphics.GAL.IRenderer;
 using Key = Ryujinx.Input.Key;
@@ -135,12 +132,14 @@ namespace Ryujinx.Ava
         public int Width { get; private set; }
         public int Height { get; private set; }
         public string ApplicationPath { get; private set; }
+        public ulong ApplicationId { get; private set; }
         public bool ScreenshotRequested { get; set; }
 
         public AppHost(
             RendererHost renderer,
             InputManager inputManager,
             string applicationPath,
+            ulong applicationId,
             VirtualFileSystem virtualFileSystem,
             ContentManager contentManager,
             AccountManager accountManager,
@@ -164,6 +163,7 @@ namespace Ryujinx.Ava
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             ApplicationPath = applicationPath;
+            ApplicationId = applicationId;
             VirtualFileSystem = virtualFileSystem;
             ContentManager = contentManager;
 
@@ -366,25 +366,33 @@ namespace Ryujinx.Ava
                             return;
                         }
 
-                        Image image = e.IsBgra ? Image.LoadPixelData<Bgra32>(e.Data, e.Width, e.Height)
-                                               : Image.LoadPixelData<Rgba32>(e.Data, e.Width, e.Height);
+                        var colorType = e.IsBgra ? SKColorType.Bgra8888 : SKColorType.Rgba8888;
+                        using var bitmap = new SKBitmap(new SKImageInfo(e.Width, e.Height, colorType, SKAlphaType.Premul));
 
-                        if (e.FlipX)
+                        Marshal.Copy(e.Data, 0, bitmap.GetPixels(), e.Data.Length);
+
+                        SKBitmap bitmapToSave = null;
+
+                        if (e.FlipX || e.FlipY)
                         {
-                            image.Mutate(x => x.Flip(FlipMode.Horizontal));
+                            bitmapToSave = new SKBitmap(bitmap.Width, bitmap.Height);
+
+                            using var canvas = new SKCanvas(bitmapToSave);
+
+                            canvas.Clear(SKColors.Transparent);
+
+                            float scaleX = e.FlipX ? -1 : 1;
+                            float scaleY = e.FlipY ? -1 : 1;
+
+                            var matrix = SKMatrix.CreateScale(scaleX, scaleY, bitmap.Width / 2f, bitmap.Height / 2f);
+
+                            canvas.SetMatrix(matrix);
+
+                            canvas.DrawBitmap(bitmap, new SKPoint(e.FlipX ? -bitmap.Width : 0, e.FlipY ? -bitmap.Height : 0));
                         }
 
-                        if (e.FlipY)
-                        {
-                            image.Mutate(x => x.Flip(FlipMode.Vertical));
-                        }
-
-                        image.SaveAsPng(path, new PngEncoder
-                        {
-                            ColorType = PngColorType.Rgb,
-                        });
-
-                        image.Dispose();
+                        SaveBitmapAsPng(bitmapToSave ?? bitmap, path);
+                        bitmapToSave?.Dispose();
 
                         Logger.Notice.Print(LogClass.Application, $"Screenshot saved to {path}", "Screenshot");
                     }
@@ -394,6 +402,14 @@ namespace Ryujinx.Ava
             {
                 Logger.Error?.Print(LogClass.Application, $"Screenshot is empty. Size : {e.Data.Length} bytes. Resolution : {e.Width}x{e.Height}", "Screenshot");
             }
+        }
+
+        private void SaveBitmapAsPng(SKBitmap bitmap, string path)
+        {
+            using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+            using var stream = File.OpenWrite(path);
+
+            data.SaveTo(stream);
         }
 
         public void Start()
@@ -706,7 +722,7 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
 
-                            if (!Device.LoadXci(ApplicationPath))
+                            if (!Device.LoadXci(ApplicationPath, ApplicationId))
                             {
                                 Device.Dispose();
 
@@ -733,7 +749,7 @@ namespace Ryujinx.Ava
                         {
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
 
-                            if (!Device.LoadNsp(ApplicationPath))
+                            if (!Device.LoadNsp(ApplicationPath, ApplicationId))
                             {
                                 Device.Dispose();
 
