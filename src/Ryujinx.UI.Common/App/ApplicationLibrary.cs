@@ -72,6 +72,11 @@ namespace Ryujinx.UI.App.Common
             return resourceByteArray;
         }
 
+        /// <exception cref="Ryujinx.HLE.Exceptions.InvalidNpdmException">The npdm file doesn't contain valid data.</exception>
+        /// <exception cref="NotImplementedException">The FsAccessHeader.ContentOwnerId section is not implemented.</exception>
+        /// <exception cref="ArgumentException">An error occured while reading bytes from the stream.</exception>
+        /// <exception cref="EndOfStreamException">The end of the stream is reached.</exception>
+        /// <exception cref="IOException">An I/O error occurred.</exception>
         private ApplicationData GetApplicationFromExeFs(PartitionFileSystem pfs, string filePath)
         {
             ApplicationData data = new()
@@ -103,6 +108,13 @@ namespace Ryujinx.UI.App.Common
             }
         }
 
+        /// <exception cref="MissingKeyException">The configured key set is missing a key.</exception>
+        /// <exception cref="HorizonResultException">An error occured while reading PFS data.</exception>
+        /// <exception cref="Ryujinx.HLE.Exceptions.InvalidNpdmException">The npdm file doesn't contain valid data.</exception>
+        /// <exception cref="NotImplementedException">The FsAccessHeader.ContentOwnerId section is not implemented.</exception>
+        /// <exception cref="ArgumentException">An error occured while reading bytes from the stream.</exception>
+        /// <exception cref="EndOfStreamException">The end of the stream is reached.</exception>
+        /// <exception cref="IOException">An I/O error occurred.</exception>
         private ApplicationData GetApplicationFromNsp(PartitionFileSystem pfs, string filePath)
         {
             bool isExeFs = false;
@@ -417,6 +429,7 @@ namespace Ryujinx.UI.App.Common
                             };
 
                             applications.Add(application);
+
                             break;
                         }
                 }
