@@ -82,6 +82,7 @@ namespace Ryujinx.UI.App.Common
             ApplicationData data = new()
             {
                 Icon = _nspIcon,
+                Path = filePath,
             };
 
             using UniqueRef<IFile> npdmFile = new();
