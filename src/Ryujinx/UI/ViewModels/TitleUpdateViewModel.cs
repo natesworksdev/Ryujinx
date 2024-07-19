@@ -169,7 +169,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        private void AddUpdate(string path, bool ignoreNotFound = false, bool select = false)
+        private void AddUpdate(string path, bool ignoreNotFound = false, bool selected = false)
         {
             if (!File.Exists(path) || TitleUpdates.Any(x => x.Path == path))
             {
@@ -207,7 +207,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     var update = new TitleUpdateModel(controlData, path);
                     TitleUpdates.Add(update);
 
-                    if (select)
+                    if (selected)
                     {
                         Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = update);
                     }
@@ -251,7 +251,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach (var file in result)
             {
-                AddUpdate(file.Path.LocalPath, select: true);
+                AddUpdate(file.Path.LocalPath, selected: true);
             }
 
             SortUpdates();
