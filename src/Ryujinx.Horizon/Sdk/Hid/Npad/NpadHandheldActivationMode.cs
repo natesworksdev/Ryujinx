@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Hid.Npad
 {
-    public enum NpadHandheldActivationMode
+    public enum NpadHandheldActivationMode : long
     {
         Dual,
         Single,

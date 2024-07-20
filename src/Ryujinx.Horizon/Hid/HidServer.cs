@@ -449,17 +449,21 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(84)]
-        public Result EnableSixAxisSensorUnalteredPassthrough(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool arg2, [ClientProcessId] ulong pid)
+        public Result EnableSixAxisSensorUnalteredPassthrough(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool sixAxisSensorUnalteredPassthrough, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _isSixAxisSensorUnalteredPassthroughEnabled = sixAxisSensorUnalteredPassthrough;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _isSixAxisSensorUnalteredPassthroughEnabled });
 
             return Result.Success;
         }
 
         [CmifCommand(85)]
-        public Result IsSixAxisSensorUnalteredPassthroughEnabled(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result IsSixAxisSensorUnalteredPassthroughEnabled(out bool sixAxisSensorUnalteredPassthrough, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            sixAxisSensorUnalteredPassthrough = _isSixAxisSensorUnalteredPassthroughEnabled;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return Result.Success;
         }
@@ -529,9 +533,19 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(102)]
-        public Result SetSupportedNpadIdType(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, [ClientProcessId] ulong pid)
+        public Result SetSupportedNpadIdType(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<NpadIdType> npadIds, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Npads.ClearSupportedPlayers();
+
+            for (int i = 0; i < npadIds.Length; i++)
+            {
+                if (IsValidNpadIdType(npadIds[i]))
+                {
+                    Npads.SetSupportedPlayer(GetIndexFromNpadIdType(npadIds[i]));
+                }
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{npadIds.Length} Players: " + string.Join(",", npadIds.ToArray()));
 
             return Result.Success;
         }
@@ -547,7 +561,8 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(104)]
         public Result DeactivateNpad(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Npads.Active = false;
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -561,17 +576,30 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(107)]
-        public Result DisconnectNpad(AppletResourceUserId appletResourceUserId, uint arg1, [ClientProcessId] ulong pid)
+        public Result DisconnectNpad(AppletResourceUserId appletResourceUserId, NpadIdType npadIdType, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadIdType });
 
             return Result.Success;
         }
 
         [CmifCommand(108)]
-        public Result GetPlayerLedPattern(out ulong arg0, uint arg1)
+        public Result GetPlayerLedPattern(out ulong ledPattern, NpadIdType npadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            ledPattern = npadId switch
+            {
+                NpadIdType.Player1 => 0b0001,
+                NpadIdType.Player2 => 0b0011,
+                NpadIdType.Player3 => 0b0111,
+                NpadIdType.Player4 => 0b1111,
+                NpadIdType.Player5 => 0b1001,
+                NpadIdType.Player6 => 0b0101,
+                NpadIdType.Player7 => 0b1101,
+                NpadIdType.Player8 => 0b0110,
+                NpadIdType.Unknown => 0b0000,
+                NpadIdType.Handheld => 0b0000,
+                _ => throw new InvalidOperationException($"{nameof(npadId)} contains an invalid value: {npadId}"),
+            };
 
             return Result.Success;
         }
@@ -617,17 +645,23 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(124)]
-        public Result SetNpadJoyAssignmentModeDual(AppletResourceUserId appletResourceUserId, uint arg1, [ClientProcessId] ulong pid)
+        public Result SetNpadJoyAssignmentModeDual(AppletResourceUserId appletResourceUserId, NpadIdType npadIdType, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            if (IsValidNpadIdType(npadIdType))
+            {
+                // context.Device.Hid.SharedMemory.Npads[(int)HidUtils.GetIndexFromNpadIdType(npadIdType)].InternalState.JoyAssignmentMode = NpadJoyAssignmentMode.Dual;
+            }
 
             return Result.Success;
         }
 
         [CmifCommand(125)]
-        public Result MergeSingleJoyAsDualJoy(AppletResourceUserId appletResourceUserId, uint arg1, uint arg2, [ClientProcessId] ulong pid)
+        public Result MergeSingleJoyAsDualJoy(AppletResourceUserId appletResourceUserId, NpadIdType npadIdType0, NpadIdType npadIdType1, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            if (IsValidNpadIdType(npadIdType0) && IsValidNpadIdType(npadIdType1))
+            {
+                Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadIdType0, npadIdType1 });
+            }
 
             return Result.Success;
         }
@@ -635,7 +669,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(126)]
         public Result StartLrAssignmentMode(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -643,31 +677,35 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(127)]
         public Result StopLrAssignmentMode(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
 
         [CmifCommand(128)]
-        public Result SetNpadHandheldActivationMode(AppletResourceUserId appletResourceUserId, long arg1, [ClientProcessId] ulong pid)
+        public Result SetNpadHandheldActivationMode(AppletResourceUserId appletResourceUserId, NpadHandheldActivationMode npadHandheldActivationMode, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _npadHandheldActivationMode = npadHandheldActivationMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadHandheldActivationMode });
 
             return Result.Success;
         }
 
         [CmifCommand(129)]
-        public Result GetNpadHandheldActivationMode(AppletResourceUserId appletResourceUserId, out long arg1, [ClientProcessId] ulong pid)
+        public Result GetNpadHandheldActivationMode(AppletResourceUserId appletResourceUserId, out NpadHandheldActivationMode npadHandheldActivationMode, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            npadHandheldActivationMode = _npadHandheldActivationMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadHandheldActivationMode });
 
             return Result.Success;
         }
 
         [CmifCommand(130)]
-        public Result SwapNpadAssignment(AppletResourceUserId appletResourceUserId, uint arg1, uint arg2, [ClientProcessId] ulong pid)
+        public Result SwapNpadAssignment(AppletResourceUserId appletResourceUserId, uint oldNpadAssignment, uint newNpadAssignment, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, oldNpadAssignment, newNpadAssignment });
 
             return Result.Success;
         }
@@ -1347,6 +1385,42 @@ namespace Ryujinx.Horizon.Hid
 
             return Result.Success;
         }
+
+        public static PlayerIndex GetIndexFromNpadIdType(NpadIdType npadIdType)
+            => npadIdType switch
+            {
+#pragma warning disable IDE0055 // Disable formatting
+                NpadIdType.Player1  => PlayerIndex.Player1,
+                NpadIdType.Player2  => PlayerIndex.Player2,
+                NpadIdType.Player3  => PlayerIndex.Player3,
+                NpadIdType.Player4  => PlayerIndex.Player4,
+                NpadIdType.Player5  => PlayerIndex.Player5,
+                NpadIdType.Player6  => PlayerIndex.Player6,
+                NpadIdType.Player7  => PlayerIndex.Player7,
+                NpadIdType.Player8  => PlayerIndex.Player8,
+                NpadIdType.Handheld => PlayerIndex.Handheld,
+                NpadIdType.Unknown  => PlayerIndex.Unknown,
+                _                   => throw new ArgumentOutOfRangeException(nameof(npadIdType)),
+#pragma warning restore IDE0055
+            };
+
+        public static NpadIdType GetNpadIdTypeFromIndex(PlayerIndex index)
+            => index switch
+            {
+#pragma warning disable IDE0055 // Disable formatting
+                PlayerIndex.Player1  => NpadIdType.Player1,
+                PlayerIndex.Player2  => NpadIdType.Player2,
+                PlayerIndex.Player3  => NpadIdType.Player3,
+                PlayerIndex.Player4  => NpadIdType.Player4,
+                PlayerIndex.Player5  => NpadIdType.Player5,
+                PlayerIndex.Player6  => NpadIdType.Player6,
+                PlayerIndex.Player7  => NpadIdType.Player7,
+                PlayerIndex.Player8  => NpadIdType.Player8,
+                PlayerIndex.Handheld => NpadIdType.Handheld,
+                PlayerIndex.Unknown  => NpadIdType.Unknown,
+                _                    => throw new ArgumentOutOfRangeException(nameof(index)),
+#pragma warning restore IDE0055
+            };
 
         private static bool IsValidNpadIdType(NpadIdType npadIdType)
         {

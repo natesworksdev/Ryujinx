@@ -152,78 +152,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [CommandCmif(84)] // 13.0.0+
-        // EnableSixAxisSensorUnalteredPassthrough(nn::applet::AppletResourceUserId, nn::hid::SixAxisSensorHandle, u8 enabled)
-        public ResultCode EnableSixAxisSensorUnalteredPassthrough(ServiceCtx context)
-        {
-            _isSixAxisSensorUnalteredPassthroughEnabled = context.RequestData.ReadUInt32() != 0;
-            int sixAxisSensorHandle = context.RequestData.ReadInt32();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _isSixAxisSensorUnalteredPassthroughEnabled });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(85)] // 13.0.0+
-        // IsSixAxisSensorUnalteredPassthroughEnabled(nn::applet::AppletResourceUserId, nn::hid::SixAxisSensorHandle) -> u8 enabled
-        public ResultCode IsSixAxisSensorUnalteredPassthroughEnabled(ServiceCtx context)
-        {
-            int sixAxisSensorHandle = context.RequestData.ReadInt32();
-            context.RequestData.BaseStream.Position += 4; // Padding
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            context.ResponseData.Write(_isSixAxisSensorUnalteredPassthroughEnabled);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(102)]
-        // SetSupportedNpadIdType(nn::applet::AppletResourceUserId, array<NpadIdType, 9>)
-        public ResultCode SetSupportedNpadIdType(ServiceCtx context)
-        {
-#pragma warning disable IDE0059 // Remove unnecessary value assignment
-            long appletResourceUserId = context.RequestData.ReadInt64();
-#pragma warning restore IDE0059
-            ulong arrayPosition = context.Request.PtrBuff[0].Position;
-            ulong arraySize = context.Request.PtrBuff[0].Size;
-
-            ReadOnlySpan<NpadIdType> supportedPlayerIds = MemoryMarshal.Cast<byte, NpadIdType>(context.Memory.GetSpan(arrayPosition, (int)arraySize));
-
-            context.Device.Hid.Npads.ClearSupportedPlayers();
-
-            for (int i = 0; i < supportedPlayerIds.Length; ++i)
-            {
-                if (HidUtils.IsValidNpadIdType(supportedPlayerIds[i]))
-                {
-                    context.Device.Hid.Npads.SetSupportedPlayer(HidUtils.GetIndexFromNpadIdType(supportedPlayerIds[i]));
-                }
-            }
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{supportedPlayerIds.Length} Players: " + string.Join(",", supportedPlayerIds.ToArray()));
-
-            return ResultCode.Success;
-        }
-
         [CommandCmif(103)]
         // ActivateNpad(nn::applet::AppletResourceUserId)
         public ResultCode ActivateNpad(ServiceCtx context)
         {
             return ActiveNpadImpl(context);
-        }
-
-        [CommandCmif(104)]
-        // DeactivateNpad(nn::applet::AppletResourceUserId)
-        public ResultCode DeactivateNpad(ServiceCtx context)
-        {
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            context.Device.Hid.Npads.Active = false;
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
-
-            return ResultCode.Success;
         }
 
         [CommandCmif(106)]
@@ -246,44 +179,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadId, npadStyleSet });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(107)]
-        // DisconnectNpad(nn::applet::AppletResourceUserId, uint NpadIdType)
-        public ResultCode DisconnectNpad(ServiceCtx context)
-        {
-            NpadIdType npadIdType = (NpadIdType)context.RequestData.ReadInt32();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadIdType });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(108)]
-        // GetPlayerLedPattern(u32 npad_id) -> u64 led_pattern
-        public ResultCode GetPlayerLedPattern(ServiceCtx context)
-        {
-            NpadIdType npadId = (NpadIdType)context.RequestData.ReadUInt32();
-
-            ulong ledPattern = npadId switch
-            {
-                NpadIdType.Player1 => 0b0001,
-                NpadIdType.Player2 => 0b0011,
-                NpadIdType.Player3 => 0b0111,
-                NpadIdType.Player4 => 0b1111,
-                NpadIdType.Player5 => 0b1001,
-                NpadIdType.Player6 => 0b0101,
-                NpadIdType.Player7 => 0b1101,
-                NpadIdType.Player8 => 0b0110,
-                NpadIdType.Unknown => 0b0000,
-                NpadIdType.Handheld => 0b0000,
-                _ => throw new InvalidOperationException($"{nameof(npadId)} contains an invalid value: {npadId}"),
-            };
-
-            context.ResponseData.Write(ledPattern);
 
             return ResultCode.Success;
         }
@@ -431,82 +326,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 context.Device.Hid.SharedMemory.Npads[(int)HidUtils.GetIndexFromNpadIdType(npadIdType)].InternalState.JoyAssignmentMode = NpadJoyAssignmentMode.Dual;
             }
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(125)]
-        // MergeSingleJoyAsDualJoy(uint npadIdType0, uint npadIdType1, nn::applet::AppletResourceUserId)
-        public ResultCode MergeSingleJoyAsDualJoy(ServiceCtx context)
-        {
-            NpadIdType npadIdType0 = (NpadIdType)context.RequestData.ReadUInt32();
-            NpadIdType npadIdType1 = (NpadIdType)context.RequestData.ReadUInt32();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            if (HidUtils.IsValidNpadIdType(npadIdType0) && HidUtils.IsValidNpadIdType(npadIdType1))
-            {
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadIdType0, npadIdType1 });
-            }
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(126)]
-        // StartLrAssignmentMode(nn::applet::AppletResourceUserId)
-        public ResultCode StartLrAssignmentMode(ServiceCtx context)
-        {
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(127)]
-        // StopLrAssignmentMode(nn::applet::AppletResourceUserId)
-        public ResultCode StopLrAssignmentMode(ServiceCtx context)
-        {
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(128)]
-        // SetNpadHandheldActivationMode(nn::applet::AppletResourceUserId, long HidNpadHandheldActivationMode)
-        public ResultCode SetNpadHandheldActivationMode(ServiceCtx context)
-        {
-            long appletResourceUserId = context.RequestData.ReadInt64();
-            _npadHandheldActivationMode = (NpadHandheldActivationMode)context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadHandheldActivationMode });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(129)]
-        // GetNpadHandheldActivationMode(nn::applet::AppletResourceUserId) -> long HidNpadHandheldActivationMode
-        public ResultCode GetNpadHandheldActivationMode(ServiceCtx context)
-        {
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            context.ResponseData.Write((long)_npadHandheldActivationMode);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadHandheldActivationMode });
-
-            return ResultCode.Success;
-        }
-
-        [CommandCmif(130)]
-        // SwapNpadAssignment(uint OldNpadAssignment, uint NewNpadAssignment, nn::applet::AppletResourceUserId)
-        public ResultCode SwapNpadAssignment(ServiceCtx context)
-        {
-            int oldNpadAssignment = context.RequestData.ReadInt32();
-            int newNpadAssignment = context.RequestData.ReadInt32();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, oldNpadAssignment, newNpadAssignment });
 
             return ResultCode.Success;
         }

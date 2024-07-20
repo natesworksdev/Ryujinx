@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Sdk.Hid.Npad
 {
-    public enum NpadIdType
+    public enum NpadIdType : uint
     {
         Player1 = 0,
         Player2 = 1,
