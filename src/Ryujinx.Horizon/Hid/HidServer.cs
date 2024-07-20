@@ -7,6 +7,7 @@ using Ryujinx.Horizon.Sdk.Hid.Npad;
 using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using Ryujinx.Horizon.Sdk.Hid.Vibration;
 using Ryujinx.Horizon.Sdk.Sf;
+using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
 
 namespace Ryujinx.Horizon.Hid
@@ -148,7 +149,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(40)]
-        public Result AcquireXpadIdEventHandle(out int arg0, ulong xpadId)
+        public Result AcquireXpadIdEventHandle([CopyHandle] out int arg0, ulong xpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -164,16 +165,19 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(51)]
-        public Result ActivateXpad(AppletResourceUserId appletResourceUserId, uint basixXpadId, [ClientProcessId] ulong pid)
+        public Result ActivateXpad(AppletResourceUserId appletResourceUserId, uint basicXpadId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, basicXpadId });
 
             return Result.Success;
         }
 
         [CmifCommand(55)]
-        public Result GetXpadIds(out long arg0, Span<uint> basicXpadIds)
+        public Result GetXpadIds(out long idCount, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<uint> basicXpadIds)
         {
+            // There aren't any Xpads, so we return 0 and write nothing inside the buffer.
+            idCount = 0;
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
             return Result.Success;
@@ -188,7 +192,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(58)]
-        public Result GetJoyXpadLifoHandle(out int arg0, uint joyXpadId)
+        public Result GetJoyXpadLifoHandle([CopyHandle] out int arg0, uint joyXpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -196,7 +200,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(59)]
-        public Result GetJoyXpadIds(out long arg0, Span<uint> joyXpadIds)
+        public Result GetJoyXpadIds(out long arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<uint> joyXpadIds)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -220,7 +224,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(62)]
-        public Result GetSixAxisSensorLifoHandle(out int arg0, uint basixXpadId)
+        public Result GetSixAxisSensorLifoHandle([CopyHandle] out int arg0, uint basixXpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -244,7 +248,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(65)]
-        public Result GetJoySixAxisSensorLifoHandle(out int arg0, uint joyXpadId)
+        public Result GetJoySixAxisSensorLifoHandle([CopyHandle] out int arg0, uint joyXpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -436,7 +440,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(86)]
-        public Result StoreSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, in SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, [ClientProcessId] ulong pid)
+        public Result StoreSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias, 0x744)] in SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { sixAxisSensorHandle, sixAxisSensorCalibrationParameter });
 
@@ -444,7 +448,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(87)]
-        public Result LoadSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, out SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result LoadSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias, 0x744)] out SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
             // TODO: CalibrationParameter have to be determined.
 
@@ -454,7 +458,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(88)]
-        public Result GetSixAxisSensorIcInformation(AppletResourceUserId appletResourceUserId, out SixAxisSensorIcInformation sixAxisSensorIcInformation, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result GetSixAxisSensorIcInformation(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer, 0xC8)] out SixAxisSensorIcInformation sixAxisSensorIcInformation, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
             // TODO: IcInformation have to be determined.
 
@@ -500,7 +504,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(102)]
-        public Result SetSupportedNpadIdType(AppletResourceUserId appletResourceUserId, ReadOnlySpan<uint> arg1, [ClientProcessId] ulong pid)
+        public Result SetSupportedNpadIdType(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -524,7 +528,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(106)]
-        public Result AcquireNpadStyleSetUpdateEventHandle(AppletResourceUserId appletResourceUserId, out int arg1, uint arg2, ulong arg3, [ClientProcessId] ulong pid)
+        public Result AcquireNpadStyleSetUpdateEventHandle(AppletResourceUserId appletResourceUserId, [CopyHandle] out int arg1, uint arg2, ulong arg3, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -740,7 +744,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(206)]
-        public Result SendVibrationValues(AppletResourceUserId appletResourceUserId, ReadOnlySpan<VibrationDeviceHandle> vibrationDeviceHandles, ReadOnlySpan<VibrationValue> vibrationValues)
+        public Result SendVibrationValues(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<VibrationDeviceHandle> vibrationDeviceHandles, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<VibrationValue> vibrationValues)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -847,7 +851,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(306)]
-        public Result InitializeSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, int nativeHandle0, ulong counter0, int nativeHandle1, ulong counter1, [ClientProcessId] ulong pid)
+        public Result InitializeSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, [CopyHandle] int nativeHandle0, ulong counter0, [CopyHandle] int nativeHandle1, ulong counter1, [ClientProcessId] ulong pid)
         {
             // TODO: Determine if array<nn::sf::NativeHandle> is a buffer or not...
 
@@ -962,7 +966,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(407)]
-        public Result GetNpadOfHighestBatteryLevel(out uint arg0, ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
+        public Result GetNpadOfHighestBatteryLevel(out uint arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -986,7 +990,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(502)]
-        public Result AcquirePalmaOperationCompleteEvent(out int arg0, PalmaConnectionHandle palmaConnectionHandle)
+        public Result AcquirePalmaOperationCompleteEvent([CopyHandle] out int arg0, PalmaConnectionHandle palmaConnectionHandle)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -994,7 +998,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(503)]
-        public Result GetPalmaOperationInfo(out ulong arg0, Span<byte> arg1, PalmaConnectionHandle palmaConnectionHandle)
+        public Result GetPalmaOperationInfo(out ulong arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg1, PalmaConnectionHandle palmaConnectionHandle)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -1050,7 +1054,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(510)]
-        public Result WritePalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, ulong arg2, in PalmaApplicationSectionAccessBuffer palmaApplicationSectionAccessBuffer)
+        public Result WritePalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, ulong arg2, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x100)] in PalmaApplicationSectionAccessBuffer palmaApplicationSectionAccessBuffer)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -1082,7 +1086,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(514)]
-        public Result WritePalmaRgbLedPatternEntry(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, ReadOnlySpan<byte> arg2)
+        public Result WritePalmaRgbLedPatternEntry(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, [Buffer(HipcBufferFlags.In | HipcBufferFlags.MapAlias)] ReadOnlySpan<byte> arg2)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -1090,7 +1094,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(515)]
-        public Result WritePalmaWaveEntry(PalmaConnectionHandle palmaConnectionHandle, PalmaWaveSet palmaWaveSet, ulong arg2, int arg3, ulong arg4, ulong arg5)
+        public Result WritePalmaWaveEntry(PalmaConnectionHandle palmaConnectionHandle, PalmaWaveSet palmaWaveSet, ulong arg2, [CopyHandle] int arg3, ulong arg4, ulong arg5)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -1202,7 +1206,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(529)]
-        public Result SetDisallowedPalmaConnection(AppletResourceUserId appletResourceUserId, ReadOnlySpan<Address> arg1, [ClientProcessId] ulong pid)
+        public Result SetDisallowedPalmaConnection(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<Address> arg1, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 

@@ -17,8 +17,8 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result SendKeyboardLockKeyEvent(AppletResourceUserId appletResourceUserId, KeyboardLockKeyEvent keyboardLockKeyEvent, ulong pid);
         Result AcquireXpadIdEventHandle(out int arg0, ulong xpadId);
         Result ReleaseXpadIdEventHandle(ulong xpadId);
-        Result ActivateXpad(AppletResourceUserId appletResourceUserId, uint basixXpadId, ulong pid);
-        Result GetXpadIds(out long arg0, Span<uint> basicXpadIds);
+        Result ActivateXpad(AppletResourceUserId appletResourceUserId, uint basicXpadId, ulong pid);
+        Result GetXpadIds(out long idCount, Span<uint> basicXpadIds);
         Result ActivateJoyXpad(uint joyXpadId);
         Result GetJoyXpadLifoHandle(out int arg0, uint joyXpadId);
         Result GetJoyXpadIds(out long arg0, Span<uint> joyXpadIds);

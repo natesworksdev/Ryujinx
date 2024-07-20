@@ -120,18 +120,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [CommandCmif(51)]
-        // ActivateXpad(nn::hid::BasicXpadId, nn::applet::AppletResourceUserId)
-        public ResultCode ActivateXpad(ServiceCtx context)
-        {
-            int basicXpadId = context.RequestData.ReadInt32();
-            long appletResourceUserId = context.RequestData.ReadInt64();
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, basicXpadId });
-
-            return ResultCode.Success;
-        }
-
         [CommandCmif(55)]
         // GetXpadIds() -> long IdsCount, buffer<array<nn::hid::BasicXpadId>, type: 0xa>
         public ResultCode GetXpadIds(ServiceCtx context)
