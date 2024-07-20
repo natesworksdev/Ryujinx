@@ -384,8 +384,7 @@ namespace Ryujinx.Ava
                         canvas.SetMatrix(matrix);
                         canvas.DrawBitmap(bitmap, SKPoint.Empty);
 
-                        SaveBitmapAsPng(bitmapToSave ?? bitmap, path);
-                        bitmapToSave?.Dispose();
+                        SaveBitmapAsPng(bitmapToSave, path);
 
                         Logger.Notice.Print(LogClass.Application, $"Screenshot saved to {path}", "Screenshot");
                     }
