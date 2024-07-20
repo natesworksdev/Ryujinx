@@ -1155,7 +1155,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // On Adreno, enabling rasterizer discard somehow corrupts the viewport state.
                 // Force it to be updated on next use to work around this bug.
-                DynamicState.ForceAllDirty();
+                DynamicState.ForceAllDirty(Gd);
             }
         }
 
