@@ -1,4 +1,3 @@
-using LibHac.Ns;
 using Ryujinx.Ava.Common.Locale;
 
 namespace Ryujinx.Ava.UI.Models
