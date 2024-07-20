@@ -27,7 +27,7 @@ namespace Ryujinx.Horizon.Hid
 
             _serverManager = new ServerManager(allocator, _sm, MaxPortsCount, _options, MaxSessionsCount);
 
-            // _serverManager.RegisterObjectForServer(, ServiceName.Encode("hid"), MaxSessionsCount);
+            _serverManager.RegisterObjectForServer(new HidServer(), ServiceName.Encode("hid"), MaxSessionsCount);
             // _serverManager.RegisterObjectForServer(, ServiceName.Encode("hidbus"), MaxSessionsCount);
             // _serverManager.RegisterObjectForServer(, ServiceName.Encode("hid:sys"), MaxSessionsCount);
             // _serverManager.RegisterObjectForServer(, ServiceName.Encode("hid:dbg"), MaxSessionsCount);

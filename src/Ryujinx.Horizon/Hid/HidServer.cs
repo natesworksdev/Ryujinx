@@ -16,14 +16,6 @@ namespace Ryujinx.Horizon.Hid
 {
     partial class HidServer : IHidServer
     {
-        internal const int SharedMemEntryCount = 17;
-
-        public DebugPadDevice DebugPad;
-        public TouchDevice Touchscreen;
-        public MouseDevice Mouse;
-        public KeyboardDevice Keyboard;
-        public NpadDevices Npads;
-
         private SystemEventType _xpadIdEvent;
         private SystemEventType _palmaOperationCompleteEvent;
 
@@ -48,12 +40,6 @@ namespace Ryujinx.Horizon.Hid
 
         public HidServer()
         {
-            DebugPad = new DebugPadDevice(true);
-            Touchscreen = new TouchDevice(true);
-            Mouse = new MouseDevice(false);
-            Keyboard = new KeyboardDevice(false);
-            Npads = new NpadDevices(true);
-
             Os.CreateSystemEvent(out _xpadIdEvent, EventClearMode.ManualClear, interProcess: true);
             Os.SignalSystemEvent(ref _xpadIdEvent); // TODO: signal event at right place
 
@@ -83,9 +69,9 @@ namespace Ryujinx.Horizon.Hid
         {
             // Initialize entries to avoid issues with some games.
 
-            for (int i = 0; i < SharedMemEntryCount; i++)
+            for (int i = 0; i < HorizonStatic.Hid.SharedMemEntryCount; i++)
             {
-                DebugPad.Update();
+                HorizonStatic.Hid.DebugPad.Update();
             }
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
@@ -96,13 +82,13 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(11)]
         public Result ActivateTouchScreen(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Touchscreen.Active = true;
+            HorizonStatic.Hid.Touchscreen.Active = true;
 
             // Initialize entries to avoid issues with some games.
 
-            for (int i = 0; i < SharedMemEntryCount; i++)
+            for (int i = 0; i < HorizonStatic.Hid.SharedMemEntryCount; i++)
             {
-                Touchscreen.Update();
+                HorizonStatic.Hid.Touchscreen.Update();
             }
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
@@ -113,13 +99,13 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(21)]
         public Result ActivateMouse(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Mouse.Active = true;
+            HorizonStatic.Hid.Mouse.Active = true;
 
             // Initialize entries to avoid issues with some games.
 
-            for (int i = 0; i < SharedMemEntryCount; i++)
+            for (int i = 0; i < HorizonStatic.Hid.SharedMemEntryCount; i++)
             {
-                Mouse.Update(0, 0);
+                HorizonStatic.Hid.Mouse.Update(0, 0);
             }
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
@@ -130,7 +116,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(31)]
         public Result ActivateKeyboard(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Keyboard.Active = true;
+            HorizonStatic.Hid.Keyboard.Active = true;
 
             // Initialize entries to avoid issues with some games.
 
@@ -139,9 +125,9 @@ namespace Ryujinx.Horizon.Hid
                 Keys = new ulong[4],
             };
 
-            for (int i = 0; i < SharedMemEntryCount; i++)
+            for (int i = 0; i < HorizonStatic.Hid.SharedMemEntryCount; i++)
             {
-                Keyboard.Update(emptyInput);
+                HorizonStatic.Hid.Keyboard.Update(emptyInput);
             }
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
@@ -530,7 +516,7 @@ namespace Ryujinx.Horizon.Hid
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { pid, appletResourceUserId, supportedStyleSets });
 
-            Npads.SupportedStyleSets = supportedStyleSets;
+            HorizonStatic.Hid.Npads.SupportedStyleSets = supportedStyleSets;
 
             return Result.Success;
         }
@@ -538,9 +524,9 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(101)]
         public Result GetSupportedNpadStyleSet(AppletResourceUserId appletResourceUserId, out NpadStyleTag supportedStyleSets, [ClientProcessId] ulong pid)
         {
-            supportedStyleSets = Npads.SupportedStyleSets;
+            supportedStyleSets = HorizonStatic.Hid.Npads.SupportedStyleSets;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, Npads.SupportedStyleSets });
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, HorizonStatic.Hid.Npads.SupportedStyleSets });
 
             return Result.Success;
         }
@@ -548,13 +534,13 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(102)]
         public Result SetSupportedNpadIdType(AppletResourceUserId appletResourceUserId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<NpadIdType> npadIds, [ClientProcessId] ulong pid)
         {
-            Npads.ClearSupportedPlayers();
+            HorizonStatic.Hid.Npads.ClearSupportedPlayers();
 
             for (int i = 0; i < npadIds.Length; i++)
             {
                 if (IsValidNpadIdType(npadIds[i]))
                 {
-                    Npads.SetSupportedPlayer(GetIndexFromNpadIdType(npadIds[i]));
+                    HorizonStatic.Hid.Npads.SetSupportedPlayer(GetIndexFromNpadIdType(npadIds[i]));
                 }
             }
 
@@ -574,7 +560,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(104)]
         public Result DeactivateNpad(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Npads.Active = false;
+            HorizonStatic.Hid.Npads.Active = false;
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
@@ -839,7 +825,7 @@ namespace Ryujinx.Horizon.Hid
                 [vibrationDeviceHandle.Position] = vibrationValue,
             };
 
-            Npads.UpdateRumbleQueue(vibrationDeviceHandle.PlayerId, dualVibrationValues);
+            HorizonStatic.Hid.Npads.UpdateRumbleQueue(vibrationDeviceHandle.PlayerId, dualVibrationValues);
 
             return Result.Success;
         }
@@ -847,7 +833,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(202)]
         public Result GetActualVibrationValue(out VibrationValue vibrationValue, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
         {
-            vibrationValue = Npads.GetLastVibrationValue(vibrationDeviceHandle.PlayerId, vibrationDeviceHandle.Position);
+            vibrationValue = HorizonStatic.Hid.Npads.GetLastVibrationValue(vibrationDeviceHandle.PlayerId, vibrationDeviceHandle.Position);
 
             return Result.Success;
         }

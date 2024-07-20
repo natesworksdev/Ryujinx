@@ -1,9 +1,10 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
-using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.Horizon;
 using Ryujinx.Horizon.Sdk.Hid;
 using Ryujinx.Horizon.Sdk.Hid.HidDevices;
+using Ryujinx.Horizon.Sdk.Hid.Npad;
 using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using System;
 using System.Collections.Generic;
@@ -66,7 +67,7 @@ namespace Ryujinx.Input.HLE
                     }
                 }
 
-                _device.Hid.RefreshInputConfig(validInputs);
+                HorizonStatic.Hid.RefreshInputConfig(validInputs);
             }
         }
 
@@ -169,7 +170,7 @@ namespace Ryujinx.Input.HLE
                 _enableKeyboard = enableKeyboard;
                 _enableMouse = enableMouse;
 
-                _device.Hid.RefreshInputConfig(validInputs);
+                HorizonStatic.Hid.RefreshInputConfig(validInputs);
             }
         }
 
@@ -228,11 +229,11 @@ namespace Ryujinx.Input.HLE
 
                         controller.UpdateUserConfiguration(inputConfig);
                         controller.Update();
-                        controller.UpdateRumble(_device.Hid.Npads.GetRumbleQueue(playerIndex));
+                        controller.UpdateRumble(HorizonStatic.Hid.Npads.GetRumbleQueue((NpadIdType)playerIndex));
 
                         inputState = controller.GetHLEInputState();
 
-                        inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
+                        inputState.Buttons |= HorizonStatic.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
                         isJoyconPair = inputConfig.ControllerType == ControllerType.JoyconPair;
 
@@ -265,12 +266,12 @@ namespace Ryujinx.Input.HLE
                     hleKeyboardInput = NpadController.GetHLEKeyboardInput(_keyboardDriver);
                 }
 
-                _device.Hid.Npads.Update(hleInputStates);
-                _device.Hid.Npads.UpdateSixAxis(hleMotionStates);
+                HorizonStatic.Hid.Npads.Update(hleInputStates);
+                HorizonStatic.Hid.Npads.UpdateSixAxis(hleMotionStates);
 
                 if (hleKeyboardInput.HasValue)
                 {
-                    _device.Hid.Keyboard.Update(hleKeyboardInput.Value);
+                    HorizonStatic.Hid.Keyboard.Update(hleKeyboardInput.Value);
                 }
 
                 if (_enableMouse)
@@ -308,11 +309,11 @@ namespace Ryujinx.Input.HLE
 
                     var position = IMouse.GetScreenPosition(mouseInput.Position, mouse.ClientSize, aspectRatio);
 
-                    _device.Hid.Mouse.Update((int)position.X, (int)position.Y, buttons, (int)mouseInput.Scroll.X, (int)mouseInput.Scroll.Y, true);
+                    HorizonStatic.Hid.Mouse.Update((int)position.X, (int)position.Y, buttons, (int)mouseInput.Scroll.X, (int)mouseInput.Scroll.Y, true);
                 }
                 else
                 {
-                    _device.Hid.Mouse.Update(0, 0);
+                    HorizonStatic.Hid.Mouse.Update(0, 0);
                 }
 
                 _device.TamperMachine.UpdateInput(hleInputStates);

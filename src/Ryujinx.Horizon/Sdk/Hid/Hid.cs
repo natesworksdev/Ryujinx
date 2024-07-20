@@ -16,7 +16,7 @@ namespace Ryujinx.Horizon.Sdk.Hid
 
         internal ref SharedMemory SharedMemory => ref _storage.GetRef<SharedMemory>(0);
 
-        internal const int SharedMemEntryCount = 17;
+        internal readonly int SharedMemEntryCount = 17;
 
         public DebugPadDevice DebugPad;
         public TouchDevice Touchscreen;
