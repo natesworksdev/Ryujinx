@@ -6,6 +6,7 @@ using Ryujinx.Horizon.Sdk.Hid.HidDevices;
 using Ryujinx.Horizon.Sdk.Hid.Npad;
 using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using Ryujinx.Horizon.Sdk.Hid.Vibration;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
@@ -22,6 +23,9 @@ namespace Ryujinx.Horizon.Hid
         public MouseDevice Mouse;
         public KeyboardDevice Keyboard;
         public NpadDevices Npads;
+
+        private SystemEventType _xpadIdEvent;
+        private SystemEventType _palmaOperationCompleteEvent;
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
@@ -49,6 +53,11 @@ namespace Ryujinx.Horizon.Hid
             Mouse = new MouseDevice(false);
             Keyboard = new KeyboardDevice(false);
             Npads = new NpadDevices(true);
+
+            Os.CreateSystemEvent(out _xpadIdEvent, EventClearMode.ManualClear, interProcess: true);
+            Os.SignalSystemEvent(ref _xpadIdEvent); // TODO: signal event at right place
+
+            Os.CreateSystemEvent(out _palmaOperationCompleteEvent, EventClearMode.ManualClear, interProcess: true);
 
             _npadHandheldActivationMode = NpadHandheldActivationMode.Dual;
             _gyroscopeZeroDriftMode = GyroscopeZeroDriftMode.Standard;
@@ -151,8 +160,10 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(40)]
-        public Result AcquireXpadIdEventHandle([CopyHandle] out int arg0, ulong xpadId)
+        public Result AcquireXpadIdEventHandle([CopyHandle] out int handle, ulong xpadId)
         {
+            handle = Os.GetReadableHandleOfSystemEvent(ref _xpadIdEvent);
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
             return Result.Success;
@@ -161,6 +172,8 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(41)]
         public Result ReleaseXpadIdEventHandle(ulong xpadId)
         {
+            Os.DetachReadableHandleOfSystemEvent(ref _xpadIdEvent);
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
             return Result.Success;
@@ -1092,18 +1105,10 @@ namespace Ryujinx.Horizon.Hid
             return Result.Success;
         }
 
-        [CmifCommand(407)]
-        public Result GetNpadOfHighestBatteryLevel(out uint npadId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
-        {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
-
-            return Result.Success;
-        }
-
         [CmifCommand(500)]
-        public Result GetPalmaConnectionHandle(out PalmaConnectionHandle palmaConnectionHandle, uint arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
+        public Result GetPalmaConnectionHandle(out PalmaConnectionHandle palmaConnectionHandle, uint unknown, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, unknown, palmaConnectionHandle });
 
             return Result.Success;
         }
@@ -1111,39 +1116,49 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(501)]
         public Result InitializePalma(PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
 
         [CmifCommand(502)]
-        public Result AcquirePalmaOperationCompleteEvent([CopyHandle] out int arg0, PalmaConnectionHandle palmaConnectionHandle)
+        public Result AcquirePalmaOperationCompleteEvent([CopyHandle] out int handle, PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            handle = Os.GetReadableHandleOfSystemEvent(ref _palmaOperationCompleteEvent);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
             return Result.Success;
         }
 
         [CmifCommand(503)]
-        public Result GetPalmaOperationInfo(out ulong arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg1, PalmaConnectionHandle palmaConnectionHandle)
+        public Result GetPalmaOperationInfo(out ulong unknown, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.MapAlias)] Span<byte> arg1, PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            unknown = 0; // Counter?
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown });
 
             return Result.Success;
         }
 
         [CmifCommand(504)]
-        public Result PlayPalmaActivity(PalmaConnectionHandle palmaConnectionHandle, ulong arg1)
+        public Result PlayPalmaActivity(PalmaConnectionHandle palmaConnectionHandle, ulong unknown)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
 
         [CmifCommand(505)]
-        public Result SetPalmaFrModeType(PalmaConnectionHandle palmaConnectionHandle, ulong arg1)
+        public Result SetPalmaFrModeType(PalmaConnectionHandle palmaConnectionHandle, ulong frModeType)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, frModeType });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
@@ -1151,15 +1166,17 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(506)]
         public Result ReadPalmaStep(PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
             return Result.Success;
         }
 
         [CmifCommand(507)]
-        public Result EnablePalmaStep(PalmaConnectionHandle palmaConnectionHandle, bool arg1)
+        public Result EnablePalmaStep(PalmaConnectionHandle palmaConnectionHandle, bool enabledPalmaStep)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, enabledPalmaStep });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
@@ -1167,23 +1184,28 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(508)]
         public Result ResetPalmaStep(PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
 
         [CmifCommand(509)]
-        public Result ReadPalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, ulong arg2)
+        public Result ReadPalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong unknown0, ulong unknown1)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown0, unknown1 });
 
             return Result.Success;
         }
 
         [CmifCommand(510)]
-        public Result WritePalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong arg1, ulong arg2, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x100)] in PalmaApplicationSectionAccessBuffer palmaApplicationSectionAccessBuffer)
+        public Result WritePalmaApplicationSection(PalmaConnectionHandle palmaConnectionHandle, ulong unknown0, ulong unknown1, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer, 0x100)] in PalmaApplicationSectionAccessBuffer palmaApplicationSectionAccessBuffer)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // nn::hid::PalmaApplicationSectionAccessBuffer cast is unknown
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown0, unknown1 });
+
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return Result.Success;
         }
