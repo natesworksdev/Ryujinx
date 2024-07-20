@@ -5,7 +5,6 @@ using Ryujinx.Horizon.Sdk.Hid.HidDevices;
 using Ryujinx.Horizon.Sdk.Hid.Npad;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using ControllerType = Ryujinx.Horizon.Sdk.Hid.Npad.ControllerType;
 using PlayerIndex = Ryujinx.Horizon.Sdk.Hid.Npad.PlayerIndex;
 
 namespace Ryujinx.Horizon.Sdk.Hid
@@ -68,7 +67,7 @@ namespace Ryujinx.Horizon.Sdk.Hid
             for (int i = 0; i < npadConfig.Length; ++i)
             {
                 npadConfig[i].Player = (PlayerIndex)inputConfig[i].PlayerIndex;
-                npadConfig[i].Type = (ControllerType)inputConfig[i].ControllerType;
+                npadConfig[i].Type = inputConfig[i].ControllerType;
             }
 
             Npads.Configure(npadConfig);

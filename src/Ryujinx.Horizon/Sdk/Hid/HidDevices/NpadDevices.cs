@@ -18,7 +18,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
         private long _lastNotifyTimestamp;
 
         public const int MaxControllers = 9; // Players 1-8 and Handheld
-        private ControllerType[] _configuredTypes;
+        private NpadStyleTag[] _configuredTypes;
         private readonly Event[] _styleSetUpdateEvents;
         private readonly bool[] _supportedPlayers;
         private VibrationValue _neutralVibrationValue = new()
@@ -31,18 +31,18 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 
         internal NpadJoyHoldType JoyHold { get; set; }
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
-        internal ControllerType SupportedStyleSets { get; set; }
+        internal NpadStyleTag SupportedStyleSets { get; set; }
 
         public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
         public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new();
 
         public NpadDevices(bool active = true) : base(active)
         {
-            _configuredTypes = new ControllerType[MaxControllers];
+            _configuredTypes = new NpadStyleTag[MaxControllers];
 
-            SupportedStyleSets = ControllerType.Handheld | ControllerType.JoyconPair |
-                                 ControllerType.JoyconLeft | ControllerType.JoyconRight |
-                                 ControllerType.ProController;
+            SupportedStyleSets = NpadStyleTag.Handheld | NpadStyleTag.JoyDual |
+                                 NpadStyleTag.JoyLeft | NpadStyleTag.JoyRight |
+                                 NpadStyleTag.FullKey;
 
             _supportedPlayers = new bool[MaxControllers];
             _supportedPlayers.AsSpan().Fill(true);
@@ -89,23 +89,23 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             }
         }
 
-        public bool Validate(int playerMin, int playerMax, ControllerType acceptedTypes, out int configuredCount, out PlayerIndex primaryIndex)
+        public bool Validate(int playerMin, int playerMax, NpadStyleTag acceptedTypes, out int configuredCount, out PlayerIndex primaryIndex)
         {
             primaryIndex = PlayerIndex.Unknown;
             configuredCount = 0;
 
             for (int i = 0; i < MaxControllers; ++i)
             {
-                ControllerType npad = _configuredTypes[i];
+                NpadStyleTag npad = _configuredTypes[i];
 
-                if (npad == ControllerType.Handheld && _device.System.State.DockedMode)
+                if (npad == NpadStyleTag.Handheld && _device.System.State.DockedMode)
                 {
                     continue;
                 }
 
-                ControllerType currentType = (ControllerType)_device.Hid.SharedMemory.Npads[i].InternalState.StyleSet;
+                NpadStyleTag currentType = (NpadStyleTag)_device.Hid.SharedMemory.Npads[i].InternalState.StyleSet;
 
-                if (currentType != ControllerType.None && (npad & acceptedTypes) != 0 && _supportedPlayers[i])
+                if (currentType != NpadStyleTag.None && (npad & acceptedTypes) != 0 && _supportedPlayers[i])
                 {
                     configuredCount++;
                     if (primaryIndex == PlayerIndex.Unknown)
@@ -125,19 +125,19 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 
         public void Configure(params ControllerConfig[] configs)
         {
-            _configuredTypes = new ControllerType[MaxControllers];
+            _configuredTypes = new NpadStyleTag[MaxControllers];
 
             for (int i = 0; i < configs.Length; ++i)
             {
                 PlayerIndex player = configs[i].Player;
-                ControllerType controllerType = configs[i].Type;
+                NpadStyleTag controllerType = configs[i].Type;
 
                 if (player > PlayerIndex.Handheld)
                 {
                     throw new InvalidOperationException("Player must be Player1-8 or Handheld");
                 }
 
-                if (controllerType == ControllerType.Handheld)
+                if (controllerType == NpadStyleTag.Handheld)
                 {
                     player = PlayerIndex.Handheld;
                 }
@@ -178,28 +178,28 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             // Remap/Init if necessary
             for (int i = 0; i < MaxControllers; ++i)
             {
-                ControllerType config = _configuredTypes[i];
+                NpadStyleTag config = _configuredTypes[i];
 
                 // Remove Handheld config when Docked
-                if (config == ControllerType.Handheld && _device.System.State.DockedMode)
+                if (config == NpadStyleTag.Handheld && _device.System.State.DockedMode)
                 {
-                    config = ControllerType.None;
+                    config = NpadStyleTag.None;
                 }
 
                 // Auto-remap ProController and JoyconPair
-                if (config == ControllerType.JoyconPair && (SupportedStyleSets & ControllerType.JoyconPair) == 0 && (SupportedStyleSets & ControllerType.ProController) != 0)
+                if (config == NpadStyleTag.JoyDual && (SupportedStyleSets & NpadStyleTag.JoyDual) == 0 && (SupportedStyleSets & NpadStyleTag.FullKey) != 0)
                 {
-                    config = ControllerType.ProController;
+                    config = NpadStyleTag.FullKey;
                 }
-                else if (config == ControllerType.ProController && (SupportedStyleSets & ControllerType.ProController) == 0 && (SupportedStyleSets & ControllerType.JoyconPair) != 0)
+                else if (config == NpadStyleTag.FullKey && (SupportedStyleSets & NpadStyleTag.FullKey) == 0 && (SupportedStyleSets & NpadStyleTag.JoyDual) != 0)
                 {
-                    config = ControllerType.JoyconPair;
+                    config = NpadStyleTag.JoyDual;
                 }
 
                 // Check StyleSet and PlayerSet
                 if ((config & SupportedStyleSets) == 0 || !_supportedPlayers[i])
                 {
-                    config = ControllerType.None;
+                    config = NpadStyleTag.None;
                 }
 
                 SetupNpad((PlayerIndex)i, config);
@@ -212,11 +212,11 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             }
         }
 
-        private void SetupNpad(PlayerIndex player, ControllerType type)
+        private void SetupNpad(PlayerIndex player, NpadStyleTag type)
         {
             ref NpadInternalState controller = ref _device.Hid.SharedMemory.Npads[(int)player].InternalState;
 
-            ControllerType oldType = (ControllerType)controller.StyleSet;
+            NpadStyleTag oldType = controller.StyleSet;
 
             if (oldType == type)
             {
@@ -225,7 +225,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
 
             controller = NpadInternalState.Create(); // Reset it
 
-            if (type == ControllerType.None)
+            if (type == NpadStyleTag.None)
             {
                 _styleSetUpdateEvents[(int)player].ReadableEvent.Signal(); // Signal disconnect
                 _activeCount--;
@@ -255,7 +255,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             switch (type)
             {
 #pragma warning disable IDE0055 // Disable formatting
-                case ControllerType.ProController:
+                case NpadStyleTag.FullKey:
                     controller.StyleSet           = NpadStyleTag.FullKey;
                     controller.DeviceType         = DeviceType.FullKey;
                     controller.SystemProperties  |= NpadSystemProperties.IsAbxyButtonOriented |
@@ -263,7 +263,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
                                                     NpadSystemProperties.IsMinusAvailable;
                     controller.AppletFooterUiType = AppletFooterUiType.SwitchProController;
                     break;
-                case ControllerType.Handheld:
+                case NpadStyleTag.Handheld:
                     controller.StyleSet           = NpadStyleTag.Handheld;
                     controller.DeviceType         = DeviceType.HandheldLeft |
                                                     DeviceType.HandheldRight;
@@ -272,7 +272,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
                                                     NpadSystemProperties.IsMinusAvailable;
                     controller.AppletFooterUiType = AppletFooterUiType.HandheldJoyConLeftJoyConRight;
                     break;
-                case ControllerType.JoyconPair:
+                case NpadStyleTag.JoyDual:
                     controller.StyleSet           = NpadStyleTag.JoyDual;
                     controller.DeviceType         = DeviceType.JoyLeft |
                                                     DeviceType.JoyRight;
@@ -281,7 +281,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
                                                     NpadSystemProperties.IsMinusAvailable;
                     controller.AppletFooterUiType = _device.System.State.DockedMode ? AppletFooterUiType.JoyDual : AppletFooterUiType.HandheldJoyConLeftJoyConRight;
                     break;
-                case ControllerType.JoyconLeft:
+                case NpadStyleTag.JoyLeft:
                     controller.StyleSet           = NpadStyleTag.JoyLeft;
                     controller.JoyAssignmentMode  = NpadJoyAssignmentMode.Single;
                     controller.DeviceType         = DeviceType.JoyLeft;
@@ -289,7 +289,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
                                                     NpadSystemProperties.IsMinusAvailable;
                     controller.AppletFooterUiType = _device.System.State.DockedMode ? AppletFooterUiType.JoyDualLeftOnly : AppletFooterUiType.HandheldJoyConLeftOnly;
                     break;
-                case ControllerType.JoyconRight:
+                case NpadStyleTag.JoyRight:
                     controller.StyleSet           = NpadStyleTag.JoyRight;
                     controller.JoyAssignmentMode  = NpadJoyAssignmentMode.Single;
                     controller.DeviceType         = DeviceType.JoyRight;
@@ -297,7 +297,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
                                                     NpadSystemProperties.IsPlusAvailable;
                     controller.AppletFooterUiType = _device.System.State.DockedMode ? AppletFooterUiType.JoyDualRightOnly : AppletFooterUiType.HandheldJoyConRightOnly;
                     break;
-                case ControllerType.Pokeball:
+                case NpadStyleTag.Palma:
                     controller.StyleSet           = NpadStyleTag.Palma;
                     controller.DeviceType         = DeviceType.Palma;
                     controller.AppletFooterUiType = AppletFooterUiType.None;

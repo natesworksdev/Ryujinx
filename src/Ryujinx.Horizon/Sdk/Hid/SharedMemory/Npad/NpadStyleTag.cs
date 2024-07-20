@@ -6,7 +6,7 @@ namespace Ryujinx.Horizon.Sdk.Hid
     /// Nintendo pad style
     /// </summary>
     [Flags]
-    enum NpadStyleTag : uint
+    public enum NpadStyleTag : uint
     {
         /// <summary>
         /// No type.

@@ -5,6 +5,6 @@ namespace Ryujinx.Horizon.Sdk.Hid
     public struct ControllerConfig
     {
         public PlayerIndex Player;
-        public ControllerType Type;
+        public NpadStyleTag Type;
     }
 }

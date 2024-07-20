@@ -2,6 +2,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Sdk.Applet;
 using Ryujinx.Horizon.Sdk.Hid;
+using Ryujinx.Horizon.Sdk.Hid.HidDevices;
+using Ryujinx.Horizon.Sdk.Hid.Npad;
 using Ryujinx.Horizon.Sdk.Hid.SixAxis;
 using Ryujinx.Horizon.Sdk.Hid.Vibration;
 using Ryujinx.Horizon.Sdk.Sf;
@@ -11,6 +13,51 @@ namespace Ryujinx.Horizon.Hid
 {
     partial class HidServer : IHidServer
     {
+        internal const int SharedMemEntryCount = 17;
+
+        public DebugPadDevice DebugPad;
+        public TouchDevice Touchscreen;
+        public MouseDevice Mouse;
+        public KeyboardDevice Keyboard;
+        public NpadDevices Npads;
+
+        private bool _sixAxisSensorFusionEnabled;
+        private bool _unintendedHomeButtonInputProtectionEnabled;
+        private bool _npadAnalogStickCenterClampEnabled;
+        private bool _vibrationPermitted;
+        private bool _usbFullKeyControllerEnabled;
+        private readonly bool _isFirmwareUpdateAvailableForSixAxisSensor;
+        private bool _isSixAxisSensorUnalteredPassthroughEnabled;
+
+        private NpadHandheldActivationMode _npadHandheldActivationMode;
+        private GyroscopeZeroDriftMode _gyroscopeZeroDriftMode;
+
+        private long _npadCommunicationMode;
+        private uint _accelerometerPlayMode;
+        private float _sevenSixAxisSensorFusionStrength;
+
+        private SensorFusionParameters _sensorFusionParams;
+        private AccelerometerParameters _accelerometerParams;
+
+        public HidServer()
+        {
+            DebugPad = new DebugPadDevice(true);
+            Touchscreen = new TouchDevice(true);
+            Mouse = new MouseDevice(false);
+            Keyboard = new KeyboardDevice(false);
+            Npads = new NpadDevices(true);
+
+            _npadHandheldActivationMode = NpadHandheldActivationMode.Dual;
+            _gyroscopeZeroDriftMode = GyroscopeZeroDriftMode.Standard;
+
+            _isFirmwareUpdateAvailableForSixAxisSensor = false;
+
+            _sensorFusionParams = new SensorFusionParameters();
+            _accelerometerParams = new AccelerometerParameters();
+
+            _vibrationPermitted = true;
+        }
+
         [CmifCommand(0)]
         public Result CreateAppletResource(out IAppletResource arg0, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
@@ -22,7 +69,14 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(1)]
         public Result ActivateDebugPad(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // Initialize entries to avoid issues with some games.
+
+            for (int i = 0; i < SharedMemEntryCount; i++)
+            {
+                DebugPad.Update();
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -30,7 +84,16 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(11)]
         public Result ActivateTouchScreen(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Touchscreen.Active = true;
+
+            // Initialize entries to avoid issues with some games.
+
+            for (int i = 0; i < SharedMemEntryCount; i++)
+            {
+                Touchscreen.Update();
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -38,7 +101,16 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(21)]
         public Result ActivateMouse(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Mouse.Active = true;
+
+            // Initialize entries to avoid issues with some games.
+
+            for (int i = 0; i < SharedMemEntryCount; i++)
+            {
+                Mouse.Update(0, 0);
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -46,7 +118,21 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(31)]
         public Result ActivateKeyboard(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Keyboard.Active = true;
+
+            // Initialize entries to avoid issues with some games.
+
+            KeyboardInput emptyInput = new()
+            {
+                Keys = new ulong[4],
+            };
+
+            for (int i = 0; i < SharedMemEntryCount; i++)
+            {
+                Keyboard.Update(emptyInput);
+            }
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -54,13 +140,15 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(32)]
         public Result SendKeyboardLockKeyEvent(AppletResourceUserId appletResourceUserId, KeyboardLockKeyEvent keyboardLockKeyEvent, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // NOTE: This signals the keyboard driver about lock events.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { keyboardLockKeyEvent });
 
             return Result.Success;
         }
 
         [CmifCommand(40)]
-        public Result AcquireXpadIdEventHandle(out int arg0, ulong arg1)
+        public Result AcquireXpadIdEventHandle(out int arg0, ulong xpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -68,7 +156,7 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(41)]
-        public Result ReleaseXpadIdEventHandle(ulong arg0)
+        public Result ReleaseXpadIdEventHandle(ulong xpadId)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -220,17 +308,26 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(73)]
-        public Result SetAccelerometerParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float arg2, float arg3, [ClientProcessId] ulong pid)
+        public Result SetAccelerometerParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float x, float y, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _accelerometerParams = new AccelerometerParameters
+            {
+                X = x,
+                Y = y,
+            };
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerParams.X, _accelerometerParams.Y });
 
             return Result.Success;
         }
 
         [CmifCommand(74)]
-        public Result GetAccelerometerParameters(out float arg0, out float arg1, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result GetAccelerometerParameters(out float x, out float y, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            x = _accelerometerParams.X;
+            y = _accelerometerParams.Y;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerParams.X, _accelerometerParams.Y });
 
             return Result.Success;
         }
@@ -238,23 +335,30 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(75)]
         public Result ResetAccelerometerParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _accelerometerParams.X = 0;
+            _accelerometerParams.Y = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerParams.X, _accelerometerParams.Y });
 
             return Result.Success;
         }
 
         [CmifCommand(76)]
-        public Result SetAccelerometerPlayMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, uint arg2, [ClientProcessId] ulong pid)
+        public Result SetAccelerometerPlayMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, uint accelerometerPlayMode, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _accelerometerPlayMode = accelerometerPlayMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerPlayMode });
 
             return Result.Success;
         }
 
         [CmifCommand(77)]
-        public Result GetAccelerometerPlayMode(out uint arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result GetAccelerometerPlayMode(out uint accelerometerPlayMode, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            accelerometerPlayMode = _accelerometerPlayMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerPlayMode });
 
             return Result.Success;
         }
@@ -262,23 +366,29 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(78)]
         public Result ResetAccelerometerPlayMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _accelerometerPlayMode = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _accelerometerPlayMode });
 
             return Result.Success;
         }
 
         [CmifCommand(79)]
-        public Result SetGyroscopeZeroDriftMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, uint arg2, [ClientProcessId] ulong pid)
+        public Result SetGyroscopeZeroDriftMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, GyroscopeZeroDriftMode gyroscopeZeroDriftMode, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _gyroscopeZeroDriftMode = gyroscopeZeroDriftMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _gyroscopeZeroDriftMode });
 
             return Result.Success;
         }
 
         [CmifCommand(80)]
-        public Result GetGyroscopeZeroDriftMode(out uint arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result GetGyroscopeZeroDriftMode(out GyroscopeZeroDriftMode gyroscopeZeroDriftMode, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            gyroscopeZeroDriftMode = _gyroscopeZeroDriftMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _gyroscopeZeroDriftMode });
 
             return Result.Success;
         }
@@ -286,7 +396,9 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(81)]
         public Result ResetGyroscopeZeroDriftMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _gyroscopeZeroDriftMode = GyroscopeZeroDriftMode.Standard;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _gyroscopeZeroDriftMode });
 
             return Result.Success;
         }
@@ -326,7 +438,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(86)]
         public Result StoreSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, in SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { sixAxisSensorHandle, sixAxisSensorCalibrationParameter });
 
             return Result.Success;
         }
@@ -334,7 +446,9 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(87)]
         public Result LoadSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, out SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // TODO: CalibrationParameter have to be determined.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return Result.Success;
         }
@@ -342,14 +456,15 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(88)]
         public Result GetSixAxisSensorIcInformation(AppletResourceUserId appletResourceUserId, out SixAxisSensorIcInformation sixAxisSensorIcInformation, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // TODO: IcInformation have to be determined.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return Result.Success;
         }
 
         [CmifCommand(89)]
-        public Result ResetIsSixAxisSensorDeviceNewlyAssigned(AppletResourceUserId appletResourceUserId,
-            SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result ResetIsSixAxisSensorDeviceNewlyAssigned(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -357,25 +472,29 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(91)]
-        public Result ActivateGesture(AppletResourceUserId appletResourceUserId, int arg1, [ClientProcessId] ulong pid)
+        public Result ActivateGesture(AppletResourceUserId appletResourceUserId, int unknown, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, unknown });
 
             return Result.Success;
         }
 
         [CmifCommand(100)]
-        public Result SetSupportedNpadStyleSet(AppletResourceUserId appletResourceUserId, NpadStyleTag arg1, [ClientProcessId] ulong pid)
+        public Result SetSupportedNpadStyleSet(AppletResourceUserId appletResourceUserId, NpadStyleTag supportedStyleSets, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { pid, appletResourceUserId, supportedStyleSets });
+
+            Npads.SupportedStyleSets = supportedStyleSets;
 
             return Result.Success;
         }
 
         [CmifCommand(101)]
-        public Result GetSupportedNpadStyleSet(AppletResourceUserId appletResourceUserId, out NpadStyleTag arg1, [ClientProcessId] ulong pid)
+        public Result GetSupportedNpadStyleSet(AppletResourceUserId appletResourceUserId, out NpadStyleTag supportedStyleSets, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            supportedStyleSets = Npads.SupportedStyleSets;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, Npads.SupportedStyleSets });
 
             return Result.Success;
         }
@@ -647,7 +766,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(209)]
         public Result BeginPermitVibrationSession(AppletResourceUserId appletResourceUserId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -661,9 +780,12 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(211)]
-        public Result IsVibrationDeviceMounted(out bool arg0, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
+        public Result IsVibrationDeviceMounted(out bool isVibrationDeviceMounted, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // NOTE: Service use vibrationDeviceHandle to get the PlayerIndex.
+            //       And return false if (npadIdType >= (NpadIdType)8 && npadIdType != NpadIdType.Handheld && npadIdType != NpadIdType.Unknown)
+
+            isVibrationDeviceMounted = true;
 
             return Result.Success;
         }
@@ -679,7 +801,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(300)]
         public Result ActivateConsoleSixAxisSensor(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -687,7 +809,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(301)]
         public Result StartConsoleSixAxisSensor(AppletResourceUserId appletResourceUserId, ConsoleSixAxisSensorHandle consoleSixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, consoleSixAxisSensorHandle });
 
             return Result.Success;
         }
@@ -695,7 +817,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(302)]
         public Result StopConsoleSixAxisSensor(AppletResourceUserId appletResourceUserId, ConsoleSixAxisSensorHandle consoleSixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, consoleSixAxisSensorHandle });
 
             return Result.Success;
         }
@@ -703,7 +825,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(303)]
         public Result ActivateSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -711,7 +833,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(304)]
         public Result StartSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
@@ -719,15 +841,17 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(305)]
         public Result StopSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
 
         [CmifCommand(306)]
-        public Result InitializeSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, int arg1, ulong arg2, int arg3, ulong arg4, [ClientProcessId] ulong pid)
+        public Result InitializeSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, int nativeHandle0, ulong counter0, int nativeHandle1, ulong counter1, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // TODO: Determine if array<nn::sf::NativeHandle> is a buffer or not...
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, counter0, counter1 });
 
             return Result.Success;
         }
@@ -735,23 +859,27 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(307)]
         public Result FinalizeSevenSixAxisSensor(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
 
         [CmifCommand(308)]
-        public Result SetSevenSixAxisSensorFusionStrength(AppletResourceUserId appletResourceUserId, float arg1, [ClientProcessId] ulong pid)
+        public Result SetSevenSixAxisSensorFusionStrength(AppletResourceUserId appletResourceUserId, float sevenSixAxisSensorFusionStrength, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _sevenSixAxisSensorFusionStrength = sevenSixAxisSensorFusionStrength;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _sevenSixAxisSensorFusionStrength });
 
             return Result.Success;
         }
 
         [CmifCommand(309)]
-        public Result GetSevenSixAxisSensorFusionStrength(out float arg0, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
+        public Result GetSevenSixAxisSensorFusionStrength(out float sevenSixSensorFusionStrength, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            sevenSixSensorFusionStrength = _sevenSixAxisSensorFusionStrength;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _sevenSixAxisSensorFusionStrength });
 
             return Result.Success;
         }
@@ -759,55 +887,68 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(310)]
         public Result ResetSevenSixAxisSensorTimestamp(AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return Result.Success;
         }
 
         [CmifCommand(400)]
-        public Result IsUsbFullKeyControllerEnabled(out bool arg0)
+        public Result IsUsbFullKeyControllerEnabled(out bool isUsbFullKeyControllerEnabled)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            isUsbFullKeyControllerEnabled = _usbFullKeyControllerEnabled;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _usbFullKeyControllerEnabled });
 
             return Result.Success;
         }
 
         [CmifCommand(401)]
-        public Result EnableUsbFullKeyController(bool arg0)
+        public Result EnableUsbFullKeyController(bool usbFullKeyControllerEnabled)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _usbFullKeyControllerEnabled = usbFullKeyControllerEnabled;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _usbFullKeyControllerEnabled });
 
             return Result.Success;
         }
 
         [CmifCommand(402)]
-        public Result IsUsbFullKeyControllerConnected(out bool arg0, uint arg1)
+        public Result IsUsbFullKeyControllerConnected(out bool isConnected, uint unknown)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            isConnected = true; // FullKeyController is always connected?
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { unknown, Connected = true });
 
             return Result.Success;
         }
 
         [CmifCommand(403)]
-        public Result HasBattery(out bool arg0, uint arg1)
+        public Result HasBattery(out bool hasBattery, uint npadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            hasBattery = true; // Npad always has a battery?
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { npadId, HasBattery = true });
 
             return Result.Success;
         }
 
         [CmifCommand(404)]
-        public Result HasLeftRightBattery(out bool arg0, out bool arg1, uint arg2)
+        public Result HasLeftRightBattery(out bool hasLeftBattery, out bool hasRightBattery, uint npadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            hasLeftBattery = true; // Npad always has a left battery?
+            hasRightBattery = true; // Npad always has a right battery?
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { npadId, HasLeftBattery = true, HasRightBattery = true });
 
             return Result.Success;
         }
 
         [CmifCommand(405)]
-        public Result GetNpadInterfaceType(out byte arg0, uint arg1)
+        public Result GetNpadInterfaceType(out byte npadInterfaceType, uint npadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            npadInterfaceType = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { npadId, NpadInterfaceType = 0 });
 
             return Result.Success;
         }
@@ -919,7 +1060,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(511)]
         public Result ReadPalmaUniqueCode(PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
             return Result.Success;
         }
@@ -927,7 +1068,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(512)]
         public Result SetPalmaUniqueCodeInvalid(PalmaConnectionHandle palmaConnectionHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
             return Result.Success;
         }
@@ -1005,9 +1146,9 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(522)]
-        public Result SetIsPalmaAllConnectable(AppletResourceUserId appletResourceUserId, bool arg1, [ClientProcessId] ulong pid)
+        public Result SetIsPalmaAllConnectable(AppletResourceUserId appletResourceUserId, bool unknownBool, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, unknownBool });
 
             return Result.Success;
         }
@@ -1031,7 +1172,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(525)]
         public Result SetPalmaBoostMode(bool arg0)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            // NOTE: Stubbed in system module.
 
             return Result.Success;
         }
@@ -1069,25 +1210,29 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(1000)]
-        public Result SetNpadCommunicationMode(AppletResourceUserId appletResourceUserId, long arg1, [ClientProcessId] ulong pid)
+        public Result SetNpadCommunicationMode(AppletResourceUserId appletResourceUserId, long npadCommunicationMode, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _npadCommunicationMode = npadCommunicationMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, _npadCommunicationMode });
 
             return Result.Success;
         }
 
         [CmifCommand(1001)]
-        public Result GetNpadCommunicationMode(out long arg0)
+        public Result GetNpadCommunicationMode(out long npadCommunicationMode)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            npadCommunicationMode = _npadCommunicationMode;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _npadCommunicationMode });
 
             return Result.Success;
         }
 
         [CmifCommand(1002)]
-        public Result SetTouchScreenConfiguration(AppletResourceUserId appletResourceUserId, TouchScreenConfigurationForNx arg1, [ClientProcessId] ulong pid)
+        public Result SetTouchScreenConfiguration(AppletResourceUserId appletResourceUserId, TouchScreenConfigurationForNx touchScreenConfigurationForNx, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, touchScreenConfigurationForNx });
 
             return Result.Success;
         }
