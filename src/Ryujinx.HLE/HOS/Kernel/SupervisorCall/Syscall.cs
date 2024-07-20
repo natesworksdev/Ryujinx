@@ -84,6 +84,17 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidSize;
             }
 
+            if (info.Flags.HasFlag(ProcessCreationFlags.EnableAliasRegionExtraSize))
+            {
+                if ((info.Flags & ProcessCreationFlags.AddressSpaceMask) != ProcessCreationFlags.AddressSpace64Bit ||
+                    info.SystemResourcePagesCount <= 0)
+                {
+                    return KernelResult.InvalidState;
+                }
+
+                // TODO: Check that we are in debug mode.
+            }
+
             if (info.Flags.HasFlag(ProcessCreationFlags.OptimizeMemoryAllocation) &&
                 !info.Flags.HasFlag(ProcessCreationFlags.IsApplication))
             {
@@ -1978,6 +1989,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 case InfoType.UsedNonSystemMemorySize:
                 case InfoType.IsApplication:
                 case InfoType.FreeThreadCount:
+                case InfoType.AliasRegionExtraSize:
                     {
                         if (subId != 0)
                         {
@@ -2006,22 +2018,19 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                                 value = process.MemoryManager.AliasRegionStart;
                                 break;
                             case InfoType.AliasRegionSize:
-                                value = (process.MemoryManager.AliasRegionEnd -
-                                         process.MemoryManager.AliasRegionStart);
+                                value = process.MemoryManager.AliasRegionEnd - process.MemoryManager.AliasRegionStart;
                                 break;
 
                             case InfoType.HeapRegionAddress:
                                 value = process.MemoryManager.HeapRegionStart;
                                 break;
                             case InfoType.HeapRegionSize:
-                                value = (process.MemoryManager.HeapRegionEnd -
-                                         process.MemoryManager.HeapRegionStart);
+                                value = process.MemoryManager.HeapRegionEnd - process.MemoryManager.HeapRegionStart;
                                 break;
 
                             case InfoType.TotalMemorySize:
                                 value = process.GetMemoryCapacity();
                                 break;
-
                             case InfoType.UsedMemorySize:
                                 value = process.GetMemoryUsage();
                                 break;
@@ -2029,7 +2038,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             case InfoType.AslrRegionAddress:
                                 value = process.MemoryManager.GetAddrSpaceBaseAddr();
                                 break;
-
                             case InfoType.AslrRegionSize:
                                 value = process.MemoryManager.GetAddrSpaceSize();
                                 break;
@@ -2038,20 +2046,17 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                                 value = process.MemoryManager.StackRegionStart;
                                 break;
                             case InfoType.StackRegionSize:
-                                value = (process.MemoryManager.StackRegionEnd -
-                                         process.MemoryManager.StackRegionStart);
+                                value = process.MemoryManager.StackRegionEnd - process.MemoryManager.StackRegionStart;
                                 break;
 
                             case InfoType.SystemResourceSizeTotal:
                                 value = process.PersonalMmHeapPagesCount * KPageTableBase.PageSize;
                                 break;
-
                             case InfoType.SystemResourceSizeUsed:
                                 if (process.PersonalMmHeapPagesCount != 0)
                                 {
                                     value = process.MemoryManager.GetMmUsedPages() * KPageTableBase.PageSize;
                                 }
-
                                 break;
 
                             case InfoType.ProgramId:
@@ -2065,7 +2070,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             case InfoType.TotalNonSystemMemorySize:
                                 value = process.GetMemoryCapacityWithoutPersonalMmHeap();
                                 break;
-
                             case InfoType.UsedNonSystemMemorySize:
                                 value = process.GetMemoryUsageWithoutPersonalMmHeap();
                                 break;
@@ -2084,10 +2088,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                                 {
                                     value = 0;
                                 }
+                                break;
 
+                            case InfoType.AliasRegionExtraSize:
+                                value = process.MemoryManager.AliasRegionExtraSize;
                                 break;
                         }
-
                         break;
                     }
 
@@ -2104,7 +2110,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         }
 
                         value = KernelStatic.GetCurrentProcess().Debug ? 1UL : 0UL;
-
                         break;
                     }
 
@@ -2136,7 +2141,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                             value = (uint)resLimHandle;
                         }
-
                         break;
                     }
 
@@ -2155,7 +2159,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         }
 
                         value = (ulong)KTimeManager.ConvertHostTicksToTicks(_context.Schedulers[currentCore].TotalIdleTimeTicks);
-
                         break;
                     }
 
@@ -2174,7 +2177,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
                         value = currentProcess.RandomEntropy[subId];
-
                         break;
                     }
 
@@ -2220,7 +2222,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                             value = (ulong)KTimeManager.ConvertHostTicksToTicks(totalTimeRunning);
                         }
-
                         break;
                     }
 
@@ -2247,7 +2248,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         }
 
                         value = (ulong)outHandle;
-
                         break;
                     }
 

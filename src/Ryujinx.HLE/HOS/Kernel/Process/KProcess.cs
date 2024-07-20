@@ -126,8 +126,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _contextFactory = contextFactory ?? new ProcessContextFactory();
             _customThreadStart = customThreadStart;
 
-            AddressSpaceType addrSpaceType = (AddressSpaceType)((int)(creationInfo.Flags & ProcessCreationFlags.AddressSpaceMask) >> (int)ProcessCreationFlags.AddressSpaceShift);
-
             Pid = KernelContext.NewKipId();
 
             if (Pid == 0 || Pid >= KernelConstants.InitialProcessId)
@@ -136,8 +134,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
 
             InitializeMemoryManager(creationInfo.Flags);
-
-            bool aslrEnabled = creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr);
 
             ulong codeAddress = creationInfo.CodeAddress;
 
@@ -148,9 +144,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 : KernelContext.SmallMemoryBlockSlabManager;
 
             Result result = MemoryManager.InitializeForProcess(
-                addrSpaceType,
-                aslrEnabled,
-                !aslrEnabled,
+                creationInfo.Flags,
+                !creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr),
                 memRegion,
                 codeAddress,
                 codeSize,
@@ -234,8 +229,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     : KernelContext.SmallMemoryBlockSlabManager;
             }
 
-            AddressSpaceType addrSpaceType = (AddressSpaceType)((int)(creationInfo.Flags & ProcessCreationFlags.AddressSpaceMask) >> (int)ProcessCreationFlags.AddressSpaceShift);
-
             Pid = KernelContext.NewProcessId();
 
             if (Pid == ulong.MaxValue || Pid < KernelConstants.InitialProcessId)
@@ -245,16 +238,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             InitializeMemoryManager(creationInfo.Flags);
 
-            bool aslrEnabled = creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr);
-
             ulong codeAddress = creationInfo.CodeAddress;
 
             ulong codeSize = codePagesCount * KPageTableBase.PageSize;
 
             Result result = MemoryManager.InitializeForProcess(
-                addrSpaceType,
-                aslrEnabled,
-                !aslrEnabled,
+                creationInfo.Flags,
+                !creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr),
                 memRegion,
                 codeAddress,
                 codeSize,
