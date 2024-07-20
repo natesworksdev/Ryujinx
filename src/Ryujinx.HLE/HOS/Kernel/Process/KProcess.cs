@@ -509,12 +509,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return result;
         }
 
-#pragma warning disable CA1822 // Mark member as static
         private void GenerateRandomEntropy()
         {
             // TODO.
         }
-#pragma warning restore CA1822
 
         public Result Start(int mainThreadPriority, ulong stackSize)
         {
@@ -1171,6 +1169,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             // TODO
             return false;
+        }
+
+        public bool IsSvcPermitted(int svcId)
+        {
+            return Capabilities.IsSvcPermitted(svcId);
         }
     }
 }

@@ -2225,6 +2225,22 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
+                case InfoType.IsSvcPermitted:
+                    {
+                        if (handle != 0)
+                        {
+                            return KernelResult.InvalidHandle;
+                        }
+
+                        if (subId != 0x36)
+                        {
+                            return KernelResult.InvalidCombination;
+                        }
+
+                        value = KernelStatic.GetCurrentProcess().IsSvcPermitted((int)subId) ? 1UL : 0UL;
+                        break;
+                    }
+
                 case InfoType.MesosphereCurrentProcess:
                     {
                         if (handle != 0)
@@ -2232,7 +2248,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             return KernelResult.InvalidHandle;
                         }
 
-                        if ((ulong)subId != 0)
+                        if (subId != 0)
                         {
                             return KernelResult.InvalidCombination;
                         }
@@ -2247,7 +2263,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             return result;
                         }
 
-                        value = (ulong)outHandle;
+                        value = (uint)outHandle;
                         break;
                     }
 
