@@ -342,49 +342,56 @@ namespace Ryujinx.Ava.UI.Helpers
                 isTopDialog = false;
             }
 
-            parent.Activate();
-
-            _contentDialogOverlayWindow = new ContentDialogOverlayWindow
+            if (parent is MainWindow)
             {
-                Height = parent.Bounds.Height,
-                Width = parent.Bounds.Width,
-                Position = parent.PointToScreen(new Point()),
-                ShowInTaskbar = false,
-            };
+                parent.Activate();
 
-            parent.PositionChanged += OverlayOnPositionChanged;
-
-            void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
-            {
-                if (_contentDialogOverlayWindow is null)
+                _contentDialogOverlayWindow = new ContentDialogOverlayWindow
                 {
-                    return;
+                    Height = parent.Bounds.Height,
+                    Width = parent.Bounds.Width,
+                    Position = parent.PointToScreen(new Point()),
+                    ShowInTaskbar = false,
+                };
+
+                parent.PositionChanged += OverlayOnPositionChanged;
+
+                void OverlayOnPositionChanged(object sender, PixelPointEventArgs e)
+                {
+                    if (_contentDialogOverlayWindow is null)
+                    {
+                        return;
+                    }
+
+                    _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
                 }
 
-                _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
-            }
+                _contentDialogOverlayWindow.ContentDialog = contentDialog;
 
-            _contentDialogOverlayWindow.ContentDialog = contentDialog;
+                bool opened = false;
 
-            bool opened = false;
+                _contentDialogOverlayWindow.Opened += OverlayOnActivated;
 
-            _contentDialogOverlayWindow.Opened += OverlayOnActivated;
-
-            async void OverlayOnActivated(object sender, EventArgs e)
-            {
-                if (opened)
+                async void OverlayOnActivated(object sender, EventArgs e)
                 {
-                    return;
+                    if (opened)
+                    {
+                        return;
+                    }
+
+                    opened = true;
+
+                    _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
+
+                    result = await ShowDialog();
                 }
 
-                opened = true;
-
-                _contentDialogOverlayWindow.Position = parent.PointToScreen(new Point());
-
-                result = await ShowDialog();
+                result = await _contentDialogOverlayWindow.ShowDialog<ContentDialogResult>(parent);
             }
-
-            result = await _contentDialogOverlayWindow.ShowDialog<ContentDialogResult>(parent);
+            else
+            {
+                result = await contentDialog.ShowAsync(parent);
+            }
 
             async Task<ContentDialogResult> ShowDialog()
             {
