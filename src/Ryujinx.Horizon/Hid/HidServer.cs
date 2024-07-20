@@ -9,6 +9,7 @@ using Ryujinx.Horizon.Sdk.Hid.Vibration;
 using Ryujinx.Horizon.Sdk.Sf;
 using Ryujinx.Horizon.Sdk.Sf.Hipc;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Hid
 {
@@ -35,6 +36,7 @@ namespace Ryujinx.Horizon.Hid
 
         private long _npadCommunicationMode;
         private uint _accelerometerPlayMode;
+        private readonly VibrationGcErmCommand _vibrationGcErmCommand;
         private float _sevenSixAxisSensorFusionStrength;
 
         private SensorFusionParameters _sensorFusionParams;
@@ -151,7 +153,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(40)]
         public Result AcquireXpadIdEventHandle([CopyHandle] out int arg0, ulong xpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
             return Result.Success;
         }
@@ -159,7 +161,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(41)]
         public Result ReleaseXpadIdEventHandle(ulong xpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
             return Result.Success;
         }
@@ -186,7 +188,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(56)]
         public Result ActivateJoyXpad(uint joyXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { joyXpadId });
 
             return Result.Success;
         }
@@ -194,39 +196,42 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(58)]
         public Result GetJoyXpadLifoHandle([CopyHandle] out int arg0, uint joyXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { joyXpadId });
 
             return Result.Success;
         }
 
         [CmifCommand(59)]
-        public Result GetJoyXpadIds(out long arg0, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<uint> joyXpadIds)
+        public Result GetJoyXpadIds(out long idCount, [Buffer(HipcBufferFlags.Out | HipcBufferFlags.Pointer)] Span<uint> joyXpadIds)
         {
+            // There aren't any JoyXpad, so we return 0 and write nothing inside the buffer.
+            idCount = 0;
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
             return Result.Success;
         }
 
         [CmifCommand(60)]
-        public Result ActivateSixAxisSensor(uint basixXpadId)
+        public Result ActivateSixAxisSensor(uint basicXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { basicXpadId });
 
             return Result.Success;
         }
 
         [CmifCommand(61)]
-        public Result DeactivateSixAxisSensor(uint basixXpadId)
+        public Result DeactivateSixAxisSensor(uint basicXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { basicXpadId });
 
             return Result.Success;
         }
 
         [CmifCommand(62)]
-        public Result GetSixAxisSensorLifoHandle([CopyHandle] out int arg0, uint basixXpadId)
+        public Result GetSixAxisSensorLifoHandle([CopyHandle] out int arg0, uint basicXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { basicXpadId });
 
             return Result.Success;
         }
@@ -234,7 +239,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(63)]
         public Result ActivateJoySixAxisSensor(uint joyXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { joyXpadId });
 
             return Result.Success;
         }
@@ -242,7 +247,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(64)]
         public Result DeactivateJoySixAxisSensor(uint joyXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { joyXpadId });
 
             return Result.Success;
         }
@@ -250,7 +255,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(65)]
         public Result GetJoySixAxisSensorLifoHandle([CopyHandle] out int arg0, uint joyXpadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { joyXpadId });
 
             return Result.Success;
         }
@@ -258,7 +263,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(66)]
         public Result StartSixAxisSensor(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return Result.Success;
         }
@@ -266,39 +271,52 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(67)]
         public Result StopSixAxisSensor(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle });
 
             return Result.Success;
         }
 
         [CmifCommand(68)]
-        public Result IsSixAxisSensorFusionEnabled(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result IsSixAxisSensorFusionEnabled(out bool sixAxisSensorFusionEnabled, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            sixAxisSensorFusionEnabled = _sixAxisSensorFusionEnabled;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _sixAxisSensorFusionEnabled });
 
             return Result.Success;
         }
 
         [CmifCommand(69)]
-        public Result EnableSixAxisSensorFusion(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool arg2, [ClientProcessId] ulong pid)
+        public Result EnableSixAxisSensorFusion(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool sixAxisSensorFusionEnabled, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _sixAxisSensorFusionEnabled = sixAxisSensorFusionEnabled;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _sixAxisSensorFusionEnabled });
 
             return Result.Success;
         }
 
         [CmifCommand(70)]
-        public Result SetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float arg2, float arg3, [ClientProcessId] ulong pid)
+        public Result SetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float revisePower, float reviseRange, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _sensorFusionParams = new SensorFusionParameters
+            {
+                RevisePower = revisePower,
+                ReviseRange = reviseRange
+            };
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _sensorFusionParams.RevisePower, _sensorFusionParams.ReviseRange });
 
             return Result.Success;
         }
 
         [CmifCommand(71)]
-        public Result GetSixAxisSensorFusionParameters(out float arg0, out float arg1, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result GetSixAxisSensorFusionParameters(out float revisePower, out float reviseRange, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            revisePower = _sensorFusionParams.RevisePower;
+            reviseRange = _sensorFusionParams.ReviseRange;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _sensorFusionParams.RevisePower, _sensorFusionParams.ReviseRange });
 
             return Result.Success;
         }
@@ -306,7 +324,10 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(72)]
         public Result ResetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _sensorFusionParams.RevisePower = 0;
+            _sensorFusionParams.ReviseRange = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _sensorFusionParams.RevisePower, _sensorFusionParams.ReviseRange });
 
             return Result.Success;
         }
@@ -408,17 +429,21 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(82)]
-        public Result IsSixAxisSensorAtRest(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result IsSixAxisSensorAtRest(out bool isAtRest, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            isAtRest = true;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, isAtRest });
 
             return Result.Success;
         }
 
         [CmifCommand(83)]
-        public Result IsFirmwareUpdateAvailableForSixAxisSensor(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
+        public Result IsFirmwareUpdateAvailableForSixAxisSensor(out bool isFirmwareUpdateAvailableForSixAxisSensor, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            isFirmwareUpdateAvailableForSixAxisSensor = _isFirmwareUpdateAvailableForSixAxisSensor;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, _isFirmwareUpdateAvailableForSixAxisSensor });
 
             return Result.Success;
         }
@@ -698,23 +723,80 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(200)]
         public Result GetVibrationDeviceInfo(out VibrationDeviceInfoForIpc vibrationDeviceInfoForIpc, VibrationDeviceHandle vibrationDeviceHandle)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            NpadStyleIndex deviceType = vibrationDeviceHandle.DeviceType;
+            NpadIdType npadIdType = vibrationDeviceHandle.PlayerId;
+            vibrationDeviceInfoForIpc = new();
 
-            return Result.Success;
+            if (deviceType < NpadStyleIndex.System || deviceType >= NpadStyleIndex.FullKey)
+            {
+                if (!IsValidNpadIdType(npadIdType))
+                {
+                    return HidResult.InvalidNpadIdType;
+                }
+
+                if (vibrationDeviceHandle.Position > 1)
+                {
+                    return HidResult.InvalidDeviceIndex;
+                }
+
+                VibrationDeviceType vibrationDeviceType = VibrationDeviceType.None;
+
+                if (Enum.IsDefined(deviceType))
+                {
+                    vibrationDeviceType = VibrationDeviceType.LinearResonantActuator;
+                }
+                else if ((uint)deviceType == 8)
+                {
+                    vibrationDeviceType = VibrationDeviceType.GcErm;
+                }
+
+                VibrationDevicePosition vibrationDevicePosition = VibrationDevicePosition.None;
+
+                if (vibrationDeviceType == VibrationDeviceType.LinearResonantActuator)
+                {
+                    if (vibrationDeviceHandle.Position == 0)
+                    {
+                        vibrationDevicePosition = VibrationDevicePosition.Left;
+                    }
+                    else if (vibrationDeviceHandle.Position == 1)
+                    {
+                        vibrationDevicePosition = VibrationDevicePosition.Right;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"{nameof(vibrationDeviceHandle.Position)} contains an invalid value: {vibrationDeviceHandle.Position}");
+                    }
+                }
+
+                vibrationDeviceInfoForIpc = new()
+                {
+                    DeviceType = vibrationDeviceType,
+                    Position = vibrationDevicePosition,
+                };
+
+                return Result.Success;
+            }
+
+            return HidResult.InvalidNpadDeviceType;
         }
 
         [CmifCommand(201)]
-        public Result SendVibrationValue(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationValue arg2, [ClientProcessId] ulong pid)
+        public Result SendVibrationValue(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationValue vibrationValue, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Dictionary<byte, VibrationValue> dualVibrationValues = new()
+            {
+                [vibrationDeviceHandle.Position] = vibrationValue,
+            };
+
+            Npads.UpdateRumbleQueue(vibrationDeviceHandle.PlayerId, dualVibrationValues);
 
             return Result.Success;
         }
 
         [CmifCommand(202)]
-        public Result GetActualVibrationValue(out VibrationValue arg0, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
+        public Result GetActualVibrationValue(out VibrationValue vibrationValue, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            vibrationValue = Npads.GetLastVibrationValue(vibrationDeviceHandle.PlayerId, vibrationDeviceHandle.Position);
 
             return Result.Success;
         }
@@ -728,17 +810,19 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(204)]
-        public Result PermitVibration(bool arg0)
+        public Result PermitVibration(bool vibrationPermitted)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            _vibrationPermitted = vibrationPermitted;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _vibrationPermitted });
 
             return Result.Success;
         }
 
         [CmifCommand(205)]
-        public Result IsVibrationPermitted(out bool arg0)
+        public Result IsVibrationPermitted(out bool vibrationPermitted)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            vibrationPermitted = _vibrationPermitted;
 
             return Result.Success;
         }
@@ -754,7 +838,7 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(207)]
         public Result SendVibrationGcErmCommand(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationGcErmCommand vibrationGcErmCommand, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, vibrationDeviceHandle, vibrationGcErmCommand });
 
             return Result.Success;
         }
@@ -762,7 +846,9 @@ namespace Ryujinx.Horizon.Hid
         [CmifCommand(208)]
         public Result GetActualVibrationGcErmCommand(out VibrationGcErmCommand vibrationGcErmCommand, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            vibrationGcErmCommand = _vibrationGcErmCommand;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, vibrationDeviceHandle, _vibrationGcErmCommand });
 
             return Result.Success;
         }
@@ -958,15 +1044,18 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(406)]
-        public Result GetNpadLeftRightInterfaceType(out byte arg0, out byte arg1, uint arg2)
+        public Result GetNpadLeftRightInterfaceType(out byte leftInterfaceType, out byte rightInterfaceType, uint npadId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            leftInterfaceType = 0;
+            rightInterfaceType = 0;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { npadId, LeftInterfaceType = 0, RightInterfaceType = 0 });
 
             return Result.Success;
         }
 
         [CmifCommand(407)]
-        public Result GetNpadOfHighestBatteryLevel(out uint arg0, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
+        public Result GetNpadOfHighestBatteryLevel(out uint npadId, [Buffer(HipcBufferFlags.In | HipcBufferFlags.Pointer)] ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
@@ -1242,9 +1331,11 @@ namespace Ryujinx.Horizon.Hid
         }
 
         [CmifCommand(1003)]
-        public Result IsFirmwareUpdateNeededForNotification(out bool arg0, int arg1, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
+        public Result IsFirmwareUpdateNeededForNotification(out bool isFirmwareUpdateNeededForNotification, int unknown, AppletResourceUserId appletResourceUserId, [ClientProcessId] ulong pid)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceHid);
+            isFirmwareUpdateNeededForNotification = false;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { IsFirmwareUpdateNeededForNotification = false, unknown, appletResourceUserId });
 
             return Result.Success;
         }
@@ -1255,6 +1346,13 @@ namespace Ryujinx.Horizon.Hid
             Logger.Stub?.PrintStub(LogClass.ServiceHid);
 
             return Result.Success;
+        }
+
+        private static bool IsValidNpadIdType(NpadIdType npadIdType)
+        {
+            return (npadIdType >= NpadIdType.Player1 && npadIdType <= NpadIdType.Player8) ||
+                   npadIdType == NpadIdType.Handheld ||
+                   npadIdType == NpadIdType.Unknown;
         }
     }
 }

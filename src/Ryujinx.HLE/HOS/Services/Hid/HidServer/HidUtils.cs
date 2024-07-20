@@ -40,12 +40,5 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             _                    => throw new ArgumentOutOfRangeException(nameof(index)),
 #pragma warning restore IDE0055
         };
-
-        public static bool IsValidNpadIdType(NpadIdType npadIdType)
-        {
-            return (npadIdType >= NpadIdType.Player1 && npadIdType <= NpadIdType.Player8) ||
-                npadIdType == NpadIdType.Handheld ||
-                npadIdType == NpadIdType.Unknown;
-        }
     }
 }

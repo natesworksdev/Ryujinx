@@ -21,19 +21,19 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result GetXpadIds(out long idCount, Span<uint> basicXpadIds);
         Result ActivateJoyXpad(uint joyXpadId);
         Result GetJoyXpadLifoHandle(out int arg0, uint joyXpadId);
-        Result GetJoyXpadIds(out long arg0, Span<uint> joyXpadIds);
-        Result ActivateSixAxisSensor(uint basixXpadId);
-        Result DeactivateSixAxisSensor(uint basixXpadId);
-        Result GetSixAxisSensorLifoHandle(out int arg0, uint basixXpadId);
+        Result GetJoyXpadIds(out long idCount, Span<uint> joyXpadIds);
+        Result ActivateSixAxisSensor(uint basicXpadId);
+        Result DeactivateSixAxisSensor(uint basicXpadId);
+        Result GetSixAxisSensorLifoHandle(out int arg0, uint basicXpadId);
         Result ActivateJoySixAxisSensor(uint joyXpadId);
         Result DeactivateJoySixAxisSensor(uint joyXpadId);
         Result GetJoySixAxisSensorLifoHandle(out int arg0, uint joyXpadId);
         Result StartSixAxisSensor(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result StopSixAxisSensor(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
-        Result IsSixAxisSensorFusionEnabled(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
-        Result EnableSixAxisSensorFusion(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool arg2, ulong pid);
-        Result SetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float arg2, float arg3, ulong pid);
-        Result GetSixAxisSensorFusionParameters(out float arg0, out float arg1, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
+        Result IsSixAxisSensorFusionEnabled(out bool sixAxisSensorFusionEnabled, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
+        Result EnableSixAxisSensorFusion(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool sixAxisSensorFusionEnabled, ulong pid);
+        Result SetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float revisePower, float reviseRange, ulong pid);
+        Result GetSixAxisSensorFusionParameters(out float revisePower, out float reviseRange, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result ResetSixAxisSensorFusionParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result SetAccelerometerParameters(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, float x, float y, ulong pid);
         Result GetAccelerometerParameters(out float x, out float y, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
@@ -44,8 +44,8 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result SetGyroscopeZeroDriftMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, GyroscopeZeroDriftMode gyroscopeZeroDriftMode, ulong pid);
         Result GetGyroscopeZeroDriftMode(out GyroscopeZeroDriftMode gyroscopeZeroDriftMode, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result ResetGyroscopeZeroDriftMode(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
-        Result IsSixAxisSensorAtRest(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
-        Result IsFirmwareUpdateAvailableForSixAxisSensor(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
+        Result IsSixAxisSensorAtRest(out bool isAtRest, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
+        Result IsFirmwareUpdateAvailableForSixAxisSensor(out bool isFirmwareUpdateAvailableForSixAxisSensor, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result EnableSixAxisSensorUnalteredPassthrough(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, bool arg2, ulong pid);
         Result IsSixAxisSensorUnalteredPassthroughEnabled(out bool arg0, AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, ulong pid);
         Result StoreSixAxisSensorCalibrationParameter(AppletResourceUserId appletResourceUserId, SixAxisSensorHandle sixAxisSensorHandle, in SixAxisSensorCalibrationParameter sixAxisSensorCalibrationParameter, ulong pid);
@@ -80,11 +80,11 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result SetNpadCaptureButtonAssignment(AppletResourceUserId appletResourceUserId, NpadStyleTag arg1, NpadButton arg2, ulong pid);
         Result ClearNpadCaptureButtonAssignment(AppletResourceUserId appletResourceUserId, ulong pid);
         Result GetVibrationDeviceInfo(out VibrationDeviceInfoForIpc vibrationDeviceInfoForIpc, VibrationDeviceHandle vibrationDeviceHandle);
-        Result SendVibrationValue(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationValue arg2, ulong pid);
-        Result GetActualVibrationValue(out VibrationValue arg0, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, ulong pid);
+        Result SendVibrationValue(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationValue vibrationValue, ulong pid);
+        Result GetActualVibrationValue(out VibrationValue vibrationValue, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, ulong pid);
         Result CreateActiveVibrationDeviceList(out IActiveVibrationDeviceList arg0);
-        Result PermitVibration(bool arg0);
-        Result IsVibrationPermitted(out bool arg0);
+        Result PermitVibration(bool vibrationPermitted);
+        Result IsVibrationPermitted(out bool vibrationPermitted);
         Result SendVibrationValues(AppletResourceUserId appletResourceUserId, ReadOnlySpan<VibrationDeviceHandle> vibrationDeviceHandles, ReadOnlySpan<VibrationValue> vibrationValues);
         Result SendVibrationGcErmCommand(AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, VibrationGcErmCommand vibrationGcErmCommand, ulong pid);
         Result GetActualVibrationGcErmCommand(out VibrationGcErmCommand vibrationGcErmCommand, AppletResourceUserId appletResourceUserId, VibrationDeviceHandle vibrationDeviceHandle, ulong pid);
@@ -109,8 +109,8 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result HasBattery(out bool hasBattery, uint npadId);
         Result HasLeftRightBattery(out bool hasLeftBattery, out bool hasRightBattery, uint npadId);
         Result GetNpadInterfaceType(out byte npadInterfaceType, uint npadId);
-        Result GetNpadLeftRightInterfaceType(out byte arg0, out byte arg1, uint arg2);
-        Result GetNpadOfHighestBatteryLevel(out uint arg0, ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, ulong pid);
+        Result GetNpadLeftRightInterfaceType(out byte leftInterfaceType, out byte rightInterfaceType, uint npadId);
+        Result GetNpadOfHighestBatteryLevel(out uint npadId, ReadOnlySpan<uint> arg1, AppletResourceUserId appletResourceUserId, ulong pid);
         Result GetPalmaConnectionHandle(out PalmaConnectionHandle palmaConnectionHandle, uint arg1, AppletResourceUserId appletResourceUserId, ulong pid);
         Result InitializePalma(PalmaConnectionHandle palmaConnectionHandle);
         Result AcquirePalmaOperationCompleteEvent(out int arg0, PalmaConnectionHandle palmaConnectionHandle);
@@ -144,7 +144,7 @@ namespace Ryujinx.Horizon.Sdk.Hid
         Result SetNpadCommunicationMode(AppletResourceUserId appletResourceUserId, long npadCommunicationMode, ulong pid);
         Result GetNpadCommunicationMode(out long npadCommunicationMode);
         Result SetTouchScreenConfiguration(AppletResourceUserId appletResourceUserId, TouchScreenConfigurationForNx touchScreenConfigurationForNx, ulong pid);
-        Result IsFirmwareUpdateNeededForNotification(out bool arg0, int arg1, AppletResourceUserId appletResourceUserId, ulong pid);
+        Result IsFirmwareUpdateNeededForNotification(out bool isFirmwareUpdateNeededForNotification, int unknown, AppletResourceUserId appletResourceUserId, ulong pid);
         Result ActivateDigitizer(AppletResourceUserId appletResourceUserId, ulong pid);
     }
 }

@@ -33,8 +33,8 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
         internal NpadStyleTag SupportedStyleSets { get; set; }
 
-        public Dictionary<PlayerIndex, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
-        public Dictionary<PlayerIndex, (VibrationValue, VibrationValue)> LastVibrationValues = new();
+        public Dictionary<NpadIdType, ConcurrentQueue<(VibrationValue, VibrationValue)>> RumbleQueues = new();
+        public Dictionary<NpadIdType, (VibrationValue, VibrationValue)> LastVibrationValues = new();
 
         public NpadDevices(bool active = true) : base(active)
         {
@@ -596,7 +596,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             WriteNewSixInputEntry(ref currentNpad.JoyRightSixAxisSensor, ref newState);
         }
 
-        public void UpdateRumbleQueue(PlayerIndex index, Dictionary<byte, VibrationValue> dualVibrationValues)
+        public void UpdateRumbleQueue(NpadIdType index, Dictionary<byte, VibrationValue> dualVibrationValues)
         {
             if (RumbleQueues.TryGetValue(index, out ConcurrentQueue<(VibrationValue, VibrationValue)> currentQueue))
             {
@@ -619,7 +619,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             }
         }
 
-        public VibrationValue GetLastVibrationValue(PlayerIndex index, byte position)
+        public VibrationValue GetLastVibrationValue(NpadIdType index, byte position)
         {
             if (!LastVibrationValues.TryGetValue(index, out (VibrationValue, VibrationValue) dualVibrationValue))
             {
@@ -629,7 +629,7 @@ namespace Ryujinx.Horizon.Sdk.Hid.HidDevices
             return (position == 0) ? dualVibrationValue.Item1 : dualVibrationValue.Item2;
         }
 
-        public ConcurrentQueue<(VibrationValue, VibrationValue)> GetRumbleQueue(PlayerIndex index)
+        public ConcurrentQueue<(VibrationValue, VibrationValue)> GetRumbleQueue(NpadIdType index)
         {
             if (!RumbleQueues.TryGetValue(index, out ConcurrentQueue<(VibrationValue, VibrationValue)> rumbleQueue))
             {

@@ -1,9 +1,11 @@
+using Ryujinx.Horizon.Sdk.Hid.Npad;
+
 namespace Ryujinx.Horizon.Sdk.Hid.Vibration
 {
     public struct VibrationDeviceHandle
     {
-        public byte DeviceType;
-        public byte PlayerId;
+        public NpadStyleIndex DeviceType;
+        public NpadIdType PlayerId;
         public byte Position;
         public byte Reserved;
     }
