@@ -67,7 +67,9 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             _info = info;
 
-            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
+            bool multisample = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
+
+            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format, multisample);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
             var depth = (uint)(info.Target == Target.Texture3D ? info.Depth : 1);
