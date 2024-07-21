@@ -833,7 +833,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            if (enables == 0 || (factor == 0 && units == 0))
+            if (enables == PolygonModeMask.None || (factor == 0 && units == 0))
             {
                 GL.Disable(EnableCap.PolygonOffsetPoint);
                 GL.Disable(EnableCap.PolygonOffsetLine);

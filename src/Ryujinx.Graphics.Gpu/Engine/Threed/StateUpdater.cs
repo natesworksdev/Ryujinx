@@ -841,16 +841,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateDepthBiasState()
         {
-            if (_pipeline.BiasEnable == 0 && (_state.State.DepthBiasFactor == 0 && _state.State.DepthBiasUnits == 0))
+            if (_state.State.DepthBiasFactor == 0 && _state.State.DepthBiasUnits == 0)
             {
-                return;
-            }
-            else if (_pipeline.BiasEnable != 0 &&
-                     (_state.State.DepthBiasFactor == 0 && _state.State.DepthBiasUnits == 0))
-            {
-                _pipeline.BiasEnable = 0;
+                if (_pipeline.BiasEnable != PolygonModeMask.None)
+                {
+                    _pipeline.BiasEnable = PolygonModeMask.None;
 
-                _context.Renderer.Pipeline.SetDepthBias(0, 0, 0, 0);
+                    _context.Renderer.Pipeline.SetDepthBias(PolygonModeMask.None, 0, 0, 0);
+                }
 
                 return;
             }
@@ -861,7 +859,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             float units = _state.State.DepthBiasUnits;
             float clamp = _state.State.DepthBiasClamp;
 
-            PolygonModeMask enables = 0;
+            PolygonModeMask enables = PolygonModeMask.None;
 
             if (factor != 0 && units != 0)
             {
