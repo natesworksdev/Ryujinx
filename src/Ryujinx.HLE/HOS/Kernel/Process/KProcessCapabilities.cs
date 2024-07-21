@@ -330,7 +330,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsSvcPermitted(int svcId)
         {
             int index = svcId / SvcMaskElementBits;
-            int mask = (byte)(1 << (svcId % SvcMaskElementBits));
+            int mask = 1 << (svcId % SvcMaskElementBits);
 
             return (uint)svcId < KernelConstants.SupervisorCallCount && (SvcAccessMask[index] & mask) != 0;
         }
