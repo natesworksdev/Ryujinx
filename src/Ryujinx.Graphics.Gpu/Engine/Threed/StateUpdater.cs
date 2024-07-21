@@ -850,7 +850,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 _pipeline.BiasEnable = 0;
 
-                _context.Renderer.Pipeline.SetDepthBiasEnable(0);
+                _context.Renderer.Pipeline.SetDepthBias(0, 0, 0, 0);
 
                 return;
             }
@@ -872,12 +872,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _pipeline.BiasEnable = enables;
 
-            _context.Renderer.Pipeline.SetDepthBiasEnable(enables);
-
-            if (enables > 0)
-            {
-                _context.Renderer.Pipeline.SetDepthBias(factor, units / 2f, clamp);
-            }
+            _context.Renderer.Pipeline.SetDepthBias(enables, factor, units / 2f, clamp);
         }
 
         /// <summary>

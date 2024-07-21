@@ -831,31 +831,14 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Enable(IndexedEnableCap.Blend, index);
         }
 
-        public void SetDepthBias(float factor, float units, float clamp)
+        public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            if (factor == 0 && units == 0)
+            if (enables == 0 || (factor == 0 && units == 0))
             {
                 GL.Disable(EnableCap.PolygonOffsetPoint);
                 GL.Disable(EnableCap.PolygonOffsetLine);
                 GL.Disable(EnableCap.PolygonOffsetFill);
 
-                return;
-            }
-
-            if (HwCapabilities.SupportsPolygonOffsetClamp)
-            {
-                GL.PolygonOffsetClamp(factor, units, clamp);
-            }
-            else
-            {
-                GL.PolygonOffset(factor, units);
-            }
-        }
-
-        public void SetDepthBiasEnable(PolygonModeMask enables)
-        {
-            if (enables == 0)
-            {
                 return;
             }
 
@@ -884,6 +867,15 @@ namespace Ryujinx.Graphics.OpenGL
             else
             {
                 GL.Disable(EnableCap.PolygonOffsetFill);
+            }
+
+            if (HwCapabilities.SupportsPolygonOffsetClamp)
+            {
+                GL.PolygonOffsetClamp(factor, units, clamp);
+            }
+            else
+            {
+                GL.PolygonOffset(factor, units);
             }
         }
 

@@ -116,7 +116,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Register<SetBlendStateAdvancedCommand>(CommandType.SetBlendStateAdvanced);
             Register<SetBlendStateCommand>(CommandType.SetBlendState);
             Register<SetDepthBiasCommand>(CommandType.SetDepthBias);
-            Register<SetDepthBiasEnableCommand>(CommandType.SetDepthBiasEnable);
             Register<SetDepthClampCommand>(CommandType.SetDepthClamp);
             Register<SetDepthModeCommand>(CommandType.SetDepthMode);
             Register<SetDepthTestCommand>(CommandType.SetDepthTest);
