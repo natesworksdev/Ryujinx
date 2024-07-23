@@ -59,10 +59,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Textures.Add(this);
 
-            bool supportsIsNotMsOrSupportsStorage = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
+            bool isNotMsOrSupportsStorage = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
 
-            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format, supportsIsNotMsOrSupportsStorage);
-            var usage = TextureStorage.GetImageUsage(info.Format, supportsIsNotMsOrSupportsStorage, false);
+            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format, isNotMsOrSupportsStorage);
+            var usage = TextureStorage.GetImageUsage(info.Format, isNotMsOrSupportsStorage, false);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
 
