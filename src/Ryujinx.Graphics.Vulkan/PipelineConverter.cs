@@ -178,7 +178,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
             {
-                pipeline.LogicOp = state.LogicOp.Convert();
+                pipeline.LogicOp = state.LogicOpEnable ? state.LogicOp.Convert() : default;
             }
 
             if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
@@ -192,13 +192,9 @@ namespace Ryujinx.Graphics.Vulkan
             if (!gd.Capabilities.SupportsExtendedDynamicState)
             {
                 pipeline.DepthTestEnable = state.DepthTest.TestEnable;
+                pipeline.DepthWriteEnable = state.DepthTest.WriteEnable && state.DepthTest.TestEnable;
 
-                if (pipeline.DepthTestEnable)
-                {
-                    pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
-                }
-
-                pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
+                pipeline.DepthCompareOp = state.DepthTest.TestEnable ? state.DepthTest.Func.Convert() : default;
 
                 pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
 
