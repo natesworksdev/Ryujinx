@@ -118,7 +118,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetDepthTestBool(bool testEnable, bool writeEnable)
         {
             DepthTestEnable = testEnable;
-            DepthWriteEnable = writeEnable;
+            DepthWriteEnable = writeEnable && testEnable;
             _dirty |= DirtyFlags.DepthTestBool;
         }
 
@@ -440,10 +440,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             api.CmdSetDepthTestEnable(commandBuffer, DepthTestEnable);
 
-            if (DepthTestEnable)
-            {
-                api.CmdSetDepthWriteEnable(commandBuffer, DepthWriteEnable);
-            }
+            api.CmdSetDepthWriteEnable(commandBuffer, DepthWriteEnable);
         }
 
         private readonly void RecordDepthTestCompareOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
@@ -478,10 +475,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordLineWidth(Vk api, CommandBuffer commandBuffer)
         {
-            if (!OperatingSystem.IsMacOS())
-            {
-                api.CmdSetLineWidth(commandBuffer, _lineWidth);
-            }
+            api.CmdSetLineWidth(commandBuffer, _lineWidth);
         }
     }
 }

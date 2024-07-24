@@ -671,15 +671,15 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     var oldTopologyClass = GetTopologyClass(oldTopology);
 
-                    DynamicState.SetCullMode(oldCullMode);
-                    DynamicState.SetStencilTest(oldStencilTestEnable);
-                    DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
-                    DynamicState.SetPrimitiveTopology(oldTopology);
-
                     if (oldTopologyClass != TopologyClass.Triangle)
                     {
                         _newState.TopologyClass = oldTopology;
                     }
+
+                    DynamicState.SetCullMode(oldCullMode);
+                    DynamicState.SetStencilTest(oldStencilTestEnable);
+                    DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
+                    DynamicState.SetPrimitiveTopology(oldTopology);
                 }
                 else
                 {
@@ -823,21 +823,35 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            bool enable = (enables != 0) && (factor > 0.0f || units > 0.0f);
+            if (factor == 0 && units == 0 && !_newState.DepthBiasEnable && !_supportExtDynamic2)
+            {
+                return;
+            }
 
-            if (enable)
+            bool depthBiasEnable = (enables != 0) && (factor != 0 && units != 0);
+            bool changed = false;
+
+            if (_supportExtDynamic2)
+            {
+                DynamicState.SetDepthBiasEnable(depthBiasEnable);
+                changed = true;
+            }
+            else if (_newState.DepthBiasEnable != depthBiasEnable)
+            {
+                _newState.DepthBiasEnable = depthBiasEnable;
+                changed = true;
+            }
+
+            if (depthBiasEnable)
             {
                 DynamicState.SetDepthBias(factor, units, clamp);
+                changed = true;
             }
 
-            if (Gd.Capabilities.SupportsExtendedDynamicState2)
+            if (changed)
             {
-                DynamicState.SetDepthBiasEnable(enable);
+                SignalStateChange();
             }
-
-            _newState.DepthBiasEnable = enable;
-
-            SignalStateChange();
         }
 
         public void SetDepthClamp(bool clamp)
@@ -849,15 +863,16 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthMode(DepthMode mode)
         {
-            bool oldMode;
+            bool newMode = mode == DepthMode.MinusOneToOne;
 
-            oldMode = _newState.DepthMode;
-            _newState.DepthMode = mode == DepthMode.MinusOneToOne;
-
-            if (_newState.DepthMode != oldMode)
+            if (_newState.DepthMode == newMode)
             {
-                SignalStateChange();
+                return;
             }
+
+            _newState.DepthMode = newMode;
+
+            SignalStateChange();
         }
 
         public void SetDepthTest(DepthTestDescriptor depthTest)
@@ -865,15 +880,17 @@ namespace Ryujinx.Graphics.Vulkan
             if (_supportExtDynamic)
             {
                 DynamicState.SetDepthTestBool(depthTest.TestEnable, depthTest.WriteEnable);
-                DynamicState.SetDepthTestCompareOp(depthTest.Func.Convert());
+                if (depthTest.TestEnable)
+                {
+                    DynamicState.SetDepthTestCompareOp(depthTest.Func.Convert());
+                }
             }
             else
             {
-                _newState.DepthWriteEnable = depthTest.WriteEnable;
-                _newState.DepthCompareOp = depthTest.Func.Convert();
+                _newState.DepthTestEnable = depthTest.TestEnable;
+                _newState.DepthWriteEnable = depthTest.WriteEnable && depthTest.TestEnable;
+                _newState.DepthCompareOp = depthTest.TestEnable ? depthTest.Func.Convert() : default;
             }
-
-            _newState.DepthTestEnable = depthTest.TestEnable;
 
             SignalStateChange();
         }
@@ -958,7 +975,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.LogicOpEnable = logicOpEnable;
 
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && logicOpEnable)
             {
                 DynamicState.SetLogicOp(op.Convert());
             }
@@ -1053,17 +1070,18 @@ namespace Ryujinx.Graphics.Vulkan
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
-            var newTopologyClass = GetTopologyClass(vkTopology);
-            var currentTopologyClass = GetTopologyClass(_newState.TopologyClass);
 
             if (_supportExtDynamic)
             {
-                DynamicState.SetPrimitiveTopology(vkTopology);
-            }
+                var newTopologyClass = GetTopologyClass(vkTopology);
+                var currentTopologyClass = GetTopologyClass(_newState.TopologyClass);
 
-            if ((currentTopologyClass != newTopologyClass))
-            {
-                _newState.TopologyClass = vkTopology;
+                if ((currentTopologyClass != newTopologyClass))
+                {
+                    _newState.TopologyClass = vkTopology;
+                }
+
+                DynamicState.SetPrimitiveTopology(vkTopology);
             }
 
             _newState.Topology = vkTopology;

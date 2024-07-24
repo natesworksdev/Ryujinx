@@ -446,7 +446,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (isMoltenVk)
                 {
-                    //When widelines feature is not supported it must be 1.0f per spec. 
+                    //When widelines feature is not supported it must be 1.0f. 
                     rasterizationState.LineWidth = 1.0f;
                 }
 
@@ -514,10 +514,7 @@ namespace Ryujinx.Graphics.Vulkan
                     depthStencilState.Back = stencilBack;
                     depthStencilState.StencilTestEnable = StencilTestEnable;
                     depthStencilState.DepthTestEnable = DepthTestEnable;
-                    if (DepthTestEnable)
-                    {
-                        depthStencilState.DepthWriteEnable = DepthWriteEnable;
-                    }
+                    depthStencilState.DepthWriteEnable = DepthWriteEnable;
                     depthStencilState.DepthCompareOp = DepthCompareOp;
                 }
 
@@ -570,7 +567,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
 
-                int baseDynamicStatesCount = 6;
+                int baseDynamicStatesCount = 7;
                 int additionalDynamicStatesCount = 0;
 
                 if (!isMoltenVk)
@@ -578,19 +575,9 @@ namespace Ryujinx.Graphics.Vulkan
                     baseDynamicStatesCount++;
                 }
 
-                if (DepthBiasEnable)
-                {
-                    baseDynamicStatesCount++;
-                }
-
                 if (supportsExtDynamicState)
                 {
-                    additionalDynamicStatesCount += isMoltenVk ? 7 : 8;
-
-                    if (DepthTestEnable)
-                    {
-                        additionalDynamicStatesCount++;
-                    }
+                    additionalDynamicStatesCount += isMoltenVk ? 8 : 9;
                 }
 
                 if (supportsExtDynamicState2)
@@ -615,16 +602,13 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[3] = DynamicState.StencilWriteMask;
                 dynamicStates[4] = DynamicState.StencilReference;
                 dynamicStates[5] = DynamicState.BlendConstants;
+                dynamicStates[6] = DynamicState.DepthBias;
 
-                if (DepthBiasEnable)
-                {
-                    dynamicStates[6] = DynamicState.DepthBias;
-                }
-                int currentIndex = DepthBiasEnable ? 7 : 6;
+                int currentIndex = 7;
 
                 if (!isMoltenVk)
                 {
-                    //LineWidth is only supported on macOS when using Metal Private API on newer version of MoltenVK
+                    //LineWidth dynamic state is only supported on macOS when using Metal Private API on newer version of MoltenVK
                     dynamicStates[currentIndex++] = DynamicState.LineWidth;
                 }
 
@@ -640,11 +624,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.CullModeExt;
                     dynamicStates[currentIndex++] = DynamicState.FrontFaceExt;
                     dynamicStates[currentIndex++] = DynamicState.DepthTestEnableExt;
-
-                    if (DepthTestEnable)
-                    {
-                        dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
-                    }
+                    dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
 
                     dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
                     dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
