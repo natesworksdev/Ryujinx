@@ -640,6 +640,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
                 var oldTopology = _newState.Topology;
+                var oldTopologyClass = _newState.TopologyClass;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -669,9 +670,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    var oldTopologyClass = GetTopologyClass(oldTopology);
-
-                    if (oldTopologyClass != TopologyClass.Triangle)
+                    if (oldTopologyClass != Silk.NET.Vulkan.PrimitiveTopology.TriangleList)
                     {
                         _newState.TopologyClass = oldTopology;
                     }
@@ -1070,12 +1069,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_supportExtDynamic)
             {
-                var newTopologyClass = GetTopologyClass(vkTopology);
-                var currentTopologyClass = GetTopologyClass(_newState.TopologyClass);
+                var oldTopologyClass = _newState.TopologyClass;
+                var newTopologyClass = Gd.TopologyRemap(topology).ConvertToClass();
 
-                if ((currentTopologyClass != newTopologyClass))
+                if ((oldTopologyClass != newTopologyClass))
                 {
-                    _newState.TopologyClass = vkTopology;
+                    _newState.TopologyClass = newTopologyClass;
                 }
 
                 DynamicState.SetPrimitiveTopology(vkTopology);
@@ -1084,34 +1083,6 @@ namespace Ryujinx.Graphics.Vulkan
             _newState.Topology = vkTopology;
 
             SignalStateChange();
-        }
-
-        private TopologyClass GetTopologyClass(Silk.NET.Vulkan.PrimitiveTopology topology)
-        {
-            return _topologyClassMapping.TryGetValue(topology, out var topologyClass) ? topologyClass : throw new ArgumentOutOfRangeException(nameof(topology), topology, null);
-        }
-
-        private static readonly Dictionary<Silk.NET.Vulkan.PrimitiveTopology, TopologyClass> _topologyClassMapping = new()
-        {
-            { Silk.NET.Vulkan.PrimitiveTopology.PointList, TopologyClass.Point },
-            { Silk.NET.Vulkan.PrimitiveTopology.LineList, TopologyClass.Line },
-            { Silk.NET.Vulkan.PrimitiveTopology.LineStrip, TopologyClass.Line },
-            { Silk.NET.Vulkan.PrimitiveTopology.LineListWithAdjacency, TopologyClass.Line },
-            { Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency, TopologyClass.Line },
-            { Silk.NET.Vulkan.PrimitiveTopology.TriangleList, TopologyClass.Triangle },
-            { Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip, TopologyClass.Triangle },
-            { Silk.NET.Vulkan.PrimitiveTopology.TriangleFan, TopologyClass.Triangle },
-            { Silk.NET.Vulkan.PrimitiveTopology.TriangleListWithAdjacency, TopologyClass.Triangle },
-            { Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency, TopologyClass.Triangle },
-            { Silk.NET.Vulkan.PrimitiveTopology.PatchList, TopologyClass.Patch }
-        };
-
-        private enum TopologyClass
-        {
-            Point,
-            Line,
-            Triangle,
-            Patch
         }
 
         public void SetProgram(IProgram program)
