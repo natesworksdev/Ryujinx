@@ -880,10 +880,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (_supportExtDynamic)
             {
                 DynamicState.SetDepthTestBool(depthTest.TestEnable, depthTest.WriteEnable);
-                if (depthTest.TestEnable)
-                {
-                    DynamicState.SetDepthTestCompareOp(depthTest.Func.Convert());
-                }
+                DynamicState.SetDepthTestCompareOp(depthTest.TestEnable ? depthTest.Func.Convert() : default);
             }
             else
             {
@@ -975,13 +972,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.LogicOpEnable = logicOpEnable;
 
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp && logicOpEnable)
+            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
             {
-                DynamicState.SetLogicOp(op.Convert());
+                DynamicState.SetLogicOp(logicOpEnable ? op.Convert() : default);
             }
-            else if (logicOpEnable)
+            else
             {
-                _newState.LogicOp = op.Convert();
+                _newState.LogicOp = logicOpEnable ? op.Convert() : default;
             }
 
             SignalStateChange();
