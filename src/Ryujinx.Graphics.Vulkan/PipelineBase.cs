@@ -1069,10 +1069,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_supportExtDynamic)
             {
-                var oldTopologyClass = _newState.TopologyClass;
                 var newTopologyClass = Gd.TopologyRemap(topology).ConvertToClass();
 
-                if ((oldTopologyClass != newTopologyClass))
+                if ((_newState.TopologyClass != newTopologyClass))
                 {
                     _newState.TopologyClass = newTopologyClass;
                 }
