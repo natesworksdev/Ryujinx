@@ -325,7 +325,6 @@ namespace Ryujinx.UI
             _hideUI.Label = _hideUI.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI.ToString());
 
             UpdateColumns();
-            UpdateGameTable();
 
             ConfigurationState.Instance.UI.GameDirs.Event += (sender, args) =>
             {
