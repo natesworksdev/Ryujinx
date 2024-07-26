@@ -422,35 +422,40 @@ namespace Ryujinx.UI.App.Common
 
             foreach (var data in applications)
             {
-                ApplicationMetadata appMetadata = LoadAndSaveMetaData(data.IdString, appMetadata =>
+                // Only load metadata for applications with an ID
+                if (data.Id != 0)
                 {
-                    appMetadata.Title = data.Name;
-
-                    // Only do the migration if time_played has a value and timespan_played hasn't been updated yet.
-                    if (appMetadata.TimePlayedOld != default && appMetadata.TimePlayed == TimeSpan.Zero)
+                    ApplicationMetadata appMetadata = LoadAndSaveMetaData(data.IdString, appMetadata =>
                     {
-                        appMetadata.TimePlayed = TimeSpan.FromSeconds(appMetadata.TimePlayedOld);
-                        appMetadata.TimePlayedOld = default;
-                    }
+                        appMetadata.Title = data.Name;
 
-                    // Only do the migration if last_played has a value and last_played_utc doesn't exist yet.
-                    if (appMetadata.LastPlayedOld != default && !appMetadata.LastPlayed.HasValue)
-                    {
-                        // Migrate from string-based last_played to DateTime-based last_played_utc.
-                        if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
+                        // Only do the migration if time_played has a value and timespan_played hasn't been updated yet.
+                        if (appMetadata.TimePlayedOld != default && appMetadata.TimePlayed == TimeSpan.Zero)
                         {
-                            appMetadata.LastPlayed = lastPlayedOldParsed;
-
-                            // Migration successful: deleting last_played from the metadata file.
-                            appMetadata.LastPlayedOld = default;
+                            appMetadata.TimePlayed = TimeSpan.FromSeconds(appMetadata.TimePlayedOld);
+                            appMetadata.TimePlayedOld = default;
                         }
 
-                    }
-                });
+                        // Only do the migration if last_played has a value and last_played_utc doesn't exist yet.
+                        if (appMetadata.LastPlayedOld != default && !appMetadata.LastPlayed.HasValue)
+                        {
+                            // Migrate from string-based last_played to DateTime-based last_played_utc.
+                            if (DateTime.TryParse(appMetadata.LastPlayedOld, out DateTime lastPlayedOldParsed))
+                            {
+                                appMetadata.LastPlayed = lastPlayedOldParsed;
 
-                data.Favorite = appMetadata.Favorite;
-                data.TimePlayed = appMetadata.TimePlayed;
-                data.LastPlayed = appMetadata.LastPlayed;
+                                // Migration successful: deleting last_played from the metadata file.
+                                appMetadata.LastPlayedOld = default;
+                            }
+
+                        }
+                    });
+
+                    data.Favorite = appMetadata.Favorite;
+                    data.TimePlayed = appMetadata.TimePlayed;
+                    data.LastPlayed = appMetadata.LastPlayed;
+                }
+
                 data.FileExtension = Path.GetExtension(applicationPath).TrimStart('.').ToUpper();
                 data.FileSize = fileSize;
                 data.Path = applicationPath;
