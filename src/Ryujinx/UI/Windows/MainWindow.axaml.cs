@@ -225,7 +225,10 @@ namespace Ryujinx.Ava.UI.Windows
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
 
-            ApplicationLibrary = new ApplicationLibrary(VirtualFileSystem, checkLevel);
+            ApplicationLibrary = new ApplicationLibrary(VirtualFileSystem, checkLevel)
+            {
+                DesiredTitleLanguage = ConfigurationState.Instance.System.Language,
+            };
 
             // Save data created before we supported extra data in directory save data will not work properly if
             // given empty extra data. Luckily some of that extra data can be created using the data from the
@@ -634,7 +637,8 @@ namespace Ryujinx.Ava.UI.Windows
 
             Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.DesiredTitleLanguage = ConfigurationState.Instance.System.Language;
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
                 _isLoading = false;
             })

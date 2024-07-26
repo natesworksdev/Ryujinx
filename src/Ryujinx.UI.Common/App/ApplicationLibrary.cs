@@ -34,6 +34,7 @@ namespace Ryujinx.UI.App.Common
 {
     public class ApplicationLibrary
     {
+        public Language DesiredTitleLanguage { get; set; }
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
@@ -45,7 +46,6 @@ namespace Ryujinx.UI.App.Common
 
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly IntegrityCheckLevel _checkLevel;
-        private Language _desiredTitleLanguage;
         private CancellationTokenSource _cancellationToken;
 
         private static readonly ApplicationJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
@@ -221,7 +221,7 @@ namespace Ryujinx.UI.App.Common
                 {
                     using UniqueRef<IFile> icon = new();
 
-                    controlFs.OpenFile(ref icon.Ref, $"/icon_{_desiredTitleLanguage}.dat".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    controlFs.OpenFile(ref icon.Ref, $"/icon_{DesiredTitleLanguage}.dat".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                     using MemoryStream stream = new();
 
@@ -477,12 +477,10 @@ namespace Ryujinx.UI.App.Common
             controlFile.Get.Read(out _, 0, outProperty, ReadOption.None).ThrowIfFailure();
         }
 
-        public void LoadApplications(List<string> appDirs, Language desiredTitleLanguage)
+        public void LoadApplications(List<string> appDirs)
         {
             int numApplicationsFound = 0;
             int numApplicationsLoaded = 0;
-
-            _desiredTitleLanguage = desiredTitleLanguage;
 
             _cancellationToken = new CancellationTokenSource();
 
@@ -832,7 +830,7 @@ namespace Ryujinx.UI.App.Common
 
         private void GetApplicationInformation(ref ApplicationControlProperty controlData, ref ApplicationData data)
         {
-            _ = Enum.TryParse(_desiredTitleLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
+            _ = Enum.TryParse(DesiredTitleLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
 
             if (controlData.Title.ItemsRo.Length > (int)desiredTitleLanguage)
             {
