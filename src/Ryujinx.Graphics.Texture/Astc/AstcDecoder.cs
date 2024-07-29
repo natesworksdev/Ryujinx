@@ -1,7 +1,6 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.Common.Utilities;
 using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -293,7 +292,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int depth,
             int levels,
             int layers,
-            out IMemoryOwner<byte> decoded)
+            out MemoryOwner<byte> decoded)
         {
             decoded = MemoryOwner<byte>.Rent(QueryDecompressedSize(width, height, depth, levels, layers));
 

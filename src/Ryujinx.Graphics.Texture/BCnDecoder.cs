@@ -1,7 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Memory;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -14,7 +13,7 @@ namespace Ryujinx.Graphics.Texture
         private const int BlockWidth = 4;
         private const int BlockHeight = 4;
 
-        public static IMemoryOwner<byte> DecodeBC1(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeBC1(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             int size = 0;
 
@@ -102,7 +101,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC2(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeBC2(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             int size = 0;
 
@@ -197,7 +196,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC3(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeBC3(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             int size = 0;
 
@@ -294,7 +293,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC4(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static MemoryOwner<byte> DecodeBC4(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
@@ -402,7 +401,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static MemoryOwner<byte> DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
@@ -527,7 +526,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC6(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static MemoryOwner<byte> DecodeBC6(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
@@ -566,7 +565,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeBC7(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeBC7(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             int size = 0;
 

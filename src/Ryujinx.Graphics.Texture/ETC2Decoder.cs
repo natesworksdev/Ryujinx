@@ -1,7 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Memory;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
@@ -51,7 +50,7 @@ namespace Ryujinx.Graphics.Texture
             new int[] { -3, -5, -7, -9, 2, 4, 6, 8 },
         };
 
-        public static IMemoryOwner<byte> DecodeRgb(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeRgb(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             ReadOnlySpan<ulong> dataUlong = MemoryMarshal.Cast<byte, ulong>(data);
 
@@ -113,7 +112,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodePta(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodePta(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             ReadOnlySpan<ulong> dataUlong = MemoryMarshal.Cast<byte, ulong>(data);
 
@@ -170,7 +169,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static IMemoryOwner<byte> DecodeRgba(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        public static MemoryOwner<byte> DecodeRgba(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
         {
             ReadOnlySpan<ulong> dataUlong = MemoryMarshal.Cast<byte, ulong>(data);
 
