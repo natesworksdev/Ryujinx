@@ -65,6 +65,29 @@ namespace Ryujinx.Common.Utilities
             return pathInfo.FullName;
         }
 
+        // TODO: This is bad. Resolve all data paths on startup instead.
+        public static string CombineAndResolveFullPath(bool isDirectory, params string[] paths)
+        {
+            if (paths.Length == 0)
+            {
+                return null;
+            }
+
+            if (paths.Length == 1)
+            {
+                return ResolveFullPath(paths[0], isDirectory);
+            }
+
+            string fullPath = ResolveFullPath(paths[0], true);
+
+            for (int i = 1; i < paths.Length - 1; i++)
+            {
+                fullPath = ResolveFullPath(Path.Combine(fullPath, paths[i]), true);
+            }
+
+            return ResolveFullPath(Path.Combine(fullPath, paths[^1]), isDirectory);
+        }
+
         public static FileInfo GetActualFileInfo(this FileInfo fileInfo)
         {
             if (fileInfo.Exists)
