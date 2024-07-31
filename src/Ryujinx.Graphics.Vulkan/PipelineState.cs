@@ -432,7 +432,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.PipelineTessellationStateCreateInfo,
                 };
 
-                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2)
+                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
                 {
                     tessellationState.PatchControlPoints = PatchControlPoints;
                 }
