@@ -469,7 +469,7 @@ namespace Ryujinx.Graphics.Vulkan
                     SType = StructureType.PhysicalDeviceExtendedDynamicState2FeaturesExt,
                     PNext = pExtendedFeatures,
                     ExtendedDynamicState2 =
-                        physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName),
+                        supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2,
                     ExtendedDynamicState2LogicOp =
                         supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
                     ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2
