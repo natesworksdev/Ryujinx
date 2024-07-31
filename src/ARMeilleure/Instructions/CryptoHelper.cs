@@ -171,12 +171,12 @@ namespace ARMeilleure.Instructions
 
         private static ReadOnlySpan<byte> _srPerm => new byte[]
         {
-            0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3,
+            0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11
         };
 
         private static ReadOnlySpan<byte> _isrPerm => new byte[]
         {
-            0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, 1, 6, 11,
+            0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3
         };
 #pragma warning restore IDE1006
         #endregion
