@@ -29,9 +29,10 @@ namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
-        public static readonly string SafeNandPath = FileSystemUtils.ResolveFullPath(Path.Combine(AppDataManager.DefaultNandDir, "safe"), true);
-        public static readonly string SystemNandPath = FileSystemUtils.ResolveFullPath(Path.Combine(AppDataManager.DefaultNandDir, "system"), true);
-        public static readonly string UserNandPath = FileSystemUtils.ResolveFullPath(Path.Combine(AppDataManager.DefaultNandDir, "user"), true);
+        // NOTE: These are relative paths.
+        public static readonly string SafeNandPath = Path.Combine(AppDataManager.DefaultNandDir, "safe");
+        public static readonly string SystemNandPath = Path.Combine(AppDataManager.DefaultNandDir, "system");
+        public static readonly string UserNandPath = Path.Combine(AppDataManager.DefaultNandDir, "user");
 
         public KeySet KeySet { get; private set; }
         public EmulatedGameCard GameCard { get; private set; }
