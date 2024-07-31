@@ -179,11 +179,11 @@ namespace Ryujinx.HLE.FileSystem
                     break;
             }
 
-            string fullPath = Path.Combine(AppDataManager.BaseDirPath, path);
+            string fullPath = FileSystemUtils.CombineAndResolveFullPath(isDirectory, AppDataManager.BaseDirPath, path);
 
             if (isDirectory && !Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(fullPath);
+                Directory.CreateDirectory(fullPath!);
             }
 
             return fullPath;

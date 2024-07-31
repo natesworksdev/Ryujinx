@@ -395,7 +395,7 @@ namespace Ryujinx.UI.Common.Configuration
         {
             try
             {
-                configurationFileFormat = JsonHelper.DeserializeFromFile(path, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
+                configurationFileFormat = JsonHelper.DeserializeFromFile(FileSystemUtils.ResolveFullPath(path, false), ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
 
                 return configurationFileFormat.Version != 0;
             }
@@ -413,7 +413,7 @@ namespace Ryujinx.UI.Common.Configuration
         /// <param name="path">The path to the JSON configuration file</param>
         public void SaveConfig(string path)
         {
-            JsonHelper.SerializeToFile(path, this, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
+            JsonHelper.SerializeToFile(FileSystemUtils.ResolveFullPath(path, false), this, ConfigurationFileFormatSettings.SerializerContext.ConfigurationFileFormat);
         }
     }
 }

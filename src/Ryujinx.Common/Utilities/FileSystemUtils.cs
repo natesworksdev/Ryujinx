@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -59,8 +60,14 @@ namespace Ryujinx.Common.Utilities
 
             if (pathInfo.Exists)
             {
-                return pathInfo.ResolveLinkTarget(true)?.FullName ?? pathInfo.FullName;
+                var fullPath = pathInfo.ResolveLinkTarget(true)?.FullName ?? pathInfo.FullName;
+
+                Logger.Warning?.Print(LogClass.Application, $"Resolved: {path} -> {pathInfo.FullName}");
+
+                return fullPath;
             }
+
+            Logger.Warning?.Print(LogClass.Application, $"Can't resolve non-existent path: {path} -> {pathInfo.FullName}");
 
             return pathInfo.FullName;
         }
@@ -85,7 +92,11 @@ namespace Ryujinx.Common.Utilities
                 fullPath = ResolveFullPath(Path.Combine(fullPath, paths[i]), true);
             }
 
-            return ResolveFullPath(Path.Combine(fullPath, paths[^1]), isDirectory);
+            fullPath = ResolveFullPath(Path.Combine(fullPath, paths[^1]), isDirectory);
+
+            Logger.Warning?.Print(LogClass.Application, $"Combined and resolved: {fullPath}");
+
+            return fullPath;
         }
 
         public static FileInfo GetActualFileInfo(this FileInfo fileInfo)

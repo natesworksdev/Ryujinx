@@ -30,11 +30,11 @@ namespace Ryujinx.HLE.FileSystem
         {
             realPath = switchContentPath switch
             {
-                SystemContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, SystemNandPath, Contents),
-                UserContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, UserNandPath, Contents),
+                SystemContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "system", Contents),
+                UserContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user", Contents),
                 SdCardContent => FileSystemUtils.CombineAndResolveFullPath(true, GetSdCardPath(), Nintendo, Contents),
-                System => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, SystemNandPath),
-                User => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, UserNandPath),
+                System => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "system"),
+                User => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user"),
                 _ => null,
             };
 
