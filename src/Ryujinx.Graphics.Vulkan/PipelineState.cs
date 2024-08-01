@@ -575,7 +575,7 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[5] = DynamicState.BlendConstants;
                 dynamicStates[6] = DynamicState.DepthBias;
 
-                int currentIndex = 7;
+                uint currentIndex = 7;
 
                 if (!isMoltenVk)
                 {
@@ -622,7 +622,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
                 {
                     SType = StructureType.PipelineDynamicStateCreateInfo,
-                    DynamicStateCount = (uint)currentIndex,
+                    DynamicStateCount = currentIndex,
                     PDynamicStates = dynamicStates,
                 };
 
