@@ -349,18 +349,15 @@ namespace Ryujinx.HLE.FileSystem
                 return false;
             }
 
-            string installedPath = VirtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
+            FileInfo installedInfo = FileSystemUtils.GetActualFileInfo(VirtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath));
 
-            if (!string.IsNullOrWhiteSpace(installedPath))
+            if (installedInfo.Exists)
             {
-                if (File.Exists(installedPath))
-                {
-                    using FileStream file = new(installedPath, FileMode.Open, FileAccess.Read);
-                    Nca nca = new(_virtualFileSystem.KeySet, file.AsStorage());
-                    bool contentCheck = nca.Header.ContentType == contentType;
+                using FileStream file = new(installedInfo.FullName, FileMode.Open, FileAccess.Read);
+                Nca nca = new(_virtualFileSystem.KeySet, file.AsStorage());
+                bool contentCheck = nca.Header.ContentType == contentType;
 
-                    return contentCheck;
-                }
+                return contentCheck;
             }
 
             return false;
@@ -941,9 +938,9 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     if (entry.ContentType == NcaContentType.Data)
                     {
-                        var path = VirtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
+                        var fileInfo = FileSystemUtils.GetActualFileInfo(VirtualFileSystem.SwitchPathToSystemPath(entry.ContentPath));
 
-                        using FileStream fileStream = File.OpenRead(path);
+                        using FileStream fileStream = fileInfo.OpenRead();
                         Nca nca = new(_virtualFileSystem.KeySet, fileStream.AsStorage());
 
                         if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)

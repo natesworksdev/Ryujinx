@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Sockets.Nsd;
 using System;
 using System.Collections.Generic;
@@ -21,12 +22,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
         {
             string sdPath = FileSystem.VirtualFileSystem.GetSdCardPath();
             string filePath = FileSystem.VirtualFileSystem.GetFullPath(sdPath, HostsFilePath);
+            FileInfo fileInfo = new FileInfo(filePath).GetActualFileInfo();
 
             _mitmHostEntries.Clear();
 
-            if (File.Exists(filePath))
+            if (fileInfo.Exists)
             {
-                using FileStream fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                using FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read);
                 using StreamReader reader = new(fileStream);
 
                 while (!reader.EndOfStream)
@@ -92,9 +94,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Proxy
 
                     return new IPHostEntry
                     {
-                        AddressList = new[] { hostEntry.Value },
+                        AddressList = [hostEntry.Value],
                         HostName = hostEntry.Key,
-                        Aliases = Array.Empty<string>(),
+                        Aliases = [],
                     };
                 }
             }

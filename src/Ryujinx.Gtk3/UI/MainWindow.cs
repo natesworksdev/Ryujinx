@@ -15,6 +15,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
@@ -187,7 +188,10 @@ namespace Ryujinx.UI
                 : IntegrityCheckLevel.None;
 
             // Instantiate GUI objects.
-            ApplicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel);
+            ApplicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel)
+            {
+                DesiredTitleLanguage = ConfigurationState.Instance.System.Language,
+            };
             _uiHandler = new GtkHostUIHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
 
@@ -325,7 +329,6 @@ namespace Ryujinx.UI
             _hideUI.Label = _hideUI.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI.ToString());
 
             UpdateColumns();
-            UpdateGameTable();
 
             ConfigurationState.Instance.UI.GameDirs.Event += (sender, args) =>
             {
@@ -738,7 +741,8 @@ namespace Ryujinx.UI
 
             Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.DesiredTitleLanguage = ConfigurationState.Instance.System.Language;
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
                 _updatingGameTable = false;
             })
@@ -917,7 +921,7 @@ namespace Ryujinx.UI
 
                 if (application.Path.StartsWith("@SystemContent"))
                 {
-                    application.Path = VirtualFileSystem.SwitchPathToSystemPath(application.Path);
+                    application.Path = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(application.Path), false);
 
                     isFirmwareTitle = true;
                 }

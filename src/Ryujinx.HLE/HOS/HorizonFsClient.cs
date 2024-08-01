@@ -3,6 +3,7 @@ using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Horizon;
 using Ryujinx.Horizon.Common;
@@ -39,19 +40,18 @@ namespace Ryujinx.HLE.HOS
         public Result MountSystemData(string mountName, ulong dataId)
         {
             string contentPath = _system.ContentManager.GetInstalledContentPath(dataId, StorageId.BuiltInSystem, NcaContentType.PublicData);
-            string installPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
-            if (!string.IsNullOrWhiteSpace(installPath))
+            if (!string.IsNullOrWhiteSpace(contentPath))
             {
-                string ncaPath = installPath;
+                FileInfo ncaInfo = FileSystemUtils.GetActualFileInfo(VirtualFileSystem.SwitchPathToSystemPath(contentPath));
 
-                if (File.Exists(ncaPath))
+                if (ncaInfo.Exists)
                 {
                     LocalStorage ncaStorage = null;
 
                     try
                     {
-                        ncaStorage = new LocalStorage(ncaPath, FileAccess.Read, FileMode.Open);
+                        ncaStorage = new LocalStorage(ncaInfo.FullName, FileAccess.Read, FileMode.Open);
 
                         Nca nca = new(_system.KeySet, ncaStorage);
 

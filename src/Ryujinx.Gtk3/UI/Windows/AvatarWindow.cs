@@ -7,6 +7,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Memory;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.Common.Configuration;
 using SixLabors.ImageSharp;
@@ -119,10 +120,10 @@ namespace Ryujinx.UI.Windows
             }
 
             string contentPath = contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.BuiltInSystem, NcaContentType.Data);
-            string avatarPath = VirtualFileSystem.SwitchPathToSystemPath(contentPath);
 
-            if (!string.IsNullOrWhiteSpace(avatarPath))
+            if (!string.IsNullOrWhiteSpace(contentPath))
             {
+                string avatarPath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(contentPath), false);
                 using IStorage ncaFileStream = new LocalStorage(avatarPath, FileAccess.Read, FileMode.Open);
 
                 Nca nca = new(virtualFileSystem.KeySet, ncaFileStream);

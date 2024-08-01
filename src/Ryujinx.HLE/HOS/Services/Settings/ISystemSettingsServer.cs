@@ -7,6 +7,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
@@ -305,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
                 return null;
             }
 
-            string firmwareTitlePath = FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath);
+            string firmwareTitlePath = FileSystemUtils.ResolveFullPath(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(contentPath), false);
 
             using IStorage firmwareStorage = new LocalStorage(firmwareTitlePath, FileAccess.Read);
             Nca firmwareContent = new(device.System.KeySet, firmwareStorage);

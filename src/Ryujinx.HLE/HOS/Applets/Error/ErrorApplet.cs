@@ -6,6 +6,7 @@ using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
@@ -107,14 +108,20 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
         private static string CleanText(string value)
         {
-            return CleanTextRegex().Replace(value, "").Replace("\0", "");
+            return CleanTextRegex().Replace(value, string.Empty).Replace("\0", string.Empty);
         }
 
         private string GetMessageText(uint module, uint description, string key)
         {
             string binaryTitleContentPath = _horizon.ContentManager.GetInstalledContentPath(ErrorMessageBinaryTitleId, StorageId.BuiltInSystem, NcaContentType.Data);
 
-            using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(binaryTitleContentPath), FileAccess.Read, FileMode.Open);
+            if (string.IsNullOrWhiteSpace(binaryTitleContentPath))
+            {
+                return string.Empty;
+            }
+
+            string binaryTitleFullPath = FileSystemUtils.ResolveFullPath(FileSystem.VirtualFileSystem.SwitchPathToSystemPath(binaryTitleContentPath), false);
+            using LibHac.Fs.IStorage ncaFileStream = new LocalStorage(binaryTitleFullPath, FileAccess.Read, FileMode.Open);
             Nca nca = new(_horizon.Device.FileSystem.KeySet, ncaFileStream);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _horizon.FsIntegrityCheckLevel);
             string languageCode = SystemLanguageToLanguageKey(_horizon.State.DesiredSystemLanguage);
@@ -131,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             }
             else
             {
-                return "";
+                return string.Empty;
             }
         }
 
@@ -139,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             string buttonsText = GetMessageText(module, description, key);
 
-            return (buttonsText == "") ? null : buttonsText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            return (buttonsText == string.Empty) ? null : buttonsText.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
         }
 
         private void ParseErrorCommonArg()
@@ -156,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
             string message = GetMessageText(module, description, "DlgMsg");
 
-            if (message == "")
+            if (message == string.Empty)
             {
                 message = "An error has occured.\n\n"
                         + "Please try again later.\n\n"
@@ -193,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
             // TODO: Handle the LanguageCode to return the translated "OK" and "Details".
 
-            if (detailsText.Trim() != "")
+            if (detailsText.Trim() != string.Empty)
             {
                 buttons.Add("Details");
             }

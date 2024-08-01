@@ -14,6 +14,7 @@ using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS;
 using System;
 using System.Buffers.Text;
@@ -22,11 +23,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Path = System.IO.Path;
+using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
+        // NOTE: These are relative paths.
         public static readonly string SafeNandPath = Path.Combine(AppDataManager.DefaultNandDir, "safe");
         public static readonly string SystemNandPath = Path.Combine(AppDataManager.DefaultNandDir, "system");
         public static readonly string UserNandPath = Path.Combine(AppDataManager.DefaultNandDir, "user");
@@ -61,7 +64,9 @@ namespace Ryujinx.HLE.FileSystem
 
         public void LoadRomFs(ulong pid, string fileName)
         {
-            var romfsStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            FileInfo fileInfo = FileSystemUtils.GetActualFileInfo(fileName);
+
+            var romfsStream = fileInfo.Open(FileMode.Open, FileAccess.Read);
 
             _romFsByPid.AddOrUpdate(pid, romfsStream, (pid, oldStream) =>
             {
@@ -98,21 +103,21 @@ namespace Ryujinx.HLE.FileSystem
             }
             else
             {
-                return null;
+                throw new ArgumentException($"The filename does not start with '/': {fileName}", nameof(fileName));
             }
 
             string fullPath = Path.GetFullPath(Path.Combine(basePath, fileName));
 
             if (!fullPath.StartsWith(AppDataManager.BaseDirPath))
             {
-                return null;
+                Logger.Warning?.Print(LogClass.ServiceFs, $"The path is not located inside the Ryujinx directory: {fullPath}");
             }
 
             return fullPath;
         }
 
-        internal static string GetSdCardPath() => MakeFullPath(AppDataManager.DefaultSdcardDir);
-        public static string GetNandPath() => MakeFullPath(AppDataManager.DefaultNandDir);
+        internal static string GetSdCardPath() => FileSystemUtils.ResolveFullPath(MakeFullPath(AppDataManager.DefaultSdcardDir), true);
+        public static string GetNandPath() => FileSystemUtils.ResolveFullPath(MakeFullPath(AppDataManager.DefaultNandDir), true);
 
         public static string SwitchPathToSystemPath(string switchPath)
         {
@@ -120,7 +125,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (parts.Length != 2)
             {
-                return null;
+                throw new ArgumentException($"Invalid switch fs path provided: {switchPath}", nameof(switchPath));
             }
 
             return GetFullPath(MakeFullPath(parts[0]), parts[1]);
@@ -174,11 +179,11 @@ namespace Ryujinx.HLE.FileSystem
                     break;
             }
 
-            string fullPath = Path.Combine(AppDataManager.BaseDirPath, path);
+            string fullPath = FileSystemUtils.CombineAndResolveFullPath(isDirectory, AppDataManager.BaseDirPath, path);
 
             if (isDirectory && !Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(fullPath);
+                Directory.CreateDirectory(fullPath!);
             }
 
             return fullPath;
@@ -236,23 +241,23 @@ namespace Ryujinx.HLE.FileSystem
 
             void LoadSetAtPath(string basePath)
             {
-                string localKeyFile = Path.Combine(basePath, "prod.keys");
-                string localTitleKeyFile = Path.Combine(basePath, "title.keys");
-                string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
+                FileInfo localKeyFile = FileSystemUtils.GetActualFileInfo(Path.Combine(basePath, "prod.keys"));
+                FileInfo localTitleKeyFile = FileSystemUtils.GetActualFileInfo(Path.Combine(basePath, "title.keys"));
+                FileInfo localConsoleKeyFile = FileSystemUtils.GetActualFileInfo(Path.Combine(basePath, "console.keys"));
 
-                if (File.Exists(localKeyFile))
+                if (localKeyFile.Exists)
                 {
-                    keyFile = localKeyFile;
+                    keyFile = localKeyFile.FullName;
                 }
 
-                if (File.Exists(localTitleKeyFile))
+                if (localTitleKeyFile.Exists)
                 {
-                    titleKeyFile = localTitleKeyFile;
+                    titleKeyFile = localTitleKeyFile.FullName;
                 }
 
-                if (File.Exists(localConsoleKeyFile))
+                if (localConsoleKeyFile.Exists)
                 {
-                    consoleKeyFile = localConsoleKeyFile;
+                    consoleKeyFile = localConsoleKeyFile.FullName;
                 }
             }
 

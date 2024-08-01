@@ -8,6 +8,7 @@ using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Ssl.Types;
@@ -122,7 +123,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
                 if (HasCertStoreTitle())
                 {
-                    using LocalStorage ncaFile = new(VirtualFileSystem.SwitchPathToSystemPath(GetCertStoreTitleContentPath()), FileAccess.Read, FileMode.Open);
+                    string certStorePath = FileSystemUtils.ResolveFullPath(VirtualFileSystem.SwitchPathToSystemPath(GetCertStoreTitleContentPath()), false);
+                    using LocalStorage ncaFile = new(certStorePath, FileAccess.Read, FileMode.Open);
 
                     Nca nca = new(_virtualFileSystem.KeySet, ncaFile);
 

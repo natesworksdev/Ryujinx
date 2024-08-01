@@ -1,9 +1,9 @@
 using LibHac.Fs;
 using LibHac.Ncm;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Utilities;
 using System;
 using static Ryujinx.HLE.FileSystem.VirtualFileSystem;
-using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.FileSystem
 {
@@ -30,11 +30,11 @@ namespace Ryujinx.HLE.FileSystem
         {
             realPath = switchContentPath switch
             {
-                SystemContent => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath, Contents),
-                UserContent => Path.Combine(AppDataManager.BaseDirPath, UserNandPath, Contents),
-                SdCardContent => Path.Combine(GetSdCardPath(), Nintendo, Contents),
-                System => Path.Combine(AppDataManager.BaseDirPath, SystemNandPath),
-                User => Path.Combine(AppDataManager.BaseDirPath, UserNandPath),
+                SystemContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "system", Contents),
+                UserContent => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user", Contents),
+                SdCardContent => FileSystemUtils.CombineAndResolveFullPath(true, GetSdCardPath(), Nintendo, Contents),
+                System => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "system"),
+                User => FileSystemUtils.CombineAndResolveFullPath(true, AppDataManager.BaseDirPath, AppDataManager.DefaultNandDir, "user"),
                 _ => null,
             };
 
