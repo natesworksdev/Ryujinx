@@ -565,34 +565,7 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
 
-                int baseDynamicStatesCount = 7;
-                int additionalDynamicStatesCount = 0;
-
-                if (!isMoltenVk)
-                {
-                    baseDynamicStatesCount++;
-                }
-
-                if (supportsExtDynamicState)
-                {
-                    additionalDynamicStatesCount += isMoltenVk ? 8 : 9;
-                }
-
-                if (supportsExtDynamicState2)
-                {
-                    additionalDynamicStatesCount += 3;
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
-                    {
-                        additionalDynamicStatesCount++;
-                    }
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
-                    {
-                        additionalDynamicStatesCount++;
-                    }
-                }
-
-                int dynamicStatesCount = baseDynamicStatesCount + additionalDynamicStatesCount;
-                DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
+                DynamicState* dynamicStates = stackalloc DynamicState[22];
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
@@ -649,10 +622,9 @@ namespace Ryujinx.Graphics.Vulkan
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
                 {
                     SType = StructureType.PipelineDynamicStateCreateInfo,
-                    DynamicStateCount = (uint)dynamicStatesCount,
+                    DynamicStateCount = (uint)currentIndex,
                     PDynamicStates = dynamicStates,
                 };
-
 
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
