@@ -537,10 +537,18 @@ namespace Ryujinx.UI.App.Common
                             }
 
                             var fileInfo = new FileInfo(app);
-                            var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
 
-                            applicationPaths.Add(fullPath);
-                            numApplicationsFound++;
+                            try
+                            {
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+
+                                applicationPaths.Add(fullPath);
+                                numApplicationsFound++;
+                            }
+                            catch (IOException exception)
+                            {
+                                Logger.Warning?.Print(LogClass.Application, $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
+                            }
                         }
                     }
                     catch (UnauthorizedAccessException)
