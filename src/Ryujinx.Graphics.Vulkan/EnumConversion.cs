@@ -310,25 +310,22 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
-        public static PrimitiveTopology ConvertToClass(this GAL.PrimitiveTopology topology)
+        public static PrimitiveTopology ConvertToClass(this PrimitiveTopology topology)
         {
             return topology switch
             {
-                GAL.PrimitiveTopology.Points => PrimitiveTopology.PointList,
-                GAL.PrimitiveTopology.Lines or
-                    GAL.PrimitiveTopology.LineStrip or
-                    GAL.PrimitiveTopology.LinesAdjacency or
-                    GAL.PrimitiveTopology.LineStripAdjacency => PrimitiveTopology.LineList,
-                GAL.PrimitiveTopology.Triangles or
-                    GAL.PrimitiveTopology.TriangleStrip or
-                    GAL.PrimitiveTopology.TriangleFan or
-                    GAL.PrimitiveTopology.TrianglesAdjacency or
-                    GAL.PrimitiveTopology.TriangleStripAdjacency or
-                    GAL.PrimitiveTopology.Polygon => PrimitiveTopology.TriangleList,
-                GAL.PrimitiveTopology.Patches => PrimitiveTopology.PatchList,
-                GAL.PrimitiveTopology.Quads => throw new NotSupportedException("Quad topology is not available in Vulkan."),
-                GAL.PrimitiveTopology.QuadStrip => throw new NotSupportedException("QuadStrip topology is not available in Vulkan."),
-                _ => LogInvalidAndReturn(topology, nameof(GAL.PrimitiveTopology), PrimitiveTopology.TriangleList),
+                PrimitiveTopology.PointList => PrimitiveTopology.PointList,
+                PrimitiveTopology.LineList or
+                    PrimitiveTopology.LineStrip or
+                    PrimitiveTopology.LineListWithAdjacency or
+                    PrimitiveTopology.LineStripWithAdjacency => PrimitiveTopology.LineList,
+                PrimitiveTopology.TriangleList or
+                    PrimitiveTopology.TriangleStrip or
+                    PrimitiveTopology.TriangleFan or
+                    PrimitiveTopology.TriangleListWithAdjacency or
+                    PrimitiveTopology.TriangleStripWithAdjacency => PrimitiveTopology.TriangleList,
+                PrimitiveTopology.PatchList => PrimitiveTopology.PatchList,
+                _ => LogInvalidAndReturn(topology, nameof(PrimitiveTopology), PrimitiveTopology.TriangleList),
             };
         }
 

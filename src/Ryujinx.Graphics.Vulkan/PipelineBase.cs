@@ -640,7 +640,6 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
                 var oldTopology = _newState.Topology;
-                var oldTopologyClass = _newState.TopologyClass;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -670,9 +669,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopologyClass != Silk.NET.Vulkan.PrimitiveTopology.TriangleList)
+                    if (oldTopology.ConvertToClass() != _newState.TopologyClass.ConvertToClass())
                     {
-                        _newState.TopologyClass = oldTopology;
+                        _newState.TopologyClass = _newState.TopologyClass.ConvertToClass();
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -1071,7 +1070,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_supportExtDynamic)
             {
-                var newTopologyClass = Gd.TopologyRemap(topology).ConvertToClass();
+                var newTopologyClass = vkTopology.ConvertToClass();
 
                 if ((_newState.TopologyClass != newTopologyClass))
                 {
