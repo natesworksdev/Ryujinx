@@ -502,7 +502,13 @@ namespace Ryujinx.UI.App.Common
 
                     try
                     {
-                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories).Where(file =>
+                        EnumerationOptions options = new()
+                        {
+                            RecurseSubdirectories = true,
+                            IgnoreInaccessible = false,
+                        };
+
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(file =>
                         {
                             return
                             (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
@@ -521,14 +527,10 @@ namespace Ryujinx.UI.App.Common
                             }
 
                             var fileInfo = new FileInfo(app);
-                            string extension = fileInfo.Extension.ToLower();
+                            var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
 
-                            if (!fileInfo.Attributes.HasFlag(FileAttributes.Hidden) && extension is ".nsp" or ".pfs0" or ".xci" or ".nca" or ".nro" or ".nso")
-                            {
-                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
-                                applicationPaths.Add(fullPath);
-                                numApplicationsFound++;
-                            }
+                            applicationPaths.Add(fullPath);
+                            numApplicationsFound++;
                         }
                     }
                     catch (UnauthorizedAccessException)
