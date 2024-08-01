@@ -18,7 +18,7 @@ namespace Ryujinx.Memory.Range
                     }
                 }
 
-                return ulong.MaxValue;
+                return MemoryRange.InvalidAddress;
             }
         }
     }
