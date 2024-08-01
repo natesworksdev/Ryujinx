@@ -1063,6 +1063,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPrimitiveTopology(PrimitiveTopology topology)
         {
+            topology = _newState.HasTessellationControlShader ? PrimitiveTopology.Patches : topology;
+            
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
