@@ -427,13 +427,11 @@ namespace Ryujinx.Graphics.Vulkan
                     Topology = supportsExtDynamicState ? TopologyClass : Topology,
                 };
 
-                var tessellationState = new PipelineTessellationStateCreateInfo
-                {
-                    SType = StructureType.PipelineTessellationStateCreateInfo,
-                };
+                PipelineTessellationStateCreateInfo tessellationState;
 
                 if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
                 {
+                    tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
                     tessellationState.PatchControlPoints = PatchControlPoints;
                 }
 
@@ -663,7 +661,6 @@ namespace Ryujinx.Graphics.Vulkan
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,
                     PInputAssemblyState = &inputAssemblyState,
-                    PTessellationState = &tessellationState,
                     PViewportState = &viewportState,
                     PRasterizationState = &rasterizationState,
                     PMultisampleState = &multisampleState,
@@ -673,6 +670,11 @@ namespace Ryujinx.Graphics.Vulkan
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
                 };
+
+                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                {
+                    pipelineCreateInfo.PTessellationState = &tessellationState;
+                }
 
                 Result result = gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle);
 
