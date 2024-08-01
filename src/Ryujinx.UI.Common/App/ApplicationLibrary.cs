@@ -266,8 +266,18 @@ namespace Ryujinx.UI.App.Common
         public bool TryGetApplicationsFromFile(string applicationPath, out List<ApplicationData> applications)
         {
             applications = [];
+            long fileSize;
 
-            long fileSize = new FileInfo(applicationPath).Length;
+            try
+            {
+                fileSize = new FileInfo(applicationPath).Length;
+            }
+            catch (FileNotFoundException)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"The file was not found: '{applicationPath}'");
+
+                return false;
+            }
 
             BlitStruct<ApplicationControlProperty> controlHolder = new(1);
 
