@@ -12,7 +12,7 @@ namespace Ryujinx.Memory.Range
                 {
                     MemoryRange subRange = Range.GetSubRange(index);
 
-                    if (subRange.Address != ulong.MaxValue)
+                    if (!MemoryRange.IsInvalid(ref subRange))
                     {
                         return subRange.Address;
                     }
