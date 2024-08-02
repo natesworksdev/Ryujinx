@@ -429,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 PipelineTessellationStateCreateInfo tessellationState;
 
-                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
                 {
                     tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
                     tessellationState.PatchControlPoints = PatchControlPoints;
@@ -643,7 +643,7 @@ namespace Ryujinx.Graphics.Vulkan
                     RenderPass = renderPass,
                 };
 
-                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
                 {
                     pipelineCreateInfo.PTessellationState = &tessellationState;
                 }

@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _dirty |= DirtyFlags.Extended;
             }
 
-            if (gd.Capabilities.SupportsExtendedDynamicState2)
+            if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2)
             {
                 _dirty |= DirtyFlags.Extended2;
             }
@@ -252,12 +252,12 @@ namespace Ryujinx.Graphics.Vulkan
                 _dirty &= ~DirtyFlags.LineWidth;
             }
 
-            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
                 _dirty &= ~DirtyFlags.LogicOp;
             }
 
-            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
                 _dirty &= ~DirtyFlags.PatchControlPoints;
             }

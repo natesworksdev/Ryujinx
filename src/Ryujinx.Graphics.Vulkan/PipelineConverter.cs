@@ -169,19 +169,19 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
 
-            if (!gd.Capabilities.SupportsExtendedDynamicState2)
+            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2)
             {
                 pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
                 pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
                 pipeline.DepthBiasEnable = state.BiasEnable != 0;
             }
 
-            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
                 pipeline.LogicOp = state.LogicOpEnable ? state.LogicOp.Convert() : default;
             }
 
-            if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
                 pipeline.PatchControlPoints = state.PatchControlPoints;
             }
