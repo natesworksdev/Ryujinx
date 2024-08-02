@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Vulkan
             DepthBiasEnable = 1 << 16,
             Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnableandStencilOp | PrimitiveTopology,
-            Extended2 = RasterDiscard | LogicOp | PatchControlPoints | PrimitiveRestart | DepthBiasEnable,
+            Extended2 = RasterDiscard | PrimitiveRestart | DepthBiasEnable,
         }
 
         private DirtyFlags _dirty;
@@ -247,19 +247,19 @@ namespace Ryujinx.Graphics.Vulkan
                 _dirty |= DirtyFlags.Extended2;
             }
 
-            if (gd.IsMoltenVk)
+            if (!gd.IsMoltenVk)
             {
-                _dirty &= ~DirtyFlags.LineWidth;
+                _dirty |= DirtyFlags.LineWidth;
             }
 
-            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
+            if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
-                _dirty &= ~DirtyFlags.LogicOp;
+                _dirty |= DirtyFlags.LogicOp;
             }
 
-            if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
+            if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
-                _dirty &= ~DirtyFlags.PatchControlPoints;
+                _dirty |= DirtyFlags.PatchControlPoints;
             }
         }
 
