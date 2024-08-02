@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
 
-            _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2;
+            _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
 
             _newState.Initialize();
         }
@@ -970,7 +970,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.LogicOpEnable = logicOpEnable;
 
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+            if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
                 DynamicState.SetLogicOp(logicOpEnable ? op.Convert() : default);
             }
@@ -993,7 +993,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
-            if (Gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints && _newState.HasTessellationControlShader)
+            if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && _newState.HasTessellationControlShader)
             {
                 DynamicState.SetPatchControlPoints((uint)vertices);
             }

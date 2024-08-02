@@ -405,7 +405,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-            bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
+            bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
 
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions2 = &_vertexAttributeDescriptions2[0])
@@ -429,7 +429,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 PipelineTessellationStateCreateInfo tessellationState;
 
-                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
                 {
                     tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
                     tessellationState.PatchControlPoints = PatchControlPoints;
@@ -545,7 +545,7 @@ namespace Ryujinx.Graphics.Vulkan
                     LogicOpEnable = LogicOpEnable,
                 };
 
-                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
                 {
                     colorBlendState.LogicOp = LogicOp;
                 }
@@ -609,11 +609,11 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.PrimitiveRestartEnableExt;
 
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2LogicOp)
+                    if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
                     {
                         dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
                     }
-                    if (gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
+                    if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
                     {
                         dynamicStates[currentIndex++] = DynamicState.PatchControlPointsExt;
                     }
@@ -643,7 +643,7 @@ namespace Ryujinx.Graphics.Vulkan
                     RenderPass = renderPass,
                 };
 
-                if (!gd.ExtendedDynamicState2Features.ExtendedDynamicState2PatchControlPoints)
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
                 {
                     pipelineCreateInfo.PTessellationState = &tessellationState;
                 }
