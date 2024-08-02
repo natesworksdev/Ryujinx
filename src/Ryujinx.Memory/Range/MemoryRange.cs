@@ -67,7 +67,7 @@ namespace Ryujinx.Memory.Range
         /// Checks if a given sub-range of memory is invalid.
         /// Those are used to represent unmapped memory regions (holes in the region mapping).
         /// </summary>
-        /// <param name="subRange">Memory range to checl</param>
+        /// <param name="subRange">Memory range to check</param>
         /// <returns>True if the memory range is considered invalid, false otherwise</returns>
         internal static bool IsInvalid(ref MemoryRange subRange)
         {
