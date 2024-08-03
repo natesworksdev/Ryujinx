@@ -227,7 +227,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationLibrary = new ApplicationLibrary(VirtualFileSystem, checkLevel)
             {
-                DesiredTitleLanguage = ConfigurationState.Instance.System.Language,
+                DesiredLanguage = ConfigurationState.Instance.System.Language,
             };
 
             // Save data created before we supported extra data in directory save data will not work properly if
@@ -637,7 +637,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.DesiredTitleLanguage = ConfigurationState.Instance.System.Language;
+                ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
                 ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
                 _isLoading = false;

@@ -189,7 +189,7 @@ namespace Ryujinx.UI
             // Instantiate GUI objects.
             ApplicationLibrary = new ApplicationLibrary(_virtualFileSystem, checkLevel)
             {
-                DesiredTitleLanguage = ConfigurationState.Instance.System.Language,
+                DesiredLanguage = ConfigurationState.Instance.System.Language,
             };
             _uiHandler = new GtkHostUIHandler(this);
             _deviceExitStatus = new AutoResetEvent(false);
@@ -740,7 +740,7 @@ namespace Ryujinx.UI
 
             Thread applicationLibraryThread = new(() =>
             {
-                ApplicationLibrary.DesiredTitleLanguage = ConfigurationState.Instance.System.Language;
+                ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
                 ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
                 _updatingGameTable = false;

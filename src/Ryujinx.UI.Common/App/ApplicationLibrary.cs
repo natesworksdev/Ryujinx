@@ -34,7 +34,7 @@ namespace Ryujinx.UI.App.Common
 {
     public class ApplicationLibrary
     {
-        public Language DesiredTitleLanguage { get; set; }
+        public Language DesiredLanguage { get; set; }
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
@@ -221,7 +221,7 @@ namespace Ryujinx.UI.App.Common
                 {
                     using UniqueRef<IFile> icon = new();
 
-                    controlFs.OpenFile(ref icon.Ref, $"/icon_{DesiredTitleLanguage}.dat".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    controlFs.OpenFile(ref icon.Ref, $"/icon_{DesiredLanguage}.dat".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                     using MemoryStream stream = new();
 
@@ -830,7 +830,7 @@ namespace Ryujinx.UI.App.Common
 
         private void GetApplicationInformation(ref ApplicationControlProperty controlData, ref ApplicationData data)
         {
-            _ = Enum.TryParse(DesiredTitleLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
+            _ = Enum.TryParse(DesiredLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
 
             if (controlData.Title.ItemsRo.Length > (int)desiredTitleLanguage)
             {
