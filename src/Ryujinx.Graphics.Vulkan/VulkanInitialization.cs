@@ -472,7 +472,7 @@ namespace Ryujinx.Graphics.Vulkan
                         supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2,
                     ExtendedDynamicState2LogicOp =
                         supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2LogicOp,
-                    ExtendedDynamicState2PatchControlPoints = false,
+                    ExtendedDynamicState2PatchControlPoints = supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints,
                 };
 
                 pExtendedFeatures = &featuresExtendedDynamicState2;
