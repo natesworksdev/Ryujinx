@@ -303,7 +303,7 @@ namespace Ryujinx.Cpu.Jit
             }
             else
             {
-                IMemoryOwner<byte> memoryOwner = ByteMemoryPool.Rent(size);
+                MemoryOwner<byte> memoryOwner = MemoryOwner<byte>.Rent(size);
 
                 Read(va, memoryOwner.Memory.Span);
 
