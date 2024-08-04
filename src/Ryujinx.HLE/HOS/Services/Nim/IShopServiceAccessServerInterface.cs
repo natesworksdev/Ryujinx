@@ -45,13 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim
         // CreateServerInterface2(pid, handle<unknown>, u64) -> object<nn::ec::IshopServiceAccessServer>
         public ResultCode CreateServerInterface2(ServiceCtx context)
         {
-            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
-
-            MakeObject(context, new IShopServiceAccessServer());
-
-            Logger.Stub?.PrintStub(LogClass.ServiceNim);
-
-            return ResultCode.Success;
+            return CreateServerInterface(context);
         }
     }
 }
