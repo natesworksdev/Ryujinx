@@ -132,7 +132,7 @@ namespace Ryujinx.Memory
             {
                 MemoryOwner<byte> memoryOwner = MemoryOwner<byte>.Rent(size);
 
-                Read(va, memoryOwner.Memory.Span);
+                Read(va, memoryOwner.Span);
 
                 return new WritableRegion(this, va, memoryOwner);
             }
