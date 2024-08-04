@@ -669,9 +669,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopology.ConvertToClass() != _newState.TopologyClass.ConvertToClass())
+                    if (oldTopology.ConvertToClass() != _newState.Topology.ConvertToClass())
                     {
-                        _newState.TopologyClass = _newState.TopologyClass.ConvertToClass();
+                        _newState.Topology = oldTopology;
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -686,9 +686,8 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.DepthTestEnable = oldDepthTestEnable;
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
                     _newState.ViewportsCount = oldViewportsCount;
+                    _newState.Topology = oldTopology;
                 }
-
-                _newState.Topology = oldTopology;
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
 
@@ -1072,15 +1071,17 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var newTopologyClass = vkTopology.ConvertToClass();
 
-                if ((_newState.TopologyClass != newTopologyClass))
+                if ((_newState.Topology.ConvertToClass() != newTopologyClass))
                 {
-                    _newState.TopologyClass = newTopologyClass;
+                    _newState.Topology = vkTopology;
                 }
 
                 DynamicState.SetPrimitiveTopology(vkTopology);
             }
-
-            _newState.Topology = vkTopology;
+            else
+            {
+                _newState.Topology = vkTopology;
+            }
 
             SignalStateChange();
         }

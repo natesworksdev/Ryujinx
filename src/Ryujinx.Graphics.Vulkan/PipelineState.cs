@@ -239,12 +239,6 @@ namespace Ryujinx.Graphics.Vulkan
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
         }
 
-        public PrimitiveTopology TopologyClass
-        {
-            readonly get => (PrimitiveTopology)((Internal.Id3 >> 7) & 0xF);
-            set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFFFFFFFF8F) | ((ulong)value << 7);
-        }
-
         public bool HasTessellationControlShader;
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
         public PipelineLayout PipelineLayout;
@@ -366,16 +360,10 @@ namespace Ryujinx.Graphics.Vulkan
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    Topology = supportsExtDynamicState ? TopologyClass : Topology,
+                    Topology = Topology,
                 };
 
                 PipelineTessellationStateCreateInfo tessellationState;
-
-                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
-                {
-                    tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
-                    tessellationState.PatchControlPoints = PatchControlPoints;
-                }
 
                 var rasterizationState = new PipelineRasterizationStateCreateInfo
                 {
@@ -388,12 +376,6 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     //When widelines feature is not supported it must be 1.0f. 
                     rasterizationState.LineWidth = 1.0f;
-                }
-
-                if (!supportsExtDynamicState2)
-                {
-                    rasterizationState.DepthBiasEnable = DepthBiasEnable;
-                    rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
                 }
 
                 var viewportState = new PipelineViewportStateCreateInfo
@@ -430,8 +412,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!supportsExtDynamicState)
                 {
-                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
-
                     rasterizationState.CullMode = CullMode;
                     rasterizationState.FrontFace = FrontFace;
 
@@ -456,6 +436,19 @@ namespace Ryujinx.Graphics.Vulkan
                     depthStencilState.DepthTestEnable = DepthTestEnable;
                     depthStencilState.DepthWriteEnable = DepthWriteEnable;
                     depthStencilState.DepthCompareOp = DepthCompareOp;
+                }
+
+                if (!supportsExtDynamicState2)
+                {
+                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
+                    rasterizationState.DepthBiasEnable = DepthBiasEnable;
+                    rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
+                }
+
+                if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints && HasTessellationControlShader)
+                {
+                    tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
+                    tessellationState.PatchControlPoints = PatchControlPoints;
                 }
 
                 uint blendEnables = 0;

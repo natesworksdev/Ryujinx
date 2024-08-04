@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint _patchControlPoints;
 
-        public PrimitiveTopology Topology;
+        private PrimitiveTopology _topology;
 
         private bool _primitiveRestartEnable;
 
@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
             PrimitiveRestart = 1 << 14,
             PrimitiveTopology = 1 << 15,
             DepthBiasEnable = 1 << 16,
-            Standard = Blend | DepthBias | Scissor | Stencil | Viewport | LineWidth,
+            Standard = Blend | DepthBias | Scissor | Stencil | Viewport,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnableandStencilOp | PrimitiveTopology,
             Extended2 = RasterDiscard | PrimitiveRestart | DepthBiasEnable,
         }
@@ -217,7 +217,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPrimitiveTopology(PrimitiveTopology primitiveTopology)
         {
-            Topology = primitiveTopology;
+            _topology = primitiveTopology;
             _dirty |= DirtyFlags.PrimitiveTopology;
         }
 
@@ -460,7 +460,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordPrimitiveTopology(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, Topology);
+            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, _topology);
         }
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)
