@@ -27,7 +27,7 @@ namespace Ryujinx.Common.Utilities
 
                 MemoryOwner<byte> ownedMemory = MemoryOwner<byte>.Rent(checked((int)bytesExpected));
 
-                var destSpan = ownedMemory.Memory.Span;
+                var destSpan = ownedMemory.Span;
 
                 int totalBytesRead = 0;
 
@@ -72,7 +72,7 @@ namespace Ryujinx.Common.Utilities
             MemoryOwner<byte> ownedMemory = MemoryOwner<byte>.Rent(checked((int)input.Length));
 
             // Discard the return value because we assume reading a MemoryStream always succeeds completely.
-            _ = input.Read(ownedMemory.Memory.Span);
+            _ = input.Read(ownedMemory.Span);
 
             return ownedMemory;
         }
