@@ -54,6 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly uint VertexBufferAlignment;
         public readonly uint SubTexelPrecisionBits;
         public readonly ulong MinResourceAlignment;
+        public readonly uint MaxTessellationPatchSize;
 
         public HardwareCapabilities(
             bool supportsIndexTypeUint8,
@@ -72,6 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
             PhysicalDeviceExtendedDynamicState2FeaturesEXT supportsExtendedDynamicState2,
+            uint maxTessellationPatchSize,
             bool supportsMultiView,
             bool supportsNullDescriptors,
             bool supportsPushDescriptors,
@@ -111,6 +113,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsExtendedDynamicState2 = supportsExtendedDynamicState2;
+            MaxTessellationPatchSize = maxTessellationPatchSize;
             SupportsMultiView = supportsMultiView;
             SupportsNullDescriptors = supportsNullDescriptors;
             SupportsPushDescriptors = supportsPushDescriptors;
