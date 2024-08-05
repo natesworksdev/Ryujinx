@@ -992,11 +992,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
-            if (vertices == 0 || vertices > Gd.Capabilities.MaxTessellationPatchSize)
+            if (vertices == 0 || vertices > Gd.Capabilities.MaxTessellationPatchSize || !_newState.HasTessellationControlShader)
             {
                 return;
             }
-            
+
             if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
                 DynamicState.SetPatchControlPoints((uint)vertices);
