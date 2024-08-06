@@ -387,6 +387,9 @@ namespace Ryujinx.Graphics.Vulkan
                 properties.Limits.FramebufferDepthSampleCounts &
                 properties.Limits.FramebufferStencilSampleCounts;
 
+            //Temporarily disable this can be added back at a later date, make it easy to re-enable. 
+            featuresExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints = false;
+
             Capabilities = new HardwareCapabilities(
                 _physicalDevice.IsDeviceExtensionPresent("VK_EXT_index_type_uint8"),
                 supportsCustomBorderColor,
