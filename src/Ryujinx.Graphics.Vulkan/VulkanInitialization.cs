@@ -462,6 +462,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             pExtendedFeatures = &featuresExtendedDynamicState;
 
+            //Temporarily disable this can be added back at a later date, make it easy to re-enable. 
+            supportedFeaturesExtExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints = false;
+
             if (physicalDevice.IsDeviceExtensionPresent(ExtExtendedDynamicState2.ExtensionName))
             {
                 var featuresExtendedDynamicState2 = new PhysicalDeviceExtendedDynamicState2FeaturesEXT()
