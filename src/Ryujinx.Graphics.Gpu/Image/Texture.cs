@@ -7,7 +7,6 @@ using Ryujinx.Graphics.Texture.Astc;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -662,7 +661,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            IMemoryOwner<byte> result = ConvertToHostCompatibleFormat(data);
+            MemoryOwner<byte> result = ConvertToHostCompatibleFormat(data);
 
             if (ScaleFactor != 1f && AllowScaledSetData())
             {
@@ -685,7 +684,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Uploads new texture data to the host GPU.
         /// </summary>
         /// <param name="data">New data</param>
-        public void SetData(IMemoryOwner<byte> data)
+        public void SetData(MemoryOwner<byte> data)
         {
             BlacklistScale();
 
@@ -704,7 +703,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
-        public void SetData(IMemoryOwner<byte> data, int layer, int level)
+        public void SetData(MemoryOwner<byte> data, int layer, int level)
         {
             BlacklistScale();
 
@@ -722,7 +721,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
         /// <param name="region">Target sub-region of the texture to update</param>
-        public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
+        public void SetData(MemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             BlacklistScale();
 
@@ -740,7 +739,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="level">Mip level to convert</param>
         /// <param name="single">True to convert a single slice</param>
         /// <returns>Converted data</returns>
-        public IMemoryOwner<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
+        public MemoryOwner<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
         {
             int width = Info.Width;
             int height = Info.Height;
@@ -755,7 +754,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int sliceDepth = single ? 1 : depth;
 
-            IMemoryOwner<byte> linear;
+            MemoryOwner<byte> linear;
 
             if (Info.IsLinear)
             {
@@ -788,7 +787,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     data);
             }
 
-            IMemoryOwner<byte> result = linear;
+            MemoryOwner<byte> result = linear;
 
             // Handle compressed cases not supported by the host:
             // - ASTC is usually not supported on desktop cards.

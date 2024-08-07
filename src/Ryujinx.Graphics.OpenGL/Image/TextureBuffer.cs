@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using System;
-using System.Buffers;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         /// <inheritdoc/>
-        public void SetData(IMemoryOwner<byte> data)
+        public void SetData(MemoryOwner<byte> data)
         {
             var dataSpan = data.Memory.Span;
 
@@ -65,13 +65,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         /// <inheritdoc/>
-        public void SetData(IMemoryOwner<byte> data, int layer, int level)
+        public void SetData(MemoryOwner<byte> data, int layer, int level)
         {
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
-        public void SetData(IMemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
+        public void SetData(MemoryOwner<byte> data, int layer, int level, Rectangle<int> region)
         {
             throw new NotSupportedException();
         }
