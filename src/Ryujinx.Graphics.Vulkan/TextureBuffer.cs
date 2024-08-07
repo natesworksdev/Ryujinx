@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
         /// <inheritdoc/>
         public void SetData(MemoryOwner<byte> data)
         {
-            _gd.SetBufferData(_bufferHandle, _offset, data.Memory.Span);
+            _gd.SetBufferData(_bufferHandle, _offset, data.Span);
             data.Dispose();
         }
 
