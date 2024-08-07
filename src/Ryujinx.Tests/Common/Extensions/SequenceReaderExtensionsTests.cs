@@ -31,7 +31,7 @@ namespace Ryujinx.Tests.Common.Extensions
                 ref readonly MyUnmanagedStruct read = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out _);
 
                 // Assert
-                MyUnmanagedStruct.Assert(Assert.AreEqual, original, read);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), original, read);
             }
         }
 
@@ -51,8 +51,8 @@ namespace Ryujinx.Tests.Common.Extensions
                 ref readonly MyUnmanagedStruct read = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out var copy);
 
                 // Assert
-                MyUnmanagedStruct.Assert(Assert.AreEqual, original, read);
-                MyUnmanagedStruct.Assert(Assert.AreEqual, read, copy);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), original, read);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), read, copy);
             }
         }
 
@@ -72,8 +72,8 @@ namespace Ryujinx.Tests.Common.Extensions
                 ref readonly MyUnmanagedStruct read = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out var copy);
 
                 // Assert
-                MyUnmanagedStruct.Assert(Assert.AreEqual, original, read);
-                MyUnmanagedStruct.Assert(Assert.AreNotEqual, read, copy);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), original, read);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.Not.EqualTo(actual)), read, copy);
             }
         }
 
@@ -112,7 +112,7 @@ namespace Ryujinx.Tests.Common.Extensions
             sequenceReader.ReadLittleEndian(out int roundTrippedValue);
 
             // Assert
-            Assert.AreEqual(TestValue, roundTrippedValue);
+            Assert.That(TestValue, Is.EqualTo(roundTrippedValue));
         }
 
         [Test]
@@ -131,7 +131,7 @@ namespace Ryujinx.Tests.Common.Extensions
             sequenceReader.ReadLittleEndian(out int roundTrippedValue);
 
             // Assert
-            Assert.AreNotEqual(TestValue, roundTrippedValue);
+            Assert.That(TestValue, Is.Not.EqualTo(roundTrippedValue));
         }
 
         [Test]
@@ -221,7 +221,7 @@ namespace Ryujinx.Tests.Common.Extensions
                 sequenceReader.ReadUnmanaged(out MyUnmanagedStruct read);
 
                 // Assert
-                MyUnmanagedStruct.Assert(Assert.AreEqual, original, read);
+                MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), original, read);
             }
         }
 
@@ -237,19 +237,19 @@ namespace Ryujinx.Tests.Common.Extensions
             static void SetConsumedAndAssert(scoped ref SequenceReader<byte> sequenceReader, long consumed)
             {
                 sequenceReader.SetConsumed(consumed);
-                Assert.AreEqual(consumed, sequenceReader.Consumed);
+                Assert.That(consumed, Is.EqualTo(sequenceReader.Consumed));
             }
 
             // Act/Assert
             ref readonly MyUnmanagedStruct struct0A = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out _);
 
-            Assert.AreEqual(sequenceReader.Consumed, MyUnmanagedStruct.SizeOf);
+            Assert.That(sequenceReader.Consumed, Is.EqualTo(MyUnmanagedStruct.SizeOf));
 
             SetConsumedAndAssert(ref sequenceReader, 0);
 
             ref readonly MyUnmanagedStruct struct0B = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out _);
 
-            MyUnmanagedStruct.Assert(Assert.AreEqual, struct0A, struct0B);
+            MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), struct0A, struct0B);
 
             SetConsumedAndAssert(ref sequenceReader, 1);
 
@@ -261,7 +261,7 @@ namespace Ryujinx.Tests.Common.Extensions
 
             ref readonly MyUnmanagedStruct struct1B = ref sequenceReader.GetRefOrRefToCopy<MyUnmanagedStruct>(out _);
 
-            MyUnmanagedStruct.Assert(Assert.AreEqual, struct1A, struct1B);
+            MyUnmanagedStruct.Assert((expected, actual) => Assert.That(expected, Is.EqualTo(actual)), struct1A, struct1B);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

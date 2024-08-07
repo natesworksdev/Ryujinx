@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Parameter.Sink
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x24, Unsafe.SizeOf<CircularBufferParameter>());
+            Assert.That(0x24, Is.EqualTo(Unsafe.SizeOf<CircularBufferParameter>()));
         }
     }
 }

@@ -20,7 +20,7 @@ using System.IO;
 using System.Reflection;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Ryujinx.UI.Windows
+namespace Ryujinx.Gtk3.UI.Windows
 {
     public class AvatarWindow : Window
     {
@@ -170,7 +170,7 @@ namespace Ryujinx.UI.Windows
         {
             using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
 
-            Image avatarImage = Image.Load(data, new PngDecoder());
+            Image avatarImage = Image.Load(data);
 
             avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(
                 (byte)(_backgroundColor.Red * 255),
@@ -265,7 +265,7 @@ namespace Ryujinx.UI.Windows
                     byte byte1 = input[inputOffset++];
                     byte byte2 = input[inputOffset++];
 
-                    int dist = ((byte1 & 0xF) << 8) | byte2;
+                    int dist = (byte1 & 0xF) << 8 | byte2;
                     int position = (int)outputOffset - (dist + 1);
 
                     int length = byte1 >> 4;

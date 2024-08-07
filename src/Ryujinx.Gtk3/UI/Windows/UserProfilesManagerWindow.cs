@@ -1,5 +1,6 @@
 using Gtk;
 using Ryujinx.Common.Memory;
+using Ryujinx.Gtk3.UI.Windows;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.UI.Common.Configuration;

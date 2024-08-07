@@ -28,7 +28,7 @@ namespace Ryujinx.Tests.Memory
         {
             Marshal.WriteInt32(_memoryBlock.Pointer, 0x2020, 0x1234abcd);
 
-            Assert.AreEqual(_memoryBlock.Read<int>(0x2020), 0x1234abcd);
+            Assert.That(_memoryBlock.Read<int>(0x2020), Is.EqualTo(0x1234abcd));
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace Ryujinx.Tests.Memory
         {
             _memoryBlock.Write(0x2040, 0xbadc0de);
 
-            Assert.AreEqual(Marshal.ReadInt32(_memoryBlock.Pointer, 0x2040), 0xbadc0de);
+            Assert.That(Marshal.ReadInt32(_memoryBlock.Pointer, 0x2040), Is.EqualTo(0xbadc0de));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Ryujinx.Tests.Memory
             toAlias.UnmapView(backing, pageSize * 3, pageSize);
 
             toAlias.Write(0, 0xbadc0de);
-            Assert.AreEqual(Marshal.ReadInt32(backing.Pointer, (int)pageSize), 0xbadc0de);
+            Assert.That(Marshal.ReadInt32(backing.Pointer, (int)pageSize), Is.EqualTo(0xbadc0de));
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Ryujinx.Tests.Memory
                     int offset = rng.Next(0, (int)pageSize - sizeof(int));
 
                     toAlias.Write((ulong)((dstPage << pageBits) + offset), 0xbadc0de);
-                    Assert.AreEqual(Marshal.ReadInt32(backing.Pointer, (srcPage << pageBits) + offset), 0xbadc0de);
+                    Assert.That(Marshal.ReadInt32(backing.Pointer, (srcPage << pageBits) + offset), Is.EqualTo(0xbadc0de));
                 }
                 else
                 {
@@ -109,7 +109,7 @@ namespace Ryujinx.Tests.Memory
                 toAlias.MapView(backing, 0, offset, pageSize);
 
                 toAlias.Write(offset, 0xbadc0de);
-                Assert.AreEqual(0xbadc0de, backing.Read<int>(0));
+                Assert.That(0xbadc0de, Is.EqualTo(backing.Read<int>(0)));
 
                 toAlias.UnmapView(backing, offset, pageSize);
             }

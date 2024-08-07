@@ -9,8 +9,8 @@ namespace Ryujinx.Tests.Audio.Renderer
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x20, Unsafe.SizeOf<MemoryPoolInParameter>());
-            Assert.AreEqual(0x10, Unsafe.SizeOf<MemoryPoolOutStatus>());
+            Assert.That(0x20, Is.EqualTo(Unsafe.SizeOf<MemoryPoolInParameter>()));
+            Assert.That(0x10, Is.EqualTo(Unsafe.SizeOf<MemoryPoolOutStatus>()));
         }
     }
 }

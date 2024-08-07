@@ -24,8 +24,10 @@ namespace Ryujinx.Graphics.Vulkan
             if (_buffer != null)
             {
                 var buffer = _buffer.Get(cbs, _offset, _size, true).Value;
+                var offset = (ulong)_offset;
+                var size = (ulong)_size;
 
-                gd.TransformFeedbackApi.CmdBindTransformFeedbackBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)_offset, (ulong)_size);
+                gd.TransformFeedbackApi.CmdBindTransformFeedbackBuffers(cbs.CommandBuffer, binding, 1, in buffer, in offset, in size);
             }
         }
 
