@@ -20,11 +20,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         /// <param name="app">The app data being compared.</param>
         public AppListFavoriteComparable(ApplicationData app)
         {
-            if (app is null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
+            ArgumentNullException.ThrowIfNull(app, nameof(app));
             this.app = app;
         }
 
