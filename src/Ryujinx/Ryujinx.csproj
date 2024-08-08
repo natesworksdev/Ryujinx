@@ -34,91 +34,67 @@
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
-  <ItemGroup> 
+  <ItemGroup Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'linux-arm64' AND '$(RuntimeIdentifier)' != 'win-x64' AND '$(RuntimeIdentifier)' != 'osx-x64' AND '$(RuntimeIdentifier)' != 'osx-arm64'">
     <Content Include="ffmpeg.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="ffprobe.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
+    <Content Include="ffprobe.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
+    </Content> 
+
     <Content Include="avutil.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avutil-57.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
-    </Content> 
-  </ItemGroup>
+    </Content>
 
-  <ItemGroup> 
     <Content Include="swresample.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="swresample-4.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="swscale-6.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avcodec.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avcodec-59.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
-    </Content> 
-  </ItemGroup>
+    </Content>
 
-  <ItemGroup> 
     <Content Include="avfilter.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avformat.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avformat-59.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avdevice.lib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avdevice-59.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
-  </ItemGroup>
 
-  <ItemGroup> 
     <Content Include="avfilter-8.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
     </Content> 
