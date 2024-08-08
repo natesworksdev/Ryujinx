@@ -965,10 +965,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.FileSize),
                 ApplicationSort.Path            => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Path)
                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.Path),
-                 // Favorite behaves same as sort by name except give favorited apps special ordering by prepending a space
-                 // The intent is to return a block of favorited apps in alphabetical order, followed by all other apps in alphabetical order.
-                ApplicationSort.Favorite        => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Favorite ? ' ' + app.Name : app.Name)
-                                                                : SortExpressionComparer<ApplicationData>.Descending(app => app.Favorite ? ' ' + app.Name : app.Name),
+                ApplicationSort.Favorite        => IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => new AppListFavoriteComparable(app))
+                                                                : SortExpressionComparer<ApplicationData>.Descending(app => new AppListFavoriteComparable(app)),
                 _ => null,
 #pragma warning restore IDE0055
             };
