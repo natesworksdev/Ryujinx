@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Parameter
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x10, Unsafe.SizeOf<PerformanceOutStatus>());
+            Assert.That(0x10, Is.EqualTo(Unsafe.SizeOf<PerformanceOutStatus>()));
         }
     }
 }

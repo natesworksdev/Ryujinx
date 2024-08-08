@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Server
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.LessOrEqual(Unsafe.SizeOf<VoiceState>(), 0x220);
+            Assert.That(Unsafe.SizeOf<VoiceState>(), Is.LessThanOrEqualTo(0x220));
         }
     }
 }

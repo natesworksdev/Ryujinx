@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Audio.Renderer.Parameter.Effect
         [Test]
         public void EnsureTypeSize()
         {
-            Assert.AreEqual(0x35, Unsafe.SizeOf<DelayParameter>());
+            Assert.That(0x35, Is.EqualTo(Unsafe.SizeOf<DelayParameter>()));
         }
     }
 }
