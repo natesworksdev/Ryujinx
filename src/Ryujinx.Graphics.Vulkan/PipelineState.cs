@@ -246,7 +246,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Array32<VertexInputAttributeDescription> _vertexAttributeDescriptions2;
 
-        public void Initialize()
+        private bool _supportsExtDynamicState;
+        private PhysicalDeviceExtendedDynamicState2FeaturesEXT _supportsExtDynamicState2;
+
+
+        public void Initialize(bool supportsExtDynamicState,
+            PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2)
         {
             HasTessellationControlShader = false;
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
@@ -257,6 +262,50 @@ namespace Ryujinx.Graphics.Vulkan
 
             SamplesCount = 1;
             DepthMode = true;
+
+            _supportsExtDynamicState = supportsExtDynamicState;
+            _supportsExtDynamicState2 = extendedDynamicState2;
+
+            if (_supportsExtDynamicState)
+            {
+                StencilFrontFailOp = 0;
+                StencilFrontPassOp = 0;
+                StencilFrontDepthFailOp = 0;
+                StencilFrontCompareOp = 0;
+
+                StencilBackFailOp = 0;
+                StencilBackPassOp = 0;
+                StencilBackDepthFailOp = 0;
+                StencilBackCompareOp = 0;
+
+                ViewportsCount = 0;
+                ScissorsCount = 0;
+
+                CullMode = 0;
+                FrontFace = 0;
+                DepthTestEnable = false;
+                DepthWriteEnable = false;
+                DepthCompareOp = 0;
+                StencilTestEnable = false;
+
+            }
+
+            if (_supportsExtDynamicState2.ExtendedDynamicState2)
+            {
+                PrimitiveRestartEnable = false;
+                DepthBiasEnable = false;
+                RasterizerDiscardEnable = false;
+            }
+
+            if (_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
+            {
+                LogicOp = 0;
+            }
+
+            if (_supportsExtDynamicState2.ExtendedDynamicState2PatchControlPoints)
+            {
+                PatchControlPoints = 0;
+            }
         }
 
         public unsafe Auto<DisposablePipeline> CreateComputePipeline(
@@ -340,9 +389,6 @@ namespace Ryujinx.Graphics.Vulkan
                 UpdateVertexAttributeDescriptions(gd);
             }
 
-            bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-            bool supportsExtDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
-
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions = &Internal.VertexAttributeDescriptions[0])
             fixed (VertexInputAttributeDescription* pVertexAttributeDescriptions2 = &_vertexAttributeDescriptions2[0])
             fixed (VertexInputBindingDescription* pVertexBindingDescriptions = &Internal.VertexBindingDescriptions[0])
@@ -410,7 +456,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBoundsTestEnable = false,
                 };
 
-                if (!supportsExtDynamicState)
+                if (!_supportsExtDynamicState)
                 {
                     rasterizationState.CullMode = CullMode;
                     rasterizationState.FrontFace = FrontFace;
@@ -438,7 +484,7 @@ namespace Ryujinx.Graphics.Vulkan
                     depthStencilState.DepthCompareOp = DepthCompareOp;
                 }
 
-                if (!supportsExtDynamicState2)
+                if (!_supportsExtDynamicState2.ExtendedDynamicState2)
                 {
                     inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
                     rasterizationState.DepthBiasEnable = DepthBiasEnable;
@@ -518,7 +564,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.LineWidth;
                 }
 
-                if (supportsExtDynamicState)
+                if (_supportsExtDynamicState)
                 {
                     if (!isMoltenVk)
                     {
@@ -538,17 +584,17 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[currentIndex++] = DynamicState.PrimitiveTopologyExt;
                 }
 
-                if (supportsExtDynamicState2)
+                if (_supportsExtDynamicState2.ExtendedDynamicState2)
                 {
                     dynamicStates[currentIndex++] = DynamicState.DepthBiasEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
                     dynamicStates[currentIndex++] = DynamicState.PrimitiveRestartEnableExt;
 
-                    if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
+                    if (_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
                     {
                         dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
                     }
-                    if (gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
+                    if (_supportsExtDynamicState2.ExtendedDynamicState2PatchControlPoints)
                     {
                         dynamicStates[currentIndex++] = DynamicState.PatchControlPointsExt;
                     }
