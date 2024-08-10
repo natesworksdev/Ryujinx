@@ -12,7 +12,6 @@ namespace Ryujinx.HLE.Generators
         {
             var syntaxReceiver = (ServiceSyntaxReceiver)context.SyntaxReceiver;
             CodeGenerator generator = new CodeGenerator();
-            generator = new CodeGenerator();
 
             generator.AppendLine("using System;");
             generator.EnterScope($"namespace Ryujinx.HLE.HOS.Services.Sm");
