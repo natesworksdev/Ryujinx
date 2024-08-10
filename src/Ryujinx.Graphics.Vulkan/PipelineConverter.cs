@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // TODO: Support divisor > 1
                     pipeline.Internal.VertexBindingDescriptions[descriptorIndex++] = new VertexInputBindingDescription(
                         (uint)i + 1,
-                        (uint)alignedStride,
+                        extendedDynamicState && !gd.IsMoltenVk ? 0 : (uint)alignedStride,
                         inputRate);
                 }
             }

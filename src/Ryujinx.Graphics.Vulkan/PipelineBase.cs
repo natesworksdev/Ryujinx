@@ -1425,7 +1425,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _newState.Internal.VertexBindingDescriptions[descriptorIndex] = new VertexInputBindingDescription(
                             (uint)binding,
-                            (uint)vertexBuffer.Stride,
+                            _supportExtDynamic && !Gd.IsMoltenVk ? 0 : (uint)vertexBuffer.Stride,
                             inputRate);
 
                         int vbSize = vertexBuffer.Buffer.Size;
