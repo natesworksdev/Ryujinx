@@ -263,6 +263,9 @@ namespace Ryujinx.Graphics.Vulkan
             SamplesCount = 1;
             DepthMode = true;
 
+            PolygonMode = PolygonMode.Fill;
+            DepthBoundsTestEnable = false;
+
             _supportsExtDynamicState = supportsExtDynamicState;
             _supportsExtDynamicState2 = extendedDynamicState2;
 
@@ -414,7 +417,6 @@ namespace Ryujinx.Graphics.Vulkan
                 var rasterizationState = new PipelineRasterizationStateCreateInfo
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
-                    PolygonMode = PolygonMode,
                     DepthClampEnable = DepthClampEnable,
                 };
 
@@ -453,7 +455,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var depthStencilState = new PipelineDepthStencilStateCreateInfo
                 {
                     SType = StructureType.PipelineDepthStencilStateCreateInfo,
-                    DepthBoundsTestEnable = false,
+                    DepthBoundsTestEnable = DepthBoundsTestEnable,
                 };
 
                 if (!_supportsExtDynamicState)
