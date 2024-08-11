@@ -200,10 +200,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                         context.Store(StorageKind.Output, IoVariable.FragmentOutputColor, null, Const(1), Const(i), ConstF(0));
                     }
                 }
-                else
-                {
-                    return;
-                }
+
+                return;
             }
 
             if (stage == ShaderStage.Vertex)
