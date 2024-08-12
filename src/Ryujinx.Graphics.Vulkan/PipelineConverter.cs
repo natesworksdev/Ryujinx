@@ -168,23 +168,12 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
 
             pipeline.HasDepthStencil = state.DepthStencilEnable;
-            pipeline.LogicOpEnable = state.LogicOpEnable;
 
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
 
             pipeline.PrimitiveRestartEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.PrimitiveRestartEnable;
             pipeline.RasterizerDiscardEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.RasterizerDiscard;
             pipeline.DepthBiasEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.BiasEnable != 0;
-
-
-            if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
-            {
-                pipeline.LogicOp = state.LogicOpEnable ? state.LogicOp.Convert() : default;
-            }
-            else
-            {
-                pipeline.LogicOp = 0;
-            }
 
             pipeline.PatchControlPoints = extendedDynamicState2.ExtendedDynamicState2PatchControlPoints ? 0 : state.PatchControlPoints;
 
@@ -338,6 +327,20 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
             pipeline.Internal.LogicOpsAllowed = attachmentCount == 0 || !allFormatsFloatOrSrgb;
+
+            bool logicOpEnable = state.LogicOpEnable &&
+                                 (gd.Vendor == Vendor.Nvidia || (attachmentCount == 0 || !allFormatsFloatOrSrgb));
+
+            pipeline.LogicOpEnable = logicOpEnable;
+
+            if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
+            {
+                pipeline.LogicOp = logicOpEnable ? state.LogicOp.Convert() : default;
+            }
+            else
+            {
+                pipeline.LogicOp = 0;
+            }
 
             return pipeline;
         }
