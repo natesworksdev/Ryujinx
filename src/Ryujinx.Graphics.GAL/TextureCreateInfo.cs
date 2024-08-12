@@ -1,6 +1,5 @@
 using Ryujinx.Common;
 using System;
-using System.Numerics;
 
 namespace Ryujinx.Graphics.GAL
 {
