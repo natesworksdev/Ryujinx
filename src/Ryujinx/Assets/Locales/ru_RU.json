@@ -522,7 +522,7 @@
   "AboutPatreonUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx на Patreon",
   "AboutGithubUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx на GitHub",
   "AboutDiscordUrlTooltipMessage": "Нажмите, чтобы открыть приглашение на сервер Ryujinx в Discord",
-  "AboutTwitterUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx в X (бывший Twitter)",
+  "AboutXUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx в X (бывший Twitter)",
   "AboutRyujinxAboutTitle": "О программе:",
   "AboutRyujinxAboutContent": "Ryujinx — это эмулятор Nintendo Switch™.\nПожалуйста, поддержите нас на Patreon.\nЧитайте последние новости в наших X (Twitter) или Discord.\nРазработчики, заинтересованные в участии, могут ознакомиться с проектом на GitHub или в Discord.",
   "AboutRyujinxMaintainersTitle": "Разработка:",

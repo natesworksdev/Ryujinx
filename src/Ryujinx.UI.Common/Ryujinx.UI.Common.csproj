@@ -20,7 +20,7 @@
     <None Remove="Resources\Logo_GitHub.png" />
     <None Remove="Resources\Logo_Patreon.png" />
     <None Remove="Resources\Logo_Ryujinx.png" />
-    <None Remove="Resources\Logo_Twitter.png" />
+    <None Remove="Resources\Logo_X.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,8 +41,8 @@
     <EmbeddedResource Include="Resources\Logo_GitHub_Light.png" />
     <EmbeddedResource Include="Resources\Logo_Patreon_Dark.png" />
     <EmbeddedResource Include="Resources\Logo_Patreon_Light.png" />
-    <EmbeddedResource Include="Resources\Logo_Twitter_Dark.png" />
-    <EmbeddedResource Include="Resources\Logo_Twitter_Light.png" />
+    <EmbeddedResource Include="Resources\Logo_X_Dark.png" />
+    <EmbeddedResource Include="Resources\Logo_X_Light.png" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' OR '$(RuntimeIdentifier)' == 'linux-arm64' OR '$(RuntimeIdentifier)' == ''">

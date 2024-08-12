@@ -171,9 +171,9 @@
                         Background="Transparent"
                         Click="Button_OnClick"
                         CornerRadius="15"
-                        Tag="https://twitter.com/RyujinxEmu"
-                        ToolTip.Tip="{locale:Locale AboutTwitterUrlTooltipMessage}">
-                        <Image Source="{Binding TwitterLogo}" />
+                        Tag="https://x.com/RyujinxEmu"
+                        ToolTip.Tip="{locale:Locale AboutXUrlTooltipMessage}">
+                        <Image Source="{Binding XLogo}" />
                     </Button>
                     <Button
                         MinWidth="30"
