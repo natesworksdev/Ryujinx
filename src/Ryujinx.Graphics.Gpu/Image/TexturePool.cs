@@ -543,6 +543,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                 swizzleA);
         }
 
+        /// <summary>
+        /// Clamps the amount of mipmap levels to the maximum allowed for the given texture dimensions.
+        /// </summary>
+        /// <param name="target">Number of texture dimensions (1D, 2D, 3D, Cube, etc)</param>
+        /// <param name="width">Width of the texture</param>
+        /// <param name="height">Height of the texture, ignored for 1D textures</param>
+        /// <param name="depthOrLayers">Depth of the texture for 3D textures, otherwise ignored</param>
+        /// <param name="levels">Original amount of mipmap levels</param>
+        /// <returns>Clamped mipmap levels</returns>
         private static int ClampLevels(Target target, int width, int height, int depthOrLayers, int levels)
         {
             int maxSize = width;
