@@ -6,6 +6,7 @@ using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -490,6 +491,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 levels = (maxLod - minLod) + 1;
             }
 
+            levels = ClampLevels(target, width, height, depthOrLayers, levels);
+
             SwizzleComponent swizzleR = descriptor.UnpackSwizzleR().Convert();
             SwizzleComponent swizzleG = descriptor.UnpackSwizzleG().Convert();
             SwizzleComponent swizzleB = descriptor.UnpackSwizzleB().Convert();
@@ -538,6 +541,25 @@ namespace Ryujinx.Graphics.Gpu.Image
                 swizzleG,
                 swizzleB,
                 swizzleA);
+        }
+
+        private static int ClampLevels(Target target, int width, int height, int depthOrLayers, int levels)
+        {
+            int maxSize = width;
+
+            if (target != Target.Texture1D &&
+                target != Target.Texture1DArray)
+            {
+                maxSize = Math.Max(maxSize, height);
+            }
+
+            if (target == Target.Texture3D)
+            {
+                maxSize = Math.Max(maxSize, depthOrLayers);
+            }
+
+            int maxLevels = BitOperations.Log2((uint)maxSize) + 1;
+            return Math.Min(levels, maxLevels);
         }
 
         /// <summary>

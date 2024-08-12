@@ -113,25 +113,6 @@ namespace Ryujinx.Graphics.GAL
             return 1;
         }
 
-        public int GetLevelsClamped()
-        {
-            int maxSize = Width;
-
-            if (Target != Target.Texture1D &&
-                Target != Target.Texture1DArray)
-            {
-                maxSize = Math.Max(maxSize, Height);
-            }
-
-            if (Target == Target.Texture3D)
-            {
-                maxSize = Math.Max(maxSize, Depth);
-            }
-
-            int maxLevels = BitOperations.Log2((uint)maxSize) + 1;
-            return Math.Min(Levels, maxLevels);
-        }
-
         private static int GetLevelSize(int size, int level)
         {
             return Math.Max(1, size >> level);
