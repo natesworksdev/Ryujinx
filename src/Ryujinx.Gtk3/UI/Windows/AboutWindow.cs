@@ -69,7 +69,7 @@ namespace Ryujinx.UI.Windows
 
         private void XButton_Pressed(object sender, ButtonPressEventArgs args)
         {
-            OpenHelper.OpenUrl("https://X.com/RyujinxEmu");
+            OpenHelper.OpenUrl("https://x.com/RyujinxEmu");
         }
 
         private void ContributorsButton_Pressed(object sender, ButtonPressEventArgs args)
