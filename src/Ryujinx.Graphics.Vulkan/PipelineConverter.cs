@@ -218,9 +218,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.StencilBackDepthFailOp = extendedDynamicState ? 0 : state.StencilTest.BackDpFail.Convert();
             pipeline.StencilBackCompareOp = extendedDynamicState ? 0 : state.StencilTest.BackFunc.Convert();
 
-            var vkTopology = gd.TopologyRemap(state.Topology).Convert();
-
-            pipeline.Topology = extendedDynamicState ? vkTopology.ConvertToClass() : vkTopology;
+            pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
 
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using PrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -22,6 +23,8 @@ namespace Ryujinx.Graphics.Vulkan
         public bool UsePushDescriptors { get; }
         public bool IsCompute { get; }
         public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
+
+        public PrimitiveTopology ShaderTopology;
 
         public bool UpdateTexturesWithoutTemplate { get; }
 
@@ -550,6 +553,8 @@ namespace Ryujinx.Graphics.Vulkan
             var renderPass = CreateDummyRenderPass();
 
             PipelineState pipeline = _state.ToVulkanPipelineState(_gd);
+
+            ShaderTopology = pipeline.Topology;
 
             // Copy the shader stage info to the pipeline.
             var stages = pipeline.Stages.AsSpan();

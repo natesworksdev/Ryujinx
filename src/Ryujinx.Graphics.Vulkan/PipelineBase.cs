@@ -1105,6 +1105,8 @@ namespace Ryujinx.Graphics.Vulkan
             _newState.HasTessellationControlShader = internalProgram.HasTessellationControlShader;
             _newState.StagesCount = (uint)stages.Length;
 
+            _newState.Topology = internalProgram.ShaderTopology;
+
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
             SignalStateChange();
