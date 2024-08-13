@@ -671,7 +671,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     if (oldTopology.ConvertToClass() != _newState.Topology.ConvertToClass())
                     {
-                        _newState.Topology = oldTopology;
+                        _newState.Topology = oldTopology.ConvertToClass();
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -1078,7 +1078,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if ((_newState.Topology.ConvertToClass() != newTopologyClass))
                 {
-                    _newState.Topology = vkTopology;
+                    _newState.Topology = vkTopology.ConvertToClass();
                 }
 
                 DynamicState.SetPrimitiveTopology(vkTopology);
