@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain, Span<AllocationCallbacks>.Empty);
+            _gd.SwapchainApi.DestroySwapchain(_device, oldSwapchain, []);
 
             CreateSwapchain();
         }

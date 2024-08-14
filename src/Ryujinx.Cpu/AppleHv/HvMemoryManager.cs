@@ -230,7 +230,7 @@ namespace Ryujinx.Cpu.AppleHv
         {
             if (size == 0)
             {
-                return Enumerable.Empty<HostMemoryRange>();
+                return [];
             }
 
             var guestRegions = GetPhysicalRegionsImpl(va, size);
@@ -256,7 +256,7 @@ namespace Ryujinx.Cpu.AppleHv
         {
             if (size == 0)
             {
-                return Enumerable.Empty<MemoryRange>();
+                return [];
             }
 
             return GetPhysicalRegionsImpl(va, size);

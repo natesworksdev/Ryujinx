@@ -70,15 +70,13 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _sampler = _renderer.CreateSampler(SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
 
-            _scalingProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(scalingShader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, scalingResourceLayout);
+            _scalingProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(scalingShader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], scalingResourceLayout);
 
-            _sharpeningProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(sharpeningShader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, sharpeningResourceLayout);
+            _sharpeningProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(sharpeningShader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], sharpeningResourceLayout);
         }
 
         public void Run(

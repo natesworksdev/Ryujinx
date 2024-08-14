@@ -173,7 +173,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                return ReadOnlySpan<byte>.Empty;
+                return [];
             }
 
             if (isContiguous)

@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         public int SendBroadcast(ILdnSocket s, LanPacketType type, int port)
         {
-            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(_discovery.LocalBroadcastAddr, port));
+            return SendPacket(s, type, [], new IPEndPoint(_discovery.LocalBroadcastAddr, port));
         }
 
         public int SendPacket(ILdnSocket s, LanPacketType type, byte[] data, EndPoint endPoint = null)
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         private int Compress(byte[] input, out byte[] output)
         {
-            List<byte> outputList = new();
+            List<byte> outputList = [];
             int i = 0;
             int maxCount = 0xFF;
 
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.LdnMitm
 
         private int Decompress(byte[] input, out byte[] output)
         {
-            List<byte> outputList = new();
+            List<byte> outputList = [];
             int i = 0;
 
             while (i < input.Length && outputList.Count < BufferSize)

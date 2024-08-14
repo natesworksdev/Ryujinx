@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Blocks = blocks;
 
-            HashSet<BasicBlock> visited = new();
+            HashSet<BasicBlock> visited = [];
 
             Stack<BasicBlock> blockStack = new();
 
@@ -50,9 +50,9 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static ControlFlowGraph Create(Operation[] operations)
         {
-            Dictionary<Operand, BasicBlock> labels = new();
+            Dictionary<Operand, BasicBlock> labels = [];
 
-            List<BasicBlock> blocks = new();
+            List<BasicBlock> blocks = [];
 
             BasicBlock currentBlock = null;
 

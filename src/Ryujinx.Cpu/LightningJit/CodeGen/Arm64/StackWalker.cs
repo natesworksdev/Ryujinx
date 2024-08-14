@@ -8,7 +8,7 @@ namespace Ryujinx.Cpu.LightningJit.CodeGen.Arm64
     {
         public IEnumerable<ulong> GetCallStack(IntPtr framePointer, IntPtr codeRegionStart, int codeRegionSize, IntPtr codeRegion2Start, int codeRegion2Size)
         {
-            List<ulong> functionPointers = new();
+            List<ulong> functionPointers = [];
 
             while (true)
             {

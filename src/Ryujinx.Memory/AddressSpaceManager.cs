@@ -106,7 +106,7 @@ namespace Ryujinx.Memory
         {
             if (size == 0)
             {
-                return Enumerable.Empty<HostMemoryRange>();
+                return [];
             }
 
             return GetHostRegionsImpl(va, size);
@@ -117,7 +117,7 @@ namespace Ryujinx.Memory
         {
             if (size == 0)
             {
-                return Enumerable.Empty<MemoryRange>();
+                return [];
             }
 
             var hostRegions = GetHostRegionsImpl(va, size);

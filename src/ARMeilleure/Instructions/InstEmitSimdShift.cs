@@ -16,12 +16,14 @@ namespace ARMeilleure.Instructions
 
     static partial class InstEmit
     {
+#pragma warning disable IDE0055 // Disable formatting
         #region "Masks"
-        private static readonly long[] _masks_SliSri = new long[] // Replication masks.
-        {
+        private static readonly long[] _masks_SliSri = // Replication masks.
+        [
             0x0101010101010101L, 0x0001000100010001L, 0x0000000100000001L, 0x0000000000000001L,
-        };
+        ];
         #endregion
+#pragma warning restore IDE0055
 
         public static void Rshrn_V(ArmEmitterContext context)
         {

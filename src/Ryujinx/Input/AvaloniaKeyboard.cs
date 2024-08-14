@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Input
 
         public AvaloniaKeyboard(AvaloniaKeyboardDriver driver, string id, string name)
         {
-            _buttonsUserMapping = new List<ButtonMappingEntry>();
+            _buttonsUserMapping = [];
 
             _driver = driver;
             Id = id;

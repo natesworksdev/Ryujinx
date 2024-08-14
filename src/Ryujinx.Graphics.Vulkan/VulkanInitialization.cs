@@ -20,7 +20,8 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] _desirableExtensions = {
+        private static readonly string[] _desirableExtensions =
+        [
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             ExtTransformFeedback.ExtensionName,
@@ -43,12 +44,13 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_KHR_portability_subset", // As per spec, we should enable this if present.
             "VK_EXT_4444_formats",
             "VK_KHR_8bit_storage",
-            "VK_KHR_maintenance2",
-        };
+            "VK_KHR_maintenance2"
+        ];
 
-        private static readonly string[] _requiredExtensions = {
-            KhrSwapchain.ExtensionName,
-        };
+        private static readonly string[] _requiredExtensions =
+        [
+            KhrSwapchain.ExtensionName
+        ];
 
         internal static VulkanInstance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions)
         {
@@ -194,12 +196,12 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Remove this once we relax our initialization codepaths.
             if (instance.InstanceVersion < _minimalInstanceVulkanVersion)
             {
-                return Array.Empty<DeviceInfo>();
+                return [];
             }
 
             instance.EnumeratePhysicalDevices(out VulkanPhysicalDevice[] physicalDevices).ThrowOnError();
 
-            List<DeviceInfo> deviceInfos = new();
+            List<DeviceInfo> deviceInfos = [];
 
             foreach (VulkanPhysicalDevice physicalDevice in physicalDevices)
             {

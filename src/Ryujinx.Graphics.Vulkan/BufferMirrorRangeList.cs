@@ -150,10 +150,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _ranges = new List<Range>
-                {
-                    new Range(offset, size)
-                };
+                _ranges = [new Range(offset, size)];
             }
         }
 
@@ -189,7 +186,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 do
                 {
-                    (result ??= new List<Range>()).Add(list[index++]);
+                    (result ??= []).Add(list[index++]);
                 }
                 while (index < list.Count && list[index].OverlapsWith(offset, size));
             }

@@ -39,8 +39,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         private VirtualFileSystem VirtualFileSystem { get; }
         private ApplicationData ApplicationData { get; }
 
-        private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
-        private AvaloniaList<object> _views = new();
+        private AvaloniaList<TitleUpdateModel> _titleUpdates = [];
+        private AvaloniaList<object> _views = [];
         private object _selectedUpdate;
 
         private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
@@ -101,7 +101,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 TitleUpdateWindowData = new TitleUpdateMetadata
                 {
                     Selected = "",
-                    Paths = new List<string>(),
+                    Paths = [],
                 };
 
                 Save();

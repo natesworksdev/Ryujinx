@@ -467,7 +467,7 @@ namespace Ryujinx.UI.Windows
             if (OperatingSystem.IsMacOS())
             {
                 var store = (_graphicsBackend.Model as ListStore);
-                store.GetIter(out TreeIter openglIter, new TreePath(new[] { 1 }));
+                store.GetIter(out TreeIter openglIter, new TreePath([1]));
                 store.Remove(ref openglIter);
 
                 _graphicsBackend.Model = store;
@@ -557,7 +557,7 @@ namespace Ryujinx.UI.Windows
         {
             if (_directoryChanged)
             {
-                List<string> gameDirs = new();
+                List<string> gameDirs = [];
 
                 _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
 

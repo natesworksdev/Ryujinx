@@ -240,11 +240,11 @@ dotnet_naming_style.IPascalCase.capitalization = pascal_case
 # .NET 8 migration (new warnings are caused by the NET 8 C# compiler and analyzer)
 # The following info messages might need to be fixed in the source code instead of hiding the actual message
 # Without the following lines, dotnet format would fail
-# Disable "Collection initialization can be simplified"
+# Disable "Use collection initializers or expressions"
 dotnet_diagnostic.IDE0028.severity = none
-dotnet_diagnostic.IDE0300.severity = none
-dotnet_diagnostic.IDE0301.severity = none
+# Disable "Use collection expression for stackalloc"
 dotnet_diagnostic.IDE0302.severity = none
+# Disable "Use collection expression for fluent"
 dotnet_diagnostic.IDE0305.severity = none
 # Disable "'new' expression can be simplified"
 dotnet_diagnostic.IDE0090.severity = none

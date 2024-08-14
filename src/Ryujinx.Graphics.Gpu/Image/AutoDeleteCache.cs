@@ -63,10 +63,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             _textures = new LinkedList<Texture>();
 
-            _shortCacheBuilder = new HashSet<ShortTextureCacheEntry>();
-            _shortCache = new HashSet<ShortTextureCacheEntry>();
+            _shortCacheBuilder = [];
+            _shortCache = [];
 
-            _shortCacheLookup = new Dictionary<TextureDescriptor, ShortTextureCacheEntry>();
+            _shortCacheLookup = [];
         }
 
         /// <summary>

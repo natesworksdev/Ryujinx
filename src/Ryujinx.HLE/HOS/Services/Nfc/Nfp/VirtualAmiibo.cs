@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 }
             }
 
-            return Array.Empty<byte>();
+            return [];
         }
 
         public static bool CreateApplicationArea(string amiiboId, uint applicationAreaId, byte[] applicationAreaData)
@@ -180,12 +180,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 virtualAmiiboFile = new VirtualAmiiboFile()
                 {
                     FileVersion = 0,
-                    TagUuid = Array.Empty<byte>(),
+                    TagUuid = [],
                     AmiiboId = amiiboId,
                     FirstWriteDate = DateTime.Now,
                     LastWriteDate = DateTime.Now,
                     WriteCounter = 0,
-                    ApplicationAreas = new List<VirtualAmiiboApplicationArea>(),
+                    ApplicationAreas = [],
                 };
 
                 SaveAmiiboFile(virtualAmiiboFile);
