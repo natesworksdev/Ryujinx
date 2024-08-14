@@ -23,13 +23,11 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
         public SocksClient ProxyClient { get; }
 
-        // TODO: Make sure Blocking is used properly
-        public bool Blocking { get; set; }
+        public bool Blocking { get => ProxyClient.Blocking; set => ProxyClient.Blocking = value; }
         public int RefCount { get; set; }
 
-        // TODO: Assign LocalEndPoint and RemoteEndPoint
-        public IPEndPoint RemoteEndPoint { get; private set; }
-        public IPEndPoint LocalEndPoint { get; private set; }
+        public IPEndPoint RemoteEndPoint => (IPEndPoint)ProxyClient.ProxiedRemoteEndPoint;
+        public IPEndPoint LocalEndPoint => (IPEndPoint)ProxyClient.ProxiedLocalEndPoint;
 
         public AddressFamily AddressFamily => ProxyClient.AddressFamily;
         public SocketType SocketType => ProxyClient.SocketType;
@@ -70,11 +68,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             RefCount = 1;
         }
 
-        private ManagedProxySocket(ManagedProxySocket oldSocket, SocksClient proxyClient)
+        private ManagedProxySocket(SocksClient proxyClient)
         {
             ProxyClient = proxyClient;
-            LocalEndPoint = oldSocket.LocalEndPoint;
-            RemoteEndPoint = oldSocket.RemoteEndPoint;
             _acceptedConnection = true;
             RefCount = 1;
         }
@@ -273,22 +269,82 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Adapted from <see cref="ManagedSocket.GetSocketOption"/>
+        /// </summary>
         public LinuxError GetSocketOption(BsdSocketOption option, SocketOptionLevel level, Span<byte> optionValue)
         {
-            // TODO: Call ProxyClient.GetSocketOption() when it's implemented
-            throw new NotImplementedException();
+            try
+            {
+                LinuxError result = WinSockHelper.ValidateSocketOption(option, level, write: false);
+
+                if (result != LinuxError.SUCCESS)
+                {
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Invalid GetSockOpt Option: {option} Level: {level}");
+
+                    return result;
+                }
+
+                if (!WinSockHelper.TryConvertSocketOption(option, level, out SocketOptionName optionName))
+                {
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported GetSockOpt Option: {option} Level: {level}");
+                    optionValue.Clear();
+
+                    return LinuxError.SUCCESS;
+                }
+
+                byte[] tempOptionValue = new byte[optionValue.Length];
+
+                ProxyClient.GetSocketOption(level, optionName, tempOptionValue);
+
+                tempOptionValue.AsSpan().CopyTo(optionValue);
+
+                return LinuxError.SUCCESS;
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
         }
 
+        /// <summary>
+        /// Adapted from <see cref="ManagedSocket.SetSocketOption"/>
+        /// </summary>
         public LinuxError SetSocketOption(BsdSocketOption option, SocketOptionLevel level, ReadOnlySpan<byte> optionValue)
         {
-            // TODO: Call ProxyClient.SetSocketOption() when it's implemented
-            throw new NotImplementedException();
+            try
+            {
+                LinuxError result = WinSockHelper.ValidateSocketOption(option, level, write: true);
+
+                if (result != LinuxError.SUCCESS)
+                {
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Invalid SetSockOpt Option: {option} Level: {level}");
+
+                    return result;
+                }
+
+                if (!WinSockHelper.TryConvertSocketOption(option, level, out SocketOptionName optionName))
+                {
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported SetSockOpt Option: {option} Level: {level}");
+
+                    return LinuxError.SUCCESS;
+                }
+
+                byte[] value = optionValue.ToArray();
+
+                ProxyClient.SetSocketOption(level, optionName, value);
+
+                return LinuxError.SUCCESS;
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
         }
 
         public bool Poll(int microSeconds, SelectMode mode)
         {
-            // TODO: Call ProxyClient.Poll() when it's implemented
-            throw new NotImplementedException();
+            return ProxyClient.Poll(microSeconds, mode);
         }
 
         public LinuxError Bind(IPEndPoint localEndPoint)
@@ -370,7 +426,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
             try
             {
                 SocksClient newProxyClient = ProxyClient.Accept();
-                newSocket = new ManagedProxySocket(this, newProxyClient);
+                newSocket = new ManagedProxySocket(newProxyClient);
             }
             catch (ProxyException exception)
             {
@@ -391,13 +447,21 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
         public void Disconnect()
         {
-            // TODO: Call ProxyClient.Disconnect() when it's implemented
+            ProxyClient.Disconnect();
         }
 
         public LinuxError Shutdown(BsdSocketShutdownFlags how)
         {
-            // TODO: Call ProxyClient.Shutdown() when it's implemented
-            return LinuxError.SUCCESS;
+            try
+            {
+                ProxyClient.Shutdown((SocketShutdown)how);
+
+                return LinuxError.SUCCESS;
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
         }
 
         public void Close()
