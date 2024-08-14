@@ -21,6 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             EventFileDescriptorPollManager.Instance,
             ManagedSocketPollManager.Instance,
+            ManagedProxySocketPollManager.Instance,
         };
 
         private BsdContext _context;
