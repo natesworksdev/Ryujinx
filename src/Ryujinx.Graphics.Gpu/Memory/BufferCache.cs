@@ -663,7 +663,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="overlapsCount">Total of overlaps</param>
         private void CreateBufferAligned(ulong address, ulong size, BufferStage stage, bool sparseCompatible, Buffer[] overlaps, int overlapsCount)
         {
-            Buffer newBuffer = new Buffer(_context, _physicalMemory, address, size, stage, sparseCompatible, overlaps.Take(overlapsCount));
+            Buffer newBuffer = new(_context, _physicalMemory, address, size, stage, sparseCompatible, overlaps.Take(overlapsCount));
 
             lock (_buffers)
             {

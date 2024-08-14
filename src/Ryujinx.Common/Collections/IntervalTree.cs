@@ -122,7 +122,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">The node to search for RangeNodes within</param>
         /// <param name="list">The list to add RangeNodes to</param>
-        private void AddToList(IntervalTreeNode<TKey, TValue> node, List<RangeNode<TKey, TValue>> list)
+        private static void AddToList(IntervalTreeNode<TKey, TValue> node, List<RangeNode<TKey, TValue>> list)
         {
             if (node == null)
             {
@@ -173,7 +173,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="end">End of the range</param>
         /// <param name="overlaps">Overlaps array to place results in</param>
         /// <param name="overlapCount">Overlaps count to update</param>
-        private void GetValues(IntervalTreeNode<TKey, TValue> node, TKey start, TKey end, ref TValue[] overlaps, ref int overlapCount)
+        private static void GetValues(IntervalTreeNode<TKey, TValue> node, TKey start, TKey end, ref TValue[] overlaps, ref int overlapCount)
         {
             if (node == null || start.CompareTo(node.Max) >= 0)
             {

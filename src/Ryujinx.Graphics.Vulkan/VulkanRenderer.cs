@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool supportsPushDescriptors = _physicalDevice.IsDeviceExtensionPresent(KhrPushDescriptor.ExtensionName);
 
-            PhysicalDevicePushDescriptorPropertiesKHR propertiesPushDescriptor = new PhysicalDevicePushDescriptorPropertiesKHR()
+            PhysicalDevicePushDescriptorPropertiesKHR propertiesPushDescriptor = new()
             {
                 SType = StructureType.PhysicalDevicePushDescriptorPropertiesKhr
             };

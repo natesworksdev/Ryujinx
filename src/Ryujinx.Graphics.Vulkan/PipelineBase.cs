@@ -694,7 +694,7 @@ namespace Ryujinx.Graphics.Vulkan
             _vertexBufferUpdater.Commit(Cbs);
         }
 
-        public void SetAlphaTest(bool enable, float reference, CompareOp op)
+        public static void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
@@ -891,12 +891,12 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Default levels (likely needs emulation on shaders?)
         }
 
-        public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
+        public static void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
         {
             // TODO.
         }
 
-        public void SetPolygonMode(PolygonMode frontMode, PolygonMode backMode)
+        public static void SetPolygonMode(PolygonMode frontMode, PolygonMode backMode)
         {
             // TODO.
         }
@@ -1142,7 +1142,7 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
-        public void SetUserClipDistance(int index, bool enableClip)
+        public static void SetUserClipDistance(int index, bool enableClip)
         {
             // TODO.
         }

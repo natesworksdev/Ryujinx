@@ -9,7 +9,7 @@ namespace Ryujinx.Input.SDL2
     {
         private readonly Dictionary<int, string> _gamepadsInstanceIdsMapping;
         private readonly List<string> _gamepadsIds;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public ReadOnlySpan<string> GamepadsIds
         {

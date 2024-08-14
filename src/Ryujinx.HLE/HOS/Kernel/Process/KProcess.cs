@@ -509,7 +509,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return result;
         }
 
-        private void GenerateRandomEntropy()
+        private static void GenerateRandomEntropy()
         {
             // TODO.
         }

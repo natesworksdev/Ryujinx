@@ -184,7 +184,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">The node to search for nodes within</param>
         /// <param name="list">The list to add node to</param>
-        private void AddToList(Node<TKey, TValue> node, List<KeyValuePair<TKey, TValue>> list)
+        private static void AddToList(Node<TKey, TValue> node, List<KeyValuePair<TKey, TValue>> list)
         {
             if (node == null)
             {

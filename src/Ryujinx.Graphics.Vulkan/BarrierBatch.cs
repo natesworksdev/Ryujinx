@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Vulkan
                         stages |= PipelineStageFlags.DrawIndirectBit;
                     }
 
-                    MemoryBarrier barrier = new MemoryBarrier()
+                    MemoryBarrier barrier = new()
                     {
                         SType = StructureType.MemoryBarrier,
                         SrcAccessMask = access,

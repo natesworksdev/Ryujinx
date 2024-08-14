@@ -839,7 +839,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             dest.NumberLocal(_intervals.Count);
 
-                            LiveInterval interval = new LiveInterval(dest);
+                            LiveInterval interval = new(dest);
                             _intervals.Add(interval);
 
                             SetVisited(dest);

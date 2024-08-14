@@ -230,7 +230,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             return GetWorkBufferSizeForMultiStreamExImpl(out size, in parameter, fromDsp: true);
         }
 
-        private Result GetWorkBufferSizeExImpl(out int size, in HardwareOpusDecoderParameterInternalEx parameter, bool fromDsp)
+        private static Result GetWorkBufferSizeExImpl(out int size, in HardwareOpusDecoderParameterInternalEx parameter, bool fromDsp)
         {
             size = 0;
 
@@ -254,7 +254,7 @@ namespace Ryujinx.Horizon.Sdk.Codec.Detail
             return Result.Success;
         }
 
-        private Result GetWorkBufferSizeForMultiStreamExImpl(out int size, in HardwareOpusMultiStreamDecoderParameterInternalEx parameter, bool fromDsp)
+        private static Result GetWorkBufferSizeForMultiStreamExImpl(out int size, in HardwareOpusMultiStreamDecoderParameterInternalEx parameter, bool fromDsp)
         {
             size = 0;
 
