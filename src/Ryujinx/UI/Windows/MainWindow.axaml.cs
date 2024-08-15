@@ -144,6 +144,16 @@ namespace Ryujinx.Ava.UI.Windows
             });
         }
 
+        private void ApplicationLibrary_DownloadableContentAdded(object sender, DownloadableContentAddedEventArgs e)
+        {
+            // Console.WriteLine("[{0}]: {1} ({2})", e.TitleId, e.ContainerFilePath, e.NcaPath);
+        }
+        
+        private void ApplicationLibrary_TitleUpdateAdded(object sender, TitleUpdateAddedEventArgs e)
+        {
+            // Console.WriteLine("[{0}]: {1}", e.TitleId, e.FilePath);
+        }
+
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
         {
             LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarGamesLoaded, e.NumAppsLoaded, e.NumAppsFound);
@@ -473,6 +483,8 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+            ApplicationLibrary.DownloadableContentAdded += ApplicationLibrary_DownloadableContentAdded;
+            ApplicationLibrary.TitleUpdateAdded += ApplicationLibrary_TitleUpdateAdded;
 
             ViewModel.RefreshFirmwareStatus();
 
@@ -638,7 +650,9 @@ namespace Ryujinx.Ava.UI.Windows
             Thread applicationLibraryThread = new(() =>
             {
                 ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
+                TimeIt("games", () => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs));
+                TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
+                TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
 
                 _isLoading = false;
             })
@@ -647,6 +661,15 @@ namespace Ryujinx.Ava.UI.Windows
                 IsBackground = true,
             };
             applicationLibraryThread.Start();
+        }
+        
+        private static void TimeIt(string tag, Action act)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            act();
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine("[{0}] {1} ms", tag, elapsedMs);
         }
     }
 }
