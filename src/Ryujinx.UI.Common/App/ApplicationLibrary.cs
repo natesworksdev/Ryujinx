@@ -16,6 +16,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
+using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Configuration.System;
 using System;
@@ -37,6 +38,8 @@ namespace Ryujinx.UI.App.Common
         public Language DesiredLanguage { get; set; }
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
+        public event EventHandler<TitleUpdateAddedEventArgs> TitleUpdateAdded;
+        public event EventHandler<DownloadableContentAddedEventArgs> DownloadableContentAdded;
 
         private readonly byte[] _nspIcon;
         private readonly byte[] _xciIcon;
@@ -275,7 +278,7 @@ namespace Ryujinx.UI.App.Common
             catch (FileNotFoundException)
             {
                 Logger.Warning?.Print(LogClass.Application, $"The file was not found: '{applicationPath}'");
-
+            
                 return false;
             }
 
@@ -473,6 +476,125 @@ namespace Ryujinx.UI.App.Common
 
             return true;
         }
+        
+        public bool TryGetDownloadableContentFromFile(string filePath, out List<(ulong TitleId, string ContainerPath, string FullPath)> titleUpdates)
+        {
+            titleUpdates = [];
+
+            try
+            {
+                string extension = Path.GetExtension(filePath).ToLower();
+
+                using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
+
+                switch (extension)
+                {
+                    case ".xci":
+                    case ".nsp":
+                        {
+                            IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
+                                ? IntegrityCheckLevel.ErrorOnInvalid
+                                : IntegrityCheckLevel.None;
+                            
+                            using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
+                            // Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.AddOnContent, _virtualFileSystem, checkLevel);
+                            
+                            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                            {
+                                using var ncaFile = new UniqueRef<IFile>();
+
+                                pfs.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                                Nca nca = TryOpenNca(ncaFile.Get.AsStorage());
+                                if (nca == null)
+                                {
+                                    continue;
+                                }
+
+                                if (nca.Header.ContentType == NcaContentType.PublicData)
+                                {
+                                    titleUpdates.Add((nca.Header.TitleId, filePath, fileEntry.FullPath));
+                                }
+                            }
+
+                            if (titleUpdates.Count == 0)
+                            {
+                                return false;
+                            }
+                            return true;
+                        }
+                }
+            }
+            catch (MissingKeyException exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
+            }
+            catch (InvalidDataException)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {filePath}");
+            }
+            catch (IOException exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, exception.Message);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
+            }
+            return false;
+        }
+        
+        public bool TryGetTitleUpdatesFromFile(string filePath, out List<(ulong, string)> titleUpdates)
+        {
+            titleUpdates = [];
+
+            try
+            {
+                string extension = Path.GetExtension(filePath).ToLower();
+
+                using FileStream file = new(filePath, FileMode.Open, FileAccess.Read);
+
+                switch (extension)
+                {
+                    case ".xci":
+                    case ".nsp":
+                        {
+                            IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
+                                ? IntegrityCheckLevel.ErrorOnInvalid
+                                : IntegrityCheckLevel.None;
+                            
+                            using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
+
+                            Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.Patch, _virtualFileSystem, checkLevel);
+                            if (updates.Count == 0)
+                            {
+                                return false;
+                            }
+
+                            titleUpdates.AddRange(updates.Select(it => (it.Key, filePath)));
+
+                            return true;
+                        }
+                }
+            }
+            catch (MissingKeyException exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
+            }
+            catch (InvalidDataException)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {filePath}");
+            }
+            catch (IOException exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, exception.Message);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
+            }
+            return false;
+        }
 
         public void CancelLoading()
         {
@@ -524,12 +646,12 @@ namespace Ryujinx.UI.App.Common
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(file =>
                         {
                             return
-                            (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.UI.ShownFileTypes.PFS0.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".xci" && ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".nca" && ConfigurationState.Instance.UI.ShownFileTypes.NCA.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".nro" && ConfigurationState.Instance.UI.ShownFileTypes.NRO.Value) ||
-                            (Path.GetExtension(file).ToLower() is ".nso" && ConfigurationState.Instance.UI.ShownFileTypes.NSO.Value);
+                                (Path.GetExtension(file).ToLower() is ".nsp" && ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
+                                (Path.GetExtension(file).ToLower() is ".pfs0" && ConfigurationState.Instance.UI.ShownFileTypes.PFS0.Value) ||
+                                (Path.GetExtension(file).ToLower() is ".xci" && ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value) ||
+                                (Path.GetExtension(file).ToLower() is ".nca" && ConfigurationState.Instance.UI.ShownFileTypes.NCA.Value) ||
+                                (Path.GetExtension(file).ToLower() is ".nro" && ConfigurationState.Instance.UI.ShownFileTypes.NRO.Value) ||
+                                (Path.GetExtension(file).ToLower() is ".nso" && ConfigurationState.Instance.UI.ShownFileTypes.NSO.Value);
                         });
 
                         foreach (string app in files)
@@ -610,6 +732,208 @@ namespace Ryujinx.UI.App.Common
             }
         }
 
+        public void LoadDownloadableContents(List<string> appDirs)
+        {
+            // Logger.Warning?.Print(LogClass.Application, "JIMMY load DLC");
+            _cancellationToken = new CancellationTokenSource();
+         
+            // Builds the applications list with paths to found applications
+            List<string> applicationPaths = new();
+
+            try
+            {
+                foreach (string appDir in appDirs)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (!Directory.Exists(appDir))
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"The specified game directory \"{appDir}\" does not exist.");
+
+                        continue;
+                    }
+
+                    try
+                    {
+                        EnumerationOptions options = new()
+                        {
+                            RecurseSubdirectories = true, IgnoreInaccessible = false,
+                        };
+
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(
+                            file =>
+                            {
+                                return
+                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
+                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
+                                    (Path.GetExtension(file).ToLower() is ".xci" &&
+                                     ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
+                            });
+
+                        foreach (string app in files)
+                        {
+                            if (_cancellationToken.Token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            var fileInfo = new FileInfo(app);
+
+                            try
+                            {
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+
+                                applicationPaths.Add(fullPath);
+                            }
+                            catch (IOException exception)
+                            {
+                                Logger.Warning?.Print(LogClass.Application,
+                                    $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"Failed to get access to directory: \"{appDir}\"");
+                    }
+                }
+
+                // Loops through applications list, creating a struct and then firing an event containing the struct for each application
+                foreach (string applicationPath in applicationPaths)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (TryGetDownloadableContentFromFile(applicationPath, out List<(ulong, string, string)> applications))
+                    {
+                        foreach (var application in applications)
+                        {
+                            OnDownloadableContentAdded(new DownloadableContentAddedEventArgs
+                            {
+                                TitleId = application.Item1,
+                                ContainerFilePath = application.Item2,
+                                NcaPath = application.Item3
+                            });
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _cancellationToken.Dispose();
+                _cancellationToken = null;
+            }
+
+        }
+
+        public void LoadTitleUpdates(List<string> appDirs)
+        {
+            // Logger.Warning?.Print(LogClass.Application, "JIMMY title updates");
+            _cancellationToken = new CancellationTokenSource();
+                     
+            // Builds the applications list with paths to found applications
+            List<string> applicationPaths = new();
+
+            try
+            {
+                foreach (string appDir in appDirs)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (!Directory.Exists(appDir))
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"The specified game directory \"{appDir}\" does not exist.");
+
+                        continue;
+                    }
+
+                    try
+                    {
+                        EnumerationOptions options = new()
+                        {
+                            RecurseSubdirectories = true, IgnoreInaccessible = false,
+                        };
+
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options)
+                            .Where(file =>
+                            {
+                                return
+                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
+                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
+                                    (Path.GetExtension(file).ToLower() is ".xci" &&
+                                     ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
+                            });
+
+                        foreach (string app in files)
+                        {
+                            if (_cancellationToken.Token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            var fileInfo = new FileInfo(app);
+
+                            try
+                            {
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ??
+                                               fileInfo.FullName;
+
+                                applicationPaths.Add(fullPath);
+                            }
+                            catch (IOException exception)
+                            {
+                                Logger.Warning?.Print(LogClass.Application,
+                                    $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"Failed to get access to directory: \"{appDir}\"");
+                    }
+                }
+
+                // Loops through applications list, creating a struct and then firing an event containing the struct for each application
+                foreach (string applicationPath in applicationPaths)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (TryGetTitleUpdatesFromFile(applicationPath,
+                            out List<(ulong, string)> titleUpdates))
+                    {
+                        foreach (var application in titleUpdates)
+                        {
+                            OnTitleUpdateAdded(new TitleUpdateAddedEventArgs()
+                            {
+                                TitleId = application.Item1,
+                                FilePath = application.Item2,
+                            });
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _cancellationToken.Dispose();
+                _cancellationToken = null;
+            }
+        }
+
         protected void OnApplicationAdded(ApplicationAddedEventArgs e)
         {
             ApplicationAdded?.Invoke(null, e);
@@ -618,6 +942,16 @@ namespace Ryujinx.UI.App.Common
         protected void OnApplicationCountUpdated(ApplicationCountUpdatedEventArgs e)
         {
             ApplicationCountUpdated?.Invoke(null, e);
+        }
+        
+        protected void OnTitleUpdateAdded(TitleUpdateAddedEventArgs e)
+        {
+            TitleUpdateAdded?.Invoke(null, e);
+        }
+        
+        protected void OnDownloadableContentAdded(DownloadableContentAddedEventArgs e)
+        {
+            DownloadableContentAdded?.Invoke(null, e);
         }
 
         public static ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
@@ -935,6 +1269,17 @@ namespace Ryujinx.UI.App.Common
             }
 
             return false;
+        }
+        
+        private Nca TryOpenNca(IStorage ncaStorage)
+        {
+            try
+            {
+                return new Nca(_virtualFileSystem.KeySet, ncaStorage);
+            }
+            catch (Exception ex) { }
+
+            return null;
         }
     }
 }
