@@ -497,7 +497,6 @@ namespace Ryujinx.UI.App.Common
                                 : IntegrityCheckLevel.None;
                             
                             using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
-                            // Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.AddOnContent, _virtualFileSystem, checkLevel);
                             
                             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
                             {
@@ -517,11 +516,7 @@ namespace Ryujinx.UI.App.Common
                                 }
                             }
 
-                            if (titleUpdates.Count == 0)
-                            {
-                                return false;
-                            }
-                            return true;
+                            return titleUpdates.Count != 0;
                         }
                 }
             }

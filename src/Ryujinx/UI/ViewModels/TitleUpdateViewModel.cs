@@ -20,6 +20,7 @@ using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common.Configuration;
+using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -190,7 +191,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
                     var displayVersion = controlData.DisplayVersionString.ToString();
-                    var update = new TitleUpdateModel(content.Version.Version, displayVersion, path);
+                    var update = new TitleUpdateModel(content.ApplicationId, content.Version.Version, displayVersion, path);
 
                     TitleUpdates.Add(update);
 

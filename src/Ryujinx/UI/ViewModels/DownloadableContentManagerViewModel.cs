@@ -19,6 +19,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.App.Common;
+using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -142,7 +143,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                         if (nca != null)
                         {
-                            var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
+                            var content = new DownloadableContentModel(nca.Header.TitleId,
                                 downloadableContentContainer.ContainerPath,
                                 downloadableContentNca.FullPath,
                                 downloadableContentNca.Enabled);
@@ -183,7 +184,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             if (arg is DownloadableContentModel content)
             {
-                return string.IsNullOrWhiteSpace(_search) || content.FileName.ToLower().Contains(_search.ToLower()) || content.TitleId.ToLower().Contains(_search.ToLower());
+                return string.IsNullOrWhiteSpace(_search) || content.FileName.ToLower().Contains(_search.ToLower()) || content.TitleIdStr.ToLower().Contains(_search.ToLower());
             }
 
             return false;
@@ -261,7 +262,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                         continue;
                     }
 
-                    var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true);
+                    var content = new DownloadableContentModel(nca.Header.TitleId, path, fileEntry.FullPath, true);
                     DownloadableContents.Add(content);
                     Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.Add(content));
 
@@ -327,7 +328,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 container.DownloadableContentNcaList.Add(new DownloadableContentNca
                 {
                     Enabled = downloadableContent.Enabled,
-                    TitleId = Convert.ToUInt64(downloadableContent.TitleId, 16),
+                    TitleId = downloadableContent.TitleId,
                     FullPath = downloadableContent.FullPath,
                 });
             }

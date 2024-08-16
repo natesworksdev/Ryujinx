@@ -8,6 +8,7 @@ using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common.Helper;
+using Ryujinx.UI.Common.Models;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Windows
@@ -92,7 +93,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                     if (index != -1)
                     {
-                        ViewModel.DownloadableContents[index].Enabled = true;
+                        // ViewModel.DownloadableContents[index].Enabled = true;
                     }
                 }
             }
@@ -105,7 +106,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                     if (index != -1)
                     {
-                        ViewModel.DownloadableContents[index].Enabled = false;
+                        // ViewModel.DownloadableContents[index].Enabled = false;
                     }
                 }
             }
