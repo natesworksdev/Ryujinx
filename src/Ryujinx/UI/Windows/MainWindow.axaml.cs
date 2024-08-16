@@ -146,12 +146,14 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void ApplicationLibrary_DownloadableContentAdded(object sender, DownloadableContentAddedEventArgs e)
         {
-            // Console.WriteLine("[{0}]: {1} ({2})", e.TitleId, e.ContainerFilePath, e.NcaPath);
+            var it = e.DownloadableContent;
+            Console.WriteLine("[{0}]: {1} ({2})", it.TitleIdBase, it.ContainerPath, it.FullPath);
         }
         
         private void ApplicationLibrary_TitleUpdateAdded(object sender, TitleUpdateAddedEventArgs e)
         {
-            // Console.WriteLine("[{0}]: {1}", e.TitleId, e.FilePath);
+            var it = e.TitleUpdate;
+            Console.WriteLine("[{0}]: {1}", it.TitleIdBase, it.Path);
         }
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)

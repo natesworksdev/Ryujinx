@@ -9,6 +9,7 @@ namespace Ryujinx.UI.Common.Models
         public bool IsBundled { get; }
         
         public string TitleIdStr => TitleId.ToString("X16");
+        public ulong TitleIdBase => TitleId & ~0x1FFFUL;
 
         public TitleUpdateModel(ulong titleId, ulong version, string displayVersion, string path)
         {

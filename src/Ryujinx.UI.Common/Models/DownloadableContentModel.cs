@@ -10,6 +10,7 @@ namespace Ryujinx.UI.Common.Models
 
         public string FileName => System.IO.Path.GetFileName(ContainerPath);
         public string TitleIdStr => TitleId.ToString("X16");
+        public ulong TitleIdBase => TitleId & ~0x1FFFUL;
         
         public DownloadableContentModel(ulong titleId, string containerPath, string fullPath, bool enabled)
         {

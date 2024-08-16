@@ -19,6 +19,7 @@ using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Configuration.System;
+using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +30,7 @@ using System.Text.Json;
 using System.Threading;
 using ContentType = LibHac.Ncm.ContentType;
 using Path = System.IO.Path;
+using SpanHelpers = LibHac.Common.SpanHelpers;
 using TimeSpan = System.TimeSpan;
 
 namespace Ryujinx.UI.App.Common
@@ -477,7 +479,7 @@ namespace Ryujinx.UI.App.Common
             return true;
         }
         
-        public bool TryGetDownloadableContentFromFile(string filePath, out List<(ulong TitleId, string ContainerPath, string FullPath)> titleUpdates)
+        public bool TryGetDownloadableContentFromFile(string filePath, out List<DownloadableContentModel> titleUpdates)
         {
             titleUpdates = [];
 
@@ -512,7 +514,7 @@ namespace Ryujinx.UI.App.Common
 
                                 if (nca.Header.ContentType == NcaContentType.PublicData)
                                 {
-                                    titleUpdates.Add((nca.Header.TitleId, filePath, fileEntry.FullPath));
+                                    titleUpdates.Add(new DownloadableContentModel(nca.Header.TitleId, filePath, fileEntry.FullPath, false));
                                 }
                             }
 
@@ -539,7 +541,7 @@ namespace Ryujinx.UI.App.Common
             return false;
         }
         
-        public bool TryGetTitleUpdatesFromFile(string filePath, out List<(ulong, string)> titleUpdates)
+        public bool TryGetTitleUpdatesFromFile(string filePath, out List<TitleUpdateModel> titleUpdates)
         {
             titleUpdates = [];
 
@@ -557,17 +559,43 @@ namespace Ryujinx.UI.App.Common
                             IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
                                 ? IntegrityCheckLevel.ErrorOnInvalid
                                 : IntegrityCheckLevel.None;
-                            
-                            using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
 
-                            Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.Patch, _virtualFileSystem, checkLevel);
+                            using IFileSystem pfs =
+                                PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
+
+                            Dictionary<ulong, ContentMetaData> updates =
+                                pfs.GetContentData(ContentMetaType.Patch, _virtualFileSystem, checkLevel);
+                            
                             if (updates.Count == 0)
                             {
                                 return false;
                             }
 
-                            titleUpdates.AddRange(updates.Select(it => (it.Key, filePath)));
+                            foreach ((_, ContentMetaData content) in updates)
+                            {
+                                Nca patchNca = content.GetNcaByType(_virtualFileSystem.KeySet, ContentType.Program);
+                                Nca controlNca = content.GetNcaByType(_virtualFileSystem.KeySet, ContentType.Control);
 
+                                if (controlNca != null && patchNca != null)
+                                {
+                                    ApplicationControlProperty controlData = new();
+
+                                    using UniqueRef<IFile> nacpFile = new();
+
+                                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None)
+                                        .OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read)
+                                        .ThrowIfFailure();
+                                    nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData),
+                                        ReadOption.None).ThrowIfFailure();
+
+                                    var displayVersion = controlData.DisplayVersionString.ToString();
+                                    var update = new TitleUpdateModel(content.ApplicationId, content.Version.Version,
+                                        displayVersion, filePath);
+
+                                    titleUpdates.Add(update);
+                                }
+                            }
+                            
                             return true;
                         }
                 }
@@ -729,7 +757,6 @@ namespace Ryujinx.UI.App.Common
 
         public void LoadDownloadableContents(List<string> appDirs)
         {
-            // Logger.Warning?.Print(LogClass.Application, "JIMMY load DLC");
             _cancellationToken = new CancellationTokenSource();
          
             // Builds the applications list with paths to found applications
@@ -806,15 +833,13 @@ namespace Ryujinx.UI.App.Common
                         return;
                     }
 
-                    if (TryGetDownloadableContentFromFile(applicationPath, out List<(ulong, string, string)> applications))
+                    if (TryGetDownloadableContentFromFile(applicationPath, out List<DownloadableContentModel> downloadableContents))
                     {
-                        foreach (var application in applications)
+                        foreach (var downloadableContent in downloadableContents)
                         {
                             OnDownloadableContentAdded(new DownloadableContentAddedEventArgs
                             {
-                                TitleId = application.Item1,
-                                ContainerFilePath = application.Item2,
-                                NcaPath = application.Item3
+                                DownloadableContent = downloadableContent,
                             });
                         }
                     }
@@ -830,7 +855,6 @@ namespace Ryujinx.UI.App.Common
 
         public void LoadTitleUpdates(List<string> appDirs)
         {
-            // Logger.Warning?.Print(LogClass.Application, "JIMMY title updates");
             _cancellationToken = new CancellationTokenSource();
                      
             // Builds the applications list with paths to found applications
@@ -908,15 +932,13 @@ namespace Ryujinx.UI.App.Common
                         return;
                     }
 
-                    if (TryGetTitleUpdatesFromFile(applicationPath,
-                            out List<(ulong, string)> titleUpdates))
+                    if (TryGetTitleUpdatesFromFile(applicationPath, out List<TitleUpdateModel> titleUpdates))
                     {
-                        foreach (var application in titleUpdates)
+                        foreach (var titleUpdate in titleUpdates)
                         {
                             OnTitleUpdateAdded(new TitleUpdateAddedEventArgs()
                             {
-                                TitleId = application.Item1,
-                                FilePath = application.Item2,
+                                TitleUpdate = titleUpdate,
                             });
                         }
                     }
