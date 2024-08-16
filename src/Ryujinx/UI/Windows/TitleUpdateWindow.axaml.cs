@@ -26,21 +26,21 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
-            DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, applicationData);
+            DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, applicationLibrary, applicationData);
 
             InitializeComponent();
         }
 
-        public static async Task Show(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public static async Task Show(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
                 CloseButtonText = "",
-                Content = new TitleUpdateWindow(virtualFileSystem, applicationData),
+                Content = new TitleUpdateWindow(virtualFileSystem, applicationLibrary, applicationData),
                 Title = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, applicationData.Name, applicationData.IdBaseString),
             };
 

@@ -35,6 +35,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly string _downloadableContentJsonPath;
 
         private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly ApplicationLibrary _applicationLibrary;
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _views = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
@@ -93,9 +94,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
-        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             _virtualFileSystem = virtualFileSystem;
+            _applicationLibrary = applicationLibrary;
 
             _applicationData = applicationData;
 
@@ -145,12 +147,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                         {
                             var content = new DownloadableContentModel(nca.Header.TitleId,
                                 downloadableContentContainer.ContainerPath,
-                                downloadableContentNca.FullPath,
-                                downloadableContentNca.Enabled);
+                                downloadableContentNca.FullPath);
 
                             DownloadableContents.Add(content);
 
-                            if (content.Enabled)
+                            if (downloadableContentNca.Enabled)
                             {
                                 SelectedDownloadableContents.Add(content);
                             }
@@ -240,34 +241,23 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return true;
             }
 
-            using IFileSystem partitionFileSystem = PartitionFileSystemUtils.OpenApplicationFileSystem(path, _virtualFileSystem);
+            if (!_applicationLibrary.TryGetDownloadableContentFromFile(path, out var dlcs))
+            {
+                return false;
+            }
 
             bool success = false;
-            foreach (DirectoryEntryEx fileEntry in partitionFileSystem.EnumerateEntries("/", "*.nca"))
+            foreach (var dlc in dlcs)
             {
-                using var ncaFile = new UniqueRef<IFile>();
-
-                partitionFileSystem.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), path);
-                if (nca == null)
+                if (dlc.TitleIdBase != _applicationData.IdBase)
                 {
                     continue;
                 }
 
-                if (nca.Header.ContentType == NcaContentType.PublicData)
-                {
-                    if (nca.GetProgramIdBase() != _applicationData.IdBase)
-                    {
-                        continue;
-                    }
+                DownloadableContents.Add(dlc);
+                Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.Add(dlc));
 
-                    var content = new DownloadableContentModel(nca.Header.TitleId, path, fileEntry.FullPath, true);
-                    DownloadableContents.Add(content);
-                    Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.Add(content));
-
-                    success = true;
-                }
+                success = true;
             }
 
             if (success)
@@ -282,6 +272,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void Remove(DownloadableContentModel model)
         {
             DownloadableContents.Remove(model);
+            SelectedDownloadableContents.Remove(model);
             OnPropertyChanged(nameof(UpdateCount));
             Sort();
         }
@@ -289,18 +280,30 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void RemoveAll()
         {
             DownloadableContents.Clear();
+            SelectedDownloadableContents.Clear();
             OnPropertyChanged(nameof(UpdateCount));
             Sort();
         }
 
         public void EnableAll()
         {
-            SelectedDownloadableContents = new(DownloadableContents);
+            SelectedDownloadableContents.Clear();
+            SelectedDownloadableContents.AddRange(DownloadableContents);
         }
 
         public void DisableAll()
         {
             SelectedDownloadableContents.Clear();
+        }
+
+        public void Enable(DownloadableContentModel model)
+        {
+            SelectedDownloadableContents.ReplaceOrAdd(model, model);
+        }
+        
+        public void Disable(DownloadableContentModel model)
+        {
+            SelectedDownloadableContents.Remove(model);
         }
 
         public void Save()
@@ -327,7 +330,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 container.DownloadableContentNcaList.Add(new DownloadableContentNca
                 {
-                    Enabled = downloadableContent.Enabled,
+                    Enabled = SelectedDownloadableContents.Contains(downloadableContent),
                     TitleId = downloadableContent.TitleId,
                     FullPath = downloadableContent.FullPath,
                 });

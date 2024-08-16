@@ -514,7 +514,7 @@ namespace Ryujinx.UI.App.Common
 
                                 if (nca.Header.ContentType == NcaContentType.PublicData)
                                 {
-                                    titleUpdates.Add(new DownloadableContentModel(nca.Header.TitleId, filePath, fileEntry.FullPath, false));
+                                    titleUpdates.Add(new DownloadableContentModel(nca.Header.TitleId, filePath, fileEntry.FullPath));
                                 }
                             }
 
@@ -1294,7 +1294,7 @@ namespace Ryujinx.UI.App.Common
             {
                 return new Nca(_virtualFileSystem.KeySet, ncaStorage);
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
 
             return null;
         }

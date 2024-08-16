@@ -38,6 +38,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public TitleUpdateMetadata TitleUpdateWindowData;
         public readonly string TitleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
+        private ApplicationLibrary ApplicationLibrary { get; }
         private ApplicationData ApplicationData { get; }
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
@@ -78,9 +79,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public IStorageProvider StorageProvider;
 
-        public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             VirtualFileSystem = virtualFileSystem;
+            ApplicationLibrary = applicationLibrary;
 
             ApplicationData = applicationData;
 
@@ -161,54 +163,36 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return;
             }
-
-            IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
-                ? IntegrityCheckLevel.ErrorOnInvalid
-                : IntegrityCheckLevel.None;
-
+            
             try
             {
-                using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(path, VirtualFileSystem);
-
-                Dictionary<ulong, ContentMetaData> updates = pfs.GetContentData(ContentMetaType.Patch, VirtualFileSystem, checkLevel);
-
-                Nca patchNca = null;
-                Nca controlNca = null;
-
-                if (updates.TryGetValue(ApplicationData.Id, out ContentMetaData content))
-                {
-                    patchNca = content.GetNcaByType(VirtualFileSystem.KeySet, ContentType.Program);
-                    controlNca = content.GetNcaByType(VirtualFileSystem.KeySet, ContentType.Control);
-                }
-
-                if (controlNca != null && patchNca != null)
-                {
-                    ApplicationControlProperty controlData = new();
-
-                    using UniqueRef<IFile> nacpFile = new();
-
-                    controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
-
-                    var displayVersion = controlData.DisplayVersionString.ToString();
-                    var update = new TitleUpdateModel(content.ApplicationId, content.Version.Version, displayVersion, path);
-
-                    TitleUpdates.Add(update);
-
-                    if (selected)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = update);
-                    }
-                }
-                else
+                if (!ApplicationLibrary.TryGetTitleUpdatesFromFile(path, out var titleUpdates))
                 {
                     if (!ignoreNotFound)
                     {
-                        Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]));
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                            ContentDialogHelper.CreateErrorDialog(
+                                LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]));
+                    }
+
+                    return;
+                }
+
+                foreach (var titleUpdate in titleUpdates)
+                {
+                    if (titleUpdate.TitleIdBase != ApplicationData.Id)
+                    {
+                        continue;
+                    }
+
+                    TitleUpdates.Add(titleUpdate);
+
+                    if (selected)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = titleUpdate);
                     }
                 }
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadFileErrorMessage, ex.Message, path)));
             }
@@ -254,7 +238,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 TitleUpdateWindowData.Paths.Add(update.Path);
 
-                if (update == SelectedUpdate)
+                if (update == SelectedUpdate as TitleUpdateModel)
                 {
                     TitleUpdateWindowData.Selected = update.Path;
                 }

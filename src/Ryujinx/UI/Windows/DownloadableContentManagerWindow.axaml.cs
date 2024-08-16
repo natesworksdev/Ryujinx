@@ -24,21 +24,21 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public DownloadableContentManagerWindow(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
-            DataContext = ViewModel = new DownloadableContentManagerViewModel(virtualFileSystem, applicationData);
+            DataContext = ViewModel = new DownloadableContentManagerViewModel(virtualFileSystem, applicationLibrary, applicationData);
 
             InitializeComponent();
         }
 
-        public static async Task Show(VirtualFileSystem virtualFileSystem, ApplicationData applicationData)
+        public static async Task Show(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
                 CloseButtonText = "",
-                Content = new DownloadableContentManagerWindow(virtualFileSystem, applicationData),
+                Content = new DownloadableContentManagerWindow(virtualFileSystem, applicationLibrary, applicationData),
                 Title = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowTitle], applicationData.Name, applicationData.IdBaseString),
             };
 
@@ -89,12 +89,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (content is DownloadableContentModel model)
                 {
-                    var index = ViewModel.DownloadableContents.IndexOf(model);
-
-                    if (index != -1)
-                    {
-                        // ViewModel.DownloadableContents[index].Enabled = true;
-                    }
+                    ViewModel.Enable(model);
                 }
             }
 
@@ -102,12 +97,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (content is DownloadableContentModel model)
                 {
-                    var index = ViewModel.DownloadableContents.IndexOf(model);
-
-                    if (index != -1)
-                    {
-                        // ViewModel.DownloadableContents[index].Enabled = false;
-                    }
+                    ViewModel.Disable(model);
                 }
             }
         }

@@ -1,23 +1,10 @@
 namespace Ryujinx.UI.Common.Models
 {
-    public class TitleUpdateModel
+    public record TitleUpdateModel(ulong TitleId, ulong Version, string DisplayVersion, string Path)
     {
-        public ulong TitleId { get; }
-        public ulong Version { get; }
-        public string DisplayVersion { get; }
-        public string Path { get; }
-        public bool IsBundled { get; }
-        
+        public bool IsBundled { get; } = System.IO.Path.GetExtension(Path)?.ToLower() == ".xci";
+
         public string TitleIdStr => TitleId.ToString("X16");
         public ulong TitleIdBase => TitleId & ~0x1FFFUL;
-
-        public TitleUpdateModel(ulong titleId, ulong version, string displayVersion, string path)
-        {
-            TitleId = titleId;
-            Version = version;
-            DisplayVersion = displayVersion;
-            Path = path;
-            IsBundled = System.IO.Path.GetExtension(path)?.ToLower() == ".xci";
-        }
     }
 }
