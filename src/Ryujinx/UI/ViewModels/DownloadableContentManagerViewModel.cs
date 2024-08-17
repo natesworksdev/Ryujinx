@@ -176,12 +176,22 @@ namespace Ryujinx.Ava.UI.ViewModels
                 .Filter(Filter)
                 .Bind(out var view).AsObservableList();
 
+            // NOTE(jpr): this works around a bug where calling _views.Clear also clears SelectedDownloadableContents for
+            // some reason. so we save the items here and add them back after
+            var items = SelectedDownloadableContents.ToArray();
+
             _views.Clear();
             _views.AddRange(view);
+            
+            foreach (DownloadableContentModel item in items)
+            {
+                SelectedDownloadableContents.ReplaceOrAdd(item, item);
+            }
+            
             OnPropertyChanged(nameof(Views));
         }
 
-        private bool Filter(object arg)
+        private bool Filter<T>(T arg)
         {
             if (arg is DownloadableContentModel content)
             {

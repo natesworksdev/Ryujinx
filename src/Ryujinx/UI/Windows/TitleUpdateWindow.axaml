@@ -82,7 +82,7 @@
                         </Panel>
                     </DataTemplate>
                     <DataTemplate
-                        DataType="viewModels:BaseModel">
+                        DataType="viewModels:TitleUpdateViewNoUpdateSentinal">
                         <Panel
                             Height="33"
                             Margin="10">

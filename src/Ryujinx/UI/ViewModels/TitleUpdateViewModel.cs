@@ -2,24 +2,14 @@ using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using LibHac.Common;
-using LibHac.Fs;
-using LibHac.Fs.Fsa;
-using LibHac.Ncm;
-using LibHac.Ns;
-using LibHac.Tools.FsSystem;
-using LibHac.Tools.FsSystem.NcaUtils;
+using DynamicData.Kernel;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.Loaders.Processes.Extensions;
-using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.App.Common;
-using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
@@ -27,14 +17,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Application = Avalonia.Application;
-using ContentType = LibHac.Ncm.ContentType;
 using Path = System.IO.Path;
-using SpanHelpers = LibHac.Common.SpanHelpers;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
+    public record TitleUpdateViewNoUpdateSentinal();
+    
     public class TitleUpdateViewModel : BaseModel
     {
+        
         public TitleUpdateMetadata TitleUpdateWindowData;
         public readonly string TitleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
@@ -43,7 +34,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
         private AvaloniaList<object> _views = new();
-        private object _selectedUpdate;
+        private object _selectedUpdate = new TitleUpdateViewNoUpdateSentinal();
 
         private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
@@ -123,9 +114,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 AddUpdate(path);
             }
 
-            TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == TitleUpdateWindowData.Selected, null);
-
-            SelectedUpdate = selected;
+            var selected = TitleUpdates.FirstOrOptional(x => x.Path == TitleUpdateWindowData.Selected);
+            SelectedUpdate = selected.HasValue ? selected.Value : new TitleUpdateViewNoUpdateSentinal();
 
             // NOTE: Save the list again to remove leftovers.
             Save();
@@ -137,23 +127,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             var sortedUpdates = TitleUpdates.OrderByDescending(update => update.Version);
 
             Views.Clear();
-            Views.Add(new BaseModel());
+            Views.Add(new TitleUpdateViewNoUpdateSentinal());
             Views.AddRange(sortedUpdates);
 
-            if (SelectedUpdate == null)
+            if (SelectedUpdate is TitleUpdateViewNoUpdateSentinal)
             {
                 SelectedUpdate = Views[0];
             }
-            else if (!TitleUpdates.Contains(SelectedUpdate))
+            else if (!TitleUpdates.Contains((TitleUpdateModel)SelectedUpdate))
             {
-                if (Views.Count > 1)
-                {
-                    SelectedUpdate = Views[1];
-                }
-                else
-                {
-                    SelectedUpdate = Views[0];
-                }
+                SelectedUpdate = Views.Count > 1 ? Views[1] : Views[0];
             }
         }
 
