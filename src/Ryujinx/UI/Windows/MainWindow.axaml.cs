@@ -485,8 +485,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-            ApplicationLibrary.DownloadableContentAdded += ApplicationLibrary_DownloadableContentAdded;
-            ApplicationLibrary.TitleUpdateAdded += ApplicationLibrary_TitleUpdateAdded;
 
             ViewModel.RefreshFirmwareStatus();
 
@@ -655,6 +653,14 @@ namespace Ryujinx.Ava.UI.Windows
                 TimeIt("games", () => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs));
                 // TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
                 TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents());
+                // TODO(jpr): conditional
+                var dlcLoaded = 0;
+                TimeIt("AUTO DLC", () => dlcLoaded = ApplicationLibrary.AutoLoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
+
+                if (dlcLoaded > 0)
+                {
+                    ShowNewContentAddedDialog(dlcLoaded, 0);
+                }
 
                 _isLoading = false;
             })
@@ -672,6 +678,28 @@ namespace Ryujinx.Ava.UI.Windows
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine("[{0}] {1} ms", tag, elapsedMs);
+        }
+        
+        private Task ShowNewContentAddedDialog(int numDlcAdded, int numUpdatesAdded)
+        {
+            var msg = "";
+            
+            if (numDlcAdded > 0 && numUpdatesAdded > 0)
+            {
+                msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAndUpdateAddedMessage], numDlcAdded, numUpdatesAdded);
+            } else if (numDlcAdded > 0)
+            {
+                msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAddedMessage], numDlcAdded);
+            } else if (numUpdatesAdded > 0)
+            {
+                msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadUpdateAddedMessage], numUpdatesAdded);
+            }
+            
+            return msg == "" ? Task.CompletedTask : Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await ContentDialogHelper.ShowTextDialog(LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle],
+                    msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
+            });
         }
     }
 }

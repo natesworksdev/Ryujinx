@@ -1,4 +1,5 @@
 using DynamicData;
+using DynamicData.Kernel;
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
@@ -813,6 +814,12 @@ namespace Ryujinx.UI.App.Common
             });
         }
         
+        private void SaveDownloadableContentsForGame(ulong titleIdBase)
+        {
+            var dlcs = DownloadableContents.Items.Where(dlc => dlc.Dlc.TitleIdBase == titleIdBase).ToList();
+            DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, titleIdBase, dlcs);
+        }
+        
         public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
         {
             _downloadableContents.Edit(it =>
@@ -824,18 +831,12 @@ namespace Ryujinx.UI.App.Common
             });
         }
 
-        // public void LoadTitleUpdates()
-        // {
-        //     
-        // }
-
-        public void AutoLoadDownloadableContents(List<string> appDirs)
+        public int AutoLoadDownloadableContents(List<string> appDirs)
         {
             _cancellationToken = new CancellationTokenSource();
-            _downloadableContents.Clear();
 
-            // Builds the applications list with paths to found applications
-            List<string> applicationPaths = new();
+            List<string> dlcPaths = new();
+            int newDlcLoaded = 0;
 
             try
             {
@@ -843,7 +844,7 @@ namespace Ryujinx.UI.App.Common
                 {
                     if (_cancellationToken.Token.IsCancellationRequested)
                     {
-                        return;
+                        return newDlcLoaded;
                     }
 
                     if (!Directory.Exists(appDir))
@@ -867,16 +868,14 @@ namespace Ryujinx.UI.App.Common
                             {
                                 return
                                     (Path.GetExtension(file).ToLower() is ".nsp" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
-                                    (Path.GetExtension(file).ToLower() is ".xci" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
+                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value);
                             });
 
                         foreach (string app in files)
                         {
                             if (_cancellationToken.Token.IsCancellationRequested)
                             {
-                                return;
+                                return newDlcLoaded;
                             }
 
                             var fileInfo = new FileInfo(app);
@@ -885,7 +884,7 @@ namespace Ryujinx.UI.App.Common
                             {
                                 var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
 
-                                applicationPaths.Add(fullPath);
+                                dlcPaths.Add(fullPath);
                             }
                             catch (IOException exception)
                             {
@@ -901,31 +900,26 @@ namespace Ryujinx.UI.App.Common
                     }
                 }
 
-                // Loops through applications list, creating a struct and then firing an event containing the struct for each application
-                foreach (string applicationPath in applicationPaths)
+                var appIdLookup = Applications.Items.Select(it => it.IdBase).ToHashSet();
+
+                foreach (string dlcPath in dlcPaths)
                 {
                     if (_cancellationToken.Token.IsCancellationRequested)
                     {
-                        return;
+                        return newDlcLoaded;
                     }
 
-                    if (TryGetDownloadableContentFromFile(applicationPath, out List<DownloadableContentModel> downloadableContents))
+                    if (TryGetDownloadableContentFromFile(dlcPath, out var foundDlcs))
                     {
-                        foreach (var downloadableContent in downloadableContents)
+                        foreach (var dlc in foundDlcs.Where(it => appIdLookup.Contains(it.TitleIdBase)))
                         {
-                            OnDownloadableContentAdded(new DownloadableContentAddedEventArgs
+                            if (!DownloadableContents.Items.Any(it => it.Dlc == dlc))
                             {
-                                DownloadableContent = downloadableContent,
-                            });
-                        }
-
-                        _downloadableContents.Edit(it =>
-                        {
-                            foreach (var downloadableContent in downloadableContents)
-                            {
-                                it.AddOrUpdate((downloadableContent, true));
+                                _downloadableContents.AddOrUpdate((dlc, true));
+                                SaveDownloadableContentsForGame(dlc.TitleIdBase);
+                                newDlcLoaded++;
                             }
-                        });
+                        }
                     }
                 }
             }
@@ -934,114 +928,117 @@ namespace Ryujinx.UI.App.Common
                 _cancellationToken.Dispose();
                 _cancellationToken = null;
             }
+
+            return newDlcLoaded;
         }
 
         public void AutoLoadTitleUpdates(List<string> appDirs)
         {
-            _cancellationToken = new CancellationTokenSource();
-            _titleUpdates.Clear();
-
-            // Builds the applications list with paths to found applications
-            List<string> applicationPaths = new();
-
-            try
-            {
-                foreach (string appDir in appDirs)
-                {
-                    if (_cancellationToken.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    if (!Directory.Exists(appDir))
-                    {
-                        Logger.Warning?.Print(LogClass.Application,
-                            $"The specified game directory \"{appDir}\" does not exist.");
-
-                        continue;
-                    }
-
-                    try
-                    {
-                        EnumerationOptions options = new()
-                        {
-                            RecurseSubdirectories = true,
-                            IgnoreInaccessible = false,
-                        };
-
-                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options)
-                            .Where(file =>
-                            {
-                                return
-                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
-                                    (Path.GetExtension(file).ToLower() is ".xci" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
-                            });
-
-                        foreach (string app in files)
-                        {
-                            if (_cancellationToken.Token.IsCancellationRequested)
-                            {
-                                return;
-                            }
-
-                            var fileInfo = new FileInfo(app);
-
-                            try
-                            {
-                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ??
-                                               fileInfo.FullName;
-
-                                applicationPaths.Add(fullPath);
-                            }
-                            catch (IOException exception)
-                            {
-                                Logger.Warning?.Print(LogClass.Application,
-                                    $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
-                            }
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        Logger.Warning?.Print(LogClass.Application,
-                            $"Failed to get access to directory: \"{appDir}\"");
-                    }
-                }
-
-                // Loops through applications list, creating a struct and then firing an event containing the struct for each application
-                foreach (string applicationPath in applicationPaths)
-                {
-                    if (_cancellationToken.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    if (TryGetTitleUpdatesFromFile(applicationPath, out List<TitleUpdateModel> titleUpdates))
-                    {
-                        foreach (var titleUpdate in titleUpdates)
-                        {
-                            OnTitleUpdateAdded(new TitleUpdateAddedEventArgs()
-                            {
-                                TitleUpdate = titleUpdate,
-                            });
-                        }
-
-                        _titleUpdates.Edit(it =>
-                        {
-                            foreach (var titleUpdate in titleUpdates)
-                            {
-                                it.AddOrUpdate((titleUpdate, false));
-                            }
-                        });
-                    }
-                }
-            }
-            finally
-            {
-                _cancellationToken.Dispose();
-                _cancellationToken = null;
-            }
+            return;
+        //     _cancellationToken = new CancellationTokenSource();
+        //     _titleUpdates.Clear();
+        //
+        //     // Builds the applications list with paths to found applications
+        //     List<string> applicationPaths = new();
+        //
+        //     try
+        //     {
+        //         foreach (string appDir in appDirs)
+        //         {
+        //             if (_cancellationToken.Token.IsCancellationRequested)
+        //             {
+        //                 return;
+        //             }
+        //
+        //             if (!Directory.Exists(appDir))
+        //             {
+        //                 Logger.Warning?.Print(LogClass.Application,
+        //                     $"The specified game directory \"{appDir}\" does not exist.");
+        //
+        //                 continue;
+        //             }
+        //
+        //             try
+        //             {
+        //                 EnumerationOptions options = new()
+        //                 {
+        //                     RecurseSubdirectories = true,
+        //                     IgnoreInaccessible = false,
+        //                 };
+        //
+        //                 IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options)
+        //                     .Where(file =>
+        //                     {
+        //                         return
+        //                             (Path.GetExtension(file).ToLower() is ".nsp" &&
+        //                              ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
+        //                             (Path.GetExtension(file).ToLower() is ".xci" &&
+        //                              ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
+        //                     });
+        //
+        //                 foreach (string app in files)
+        //                 {
+        //                     if (_cancellationToken.Token.IsCancellationRequested)
+        //                     {
+        //                         return;
+        //                     }
+        //
+        //                     var fileInfo = new FileInfo(app);
+        //
+        //                     try
+        //                     {
+        //                         var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ??
+        //                                        fileInfo.FullName;
+        //
+        //                         applicationPaths.Add(fullPath);
+        //                     }
+        //                     catch (IOException exception)
+        //                     {
+        //                         Logger.Warning?.Print(LogClass.Application,
+        //                             $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
+        //                     }
+        //                 }
+        //             }
+        //             catch (UnauthorizedAccessException)
+        //             {
+        //                 Logger.Warning?.Print(LogClass.Application,
+        //                     $"Failed to get access to directory: \"{appDir}\"");
+        //             }
+        //         }
+        //
+        //         // Loops through applications list, creating a struct and then firing an event containing the struct for each application
+        //         foreach (string applicationPath in applicationPaths)
+        //         {
+        //             if (_cancellationToken.Token.IsCancellationRequested)
+        //             {
+        //                 return;
+        //             }
+        //
+        //             if (TryGetTitleUpdatesFromFile(applicationPath, out List<TitleUpdateModel> titleUpdates))
+        //             {
+        //                 foreach (var titleUpdate in titleUpdates)
+        //                 {
+        //                     OnTitleUpdateAdded(new TitleUpdateAddedEventArgs()
+        //                     {
+        //                         TitleUpdate = titleUpdate,
+        //                     });
+        //                 }
+        //
+        //                 _titleUpdates.Edit(it =>
+        //                 {
+        //                     foreach (var titleUpdate in titleUpdates)
+        //                     {
+        //                         it.AddOrUpdate((titleUpdate, false));
+        //                     }
+        //                 });
+        //             }
+        //         }
+        //     }
+        //     finally
+        //     {
+        //         _cancellationToken.Dispose();
+        //         _cancellationToken = null;
+        //     }
         }
 
         protected void OnApplicationAdded(ApplicationAddedEventArgs e)
