@@ -134,7 +134,7 @@ namespace Ryujinx.UI.Common.Helper
             {
                 return new Nca(vfs.KeySet, ncaStorage);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Dispatcher.UIThread.InvokeAsync(async () =>
                 // {
