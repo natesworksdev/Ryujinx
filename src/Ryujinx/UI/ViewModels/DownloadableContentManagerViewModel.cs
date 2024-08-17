@@ -19,6 +19,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.App.Common;
+using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
@@ -130,36 +131,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void LoadDownloadableContents()
         {
-            foreach (DownloadableContentContainer downloadableContentContainer in _downloadableContentContainerList)
+            var savedDlc = DownloadableContentsHelper.LoadSavedDownloadableContents(_virtualFileSystem, _applicationData.IdBase);
+            foreach ((DownloadableContentModel dlc, bool isEnabled) in savedDlc)
             {
-                if (File.Exists(downloadableContentContainer.ContainerPath))
+                DownloadableContents.Add(dlc);
+                
+                if (isEnabled)
                 {
-                    using IFileSystem partitionFileSystem = PartitionFileSystemUtils.OpenApplicationFileSystem(downloadableContentContainer.ContainerPath, _virtualFileSystem);
-
-                    foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
-                    {
-                        using UniqueRef<IFile> ncaFile = new();
-
-                        partitionFileSystem.OpenFile(ref ncaFile.Ref, downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                        Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
-                        if (nca != null)
-                        {
-                            var content = new DownloadableContentModel(nca.Header.TitleId,
-                                downloadableContentContainer.ContainerPath,
-                                downloadableContentNca.FullPath);
-
-                            DownloadableContents.Add(content);
-
-                            if (downloadableContentNca.Enabled)
-                            {
-                                SelectedDownloadableContents.Add(content);
-                            }
-
-                            OnPropertyChanged(nameof(UpdateCount));
-                        }
-                    }
+                    SelectedDownloadableContents.Add(dlc);
                 }
+                
+                OnPropertyChanged(nameof(UpdateCount));
             }
 
             // NOTE: Try to load downloadable contents from PFS last to preserve enabled state.
