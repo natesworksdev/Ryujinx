@@ -1,5 +1,6 @@
 namespace Ryujinx.UI.Common.Models
 {
+    // NOTE: most consuming code relies on this model being value-comparable
     public record DownloadableContentModel(ulong TitleId, string ContainerPath, string FullPath)
     {
         public bool IsBundled { get; } = System.IO.Path.GetExtension(ContainerPath)?.ToLower() == ".xci";

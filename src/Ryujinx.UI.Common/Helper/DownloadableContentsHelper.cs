@@ -22,8 +22,7 @@ namespace Ryujinx.UI.Common.Helper
 
         public static List<(DownloadableContentModel, bool IsEnabled)> LoadDownloadableContentsJson(VirtualFileSystem vfs, ulong applicationIdBase)
         {
-            // _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
-            var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
+            var downloadableContentJsonPath = PathToGameDLCJson(applicationIdBase);
 
             if (!File.Exists(downloadableContentJsonPath))
             {
@@ -77,9 +76,7 @@ namespace Ryujinx.UI.Common.Helper
                 downloadableContentContainerList.Add(container);
             }
 
-            // _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
-            // var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
-            var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
+            var downloadableContentJsonPath = PathToGameDLCJson(applicationIdBase);
             JsonHelper.SerializeToFile(downloadableContentJsonPath, downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
         }
 
@@ -102,11 +99,9 @@ namespace Ryujinx.UI.Common.Helper
 
                     partitionFileSystem.OpenFile(ref ncaFile.Ref, downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                    // Nca nca = TryOpenNca(vfs, ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
                     Nca nca = TryOpenNca(vfs, ncaFile.Get.AsStorage());
                     if (nca == null)
                     {
-                        // result.Add((content, downloadableContentNca.Enabled));
                         continue;
                     }
 
@@ -115,13 +110,6 @@ namespace Ryujinx.UI.Common.Helper
                         downloadableContentNca.FullPath);
 
                     result.Add((content, downloadableContentNca.Enabled));
-
-                    // if (downloadableContentNca.Enabled)
-                    // {
-                    //     SelectedDownloadableContents.Add(content);
-                    // }
-
-                    // OnPropertyChanged(nameof(UpdateCount));
                 }
             }
 
@@ -136,6 +124,7 @@ namespace Ryujinx.UI.Common.Helper
             }
             catch (Exception)
             {
+                // TODO(jpr): emit failure
                 // Dispatcher.UIThread.InvokeAsync(async () =>
                 // {
                 //     await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogLoadFileErrorMessage], ex.Message, containerPath));
@@ -143,6 +132,11 @@ namespace Ryujinx.UI.Common.Helper
             }
 
             return null;
+        }
+
+        private static string PathToGameDLCJson(ulong applicationIdBase)
+        {
+            return Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
         }
     }
 }
