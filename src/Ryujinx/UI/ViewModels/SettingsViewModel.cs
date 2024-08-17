@@ -132,6 +132,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
         public bool RememberWindowState { get; set; }
+        public bool AutoloadContent { get; set; }
         public int HideCursor { get; set; }
         public bool EnableDockedMode { get; set; }
         public bool EnableKeyboard { get; set; }
@@ -392,6 +393,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
             RememberWindowState = config.RememberWindowState;
+            AutoloadContent = config.AutoloadContent;
             HideCursor = (int)config.HideCursor.Value;
 
             GameDirectories.Clear();
@@ -484,6 +486,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
             config.ShowConfirmExit.Value = ShowConfirmExit;
             config.RememberWindowState.Value = RememberWindowState;
+            config.AutoloadContent.Value = AutoloadContent;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
 
             if (_directoryChanged)

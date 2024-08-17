@@ -651,15 +651,22 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
                 TimeIt("games", () => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs));
-                // TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
+                TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates());
                 TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents());
-                // TODO(jpr): conditional
-                var dlcLoaded = 0;
-                TimeIt("AUTO DLC", () => dlcLoaded = ApplicationLibrary.AutoLoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
 
-                if (dlcLoaded > 0)
+                if (ConfigurationState.Instance.AutoloadContent)
                 {
-                    ShowNewContentAddedDialog(dlcLoaded, 0);
+                    var updatesLoaded = 0;
+                    TimeIt("auto updates",
+                        () => updatesLoaded =
+                            ApplicationLibrary.AutoLoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
+
+                    var dlcLoaded = 0;
+                    TimeIt("auto dlc",
+                        () => dlcLoaded =
+                            ApplicationLibrary.AutoLoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
+
+                    ShowNewContentAddedDialog(dlcLoaded, updatesLoaded);
                 }
 
                 _isLoading = false;
@@ -679,23 +686,29 @@ namespace Ryujinx.Ava.UI.Windows
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine("[{0}] {1} ms", tag, elapsedMs);
         }
-        
+
         private Task ShowNewContentAddedDialog(int numDlcAdded, int numUpdatesAdded)
         {
             var msg = "";
-            
+
             if (numDlcAdded > 0 && numUpdatesAdded > 0)
             {
                 msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAndUpdateAddedMessage], numDlcAdded, numUpdatesAdded);
-            } else if (numDlcAdded > 0)
+            }
+            else if (numDlcAdded > 0)
             {
                 msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAddedMessage], numDlcAdded);
-            } else if (numUpdatesAdded > 0)
+            }
+            else if (numUpdatesAdded > 0)
             {
                 msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadUpdateAddedMessage], numUpdatesAdded);
             }
-            
-            return msg == "" ? Task.CompletedTask : Dispatcher.UIThread.InvokeAsync(async () =>
+            else
+            {
+                return Task.CompletedTask;
+            }
+
+            return Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 await ContentDialogHelper.ShowTextDialog(LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle],
                     msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
