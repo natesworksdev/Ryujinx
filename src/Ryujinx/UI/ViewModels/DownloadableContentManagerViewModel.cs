@@ -21,8 +21,8 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private readonly ApplicationLibrary _applicationLibrary;
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
-        private AvaloniaList<DownloadableContentModel> _views = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
+        private AvaloniaList<DownloadableContentModel> _views = new();
 
         private string _search;
         private readonly ApplicationData _applicationData;
@@ -106,14 +106,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(UpdateCount));
             }
 
-            // NOTE: Try to load downloadable contents from PFS last to preserve enabled state.
-            if (AddDownloadableContent(_applicationData.Path, out var newDlc) && newDlc > 0)
-            {
-                ShowNewDlcAddedDialog(newDlc);
-            }
-
-            // NOTE: Save the list again to remove leftovers.
-            Save();
             Sort();
         }
 
@@ -182,7 +174,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (totalDlcAdded > 0)
             {
-                await ShowNewDlcAddedDialog(0);
+                await ShowNewDlcAddedDialog(totalDlcAdded);
             }
         }
 
@@ -205,7 +197,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 if (!DownloadableContents.Contains(dlc))
                 {
                     DownloadableContents.Add(dlc);
-                    Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.ReplaceOrAdd(dlc, dlc));
+                    SelectedDownloadableContents.ReplaceOrAdd(dlc, dlc);
 
                     numDlcAdded++;
                 }
@@ -276,6 +268,5 @@ namespace Ryujinx.Ava.UI.ViewModels
                 await ContentDialogHelper.ShowTextDialog(LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle], msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
             });
         }
-
     }
 }

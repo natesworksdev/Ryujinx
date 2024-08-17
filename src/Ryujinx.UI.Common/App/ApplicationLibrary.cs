@@ -786,12 +786,33 @@ namespace Ryujinx.UI.App.Common
 
                 foreach (ApplicationData application in Applications.Items)
                 {
-                    var res = DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
-                    it.AddOrUpdate(res);
+                    var savedDlc = DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
+                    it.AddOrUpdate(savedDlc);
+                    
+                    if(TryGetDownloadableContentFromFile(application.Path, out var bundledDlc))
+                    {
+                        var savedDlcLookup = savedDlc.Select(dlc => dlc.Item1).ToHashSet();
+
+                        bool addedNewDlc = false;
+                        foreach (var dlc in bundledDlc)
+                        {
+                            if (!savedDlcLookup.Contains(dlc))
+                            {
+                                addedNewDlc = true;
+                                it.AddOrUpdate((dlc, true));
+                            }
+                        }
+
+                        if (addedNewDlc)
+                        {
+                            var gameDlcs = it.Items.Where(dlc => dlc.Dlc.TitleIdBase == application.IdBase).ToList();
+                            DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase, gameDlcs);
+                        }
+                    }
                 }
             });
         }
-
+        
         public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
         {
             _downloadableContents.Edit(it =>
