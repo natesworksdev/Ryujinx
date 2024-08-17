@@ -19,7 +19,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 return BindingOperations.DoNothing;
             }
-            
+
             if (values.Count != 2 || !targetType.IsAssignableFrom(typeof(string)))
             {
                 return null;
@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.UI.Helpers
             {
                 return null;
             }
-            
+
             return isBundled ? $"{LocaleManager.Instance[LocaleKeys.TitleBundledDlcLabel]} {label}" : label;
         }
 

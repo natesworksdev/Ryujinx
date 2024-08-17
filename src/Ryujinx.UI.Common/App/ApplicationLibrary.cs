@@ -294,7 +294,7 @@ namespace Ryujinx.UI.App.Common
             catch (FileNotFoundException)
             {
                 Logger.Warning?.Print(LogClass.Application, $"The file was not found: '{applicationPath}'");
-            
+
                 return false;
             }
 
@@ -492,7 +492,7 @@ namespace Ryujinx.UI.App.Common
 
             return true;
         }
-        
+
         public bool TryGetDownloadableContentFromFile(string filePath, out List<DownloadableContentModel> titleUpdates)
         {
             titleUpdates = [];
@@ -511,9 +511,9 @@ namespace Ryujinx.UI.App.Common
                             IntegrityCheckLevel checkLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
                                 ? IntegrityCheckLevel.ErrorOnInvalid
                                 : IntegrityCheckLevel.None;
-                            
+
                             using IFileSystem pfs = PartitionFileSystemUtils.OpenApplicationFileSystem(filePath, _virtualFileSystem);
-                            
+
                             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
                             {
                                 using var ncaFile = new UniqueRef<IFile>();
@@ -554,7 +554,7 @@ namespace Ryujinx.UI.App.Common
             }
             return false;
         }
-        
+
         public bool TryGetTitleUpdatesFromFile(string filePath, out List<TitleUpdateModel> titleUpdates)
         {
             titleUpdates = [];
@@ -579,7 +579,7 @@ namespace Ryujinx.UI.App.Common
 
                             Dictionary<ulong, ContentMetaData> updates =
                                 pfs.GetContentData(ContentMetaType.Patch, _virtualFileSystem, checkLevel);
-                            
+
                             if (updates.Count == 0)
                             {
                                 return false;
@@ -609,7 +609,7 @@ namespace Ryujinx.UI.App.Common
                                     titleUpdates.Add(update);
                                 }
                             }
-                            
+
                             return true;
                         }
                 }
@@ -737,7 +737,7 @@ namespace Ryujinx.UI.App.Common
                                 AppData = application,
                             });
                         }
-                        
+
                         _applications.Edit(it =>
                         {
                             foreach (var application in applications)
@@ -783,7 +783,7 @@ namespace Ryujinx.UI.App.Common
             _downloadableContents.Edit(it =>
             {
                 it.Clear();
-                
+
                 foreach (ApplicationData application in Applications.Items)
                 {
                     var res = DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
@@ -791,18 +791,18 @@ namespace Ryujinx.UI.App.Common
                 }
             });
         }
-        
+
         public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
         {
             _downloadableContents.Edit(it =>
             {
                 DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase, dlcs);
-                
+
                 it.Remove(it.Items.Where(item => item.Dlc.TitleIdBase == application.IdBase));
                 it.AddOrUpdate(dlcs);
             });
         }
-        
+
         // public void LoadTitleUpdates()
         // {
         //     
@@ -812,7 +812,7 @@ namespace Ryujinx.UI.App.Common
         {
             _cancellationToken = new CancellationTokenSource();
             _downloadableContents.Clear();
-         
+
             // Builds the applications list with paths to found applications
             List<string> applicationPaths = new();
 
@@ -837,7 +837,8 @@ namespace Ryujinx.UI.App.Common
                     {
                         EnumerationOptions options = new()
                         {
-                            RecurseSubdirectories = true, IgnoreInaccessible = false,
+                            RecurseSubdirectories = true,
+                            IgnoreInaccessible = false,
                         };
 
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(
@@ -896,7 +897,7 @@ namespace Ryujinx.UI.App.Common
                                 DownloadableContent = downloadableContent,
                             });
                         }
-                        
+
                         _downloadableContents.Edit(it =>
                         {
                             foreach (var downloadableContent in downloadableContents)
@@ -918,7 +919,7 @@ namespace Ryujinx.UI.App.Common
         {
             _cancellationToken = new CancellationTokenSource();
             _titleUpdates.Clear();
-                     
+
             // Builds the applications list with paths to found applications
             List<string> applicationPaths = new();
 
@@ -943,7 +944,8 @@ namespace Ryujinx.UI.App.Common
                     {
                         EnumerationOptions options = new()
                         {
-                            RecurseSubdirectories = true, IgnoreInaccessible = false,
+                            RecurseSubdirectories = true,
+                            IgnoreInaccessible = false,
                         };
 
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options)
@@ -1003,7 +1005,7 @@ namespace Ryujinx.UI.App.Common
                                 TitleUpdate = titleUpdate,
                             });
                         }
-                        
+
                         _titleUpdates.Edit(it =>
                         {
                             foreach (var titleUpdate in titleUpdates)
@@ -1030,12 +1032,12 @@ namespace Ryujinx.UI.App.Common
         {
             ApplicationCountUpdated?.Invoke(null, e);
         }
-        
+
         protected void OnTitleUpdateAdded(TitleUpdateAddedEventArgs e)
         {
             TitleUpdateAdded?.Invoke(null, e);
         }
-        
+
         protected void OnDownloadableContentAdded(DownloadableContentAddedEventArgs e)
         {
             DownloadableContentAdded?.Invoke(null, e);
@@ -1357,7 +1359,7 @@ namespace Ryujinx.UI.App.Common
 
             return false;
         }
-        
+
         private Nca TryOpenNca(IStorage ncaStorage)
         {
             try

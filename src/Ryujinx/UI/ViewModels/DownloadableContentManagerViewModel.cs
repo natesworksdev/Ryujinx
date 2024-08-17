@@ -134,12 +134,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             foreach ((DownloadableContentModel dlc, bool isEnabled) in _applicationLibrary.DownloadableContents.Items.Where(it => it.Dlc.TitleIdBase == _applicationData.IdBase))
             {
                 DownloadableContents.Add(dlc);
-                
+
                 if (isEnabled)
                 {
                     SelectedDownloadableContents.Add(dlc);
                 }
-                
+
                 OnPropertyChanged(nameof(UpdateCount));
             }
 
@@ -163,12 +163,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             _views.Clear();
             _views.AddRange(view);
-            
+
             foreach (DownloadableContentModel item in items)
             {
                 SelectedDownloadableContents.ReplaceOrAdd(item, item);
             }
-            
+
             OnPropertyChanged(nameof(Views));
         }
 
@@ -291,7 +291,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             SelectedDownloadableContents.ReplaceOrAdd(model, model);
         }
-        
+
         public void Disable(DownloadableContentModel model)
         {
             SelectedDownloadableContents.Remove(model);

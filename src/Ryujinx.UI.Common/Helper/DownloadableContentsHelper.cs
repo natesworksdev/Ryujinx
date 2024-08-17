@@ -19,7 +19,7 @@ namespace Ryujinx.UI.Common.Helper
     public static class DownloadableContentsHelper
     {
         private static readonly DownloadableContentJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
-        
+
         public static List<(DownloadableContentModel, bool IsEnabled)> LoadDownloadableContentsJson(VirtualFileSystem vfs, ulong applicationIdBase)
         {
             // _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
@@ -86,7 +86,7 @@ namespace Ryujinx.UI.Common.Helper
         private static List<(DownloadableContentModel, bool IsEnabled)> LoadDownloadableContents(VirtualFileSystem vfs, List<DownloadableContentContainer> downloadableContentContainers)
         {
             var result = new List<(DownloadableContentModel, bool IsEnabled)>();
-            
+
             foreach (DownloadableContentContainer downloadableContentContainer in downloadableContentContainers)
             {
                 if (!File.Exists(downloadableContentContainer.ContainerPath))
@@ -127,7 +127,7 @@ namespace Ryujinx.UI.Common.Helper
 
             return result;
         }
-        
+
         private static Nca TryOpenNca(VirtualFileSystem vfs, IStorage ncaStorage)
         {
             try

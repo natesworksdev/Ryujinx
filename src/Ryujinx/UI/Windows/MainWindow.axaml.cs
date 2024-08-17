@@ -149,7 +149,7 @@ namespace Ryujinx.Ava.UI.Windows
             var it = e.DownloadableContent;
             Console.WriteLine("[{0}]: {1} ({2})", it.TitleIdBase, it.ContainerPath, it.FullPath);
         }
-        
+
         private void ApplicationLibrary_TitleUpdateAdded(object sender, TitleUpdateAddedEventArgs e)
         {
             var it = e.TitleUpdate;
@@ -664,7 +664,7 @@ namespace Ryujinx.Ava.UI.Windows
             };
             applicationLibraryThread.Start();
         }
-        
+
         private static void TimeIt(string tag, Action act)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();

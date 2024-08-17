@@ -22,10 +22,10 @@ using Path = System.IO.Path;
 namespace Ryujinx.Ava.UI.ViewModels
 {
     public record TitleUpdateViewNoUpdateSentinal();
-    
+
     public class TitleUpdateViewModel : BaseModel
     {
-        
+
         public TitleUpdateMetadata TitleUpdateWindowData;
         public readonly string TitleUpdateJsonPath;
         private VirtualFileSystem VirtualFileSystem { get; }
@@ -146,7 +146,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return;
             }
-            
+
             try
             {
                 if (!ApplicationLibrary.TryGetTitleUpdatesFromFile(path, out var titleUpdates))
@@ -175,7 +175,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                         Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = titleUpdate);
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadFileErrorMessage, ex.Message, path)));
             }
