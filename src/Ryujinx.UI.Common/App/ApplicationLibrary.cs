@@ -1,6 +1,6 @@
+using DynamicData;
 using LibHac;
 using LibHac.Common;
-using LibHac.Common.Keys;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
@@ -19,9 +19,11 @@ using Ryujinx.HLE.Loaders.Processes.Extensions;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Configuration.System;
+using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -29,6 +31,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using ContentType = LibHac.Ncm.ContentType;
+using MissingKeyException = LibHac.Common.Keys.MissingKeyException;
 using Path = System.IO.Path;
 using SpanHelpers = LibHac.Common.SpanHelpers;
 using TimeSpan = System.TimeSpan;
@@ -43,6 +46,10 @@ namespace Ryujinx.UI.App.Common
         public event EventHandler<TitleUpdateAddedEventArgs> TitleUpdateAdded;
         public event EventHandler<DownloadableContentAddedEventArgs> DownloadableContentAdded;
 
+        public IObservableCache<ApplicationData, string> Applications;
+        public IObservableCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> TitleUpdates;
+        public IObservableCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> DownloadableContents;
+
         private readonly byte[] _nspIcon;
         private readonly byte[] _xciIcon;
         private readonly byte[] _ncaIcon;
@@ -52,6 +59,9 @@ namespace Ryujinx.UI.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly IntegrityCheckLevel _checkLevel;
         private CancellationTokenSource _cancellationToken;
+        private readonly SourceCache<ApplicationData, string> _applications = new(it => it.Path);
+        private readonly SourceCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> _titleUpdates = new(it => it.TitleUpdate);
+        private readonly SourceCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> _downloadableContents = new(it => it.Dlc);
 
         private static readonly ApplicationJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
@@ -59,6 +69,10 @@ namespace Ryujinx.UI.App.Common
         {
             _virtualFileSystem = virtualFileSystem;
             _checkLevel = checkLevel;
+
+            Applications = _applications.AsObservableCache();
+            TitleUpdates = _titleUpdates.AsObservableCache();
+            DownloadableContents = _downloadableContents.AsObservableCache();
 
             _nspIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_NSP.png");
             _xciIcon = GetResourceBytes("Ryujinx.UI.Common.Resources.Icon_XCI.png");
@@ -105,7 +119,7 @@ namespace Ryujinx.UI.App.Common
             return data;
         }
 
-        /// <exception cref="MissingKeyException">The configured key set is missing a key.</exception>
+        /// <exception cref="LibHac.Common.Keys.MissingKeyException">The configured key set is missing a key.</exception>
         /// <exception cref="InvalidDataException">The NCA header could not be decrypted.</exception>
         /// <exception cref="NotSupportedException">The NCA version is not supported.</exception>
         /// <exception cref="HorizonResultException">An error occured while reading PFS data.</exception>
@@ -181,7 +195,7 @@ namespace Ryujinx.UI.App.Common
             return null;
         }
 
-        /// <exception cref="MissingKeyException">The configured key set is missing a key.</exception>
+        /// <exception cref="LibHac.Common.Keys.MissingKeyException">The configured key set is missing a key.</exception>
         /// <exception cref="InvalidDataException">The NCA header could not be decrypted.</exception>
         /// <exception cref="NotSupportedException">The NCA version is not supported.</exception>
         /// <exception cref="HorizonResultException">An error occured while reading PFS data.</exception>
@@ -638,6 +652,7 @@ namespace Ryujinx.UI.App.Common
             int numApplicationsLoaded = 0;
 
             _cancellationToken = new CancellationTokenSource();
+            _applications.Clear();
 
             // Builds the applications list with paths to found applications
             List<string> applicationPaths = new();
@@ -722,6 +737,14 @@ namespace Ryujinx.UI.App.Common
                                 AppData = application,
                             });
                         }
+                        
+                        _applications.Edit(it =>
+                        {
+                            foreach (var application in applications)
+                            {
+                                it.AddOrUpdate(application);
+                            }
+                        });
 
                         if (applications.Count > 1)
                         {
@@ -755,9 +778,40 @@ namespace Ryujinx.UI.App.Common
             }
         }
 
-        public void LoadDownloadableContents(List<string> appDirs)
+        public void LoadDownloadableContents()
+        {
+            _downloadableContents.Edit(it =>
+            {
+                it.Clear();
+                
+                foreach (ApplicationData application in Applications.Items)
+                {
+                    var res = DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
+                    it.AddOrUpdate(res);
+                }
+            });
+        }
+        
+        public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
+        {
+            _downloadableContents.Edit(it =>
+            {
+                DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase, dlcs);
+                
+                it.Remove(it.Items.Where(item => item.Dlc.TitleIdBase == application.IdBase));
+                it.AddOrUpdate(dlcs);
+            });
+        }
+        
+        // public void LoadTitleUpdates()
+        // {
+        //     
+        // }
+
+        public void AutoLoadDownloadableContents(List<string> appDirs)
         {
             _cancellationToken = new CancellationTokenSource();
+            _downloadableContents.Clear();
          
             // Builds the applications list with paths to found applications
             List<string> applicationPaths = new();
@@ -842,6 +896,14 @@ namespace Ryujinx.UI.App.Common
                                 DownloadableContent = downloadableContent,
                             });
                         }
+                        
+                        _downloadableContents.Edit(it =>
+                        {
+                            foreach (var downloadableContent in downloadableContents)
+                            {
+                                it.AddOrUpdate((downloadableContent, true));
+                            }
+                        });
                     }
                 }
             }
@@ -850,12 +912,12 @@ namespace Ryujinx.UI.App.Common
                 _cancellationToken.Dispose();
                 _cancellationToken = null;
             }
-
         }
 
-        public void LoadTitleUpdates(List<string> appDirs)
+        public void AutoLoadTitleUpdates(List<string> appDirs)
         {
             _cancellationToken = new CancellationTokenSource();
+            _titleUpdates.Clear();
                      
             // Builds the applications list with paths to found applications
             List<string> applicationPaths = new();
@@ -941,6 +1003,14 @@ namespace Ryujinx.UI.App.Common
                                 TitleUpdate = titleUpdate,
                             });
                         }
+                        
+                        _titleUpdates.Edit(it =>
+                        {
+                            foreach (var titleUpdate in titleUpdates)
+                            {
+                                it.AddOrUpdate((titleUpdate, false));
+                            }
+                        });
                     }
                 }
             }

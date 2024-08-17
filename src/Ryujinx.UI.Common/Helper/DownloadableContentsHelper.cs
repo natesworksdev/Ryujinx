@@ -20,9 +20,10 @@ namespace Ryujinx.UI.Common.Helper
     {
         private static readonly DownloadableContentJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
         
-        public static List<(DownloadableContentModel, bool IsEnabled)> LoadSavedDownloadableContents(VirtualFileSystem vfs, ulong applicationIdBase)
+        public static List<(DownloadableContentModel, bool IsEnabled)> LoadDownloadableContentsJson(VirtualFileSystem vfs, ulong applicationIdBase)
         {
-            var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("X16"), "dlc.json");
+            // _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
+            var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
 
             if (!File.Exists(downloadableContentJsonPath))
             {
@@ -40,6 +41,46 @@ namespace Ryujinx.UI.Common.Helper
                 Logger.Error?.Print(LogClass.Configuration, "Downloadable Content JSON failed to deserialize.");
                 return [];
             }
+        }
+
+        public static void SaveDownloadableContentsJson(VirtualFileSystem vfs, ulong applicationIdBase, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
+        {
+            DownloadableContentContainer container = default;
+            List<DownloadableContentContainer> downloadableContentContainerList = new();
+
+            foreach ((DownloadableContentModel dlc, bool isEnabled) in dlcs)
+            {
+                if (container.ContainerPath != dlc.ContainerPath)
+                {
+                    if (!string.IsNullOrWhiteSpace(container.ContainerPath))
+                    {
+                        downloadableContentContainerList.Add(container);
+                    }
+
+                    container = new DownloadableContentContainer
+                    {
+                        ContainerPath = dlc.ContainerPath,
+                        DownloadableContentNcaList = [],
+                    };
+                }
+
+                container.DownloadableContentNcaList.Add(new DownloadableContentNca
+                {
+                    Enabled = isEnabled,
+                    TitleId = dlc.TitleId,
+                    FullPath = dlc.FullPath,
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(container.ContainerPath))
+            {
+                downloadableContentContainerList.Add(container);
+            }
+
+            // _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
+            // var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
+            var downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationIdBase.ToString("x16"), "dlc.json");
+            JsonHelper.SerializeToFile(downloadableContentJsonPath, downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
         }
 
         private static List<(DownloadableContentModel, bool IsEnabled)> LoadDownloadableContents(VirtualFileSystem vfs, List<DownloadableContentContainer> downloadableContentContainers)

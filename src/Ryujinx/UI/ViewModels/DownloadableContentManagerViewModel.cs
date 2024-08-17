@@ -131,8 +131,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void LoadDownloadableContents()
         {
-            var savedDlc = DownloadableContentsHelper.LoadSavedDownloadableContents(_virtualFileSystem, _applicationData.IdBase);
-            foreach ((DownloadableContentModel dlc, bool isEnabled) in savedDlc)
+            foreach ((DownloadableContentModel dlc, bool isEnabled) in _applicationLibrary.DownloadableContents.Items.Where(it => it.Dlc.TitleIdBase == _applicationData.IdBase))
             {
                 DownloadableContents.Add(dlc);
                 
@@ -300,40 +299,42 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Save()
         {
-            _downloadableContentContainerList.Clear();
+            var dlcs = DownloadableContents.Select(it => (it, SelectedDownloadableContents.Contains(it))).ToList();
+            _applicationLibrary.SaveDownloadableContentsForGame(_applicationData, dlcs);
+            // _downloadableContentContainerList.Clear();
 
-            DownloadableContentContainer container = default;
-
-            foreach (DownloadableContentModel downloadableContent in DownloadableContents)
-            {
-                if (container.ContainerPath != downloadableContent.ContainerPath)
-                {
-                    if (!string.IsNullOrWhiteSpace(container.ContainerPath))
-                    {
-                        _downloadableContentContainerList.Add(container);
-                    }
-
-                    container = new DownloadableContentContainer
-                    {
-                        ContainerPath = downloadableContent.ContainerPath,
-                        DownloadableContentNcaList = new List<DownloadableContentNca>(),
-                    };
-                }
-
-                container.DownloadableContentNcaList.Add(new DownloadableContentNca
-                {
-                    Enabled = SelectedDownloadableContents.Contains(downloadableContent),
-                    TitleId = downloadableContent.TitleId,
-                    FullPath = downloadableContent.FullPath,
-                });
-            }
-
-            if (!string.IsNullOrWhiteSpace(container.ContainerPath))
-            {
-                _downloadableContentContainerList.Add(container);
-            }
-
-            JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
+            // DownloadableContentContainer container = default;
+            //
+            // foreach (DownloadableContentModel downloadableContent in DownloadableContents)
+            // {
+            //     if (container.ContainerPath != downloadableContent.ContainerPath)
+            //     {
+            //         if (!string.IsNullOrWhiteSpace(container.ContainerPath))
+            //         {
+            //             _downloadableContentContainerList.Add(container);
+            //         }
+            //
+            //         container = new DownloadableContentContainer
+            //         {
+            //             ContainerPath = downloadableContent.ContainerPath,
+            //             DownloadableContentNcaList = new List<DownloadableContentNca>(),
+            //         };
+            //     }
+            //
+            //     container.DownloadableContentNcaList.Add(new DownloadableContentNca
+            //     {
+            //         Enabled = SelectedDownloadableContents.Contains(downloadableContent),
+            //         TitleId = downloadableContent.TitleId,
+            //         FullPath = downloadableContent.FullPath,
+            //     });
+            // }
+            //
+            // if (!string.IsNullOrWhiteSpace(container.ContainerPath))
+            // {
+            //     _downloadableContentContainerList.Add(container);
+            // }
+            //
+            // JsonHelper.SerializeToFile(_downloadableContentJsonPath, _downloadableContentContainerList, _serializerContext.ListDownloadableContentContainer);
         }
 
     }

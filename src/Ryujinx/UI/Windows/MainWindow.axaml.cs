@@ -653,8 +653,8 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
                 TimeIt("games", () => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs));
-                TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
-                TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
+                // TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
+                TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents());
 
                 _isLoading = false;
             })
