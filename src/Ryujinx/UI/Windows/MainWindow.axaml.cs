@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using DynamicData;
 using FluentAvalonia.UI.Controls;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Ava.Common;
@@ -26,6 +27,7 @@ using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,7 @@ namespace Ryujinx.Ava.UI.Windows
         private static string _launchApplicationId;
         private static bool _startFullscreen;
         internal readonly AvaHostUIHandler UiHandler;
+        private IDisposable _appLibraryAppsSubscription;
 
         public VirtualFileSystem VirtualFileSystem { get; private set; }
         public ContentManager ContentManager { get; private set; }
@@ -134,26 +137,6 @@ namespace Ryujinx.Ava.UI.Windows
         private void OnScalingChanged(object sender, EventArgs e)
         {
             Program.DesktopScaleFactor = this.RenderScaling;
-        }
-
-        private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                ViewModel.Applications.Add(e.AppData);
-            });
-        }
-
-        private void ApplicationLibrary_DownloadableContentAdded(object sender, DownloadableContentAddedEventArgs e)
-        {
-            var it = e.DownloadableContent;
-            Console.WriteLine("[{0}]: {1} ({2})", it.TitleIdBase, it.ContainerPath, it.FullPath);
-        }
-
-        private void ApplicationLibrary_TitleUpdateAdded(object sender, TitleUpdateAddedEventArgs e)
-        {
-            var it = e.TitleUpdate;
-            Console.WriteLine("[{0}]: {1}", it.TitleIdBase, it.Path);
         }
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)
@@ -484,7 +467,12 @@ namespace Ryujinx.Ava.UI.Windows
                 this);
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+            _appLibraryAppsSubscription?.Dispose();
+            _appLibraryAppsSubscription = ApplicationLibrary.Applications
+                    .Connect()
+                    .ObserveOn(SynchronizationContext.Current)
+                    .Bind(ViewModel.Applications)
+                    .Subscribe();
 
             ViewModel.RefreshFirmwareStatus();
 
@@ -587,6 +575,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();
+            _appLibraryAppsSubscription?.Dispose();
             Program.Exit();
 
             base.OnClosing(e);
@@ -608,7 +597,6 @@ namespace Ryujinx.Ava.UI.Windows
         public void LoadApplications()
         {
             _applicationsLoadedOnce = true;
-            ViewModel.Applications.Clear();
 
             StatusBarView.LoadProgressBar.IsVisible = true;
             ViewModel.StatusBarProgressMaximum = 0;

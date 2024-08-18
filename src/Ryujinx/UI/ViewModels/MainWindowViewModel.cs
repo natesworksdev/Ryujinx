@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
+using DynamicData.Alias;
 using DynamicData.Binding;
 using LibHac.Common;
 using Ryujinx.Ava.Common;
@@ -50,7 +51,7 @@ namespace Ryujinx.Ava.UI.ViewModels
     {
         private const int HotKeyPressDelayMs = 500;
 
-        private ObservableCollection<ApplicationData> _applications;
+        private ObservableCollectionExtended<ApplicationData> _applications;
         private string _aspectStatusText;
 
         private string _loadHeading;
@@ -112,8 +113,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public MainWindowViewModel()
         {
-            Applications = new ObservableCollection<ApplicationData>();
-
+            Applications = new ObservableCollectionExtended<ApplicationData>();
+            
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
                 .Sort(GetComparer())
@@ -741,7 +742,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => FileAssociationHelper.IsTypeAssociationSupported;
         }
 
-        public ObservableCollection<ApplicationData> Applications
+        public ObservableCollectionExtended<ApplicationData> Applications
         {
             get => _applications;
             set

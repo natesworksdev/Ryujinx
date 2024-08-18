@@ -1,5 +1,4 @@
 using DynamicData;
-using DynamicData.Kernel;
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
@@ -24,7 +23,6 @@ using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Common.Models;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,8 +42,6 @@ namespace Ryujinx.UI.App.Common
         public Language DesiredLanguage { get; set; }
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
-        public event EventHandler<TitleUpdateAddedEventArgs> TitleUpdateAdded;
-        public event EventHandler<DownloadableContentAddedEventArgs> DownloadableContentAdded;
 
         public IObservableCache<ApplicationData, string> Applications;
         public IObservableCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> TitleUpdates;
@@ -553,6 +549,7 @@ namespace Ryujinx.UI.App.Common
             {
                 Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
             }
+            
             return false;
         }
 
@@ -1054,16 +1051,6 @@ namespace Ryujinx.UI.App.Common
         protected void OnApplicationCountUpdated(ApplicationCountUpdatedEventArgs e)
         {
             ApplicationCountUpdated?.Invoke(null, e);
-        }
-
-        protected void OnTitleUpdateAdded(TitleUpdateAddedEventArgs e)
-        {
-            TitleUpdateAdded?.Invoke(null, e);
-        }
-
-        protected void OnDownloadableContentAdded(DownloadableContentAddedEventArgs e)
-        {
-            DownloadableContentAdded?.Invoke(null, e);
         }
 
         public static ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
