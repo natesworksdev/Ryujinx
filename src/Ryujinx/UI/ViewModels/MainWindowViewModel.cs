@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Alias;
 using DynamicData.Binding;
+using FluentAvalonia.UI.Controls;
 using LibHac.Common;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -39,6 +40,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Key = Ryujinx.Input.Key;
@@ -1501,6 +1503,32 @@ namespace Ryujinx.Ava.UI.ViewModels
                 else
                 {
                     await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.MenuBarFileOpenFromFileError]);
+                }
+            }
+        }
+
+        public async Task BulkLoadDlc()
+        {
+            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle], AllowMultiple = true,
+            });
+
+            if (result.Count > 0)
+            {
+                var dirs = result.Select(it => it.Path.LocalPath).ToList();
+                var numDlcAdded = ApplicationLibrary.AutoLoadDownloadableContents(dirs);
+
+                if (numDlcAdded > 0)
+                {
+                    var msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAddedMessage], numDlcAdded);
+
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.ShowTextDialog(
+                            LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle],
+                            msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
+                    });
                 }
             }
         }

@@ -34,6 +34,11 @@
                     Header="{locale:Locale MenuBarFileOpenUnpacked}"
                     IsEnabled="{Binding EnableNonGameRunningControls}"
                     ToolTip.Tip="{locale:Locale LoadApplicationFolderTooltip}" />
+                <MenuItem
+                    Command="{Binding BulkLoadDlc}"
+                    Header="Bulk Load DLC"
+                    IsEnabled="{Binding EnableNonGameRunningControls}"
+                    ToolTip.Tip="This is the tooltip" />
                 <MenuItem Header="{locale:Locale MenuBarFileOpenApplet}" IsEnabled="{Binding IsAppletMenuActive}">
                     <MenuItem
                         Click="OpenMiiApplet"
