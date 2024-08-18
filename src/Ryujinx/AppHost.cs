@@ -1210,15 +1210,9 @@ namespace Ryujinx.Ava
                         case KeyboardHotkeyState.CycleControllersPlayer6:
                         case KeyboardHotkeyState.CycleControllersPlayer7:
                         case KeyboardHotkeyState.CycleControllersPlayer8:
-                            Dispatcher.UIThread.Invoke(() => {
-                                var player = currentHotkeyState - KeyboardHotkeyState.CycleControllersPlayer1;
-                                var ivm = new UI.ViewModels.Input.InputViewModel();
-                                ivm.LoadDevices();
-                                ivm.PlayerId = (Ryujinx.Common.Configuration.Hid.PlayerIndex) player;
-                                ivm.Device = (ivm.Device + 1) % ivm.Devices.Count;
-                                ivm.Save();
-                                Console.WriteLine($"Cycling controller for player {ivm.PlayerId} to {ivm.Devices[ivm.Device].Name}");
-                            });
+                            var player = currentHotkeyState - KeyboardHotkeyState.CycleControllersPlayer1;
+                            var ivm = new UI.ViewModels.Input.InputViewModel();
+                            Dispatcher.UIThread.Invoke(() => ivm.CyclePlayerDevice(player));
                             break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
