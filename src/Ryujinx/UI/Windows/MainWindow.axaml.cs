@@ -638,22 +638,14 @@ namespace Ryujinx.Ava.UI.Windows
             Thread applicationLibraryThread = new(() =>
             {
                 ApplicationLibrary.DesiredLanguage = ConfigurationState.Instance.System.Language;
-                TimeIt("games", () => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs));
-                TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates());
-                TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents());
+
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
                 var autoloadDirs = ConfigurationState.Instance.UI.AutoloadDirs.Value;
                 if (autoloadDirs.Count > 0)
                 {
-                    var updatesLoaded = 0;
-                    TimeIt("auto updates",
-                        () => updatesLoaded =
-                            ApplicationLibrary.AutoLoadTitleUpdates(autoloadDirs));
-
-                    var dlcLoaded = 0;
-                    TimeIt("auto dlc",
-                        () => dlcLoaded =
-                            ApplicationLibrary.AutoLoadDownloadableContents(autoloadDirs));
+                    var updatesLoaded = ApplicationLibrary.AutoLoadTitleUpdates(autoloadDirs);
+                    var dlcLoaded = ApplicationLibrary.AutoLoadDownloadableContents(autoloadDirs);
 
                     ShowNewContentAddedDialog(dlcLoaded, updatesLoaded);
                 }
@@ -665,15 +657,6 @@ namespace Ryujinx.Ava.UI.Windows
                 IsBackground = true,
             };
             applicationLibraryThread.Start();
-        }
-
-        private static void TimeIt(string tag, Action act)
-        {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            act();
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine("[{0}] {1} ms", tag, elapsedMs);
         }
 
         private Task ShowNewContentAddedDialog(int numDlcAdded, int numUpdatesAdded)

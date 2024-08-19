@@ -44,9 +44,9 @@ namespace Ryujinx.UI.App.Common
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
-        public IObservableCache<ApplicationData, string> Applications;
-        public IObservableCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> TitleUpdates;
-        public IObservableCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> DownloadableContents;
+        public readonly IObservableCache<ApplicationData, (ulong Id, string Path)> Applications;
+        public readonly IObservableCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> TitleUpdates;
+        public readonly IObservableCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> DownloadableContents;
 
         private readonly byte[] _nspIcon;
         private readonly byte[] _xciIcon;
@@ -57,7 +57,7 @@ namespace Ryujinx.UI.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly IntegrityCheckLevel _checkLevel;
         private CancellationTokenSource _cancellationToken;
-        private readonly SourceCache<ApplicationData, string> _applications = new(it => it.Path);
+        private readonly SourceCache<ApplicationData, (ulong Id, string Path)> _applications = new(it => (it.Id, it.Path));
         private readonly SourceCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> _titleUpdates = new(it => it.TitleUpdate);
         private readonly SourceCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> _downloadableContents = new(it => it.Dlc);
 
@@ -742,8 +742,12 @@ namespace Ryujinx.UI.App.Common
                             foreach (var application in applications)
                             {
                                 it.AddOrUpdate(application);
-                                LoadTitleUpdatesForApplication(application);
                                 LoadDlcForApplication(application);
+                                if (LoadTitleUpdatesForApplication(application))
+                                {
+                                    // Trigger a reload of the version data
+                                    RefreshApplicationInfo(application.IdBase);
+                                }
                             }
                         });
 
@@ -779,117 +783,6 @@ namespace Ryujinx.UI.App.Common
             }
         }
 
-        private void LoadTitleUpdatesForApplication(ApplicationData application)
-        {
-            _titleUpdates.Edit(it =>
-            {
-                var savedUpdates =
-                    TitleUpdatesHelper.LoadTitleUpdatesJson(_virtualFileSystem, application.IdBase);
-                it.AddOrUpdate(savedUpdates);
-
-                var selectedUpdate = savedUpdates.FirstOrOptional(update => update.IsSelected);
-
-                if (TryGetTitleUpdatesFromFile(application.Path, out var bundledUpdates))
-                {
-                    var savedUpdateLookup = savedUpdates.Select(update => update.Item1).ToHashSet();
-
-                    bool addedNewUpdate = false;
-                    foreach (var update in bundledUpdates)
-                    {
-                        if (!savedUpdateLookup.Contains(update))
-                        {
-                            addedNewUpdate = true;
-                            it.AddOrUpdate((update, false));
-                        }
-                    }
-
-                    if (addedNewUpdate)
-                    {
-                        var gameUpdates = it.Items.Where(update => update.TitleUpdate.TitleIdBase == application.IdBase).ToList();
-                        TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, application.IdBase, gameUpdates);
-                    }
-                }
-            });
-        }
-
-        private void LoadDlcForApplication(ApplicationData application)
-        {
-            _downloadableContents.Edit(it =>
-            {
-                var savedDlc =
-                    DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
-                it.AddOrUpdate(savedDlc);
-
-                if (TryGetDownloadableContentFromFile(application.Path, out var bundledDlc))
-                {
-                    var savedDlcLookup = savedDlc.Select(dlc => dlc.Item1).ToHashSet();
-
-                    bool addedNewDlc = false;
-                    foreach (var dlc in bundledDlc)
-                    {
-                        if (!savedDlcLookup.Contains(dlc))
-                        {
-                            addedNewDlc = true;
-                            it.AddOrUpdate((dlc, true));
-                        }
-                    }
-
-                    if (addedNewDlc)
-                    {
-                        var gameDlcs = it.Items.Where(dlc => dlc.Dlc.TitleIdBase == application.IdBase).ToList();
-                        DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase,
-                            gameDlcs);
-                    }
-                }
-            });
-        }
-
-        public void LoadTitleUpdates()
-        {
-            return;
-        }
-
-        public void LoadDownloadableContents()
-        {
-            _downloadableContents.Edit(it =>
-            {
-                it.Clear();
-
-                foreach (ApplicationData application in Applications.Items)
-                {
-                    var savedDlc = DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
-                    it.AddOrUpdate(savedDlc);
-
-                    if (TryGetDownloadableContentFromFile(application.Path, out var bundledDlc))
-                    {
-                        var savedDlcLookup = savedDlc.Select(dlc => dlc.Item1).ToHashSet();
-
-                        bool addedNewDlc = false;
-                        foreach (var dlc in bundledDlc)
-                        {
-                            if (!savedDlcLookup.Contains(dlc))
-                            {
-                                addedNewDlc = true;
-                                it.AddOrUpdate((dlc, true));
-                            }
-                        }
-
-                        if (addedNewDlc)
-                        {
-                            var gameDlcs = it.Items.Where(dlc => dlc.Dlc.TitleIdBase == application.IdBase).ToList();
-                            DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase, gameDlcs);
-                        }
-                    }
-                }
-            });
-        }
-
-        private void SaveDownloadableContentsForGame(ulong titleIdBase)
-        {
-            var dlcs = DownloadableContents.Items.Where(dlc => dlc.Dlc.TitleIdBase == titleIdBase).ToList();
-            DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, titleIdBase, dlcs);
-        }
-
         public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
         {
             _downloadableContents.Edit(it =>
@@ -899,12 +792,6 @@ namespace Ryujinx.UI.App.Common
                 it.Remove(it.Items.Where(item => item.Dlc.TitleIdBase == application.IdBase));
                 it.AddOrUpdate(dlcs);
             });
-        }
-
-        private void SaveTitleUpdatesForGame(ulong titleIdBase)
-        {
-            var updates = TitleUpdates.Items.Where(update => update.TitleUpdate.TitleIdBase == titleIdBase).ToList();
-            TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, titleIdBase, updates);
         }
 
         public void SaveTitleUpdatesForGame(ApplicationData application, List<(TitleUpdateModel, bool IsSelected)> updates)
@@ -937,7 +824,7 @@ namespace Ryujinx.UI.App.Common
                     if (!Directory.Exists(appDir))
                     {
                         Logger.Warning?.Print(LogClass.Application,
-                            $"The specified game directory \"{appDir}\" does not exist.");
+                            $"The specified autoload directory \"{appDir}\" does not exist.");
 
                         continue;
                     }
@@ -1021,111 +908,113 @@ namespace Ryujinx.UI.App.Common
 
         public int AutoLoadTitleUpdates(List<string> appDirs)
         {
-            return 0;
-            //     _cancellationToken = new CancellationTokenSource();
-            //     _titleUpdates.Clear();
-            //
-            //     // Builds the applications list with paths to found applications
-            //     List<string> applicationPaths = new();
-            //
-            //     try
-            //     {
-            //         foreach (string appDir in appDirs)
-            //         {
-            //             if (_cancellationToken.Token.IsCancellationRequested)
-            //             {
-            //                 return;
-            //             }
-            //
-            //             if (!Directory.Exists(appDir))
-            //             {
-            //                 Logger.Warning?.Print(LogClass.Application,
-            //                     $"The specified game directory \"{appDir}\" does not exist.");
-            //
-            //                 continue;
-            //             }
-            //
-            //             try
-            //             {
-            //                 EnumerationOptions options = new()
-            //                 {
-            //                     RecurseSubdirectories = true,
-            //                     IgnoreInaccessible = false,
-            //                 };
-            //
-            //                 IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options)
-            //                     .Where(file =>
-            //                     {
-            //                         return
-            //                             (Path.GetExtension(file).ToLower() is ".nsp" &&
-            //                              ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value) ||
-            //                             (Path.GetExtension(file).ToLower() is ".xci" &&
-            //                              ConfigurationState.Instance.UI.ShownFileTypes.XCI.Value);
-            //                     });
-            //
-            //                 foreach (string app in files)
-            //                 {
-            //                     if (_cancellationToken.Token.IsCancellationRequested)
-            //                     {
-            //                         return;
-            //                     }
-            //
-            //                     var fileInfo = new FileInfo(app);
-            //
-            //                     try
-            //                     {
-            //                         var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ??
-            //                                        fileInfo.FullName;
-            //
-            //                         applicationPaths.Add(fullPath);
-            //                     }
-            //                     catch (IOException exception)
-            //                     {
-            //                         Logger.Warning?.Print(LogClass.Application,
-            //                             $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
-            //                     }
-            //                 }
-            //             }
-            //             catch (UnauthorizedAccessException)
-            //             {
-            //                 Logger.Warning?.Print(LogClass.Application,
-            //                     $"Failed to get access to directory: \"{appDir}\"");
-            //             }
-            //         }
-            //
-            //         // Loops through applications list, creating a struct and then firing an event containing the struct for each application
-            //         foreach (string applicationPath in applicationPaths)
-            //         {
-            //             if (_cancellationToken.Token.IsCancellationRequested)
-            //             {
-            //                 return;
-            //             }
-            //
-            //             if (TryGetTitleUpdatesFromFile(applicationPath, out List<TitleUpdateModel> titleUpdates))
-            //             {
-            //                 foreach (var titleUpdate in titleUpdates)
-            //                 {
-            //                     OnTitleUpdateAdded(new TitleUpdateAddedEventArgs()
-            //                     {
-            //                         TitleUpdate = titleUpdate,
-            //                     });
-            //                 }
-            //
-            //                 _titleUpdates.Edit(it =>
-            //                 {
-            //                     foreach (var titleUpdate in titleUpdates)
-            //                     {
-            //                         it.AddOrUpdate((titleUpdate, false));
-            //                     }
-            //                 });
-            //             }
-            //         }
-            //     }
-            //     finally
-            //     {
-            //         _cancellationToken.Dispose();
-            //         _cancellationToken = null;
-            //     }
+            _cancellationToken = new CancellationTokenSource();
+
+            List<string> updatePaths = new();
+            int numUpdatesLoaded = 0;
+
+            try
+            {
+                foreach (string appDir in appDirs)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return numUpdatesLoaded;
+                    }
+
+                    if (!Directory.Exists(appDir))
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"The specified autoload directory \"{appDir}\" does not exist.");
+
+                        continue;
+                    }
+
+                    try
+                    {
+                        EnumerationOptions options = new()
+                        {
+                            RecurseSubdirectories = true,
+                            IgnoreInaccessible = false,
+                        };
+
+                        IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(
+                            file =>
+                            {
+                                return
+                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
+                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value);
+                            });
+
+                        foreach (string app in files)
+                        {
+                            if (_cancellationToken.Token.IsCancellationRequested)
+                            {
+                                return numUpdatesLoaded;
+                            }
+
+                            var fileInfo = new FileInfo(app);
+
+                            try
+                            {
+                                var fullPath = fileInfo.ResolveLinkTarget(true)?.FullName ?? fileInfo.FullName;
+
+                                updatePaths.Add(fullPath);
+                            }
+                            catch (IOException exception)
+                            {
+                                Logger.Warning?.Print(LogClass.Application,
+                                    $"Failed to resolve the full path to file: \"{app}\" Error: {exception}");
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Logger.Warning?.Print(LogClass.Application,
+                            $"Failed to get access to directory: \"{appDir}\"");
+                    }
+                }
+
+                var appIdLookup = Applications.Items.Select(it => it.IdBase).ToHashSet();
+
+                foreach (string updatePath in updatePaths)
+                {
+                    if (_cancellationToken.Token.IsCancellationRequested)
+                    {
+                        return numUpdatesLoaded;
+                    }
+
+                    if (TryGetTitleUpdatesFromFile(updatePath, out var foundUpdates))
+                    {
+                        foreach (var update in foundUpdates.Where(it => appIdLookup.Contains(it.TitleIdBase)))
+                        {
+                            if (!_titleUpdates.Lookup(update).HasValue)
+                            {
+                                var currentlySelected = TitleUpdates.Items.FirstOrOptional(it =>
+                                    it.TitleUpdate.TitleIdBase == update.TitleIdBase && it.IsSelected);
+
+                                var shouldSelect = !currentlySelected.HasValue ||
+                                                   currentlySelected.Value.TitleUpdate.Version < update.Version;
+                                _titleUpdates.AddOrUpdate((update, shouldSelect));
+                                SaveTitleUpdatesForGame(update.TitleIdBase);
+                                numUpdatesLoaded++;
+
+                                if (shouldSelect)
+                                {
+                                    RefreshApplicationInfo(update.TitleIdBase);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _cancellationToken.Dispose();
+                _cancellationToken = null;
+            }
+
+            return numUpdatesLoaded;
         }
 
         protected void OnApplicationAdded(ApplicationAddedEventArgs e)
@@ -1464,6 +1353,109 @@ namespace Ryujinx.UI.App.Common
             catch (Exception) { }
 
             return null;
+        }
+
+        private void LoadDlcForApplication(ApplicationData application)
+        {
+            _downloadableContents.Edit(it =>
+            {
+                var savedDlc =
+                    DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
+                it.AddOrUpdate(savedDlc);
+
+                if (TryGetDownloadableContentFromFile(application.Path, out var bundledDlc))
+                {
+                    var savedDlcLookup = savedDlc.Select(dlc => dlc.Item1).ToHashSet();
+
+                    bool addedNewDlc = false;
+                    foreach (var dlc in bundledDlc)
+                    {
+                        if (!savedDlcLookup.Contains(dlc))
+                        {
+                            addedNewDlc = true;
+                            it.AddOrUpdate((dlc, true));
+                        }
+                    }
+
+                    if (addedNewDlc)
+                    {
+                        var gameDlcs = it.Items.Where(dlc => dlc.Dlc.TitleIdBase == application.IdBase).ToList();
+                        DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase,
+                            gameDlcs);
+                    }
+                }
+            });
+        }
+
+        private bool LoadTitleUpdatesForApplication(ApplicationData application)
+        {
+            var modifiedVersion = false;
+
+            _titleUpdates.Edit(it =>
+            {
+                var savedUpdates =
+                    TitleUpdatesHelper.LoadTitleUpdatesJson(_virtualFileSystem, application.IdBase);
+                it.AddOrUpdate(savedUpdates);
+
+                var selectedUpdate = savedUpdates.FirstOrOptional(update => update.IsSelected);
+
+                if (TryGetTitleUpdatesFromFile(application.Path, out var bundledUpdates))
+                {
+                    var savedUpdateLookup = savedUpdates.Select(update => update.Item1).ToHashSet();
+
+                    bool addedNewUpdate = false;
+                    foreach (var update in bundledUpdates.OrderByDescending(bundled => bundled.Version))
+                    {
+                        if (!savedUpdateLookup.Contains(update))
+                        {
+                            bool shouldSelect = false;
+                            if (!selectedUpdate.HasValue || selectedUpdate.Value.Item1.Version < update.Version)
+                            {
+                                shouldSelect = true;
+                                selectedUpdate = Optional<(TitleUpdateModel, bool IsSelected)>.Create((update, true));
+                            }
+
+                            modifiedVersion = modifiedVersion || shouldSelect;
+                            it.AddOrUpdate((update, shouldSelect));
+
+                            addedNewUpdate = true;
+                        }
+                    }
+
+                    if (addedNewUpdate)
+                    {
+                        var gameUpdates = it.Items.Where(update => update.TitleUpdate.TitleIdBase == application.IdBase).ToList();
+                        TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, application.IdBase, gameUpdates);
+                    }
+                }
+            });
+
+            return modifiedVersion;
+        }
+
+        private void SaveDownloadableContentsForGame(ulong titleIdBase)
+        {
+            var dlcs = DownloadableContents.Items.Where(dlc => dlc.Dlc.TitleIdBase == titleIdBase).ToList();
+            DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, titleIdBase, dlcs);
+        }
+
+        private void SaveTitleUpdatesForGame(ulong titleIdBase)
+        {
+            var updates = TitleUpdates.Items.Where(update => update.TitleUpdate.TitleIdBase == titleIdBase).ToList();
+            TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, titleIdBase, updates);
+        }
+
+        private void RefreshApplicationInfo(ulong appIdBase)
+        {
+            var application = Applications.Items.First(it => it.IdBase == appIdBase);
+
+            if (!TryGetApplicationsFromFile(application.Path, out List<ApplicationData> applications))
+            {
+                return;
+            }
+
+            var newApplication = applications.First(it => it.IdBase == appIdBase);
+            _applications.AddOrUpdate(newApplication);
         }
     }
 }
