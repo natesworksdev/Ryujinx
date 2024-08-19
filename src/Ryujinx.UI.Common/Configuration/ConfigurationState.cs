@@ -121,6 +121,11 @@ namespace Ryujinx.UI.Common.Configuration
             /// A list of directories containing games to be used to load games into the games list
             /// </summary>
             public ReactiveObject<List<string>> GameDirs { get; private set; }
+            
+            /// <summary>
+            /// A list of directories containing DLC/updates the user wants to autoload during library refreshes
+            /// </summary>
+            public ReactiveObject<List<string>> AutoloadDirs { get; private set; }
 
             /// <summary>
             /// A list of file types to be hidden in the games List
@@ -192,6 +197,7 @@ namespace Ryujinx.UI.Common.Configuration
                 GuiColumns = new Columns();
                 ColumnSort = new ColumnSortSettings();
                 GameDirs = new ReactiveObject<List<string>>();
+                AutoloadDirs = new ReactiveObject<List<string>>();
                 ShownFileTypes = new ShownFileTypeSettings();
                 WindowStartup = new WindowStartupSettings();
                 EnableCustomTheme = new ReactiveObject<bool>();
@@ -735,6 +741,7 @@ namespace Ryujinx.UI.Common.Configuration
                     SortAscending = UI.ColumnSort.SortAscending,
                 },
                 GameDirs = UI.GameDirs,
+                AutoloadDirs = UI.AutoloadDirs,
                 ShownFileTypes = new ShownFileTypes
                 {
                     NSP = UI.ShownFileTypes.NSP,
@@ -844,6 +851,7 @@ namespace Ryujinx.UI.Common.Configuration
             UI.ColumnSort.SortColumnId.Value = 0;
             UI.ColumnSort.SortAscending.Value = false;
             UI.GameDirs.Value = new List<string>();
+            UI.AutoloadDirs.Value = new List<string>();
             UI.ShownFileTypes.NSP.Value = true;
             UI.ShownFileTypes.PFS0.Value = true;
             UI.ShownFileTypes.XCI.Value = true;
@@ -1493,6 +1501,15 @@ namespace Ryujinx.UI.Common.Configuration
 
                 configurationFileUpdated = true;
             }
+            
+            if (configurationFileFormat.Version < 53)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 53.");
+
+                configurationFileFormat.AutoloadDirs = new();
+
+                configurationFileUpdated = true;
+            }
 
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
@@ -1556,6 +1573,7 @@ namespace Ryujinx.UI.Common.Configuration
             UI.ColumnSort.SortColumnId.Value = configurationFileFormat.ColumnSort.SortColumnId;
             UI.ColumnSort.SortAscending.Value = configurationFileFormat.ColumnSort.SortAscending;
             UI.GameDirs.Value = configurationFileFormat.GameDirs;
+            UI.AutoloadDirs.Value = configurationFileFormat.AutoloadDirs;
             UI.ShownFileTypes.NSP.Value = configurationFileFormat.ShownFileTypes.NSP;
             UI.ShownFileTypes.PFS0.Value = configurationFileFormat.ShownFileTypes.PFS0;
             UI.ShownFileTypes.XCI.Value = configurationFileFormat.ShownFileTypes.XCI;

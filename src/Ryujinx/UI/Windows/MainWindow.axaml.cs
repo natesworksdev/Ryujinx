@@ -642,17 +642,18 @@ namespace Ryujinx.Ava.UI.Windows
                 TimeIt("updates", () => ApplicationLibrary.LoadTitleUpdates());
                 TimeIt("DLC", () => ApplicationLibrary.LoadDownloadableContents());
 
-                if (ConfigurationState.Instance.AutoloadContent)
+                var autoloadDirs = ConfigurationState.Instance.UI.AutoloadDirs.Value;
+                if (autoloadDirs.Count > 0)
                 {
                     var updatesLoaded = 0;
                     TimeIt("auto updates",
                         () => updatesLoaded =
-                            ApplicationLibrary.AutoLoadTitleUpdates(ConfigurationState.Instance.UI.GameDirs));
+                            ApplicationLibrary.AutoLoadTitleUpdates(autoloadDirs));
 
                     var dlcLoaded = 0;
                     TimeIt("auto dlc",
                         () => dlcLoaded =
-                            ApplicationLibrary.AutoLoadDownloadableContents(ConfigurationState.Instance.UI.GameDirs));
+                            ApplicationLibrary.AutoLoadDownloadableContents(autoloadDirs));
 
                     ShowNewContentAddedDialog(dlcLoaded, updatesLoaded);
                 }
