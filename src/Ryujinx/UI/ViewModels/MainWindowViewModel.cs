@@ -116,7 +116,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public MainWindowViewModel()
         {
             Applications = new ObservableCollectionExtended<ApplicationData>();
-            
+
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
                 .Sort(GetComparer())
@@ -1263,7 +1263,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle], AllowMultiple = true,
+                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
+                AllowMultiple = true,
             });
 
             if (result.Count > 0)

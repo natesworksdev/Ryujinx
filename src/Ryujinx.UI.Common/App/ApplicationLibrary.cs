@@ -549,7 +549,7 @@ namespace Ryujinx.UI.App.Common
             {
                 Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
             }
-            
+
             return false;
         }
 

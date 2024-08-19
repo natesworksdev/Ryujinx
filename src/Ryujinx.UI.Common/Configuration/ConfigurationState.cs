@@ -121,7 +121,7 @@ namespace Ryujinx.UI.Common.Configuration
             /// A list of directories containing games to be used to load games into the games list
             /// </summary>
             public ReactiveObject<List<string>> GameDirs { get; private set; }
-            
+
             /// <summary>
             /// A list of directories containing DLC/updates the user wants to autoload during library refreshes
             /// </summary>

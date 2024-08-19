@@ -126,7 +126,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool AutoloadDirectoryChanged
         {
             get => _autoloadDirectoryChanged;
@@ -410,7 +410,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
-            
+
             AutoloadDirectories.Clear();
             AutoloadDirectories.AddRange(config.UI.AutoloadDirs.Value);
 
@@ -508,7 +508,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 List<string> gameDirs = new(GameDirectories);
                 config.UI.GameDirs.Value = gameDirs;
             }
-            
+
             if (_autoloadDirectoryChanged)
             {
                 List<string> autoloadDirs = new(AutoloadDirectories);

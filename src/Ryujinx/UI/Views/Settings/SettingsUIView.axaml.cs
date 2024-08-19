@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
                 GameDirsList.SelectedIndex = oldIndex < GameDirsList.ItemCount ? oldIndex : 0;
             }
         }
-        
+
         private async void AddAutoloadDirButton_OnClick(object sender, RoutedEventArgs e)
         {
             string path = AutoloadDirPathBox.Text;
