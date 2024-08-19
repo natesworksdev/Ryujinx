@@ -5,9 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Common.Models;
@@ -26,21 +24,21 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
+        public TitleUpdateWindow(ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
-            DataContext = ViewModel = new TitleUpdateViewModel(virtualFileSystem, applicationLibrary, applicationData);
+            DataContext = ViewModel = new TitleUpdateViewModel(applicationLibrary, applicationData);
 
             InitializeComponent();
         }
 
-        public static async Task Show(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
+        public static async Task Show(ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = "",
                 SecondaryButtonText = "",
                 CloseButtonText = "",
-                Content = new TitleUpdateWindow(virtualFileSystem, applicationLibrary, applicationData),
+                Content = new TitleUpdateWindow(applicationLibrary, applicationData),
                 Title = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.GameUpdateWindowHeading, applicationData.Name, applicationData.IdBaseString),
             };
 

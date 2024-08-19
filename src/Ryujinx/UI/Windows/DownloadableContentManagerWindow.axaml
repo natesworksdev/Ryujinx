@@ -28,7 +28,8 @@
             Grid.Row="0"
             Margin="0 0 0 10"
             Spacing="5"
-            Orientation="Horizontal">
+            Orientation="Horizontal"
+            IsVisible="{Binding ShowBundledContentNotice}">
             <ui:FontIcon
                 Margin="0"
                 HorizontalAlignment="Stretch"

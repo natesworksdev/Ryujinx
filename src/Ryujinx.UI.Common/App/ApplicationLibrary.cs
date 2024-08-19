@@ -1,4 +1,5 @@
 using DynamicData;
+using DynamicData.Kernel;
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
@@ -741,6 +742,8 @@ namespace Ryujinx.UI.App.Common
                             foreach (var application in applications)
                             {
                                 it.AddOrUpdate(application);
+                                LoadTitleUpdatesForApplication(application);
+                                LoadDlcForApplication(application);
                             }
                         });
 
@@ -774,6 +777,71 @@ namespace Ryujinx.UI.App.Common
                 _cancellationToken.Dispose();
                 _cancellationToken = null;
             }
+        }
+
+        private void LoadTitleUpdatesForApplication(ApplicationData application)
+        {
+            _titleUpdates.Edit(it =>
+            {
+                var savedUpdates =
+                    TitleUpdatesHelper.LoadTitleUpdatesJson(_virtualFileSystem, application.IdBase);
+                it.AddOrUpdate(savedUpdates);
+
+                var selectedUpdate = savedUpdates.FirstOrOptional(update => update.IsSelected);
+
+                if (TryGetTitleUpdatesFromFile(application.Path, out var bundledUpdates))
+                {
+                    var savedUpdateLookup = savedUpdates.Select(update => update.Item1).ToHashSet();
+
+                    bool addedNewUpdate = false;
+                    foreach (var update in bundledUpdates)
+                    {
+                        if (!savedUpdateLookup.Contains(update))
+                        {
+                            addedNewUpdate = true;
+                            it.AddOrUpdate((update, false));
+                        }
+                    }
+
+                    if (addedNewUpdate)
+                    {
+                        var gameUpdates = it.Items.Where(update => update.TitleUpdate.TitleIdBase == application.IdBase).ToList();
+                        TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, application.IdBase, gameUpdates);
+                    }
+                }
+            });
+        }
+
+        private void LoadDlcForApplication(ApplicationData application)
+        {
+            _downloadableContents.Edit(it =>
+            {
+                var savedDlc =
+                    DownloadableContentsHelper.LoadDownloadableContentsJson(_virtualFileSystem, application.IdBase);
+                it.AddOrUpdate(savedDlc);
+
+                if (TryGetDownloadableContentFromFile(application.Path, out var bundledDlc))
+                {
+                    var savedDlcLookup = savedDlc.Select(dlc => dlc.Item1).ToHashSet();
+
+                    bool addedNewDlc = false;
+                    foreach (var dlc in bundledDlc)
+                    {
+                        if (!savedDlcLookup.Contains(dlc))
+                        {
+                            addedNewDlc = true;
+                            it.AddOrUpdate((dlc, true));
+                        }
+                    }
+
+                    if (addedNewDlc)
+                    {
+                        var gameDlcs = it.Items.Where(dlc => dlc.Dlc.TitleIdBase == application.IdBase).ToList();
+                        DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, application.IdBase,
+                            gameDlcs);
+                    }
+                }
+            });
         }
 
         public void LoadTitleUpdates()
@@ -830,6 +898,23 @@ namespace Ryujinx.UI.App.Common
 
                 it.Remove(it.Items.Where(item => item.Dlc.TitleIdBase == application.IdBase));
                 it.AddOrUpdate(dlcs);
+            });
+        }
+
+        private void SaveTitleUpdatesForGame(ulong titleIdBase)
+        {
+            var updates = TitleUpdates.Items.Where(update => update.TitleUpdate.TitleIdBase == titleIdBase).ToList();
+            TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, titleIdBase, updates);
+        }
+
+        public void SaveTitleUpdatesForGame(ApplicationData application, List<(TitleUpdateModel, bool IsSelected)> updates)
+        {
+            _titleUpdates.Edit(it =>
+            {
+                TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, application.IdBase, updates);
+
+                it.Remove(it.Items.Where(item => item.TitleUpdate.TitleIdBase == application.IdBase));
+                it.AddOrUpdate(updates);
             });
         }
 

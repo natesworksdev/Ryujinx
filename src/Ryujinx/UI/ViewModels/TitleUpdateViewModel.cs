@@ -2,22 +2,17 @@ using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using DynamicData.Kernel;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
-using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common.Models;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Application = Avalonia.Application;
-using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
@@ -25,18 +20,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
     public class TitleUpdateViewModel : BaseModel
     {
-
-        public TitleUpdateMetadata TitleUpdateWindowData;
-        public readonly string TitleUpdateJsonPath;
-        private VirtualFileSystem VirtualFileSystem { get; }
         private ApplicationLibrary ApplicationLibrary { get; }
         private ApplicationData ApplicationData { get; }
 
         private AvaloniaList<TitleUpdateModel> _titleUpdates = new();
         private AvaloniaList<object> _views = new();
         private object _selectedUpdate = new TitleUpdateViewNoUpdateSentinal();
-
-        private static readonly TitleUpdateMetadataJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
+        private bool _showBundledContentNotice = false;
 
         public AvaloniaList<TitleUpdateModel> TitleUpdates
         {
@@ -68,11 +58,20 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public bool ShowBundledContentNotice
+        {
+            get => _showBundledContentNotice;
+            set
+            {
+                _showBundledContentNotice = value;
+                OnPropertyChanged();
+            }
+        }
+
         public IStorageProvider StorageProvider;
 
-        public TitleUpdateViewModel(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
+        public TitleUpdateViewModel(ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
-            VirtualFileSystem = virtualFileSystem;
             ApplicationLibrary = applicationLibrary;
 
             ApplicationData = applicationData;
@@ -82,43 +81,29 @@ namespace Ryujinx.Ava.UI.ViewModels
                 StorageProvider = desktop.MainWindow.StorageProvider;
             }
 
-            TitleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, ApplicationData.IdBaseString, "updates.json");
-
-            try
-            {
-                TitleUpdateWindowData = JsonHelper.DeserializeFromFile(TitleUpdateJsonPath, _serializerContext.TitleUpdateMetadata);
-            }
-            catch
-            {
-                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {ApplicationData.IdBaseString} at {TitleUpdateJsonPath}");
-
-                TitleUpdateWindowData = new TitleUpdateMetadata
-                {
-                    Selected = "",
-                    Paths = new List<string>(),
-                };
-
-                Save();
-            }
-
             LoadUpdates();
         }
 
         private void LoadUpdates()
         {
-            // Try to load updates from PFS first
-            AddUpdate(ApplicationData.Path, true);
+            var updates = ApplicationLibrary.TitleUpdates.Items
+                .Where(it => it.TitleUpdate.TitleIdBase == ApplicationData.IdBase);
 
-            foreach (string path in TitleUpdateWindowData.Paths)
+            bool hasBundledContent = false;
+            SelectedUpdate = new TitleUpdateViewNoUpdateSentinal();
+            foreach ((TitleUpdateModel update, bool isSelected) in updates)
             {
-                AddUpdate(path);
+                TitleUpdates.Add(update);
+                hasBundledContent = hasBundledContent || update.IsBundled;
+
+                if (isSelected)
+                {
+                    SelectedUpdate = update;
+                }
             }
 
-            var selected = TitleUpdates.FirstOrOptional(x => x.Path == TitleUpdateWindowData.Selected);
-            SelectedUpdate = selected.HasValue ? selected.Value : new TitleUpdateViewNoUpdateSentinal();
+            ShowBundledContentNotice = hasBundledContent;
 
-            // NOTE: Save the list again to remove leftovers.
-            Save();
             SortUpdates();
         }
 
@@ -126,65 +111,76 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var sortedUpdates = TitleUpdates.OrderByDescending(update => update.Version);
 
+            // NOTE(jpr): this works around a bug where calling Views.Clear also clears SelectedUpdate for
+            // some reason. so we save the item here and restore it after
+            var selected = SelectedUpdate;
+
             Views.Clear();
             Views.Add(new TitleUpdateViewNoUpdateSentinal());
             Views.AddRange(sortedUpdates);
+
+            SelectedUpdate = selected;
 
             if (SelectedUpdate is TitleUpdateViewNoUpdateSentinal)
             {
                 SelectedUpdate = Views[0];
             }
+            // this is mainly to handle a scenario where the user removes the selected update
             else if (!TitleUpdates.Contains((TitleUpdateModel)SelectedUpdate))
             {
                 SelectedUpdate = Views.Count > 1 ? Views[1] : Views[0];
             }
         }
 
-        private void AddUpdate(string path, bool ignoreNotFound = false, bool selected = false)
+        private bool AddUpdate(string path, out int numUpdatesAdded)
         {
-            if (!File.Exists(path) || TitleUpdates.Any(x => x.Path == path))
+            numUpdatesAdded = 0;
+
+            if (!File.Exists(path))
             {
-                return;
+                return false;
             }
 
-            try
+            if (!ApplicationLibrary.TryGetTitleUpdatesFromFile(path, out var updates))
             {
-                if (!ApplicationLibrary.TryGetTitleUpdatesFromFile(path, out var titleUpdates))
+                return false;
+            }
+
+            var updatesForThisGame = updates.Where(it => it.TitleIdBase == ApplicationData.Id);
+            if (!updatesForThisGame.Any())
+            {
+                return false;
+            }
+
+            foreach (var update in updatesForThisGame)
+            {
+                if (!TitleUpdates.Contains(update))
                 {
-                    if (!ignoreNotFound)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                            ContentDialogHelper.CreateErrorDialog(
-                                LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]));
-                    }
+                    TitleUpdates.Add(update);
+                    SelectedUpdate = update;
 
-                    return;
-                }
-
-                foreach (var titleUpdate in titleUpdates)
-                {
-                    if (titleUpdate.TitleIdBase != ApplicationData.Id)
-                    {
-                        continue;
-                    }
-
-                    TitleUpdates.Add(titleUpdate);
-
-                    if (selected)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = titleUpdate);
-                    }
+                    numUpdatesAdded++;
                 }
             }
-            catch (Exception ex)
+
+            if (numUpdatesAdded > 0)
             {
-                Dispatcher.UIThread.InvokeAsync(() => ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogLoadFileErrorMessage, ex.Message, path)));
+                SortUpdates();
             }
+
+            return true;
         }
 
         public void RemoveUpdate(TitleUpdateModel update)
         {
-            TitleUpdates.Remove(update);
+            if (!update.IsBundled)
+            {
+                TitleUpdates.Remove(update);
+            }
+            else if (update == SelectedUpdate as TitleUpdateModel)
+            {
+                SelectedUpdate = new TitleUpdateViewNoUpdateSentinal();
+            }
 
             SortUpdates();
         }
@@ -205,30 +201,36 @@ namespace Ryujinx.Ava.UI.ViewModels
                 },
             });
 
+            var totalUpdatesAdded = 0;
             foreach (var file in result)
             {
-                AddUpdate(file.Path.LocalPath, selected: true);
+                if (!AddUpdate(file.Path.LocalPath, out var newUpdatesAdded))
+                {
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUpdateAddUpdateErrorMessage]);
+                }
+
+                totalUpdatesAdded += newUpdatesAdded;
             }
 
-            SortUpdates();
+            if (totalUpdatesAdded > 0)
+            {
+                await ShowNewUpdatesAddedDialog(totalUpdatesAdded);
+            }
         }
 
         public void Save()
         {
-            TitleUpdateWindowData.Paths.Clear();
-            TitleUpdateWindowData.Selected = "";
+            var updates = TitleUpdates.Select(it => (it, it == SelectedUpdate as TitleUpdateModel)).ToList();
+            ApplicationLibrary.SaveTitleUpdatesForGame(ApplicationData, updates);
+        }
 
-            foreach (TitleUpdateModel update in TitleUpdates)
+        private Task ShowNewUpdatesAddedDialog(int numAdded)
+        {
+            var msg = string.Format(LocaleManager.Instance[LocaleKeys.UpdateWindowUpdateAddedMessage], numAdded);
+            return Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                TitleUpdateWindowData.Paths.Add(update.Path);
-
-                if (update == SelectedUpdate as TitleUpdateModel)
-                {
-                    TitleUpdateWindowData.Selected = update.Path;
-                }
-            }
-
-            JsonHelper.SerializeToFile(TitleUpdateJsonPath, TitleUpdateWindowData, _serializerContext.TitleUpdateMetadata);
+                await ContentDialogHelper.ShowTextDialog(LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle], msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
+            });
         }
     }
 }

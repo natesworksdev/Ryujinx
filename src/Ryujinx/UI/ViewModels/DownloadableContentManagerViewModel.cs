@@ -23,6 +23,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
         private AvaloniaList<DownloadableContentModel> _views = new();
+        private bool _showBundledContentNotice = false;
 
         private string _search;
         private readonly ApplicationData _applicationData;
@@ -76,7 +77,17 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowHeading], DownloadableContents.Count);
         }
 
-        public DownloadableContentManagerViewModel(VirtualFileSystem virtualFileSystem, ApplicationLibrary applicationLibrary, ApplicationData applicationData)
+        public bool ShowBundledContentNotice
+        {
+            get => _showBundledContentNotice;
+            set
+            {
+                _showBundledContentNotice = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public DownloadableContentManagerViewModel(ApplicationLibrary applicationLibrary, ApplicationData applicationData)
         {
             _applicationLibrary = applicationLibrary;
 
@@ -94,9 +105,12 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             var dlcs = _applicationLibrary.DownloadableContents.Items
                 .Where(it => it.Dlc.TitleIdBase == _applicationData.IdBase);
+
+            bool hasBundledContent = false;
             foreach ((DownloadableContentModel dlc, bool isEnabled) in dlcs)
             {
                 DownloadableContents.Add(dlc);
+                hasBundledContent = hasBundledContent || dlc.IsBundled;
 
                 if (isEnabled)
                 {
@@ -105,6 +119,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 OnPropertyChanged(nameof(UpdateCount));
             }
+
+            ShowBundledContentNotice = hasBundledContent;
 
             Sort();
         }
@@ -187,12 +203,18 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return false;
             }
 
-            if (!_applicationLibrary.TryGetDownloadableContentFromFile(path, out var dlcs))
+            if (!_applicationLibrary.TryGetDownloadableContentFromFile(path, out var dlcs) || dlcs.Count == 0)
             {
                 return false;
             }
 
-            foreach (var dlc in dlcs.Where(dlc => dlc.TitleIdBase == _applicationData.IdBase))
+            var dlcsForThisGame = dlcs.Where(it => it.TitleIdBase == _applicationData.IdBase);
+            if (!dlcsForThisGame.Any())
+            {
+                return false;
+            }
+
+            foreach (var dlc in dlcsForThisGame)
             {
                 if (!DownloadableContents.Contains(dlc))
                 {
