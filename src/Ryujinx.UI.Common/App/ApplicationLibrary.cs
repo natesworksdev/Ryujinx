@@ -888,7 +888,7 @@ namespace Ryujinx.UI.App.Common
                     {
                         foreach (var dlc in foundDlcs.Where(it => appIdLookup.Contains(it.TitleIdBase)))
                         {
-                            if (!_downloadableContents.Lookup( dlc).HasValue)
+                            if (!_downloadableContents.Lookup(dlc).HasValue)
                             {
                                 _downloadableContents.AddOrUpdate((dlc, true));
                                 SaveDownloadableContentsForGame(dlc.TitleIdBase);
