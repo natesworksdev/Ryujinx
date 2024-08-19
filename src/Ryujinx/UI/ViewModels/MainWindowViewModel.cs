@@ -1259,6 +1259,29 @@ namespace Ryujinx.Ava.UI.ViewModels
             _rendererWaitEvent.Set();
         }
 
+        private async Task LoadContentFromFolder(LocaleKeys localeMessageKey, Func<List<string>, int> onDirsSelected)
+        {
+            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle], AllowMultiple = true,
+            });
+
+            if (result.Count > 0)
+            {
+                var dirs = result.Select(it => it.Path.LocalPath).ToList();
+                var numAdded = onDirsSelected(dirs);
+
+                var msg = string.Format(LocaleManager.Instance[localeMessageKey], numAdded);
+
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.ShowTextDialog(
+                        LocaleManager.Instance[numAdded > 0 ? LocaleKeys.RyujinxConfirm : LocaleKeys.RyujinxInfo],
+                        msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
+                });
+            }
+        }
+
         #endregion
 
         #region PublicMethods
@@ -1507,30 +1530,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async Task BulkLoadDlc()
+        public async Task LoadDlcFromFolder()
         {
-            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-            {
-                Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle], AllowMultiple = true,
-            });
+            await LoadContentFromFolder(LocaleKeys.AutoloadDlcAddedMessage,
+                dirs => ApplicationLibrary.AutoLoadDownloadableContents(dirs));
+        }
 
-            if (result.Count > 0)
-            {
-                var dirs = result.Select(it => it.Path.LocalPath).ToList();
-                var numDlcAdded = ApplicationLibrary.AutoLoadDownloadableContents(dirs);
-
-                if (numDlcAdded > 0)
-                {
-                    var msg = string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAddedMessage], numDlcAdded);
-
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        await ContentDialogHelper.ShowTextDialog(
-                            LocaleManager.Instance[LocaleKeys.DialogConfirmationTitle],
-                            msg, "", "", "", LocaleManager.Instance[LocaleKeys.InputDialogOk], (int)Symbol.Checkmark);
-                    });
-                }
-            }
+        public async Task LoadTitleUpdatesFromFolder()
+        {
+            await LoadContentFromFolder(LocaleKeys.AutoloadUpdateAddedMessage,
+                dirs => ApplicationLibrary.AutoLoadTitleUpdates(dirs));
         }
 
         public async Task OpenFolder()
