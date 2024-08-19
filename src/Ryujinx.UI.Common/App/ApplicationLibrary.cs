@@ -44,7 +44,7 @@ namespace Ryujinx.UI.App.Common
         public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
-        public readonly IObservableCache<ApplicationData, (ulong Id, string Path)> Applications;
+        public readonly IObservableCache<ApplicationData, ulong> Applications;
         public readonly IObservableCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> TitleUpdates;
         public readonly IObservableCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> DownloadableContents;
 
@@ -57,7 +57,7 @@ namespace Ryujinx.UI.App.Common
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly IntegrityCheckLevel _checkLevel;
         private CancellationTokenSource _cancellationToken;
-        private readonly SourceCache<ApplicationData, (ulong Id, string Path)> _applications = new(it => (it.Id, it.Path));
+        private readonly SourceCache<ApplicationData, ulong> _applications = new(it => it.Id);
         private readonly SourceCache<(TitleUpdateModel TitleUpdate, bool IsSelected), TitleUpdateModel> _titleUpdates = new(it => it.TitleUpdate);
         private readonly SourceCache<(DownloadableContentModel Dlc, bool IsEnabled), DownloadableContentModel> _downloadableContents = new(it => it.Dlc);
 
@@ -887,7 +887,7 @@ namespace Ryujinx.UI.App.Common
                     {
                         foreach (var dlc in foundDlcs.Where(it => appIdLookup.Contains(it.TitleIdBase)))
                         {
-                            if (!DownloadableContents.Items.Any(it => it.Dlc == dlc))
+                            if (!_downloadableContents.Lookup( dlc).HasValue)
                             {
                                 _downloadableContents.AddOrUpdate((dlc, true));
                                 SaveDownloadableContentsForGame(dlc.TitleIdBase);
