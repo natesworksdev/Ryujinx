@@ -802,6 +802,7 @@ namespace Ryujinx.UI.App.Common
 
                 it.Remove(it.Items.Where(item => item.TitleUpdate.TitleIdBase == application.IdBase));
                 it.AddOrUpdate(updates);
+                RefreshApplicationInfo(application.IdBase);
             });
         }
 
