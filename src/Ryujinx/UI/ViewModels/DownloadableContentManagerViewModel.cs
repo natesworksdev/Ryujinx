@@ -135,27 +135,26 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     foreach (DownloadableContentNca downloadableContentNca in downloadableContentContainer.DownloadableContentNcaList)
                     {
-                        using UniqueRef<IFile> ncaFile = new();
+                        Nca nca = TryOpenNca(partitionFileSystem, downloadableContentNca.FullPath);
 
-                        partitionFileSystem.OpenFile(ref ncaFile.Ref, downloadableContentNca.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                        Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), downloadableContentContainer.ContainerPath);
-                        if (nca != null)
+                        if (nca == null)
                         {
-                            var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
-                                downloadableContentContainer.ContainerPath,
-                                downloadableContentNca.FullPath,
-                                downloadableContentNca.Enabled);
-
-                            DownloadableContents.Add(content);
-
-                            if (content.Enabled)
-                            {
-                                SelectedDownloadableContents.Add(content);
-                            }
-
-                            OnPropertyChanged(nameof(UpdateCount));
+                            continue;
                         }
+
+                        var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"),
+                            downloadableContentContainer.ContainerPath,
+                            downloadableContentNca.FullPath,
+                            downloadableContentNca.Enabled);
+
+                        DownloadableContents.Add(content);
+
+                        if (content.Enabled)
+                        {
+                            SelectedDownloadableContents.Add(content);
+                        }
+
+                        OnPropertyChanged(nameof(UpdateCount));
                     }
                 }
             }
@@ -189,17 +188,20 @@ namespace Ryujinx.Ava.UI.ViewModels
             return false;
         }
 
-        private Nca TryOpenNca(IStorage ncaStorage, string containerPath)
+        private Nca TryOpenNca(IFileSystem partitionFileSystem, string fullPath)
         {
             try
             {
-                return new Nca(_virtualFileSystem.KeySet, ncaStorage);
+                using UniqueRef<IFile> ncaFile = new();
+                partitionFileSystem.OpenFile(ref ncaFile.Ref, fullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                return new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
             }
             catch (Exception ex)
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogLoadFileErrorMessage], ex.Message, containerPath));
+                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogLoadFileErrorMessage], ex.Message, fullPath));
                 });
             }
 
@@ -244,11 +246,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             bool success = false;
             foreach (DirectoryEntryEx fileEntry in partitionFileSystem.EnumerateEntries("/", "*.nca"))
             {
-                using var ncaFile = new UniqueRef<IFile>();
+                Nca nca = TryOpenNca(partitionFileSystem, fileEntry.FullPath);
 
-                partitionFileSystem.OpenFile(ref ncaFile.Ref, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                Nca nca = TryOpenNca(ncaFile.Get.AsStorage(), path);
                 if (nca == null)
                 {
                     continue;
@@ -261,7 +260,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                         continue;
                     }
 
-                    var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true);
+                    var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path,
+                        fileEntry.FullPath, true);
                     DownloadableContents.Add(content);
                     Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.Add(content));
 
