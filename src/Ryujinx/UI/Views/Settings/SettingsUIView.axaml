@@ -39,9 +39,6 @@
                     <CheckBox IsChecked="{Binding RememberWindowState}">
                         <TextBlock Text="{locale:Locale SettingsTabGeneralRememberWindowState}" />
                     </CheckBox>
-                    <CheckBox IsChecked="{Binding AutoloadContent}">
-                        <TextBlock Text="{locale:Locale SettingsTabGeneralAutoloadContent}" />
-                    </CheckBox>
                     <StackPanel Margin="0, 15, 0, 0" Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    Text="{locale:Locale SettingsTabGeneralHideCursor}"

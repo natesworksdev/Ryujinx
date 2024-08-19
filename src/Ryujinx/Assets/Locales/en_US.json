@@ -100,7 +100,6 @@
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Check for Updates on Launch",
   "SettingsTabGeneralShowConfirmExitDialog": "Show \"Confirm Exit\" Dialog",
   "SettingsTabGeneralRememberWindowState": "Remember Window Size/Position",
-  "SettingsTabGeneralAutoloadContent": "Automatically load DLC/updates",
   "SettingsTabGeneralHideCursor": "Hide Cursor:",
   "SettingsTabGeneralHideCursorNever": "Never",
   "SettingsTabGeneralHideCursorOnIdle": "On Idle",

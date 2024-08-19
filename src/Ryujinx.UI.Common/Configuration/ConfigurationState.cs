@@ -639,11 +639,6 @@ namespace Ryujinx.UI.Common.Configuration
         public ReactiveObject<bool> RememberWindowState { get; private set; }
 
         /// <summary>
-        /// Enables or disables automatically loading DLC/title updates on library refresh.
-        /// </summary>
-        public ReactiveObject<bool> AutoloadContent { get; private set; }
-
-        /// <summary>
         /// Enables hardware-accelerated rendering for Avalonia
         /// </summary>
         public ReactiveObject<bool> EnableHardwareAcceleration { get; private set; }
@@ -665,7 +660,6 @@ namespace Ryujinx.UI.Common.Configuration
             CheckUpdatesOnStart = new ReactiveObject<bool>();
             ShowConfirmExit = new ReactiveObject<bool>();
             RememberWindowState = new ReactiveObject<bool>();
-            AutoloadContent = new ReactiveObject<bool>();
             EnableHardwareAcceleration = new ReactiveObject<bool>();
             HideCursor = new ReactiveObject<HideCursorMode>();
         }
@@ -704,7 +698,6 @@ namespace Ryujinx.UI.Common.Configuration
                 CheckUpdatesOnStart = CheckUpdatesOnStart,
                 ShowConfirmExit = ShowConfirmExit,
                 RememberWindowState = RememberWindowState,
-                AutoloadContent = AutoloadContent,
                 EnableHardwareAcceleration = EnableHardwareAcceleration,
                 HideCursor = HideCursor,
                 EnableVsync = Graphics.EnableVsync,
@@ -815,7 +808,6 @@ namespace Ryujinx.UI.Common.Configuration
             CheckUpdatesOnStart.Value = true;
             ShowConfirmExit.Value = true;
             RememberWindowState.Value = true;
-            AutoloadContent.Value = false;
             EnableHardwareAcceleration.Value = true;
             HideCursor.Value = HideCursorMode.OnIdle;
             Graphics.EnableVsync.Value = true;
@@ -1497,15 +1489,6 @@ namespace Ryujinx.UI.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 52.");
 
-                configurationFileFormat.AutoloadContent = false;
-
-                configurationFileUpdated = true;
-            }
-            
-            if (configurationFileFormat.Version < 53)
-            {
-                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 53.");
-
                 configurationFileFormat.AutoloadDirs = new();
 
                 configurationFileUpdated = true;
@@ -1542,7 +1525,6 @@ namespace Ryujinx.UI.Common.Configuration
             CheckUpdatesOnStart.Value = configurationFileFormat.CheckUpdatesOnStart;
             ShowConfirmExit.Value = configurationFileFormat.ShowConfirmExit;
             RememberWindowState.Value = configurationFileFormat.RememberWindowState;
-            AutoloadContent.Value = configurationFileFormat.AutoloadContent;
             EnableHardwareAcceleration.Value = configurationFileFormat.EnableHardwareAcceleration;
             HideCursor.Value = configurationFileFormat.HideCursor;
             Graphics.EnableVsync.Value = configurationFileFormat.EnableVsync;
