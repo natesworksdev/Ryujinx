@@ -122,14 +122,7 @@ namespace Ryujinx.UI.Common.Helper
             {
                 return new Nca(vfs.KeySet, ncaStorage);
             }
-            catch (Exception)
-            {
-                // TODO(jpr): emit failure
-                // Dispatcher.UIThread.InvokeAsync(async () =>
-                // {
-                //     await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[LocaleKeys.DialogLoadFileErrorMessage], ex.Message, containerPath));
-                // });
-            }
+            catch (Exception) { }
 
             return null;
         }
