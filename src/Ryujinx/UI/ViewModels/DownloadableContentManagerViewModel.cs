@@ -208,8 +208,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return false;
             }
 
-            var dlcsForThisGame = dlcs.Where(it => it.TitleIdBase == _applicationData.IdBase);
-            if (!dlcsForThisGame.Any())
+            var dlcsForThisGame = dlcs.Where(it => it.TitleIdBase == _applicationData.IdBase).ToList();
+            if (dlcsForThisGame.Count == 0)
             {
                 return false;
             }

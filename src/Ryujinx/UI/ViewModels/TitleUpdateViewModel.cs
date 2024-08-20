@@ -146,8 +146,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return false;
             }
 
-            var updatesForThisGame = updates.Where(it => it.TitleIdBase == ApplicationData.Id);
-            if (!updatesForThisGame.Any())
+            var updatesForThisGame = updates.Where(it => it.TitleIdBase == ApplicationData.Id).ToList();
+            if (updatesForThisGame.Count == 0)
             {
                 return false;
             }
