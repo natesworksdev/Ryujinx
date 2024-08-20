@@ -299,6 +299,18 @@ namespace Ryujinx.Graphics.Vulkan
             set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
         }
 
+        public bool FeedbackLoopColor
+        {
+            readonly get => ((Internal.Id8 >> 7) & 0x1) != 0UL;
+            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFF7F) | ((value ? 1UL : 0UL) << 7);
+        }
+
+        public bool FeedbackLoopDepth
+        {
+            readonly get => ((Internal.Id8 >> 8) & 0x1) != 0UL;
+            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFEFF) | ((value ? 1UL : 0UL) << 8);
+        }
+
         public bool HasTessellationControlShader;
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
         public PipelineLayout PipelineLayout;
@@ -588,9 +600,25 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicStates = dynamicStates,
                 };
 
+                PipelineCreateFlags flags = 0;
+
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
+                {
+                    if (FeedbackLoopColor)
+                    {
+                        flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
+                    }
+
+                    if (FeedbackLoopDepth)
+                    {
+                        flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
+                    }
+                }
+
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
+                    Flags = flags,
                     StageCount = StagesCount,
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,

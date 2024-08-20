@@ -44,6 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_4444_formats",
             "VK_KHR_8bit_storage",
             "VK_KHR_maintenance2",
+            "VK_EXT_attachment_feedback_loop_layout",
         };
 
         private static readonly string[] _requiredExtensions = {
@@ -357,6 +358,17 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesDepthClipControl;
             }
 
+            PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT supportedFeaturesAttachmentFeedbackLoopLayout = new()
+            {
+                SType = StructureType.PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesExt,
+                PNext = features2.PNext,
+            };
+
+            if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_attachment_feedback_loop_layout"))
+            {
+                features2.PNext = &supportedFeaturesAttachmentFeedbackLoopLayout;
+            }
+
             PhysicalDeviceVulkan12Features supportedPhysicalDeviceVulkan12Features = new()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
@@ -529,6 +541,21 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 pExtendedFeatures = &featuresDepthClipControl;
+            }
+
+            PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT featuresAttachmentFeedbackLoopLayout;
+
+            if (physicalDevice.IsDeviceExtensionPresent("VK_EXT_attachment_feedback_loop_layout") &&
+                supportedFeaturesAttachmentFeedbackLoopLayout.AttachmentFeedbackLoopLayout)
+            {
+                featuresAttachmentFeedbackLoopLayout = new()
+                {
+                    SType = StructureType.PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    AttachmentFeedbackLoopLayout = true,
+                };
+
+                pExtendedFeatures = &featuresAttachmentFeedbackLoopLayout;
             }
 
             var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(physicalDevice.DeviceExtensions)).ToArray();

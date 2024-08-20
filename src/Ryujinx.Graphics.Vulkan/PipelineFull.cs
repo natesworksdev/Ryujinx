@@ -28,6 +28,8 @@ namespace Ryujinx.Graphics.Vulkan
             _activeBufferMirrors = new();
 
             CommandBuffer = (Cbs = gd.CommandBufferPool.Rent()).CommandBuffer;
+
+            IsMainPipeline = true;
         }
 
         private void CopyPendingQuery()

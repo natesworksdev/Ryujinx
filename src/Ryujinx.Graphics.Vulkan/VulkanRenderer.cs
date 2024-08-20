@@ -243,6 +243,11 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
             };
 
+            PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT featuresAttachmentFeedbackLoop = new()
+            {
+                SType = StructureType.PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesExt,
+            };
+
             PhysicalDevicePortabilitySubsetFeaturesKHR featuresPortabilitySubset = new()
             {
                 SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr,
@@ -277,6 +282,14 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 featuresDepthClipControl.PNext = features2.PNext;
                 features2.PNext = &featuresDepthClipControl;
+            }
+
+            bool supportsAttachmentFeedbackLoop = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_attachment_feedback_loop_layout");
+
+            if (supportsAttachmentFeedbackLoop)
+            {
+                featuresAttachmentFeedbackLoop.PNext = features2.PNext;
+                features2.PNext = &featuresAttachmentFeedbackLoop;
             }
 
             bool usePortability = _physicalDevice.IsDeviceExtensionPresent("VK_KHR_portability_subset");
@@ -401,6 +414,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent("VK_NV_viewport_array2"),
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
+                supportsAttachmentFeedbackLoop && featuresAttachmentFeedbackLoop.AttachmentFeedbackLoopLayout,
                 propertiesSubgroup.SubgroupSize,
                 supportedSampleCounts,
                 portabilityFlags,
