@@ -775,6 +775,7 @@ namespace Ryujinx.UI.App.Common
             }
         }
 
+        // Replace the currently stored DLC state for the game with the provided DLC state.
         public void SaveDownloadableContentsForGame(ApplicationData application, List<(DownloadableContentModel, bool IsEnabled)> dlcs)
         {
             _downloadableContents.Edit(it =>
@@ -786,6 +787,7 @@ namespace Ryujinx.UI.App.Common
             });
         }
 
+        // Replace the currently stored update state for the game with the provided update state.
         public void SaveTitleUpdatesForGame(ApplicationData application, List<(TitleUpdateModel, bool IsSelected)> updates)
         {
             _titleUpdates.Edit(it =>
@@ -798,6 +800,8 @@ namespace Ryujinx.UI.App.Common
             });
         }
 
+        // Searches the provided directories for DLC NSP files that are _valid for the currently detected games in the
+        // library_, and then enables those DLC.
         public int AutoLoadDownloadableContents(List<string> appDirs)
         {
             _cancellationToken = new CancellationTokenSource();
@@ -894,6 +898,9 @@ namespace Ryujinx.UI.App.Common
             return newDlcLoaded;
         }
 
+        // Searches the provided directories for update NSP files that are _valid for the currently detected games in the
+        // library_, and then applies those updates. If a newly-detected update is a newer version than the currently
+        // selected update (or if no update is currently selected), then that update will be selected.
         public int AutoLoadTitleUpdates(List<string> appDirs)
         {
             _cancellationToken = new CancellationTokenSource();
@@ -1333,6 +1340,8 @@ namespace Ryujinx.UI.App.Common
             return null;
         }
 
+        // Does a two-phase load of DLC. First reading the metadata on disk, then loading anything bundled in the game
+        // file itself
         private void LoadDlcForApplication(ApplicationData application)
         {
             _downloadableContents.Edit(it =>
@@ -1365,6 +1374,8 @@ namespace Ryujinx.UI.App.Common
             });
         }
 
+        // Does a two-phase load of updates. First reading the metadata on disk, then loading anything bundled in the game
+        // file itself
         private bool LoadTitleUpdatesForApplication(ApplicationData application)
         {
             var modifiedVersion = false;
@@ -1411,28 +1422,33 @@ namespace Ryujinx.UI.App.Common
             return modifiedVersion;
         }
 
+        // Save the _currently tracked_ DLC state for the game
         private void SaveDownloadableContentsForGame(ulong titleIdBase)
         {
             var dlcs = DownloadableContents.Items.Where(dlc => dlc.Dlc.TitleIdBase == titleIdBase).ToList();
             DownloadableContentsHelper.SaveDownloadableContentsJson(_virtualFileSystem, titleIdBase, dlcs);
         }
 
+        // Save the _currently tracked_ update state for the game
         private void SaveTitleUpdatesForGame(ulong titleIdBase)
         {
             var updates = TitleUpdates.Items.Where(update => update.TitleUpdate.TitleIdBase == titleIdBase).ToList();
             TitleUpdatesHelper.SaveTitleUpdatesJson(_virtualFileSystem, titleIdBase, updates);
         }
 
+        // ApplicationData isnt live-updating (e.g. when an update gets applied) and so this is meant to trigger a refresh
+        // of its state
         private void RefreshApplicationInfo(ulong appIdBase)
         {
-            var application = Applications.Items.First(it => it.IdBase == appIdBase);
+            var application = _applications.Lookup(appIdBase);
 
-            if (!TryGetApplicationsFromFile(application.Path, out List<ApplicationData> applications))
-            {
+            if (!application.HasValue)
                 return;
-            }
 
-            var newApplication = applications.First(it => it.IdBase == appIdBase);
+            if (!TryGetApplicationsFromFile(application.Value.Path, out List<ApplicationData> newApplications))
+                return;
+
+            var newApplication = newApplications.First(it => it.IdBase == appIdBase);
             _applications.AddOrUpdate(newApplication);
         }
     }
