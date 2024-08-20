@@ -41,7 +41,6 @@ namespace Ryujinx.UI.App.Common
     public class ApplicationLibrary
     {
         public Language DesiredLanguage { get; set; }
-        public event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
         public readonly IObservableCache<ApplicationData, ulong> Applications;
@@ -629,6 +628,7 @@ namespace Ryujinx.UI.App.Common
             {
                 Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{filePath}' Error: {exception}");
             }
+
             return false;
         }
 
@@ -729,14 +729,6 @@ namespace Ryujinx.UI.App.Common
 
                     if (TryGetApplicationsFromFile(applicationPath, out List<ApplicationData> applications))
                     {
-                        foreach (var application in applications)
-                        {
-                            OnApplicationAdded(new ApplicationAddedEventArgs
-                            {
-                                AppData = application,
-                            });
-                        }
-
                         _applications.Edit(it =>
                         {
                             foreach (var application in applications)
@@ -839,12 +831,7 @@ namespace Ryujinx.UI.App.Common
                         };
 
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(
-                            file =>
-                            {
-                                return
-                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value);
-                            });
+                            file => Path.GetExtension(file).ToLower() is ".nsp");
 
                         foreach (string app in files)
                         {
@@ -940,12 +927,7 @@ namespace Ryujinx.UI.App.Common
                         };
 
                         IEnumerable<string> files = Directory.EnumerateFiles(appDir, "*", options).Where(
-                            file =>
-                            {
-                                return
-                                    (Path.GetExtension(file).ToLower() is ".nsp" &&
-                                     ConfigurationState.Instance.UI.ShownFileTypes.NSP.Value);
-                            });
+                            file => Path.GetExtension(file).ToLower() is ".nsp");
 
                         foreach (string app in files)
                         {
@@ -1016,11 +998,6 @@ namespace Ryujinx.UI.App.Common
             }
 
             return numUpdatesLoaded;
-        }
-
-        protected void OnApplicationAdded(ApplicationAddedEventArgs e)
-        {
-            ApplicationAdded?.Invoke(null, e);
         }
 
         protected void OnApplicationCountUpdated(ApplicationCountUpdatedEventArgs e)
