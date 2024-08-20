@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly ulong _size;
 
         private int _bindCount;
-        private TextureSliceInfo[] _slices;
+        private readonly TextureSliceInfo[] _slices;
 
         public VkFormat VkFormat { get; }
 
