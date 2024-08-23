@@ -47,6 +47,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsHostImportedMemory;
         public readonly bool SupportsDepthClipControl;
         public readonly bool SupportsAttachmentFeedbackLoop;
+        public readonly bool SupportsDynamicAttachmentFeedbackLoop;
         public readonly uint SubgroupSize;
         public readonly SampleCountFlags SupportedSampleCounts;
         public readonly PortabilitySubsetFlags PortabilitySubset;
@@ -86,6 +87,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsHostImportedMemory,
             bool supportsDepthClipControl,
             bool supportsAttachmentFeedbackLoop,
+            bool supportsDynamicAttachmentFeedbackLoop,
             uint subgroupSize,
             SampleCountFlags supportedSampleCounts,
             PortabilitySubsetFlags portabilitySubset,

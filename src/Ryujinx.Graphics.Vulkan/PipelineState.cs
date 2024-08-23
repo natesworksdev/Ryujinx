@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
     struct PipelineState : IDisposable
     {
         private const int RequiredSubgroupSize = 32;
+        private const int MaxDynamicStatesCount = 9;
 
         public PipelineUid Internal;
 
@@ -576,9 +577,11 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
-                int dynamicStatesCount = supportsExtDynamicState ? 8 : 7;
+                bool supportsFeedbackLoopDynamicState = gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop;
 
-                DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
+                DynamicState* dynamicStates = stackalloc DynamicState[MaxDynamicStatesCount];
+
+                int dynamicStatesCount = 7;
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
@@ -590,7 +593,12 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (supportsExtDynamicState)
                 {
-                    dynamicStates[7] = DynamicState.VertexInputBindingStrideExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.VertexInputBindingStrideExt;
+                }
+
+                if (supportsFeedbackLoopDynamicState)
+                {
+                    dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo

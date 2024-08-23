@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (Pipeline != null && Pbp == PipelineBindPoint.Graphics)
             {
-                DynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
+                DynamicState.ReplayIfDirty(Gd, CommandBuffer);
             }
         }
 

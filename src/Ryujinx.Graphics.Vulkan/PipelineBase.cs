@@ -1535,8 +1535,17 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_feedbackLoop != aspects)
             {
-                _newState.FeedbackLoopColor = (aspects & FeedbackLoopAspects.Color) != 0;
-                _newState.FeedbackLoopDepth = (aspects & FeedbackLoopAspects.Depth) != 0;
+                if (Gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop)
+                {
+                    DynamicState.SetFeedbackLoop(
+                        (aspects & FeedbackLoopAspects.Color) != 0,
+                        (aspects & FeedbackLoopAspects.Depth) != 0);
+                }
+                else
+                {
+                    _newState.FeedbackLoopColor = (aspects & FeedbackLoopAspects.Color) != 0;
+                    _newState.FeedbackLoopDepth = (aspects & FeedbackLoopAspects.Depth) != 0;
+                }
 
                 _feedbackLoop = aspects;
 
@@ -1602,7 +1611,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Gd.FlushAllCommands();
             }
 
-            DynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
+            DynamicState.ReplayIfDirty(Gd, CommandBuffer);
 
             if (_needsIndexBufferRebind && _indexBufferPattern == null)
             {
