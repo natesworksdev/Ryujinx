@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private void RecordFeedbackLoop(ExtAttachmentFeedbackLoopDynamicState api, CommandBuffer commandBuffer)
+        private readonly void RecordFeedbackLoop(ExtAttachmentFeedbackLoopDynamicState api, CommandBuffer commandBuffer)
         {
             ImageAspectFlags aspects = _feedbackLoopColor ? ImageAspectFlags.ColorBit : 0;
 
