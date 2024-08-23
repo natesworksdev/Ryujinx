@@ -1,4 +1,4 @@
-using CommandLine;
+﻿using CommandLine;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Common;
