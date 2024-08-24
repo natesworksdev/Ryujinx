@@ -165,6 +165,8 @@ namespace Ryujinx.UI.Common.Helper
             fs.Seek(14, SeekOrigin.Begin);
             fs.WriteByte((byte)dataLength);
             fs.WriteByte((byte)(dataLength >> 8));
+            fs.WriteByte((byte)(dataLength >> 16));
+            fs.WriteByte((byte)(dataLength >> 24));
         }
     }
 }
