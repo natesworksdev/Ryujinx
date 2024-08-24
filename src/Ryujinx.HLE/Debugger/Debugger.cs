@@ -323,7 +323,7 @@ namespace Ryujinx.HLE.Debugger
                 case 'q':
                     if (ss.ConsumeRemaining("GDBServerVersion"))
                     {
-                        Reply($"name:Ryujinx;version:{ReleaseInformation.GetVersion()};");
+                        Reply($"name:Ryujinx;version:{ReleaseInformation.Version};");
                         break;
                     }
 
