@@ -47,6 +47,7 @@ namespace Ryujinx.UI.Windows
         [GUI] Adjustment _gyroDeadzone;
         [GUI] CheckButton _enableMotion;
         [GUI] CheckButton _enableCemuHook;
+        [GUI] CheckButton _enableHandheld;
         [GUI] CheckButton _mirrorInput;
         [GUI] Entry _dsuServerHost;
         [GUI] Entry _dsuServerPort;
@@ -185,6 +186,7 @@ namespace Ryujinx.UI.Windows
             _rSl.Clicked += Button_Pressed;
             _rSr.Clicked += Button_Pressed;
             _enableCemuHook.Clicked += CemuHookCheckButtonPressed;
+            _enableHandheld.Clicked += HandheldCheckButtonPressed;
 
             // Setup current values.
             UpdateInputDeviceList();
@@ -200,6 +202,11 @@ namespace Ryujinx.UI.Windows
             mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
 
             _mainWindow.RendererWidget?.NpadManager.BlockInputUpdates();
+        }
+
+        private void HandheldCheckButtonPressed(object sender, EventArgs e)
+        {
+            UpdateCemuHookSpecificFieldsVisibility();
         }
 
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
@@ -291,8 +298,13 @@ namespace Ryujinx.UI.Windows
 
         private void UpdateCemuHookSpecificFieldsVisibility()
         {
+            if (_enableHandheld.Active)
+            {
+                _enableCemuHook.Active = false;
+            }
             if (_enableCemuHook.Active)
             {
+                _enableHandheld.Active = false;
                 _dsuServerHostBox.Show();
                 _dsuServerPortBox.Show();
                 _motionControllerSlot.Show();
@@ -429,6 +441,7 @@ namespace Ryujinx.UI.Windows
             _mirrorInput.Active = false;
             _enableMotion.Active = false;
             _enableCemuHook.Active = false;
+            _enableHandheld.Active = false;
             _slotNumber.Value = 0;
             _altSlotNumber.Value = 0;
             _sensitivity.Value = 100;
@@ -528,6 +541,7 @@ namespace Ryujinx.UI.Windows
                     _gyroDeadzone.Value = controllerConfig.Motion.GyroDeadzone;
                     _enableMotion.Active = controllerConfig.Motion.EnableMotion;
                     _enableCemuHook.Active = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
+                    _enableHandheld.Active = controllerConfig.Motion.MotionBackend == MotionInputBackendType.Handheld;
 
                     // If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0.
                     if (_controllerRangeLeft.Value <= 0.0 && _controllerRangeRight.Value <= 0.0)
@@ -688,7 +702,7 @@ namespace Ryujinx.UI.Windows
                 {
                     motionConfig = new StandardMotionConfigController
                     {
-                        MotionBackend = MotionInputBackendType.GamepadDriver,
+                        MotionBackend = _enableHandheld.Active ? MotionInputBackendType.Handheld : MotionInputBackendType.GamepadDriver,
                         EnableMotion = _enableMotion.Active,
                         Sensitivity = (int)_sensitivity.Value,
                         GyroDeadzone = _gyroDeadzone.Value,

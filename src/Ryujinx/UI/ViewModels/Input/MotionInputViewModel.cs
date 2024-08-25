@@ -85,7 +85,26 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             get => _enableCemuHookMotion;
             set
             {
+                if (value)
+                {
+                    EnableHandheldMotion = false;
+                }
                 _enableCemuHookMotion = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _enableHandheldMotion;
+        public bool EnableHandheldMotion
+        {
+            get => _enableHandheldMotion;
+            set
+            {
+                if (value)
+                {
+                    EnableCemuHookMotion = false;
+                }
+                _enableHandheldMotion = value;
                 OnPropertyChanged();
             }
         }

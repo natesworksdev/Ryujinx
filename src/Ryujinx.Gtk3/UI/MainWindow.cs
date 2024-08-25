@@ -26,6 +26,7 @@ using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
+using Ryujinx.SDL3;
 using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Applet;
 using Ryujinx.UI.Common;
@@ -339,7 +340,7 @@ namespace Ryujinx.UI
 
             Task.Run(RefreshFirmwareLabel);
 
-            InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
+            InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver(), new SDL3MotionDriver());
         }
 
         private void UpdateMultiplayerLanInterfaceId(object sender, ReactiveEventArgs<string> args)

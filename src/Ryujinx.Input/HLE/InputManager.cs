@@ -7,9 +7,11 @@ namespace Ryujinx.Input.HLE
         public IGamepadDriver KeyboardDriver { get; private set; }
         public IGamepadDriver GamepadDriver { get; private set; }
         public IGamepadDriver MouseDriver { get; private set; }
+        public IHandheld Handheld { get; private set; }
 
-        public InputManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver)
+        public InputManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver, IHandheld handheld)
         {
+            Handheld = handheld;
             KeyboardDriver = keyboardDriver;
             GamepadDriver = gamepadDriver;
         }
@@ -23,7 +25,7 @@ namespace Ryujinx.Input.HLE
 
         public NpadManager CreateNpadManager()
         {
-            return new NpadManager(KeyboardDriver, GamepadDriver, MouseDriver);
+            return new NpadManager(KeyboardDriver, GamepadDriver, MouseDriver, Handheld);
         }
 
         public TouchScreenManager CreateTouchScreenManager()

@@ -28,6 +28,7 @@ using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.SDL2.Common;
+using Ryujinx.SDL3;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -339,7 +340,7 @@ namespace Ryujinx.Headless.SDL2
             _accountManager = new AccountManager(_libHacHorizonManager.RyujinxClient, option.UserProfile);
             _userChannelPersistence = new UserChannelPersistence();
 
-            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver());
+            _inputManager = new InputManager(new SDL2KeyboardDriver(), new SDL2GamepadDriver(), new SDL3MotionDriver());
 
             GraphicsConfig.EnableShaderCache = true;
 

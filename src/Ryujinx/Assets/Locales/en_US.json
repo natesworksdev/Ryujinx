@@ -264,6 +264,7 @@
   "ControllerSettingsTriggerThreshold": "Trigger Threshold:",
   "ControllerSettingsMotion": "Motion",
   "ControllerSettingsMotionUseCemuhookCompatibleMotion": "Use CemuHook compatible motion",
+  "ControllerSettingsMotionUseHandheldCompatibleMotion": "Use Handheld compatible motion",
   "ControllerSettingsMotionControllerSlot": "Controller Slot:",
   "ControllerSettingsMotionMirrorInput": "Mirror Input",
   "ControllerSettingsMotionRightJoyConSlot": "Right JoyCon Slot:",
