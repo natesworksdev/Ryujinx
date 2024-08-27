@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                return Array.Empty<NodeLatestUpdate>();
+                return [];
             }
         }
 

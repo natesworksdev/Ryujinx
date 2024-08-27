@@ -20,23 +20,21 @@ namespace Ryujinx.Cpu.LightningJit
         private static bool IsNoWxPlatform => false;
 
         private static readonly AddressTable<ulong>.Level[] _levels64Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(31, 17),
-                new(23,  8),
-                new(15,  8),
-                new( 7,  8),
-                new( 2,  5),
-            };
+        [
+            new(31, 17),
+            new(23, 8),
+            new(15, 8),
+            new(7, 8),
+            new(2, 5)
+        ];
 
         private static readonly AddressTable<ulong>.Level[] _levels32Bit =
-            new AddressTable<ulong>.Level[]
-            {
-                new(23, 9),
-                new(15, 8),
-                new( 7, 8),
-                new( 1, 6),
-            };
+        [
+            new(23, 9),
+            new(15, 8),
+            new(7, 8),
+            new(1, 6)
+        ];
 
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
         private readonly NoWxCache _noWxCache;
@@ -153,7 +151,7 @@ namespace Ryujinx.Cpu.LightningJit
 
         public void InvalidateJitCacheRegion(ulong address, ulong size)
         {
-            ulong[] overlapAddresses = Array.Empty<ulong>();
+            ulong[] overlapAddresses = [];
 
             int overlapsCount = Functions.GetOverlaps(address, size, ref overlapAddresses);
 

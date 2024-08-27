@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
         {
             string buttonsText = GetMessageText(module, description, key);
 
-            return (buttonsText == "") ? null : buttonsText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            return (buttonsText == "") ? null : buttonsText.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
         }
 
         private void ParseErrorCommonArg()
@@ -189,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             string messageText = Encoding.ASCII.GetString(messageTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
             string detailsText = Encoding.ASCII.GetString(detailsTextBuffer.TakeWhile(b => !b.Equals(0)).ToArray());
 
-            List<string> buttons = new();
+            List<string> buttons = [];
 
             // TODO: Handle the LanguageCode to return the translated "OK" and "Details".
 

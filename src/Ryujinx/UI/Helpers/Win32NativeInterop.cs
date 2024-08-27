@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.UI.Helpers
 
         public static IntPtr CreateEmptyCursor()
         {
-            return CreateCursor(IntPtr.Zero, 0, 0, 1, 1, new byte[] { 0xFF }, new byte[] { 0x00 });
+            return CreateCursor(IntPtr.Zero, 0, 0, 1, 1, [0xFF], [0x00]);
         }
 
         public static IntPtr CreateArrowCursor()

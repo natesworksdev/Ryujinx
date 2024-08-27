@@ -14,7 +14,7 @@ namespace Ryujinx.Input.GTK3
         public GTK3KeyboardDriver(Widget widget)
         {
             _widget = widget;
-            _pressedKeys = new HashSet<GtkKey>();
+            _pressedKeys = [];
 
             _widget.KeyPressEvent += OnKeyPress;
             _widget.KeyReleaseEvent += OnKeyRelease;
@@ -22,7 +22,7 @@ namespace Ryujinx.Input.GTK3
 
         public string DriverName => "GTK3";
 
-        private static readonly string[] _keyboardIdentifers = new string[1] { "0" };
+        private static readonly string[] _keyboardIdentifers = ["0"];
 
         public ReadOnlySpan<string> GamepadsIds => _keyboardIdentifers;
 

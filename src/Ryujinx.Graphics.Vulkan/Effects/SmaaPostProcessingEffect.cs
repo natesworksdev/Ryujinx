@@ -116,20 +116,17 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 (4, SpecConstType.Float32),
                 (5, SpecConstType.Float32));
 
-            _edgeProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(edgeShader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, edgeResourceLayout, new[] { specInfo });
+            _edgeProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(edgeShader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], edgeResourceLayout, [specInfo]);
 
-            _blendProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(blendShader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, blendResourceLayout, new[] { specInfo });
+            _blendProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(blendShader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], blendResourceLayout, [specInfo]);
 
-            _neighbourProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(neighbourShader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, neighbourResourceLayout, new[] { specInfo });
+            _neighbourProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(neighbourShader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], neighbourResourceLayout, [specInfo]);
         }
 
         public void DeletePipelines()

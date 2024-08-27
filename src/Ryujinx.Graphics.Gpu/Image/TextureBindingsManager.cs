@@ -103,11 +103,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             for (int stage = 0; stage < stages; stage++)
             {
-                _textureBindings[stage] = Array.Empty<TextureBindingInfo>();
-                _imageBindings[stage] = Array.Empty<TextureBindingInfo>();
+                _textureBindings[stage] = [];
+                _imageBindings[stage] = [];
             }
 
-            _textureCounts = Array.Empty<int>();
+            _textureCounts = [];
         }
 
         /// <summary>
@@ -448,8 +448,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int cachedTextureBufferIndex = -1;
             int cachedSamplerBufferIndex = -1;
-            ReadOnlySpan<int> cachedTextureBuffer = Span<int>.Empty;
-            ReadOnlySpan<int> cachedSamplerBuffer = Span<int>.Empty;
+            ReadOnlySpan<int> cachedTextureBuffer = [];
+            ReadOnlySpan<int> cachedSamplerBuffer = [];
 
             for (int index = 0; index < textureCount; index++)
             {
@@ -584,8 +584,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int cachedTextureBufferIndex = -1;
             int cachedSamplerBufferIndex = -1;
-            ReadOnlySpan<int> cachedTextureBuffer = Span<int>.Empty;
-            ReadOnlySpan<int> cachedSamplerBuffer = Span<int>.Empty;
+            ReadOnlySpan<int> cachedTextureBuffer = [];
+            ReadOnlySpan<int> cachedSamplerBuffer = [];
 
             bool specStateMatches = true;
 

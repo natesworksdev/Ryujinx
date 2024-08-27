@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private float _volume;
         private bool _isVulkanAvailable = true;
         private bool _directoryChanged;
-        private readonly List<string> _gpuIds = new();
+        private readonly List<string> _gpuIds = [];
         private int _graphicsBackendIndex;
         private int _scalingFilter;
         private int _scalingFilterLevel;
@@ -271,11 +271,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public SettingsViewModel()
         {
-            GameDirectories = new AvaloniaList<string>();
-            TimeZones = new AvaloniaList<TimeZone>();
-            AvailableGpus = new ObservableCollection<ComboBoxItem>();
-            _validTzRegions = new List<string>();
-            _networkInterfaces = new Dictionary<string, string>();
+            GameDirectories = [];
+            TimeZones = [];
+            AvailableGpus = [];
+            _validTzRegions = [];
+            _networkInterfaces = [];
 
             Task.Run(CheckSoundBackends);
             Task.Run(PopulateNetworkInterfaces);

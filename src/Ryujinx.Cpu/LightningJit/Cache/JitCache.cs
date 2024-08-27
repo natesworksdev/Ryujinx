@@ -21,7 +21,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
         private static CacheMemoryAllocator _cacheAllocator;
 
-        private static readonly List<CacheEntry> _cacheEntries = new();
+        private static readonly List<CacheEntry> _cacheEntries = [];
 
         private static readonly object _lock = new();
         private static bool _initialized;

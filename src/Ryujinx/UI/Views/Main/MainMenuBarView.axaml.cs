@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private CheckBox[] GenerateToggleFileTypeItems()
         {
-            List<CheckBox> checkBoxes = new();
+            List<CheckBox> checkBoxes = [];
 
             foreach (var item in Enum.GetValues(typeof(FileTypes)))
             {
@@ -55,7 +55,7 @@ namespace Ryujinx.Ava.UI.Views.Main
 
         private static MenuItem[] GenerateLanguageMenuItems()
         {
-            List<MenuItem> menuItems = new();
+            List<MenuItem> menuItems = [];
 
             string localePath = "Ryujinx/Assets/Locales";
             string localeExt = ".json";

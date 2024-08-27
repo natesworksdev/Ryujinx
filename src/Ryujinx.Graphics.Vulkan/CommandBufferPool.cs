@@ -47,8 +47,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 api.AllocateCommandBuffers(device, allocateInfo, out CommandBuffer);
 
-                Dependants = new List<IAuto>();
-                Waitables = new List<MultiFenceHolder>();
+                Dependants = [];
+                Waitables = [];
             }
         }
 

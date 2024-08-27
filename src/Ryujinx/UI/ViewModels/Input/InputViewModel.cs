@@ -256,11 +256,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public InputViewModel()
         {
-            PlayerIndexes = new ObservableCollection<PlayerModel>();
-            Controllers = new ObservableCollection<ControllerModel>();
-            Devices = new ObservableCollection<(DeviceType Type, string Id, string Name)>();
-            ProfilesList = new AvaloniaList<string>();
-            DeviceList = new AvaloniaList<string>();
+            PlayerIndexes = [];
+            Controllers = [];
+            Devices = [];
+            ProfilesList = [];
+            DeviceList = [];
 
             ControllerImage = ProControllerResource;
 

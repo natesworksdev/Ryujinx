@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public NetworkInfo[] Scan(ushort channel, ScanFilter scanFilter)
         {
-            return Array.Empty<NetworkInfo>();
+            return [];
         }
 
         public void SetAdvertiseData(byte[] data) { }

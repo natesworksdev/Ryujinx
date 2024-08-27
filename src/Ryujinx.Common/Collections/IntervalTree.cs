@@ -106,7 +106,7 @@ namespace Ryujinx.Common.Collections
         /// <returns>A list of all RangeNodes sorted by Key Order</returns>
         public List<RangeNode<TKey, TValue>> AsList()
         {
-            List<RangeNode<TKey, TValue>> list = new();
+            List<RangeNode<TKey, TValue>> list = [];
 
             AddToList(Root, list);
 
@@ -492,7 +492,7 @@ namespace Ryujinx.Common.Collections
             Start = start;
             End = end;
             Max = end;
-            Values = new List<RangeNode<TKey, TValue>> { new RangeNode<TKey, TValue>(start, end, value) };
+            Values = [new RangeNode<TKey, TValue>(start, end, value)];
             Parent = parent;
         }
     }

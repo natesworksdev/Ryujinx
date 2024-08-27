@@ -57,10 +57,12 @@ namespace Ryujinx.Graphics.Texture.Encoders
             }
         }
 
-        private static readonly int[] _mostFrequentPartitions = new int[]
-        {
+#pragma warning disable IDE0055 // Disable formatting
+        private static readonly int[] _mostFrequentPartitions =
+        [
             0, 13, 2, 1, 15, 14, 10, 23,
-        };
+        ];
+#pragma warning restore IDE0055
 
         private static Block CompressBlock(ReadOnlySpan<byte> data, int x, int y, int width, int height, bool fastMode)
         {

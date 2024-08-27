@@ -247,7 +247,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             /// <param name="samplerPool">Sampler pool where the array samplers are located</param>
             private CacheEntry(TexturePool texturePool, SamplerPool samplerPool)
             {
-                Textures = new Dictionary<Texture, int>();
+                Textures = [];
 
                 TexturePool = texturePool;
                 SamplerPool = samplerPool;
@@ -390,8 +390,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Key = key;
                 _lastSequenceNumber = -1;
-                TextureIds = new Dictionary<int, (Texture, TextureDescriptor)>();
-                SamplerIds = new Dictionary<int, (Sampler, SamplerDescriptor)>();
+                TextureIds = [];
+                SamplerIds = [];
             }
 
             /// <summary>
@@ -405,8 +405,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Key = key;
                 _lastSequenceNumber = -1;
-                TextureIds = new Dictionary<int, (Texture, TextureDescriptor)>();
-                SamplerIds = new Dictionary<int, (Sampler, SamplerDescriptor)>();
+                TextureIds = [];
+                SamplerIds = [];
             }
 
             /// <inheritdoc/>
@@ -547,8 +547,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             _context = context;
             _channel = channel;
-            _cacheFromBuffer = new Dictionary<CacheEntryFromBufferKey, CacheEntryFromBuffer>();
-            _cacheFromPool = new Dictionary<CacheEntryFromPoolKey, CacheEntry>();
+            _cacheFromBuffer = [];
+            _cacheFromPool = [];
             _lruCache = new LinkedList<CacheEntryFromBuffer>();
         }
 
@@ -1146,7 +1146,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 if (key.MatchesPool(pool))
                 {
-                    (keysToRemove ??= new()).Add(key);
+                    (keysToRemove ??= []).Add(key);
 
                     if (key.IsImage)
                     {

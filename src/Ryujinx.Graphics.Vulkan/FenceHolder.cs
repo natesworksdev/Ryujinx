@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                _api.DestroyFence(_device, _fence, Span<AllocationCallbacks>.Empty);
+                _api.DestroyFence(_device, _fence, []);
                 _fence = default;
             }
         }

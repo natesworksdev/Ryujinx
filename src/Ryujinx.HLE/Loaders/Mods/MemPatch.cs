@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 {
     public class MemPatch
     {
-        readonly Dictionary<uint, byte[]> _patches = new();
+        readonly Dictionary<uint, byte[]> _patches = [];
 
         /// <summary>
         /// Adds a patch to specified offset. Overwrites if already present. 

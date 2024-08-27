@@ -19,7 +19,7 @@ namespace Ryujinx.UI.Common.Helper
 
         public static void ParseArguments(string[] args)
         {
-            List<string> arguments = new();
+            List<string> arguments = [];
 
             // Parse Arguments.
             for (int i = 0; i < args.Length; ++i)

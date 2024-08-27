@@ -148,8 +148,8 @@ namespace Ryujinx.Ava.UI.Helpers
         {
             Grid content = new()
             {
-                RowDefinitions = new RowDefinitions { new(), new() },
-                ColumnDefinitions = new ColumnDefinitions { new(GridLength.Auto), new() },
+                RowDefinitions = [new(), new()],
+                ColumnDefinitions = [new(GridLength.Auto), new()],
 
                 MinHeight = 80,
             };

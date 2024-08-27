@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 default:
                     Debug.Assert(false, "Invalid maxTxSize.");
 
-                    return ReadOnlySpan<byte>.Empty;
+                    return [];
             }
         }
 
@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 default:
                     Debug.Assert(false, "Invalid maxTxSize.");
 
-                    return Span<uint>.Empty;
+                    return [];
             }
         }
 

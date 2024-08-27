@@ -495,7 +495,7 @@ namespace Ryujinx.UI.App.Common
             _cancellationToken = new CancellationTokenSource();
 
             // Builds the applications list with paths to found applications
-            List<string> applicationPaths = new();
+            List<string> applicationPaths = [];
 
             try
             {

@@ -11,13 +11,15 @@ namespace Ryujinx.Tests.Cpu
 #if SimdExt
 
         #region "ValueSource"
+#pragma warning disable IDE0055 // Disable formatting
         private static ulong[] _8B_()
         {
-            return new[] {
+            return [
                 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul,
-            };
+            ];
         }
+#pragma warning restore IDE0055
         #endregion
 
         [Test, Pairwise, Description("EXT <Vd>.8B, <Vn>.8B, <Vm>.8B, #<index>")]

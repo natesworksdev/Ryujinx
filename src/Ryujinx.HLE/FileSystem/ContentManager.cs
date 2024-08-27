@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.FileSystem
         public ContentManager(VirtualFileSystem virtualFileSystem)
         {
             _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-            _locationEntries = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+            _locationEntries = [];
 
             _sharedFontTitleDictionary = new Dictionary<string, ulong>
             {
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.FileSystem
 
             _virtualFileSystem = virtualFileSystem;
 
-            AocData = new SortedList<ulong, AocItem>();
+            AocData = [];
         }
 
         public void LoadEntries(Switch device = null)
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.FileSystem
             lock (_lock)
             {
                 _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-                _locationEntries = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+                _locationEntries = [];
 
                 foreach (StorageId storageId in Enum.GetValues<StorageId>())
                 {
@@ -592,7 +592,7 @@ namespace Ryujinx.HLE.FileSystem
                 throw new MissingKeyException("HeaderKey is empty. Cannot decrypt NCA headers.");
             }
 
-            Dictionary<ulong, List<(NcaContentType type, string path)>> updateNcas = new();
+            Dictionary<ulong, List<(NcaContentType type, string path)>> updateNcas = [];
 
             if (Directory.Exists(firmwarePackage))
             {

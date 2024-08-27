@@ -151,7 +151,7 @@ namespace Ryujinx.UI.Common.Helper
         private static void SaveBitmapAsIcon(Image source, string filePath)
         {
             // Code Modified From https://stackoverflow.com/a/11448060/368354 by Benlitz
-            byte[] header = { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 32, 0, 0, 0, 0, 0, 22, 0, 0, 0 };
+            byte[] header = [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 32, 0, 0, 0, 0, 0, 22, 0, 0, 0];
             using FileStream fs = new(filePath, FileMode.Create);
 
             fs.Write(header);

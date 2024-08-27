@@ -26,7 +26,7 @@ namespace Ryujinx.Cpu.LightningJit.CodeGen.Arm64
         public Assembler(CodeWriter writer)
         {
             _code = writer.GetList();
-            _labels = new List<LabelState>();
+            _labels = [];
         }
 
         public readonly Operand CreateLabel()

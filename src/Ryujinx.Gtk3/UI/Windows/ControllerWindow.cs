@@ -1144,7 +1144,7 @@ namespace Ryujinx.UI.Windows
             }
 
             InputConfig inputConfig = GetValues();
-            ProfileDialog profileDialog = new();
+            ProfileDialog profileDialog = [];
 
             if (inputConfig == null)
             {

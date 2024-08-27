@@ -19,9 +19,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly NativeArray<BufferMemoryBarrier> _bufferBarrierBatch = new(MaxBarriersPerCall);
         private readonly NativeArray<ImageMemoryBarrier> _imageBarrierBatch = new(MaxBarriersPerCall);
 
-        private readonly List<BarrierWithStageFlags<MemoryBarrier, int>> _memoryBarriers = new();
-        private readonly List<BarrierWithStageFlags<BufferMemoryBarrier, int>> _bufferBarriers = new();
-        private readonly List<BarrierWithStageFlags<ImageMemoryBarrier, TextureStorage>> _imageBarriers = new();
+        private readonly List<BarrierWithStageFlags<MemoryBarrier, int>> _memoryBarriers = [];
+        private readonly List<BarrierWithStageFlags<BufferMemoryBarrier, int>> _bufferBarriers = [];
+        private readonly List<BarrierWithStageFlags<ImageMemoryBarrier, TextureStorage>> _imageBarriers = [];
         private int _queuedBarrierCount;
 
         private enum IncoherentBarrierType

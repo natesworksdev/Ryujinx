@@ -42,7 +42,7 @@ namespace ARMeilleure.CodeGen.Arm64
             {
                 Offset = offset;
                 Symbol = symbol;
-                LdrOffsets = new List<(Operand, int)>();
+                LdrOffsets = [];
             }
         }
 
@@ -78,9 +78,9 @@ namespace ARMeilleure.CodeGen.Arm64
             CallArgsRegionSize = maxCallArgs * 16;
             FpLrSaveRegionSize = hasCall ? 16 : 0;
 
-            _visitedBlocks = new Dictionary<BasicBlock, long>();
+            _visitedBlocks = [];
             _pendingBranches = new Dictionary<BasicBlock, List<(ArmCondition, long)>>();
-            _constantPool = new Dictionary<ulong, ConstantPoolEntry>();
+            _constantPool = [];
 
             _relocatable = relocatable;
         }
@@ -266,7 +266,7 @@ namespace ARMeilleure.CodeGen.Arm64
             }
             else
             {
-                relocInfo = new RelocInfo(Array.Empty<RelocEntry>());
+                relocInfo = new RelocInfo([]);
             }
 
             return (code, relocInfo);
