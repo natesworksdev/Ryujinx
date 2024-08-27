@@ -61,15 +61,15 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     EnableInputFocusProxy = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") == "gamescope",
-                    RenderingMode = UseHardwareAcceleration ?
-                        new[] { X11RenderingMode.Glx, X11RenderingMode.Software } :
+                    RenderingMode = UseHardwareAcceleration ? [X11RenderingMode.Glx, X11RenderingMode.Software]
+                        :
                         new[] { X11RenderingMode.Software },
                 })
                 .With(new Win32PlatformOptions
                 {
                     WinUICompositionBackdropCornerRadius = 8.0f,
-                    RenderingMode = UseHardwareAcceleration ?
-                        new[] { Win32RenderingMode.AngleEgl, Win32RenderingMode.Software } :
+                    RenderingMode = UseHardwareAcceleration ? [Win32RenderingMode.AngleEgl, Win32RenderingMode.Software]
+                        :
                         new[] { Win32RenderingMode.Software },
                 })
                 .UseSkia();

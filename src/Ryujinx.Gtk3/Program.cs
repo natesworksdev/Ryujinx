@@ -253,7 +253,7 @@ namespace Ryujinx
             }
 
             // Show the main window UI.
-            MainWindow mainWindow = new();
+            MainWindow mainWindow = [];
             mainWindow.Show();
 
             // Load the game table if no application was requested by the command line

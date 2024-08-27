@@ -78,8 +78,8 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly string _preferredGpuId;
 
         private int[] _pdReservedBindings;
-        private readonly static int[] _pdReservedBindingsNvn = { 3, 18, 21, 36, 30 };
-        private readonly static int[] _pdReservedBindingsOgl = { 17, 18, 34, 35, 36 };
+        private readonly static int[] _pdReservedBindingsNvn = [3, 18, 21, 36, 30];
+        private readonly static int[] _pdReservedBindingsOgl = [17, 18, 34, 35, 36];
 
         internal Vendor Vendor { get; private set; }
         internal bool IsAmdWindows { get; private set; }
@@ -107,9 +107,9 @@ namespace Ryujinx.Graphics.Vulkan
             _getRequiredExtensions = requiredExtensionsFunc;
             _preferredGpuId = preferredGpuId;
             Api = api;
-            Shaders = new HashSet<ShaderCollection>();
-            Textures = new HashSet<ITexture>();
-            Samplers = new HashSet<SamplerHolder>();
+            Shaders = [];
+            Textures = [];
+            Samplers = [];
 
             if (OperatingSystem.IsMacOS())
             {
@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool supportsPushDescriptors = _physicalDevice.IsDeviceExtensionPresent(KhrPushDescriptor.ExtensionName);
 
-            PhysicalDevicePushDescriptorPropertiesKHR propertiesPushDescriptor = new PhysicalDevicePushDescriptorPropertiesKHR()
+            PhysicalDevicePushDescriptorPropertiesKHR propertiesPushDescriptor = new()
             {
                 SType = StructureType.PhysicalDevicePushDescriptorPropertiesKhr
             };
@@ -481,7 +481,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
                 else
                 {
-                    _pdReservedBindings = Array.Empty<int>();
+                    _pdReservedBindings = [];
                 }
             }
 
@@ -770,7 +770,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Logger.Error?.PrintMsg(LogClass.Gpu, $"Error querying Vulkan devices: {ex.Message}");
 
-                return Array.Empty<DeviceInfo>();
+                return [];
             }
         }
 
@@ -783,7 +783,7 @@ namespace Ryujinx.Graphics.Vulkan
             catch (Exception)
             {
                 // If we got an exception here, Vulkan is most likely not supported.
-                return Array.Empty<DeviceInfo>();
+                return [];
             }
         }
 

@@ -128,8 +128,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _descriptorSetUpdater.Initialize();
 
-            QuadsToTrisPattern = new IndexBufferPattern(Gd, 4, 6, 0, new[] { 0, 1, 2, 0, 2, 3 }, 4, false);
-            TriFanToTrisPattern = new IndexBufferPattern(Gd, 3, 3, 2, new[] { int.MinValue, -1, 0 }, 1, true);
+            QuadsToTrisPattern = new IndexBufferPattern(Gd, 4, 6, 0, [0, 1, 2, 0, 2, 3], 4, false);
+            TriFanToTrisPattern = new IndexBufferPattern(Gd, 3, 3, 2, [int.MinValue, -1, 0], 1, true);
         }
 
         public unsafe void Barrier()
@@ -154,9 +154,9 @@ namespace Ryujinx.Graphics.Vulkan
                 1,
                 new ReadOnlySpan<MemoryBarrier>(in memoryBarrier),
                 0,
-                ReadOnlySpan<BufferMemoryBarrier>.Empty,
+                [],
                 0,
-                ReadOnlySpan<ImageMemoryBarrier>.Empty);
+                []);
         }
 
         public void BeginTransformFeedback(PrimitiveTopology topology)
@@ -694,7 +694,7 @@ namespace Ryujinx.Graphics.Vulkan
             _vertexBufferUpdater.Commit(Cbs);
         }
 
-        public void SetAlphaTest(bool enable, float reference, CompareOp op)
+        public static void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
@@ -891,12 +891,12 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: Default levels (likely needs emulation on shaders?)
         }
 
-        public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
+        public static void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
         {
             // TODO.
         }
 
-        public void SetPolygonMode(PolygonMode frontMode, PolygonMode backMode)
+        public static void SetPolygonMode(PolygonMode frontMode, PolygonMode backMode)
         {
             // TODO.
         }
@@ -1142,7 +1142,7 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
         }
 
-        public void SetUserClipDistance(int index, bool enableClip)
+        public static void SetUserClipDistance(int index, bool enableClip)
         {
             // TODO.
         }

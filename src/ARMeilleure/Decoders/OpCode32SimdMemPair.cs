@@ -4,13 +4,15 @@ namespace ARMeilleure.Decoders
 {
     class OpCode32SimdMemPair : OpCode32, IOpCode32Simd
     {
+#pragma warning disable IDE0055 // Disable formatting
         private static readonly int[] _regsMap =
-        {
+        [
             1, 1, 4, 2,
             1, 1, 3, 1,
             1, 1, 2, 1,
             1, 1, 1, 1,
-        };
+        ];
+#pragma warning restore IDE0055
 
         public int Vd { get; }
         public int Rn { get; }

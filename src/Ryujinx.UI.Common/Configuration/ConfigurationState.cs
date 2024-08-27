@@ -759,8 +759,8 @@ namespace Ryujinx.UI.Common.Configuration
                 EnableKeyboard = Hid.EnableKeyboard,
                 EnableMouse = Hid.EnableMouse,
                 Hotkeys = Hid.Hotkeys,
-                KeyboardConfig = new List<JsonObject>(),
-                ControllerConfig = new List<JsonObject>(),
+                KeyboardConfig = [],
+                ControllerConfig = [],
                 InputConfig = Hid.InputConfig,
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,
@@ -790,7 +790,7 @@ namespace Ryujinx.UI.Common.Configuration
             Logger.EnableTrace.Value = false;
             Logger.EnableGuest.Value = true;
             Logger.EnableFsAccessLog.Value = false;
-            Logger.FilteredClasses.Value = Array.Empty<LogClass>();
+            Logger.FilteredClasses.Value = [];
             Logger.GraphicsDebugLevel.Value = GraphicsDebugLevel.None;
             System.Language.Value = Language.AmericanEnglish;
             System.Region.Value = Region.USA;
@@ -835,7 +835,7 @@ namespace Ryujinx.UI.Common.Configuration
             UI.GuiColumns.PathColumn.Value = true;
             UI.ColumnSort.SortColumnId.Value = 0;
             UI.ColumnSort.SortAscending.Value = false;
-            UI.GameDirs.Value = new List<string>();
+            UI.GameDirs.Value = [];
             UI.ShownFileTypes.NSP.Value = true;
             UI.ShownFileTypes.PFS0.Value = true;
             UI.ShownFileTypes.XCI.Value = true;
@@ -872,8 +872,8 @@ namespace Ryujinx.UI.Common.Configuration
                 VolumeUp = Key.Unbound,
                 VolumeDown = Key.Unbound,
             };
-            Hid.InputConfig.Value = new List<InputConfig>
-            {
+            Hid.InputConfig.Value =
+            [
                 new StandardKeyboardInputConfig
                 {
                     Version = InputConfig.CurrentVersion,
@@ -921,8 +921,9 @@ namespace Ryujinx.UI.Common.Configuration
                         StickRight = Key.L,
                         StickButton = Key.H,
                     },
-                },
-            };
+                }
+
+            ];
         }
 
         public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
@@ -1101,8 +1102,8 @@ namespace Ryujinx.UI.Common.Configuration
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 24.");
 
-                configurationFileFormat.InputConfig = new List<InputConfig>
-                {
+                configurationFileFormat.InputConfig =
+                [
                     new StandardKeyboardInputConfig
                     {
                         Version = InputConfig.CurrentVersion,
@@ -1150,8 +1151,9 @@ namespace Ryujinx.UI.Common.Configuration
                             StickRight = Key.L,
                             StickButton = Key.H,
                         },
-                    },
-                };
+                    }
+
+                ];
 
                 configurationFileUpdated = true;
             }
@@ -1567,7 +1569,7 @@ namespace Ryujinx.UI.Common.Configuration
 
             if (Hid.InputConfig.Value == null)
             {
-                Hid.InputConfig.Value = new List<InputConfig>();
+                Hid.InputConfig.Value = [];
             }
 
             Multiplayer.LanInterfaceId.Value = configurationFileFormat.MultiplayerLanInterfaceId;

@@ -12,9 +12,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public StructuredProgramInfo()
         {
-            Functions = new List<StructuredFunction>();
+            Functions = [];
 
-            IoDefinitions = new HashSet<IoDefinition>();
+            IoDefinitions = [];
         }
     }
 }

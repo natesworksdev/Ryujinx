@@ -34,9 +34,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private readonly string _downloadableContentJsonPath;
 
         private readonly VirtualFileSystem _virtualFileSystem;
-        private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
-        private AvaloniaList<DownloadableContentModel> _views = new();
-        private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
+        private AvaloniaList<DownloadableContentModel> _downloadableContents = [];
+        private AvaloniaList<DownloadableContentModel> _views = [];
+        private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = [];
 
         private string _search;
         private readonly ApplicationData _applicationData;
@@ -107,7 +107,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (!File.Exists(_downloadableContentJsonPath))
             {
-                _downloadableContentContainerList = new List<DownloadableContentContainer>();
+                _downloadableContentContainerList = [];
 
                 Save();
             }
@@ -119,7 +119,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             catch
             {
                 Logger.Error?.Print(LogClass.Configuration, "Downloadable Content JSON failed to deserialize.");
-                _downloadableContentContainerList = new List<DownloadableContentContainer>();
+                _downloadableContentContainerList = [];
             }
 
             LoadDownloadableContents();
@@ -320,7 +320,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     container = new DownloadableContentContainer
                     {
                         ContainerPath = downloadableContent.ContainerPath,
-                        DownloadableContentNcaList = new List<DownloadableContentNca>(),
+                        DownloadableContentNcaList = [],
                     };
                 }
 

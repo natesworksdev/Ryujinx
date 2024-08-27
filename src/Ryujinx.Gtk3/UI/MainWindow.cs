@@ -1851,7 +1851,7 @@ namespace Ryujinx.UI
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            AboutWindow aboutWindow = new();
+            AboutWindow aboutWindow = [];
 
             aboutWindow.SetSizeRequest((int)(aboutWindow.DefaultWidth * Program.WindowScaleFactor), (int)(aboutWindow.DefaultHeight * Program.WindowScaleFactor));
             aboutWindow.Show();

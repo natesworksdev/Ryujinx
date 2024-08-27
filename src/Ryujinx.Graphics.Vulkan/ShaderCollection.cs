@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.Vulkan
             // If binding 3 is immediately used, use an alternate set of reserved bindings.
             ReadOnlyCollection<ResourceUsage> uniformUsage = layout.SetUsages[0].Usages;
             bool hasBinding3 = uniformUsage.Any(x => x.Binding == 3);
-            int[] reserved = isCompute ? Array.Empty<int>() : gd.GetPushDescriptorReservedBindings(hasBinding3);
+            int[] reserved = isCompute ? [] : gd.GetPushDescriptorReservedBindings(hasBinding3);
 
             // Can't use any of the reserved usages.
             for (int i = 0; i < uniformUsage.Count; i++)
@@ -239,7 +239,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < sets.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new();
+                List<ResourceBindingSegment> currentSegments = [];
 
                 ResourceDescriptor currentDescriptor = default;
                 int currentCount = 0;
@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
             {
-                List<ResourceBindingSegment> currentSegments = new();
+                List<ResourceBindingSegment> currentSegments = [];
 
                 ResourceUsage currentUsage = default;
                 int currentCount = 0;
@@ -381,7 +381,7 @@ namespace Ryujinx.Graphics.Vulkan
             return templates;
         }
 
-        private PipelineStageFlags GetPipelineStages(ResourceStages stages)
+        private static PipelineStageFlags GetPipelineStages(ResourceStages stages)
         {
             PipelineStageFlags result = 0;
 
@@ -418,7 +418,7 @@ namespace Ryujinx.Graphics.Vulkan
             return result;
         }
 
-        private (PipelineStageFlags Buffer, PipelineStageFlags Texture) BuildIncoherentStages(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        private static (PipelineStageFlags Buffer, PipelineStageFlags Texture) BuildIncoherentStages(ReadOnlyCollection<ResourceUsageCollection> setUsages)
         {
             PipelineStageFlags buffer = PipelineStageFlags.None;
             PipelineStageFlags texture = PipelineStageFlags.None;

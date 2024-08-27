@@ -177,7 +177,7 @@ namespace Ryujinx.Memory.Tracking
             InitializeRegions();
         }
 
-        private List<VirtualRegion> GetGuestRegions(MemoryTracking tracking, ulong address, ulong size, RegionFlags flags)
+        private static List<VirtualRegion> GetGuestRegions(MemoryTracking tracking, ulong address, ulong size, RegionFlags flags)
         {
             ulong guestAddress;
             ulong guestSize;

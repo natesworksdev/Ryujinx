@@ -64,7 +64,7 @@ namespace Ryujinx.UI.Windows
             Directory.CreateDirectory(System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
 
             _amiiboJsonPath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
-            _amiiboList = new List<AmiiboApi>();
+            _amiiboList = [];
 
             _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.UI.Common/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Pixbuf(_amiiboLogoBytes);
@@ -165,7 +165,7 @@ namespace Ryujinx.UI.Windows
 
         private void ParseAmiiboData()
         {
-            List<string> comboxItemList = new();
+            List<string> comboxItemList = [];
 
             for (int i = 0; i < _amiiboList.Count; i++)
             {
@@ -312,7 +312,7 @@ namespace Ryujinx.UI.Windows
 
             List<AmiiboApi> amiiboSortedList = _amiiboList.Where(amiibo => amiibo.AmiiboSeries == _amiiboSeriesComboBox.ActiveId).OrderBy(amiibo => amiibo.Name).ToList();
 
-            List<string> comboxItemList = new();
+            List<string> comboxItemList = [];
 
             for (int i = 0; i < amiiboSortedList.Count; i++)
             {

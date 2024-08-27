@@ -46,10 +46,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
 
             _samplerLinear = _renderer.CreateSampler(SamplerCreateInfo.Create(MinFilter.Linear, MagFilter.Linear));
 
-            _shaderProgram = _renderer.CreateProgramWithMinimalLayout(new[]
-            {
-                new ShaderSource(shader, ShaderStage.Compute, TargetLanguage.Spirv),
-            }, resourceLayout);
+            _shaderProgram = _renderer.CreateProgramWithMinimalLayout([
+                new ShaderSource(shader, ShaderStage.Compute, TargetLanguage.Spirv)
+            ], resourceLayout);
         }
 
         public TextureView Run(TextureView view, CommandBufferScoped cbs, int width, int height)

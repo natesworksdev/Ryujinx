@@ -26,11 +26,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             return (byte)BitUtils.RoundPowerOfTwo(prob1 * (256 - factor) + prob2 * factor, 8);
         }
 
+#pragma warning disable IDE0055 // Disable formatting
         // MODE_MV_MAX_UPDATE_FACTOR (128) * count / MODE_MV_COUNT_SAT;
-        private static readonly uint[] _countToUpdateFactor = {
+        private static readonly uint[] _countToUpdateFactor = [
             0,  6,  12, 19, 25, 32,  38,  44,  51,  57, 64,
             70, 76, 83, 89, 96, 102, 108, 115, 121, 128,
-        };
+        ];
+#pragma warning restore IDE0055
 
         private const int ModeMvCountSat = 20;
 

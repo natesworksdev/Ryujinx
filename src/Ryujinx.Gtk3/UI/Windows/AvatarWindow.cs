@@ -27,7 +27,7 @@ namespace Ryujinx.UI.Windows
         public byte[] SelectedProfileImage;
         public bool NewUser;
 
-        private static readonly Dictionary<string, byte[]> _avatarDict = new();
+        private static readonly Dictionary<string, byte[]> _avatarDict = [];
 
         private readonly ListStore _listStore;
         private readonly IconView _iconView;
@@ -163,7 +163,7 @@ namespace Ryujinx.UI.Windows
                 _listStore.AppendValues(avatar.Key, new Gdk.Pixbuf(ProcessImage(avatar.Value), 96, 96));
             }
 
-            _iconView.SelectPath(new TreePath(new[] { 0 }));
+            _iconView.SelectPath(new TreePath([0]));
         }
 
         private byte[] ProcessImage(byte[] data)
