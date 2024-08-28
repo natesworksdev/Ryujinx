@@ -1,6 +1,7 @@
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl;
 using Ryujinx.HLE.HOS.Services.Ssl.Types;
+using RyuSocks;
 using System;
 using System.IO;
 using System.Net;
@@ -111,12 +112,25 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             {
                 return hostName;
             }
+            // Thrown by ManagedProxySocket when accessing RemoteEndPoint before connecting to a remote.
+            catch (NullReferenceException)
+            {
+                return hostName;
+            }
         }
 
         public ResultCode Handshake(string hostName)
         {
             StartSslOperation();
-            _stream = new SslStream(new NetworkStream(((ManagedSocket)Socket).Socket, false), false, null, null);
+
+            Stream socketStream = Socket switch
+            {
+                ManagedSocket managedSocket => new NetworkStream(managedSocket.Socket, false),
+                ManagedProxySocket proxySocket => new SocksClientStream(proxySocket.ProxyClient, false),
+                _ => throw new NotSupportedException($"{typeof(Socket)} is not supported.")
+            };
+
+            _stream = new SslStream(socketStream, false, null, null);
             hostName = RetrieveHostName(hostName);
             _stream.AuthenticateAsClient(hostName, null, TranslateSslVersion(_sslVersion), false);
             EndSslOperation();
