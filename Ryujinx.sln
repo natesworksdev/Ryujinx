@@ -87,8 +87,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon", "src\Ryuj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon.Kernel.Generators", "src\Ryujinx.Horizon.Kernel.Generators\Ryujinx.Horizon.Kernel.Generators.csproj", "{7F55A45D-4E1D-4A36-ADD3-87F29A285AA2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D796F12C-217B-4BBF-A131-B6DCB72C6282}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Input.SDL3", "src\Ryujinx.Input.SDL3\Ryujinx.Input.SDL3.csproj", "{3BF24278-547D-42C2-9D43-182B978F54DD}"
 EndProject
 Global
@@ -263,8 +261,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {110169B3-3328-4730-8AB0-BA05BEF75C1A}
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{3BF24278-547D-42C2-9D43-182B978F54DD} = {D796F12C-217B-4BBF-A131-B6DCB72C6282}
 	EndGlobalSection
 EndGlobal
