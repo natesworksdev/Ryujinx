@@ -55,20 +55,6 @@ namespace Ryujinx.Graphics.Vulkan
                 stages |= PipelineStageFlags.TransformFeedbackBitExt;
             }
 
-            if (!gd.IsTBDR)
-            {
-                // Desktop GPUs can transform image barriers into memory barriers.
-                // ...but these cause VUID-VkSubpassDependency-srcSubpass-06809
-
-                /*
-                access |= AccessFlags.DepthStencilAttachmentWriteBit | AccessFlags.ColorAttachmentWriteBit;
-                access |= AccessFlags.DepthStencilAttachmentReadBit | AccessFlags.ColorAttachmentReadBit;
-
-                stages |= PipelineStageFlags.EarlyFragmentTestsBit | PipelineStageFlags.LateFragmentTestsBit;
-                stages |= PipelineStageFlags.ColorAttachmentOutputBit;
-                */
-            }
-
             return (access, stages);
         }
 

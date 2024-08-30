@@ -1566,7 +1566,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 foreach (TextureView view in hazards)
                 {
-                    // TODO: enforce layout
+                    // May need to enforce feedback loop layout here in the future.
+                    // Though technically, it should always work with the general layout.
 
                     if (view.Info.Format.IsDepthOrStencil())
                     {

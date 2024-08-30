@@ -126,6 +126,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsHostImportedMemory = supportsHostImportedMemory;
             SupportsDepthClipControl = supportsDepthClipControl;
             SupportsAttachmentFeedbackLoop = supportsAttachmentFeedbackLoop;
+            SupportsDynamicAttachmentFeedbackLoop = supportsDynamicAttachmentFeedbackLoop;
             SubgroupSize = subgroupSize;
             SupportedSampleCounts = supportedSampleCounts;
             PortabilitySubset = portabilitySubset;
