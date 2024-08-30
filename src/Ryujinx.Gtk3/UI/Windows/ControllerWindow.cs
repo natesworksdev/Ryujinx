@@ -206,12 +206,12 @@ namespace Ryujinx.UI.Windows
 
         private void HandheldCheckButtonPressed(object sender, EventArgs e)
         {
-            UpdateCemuHookSpecificFieldsVisibility();
+            ReflectMotionHandlerChanges();
         }
 
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
         {
-            UpdateCemuHookSpecificFieldsVisibility();
+            ReflectMotionHandlerChanges();
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -296,7 +296,7 @@ namespace Ryujinx.UI.Windows
             }
         }
 
-        private void UpdateCemuHookSpecificFieldsVisibility()
+        private void ReflectMotionHandlerChanges()
         {
             if (_enableHandheld.Active)
             {
@@ -342,7 +342,7 @@ namespace Ryujinx.UI.Windows
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
 
-                UpdateCemuHookSpecificFieldsVisibility();
+                ReflectMotionHandlerChanges();
             }
             else
             {
