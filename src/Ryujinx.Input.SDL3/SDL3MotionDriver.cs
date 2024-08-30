@@ -7,13 +7,22 @@ using System.Numerics;
 using static SDL3.SDL3;
 
 namespace Ryujinx.SDL3;
-public unsafe class SDL3MotionDriver : IHandheld
+
+public unsafe class SDL3MotionDriver : IHandheld, IDisposable
 {
     private Dictionary<SDL_SensorType, SDL_Sensor> sensors;
     public SDL3MotionDriver()
     {
         SDL_Init(SDL_InitFlags.Sensor);
         sensors = SDL_GetSensors().ToArray().ToDictionary(SDL_GetSensorTypeForID, SDL_OpenSensor);
+    }
+
+    public void Dispose()
+    {
+        foreach (var sensor in sensors.Values)
+        {
+            SDL_CloseSensor(sensor);
+        }
     }
 
     public Vector3 GetMotionData(MotionInputId gyroscope)
