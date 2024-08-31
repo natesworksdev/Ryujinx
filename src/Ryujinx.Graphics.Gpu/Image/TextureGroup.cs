@@ -629,7 +629,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_flushBuffer == BufferHandle.Null)
             {
-                if (!TextureCompatibility.CanTextureFlush(Storage.Info, _context.Capabilities))
+                if (!TextureCompatibility.CanTextureFlush(Storage, _context.Capabilities))
                 {
                     return;
                 }
@@ -1661,7 +1661,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                if (TextureCompatibility.CanTextureFlush(Storage.Info, _context.Capabilities) && !(inBuffer && _flushBufferImported))
+                if (TextureCompatibility.CanTextureFlush(Storage, _context.Capabilities) && !(inBuffer && _flushBufferImported))
                 {
                     FlushSliceRange(false, handle.BaseSlice, handle.BaseSlice + handle.SliceCount, inBuffer, Storage.GetFlushTexture());
                 }

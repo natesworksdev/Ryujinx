@@ -464,9 +464,29 @@ namespace Ryujinx.UI.Common.Configuration
             public ReactiveObject<float> ResScaleCustom { get; private set; }
 
             /// <summary>
-            /// Dumps shaders in this local directory
+            /// Directory to save the game shaders.
             /// </summary>
             public ReactiveObject<string> ShadersDumpPath { get; private set; }
+
+            /// <summary>
+            /// Directory to save the game textures, if texture dumping is enabled.
+            /// </summary>
+            public ReactiveObject<string> TexturesDumpPath { get; private set; }
+
+            /// <summary>
+            /// File format used to dump textures.
+            /// </summary>
+            public ReactiveObject<TextureFileFormat> TexturesDumpFileFormat { get; private set; }
+
+            /// <summary>
+            /// Enables texture dumping.
+            /// </summary>
+            public ReactiveObject<bool> EnableTextureDump { get; private set; }
+
+            /// <summary>
+            /// Enables real-time texture editing.
+            /// </summary>
+            public ReactiveObject<bool> EnableTextureRealTimeEdit { get; private set; }
 
             /// <summary>
             /// Enables or disables Vertical Sync
@@ -531,6 +551,13 @@ namespace Ryujinx.UI.Common.Configuration
                 AspectRatio = new ReactiveObject<AspectRatio>();
                 AspectRatio.Event += static (sender, e) => LogValueChange(e, nameof(AspectRatio));
                 ShadersDumpPath = new ReactiveObject<string>();
+                TexturesDumpPath = new ReactiveObject<string>();
+                TexturesDumpFileFormat = new ReactiveObject<TextureFileFormat>();
+                TexturesDumpFileFormat.Event += static (sender, e) => LogValueChange(e, nameof(TexturesDumpFileFormat));
+                EnableTextureDump = new ReactiveObject<bool>();
+                EnableTextureDump.Event += static (sender, e) => LogValueChange(e, nameof(EnableTextureDump));
+                EnableTextureRealTimeEdit = new ReactiveObject<bool>();
+                EnableTextureRealTimeEdit.Event += static (sender, e) => LogValueChange(e, nameof(EnableTextureRealTimeEdit));
                 EnableVsync = new ReactiveObject<bool>();
                 EnableVsync.Event += static (sender, e) => LogValueChange(e, nameof(EnableVsync));
                 EnableShaderCache = new ReactiveObject<bool>();
@@ -673,6 +700,10 @@ namespace Ryujinx.UI.Common.Configuration
                 ScalingFilter = Graphics.ScalingFilter,
                 ScalingFilterLevel = Graphics.ScalingFilterLevel,
                 GraphicsShadersDumpPath = Graphics.ShadersDumpPath,
+                GraphicsTexturesDumpPath = Graphics.TexturesDumpPath,
+                GraphicsTexturesDumpFileFormat = Graphics.TexturesDumpFileFormat,
+                GraphicsEnableTextureDump = Graphics.EnableTextureDump,
+                GraphicsEnableTextureRealTimeEdit = Graphics.EnableTextureRealTimeEdit,
                 LoggingEnableDebug = Logger.EnableDebug,
                 LoggingEnableStub = Logger.EnableStub,
                 LoggingEnableInfo = Logger.EnableInfo,
@@ -782,6 +813,10 @@ namespace Ryujinx.UI.Common.Configuration
             Graphics.GraphicsBackend.Value = DefaultGraphicsBackend();
             Graphics.PreferredGpu.Value = "";
             Graphics.ShadersDumpPath.Value = "";
+            Graphics.TexturesDumpPath.Value = "";
+            Graphics.TexturesDumpFileFormat.Value = TextureFileFormat.Dds;
+            Graphics.EnableTextureDump.Value = true;
+            Graphics.EnableTextureRealTimeEdit.Value = true;
             Logger.EnableDebug.Value = false;
             Logger.EnableStub.Value = true;
             Logger.EnableInfo.Value = true;
@@ -1477,12 +1512,28 @@ namespace Ryujinx.UI.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 52)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 52.");
+
+                configurationFileFormat.GraphicsTexturesDumpPath = "";
+                configurationFileFormat.GraphicsTexturesDumpFileFormat = TextureFileFormat.Dds;
+                configurationFileFormat.GraphicsEnableTextureDump = true;
+                configurationFileFormat.GraphicsEnableTextureRealTimeEdit = true;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value = configurationFileFormat.MaxAnisotropy;
             Graphics.AspectRatio.Value = configurationFileFormat.AspectRatio;
             Graphics.ShadersDumpPath.Value = configurationFileFormat.GraphicsShadersDumpPath;
+            Graphics.TexturesDumpPath.Value = configurationFileFormat.GraphicsTexturesDumpPath;
+            Graphics.TexturesDumpFileFormat.Value = configurationFileFormat.GraphicsTexturesDumpFileFormat;
+            Graphics.EnableTextureDump.Value = configurationFileFormat.GraphicsEnableTextureDump;
+            Graphics.EnableTextureRealTimeEdit.Value = configurationFileFormat.GraphicsEnableTextureRealTimeEdit;
             Graphics.BackendThreading.Value = configurationFileFormat.BackendThreading;
             Graphics.GraphicsBackend.Value = configurationFileFormat.GraphicsBackend;
             Graphics.PreferredGpu.Value = configurationFileFormat.PreferredGpu;

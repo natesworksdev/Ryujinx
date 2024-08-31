@@ -50,10 +50,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information</param>
         /// <param name="caps">Host GPU capabilities</param>
         /// <returns>True if the format is incompatible, false otherwise</returns>
-        public static bool IsFormatHostIncompatible(TextureInfo info, Capabilities caps)
+        public static bool IsFormatHostIncompatible(TextureInfo info, in Capabilities caps)
         {
             Format originalFormat = info.FormatInfo.Format;
-            return ToHostCompatibleFormat(info, caps).Format != originalFormat;
+            return ToHostCompatibleFormat(info.FormatInfo, info.Target, caps).Format != originalFormat;
         }
 
         /// <summary>
@@ -64,10 +64,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This can be used to convert a incompatible compressed format to the decompressor
         /// output format.
         /// </remarks>
-        /// <param name="info">Texture information</param>
+        /// <param name="formatInfo">Texture format information</param>
+        /// <param name="target">Texture dimensions</param>
         /// <param name="caps">Host GPU capabilities</param>
         /// <returns>A host compatible format</returns>
-        public static FormatInfo ToHostCompatibleFormat(TextureInfo info, Capabilities caps)
+        public static FormatInfo ToHostCompatibleFormat(FormatInfo formatInfo, Target target, in Capabilities caps)
         {
             // The host API does not support those compressed formats.
             // We assume software decompression will be done for those textures,
@@ -75,13 +76,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!caps.SupportsAstcCompression)
             {
-                if (info.FormatInfo.Format.IsAstcUnorm())
+                if (formatInfo.Format.IsAstcUnorm())
                 {
                     return GraphicsConfig.EnableTextureRecompression
                         ? new FormatInfo(Format.Bc7Unorm, 4, 4, 16, 4)
                         : new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                 }
-                else if (info.FormatInfo.Format.IsAstcSrgb())
+                else if (formatInfo.Format.IsAstcSrgb())
                 {
                     return GraphicsConfig.EnableTextureRecompression
                         ? new FormatInfo(Format.Bc7Srgb, 4, 4, 16, 4)
@@ -89,9 +90,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (!HostSupportsBcFormat(info.FormatInfo.Format, info.Target, caps))
+            if (!HostSupportsBcFormat(formatInfo.Format, target, caps))
             {
-                switch (info.FormatInfo.Format)
+                switch (formatInfo.Format)
                 {
                     case Format.Bc1RgbaSrgb:
                     case Format.Bc2Srgb:
@@ -119,7 +120,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!caps.SupportsEtc2Compression)
             {
-                switch (info.FormatInfo.Format)
+                switch (formatInfo.Format)
                 {
                     case Format.Etc2RgbaSrgb:
                     case Format.Etc2RgbPtaSrgb:
@@ -132,7 +133,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (!caps.SupportsR4G4Format && info.FormatInfo.Format == Format.R4G4Unorm)
+            if (!caps.SupportsR4G4Format && formatInfo.Format == Format.R4G4Unorm)
             {
                 if (caps.SupportsR4G4B4A4Format)
                 {
@@ -144,19 +145,19 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (info.FormatInfo.Format == Format.R4G4B4A4Unorm)
+            if (formatInfo.Format == Format.R4G4B4A4Unorm)
             {
                 if (!caps.SupportsR4G4B4A4Format)
                 {
                     return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                 }
             }
-            else if (!caps.Supports5BitComponentFormat && info.FormatInfo.Format.Is16BitPacked())
+            else if (!caps.Supports5BitComponentFormat && formatInfo.Format.Is16BitPacked())
             {
-                return new FormatInfo(info.FormatInfo.Format.IsBgr() ? Format.B8G8R8A8Unorm : Format.R8G8B8A8Unorm, 1, 1, 4, 4);
+                return new FormatInfo(formatInfo.Format.IsBgr() ? Format.B8G8R8A8Unorm : Format.R8G8B8A8Unorm, 1, 1, 4, 4);
             }
 
-            return info.FormatInfo;
+            return formatInfo;
         }
 
         /// <summary>
@@ -166,7 +167,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="target">Target usage of the texture</param>
         /// <param name="caps">Host GPU Capabilities</param>
         /// <returns>True if the texture host supports the format with the given target usage, false otherwise</returns>
-        public static bool HostSupportsBcFormat(Format format, Target target, Capabilities caps)
+        public static bool HostSupportsBcFormat(Format format, Target target, in Capabilities caps)
         {
             bool not3DOr3DCompressionSupported = target != Target.Texture3D || caps.Supports3DTextureCompression;
 
@@ -197,12 +198,23 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Determines whether a texture can flush its data back to guest memory.
         /// </summary>
+        /// <param name="info">Texture that will have its data flushed</param>
+        /// <param name="caps">Host GPU Capabilities</param>
+        /// <returns>True if the texture can flush, false otherwise</returns>
+        public static bool CanTextureFlush(Texture texture, in Capabilities caps)
+        {
+            return !texture.HasImportOverride() && CanTextureFlush(texture.Info, caps);
+        }
+
+        /// <summary>
+        /// Determines whether a texture can flush its data back to guest memory.
+        /// </summary>
         /// <param name="info">Texture information</param>
         /// <param name="caps">Host GPU Capabilities</param>
         /// <returns>True if the texture can flush, false otherwise</returns>
-        public static bool CanTextureFlush(TextureInfo info, Capabilities caps)
+        private static bool CanTextureFlush(TextureInfo info, in Capabilities caps)
         {
-            if (IsFormatHostIncompatible(info, caps))
+            if (IsFormatHostIncompatible(info, in caps))
             {
                 return false; // Flushing this format is not supported, as it may have been converted to another host format.
             }

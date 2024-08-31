@@ -295,6 +295,48 @@
                                  ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}" />
                     </StackPanel>
                 </StackPanel>
+                <StackPanel
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical"
+                    Spacing="10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   ToolTip.Tip="{locale:Locale TextureDumpPathTooltip}"
+                                   Text="{locale:Locale SettingsTabGraphicsTextureDumpPath}"
+                                   Width="250" />
+                        <TextBox Text="{Binding TextureDumpPath}"
+                                 Width="350"
+                                 ToolTip.Tip="{locale:Locale TextureDumpPathTooltip}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   ToolTip.Tip="{locale:Locale GraphicsTextureDumpFormatTooltip}"
+                                   Text="{locale:Locale SettingsTabGraphicsTextureDumpFormat}"
+                                   Width="250" />
+                        <ComboBox Width="350"
+                                  HorizontalContentAlignment="Left"
+                                  ToolTip.Tip="{locale:Locale GraphicsTextureDumpFormatTooltip}"
+                                  SelectedIndex="{Binding TextureDumpFormatIndex}">
+                            <ComboBoxItem>
+                                <TextBlock Text="{locale:Locale SettingsTabGraphicsTextureDumpFormatDds}" />
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <TextBlock Text="{locale:Locale SettingsTabGraphicsTextureDumpFormatPng}" />
+                            </ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical">
+                        <CheckBox IsChecked="{Binding EnableTextureDump}"
+                            ToolTip.Tip="{locale:Locale GraphicsEnableTextureDumpTooltip}">
+                            <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableTextureDump}" />
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding EnableTextureRealTimeEditing}"
+                            ToolTip.Tip="{locale:Locale GraphicsEnableTextureRealTimeEditingTooltip}">
+                            <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableTextureRealTimeEditing}" />
+                        </CheckBox>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Border>
     </ScrollViewer>
