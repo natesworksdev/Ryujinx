@@ -896,6 +896,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     for (int j = 0; j < stride; j++)
                     {
                         output.Span[dstOffset + j * 4] = input[srcOffset + j];
+                        output.Span[dstOffset + j * 4 + 1] = 0;
+                        output.Span[dstOffset + j * 4 + 2] = 0;
                         output.Span[dstOffset + j * 4 + 3] = 0xff;
                     }
                 }
@@ -933,6 +935,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         output.Span[dstOffset + j * 2] = input[srcOffset + j];
                         output.Span[dstOffset + j * 2 + 1] = input[srcOffset + j + 1];
+                        output.Span[dstOffset + j * 2 + 2] = 0;
                         output.Span[dstOffset + j * 2 + 3] = 0xff;
                     }
                 }
