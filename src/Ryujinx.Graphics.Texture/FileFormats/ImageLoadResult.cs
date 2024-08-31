@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Graphics.Texture.FileFormats
+namespace Ryujinx.Graphics.Texture.FileFormats
 {
     public enum ImageLoadResult
     {
