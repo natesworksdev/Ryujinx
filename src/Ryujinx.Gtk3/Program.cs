@@ -4,6 +4,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
+using Ryujinx.Graphics.Vulkan.MoltenVK;
 using Ryujinx.Modules;
 using Ryujinx.SDL2.Common;
 using Ryujinx.UI;
@@ -13,7 +14,6 @@ using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Common.SystemInfo;
 using Ryujinx.UI.Widgets;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -111,6 +111,8 @@ namespace Ryujinx
 
             if (OperatingSystem.IsMacOS())
             {
+                MVKInitialization.InitializeResolver();
+
                 string baseDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
                 string resourcesDataDir;
 
@@ -161,12 +163,6 @@ namespace Ryujinx
                     action();
                 });
             };
-
-            // Sets ImageSharp Jpeg Encoder Quality.
-            SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.SetEncoder(JpegFormat.Instance, new JpegEncoder()
-            {
-                Quality = 100,
-            });
 
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.ConfigName);
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.ConfigName);
@@ -255,6 +251,12 @@ namespace Ryujinx
             // Show the main window UI.
             MainWindow mainWindow = new();
             mainWindow.Show();
+
+            // Load the game table if no application was requested by the command line
+            if (CommandLineState.LaunchPathArg == null)
+            {
+                mainWindow.UpdateGameTable();
+            }
 
             if (OperatingSystem.IsLinux())
             {
