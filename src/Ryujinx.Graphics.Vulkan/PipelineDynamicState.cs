@@ -22,8 +22,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Array4<float> _blendConstants;
 
-        private bool _feedbackLoopColor;
-        private bool _feedbackLoopDepth;
+        private FeedbackLoopAspects _feedbackLoopAspects;
 
         public uint ViewportsCount;
         public Array16<Viewport> Viewports;
@@ -104,10 +103,9 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetFeedbackLoop(bool color, bool depth)
+        public void SetFeedbackLoop(FeedbackLoopAspects aspects)
         {
-            _feedbackLoopColor = color;
-            _feedbackLoopDepth = depth;
+            _feedbackLoopAspects = aspects;
 
             _dirty |= DirtyFlags.FeedbackLoop;
         }
@@ -192,9 +190,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordFeedbackLoop(ExtAttachmentFeedbackLoopDynamicState api, CommandBuffer commandBuffer)
         {
-            ImageAspectFlags aspects = _feedbackLoopColor ? ImageAspectFlags.ColorBit : 0;
+            ImageAspectFlags aspects = (_feedbackLoopAspects & FeedbackLoopAspects.Color) != 0 ? ImageAspectFlags.ColorBit : 0;
 
-            if (_feedbackLoopDepth)
+            if ((_feedbackLoopAspects & FeedbackLoopAspects.Depth) != 0)
             {
                 aspects |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
             }

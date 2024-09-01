@@ -300,16 +300,10 @@ namespace Ryujinx.Graphics.Vulkan
             set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
         }
 
-        public bool FeedbackLoopColor
+        public FeedbackLoopAspects FeedbackLoopAspects
         {
-            readonly get => ((Internal.Id8 >> 7) & 0x1) != 0UL;
-            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFF7F) | ((value ? 1UL : 0UL) << 7);
-        }
-
-        public bool FeedbackLoopDepth
-        {
-            readonly get => ((Internal.Id8 >> 8) & 0x1) != 0UL;
-            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFEFF) | ((value ? 1UL : 0UL) << 8);
+            readonly get => (FeedbackLoopAspects)((Internal.Id8 >> 7) & 0x3);
+            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFE7F) | (((ulong)value) << 7);
         }
 
         public bool HasTessellationControlShader;
@@ -612,12 +606,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
                 {
-                    if (FeedbackLoopColor)
+                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
+
+                    if ((aspects & FeedbackLoopAspects.Color) != 0)
                     {
                         flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
                     }
 
-                    if (FeedbackLoopDepth)
+                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
                     {
                         flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
                     }

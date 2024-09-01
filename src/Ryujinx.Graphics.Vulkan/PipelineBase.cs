@@ -87,13 +87,6 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _tfEnabled;
         private bool _tfActive;
 
-        [Flags]
-        private enum FeedbackLoopAspects
-        {
-            Color = 1 << 0,
-            Depth = 1 << 1,
-        };
-
         private FeedbackLoopAspects _feedbackLoop;
         private bool _passWritesDepthStencil;
 
@@ -1453,8 +1446,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 FramebufferParams.AddBindings();
 
-                _newState.FeedbackLoopColor = false;
-                _newState.FeedbackLoopDepth = false;
+                _newState.FeedbackLoopAspects = FeedbackLoopAspects.None;
                 _bindingBarriersDirty = true;
             }
 
@@ -1537,14 +1529,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (Gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop)
                 {
-                    DynamicState.SetFeedbackLoop(
-                        (aspects & FeedbackLoopAspects.Color) != 0,
-                        (aspects & FeedbackLoopAspects.Depth) != 0);
+                    DynamicState.SetFeedbackLoop(aspects);
                 }
                 else
                 {
-                    _newState.FeedbackLoopColor = (aspects & FeedbackLoopAspects.Color) != 0;
-                    _newState.FeedbackLoopDepth = (aspects & FeedbackLoopAspects.Depth) != 0;
+                    _newState.FeedbackLoopAspects = aspects;
                 }
 
                 _feedbackLoop = aspects;
@@ -1588,7 +1577,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else if (_feedbackLoop != 0)
             {
-                return ChangeFeedbackLoop(0);
+                return ChangeFeedbackLoop(FeedbackLoopAspects.None);
             }
 
             return false;
