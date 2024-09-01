@@ -56,6 +56,7 @@ namespace Ryujinx.Horizon.Sdk.OsTypes
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -229,6 +229,7 @@ namespace Ryujinx.Audio.Backends.SDL2
         public override void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

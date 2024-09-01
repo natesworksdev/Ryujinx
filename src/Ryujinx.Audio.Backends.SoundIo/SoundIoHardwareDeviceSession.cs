@@ -446,6 +446,8 @@ namespace Ryujinx.Audio.Backends.SoundIo
             {
                 Dispose(true);
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

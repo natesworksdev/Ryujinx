@@ -16,6 +16,7 @@ using Ryujinx.Horizon.Sdk.Arp;
 using Ryujinx.Horizon.Srepo;
 using Ryujinx.Horizon.Usb;
 using Ryujinx.Horizon.Wlan;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -88,6 +89,7 @@ namespace Ryujinx.Horizon
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

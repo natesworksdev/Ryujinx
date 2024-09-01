@@ -192,6 +192,7 @@ namespace Ryujinx.Horizon.Sdk.Sf.Hipc
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
