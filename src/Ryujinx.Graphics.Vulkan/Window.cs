@@ -665,7 +665,6 @@ namespace Ryujinx.Graphics.Vulkan
         public override void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -12,7 +12,7 @@ using SamplerCreateInfo = Ryujinx.Graphics.GAL.SamplerCreateInfo;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class DescriptorSetUpdater
+    class DescriptorSetUpdater : IDisposable
     {
         private const ulong StorageBufferMaxMirrorable = 0x2000;
 

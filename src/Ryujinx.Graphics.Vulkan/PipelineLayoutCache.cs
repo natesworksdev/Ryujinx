@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class PipelineLayoutCache
+    class PipelineLayoutCache : IDisposable
     {
         private readonly struct PlceKey : IEquatable<PlceKey>
         {

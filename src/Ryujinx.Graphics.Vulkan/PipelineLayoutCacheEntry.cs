@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class PipelineLayoutCacheEntry
+    class PipelineLayoutCacheEntry : IDisposable
     {
         private const int MaxPoolSizesPerSet = 8;
 

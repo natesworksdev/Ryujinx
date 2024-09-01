@@ -22,7 +22,7 @@ using System.Threading;
 
 namespace Ryujinx.Horizon
 {
-    public class ServiceTable
+    public class ServiceTable : IDisposable
     {
         private int _readyServices;
         private int _totalServices;
