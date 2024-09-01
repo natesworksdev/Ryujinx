@@ -173,7 +173,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.PrimitiveRestartEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.PrimitiveRestartEnable;
             pipeline.RasterizerDiscardEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.RasterizerDiscard;
-            pipeline.DepthBiasEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.BiasEnable != 0;
+            pipeline.DepthBiasEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : ((state.BiasEnable != 0) &&
+                (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0));
 
             pipeline.PatchControlPoints = extendedDynamicState2.ExtendedDynamicState2PatchControlPoints ? 0 : state.PatchControlPoints;
 
@@ -185,7 +186,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (!extendedDynamicState)
             {
                 pipeline.DepthCompareOp = state.DepthTest.TestEnable ? state.DepthTest.Func.Convert() : default;
-                pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
+                pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : default;
             }
             else
             {

@@ -63,6 +63,9 @@ namespace Ryujinx.Graphics.GAL
         public bool PrimitiveRestartEnable;
         public uint PatchControlPoints;
 
+        public float DepthBiasUnits;
+        public float DepthBiasFactor;
+
         public DepthMode DepthMode;
 
         public void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs)

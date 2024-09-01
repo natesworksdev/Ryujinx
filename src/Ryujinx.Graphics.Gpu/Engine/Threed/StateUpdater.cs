@@ -854,6 +854,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             enables |= (depthBias.FillEnable ? PolygonModeMask.Fill : 0);
 
             _pipeline.BiasEnable = enables;
+            _pipeline.DepthBiasUnits = units / 2f;
+            _pipeline.DepthBiasFactor = factor;
+
             _context.Renderer.Pipeline.SetDepthBias(enables, factor, units / 2f, clamp);
         }
 

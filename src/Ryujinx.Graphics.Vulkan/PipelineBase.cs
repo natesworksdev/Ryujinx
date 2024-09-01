@@ -893,11 +893,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_supportExtDynamic)
             {
-                DynamicState.SetCullMode(enable ? face.Convert() : CullModeFlags.None);
+                DynamicState.SetCullMode(enable ? face.Convert() : default);
             }
             else
             {
-                _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
+                _newState.CullMode = enable ? face.Convert() : default;
             }
 
             SignalStateChange();
