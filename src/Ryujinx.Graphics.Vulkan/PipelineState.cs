@@ -255,10 +255,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _supportsExtDynamicState;
         private PhysicalDeviceExtendedDynamicState2FeaturesEXT _supportsExtDynamicState2;
+        private bool _supportsFeedBackLoopDynamicState;
 
 
-        public void Initialize(bool supportsExtDynamicState,
-            PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2)
+        public void Initialize(HardwareCapabilities capabilities)
         {
             HasTessellationControlShader = false;
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
@@ -273,10 +273,14 @@ namespace Ryujinx.Graphics.Vulkan
             PolygonMode = PolygonMode.Fill;
             DepthBoundsTestEnable = false;
 
-            FeedbackLoopAspects = FeedbackLoopAspects.None;
+            _supportsExtDynamicState = capabilities.SupportsExtendedDynamicState;
+            _supportsExtDynamicState2 = capabilities.SupportsExtendedDynamicState2;
+            _supportsFeedBackLoopDynamicState = capabilities.SupportsDynamicAttachmentFeedbackLoop;
 
-            _supportsExtDynamicState = supportsExtDynamicState;
-            _supportsExtDynamicState2 = extendedDynamicState2;
+            if (_supportsFeedBackLoopDynamicState || !capabilities.SupportsAttachmentFeedbackLoop)
+            {
+                FeedbackLoopAspects = FeedbackLoopAspects.None;
+            }
 
             if (_supportsExtDynamicState)
             {
@@ -577,8 +581,6 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
 
-                bool supportsFeedbackLoopDynamicState = gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop;
-
                 DynamicState* dynamicStates = stackalloc DynamicState[MaxDynamicStatesCount];
 
                 uint dynamicStatesCount = 7;
@@ -633,7 +635,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                if (supportsFeedbackLoopDynamicState)
+                if (_supportsFeedBackLoopDynamicState)
                 {
                     dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
                 }

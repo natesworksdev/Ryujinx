@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Vulkan
             var extendedDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
 
             PipelineState pipeline = new();
-            pipeline.Initialize(extendedDynamicState, extendedDynamicState2);
+            pipeline.Initialize(gd.Capabilities);
 
             // It is assumed that Dynamic State is enabled when this conversion is used.
             pipeline.DepthBoundsTestEnable = false; // Not implemented.

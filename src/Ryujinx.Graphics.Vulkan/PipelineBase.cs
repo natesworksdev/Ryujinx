@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
 
-            _newState.Initialize(_supportExtDynamic, gd.Capabilities.SupportsExtendedDynamicState2);
+            _newState.Initialize(gd.Capabilities);
         }
 
         public void Initialize()
