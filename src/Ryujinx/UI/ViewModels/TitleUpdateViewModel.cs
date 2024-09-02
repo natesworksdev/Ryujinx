@@ -88,7 +88,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 StorageProvider = desktop.MainWindow.StorageProvider;
             }
 
-            TitleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, ApplicationData.IdString, "updates.json");
+            TitleUpdateJsonPath = Path.Combine(AppDataManager.GamesDirPath, ApplicationData.IdBaseString, "updates.json");
 
             try
             {
@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             catch
             {
-                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {ApplicationData.IdString} at {TitleUpdateJsonPath}");
+                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize title update data for {ApplicationData.IdBaseString} at {TitleUpdateJsonPath}");
 
                 TitleUpdateWindowData = new TitleUpdateMetadata
                 {
@@ -131,26 +131,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void SortUpdates()
         {
-            var list = TitleUpdates.ToList();
-
-            list.Sort((first, second) =>
-            {
-                if (string.IsNullOrEmpty(first.Control.DisplayVersionString.ToString()))
-                {
-                    return -1;
-                }
-
-                if (string.IsNullOrEmpty(second.Control.DisplayVersionString.ToString()))
-                {
-                    return 1;
-                }
-
-                return Version.Parse(first.Control.DisplayVersionString.ToString()).CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
-            });
+            var sortedUpdates = TitleUpdates.OrderByDescending(update => update.Version);
 
             Views.Clear();
             Views.Add(new BaseModel());
-            Views.AddRange(list);
+            Views.AddRange(sortedUpdates);
 
             if (SelectedUpdate == null)
             {
@@ -169,7 +154,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        private void AddUpdate(string path, bool ignoreNotFound = false)
+        private void AddUpdate(string path, bool ignoreNotFound = false, bool selected = false)
         {
             if (!File.Exists(path) || TitleUpdates.Any(x => x.Path == path))
             {
@@ -204,7 +189,15 @@ namespace Ryujinx.Ava.UI.ViewModels
                     controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(ref nacpFile.Ref, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
                     nacpFile.Get.Read(out _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
-                    TitleUpdates.Add(new TitleUpdateModel(controlData, path));
+                    var displayVersion = controlData.DisplayVersionString.ToString();
+                    var update = new TitleUpdateModel(content.Version.Version, displayVersion, path);
+
+                    TitleUpdates.Add(update);
+
+                    if (selected)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() => SelectedUpdate = update);
+                    }
                 }
                 else
                 {
@@ -245,7 +238,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach (var file in result)
             {
-                AddUpdate(file.Path.LocalPath);
+                AddUpdate(file.Path.LocalPath, selected: true);
             }
 
             SortUpdates();

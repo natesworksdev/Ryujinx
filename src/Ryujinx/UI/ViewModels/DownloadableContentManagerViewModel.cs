@@ -103,7 +103,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _storageProvider = desktop.MainWindow.StorageProvider;
             }
 
-            _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdString, "dlc.json");
+            _downloadableContentJsonPath = Path.Combine(AppDataManager.GamesDirPath, applicationData.IdBaseString, "dlc.json");
 
             if (!File.Exists(_downloadableContentJsonPath))
             {
@@ -263,7 +263,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                     var content = new DownloadableContentModel(nca.Header.TitleId.ToString("X16"), path, fileEntry.FullPath, true);
                     DownloadableContents.Add(content);
-                    SelectedDownloadableContents.Add(content);
+                    Dispatcher.UIThread.InvokeAsync(() => SelectedDownloadableContents.Add(content));
 
                     success = true;
                 }
