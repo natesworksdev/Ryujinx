@@ -1721,6 +1721,11 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool UpdateFeedbackLoop()
         {
+            if (!Gd.Capabilities.SupportsAttachmentFeedbackLoop)
+            {
+                return false;
+            }
+
             List<TextureView> hazards = _descriptorSetUpdater.FeedbackLoopHazards;
 
             if ((hazards?.Count ?? 0) > 0)
@@ -1765,7 +1770,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             // Stencil test being enabled doesn't necessarily mean a write, but it's not critical to check.
-            _passWritesDepthStencil |= (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
+            _passWritesDepthStencil |= _supportExtDynamic ? (DynamicState.DepthTestEnable && DynamicState.DepthWriteEnable) || _newState.StencilTestEnable : (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
         }
 
         private bool RecreateGraphicsPipelineIfNeeded()

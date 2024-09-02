@@ -273,6 +273,8 @@ namespace Ryujinx.Graphics.Vulkan
             PolygonMode = PolygonMode.Fill;
             DepthBoundsTestEnable = false;
 
+            FeedbackLoopAspects = FeedbackLoopAspects.None;
+
             _supportsExtDynamicState = supportsExtDynamicState;
             _supportsExtDynamicState2 = extendedDynamicState2;
 
