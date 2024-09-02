@@ -323,9 +323,9 @@ namespace Ryujinx.Graphics.Vulkan
                     PrimitiveTopology.TriangleStrip or
                     PrimitiveTopology.TriangleFan or
                     PrimitiveTopology.TriangleListWithAdjacency or
-                    PrimitiveTopology.TriangleStripWithAdjacency => PrimitiveTopology.TriangleList,
+                    PrimitiveTopology.TriangleStripWithAdjacency => PrimitiveTopology.TriangleStrip,
                 PrimitiveTopology.PatchList => PrimitiveTopology.PatchList,
-                _ => LogInvalidAndReturn(topology, nameof(PrimitiveTopology), PrimitiveTopology.TriangleList),
+                _ => LogInvalidAndReturn(topology, nameof(PrimitiveTopology), PrimitiveTopology.TriangleStrip),
             };
         }
 

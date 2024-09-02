@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint _patchControlPoints;
 
-        public PrimitiveTopology _topology;
+        private PrimitiveTopology _topology;
 
         private bool _primitiveRestartEnable;
 

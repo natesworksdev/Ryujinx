@@ -166,7 +166,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.DepthClampEnable = state.DepthClampEnable;
 
-            pipeline.FeedbackLoopAspects = FeedbackLoopAspects.None;
+            if (gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop || !gd.Capabilities.SupportsAttachmentFeedbackLoop)
+            {
+                pipeline.FeedbackLoopAspects = FeedbackLoopAspects.None;
+            }
 
             pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
 

@@ -644,7 +644,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _supportExtDynamic ? DynamicState._topology : _newState.Topology;
+                var oldTopology = _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -825,11 +825,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            if (factor == 0 && units == 0 && !_newState.DepthBiasEnable && !_supportExtDynamic2)
-            {
-                return;
-            }
-
             bool depthBiasEnable = (enables != 0) && (factor != 0 && units != 0);
             bool changed = false;
 
@@ -882,7 +877,10 @@ namespace Ryujinx.Graphics.Vulkan
             if (_supportExtDynamic)
             {
                 DynamicState.SetDepthTestBool(depthTest.TestEnable, depthTest.WriteEnable);
-                DynamicState.SetDepthTestCompareOp(depthTest.TestEnable ? depthTest.Func.Convert() : default);
+                if (depthTest.TestEnable)
+                {
+                    DynamicState.SetDepthTestCompareOp(depthTest.Func.Convert());
+                }
             }
             else
             {
@@ -899,7 +897,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_supportExtDynamic)
             {
-                DynamicState.SetCullMode(enable ? face.Convert() : default);
+                DynamicState.SetCullMode(enable ? face.Convert() : CullModeFlags.None);
             }
             else
             {
@@ -977,7 +975,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
-                DynamicState.SetLogicOp(logicOpEnable ? op.Convert() : default);
+                if (logicOpEnable)
+                {
+                    DynamicState.SetLogicOp(op.Convert());
+                }
+
             }
             else
             {
@@ -998,11 +1000,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel)
         {
-            if (vertices == 0 || vertices > Gd.Capabilities.MaxTessellationPatchSize)
-            {
-                return;
-            }
-
             if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
                 DynamicState.SetPatchControlPoints((uint)vertices);
@@ -1770,7 +1767,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             // Stencil test being enabled doesn't necessarily mean a write, but it's not critical to check.
-            _passWritesDepthStencil |= _supportExtDynamic ? (DynamicState.DepthTestEnable && DynamicState.DepthWriteEnable) || _newState.StencilTestEnable : (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
+            _passWritesDepthStencil |= _supportExtDynamic ? (DynamicState.DepthTestEnable && DynamicState.DepthWriteEnable) || DynamicState.StencilTestEnable : (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
         }
 
         private bool RecreateGraphicsPipelineIfNeeded()
