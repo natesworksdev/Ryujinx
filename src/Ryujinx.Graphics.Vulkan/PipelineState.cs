@@ -488,7 +488,27 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!_supportsExtDynamicState2.ExtendedDynamicState2)
                 {
-                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
+                    bool primitiveRestartEnable = PrimitiveRestartEnable;
+
+                    bool topologySupportsRestart;
+
+                    if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
+                    {
+                        topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
+                                                  Topology != PrimitiveTopology.PatchList;
+                    }
+                    else
+                    {
+                        topologySupportsRestart = Topology == PrimitiveTopology.LineStrip ||
+                                                  Topology == PrimitiveTopology.TriangleStrip ||
+                                                  Topology == PrimitiveTopology.TriangleFan ||
+                                                  Topology == PrimitiveTopology.LineStripWithAdjacency ||
+                                                  Topology == PrimitiveTopology.TriangleStripWithAdjacency;
+                    }
+
+                    primitiveRestartEnable &= topologySupportsRestart;
+
+                    inputAssemblyState.PrimitiveRestartEnable = primitiveRestartEnable;
                     rasterizationState.DepthBiasEnable = DepthBiasEnable;
                     rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
                 }

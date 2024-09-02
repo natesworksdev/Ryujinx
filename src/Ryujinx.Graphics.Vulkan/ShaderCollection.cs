@@ -552,7 +552,7 @@ namespace Ryujinx.Graphics.Vulkan
             // The active attachment formats have been provided by the abstraction layer.
             var renderPass = CreateDummyRenderPass();
 
-            PipelineState pipeline = _state.ToVulkanPipelineState(_gd);
+            PipelineState pipeline = _state.ToVulkanPipelineState(_gd, HasTessellationControlShader);
 
             ShaderTopology = pipeline.Topology;
 

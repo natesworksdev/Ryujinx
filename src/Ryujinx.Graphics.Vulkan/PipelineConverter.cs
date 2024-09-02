@@ -4,6 +4,7 @@ using Silk.NET.Vulkan;
 using System;
 using Format = Silk.NET.Vulkan.Format;
 using PolygonMode = Silk.NET.Vulkan.PolygonMode;
+using PrimitiveTopology = Ryujinx.Graphics.GAL.PrimitiveTopology;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -152,7 +153,7 @@ namespace Ryujinx.Graphics.Vulkan
                 0);
         }
 
-        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd)
+        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd, bool hasTCS)
         {
             var extendedDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
             var extendedDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
@@ -219,7 +220,8 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.StencilBackDepthFailOp = extendedDynamicState ? 0 : state.StencilTest.BackDpFail.Convert();
             pipeline.StencilBackCompareOp = extendedDynamicState ? 0 : state.StencilTest.BackFunc.Convert();
 
-            pipeline.Topology = extendedDynamicState ? gd.TopologyRemap(state.Topology).Convert().ConvertToClass() : gd.TopologyRemap(state.Topology).Convert();
+            var topology = hasTCS ? PrimitiveTopology.Patches : state.Topology;
+            pipeline.Topology = extendedDynamicState ? gd.TopologyRemap(topology).Convert().ConvertToClass() : gd.TopologyRemap(topology).Convert();
 
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);

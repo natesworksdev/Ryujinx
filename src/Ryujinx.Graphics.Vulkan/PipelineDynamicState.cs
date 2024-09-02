@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint _patchControlPoints;
 
-        private PrimitiveTopology _topology;
+        public PrimitiveTopology _topology;
 
         private bool _primitiveRestartEnable;
 
@@ -455,7 +455,33 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordPrimitiveRestartEnable(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            gd.ExtendedDynamicState2Api.CmdSetPrimitiveRestartEnable(commandBuffer, _primitiveRestartEnable);
+            bool primitiveRestartEnable = _primitiveRestartEnable;
+
+            bool topologySupportsRestart;
+
+            if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
+            {
+                topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
+                                          _topology != PrimitiveTopology.PatchList;
+            }
+            else
+            {
+                topologySupportsRestart = _topology == PrimitiveTopology.LineStrip ||
+                                          _topology == PrimitiveTopology.TriangleStrip ||
+                                          _topology == PrimitiveTopology.TriangleFan ||
+                                          _topology == PrimitiveTopology.LineStripWithAdjacency ||
+                                          _topology == PrimitiveTopology.TriangleStripWithAdjacency;
+            }
+
+            primitiveRestartEnable &= topologySupportsRestart;
+
+            //Cannot disable primitiveRestartEnable for these Topologies on MacOS
+            if (gd.IsMoltenVk)
+            {
+                primitiveRestartEnable = true;
+            }
+
+            gd.ExtendedDynamicState2Api.CmdSetPrimitiveRestartEnable(commandBuffer, primitiveRestartEnable);
         }
 
         private readonly void RecordPrimitiveTopology(VulkanRenderer gd, CommandBuffer commandBuffer)

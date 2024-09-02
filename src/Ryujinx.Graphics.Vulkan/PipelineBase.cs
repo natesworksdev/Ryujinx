@@ -639,7 +639,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _newState.Topology;
+                var oldTopology = _supportExtDynamic ? DynamicState._topology : _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -1023,41 +1023,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPrimitiveRestart(bool enable, int index)
         {
-            bool primitiveRestartEnable = enable;
-
-            bool topologySupportsRestart;
-
-            if (Gd.Capabilities.SupportsPrimitiveTopologyListRestart)
-            {
-                topologySupportsRestart = Gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
-                                          _newState.Topology != Silk.NET.Vulkan.PrimitiveTopology.PatchList;
-            }
-            else
-            {
-                topologySupportsRestart = _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStrip ||
-                                          _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip ||
-                                          _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleFan ||
-                                          _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency ||
-                                          _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency;
-            }
-
-            primitiveRestartEnable &= topologySupportsRestart;
-
-            //Cannot disable primitiveRestartEnable for these Topologies on MacOS
-            if ((_newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStrip || _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStrip ||
-                 _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.LineStripWithAdjacency ||
-                 _newState.Topology == Silk.NET.Vulkan.PrimitiveTopology.TriangleStripWithAdjacency) && Gd.IsMoltenVk)
-            {
-                primitiveRestartEnable = true;
-            }
-
             if (_supportExtDynamic2)
             {
-                DynamicState.SetPrimitiveRestartEnable(primitiveRestartEnable);
+                DynamicState.SetPrimitiveRestartEnable(enable);
             }
             else
             {
-                _newState.PrimitiveRestartEnable = primitiveRestartEnable;
+                _newState.PrimitiveRestartEnable = enable;
             }
 
             // TODO: What to do about the index?
