@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _supportsFeedBackLoopDynamicState;
 
 
-        public void Initialize(HardwareCapabilities capabilities)
+        public void Initialize(HardwareCapabilities capabilities, PrimitiveTopology topology = default)
         {
             HasTessellationControlShader = false;
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
@@ -277,13 +277,14 @@ namespace Ryujinx.Graphics.Vulkan
             _supportsExtDynamicState2 = capabilities.SupportsExtendedDynamicState2;
             _supportsFeedBackLoopDynamicState = capabilities.SupportsDynamicAttachmentFeedbackLoop;
 
-            if (_supportsFeedBackLoopDynamicState || !capabilities.SupportsAttachmentFeedbackLoop)
+            if (!capabilities.SupportsAttachmentFeedbackLoop)
             {
                 FeedbackLoopAspects = FeedbackLoopAspects.None;
             }
 
             if (_supportsExtDynamicState)
             {
+                Topology = topology;
                 StencilFrontFailOp = 0;
                 StencilFrontPassOp = 0;
                 StencilFrontDepthFailOp = 0;
@@ -649,7 +650,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 PipelineCreateFlags flags = 0;
 
-                if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop && !_supportsFeedBackLoopDynamicState)
                 {
                     FeedbackLoopAspects aspects = FeedbackLoopAspects;
 

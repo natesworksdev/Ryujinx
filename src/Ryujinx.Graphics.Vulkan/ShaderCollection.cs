@@ -24,8 +24,6 @@ namespace Ryujinx.Graphics.Vulkan
         public bool IsCompute { get; }
         public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
 
-        public PrimitiveTopology ShaderTopology;
-
         public bool UpdateTexturesWithoutTemplate { get; }
 
         public uint Stages { get; }
@@ -552,9 +550,7 @@ namespace Ryujinx.Graphics.Vulkan
             // The active attachment formats have been provided by the abstraction layer.
             var renderPass = CreateDummyRenderPass();
 
-            PipelineState pipeline = _state.ToVulkanPipelineState(_gd, HasTessellationControlShader);
-
-            ShaderTopology = pipeline.Topology;
+            PipelineState pipeline = _state.ToVulkanPipelineState(_gd);
 
             // Copy the shader stage info to the pipeline.
             var stages = pipeline.Stages.AsSpan();

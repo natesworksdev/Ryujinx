@@ -153,13 +153,15 @@ namespace Ryujinx.Graphics.Vulkan
                 0);
         }
 
-        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd, bool hasTCS)
+        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd)
         {
             var extendedDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
             var extendedDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
 
+            var topology = extendedDynamicState ? gd.TopologyRemap(state.Topology).Convert().ConvertToClass() : gd.TopologyRemap(state.Topology).Convert();
+
             PipelineState pipeline = new();
-            pipeline.Initialize(gd.Capabilities);
+            pipeline.Initialize(gd.Capabilities, topology);
 
             // It is assumed that Dynamic State is enabled when this conversion is used.
             pipeline.DepthBoundsTestEnable = false; // Not implemented.
@@ -225,8 +227,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.StencilBackDepthFailOp = extendedDynamicState ? 0 : state.StencilTest.BackDpFail.Convert();
             pipeline.StencilBackCompareOp = extendedDynamicState ? 0 : state.StencilTest.BackFunc.Convert();
 
-            var topology = hasTCS ? PrimitiveTopology.Patches : state.Topology;
-            pipeline.Topology = extendedDynamicState ? gd.TopologyRemap(topology).Convert().ConvertToClass() : gd.TopologyRemap(topology).Convert();
+            pipeline.Topology = topology;
 
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);

@@ -1080,8 +1080,6 @@ namespace Ryujinx.Graphics.Vulkan
             _newState.HasTessellationControlShader = internalProgram.HasTessellationControlShader;
             _newState.StagesCount = (uint)stages.Length;
 
-            _newState.Topology = internalProgram.ShaderTopology;
-
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
             SignalStateChange();
@@ -1702,7 +1700,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     DynamicState.SetFeedbackLoop(aspects);
                 }
-                else
+                else if (Gd.Capabilities.SupportsAttachmentFeedbackLoop)
                 {
                     _newState.FeedbackLoopAspects = aspects;
                 }
@@ -1718,11 +1716,6 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool UpdateFeedbackLoop()
         {
-            if (!Gd.Capabilities.SupportsAttachmentFeedbackLoop)
-            {
-                return false;
-            }
-
             List<TextureView> hazards = _descriptorSetUpdater.FeedbackLoopHazards;
 
             if ((hazards?.Count ?? 0) > 0)
