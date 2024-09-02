@@ -948,7 +948,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline.SetStorageBuffers(1, new[] { srcIndexBuffer.GetBuffer(), dstIndexBuffer.GetBuffer() });
 
             _pipeline.SetProgram(_programConvertIndexBuffer);
-            _pipeline.DispatchCompute(1, 1, 1);
+            _pipeline.DispatchCompute(BitUtils.DivRoundUp(primitiveCount, 16), 1, 1);
 
             BufferHolder.InsertBufferBarrier(
                 gd,
