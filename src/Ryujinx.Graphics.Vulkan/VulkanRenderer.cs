@@ -39,6 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal KhrPushDescriptor PushDescriptorApi { get; private set; }
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
         internal KhrDrawIndirectCount DrawIndirectCountApi { get; private set; }
+        internal ExtAttachmentFeedbackLoopDynamicState DynamicFeedbackLoopApi { get; private set; }
 
         internal uint QueueFamilyIndex { get; private set; }
         internal Queue Queue { get; private set; }
@@ -155,6 +156,11 @@ namespace Ryujinx.Graphics.Vulkan
                 DrawIndirectCountApi = drawIndirectCountApi;
             }
 
+            if (Api.TryGetDeviceExtension(_instance.Instance, _device, out ExtAttachmentFeedbackLoopDynamicState dynamicFeedbackLoopApi))
+            {
+                DynamicFeedbackLoopApi = dynamicFeedbackLoopApi;
+            }
+
             if (maxQueueCount >= 2)
             {
                 Api.GetDeviceQueue(_device, queueFamilyIndex, 1, out var backgroundQueue);
@@ -254,6 +260,16 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceDepthClipControlFeaturesExt,
             };
 
+            PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT featuresAttachmentFeedbackLoop = new()
+            {
+                SType = StructureType.PhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesExt,
+            };
+
+            PhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT featuresDynamicAttachmentFeedbackLoop = new()
+            {
+                SType = StructureType.PhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesExt,
+            };
+
             PhysicalDevicePortabilitySubsetFeaturesKHR featuresPortabilitySubset = new()
             {
                 SType = StructureType.PhysicalDevicePortabilitySubsetFeaturesKhr,
@@ -294,6 +310,22 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 featuresDepthClipControl.PNext = features2.PNext;
                 features2.PNext = &featuresDepthClipControl;
+            }
+
+            bool supportsAttachmentFeedbackLoop = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_attachment_feedback_loop_layout");
+
+            if (supportsAttachmentFeedbackLoop)
+            {
+                featuresAttachmentFeedbackLoop.PNext = features2.PNext;
+                features2.PNext = &featuresAttachmentFeedbackLoop;
+            }
+
+            bool supportsDynamicAttachmentFeedbackLoop = _physicalDevice.IsDeviceExtensionPresent("VK_EXT_attachment_feedback_loop_dynamic_state");
+
+            if (supportsDynamicAttachmentFeedbackLoop)
+            {
+                featuresDynamicAttachmentFeedbackLoop.PNext = features2.PNext;
+                features2.PNext = &featuresDynamicAttachmentFeedbackLoop;
             }
 
             bool usePortability = _physicalDevice.IsDeviceExtensionPresent("VK_KHR_portability_subset");
@@ -424,6 +456,8 @@ namespace Ryujinx.Graphics.Vulkan
                 _physicalDevice.IsDeviceExtensionPresent(ExtExternalMemoryHost.ExtensionName),
                 supportsDepthClipControl && featuresDepthClipControl.DepthClipControl,
                 _physicalDevice.PhysicalDeviceFeatures.WideLines,
+                supportsAttachmentFeedbackLoop && featuresAttachmentFeedbackLoop.AttachmentFeedbackLoopLayout,
+                supportsDynamicAttachmentFeedbackLoop && featuresDynamicAttachmentFeedbackLoop.AttachmentFeedbackLoopDynamicState,
                 propertiesSubgroup.SubgroupSize,
                 supportedSampleCounts,
                 portabilityFlags,

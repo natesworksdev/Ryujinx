@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
     struct PipelineState : IDisposable
     {
         private const int RequiredSubgroupSize = 32;
+        private const int MaxDynamicStatesCount = 23;
 
         public PipelineUid Internal;
 
@@ -237,6 +238,12 @@ namespace Ryujinx.Graphics.Vulkan
         {
             readonly get => ((Internal.Id3 >> 6) & 0x1) != 0UL;
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFFFFFFFFBF) | ((value ? 1UL : 0UL) << 6);
+        }
+
+        public FeedbackLoopAspects FeedbackLoopAspects
+        {
+            readonly get => (FeedbackLoopAspects)((Internal.Id8 >> 7) & 0x3);
+            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFE7F) | (((ulong)value) << 7);
         }
 
         public bool HasTessellationControlShader;
@@ -568,7 +575,11 @@ namespace Ryujinx.Graphics.Vulkan
                     colorBlendState.PNext = &colorBlendAdvancedState;
                 }
 
-                DynamicState* dynamicStates = stackalloc DynamicState[22];
+                bool supportsFeedbackLoopDynamicState = gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop;
+
+                DynamicState* dynamicStates = stackalloc DynamicState[MaxDynamicStatesCount];
+                
+                int dynamicStatesCount = 7;
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
@@ -578,12 +589,10 @@ namespace Ryujinx.Graphics.Vulkan
                 dynamicStates[5] = DynamicState.BlendConstants;
                 dynamicStates[6] = DynamicState.DepthBias;
 
-                uint currentIndex = 7;
-
                 if (!isMoltenVk)
                 {
                     //LineWidth dynamic state is only supported on macOS when using Metal Private API on newer version of MoltenVK
-                    dynamicStates[currentIndex++] = DynamicState.LineWidth;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.LineWidth;
                 }
 
                 if (_supportsExtDynamicState)
@@ -591,35 +600,40 @@ namespace Ryujinx.Graphics.Vulkan
                     if (!isMoltenVk)
                     {
                         //Requires Metal 3.1 and new MoltenVK
-                        dynamicStates[currentIndex++] = DynamicState.VertexInputBindingStrideExt;
+                        dynamicStates[dynamicStatesCount++] = DynamicState.VertexInputBindingStrideExt;
                     }
                     dynamicStates[0] = DynamicState.ViewportWithCountExt;
                     dynamicStates[1] = DynamicState.ScissorWithCountExt;
-                    dynamicStates[currentIndex++] = DynamicState.CullModeExt;
-                    dynamicStates[currentIndex++] = DynamicState.FrontFaceExt;
-                    dynamicStates[currentIndex++] = DynamicState.DepthTestEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.DepthWriteEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.CullModeExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.FrontFaceExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.DepthTestEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.DepthWriteEnableExt;
 
-                    dynamicStates[currentIndex++] = DynamicState.DepthCompareOpExt;
-                    dynamicStates[currentIndex++] = DynamicState.StencilTestEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.StencilOpExt;
-                    dynamicStates[currentIndex++] = DynamicState.PrimitiveTopologyExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.DepthCompareOpExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.StencilTestEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.StencilOpExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.PrimitiveTopologyExt;
                 }
 
                 if (_supportsExtDynamicState2.ExtendedDynamicState2)
                 {
-                    dynamicStates[currentIndex++] = DynamicState.DepthBiasEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.RasterizerDiscardEnableExt;
-                    dynamicStates[currentIndex++] = DynamicState.PrimitiveRestartEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.DepthBiasEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.RasterizerDiscardEnableExt;
+                    dynamicStates[dynamicStatesCount++] = DynamicState.PrimitiveRestartEnableExt;
 
                     if (_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
                     {
-                        dynamicStates[currentIndex++] = DynamicState.LogicOpExt;
+                        dynamicStates[dynamicStatesCount++] = DynamicState.LogicOpExt;
                     }
                     if (_supportsExtDynamicState2.ExtendedDynamicState2PatchControlPoints)
                     {
-                        dynamicStates[currentIndex++] = DynamicState.PatchControlPointsExt;
+                        dynamicStates[dynamicStatesCount++] = DynamicState.PatchControlPointsExt;
                     }
+                }
+
+                if (supportsFeedbackLoopDynamicState)
+                {
+                    dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
@@ -629,9 +643,27 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicStates = dynamicStates,
                 };
 
+                PipelineCreateFlags flags = 0;
+
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
+                {
+                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
+
+                    if ((aspects & FeedbackLoopAspects.Color) != 0)
+                    {
+                        flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
+                    }
+
+                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
+                    {
+                        flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
+                    }
+                }
+
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
+                    Flags = flags,
                     StageCount = StagesCount,
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,

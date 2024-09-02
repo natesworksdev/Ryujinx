@@ -3,6 +3,7 @@ using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using System;
 
+
 namespace Ryujinx.Graphics.Vulkan
 {
     struct PipelineDynamicState
@@ -41,6 +42,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Array4<float> _blendConstants;
 
+        private FeedbackLoopAspects _feedbackLoopAspects;
+
         public uint ViewportsCount;
         public Array16<Viewport> Viewports;
 
@@ -66,19 +69,20 @@ namespace Ryujinx.Graphics.Vulkan
             Scissor = 1 << 2,
             Stencil = 1 << 3,
             Viewport = 1 << 4,
-            CullMode = 1 << 5,
-            FrontFace = 1 << 6,
-            DepthTestBool = 1 << 7,
-            DepthTestCompareOp = 1 << 8,
-            StencilTestEnableandStencilOp = 1 << 9,
-            LineWidth = 1 << 10,
-            RasterDiscard = 1 << 11,
-            LogicOp = 1 << 12,
-            PatchControlPoints = 1 << 13,
-            PrimitiveRestart = 1 << 14,
-            PrimitiveTopology = 1 << 15,
-            DepthBiasEnable = 1 << 16,
-            Standard = Blend | DepthBias | Scissor | Stencil | Viewport,
+            FeedbackLoop = 1 << 5,
+            CullMode = 1 << 6,
+            FrontFace = 1 << 7,
+            DepthTestBool = 1 << 8,
+            DepthTestCompareOp = 1 << 9,
+            StencilTestEnableandStencilOp = 1 << 10,
+            LineWidth = 1 << 11,
+            RasterDiscard = 1 << 12,
+            LogicOp = 1 << 13,
+            PatchControlPoints = 1 << 14,
+            PrimitiveRestart = 1 << 15,
+            PrimitiveTopology = 1 << 16,
+            DepthBiasEnable = 1 << 17,
+            Standard = Blend | DepthBias | Scissor | Stencil | Viewport |  FeedbackLoop,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnableandStencilOp | PrimitiveTopology,
             Extended2 = RasterDiscard | PrimitiveRestart | DepthBiasEnable,
         }
@@ -203,6 +207,13 @@ namespace Ryujinx.Graphics.Vulkan
             _dirty |= DirtyFlags.LineWidth;
         }
 
+        public void SetFeedbackLoop(FeedbackLoopAspects aspects)
+        {
+            _feedbackLoopAspects = aspects;
+
+            _dirty |= DirtyFlags.FeedbackLoop;
+        }
+
         public void SetRasterizerDiscard(bool discard)
         {
             _discard = discard;
@@ -265,6 +276,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ReplayIfDirty(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
+            Vk api = gd.Api;
+
             if (_dirty.HasFlag(DirtyFlags.Blend))
             {
                 RecordBlend(gd.Api, commandBuffer);
@@ -348,6 +361,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_dirty.HasFlag(DirtyFlags.PatchControlPoints))
             {
                 RecordPatchControlPoints(gd, commandBuffer);
+            }
+
+            if (_dirty.HasFlag(DirtyFlags.FeedbackLoop) && gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop)
+            {
+                RecordFeedbackLoop(gd.DynamicFeedbackLoopApi, commandBuffer);
             }
 
             _dirty = DirtyFlags.None;
@@ -502,6 +520,18 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly void RecordLineWidth(Vk api, CommandBuffer commandBuffer)
         {
             api.CmdSetLineWidth(commandBuffer, _lineWidth);
+        }
+
+        private readonly void RecordFeedbackLoop(ExtAttachmentFeedbackLoopDynamicState api, CommandBuffer commandBuffer)
+        {
+            ImageAspectFlags aspects = (_feedbackLoopAspects & FeedbackLoopAspects.Color) != 0 ? ImageAspectFlags.ColorBit : 0;
+
+            if ((_feedbackLoopAspects & FeedbackLoopAspects.Depth) != 0)
+            {
+                aspects |= ImageAspectFlags.DepthBit | ImageAspectFlags.StencilBit;
+            }
+
+            api.CmdSetAttachmentFeedbackLoopEnable(commandBuffer, aspects);
         }
     }
 }
