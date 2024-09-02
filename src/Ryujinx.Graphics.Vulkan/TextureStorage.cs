@@ -77,9 +77,9 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             _info = info;
 
-            bool isNotMsOrSupportsStorage = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
+            bool isMsImageStorageSupported = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
 
-            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format, isNotMsOrSupportsStorage);
+            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format, isMsImageStorageSupported);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
             var depth = (uint)(info.Target == Target.Texture3D ? info.Depth : 1);
@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
-            var usage = GetImageUsage(info.Format, gd.Capabilities, isNotMsOrSupportsStorage, true);
+            var usage = GetImageUsage(info.Format, gd.Capabilities, isMsImageStorageSupported, true);
 
             var flags = ImageCreateFlags.CreateMutableFormatBit | ImageCreateFlags.CreateExtendedUsageBit;
 
@@ -307,7 +307,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static ImageUsageFlags GetImageUsage(Format format in HardwareCapabilities capabilities, bool isNotMsOrSupportsStorage, bool extendedUsage)
+        public static ImageUsageFlags GetImageUsage(Format format, in HardwareCapabilities capabilities, bool isMsImageStorageSupported, bool extendedUsage)
         {
             var usage = DefaultUsageFlags;
 
@@ -320,7 +320,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
-            if ((format.IsImageCompatible() && isNotMsOrSupportsStorage) || extendedUsage)
+            if ((format.IsImageCompatible() && isMsImageStorageSupported) || extendedUsage)
             {
                 usage |= ImageUsageFlags.StorageBit;
             }
