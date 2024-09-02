@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
             PrimitiveRestart = 1 << 15,
             PrimitiveTopology = 1 << 16,
             DepthBiasEnable = 1 << 17,
-            Standard = Blend | DepthBias | Scissor | Stencil | Viewport |  FeedbackLoop,
+            Standard = Blend | DepthBias | Scissor | Stencil | Viewport | FeedbackLoop,
             Extended = CullMode | FrontFace | DepthTestBool | DepthTestCompareOp | StencilTestEnableandStencilOp | PrimitiveTopology,
             Extended2 = RasterDiscard | PrimitiveRestart | DepthBiasEnable,
         }
@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ReplayIfDirty(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            Vk api = gd.Api;
+            _ = gd.Api;
 
             if (_dirty.HasFlag(DirtyFlags.Blend))
             {

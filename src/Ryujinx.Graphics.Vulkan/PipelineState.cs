@@ -242,8 +242,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public FeedbackLoopAspects FeedbackLoopAspects
         {
-            readonly get => (FeedbackLoopAspects)((Internal.Id8 >> 7) & 0x3);
-            set => Internal.Id8 = (Internal.Id8 & 0xFFFFFFFFFFFFFE7F) | (((ulong)value) << 7);
+            readonly get => (FeedbackLoopAspects)((Internal.Id3 >> 7) & 0x3);
+            set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFFFFFFFE7F) | (((ulong)value) << 7);
         }
 
         public bool HasTessellationControlShader;
@@ -578,8 +578,8 @@ namespace Ryujinx.Graphics.Vulkan
                 bool supportsFeedbackLoopDynamicState = gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop;
 
                 DynamicState* dynamicStates = stackalloc DynamicState[MaxDynamicStatesCount];
-                
-                int dynamicStatesCount = 7;
+
+                uint dynamicStatesCount = 7;
 
                 dynamicStates[0] = DynamicState.Viewport;
                 dynamicStates[1] = DynamicState.Scissor;
@@ -639,7 +639,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
                 {
                     SType = StructureType.PipelineDynamicStateCreateInfo,
-                    DynamicStateCount = currentIndex,
+                    DynamicStateCount = dynamicStatesCount,
                     PDynamicStates = dynamicStates,
                 };
 
