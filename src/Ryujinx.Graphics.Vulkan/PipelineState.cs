@@ -420,10 +420,12 @@ namespace Ryujinx.Graphics.Vulkan
                     PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
 
+                var topology = HasTessellationControlShader ? PrimitiveTopology.PatchList : Topology;
+
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    Topology = Topology,
+                    Topology = topology,
                 };
 
                 PipelineTessellationStateCreateInfo tessellationState;
@@ -554,12 +556,16 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
+                // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
+                // so we need to force disable them here.
+                bool logicOpEnable = LogicOpEnable && (gd.Vendor == Vendor.Nvidia || Internal.LogicOpsAllowed);
+
                 var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
-                    LogicOpEnable = LogicOpEnable,
+                    LogicOpEnable = logicOpEnable,
                 };
 
                 if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)

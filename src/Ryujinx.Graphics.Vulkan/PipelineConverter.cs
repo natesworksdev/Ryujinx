@@ -229,6 +229,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.Topology = topology;
 
+            pipeline.LogicOpEnable = state.LogicOpEnable;
+
             int vaCount = Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             int vbCount = Math.Min(Constants.MaxVertexBuffers, state.VertexBufferCount);
 
@@ -272,7 +274,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // TODO: Support divisor > 1
                     pipeline.Internal.VertexBindingDescriptions[descriptorIndex++] = new VertexInputBindingDescription(
                         (uint)i + 1,
-                        extendedDynamicState && !gd.IsMoltenVk ? 0 : (uint)alignedStride,
+                        extendedDynamicState && !gd.IsMoltenVk ? default : (uint)alignedStride,
                         inputRate);
                 }
             }
@@ -336,9 +338,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.Internal.LogicOpsAllowed = attachmentCount == 0 || !allFormatsFloatOrSrgb;
 
             bool logicOpEnable = state.LogicOpEnable &&
-                                 (gd.Vendor == Vendor.Nvidia || (attachmentCount == 0 || !allFormatsFloatOrSrgb));
-
-            pipeline.LogicOpEnable = logicOpEnable;
+                                 (gd.Vendor == Vendor.Nvidia || pipeline.Internal.LogicOpsAllowed);
 
             if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
             {

@@ -674,9 +674,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopology.ConvertToClass() != _newState.Topology.ConvertToClass())
+                    if (oldTopology != _newState.Topology.ConvertToClass())
                     {
-                        _newState.Topology = oldTopology.ConvertToClass();
+                        _newState.Topology = oldTopology;
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -971,7 +971,7 @@ namespace Ryujinx.Graphics.Vulkan
             // so we need to force disable them here.
             bool logicOpEnable = enable && (Gd.Vendor == Vendor.Nvidia || _newState.Internal.LogicOpsAllowed);
 
-            _newState.LogicOpEnable = logicOpEnable;
+            _newState.LogicOpEnable = enable;
 
             if (Gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
@@ -979,7 +979,6 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     DynamicState.SetLogicOp(op.Convert());
                 }
-
             }
             else
             {
@@ -1041,8 +1040,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPrimitiveTopology(PrimitiveTopology topology)
         {
-            topology = _newState.HasTessellationControlShader ? PrimitiveTopology.Patches : topology;
-
             _topology = topology;
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
@@ -1402,7 +1399,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _newState.Internal.VertexBindingDescriptions[descriptorIndex] = new VertexInputBindingDescription(
                             (uint)binding,
-                            _supportExtDynamic && !Gd.IsMoltenVk ? 0 : (uint)vertexBuffer.Stride,
+                            _supportExtDynamic && !Gd.IsMoltenVk ? default : (uint)vertexBuffer.Stride,
                             inputRate);
 
                         int vbSize = vertexBuffer.Buffer.Size;

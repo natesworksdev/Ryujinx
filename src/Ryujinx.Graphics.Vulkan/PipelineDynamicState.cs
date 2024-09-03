@@ -276,8 +276,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void ReplayIfDirty(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            _ = gd.Api;
-
             if (_dirty.HasFlag(DirtyFlags.Blend))
             {
                 RecordBlend(gd.Api, commandBuffer);
