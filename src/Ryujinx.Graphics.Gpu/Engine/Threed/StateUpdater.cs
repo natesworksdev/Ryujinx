@@ -709,8 +709,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             DepthTestDescriptor descriptor = new(
                 _state.State.DepthTestEnable,
-                _state.State.DepthWriteEnable,
-                _state.State.DepthTestFunc);
+                _state.State.DepthWriteEnable && _state.State.DepthTestEnable,
+                _state.State.DepthTestEnable ? _state.State.DepthTestFunc : default);
 
             _pipeline.DepthTest = descriptor;
             _context.Renderer.Pipeline.SetDepthTest(descriptor);
@@ -1029,7 +1029,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             float width = _state.State.LineWidthSmooth;
             bool smooth = _state.State.LineSmoothEnable;
 
-            _pipeline.LineWidth = width;
             _context.Renderer.Pipeline.SetLineParameters(width, smooth);
         }
 
@@ -1391,6 +1390,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool alphaToCoverageEnable = (_state.State.MultisampleControl & 1) != 0;
             bool alphaToOneEnable = (_state.State.MultisampleControl & 0x10) != 0;
 
+            _pipeline.AlphaToCoverageEnable = alphaToCoverageEnable;
+            _pipeline.AlphaToOneEnable = alphaToOneEnable;
             _context.Renderer.Pipeline.SetMultisampleState(new MultisampleDescriptor(
                 alphaToCoverageEnable,
                 _state.State.AlphaToCoverageDitherEnable,

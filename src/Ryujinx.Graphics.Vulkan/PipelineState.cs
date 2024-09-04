@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _supportsFeedBackLoopDynamicState;
 
 
-        public void Initialize(HardwareCapabilities capabilities, PrimitiveTopology topology = default)
+        public void Initialize(HardwareCapabilities capabilities)
         {
             HasTessellationControlShader = false;
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
@@ -267,7 +267,6 @@ namespace Ryujinx.Graphics.Vulkan
             AdvancedBlendDstPreMultiplied = true;
             AdvancedBlendOverlap = BlendOverlapEXT.UncorrelatedExt;
 
-            SamplesCount = 1;
             DepthMode = true;
 
             PolygonMode = PolygonMode.Fill;
@@ -277,14 +276,8 @@ namespace Ryujinx.Graphics.Vulkan
             _supportsExtDynamicState2 = capabilities.SupportsExtendedDynamicState2;
             _supportsFeedBackLoopDynamicState = capabilities.SupportsDynamicAttachmentFeedbackLoop;
 
-            if (!capabilities.SupportsAttachmentFeedbackLoop)
-            {
-                FeedbackLoopAspects = FeedbackLoopAspects.None;
-            }
-
             if (_supportsExtDynamicState)
             {
-                Topology = topology;
                 StencilFrontFailOp = 0;
                 StencilFrontPassOp = 0;
                 StencilFrontDepthFailOp = 0;
@@ -312,16 +305,16 @@ namespace Ryujinx.Graphics.Vulkan
                 PrimitiveRestartEnable = false;
                 DepthBiasEnable = false;
                 RasterizerDiscardEnable = false;
-            }
 
-            if (_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
-            {
-                LogicOp = 0;
-            }
+                if (_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
+                {
+                    LogicOp = 0;
+                }
 
-            if (_supportsExtDynamicState2.ExtendedDynamicState2PatchControlPoints)
-            {
-                PatchControlPoints = 0;
+                if (_supportsExtDynamicState2.ExtendedDynamicState2PatchControlPoints)
+                {
+                    PatchControlPoints = 0;
+                }
             }
         }
 
@@ -531,8 +524,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
                 {
-                    tessellationState.SType = StructureType.PipelineTessellationStateCreateInfo;
-                    tessellationState.PatchControlPoints = PatchControlPoints;
+                    tessellationState = new PipelineTessellationStateCreateInfo
+                    {
+                        SType = StructureType.PipelineTessellationStateCreateInfo,
+                        PatchControlPoints = PatchControlPoints,
+                    };
                 }
 
                 uint blendEnables = 0;

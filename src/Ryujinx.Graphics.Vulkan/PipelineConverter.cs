@@ -158,20 +158,16 @@ namespace Ryujinx.Graphics.Vulkan
             var extendedDynamicState2 = gd.Capabilities.SupportsExtendedDynamicState2;
             var extendedDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
 
-            var topology = extendedDynamicState ? gd.TopologyRemap(state.Topology).Convert().ConvertToClass() : gd.TopologyRemap(state.Topology).Convert();
-
             PipelineState pipeline = new();
-            pipeline.Initialize(gd.Capabilities, topology);
+            pipeline.Initialize(gd.Capabilities);
 
             // It is assumed that Dynamic State is enabled when this conversion is used.
             pipeline.DepthBoundsTestEnable = false; // Not implemented.
 
             pipeline.DepthClampEnable = state.DepthClampEnable;
 
-            if (gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop || !gd.Capabilities.SupportsAttachmentFeedbackLoop)
-            {
-                pipeline.FeedbackLoopAspects = FeedbackLoopAspects.None;
-            }
+            pipeline.AlphaToCoverageEnable = state.AlphaToCoverageEnable;
+            pipeline.AlphaToOneEnable = state.AlphaToOneEnable;
 
             pipeline.DepthMode = state.DepthMode == DepthMode.MinusOneToOne;
 
@@ -179,55 +175,56 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
 
-            pipeline.PrimitiveRestartEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.PrimitiveRestartEnable;
-            pipeline.RasterizerDiscardEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : state.RasterizerDiscard;
-            pipeline.DepthBiasEnable = extendedDynamicState2.ExtendedDynamicState2 ? false : ((state.BiasEnable != 0) &&
-                (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0));
-
-            pipeline.PatchControlPoints = extendedDynamicState2.ExtendedDynamicState2PatchControlPoints ? 0 : state.PatchControlPoints;
-
-            pipeline.SamplesCount = (uint)state.SamplesCount;
-
-            pipeline.DepthTestEnable = !extendedDynamicState && state.DepthTest.TestEnable;
-            pipeline.DepthWriteEnable = !extendedDynamicState && state.DepthTest.WriteEnable && state.DepthTest.TestEnable;
+            pipeline.Topology = extendedDynamicState ? gd.TopologyRemap(state.Topology).Convert().ConvertToClass() : gd.TopologyRemap(state.Topology).Convert();
 
             if (!extendedDynamicState)
             {
-                pipeline.DepthCompareOp = state.DepthTest.TestEnable ? state.DepthTest.Func.Convert() : default;
-                pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : default;
+                pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
+                pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
+
+                pipeline.DepthTestEnable = state.DepthTest.TestEnable;
+                pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;
+
+                pipeline.FrontFace = state.FrontFace.Convert();
+
+                if (gd.Capabilities.SupportsMultiView)
+                {
+                    pipeline.ScissorsCount = Constants.MaxViewports;
+                    pipeline.ViewportsCount = Constants.MaxViewports;
+                }
+                else
+                {
+                    pipeline.ScissorsCount = 1;
+                    pipeline.ViewportsCount = 1;
+                }
+
+                pipeline.StencilTestEnable = state.StencilTest.TestEnable;
+
+                pipeline.StencilFrontFailOp = state.StencilTest.FrontSFail.Convert();
+                pipeline.StencilFrontPassOp = state.StencilTest.FrontDpPass.Convert();
+                pipeline.StencilFrontDepthFailOp = state.StencilTest.FrontDpFail.Convert();
+                pipeline.StencilFrontCompareOp = state.StencilTest.FrontFunc.Convert();
+
+                pipeline.StencilBackFailOp = state.StencilTest.BackSFail.Convert();
+                pipeline.StencilBackPassOp = state.StencilTest.BackDpPass.Convert();
+                pipeline.StencilBackDepthFailOp = state.StencilTest.BackDpFail.Convert();
+                pipeline.StencilBackCompareOp = state.StencilTest.BackFunc.Convert();
             }
-            else
+
+            if (!extendedDynamicState2.ExtendedDynamicState2)
             {
-                pipeline.DepthCompareOp = 0;
-                pipeline.CullMode = 0;
+                pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
+                pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
+                pipeline.DepthBiasEnable = ((state.BiasEnable != 0) &&
+                    (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0));
             }
 
-            pipeline.FrontFace = extendedDynamicState ? 0 : state.FrontFace.Convert();
-
-            if (gd.Capabilities.SupportsMultiView)
+            if (!extendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
             {
-                pipeline.ScissorsCount = (uint)(extendedDynamicState ? 0 : Constants.MaxViewports);
-                pipeline.ViewportsCount = (uint)(extendedDynamicState ? 0 : Constants.MaxViewports);
-            }
-            else
-            {
-                pipeline.ScissorsCount = (uint)(extendedDynamicState ? 0 : 1);
-                pipeline.ViewportsCount = (uint)(extendedDynamicState ? 0 : 1);
+                pipeline.PatchControlPoints = state.PatchControlPoints;
             }
 
-            pipeline.StencilTestEnable = !extendedDynamicState && state.StencilTest.TestEnable;
-
-            pipeline.StencilFrontFailOp = extendedDynamicState ? 0 : state.StencilTest.FrontSFail.Convert();
-            pipeline.StencilFrontPassOp = extendedDynamicState ? 0 : state.StencilTest.FrontDpPass.Convert();
-            pipeline.StencilFrontDepthFailOp = extendedDynamicState ? 0 : state.StencilTest.FrontDpFail.Convert();
-            pipeline.StencilFrontCompareOp = extendedDynamicState ? 0 : state.StencilTest.FrontFunc.Convert();
-
-            pipeline.StencilBackFailOp = extendedDynamicState ? 0 : state.StencilTest.BackSFail.Convert();
-            pipeline.StencilBackPassOp = extendedDynamicState ? 0 : state.StencilTest.BackDpPass.Convert();
-            pipeline.StencilBackDepthFailOp = extendedDynamicState ? 0 : state.StencilTest.BackDpFail.Convert();
-            pipeline.StencilBackCompareOp = extendedDynamicState ? 0 : state.StencilTest.BackFunc.Convert();
-
-            pipeline.Topology = topology;
+            pipeline.SamplesCount = (uint)state.SamplesCount;
 
             pipeline.LogicOpEnable = state.LogicOpEnable;
 
@@ -337,16 +334,12 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
             pipeline.Internal.LogicOpsAllowed = attachmentCount == 0 || !allFormatsFloatOrSrgb;
 
-            bool logicOpEnable = state.LogicOpEnable &&
-                                 (gd.Vendor == Vendor.Nvidia || pipeline.Internal.LogicOpsAllowed);
-
             if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
             {
+                bool logicOpEnable = state.LogicOpEnable &&
+                                     (gd.Vendor == Vendor.Nvidia || pipeline.Internal.LogicOpsAllowed);
+
                 pipeline.LogicOp = logicOpEnable ? state.LogicOp.Convert() : default;
-            }
-            else
-            {
-                pipeline.LogicOp = 0;
             }
 
             return pipeline;

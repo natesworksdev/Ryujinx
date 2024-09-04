@@ -644,7 +644,8 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
                 var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _newState.Topology;
+                var oldTopology = _supportExtDynamic ? DynamicState.Topology : _newState.Topology;
+                var oldTopologyClass = _newState.Topology;
                 var oldViewports = DynamicState.Viewports;
                 var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
 
@@ -674,9 +675,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopology != _newState.Topology.ConvertToClass())
+                    if (oldTopologyClass != _newState.Topology)
                     {
-                        _newState.Topology = oldTopology;
+                        _newState.Topology = oldTopologyClass;
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -885,8 +886,8 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _newState.DepthTestEnable = depthTest.TestEnable;
-                _newState.DepthWriteEnable = depthTest.WriteEnable && depthTest.TestEnable;
-                _newState.DepthCompareOp = depthTest.TestEnable ? depthTest.Func.Convert() : default;
+                _newState.DepthWriteEnable = depthTest.WriteEnable;
+                _newState.DepthCompareOp = depthTest.Func.Convert();
             }
 
             UpdatePassDepthStencil();
@@ -901,7 +902,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _newState.CullMode = enable ? face.Convert() : default;
+                _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
             }
 
             SignalStateChange();
@@ -1048,9 +1049,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var newTopologyClass = vkTopology.ConvertToClass();
 
-                if ((_newState.Topology.ConvertToClass() != newTopologyClass))
+                if ((_newState.Topology != newTopologyClass))
                 {
-                    _newState.Topology = vkTopology.ConvertToClass();
+                    _newState.Topology = newTopologyClass;
                 }
 
                 DynamicState.SetPrimitiveTopology(vkTopology);
@@ -1075,7 +1076,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.HasTessellationControlShader = internalProgram.HasTessellationControlShader;
-            _newState.StagesCount = (uint)stages.Length;
+            _newState.StagesCount = internalProgram.IsCompute ? 1 : (uint)stages.Length;
 
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
@@ -1196,6 +1197,13 @@ namespace Ryujinx.Graphics.Vulkan
                 ClearScissor = regions[0];
             }
 
+            if (!_supportExtDynamic)
+            {
+                _newState.ScissorsCount = (uint)count;
+            }
+
+            DynamicState.ScissorsCount = count;
+
             for (int i = 0; i < count; i++)
             {
                 var region = regions[i];
@@ -1205,12 +1213,6 @@ namespace Ryujinx.Graphics.Vulkan
                 DynamicState.SetScissor(i, new Rect2D(offset, extent));
             }
 
-            DynamicState.ScissorsCount = count;
-
-            if (!_supportExtDynamic)
-            {
-                _newState.ScissorsCount = (uint)count;
-            }
             SignalStateChange();
         }
 
@@ -1473,6 +1475,11 @@ namespace Ryujinx.Graphics.Vulkan
                 return Math.Clamp(value, 0f, 1f);
             }
 
+            if (!_supportExtDynamic)
+            {
+                _newState.ViewportsCount = (uint)count;
+            }
+
             DynamicState.ViewportsCount = (uint)count;
 
             for (int i = 0; i < count; i++)
@@ -1488,10 +1495,6 @@ namespace Ryujinx.Graphics.Vulkan
                     Clamp(viewport.DepthFar)));
             }
 
-            if (!_supportExtDynamic)
-            {
-                _newState.ViewportsCount = (uint)count;
-            }
             SignalStateChange();
         }
 

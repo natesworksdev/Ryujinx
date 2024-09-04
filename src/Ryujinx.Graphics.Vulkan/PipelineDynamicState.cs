@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private uint _patchControlPoints;
 
-        private PrimitiveTopology _topology;
+        public PrimitiveTopology Topology;
 
         private bool _primitiveRestartEnable;
 
@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetDepthTestBool(bool testEnable, bool writeEnable)
         {
             DepthTestEnable = testEnable;
-            DepthWriteEnable = writeEnable && testEnable;
+            DepthWriteEnable = writeEnable;
             _dirty |= DirtyFlags.DepthTestBool;
         }
 
@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetPrimitiveTopology(PrimitiveTopology primitiveTopology)
         {
-            _topology = primitiveTopology;
+            Topology = primitiveTopology;
             _dirty |= DirtyFlags.PrimitiveTopology;
         }
 
@@ -478,15 +478,15 @@ namespace Ryujinx.Graphics.Vulkan
             if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
             {
                 topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
-                                          _topology != PrimitiveTopology.PatchList;
+                                          Topology != PrimitiveTopology.PatchList;
             }
             else
             {
-                topologySupportsRestart = _topology == PrimitiveTopology.LineStrip ||
-                                          _topology == PrimitiveTopology.TriangleStrip ||
-                                          _topology == PrimitiveTopology.TriangleFan ||
-                                          _topology == PrimitiveTopology.LineStripWithAdjacency ||
-                                          _topology == PrimitiveTopology.TriangleStripWithAdjacency;
+                topologySupportsRestart = Topology == PrimitiveTopology.LineStrip ||
+                                          Topology == PrimitiveTopology.TriangleStrip ||
+                                          Topology == PrimitiveTopology.TriangleFan ||
+                                          Topology == PrimitiveTopology.LineStripWithAdjacency ||
+                                          Topology == PrimitiveTopology.TriangleStripWithAdjacency;
             }
 
             primitiveRestartEnable &= topologySupportsRestart;
@@ -502,7 +502,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly void RecordPrimitiveTopology(VulkanRenderer gd, CommandBuffer commandBuffer)
         {
-            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, _topology);
+            gd.ExtendedDynamicStateApi.CmdSetPrimitiveTopology(commandBuffer, Topology);
         }
 
         private readonly void RecordLogicOp(VulkanRenderer gd, CommandBuffer commandBuffer)

@@ -55,7 +55,9 @@ namespace Ryujinx.Graphics.GAL
 
         public PolygonModeMask BiasEnable;
 
-        public float LineWidth;
+        public bool AlphaToCoverageEnable;
+        public bool AlphaToOneEnable;
+
         // TODO: Polygon mode.
         public bool DepthClampEnable;
         public bool RasterizerDiscard;
