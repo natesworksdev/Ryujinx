@@ -1182,7 +1182,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             RendererHostControl.WindowCreated += RendererHost_Created;
 
-            AppHost.StatusInitEvent += Init_StatusBar;
             AppHost.StatusUpdatedEvent += Update_StatusBar;
             AppHost.AppExit += AppHost_AppExit;
 
@@ -1206,18 +1205,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 // Otherwise, clear state.
                 UserChannelPersistence = new UserChannelPersistence();
                 _currentApplicationData = null;
-            }
-        }
-
-        private void Init_StatusBar(object sender, StatusInitEventArgs args)
-        {
-            if (ShowMenuAndStatusBar && !ShowLoadProgress)
-            {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    GpuNameText = args.GpuName;
-                    BackendText = args.GpuBackend;
-                });
             }
         }
 

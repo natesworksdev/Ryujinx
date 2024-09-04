@@ -120,7 +120,6 @@ namespace Ryujinx.Ava
         private readonly object _lockObject = new();
 
         public event EventHandler AppExit;
-        public event EventHandler<StatusInitEventArgs> StatusInitEvent;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         public VirtualFileSystem VirtualFileSystem { get; }
@@ -1044,14 +1043,14 @@ namespace Ryujinx.Ava
 
         public void InitStatus()
         {
-            StatusInitEvent?.Invoke(this, new StatusInitEventArgs(
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value switch
-                {
-                    GraphicsBackend.Vulkan => "Vulkan",
-                    GraphicsBackend.OpenGl => "OpenGL",
-                    _ => throw new NotImplementedException()
-                },
-                $"GPU: {_renderer.GetHardwareInfo().GpuDriver}"));
+            _viewModel.BackendText = ConfigurationState.Instance.Graphics.GraphicsBackend.Value switch
+            {
+                GraphicsBackend.Vulkan => "Vulkan",
+                GraphicsBackend.OpenGl => "OpenGL",
+                _ => throw new NotImplementedException()
+            };
+
+            _viewModel.GpuNameText = $"GPU: {_renderer.GetHardwareInfo().GpuDriver}";
         }
 
         public void UpdateStatus()
