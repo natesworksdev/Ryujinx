@@ -709,8 +709,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             DepthTestDescriptor descriptor = new(
                 _state.State.DepthTestEnable,
-                _state.State.DepthWriteEnable && _state.State.DepthTestEnable,
-                _state.State.DepthTestEnable ? _state.State.DepthTestFunc : default);
+                _state.State.DepthWriteEnable,
+                _state.State.DepthTestFunc);
 
             _pipeline.DepthTest = descriptor;
             _context.Renderer.Pipeline.SetDepthTest(descriptor);

@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
@@ -675,9 +676,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopologyClass != _newState.Topology)
+                    if (oldTopologyClass != _newState.Topology.ConvertToClass())
                     {
-                        _newState.Topology = oldTopologyClass;
+                        _newState.Topology = oldTopology;
                     }
 
                     DynamicState.SetCullMode(oldCullMode);
@@ -983,7 +984,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                _newState.LogicOp = logicOpEnable ? op.Convert() : default;
+                _newState.LogicOp = op.Convert();
             }
 
             SignalStateChange();
@@ -1049,9 +1050,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var newTopologyClass = vkTopology.ConvertToClass();
 
-                if ((_newState.Topology != newTopologyClass))
+                if ((_newState.Topology.ConvertToClass() != newTopologyClass))
                 {
-                    _newState.Topology = newTopologyClass;
+                    _newState.Topology = vkTopology;
                 }
 
                 DynamicState.SetPrimitiveTopology(vkTopology);
@@ -1401,7 +1402,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _newState.Internal.VertexBindingDescriptions[descriptorIndex] = new VertexInputBindingDescription(
                             (uint)binding,
-                            _supportExtDynamic && !Gd.IsMoltenVk ? default : (uint)vertexBuffer.Stride,
+                            (uint)vertexBuffer.Stride,
                             inputRate);
 
                         int vbSize = vertexBuffer.Buffer.Size;

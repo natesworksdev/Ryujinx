@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.PolygonMode = PolygonMode.Fill; // Not implemented.
 
-            pipeline.Topology = extendedDynamicState ? gd.TopologyRemap(state.Topology).Convert().ConvertToClass() : gd.TopologyRemap(state.Topology).Convert();
+            pipeline.Topology = gd.TopologyRemap(state.Topology).Convert();
 
             if (!extendedDynamicState)
             {
@@ -217,6 +217,11 @@ namespace Ryujinx.Graphics.Vulkan
                 pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
                 pipeline.DepthBiasEnable = ((state.BiasEnable != 0) &&
                     (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0));
+            }
+
+            if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
+            {
+                pipeline.LogicOp = state.LogicOp.Convert();
             }
 
             if (!extendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
@@ -271,7 +276,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // TODO: Support divisor > 1
                     pipeline.Internal.VertexBindingDescriptions[descriptorIndex++] = new VertexInputBindingDescription(
                         (uint)i + 1,
-                        extendedDynamicState && !gd.IsMoltenVk ? default : (uint)alignedStride,
+                        (uint)alignedStride,
                         inputRate);
                 }
             }
@@ -333,14 +338,6 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.VertexAttributeDescriptionsCount = (uint)Math.Min(Constants.MaxVertexAttributes, state.VertexAttribCount);
             pipeline.Internal.AttachmentIntegerFormatMask = attachmentIntegerFormatMask;
             pipeline.Internal.LogicOpsAllowed = attachmentCount == 0 || !allFormatsFloatOrSrgb;
-
-            if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)
-            {
-                bool logicOpEnable = state.LogicOpEnable &&
-                                     (gd.Vendor == Vendor.Nvidia || pipeline.Internal.LogicOpsAllowed);
-
-                pipeline.LogicOp = logicOpEnable ? state.LogicOp.Convert() : default;
-            }
 
             return pipeline;
         }

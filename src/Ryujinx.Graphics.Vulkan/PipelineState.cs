@@ -256,6 +256,8 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _supportsExtDynamicState;
         private PhysicalDeviceExtendedDynamicState2FeaturesEXT _supportsExtDynamicState2;
         private bool _supportsFeedBackLoopDynamicState;
+        private uint _blendEnables;
+
 
 
         public void Initialize(HardwareCapabilities capabilities)
@@ -297,7 +299,6 @@ namespace Ryujinx.Graphics.Vulkan
                 DepthWriteEnable = false;
                 DepthCompareOp = 0;
                 StencilTestEnable = false;
-
             }
 
             if (_supportsExtDynamicState2.ExtendedDynamicState2)
@@ -368,6 +369,74 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
+
+        private void CheckCapability(VulkanRenderer gd)
+        {
+            // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
+            // so we need to force disable them here.
+            LogicOpEnable = LogicOpEnable && (gd.Vendor == Vendor.Nvidia || Internal.LogicOpsAllowed);
+
+            if (!_supportsExtDynamicState)
+            {
+                DepthWriteEnable = DepthWriteEnable && DepthTestEnable;
+                DepthCompareOp = DepthTestEnable ? DepthCompareOp : default;
+            }
+
+            if (!_supportsExtDynamicState2.ExtendedDynamicState2LogicOp)
+            {
+                LogicOp = LogicOpEnable ? LogicOp : default;
+            }
+
+            if (!_supportsExtDynamicState2.ExtendedDynamicState2)
+            {
+                bool topologySupportsRestart;
+
+                if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
+                {
+                    topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
+                                              Topology != PrimitiveTopology.PatchList;
+                }
+                else
+                {
+                    topologySupportsRestart = Topology == PrimitiveTopology.LineStrip ||
+                                              Topology == PrimitiveTopology.TriangleStrip ||
+                                              Topology == PrimitiveTopology.TriangleFan ||
+                                              Topology == PrimitiveTopology.LineStripWithAdjacency ||
+                                              Topology == PrimitiveTopology.TriangleStripWithAdjacency;
+                }
+
+                PrimitiveRestartEnable &= topologySupportsRestart;
+            }
+
+            if (_supportsExtDynamicState)
+            {
+                Topology = Topology.ConvertToClass();
+            }
+
+            Topology = HasTessellationControlShader ? PrimitiveTopology.PatchList : Topology;
+
+            if (gd.IsMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
+            {
+                _blendEnables = 0;
+
+                // Blend can't be enabled for integer formats, so let's make sure it is disabled.
+                uint attachmentIntegerFormatMask = Internal.AttachmentIntegerFormatMask;
+
+                while (attachmentIntegerFormatMask != 0)
+                {
+                    int i = BitOperations.TrailingZeroCount(attachmentIntegerFormatMask);
+
+                    if (Internal.ColorBlendAttachmentState[i].BlendEnable)
+                    {
+                        _blendEnables |= 1u << i;
+                    }
+
+                    Internal.ColorBlendAttachmentState[i].BlendEnable = false;
+                    attachmentIntegerFormatMask &= ~(1u << i);
+                }
+            }
+        }
+
         public unsafe Auto<DisposablePipeline> CreateGraphicsPipeline(
             VulkanRenderer gd,
             Device device,
@@ -376,6 +445,8 @@ namespace Ryujinx.Graphics.Vulkan
             RenderPass renderPass,
             bool throwOnError = false)
         {
+            CheckCapability(gd);
+
             // Using patches topology without a tessellation shader is invalid.
             // If we find such a case, return null pipeline to skip the draw.
             if (Topology == PrimitiveTopology.PatchList && !HasTessellationControlShader)
@@ -413,12 +484,10 @@ namespace Ryujinx.Graphics.Vulkan
                     PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
 
-                var topology = HasTessellationControlShader ? PrimitiveTopology.PatchList : Topology;
-
                 var inputAssemblyState = new PipelineInputAssemblyStateCreateInfo
                 {
                     SType = StructureType.PipelineInputAssemblyStateCreateInfo,
-                    Topology = topology,
+                    Topology = Topology,
                 };
 
                 PipelineTessellationStateCreateInfo tessellationState;
@@ -497,27 +566,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (!_supportsExtDynamicState2.ExtendedDynamicState2)
                 {
-                    bool primitiveRestartEnable = PrimitiveRestartEnable;
 
-                    bool topologySupportsRestart;
-
-                    if (gd.Capabilities.SupportsPrimitiveTopologyListRestart)
-                    {
-                        topologySupportsRestart = gd.Capabilities.SupportsPrimitiveTopologyPatchListRestart ||
-                                                  Topology != PrimitiveTopology.PatchList;
-                    }
-                    else
-                    {
-                        topologySupportsRestart = Topology == PrimitiveTopology.LineStrip ||
-                                                  Topology == PrimitiveTopology.TriangleStrip ||
-                                                  Topology == PrimitiveTopology.TriangleFan ||
-                                                  Topology == PrimitiveTopology.LineStripWithAdjacency ||
-                                                  Topology == PrimitiveTopology.TriangleStripWithAdjacency;
-                    }
-
-                    primitiveRestartEnable &= topologySupportsRestart;
-
-                    inputAssemblyState.PrimitiveRestartEnable = primitiveRestartEnable;
+                    inputAssemblyState.PrimitiveRestartEnable = PrimitiveRestartEnable;
                     rasterizationState.DepthBiasEnable = DepthBiasEnable;
                     rasterizationState.RasterizerDiscardEnable = RasterizerDiscardEnable;
                 }
@@ -531,37 +581,12 @@ namespace Ryujinx.Graphics.Vulkan
                     };
                 }
 
-                uint blendEnables = 0;
-
-                if (isMoltenVk && Internal.AttachmentIntegerFormatMask != 0)
-                {
-                    // Blend can't be enabled for integer formats, so let's make sure it is disabled.
-                    uint attachmentIntegerFormatMask = Internal.AttachmentIntegerFormatMask;
-
-                    while (attachmentIntegerFormatMask != 0)
-                    {
-                        int i = BitOperations.TrailingZeroCount(attachmentIntegerFormatMask);
-
-                        if (Internal.ColorBlendAttachmentState[i].BlendEnable)
-                        {
-                            blendEnables |= 1u << i;
-                        }
-
-                        Internal.ColorBlendAttachmentState[i].BlendEnable = false;
-                        attachmentIntegerFormatMask &= ~(1u << i);
-                    }
-                }
-
-                // Vendors other than NVIDIA have a bug where it enables logical operations even for float formats,
-                // so we need to force disable them here.
-                bool logicOpEnable = LogicOpEnable && (gd.Vendor == Vendor.Nvidia || Internal.LogicOpsAllowed);
-
                 var colorBlendState = new PipelineColorBlendStateCreateInfo
                 {
                     SType = StructureType.PipelineColorBlendStateCreateInfo,
                     AttachmentCount = ColorBlendAttachmentStateCount,
                     PAttachments = pColorBlendAttachmentState,
-                    LogicOpEnable = logicOpEnable,
+                    LogicOpEnable = LogicOpEnable,
                 };
 
                 if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2LogicOp)
@@ -650,27 +675,9 @@ namespace Ryujinx.Graphics.Vulkan
                     PDynamicStates = dynamicStates,
                 };
 
-                PipelineCreateFlags flags = 0;
-
-                if (gd.Capabilities.SupportsAttachmentFeedbackLoop && !_supportsFeedBackLoopDynamicState)
-                {
-                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
-
-                    if ((aspects & FeedbackLoopAspects.Color) != 0)
-                    {
-                        flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
-                    }
-
-                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
-                    {
-                        flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
-                    }
-                }
-
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
-                    Flags = flags,
                     StageCount = StagesCount,
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,
@@ -684,6 +691,21 @@ namespace Ryujinx.Graphics.Vulkan
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
                 };
+
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop && !_supportsFeedBackLoopDynamicState)
+                {
+                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
+
+                    if ((aspects & FeedbackLoopAspects.Color) != 0)
+                    {
+                        pipelineCreateInfo.Flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
+                    }
+
+                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
+                    {
+                        pipelineCreateInfo.Flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
+                    }
+                }
 
                 if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
                 {
@@ -702,20 +724,20 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return null;
                 }
-
-                // Restore previous blend enable values if we changed it.
-                while (blendEnables != 0)
-                {
-                    int i = BitOperations.TrailingZeroCount(blendEnables);
-
-                    Internal.ColorBlendAttachmentState[i].BlendEnable = true;
-                    blendEnables &= ~(1u << i);
-                }
             }
 
             pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(gd.Api, device, pipelineHandle));
 
             program.AddGraphicsPipeline(ref Internal, pipeline);
+
+            // Restore previous blend enable values if we changed it.
+            while (_blendEnables != 0)
+            {
+                int i = BitOperations.TrailingZeroCount(_blendEnables);
+
+                Internal.ColorBlendAttachmentState[i].BlendEnable = true;
+                _blendEnables &= ~(1u << i);
+            }
 
             return pipeline;
         }
