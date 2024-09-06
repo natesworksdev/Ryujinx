@@ -235,7 +235,7 @@
   "ControllerSettingsDPadLeft": "Left",
   "ControllerSettingsDPadRight": "Right",
   "ControllerSettingsRawScreenshot": "Raw Screenshot",
-  "ControllerSettingsRawScreenshotTooltip": "Takes a screenshot without informing the game, so no watermarks will be added.",
+  "ControllerSettingsRawScreenshotTooltip": "Takes a screenshot without any watermarks etc.",
   "ControllerSettingsStickButton": "Button",
   "ControllerSettingsStickUp": "Up",
   "ControllerSettingsStickDown": "Down",
