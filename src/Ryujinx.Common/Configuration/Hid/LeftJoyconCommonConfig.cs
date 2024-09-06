@@ -3,6 +3,7 @@ namespace Ryujinx.Common.Configuration.Hid
     public class LeftJoyconCommonConfig<TButton>
     {
         public TButton ButtonMinus { get; set; }
+        public TButton ButtonScreenshot { get; set; }
         public TButton ButtonL { get; set; }
         public TButton ButtonZl { get; set; }
         public TButton ButtonSl { get; set; }

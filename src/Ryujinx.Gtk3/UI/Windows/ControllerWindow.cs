@@ -84,6 +84,7 @@ namespace Ryujinx.UI.Windows
         [GUI] ToggleButton _dpadLeft;
         [GUI] ToggleButton _dpadRight;
         [GUI] ToggleButton _minus;
+        [GUI] ToggleButton _screenshot;
         [GUI] ToggleButton _l;
         [GUI] ToggleButton _zL;
         [GUI] ToggleButton _rStick;
@@ -165,6 +166,7 @@ namespace Ryujinx.UI.Windows
             _dpadLeft.Clicked += Button_Pressed;
             _dpadRight.Clicked += Button_Pressed;
             _minus.Clicked += Button_Pressed;
+            _screenshot.Clicked += Button_Pressed;
             _l.Clicked += Button_Pressed;
             _zL.Clicked += Button_Pressed;
             _lSl.Clicked += Button_Pressed;
@@ -400,6 +402,7 @@ namespace Ryujinx.UI.Windows
             _dpadLeft.Label = "Unbound";
             _dpadRight.Label = "Unbound";
             _minus.Label = "Unbound";
+            _screenshot.Label = "Unbound";
             _l.Label = "Unbound";
             _zL.Label = "Unbound";
             _lSl.Label = "Unbound";
@@ -460,6 +463,7 @@ namespace Ryujinx.UI.Windows
                     _dpadLeft.Label = keyboardConfig.LeftJoycon.DpadLeft.ToString();
                     _dpadRight.Label = keyboardConfig.LeftJoycon.DpadRight.ToString();
                     _minus.Label = keyboardConfig.LeftJoycon.ButtonMinus.ToString();
+                    _screenshot.Label = keyboardConfig.LeftJoycon.ButtonScreenshot.ToString();
                     _l.Label = keyboardConfig.LeftJoycon.ButtonL.ToString();
                     _zL.Label = keyboardConfig.LeftJoycon.ButtonZl.ToString();
                     _lSl.Label = keyboardConfig.LeftJoycon.ButtonSl.ToString();
@@ -498,6 +502,7 @@ namespace Ryujinx.UI.Windows
                     _dpadLeft.Label = controllerConfig.LeftJoycon.DpadLeft.ToString();
                     _dpadRight.Label = controllerConfig.LeftJoycon.DpadRight.ToString();
                     _minus.Label = controllerConfig.LeftJoycon.ButtonMinus.ToString();
+                    _screenshot.Label = controllerConfig.LeftJoycon.ButtonScreenshot.ToString();
                     _l.Label = controllerConfig.LeftJoycon.ButtonL.ToString();
                     _zL.Label = controllerConfig.LeftJoycon.ButtonZl.ToString();
                     _lSl.Label = controllerConfig.LeftJoycon.ButtonSl.ToString();
@@ -566,6 +571,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_dpadLeft.Label,     out Key lDPadLeft);
                 Enum.TryParse(_dpadRight.Label,    out Key lDPadRight);
                 Enum.TryParse(_minus.Label,        out Key lButtonMinus);
+                Enum.TryParse(_screenshot.Label,   out Key lButtonScreenshot);
                 Enum.TryParse(_l.Label,            out Key lButtonL);
                 Enum.TryParse(_zL.Label,           out Key lButtonZl);
                 Enum.TryParse(_lSl.Label,          out Key lButtonSl);
@@ -597,6 +603,7 @@ namespace Ryujinx.UI.Windows
                     LeftJoycon = new LeftJoyconCommonConfig<Key>
                     {
                         ButtonMinus = lButtonMinus,
+                        ButtonScreenshot = lButtonScreenshot,
                         ButtonL = lButtonL,
                         ButtonZl = lButtonZl,
                         ButtonSl = lButtonSl,
@@ -643,6 +650,7 @@ namespace Ryujinx.UI.Windows
                 Enum.TryParse(_lStick.Label,       out ConfigStickInputId   lStick);
                 Enum.TryParse(_lStickButton.Label, out ConfigGamepadInputId lStickButton);
                 Enum.TryParse(_minus.Label,        out ConfigGamepadInputId lButtonMinus);
+                Enum.TryParse(_screenshot.Label,   out ConfigGamepadInputId lButtonScreenshot);
                 Enum.TryParse(_l.Label,            out ConfigGamepadInputId lButtonL);
                 Enum.TryParse(_zL.Label,           out ConfigGamepadInputId lButtonZl);
                 Enum.TryParse(_lSl.Label,          out ConfigGamepadInputId lButtonSl);
@@ -710,6 +718,7 @@ namespace Ryujinx.UI.Windows
                     LeftJoycon = new LeftJoyconCommonConfig<ConfigGamepadInputId>
                     {
                         ButtonMinus = lButtonMinus,
+                        ButtonScreenshot = lButtonScreenshot,
                         ButtonL = lButtonL,
                         ButtonZl = lButtonZl,
                         ButtonSl = lButtonSl,
@@ -997,6 +1006,7 @@ namespace Ryujinx.UI.Windows
                             DpadLeft = Key.Left,
                             DpadRight = Key.Right,
                             ButtonMinus = Key.Minus,
+                            ButtonScreenshot = Key.Unbound, // keyboard already has a default screenshot configured via ConfigurationState.Hid.Hotkeys.Screenshot, so no gamepad mapping needed
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
@@ -1057,6 +1067,7 @@ namespace Ryujinx.UI.Windows
                             DpadLeft = ConfigGamepadInputId.DpadLeft,
                             DpadRight = ConfigGamepadInputId.DpadRight,
                             ButtonMinus = ConfigGamepadInputId.Minus,
+                            ButtonScreenshot = ConfigGamepadInputId.Misc1,
                             ButtonL = ConfigGamepadInputId.LeftShoulder,
                             ButtonZl = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,

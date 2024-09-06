@@ -381,6 +381,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     DpadRight = DpadRight,
                     ButtonL = ButtonL,
                     ButtonMinus = ButtonMinus,
+                    ButtonScreenshot = Key.Unbound,  // keyboard screenshot configured via ConfigurationState.Hid.Hotkeys.Screenshot, so no gamepad mapping needed
                     ButtonZl = ButtonZl,
                     ButtonSl = LeftButtonSl,
                     ButtonSr = LeftButtonSr,

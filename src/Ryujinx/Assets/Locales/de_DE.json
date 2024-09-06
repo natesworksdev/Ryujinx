@@ -233,6 +233,8 @@
   "ControllerSettingsDPadDown": "Runter",
   "ControllerSettingsDPadLeft": "Links",
   "ControllerSettingsDPadRight": "Rechts",
+  "ControllerSettingsRawScreenshot": "Unbearbeiteter Screenshot",
+  "ControllerSettingsRawScreenshotTooltip": "Macht ein Bildschirmfoto, ohne das Spiel zu informieren, sodass keine Wasserzeichen hinzugefügt werden.",
   "ControllerSettingsStickButton": "Button",
   "ControllerSettingsStickUp": "Hoch",
   "ControllerSettingsStickDown": "Runter",

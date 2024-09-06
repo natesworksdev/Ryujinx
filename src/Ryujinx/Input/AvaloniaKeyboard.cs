@@ -128,6 +128,7 @@ namespace Ryujinx.Ava.Input
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadLeft,            (Key)_configuration.LeftJoycon.DpadLeft));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadRight,           (Key)_configuration.LeftJoycon.DpadRight));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Minus,               (Key)_configuration.LeftJoycon.ButtonMinus));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Misc1,               (Key)_configuration.LeftJoycon.ButtonScreenshot));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftShoulder,        (Key)_configuration.LeftJoycon.ButtonL));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftTrigger,         (Key)_configuration.LeftJoycon.ButtonZl));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, (Key)_configuration.LeftJoycon.ButtonSr));

@@ -161,6 +161,7 @@ namespace Ryujinx.Headless.SDL2
                             DpadLeft = Key.Left,
                             DpadRight = Key.Right,
                             ButtonMinus = Key.Minus,
+                            ButtonScreenshot = Key.Unbound, // keyboard already has a default screenshot configured via ConfigurationState.Hid.Hotkeys.Screenshot, so no gamepad mapping needed
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,
@@ -221,6 +222,7 @@ namespace Ryujinx.Headless.SDL2
                             DpadLeft = ConfigGamepadInputId.DpadLeft,
                             DpadRight = ConfigGamepadInputId.DpadRight,
                             ButtonMinus = ConfigGamepadInputId.Minus,
+                            ButtonScreenshot = ConfigGamepadInputId.Misc1,
                             ButtonL = ConfigGamepadInputId.LeftShoulder,
                             ButtonZl = ConfigGamepadInputId.LeftTrigger,
                             ButtonSl = ConfigGamepadInputId.Unbound,

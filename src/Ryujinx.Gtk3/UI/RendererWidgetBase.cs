@@ -15,6 +15,7 @@ using Ryujinx.UI.Common.Helper;
 using Ryujinx.UI.Widgets;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -73,10 +74,13 @@ namespace Ryujinx.UI
         private HideCursorMode _hideCursorMode;
         private readonly InputManager _inputManager;
         private readonly IKeyboard _keyboardInterface;
+        private readonly List<IGamepad> _gamepadInterfaces;
         private readonly GraphicsDebugLevel _glLogLevel;
         private string _gpuBackendName;
         private string _gpuDriverName;
         private bool _isMouseInClient;
+
+        private int _gamepadsChanged; // use atomically via Interlocked
 
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
         {
@@ -87,6 +91,13 @@ namespace Ryujinx.UI
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
+
+            _gamepadInterfaces = new List<IGamepad>();
+
+            _inputManager.GamepadDriver.OnGamepadConnected += GamepadConnected;
+            _inputManager.GamepadDriver.OnGamepadDisconnected += GamepadDisconnected;
+
+            RefreshGamepads();
 
             WaitEvent = new ManualResetEvent(false);
 
@@ -649,6 +660,11 @@ namespace Ryujinx.UI
                 });
             }
 
+            if (Interlocked.Exchange(ref _gamepadsChanged, 0) == 1)
+            {
+                RefreshGamepads();
+            }
+
             NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
 
             if ((Toplevel as MainWindow).IsFocused)
@@ -767,7 +783,8 @@ namespace Ryujinx.UI
                 state |= KeyboardHotkeyState.ToggleVSync;
             }
 
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot) ||
+                ButtonPressedOnAnyGamepad(GamepadButtonInputId.Misc1))
             {
                 state |= KeyboardHotkeyState.Screenshot;
             }
@@ -808,6 +825,38 @@ namespace Ryujinx.UI
             }
 
             return state;
+        }
+
+        private void GamepadConnected(string id)
+        {
+            Interlocked.Exchange(ref _gamepadsChanged, 1);
+        }
+
+        private void GamepadDisconnected(string id)
+        {
+            Interlocked.Exchange(ref _gamepadsChanged, 1);
+        }
+
+        private void RefreshGamepads()
+        {
+            _gamepadInterfaces.Clear();
+
+            foreach (string id in _inputManager.GamepadDriver.GamepadsIds)
+            {
+                _gamepadInterfaces.Add(_inputManager.GamepadDriver.GetGamepad(id));
+            }
+        }
+
+        private bool ButtonPressedOnAnyGamepad(GamepadButtonInputId button)
+        {
+            foreach (IGamepad gamepad in _gamepadInterfaces)
+            {
+                if (gamepad.IsPressed(button))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

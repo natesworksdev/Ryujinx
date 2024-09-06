@@ -178,6 +178,17 @@ namespace Ryujinx.Ava.UI.Models.Input
             }
         }
 
+        private GamepadInputId _buttonScreenshot;
+        public GamepadInputId ButtonScreenshot
+        {
+            get => _buttonScreenshot;
+            set
+            {
+                _buttonScreenshot = value;
+                OnPropertyChanged();
+            }
+        }
+
         private GamepadInputId _buttonL;
         public GamepadInputId ButtonL
         {
@@ -440,6 +451,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                 DpadRight = controllerInput.LeftJoycon.DpadRight;
                 ButtonL = controllerInput.LeftJoycon.ButtonL;
                 ButtonMinus = controllerInput.LeftJoycon.ButtonMinus;
+                ButtonScreenshot = controllerInput.LeftJoycon.ButtonScreenshot;
                 LeftButtonSl = controllerInput.LeftJoycon.ButtonSl;
                 LeftButtonSr = controllerInput.LeftJoycon.ButtonSr;
                 ButtonZl = controllerInput.LeftJoycon.ButtonZl;
@@ -502,6 +514,7 @@ namespace Ryujinx.Ava.UI.Models.Input
                     DpadRight = DpadRight,
                     ButtonL = ButtonL,
                     ButtonMinus = ButtonMinus,
+                    ButtonScreenshot = ButtonScreenshot,
                     ButtonSl = LeftButtonSl,
                     ButtonSr = LeftButtonSr,
                     ButtonZl = ButtonZl,
