@@ -329,6 +329,12 @@ namespace Ryujinx.HLE.HOS
             AppletState.SetFocus(true);
         }
 
+        public void RequestExit()
+        {
+            AppletState.Messages.Enqueue(AppletMessage.Exit);
+            AppletState.MessageEvent.ReadableEvent.Signal();
+        }
+
         public void SimulateWakeUpMessage()
         {
             AppletState.Messages.Enqueue(AppletMessage.Resume);

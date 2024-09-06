@@ -21,6 +21,7 @@ using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -677,7 +678,8 @@ namespace Ryujinx.UI
                 ConfigurationState.Instance.System.AudioVolume,
                 ConfigurationState.Instance.System.UseHypervisor,
                 ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                ConfigurationState.Instance.Multiplayer.Mode);
+                ConfigurationState.Instance.Multiplayer.Mode,
+                () => StopEmulation());
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -1484,7 +1486,7 @@ namespace Ryujinx.UI
             SaveConfig();
         }
 
-        private void StopEmulation_Pressed(object sender, EventArgs args)
+        private void StopEmulation()
         {
             if (_emulationContext != null)
             {
@@ -1495,6 +1497,16 @@ namespace Ryujinx.UI
             _resumeEmulation.Sensitive = false;
             UpdateMenuItem.Sensitive = true;
             RendererWidget?.Exit();
+        }
+
+        private void StopEmulation_Pressed(object sender, EventArgs args)
+        {
+            _emulationContext.System.RequestExit();
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                StopEmulation();
+            });
         }
 
         private void PauseEmulation_Pressed(object sender, EventArgs args)

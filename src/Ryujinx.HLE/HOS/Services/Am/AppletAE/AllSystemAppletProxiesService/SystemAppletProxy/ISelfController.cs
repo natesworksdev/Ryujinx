@@ -51,7 +51,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // Exit()
         public ResultCode Exit(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            Logger.Warning?.Print(LogClass.ServiceAm, "Self Applet Exit");
+
+            context.Device.Configuration.Stop();
 
             return ResultCode.Success;
         }
