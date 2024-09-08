@@ -408,7 +408,10 @@ namespace Ryujinx.Graphics.Vulkan
                 PrimitiveRestartEnable &= topologySupportsRestart;
             }
 
-            if (_supportsExtDynamicState)
+            if (_supportsExtDynamicState && (Topology != PrimitiveTopology.LineList ||
+                                             Topology != PrimitiveTopology.TriangleStrip ||
+                                             Topology != PrimitiveTopology.PointList ||
+                                             Topology != PrimitiveTopology.PatchList))
             {
                 Topology = Topology.ConvertToClass();
             }
