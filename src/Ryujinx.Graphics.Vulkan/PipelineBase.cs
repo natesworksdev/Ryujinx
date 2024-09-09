@@ -676,7 +676,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportExtDynamic)
                 {
-                    if (oldTopologyClass != _newState.Topology.ConvertToClass())
+                    if (oldTopologyClass != _newState.Topology)
                     {
                         _newState.Topology = oldTopology;
                     }
@@ -1048,9 +1048,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_supportExtDynamic)
             {
-                var newTopologyClass = vkTopology.ConvertToClass();
-
-                if ((_newState.Topology.ConvertToClass() != newTopologyClass))
+                if ((_newState.Topology != vkTopology))
                 {
                     _newState.Topology = vkTopology;
                 }
