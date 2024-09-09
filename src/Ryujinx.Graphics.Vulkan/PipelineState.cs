@@ -632,9 +632,10 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (_supportsExtDynamicState)
                 {
-                    if (!isMoltenVk)
+                    if (gd.SupportsMTL31 || gd.IsMoltenVk)
                     {
-                        //Requires Metal 3.1 and new MoltenVK
+                        //Requires Metal 3.1 and new MoltenVK however extended dynamic states extension is not
+                        //available on older verrsion of MVK so we can safely check only OS version
                         dynamicStates[dynamicStatesCount++] = DynamicState.VertexInputBindingStrideExt;
                     }
                     dynamicStates[0] = DynamicState.ViewportWithCountExt;
