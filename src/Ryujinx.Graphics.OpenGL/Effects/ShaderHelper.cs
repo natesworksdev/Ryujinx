@@ -7,27 +7,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
     {
         public static int CompileProgram(string shaderCode, ShaderType shaderType)
         {
-            var shader = GL.CreateShader(shaderType);
-            GL.ShaderSource(shader, shaderCode);
-            GL.CompileShader(shader);
-
-            GL.GetShader(shader, ShaderParameter.CompileStatus, out int isCompiled);
-            if (isCompiled == 0)
-            {
-                string log = GL.GetShaderInfoLog(shader);
-                Logger.Error?.Print(LogClass.Gpu, $"Failed to compile effect shader:\n\n{log}\n");
-                GL.DeleteShader(shader);
-                return 0;
-            }
-
-            var program = GL.CreateProgram();
-            GL.AttachShader(program, shader);
-            GL.LinkProgram(program);
-
-            GL.DetachShader(program, shader);
-            GL.DeleteShader(shader);
-
-            return program;
+            return CompileProgram(new string[] { shaderCode }, shaderType);
         }
 
         public static int CompileProgram(string[] shaders, ShaderType shaderType)
