@@ -574,8 +574,6 @@ namespace Ryujinx.Graphics.Vulkan
                             _scalingFilter?.Dispose();
                             _scalingFilter = new AreaScalingFilter(_gd, _device);
                         }
-
-                        _scalingFilter.Level = _scalingFilterLevel;
                         break;
                 }
             }

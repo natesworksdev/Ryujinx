@@ -382,7 +382,6 @@ namespace Ryujinx.Graphics.OpenGL
                             _scalingFilter = new AreaScalingFilter(_renderer);
                         }
                         _isLinear = false;
-                        _scalingFilter.Level = _scalingFilterLevel;
 
                         RecreateUpscalingTexture();
                         break;
