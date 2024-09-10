@@ -6,15 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Effects\Shaders\area_scaling.glsl" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenTK.Graphics" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Effects\Shaders\area_scaling.glsl" />
     <EmbeddedResource Include="Effects\Textures\SmaaAreaTexture.bin" />
     <EmbeddedResource Include="Effects\Textures\SmaaSearchTexture.bin" />
     <EmbeddedResource Include="Effects\Shaders\fsr_sharpening.glsl" />
@@ -26,6 +21,7 @@
     <EmbeddedResource Include="Effects\Shaders\ffx_fsr1.h" />
     <EmbeddedResource Include="Effects\Shaders\ffx_a.h" />
     <EmbeddedResource Include="Effects\Shaders\fsr_scaling.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\area_scaling.glsl" />
   </ItemGroup>
 
   <ItemGroup>
