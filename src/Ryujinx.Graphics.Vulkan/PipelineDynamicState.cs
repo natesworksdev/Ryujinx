@@ -301,30 +301,6 @@ namespace Ryujinx.Graphics.Vulkan
             var extendedState2Api = gd.ExtendedDynamicState2Api;
             var dynamicFeedbackLoopApi = gd.DynamicFeedbackLoopApi;
 
-            PipelineDynamicState state = this;
-
-            Action[] actions = new Action[]
-            {
-                () => state.RecordBlend(api, commandBuffer),
-                () => state.RecordDepthBias(api, commandBuffer),
-                () => state.RecordScissor(gd, commandBuffer),
-                () => state.RecordStencil(api, commandBuffer),
-                () => state.RecordViewport(gd, commandBuffer),
-                () => state.RecordFeedbackLoop(dynamicFeedbackLoopApi, commandBuffer),
-                () => state.RecordCullMode(extendedStateApi, commandBuffer),
-                () => state.RecordFrontFace(extendedStateApi, commandBuffer),
-                () => state.RecordDepthTestBool(extendedStateApi, commandBuffer),
-                () => state.RecordDepthTestCompareOp(extendedStateApi, commandBuffer),
-                () => state.RecordStencilTestAndOp(extendedStateApi, commandBuffer),
-                () => state.RecordLineWidth(api, commandBuffer),
-                () => state.RecordRasterizationDiscard(extendedState2Api, commandBuffer),
-                () => state.RecordLogicOp(extendedState2Api, commandBuffer),
-                () => state.RecordPatchControlPoints(extendedState2Api, commandBuffer),
-                () => state.RecordPrimitiveRestartEnable(gd, commandBuffer),
-                () => state.RecordPrimitiveTopology(extendedStateApi, commandBuffer),
-                () => state.RecordDepthBiasEnable(extendedState2Api, commandBuffer),
-            };
-
             DirtyFlags dirtyFlags = _dirty;
 
             while (dirtyFlags != DirtyFlags.None)
@@ -332,7 +308,63 @@ namespace Ryujinx.Graphics.Vulkan
                 int bitIndex = BitOperations.TrailingZeroCount((uint)dirtyFlags);
                 DirtyFlags currentFlag = (DirtyFlags)(1 << bitIndex);
 
-                actions[bitIndex]();
+                switch (currentFlag)
+                {
+                    case DirtyFlags.Blend:
+                        RecordBlend(api, commandBuffer);
+                        break;
+                    case DirtyFlags.DepthBias:
+                        RecordDepthBias(api, commandBuffer);
+                        break;
+                    case DirtyFlags.Scissor:
+                        RecordScissor(gd, commandBuffer);
+                        break;
+                    case DirtyFlags.Stencil:
+                        RecordStencil(api, commandBuffer);
+                        break;
+                    case DirtyFlags.Viewport:
+                        RecordViewport(gd, commandBuffer);
+                        break;
+                    case DirtyFlags.FeedbackLoop:
+                        RecordFeedbackLoop(dynamicFeedbackLoopApi, commandBuffer);
+                        break;
+                    case DirtyFlags.CullMode:
+                        RecordCullMode(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.FrontFace:
+                        RecordFrontFace(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.DepthTestBool:
+                        RecordDepthTestBool(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.DepthTestCompareOp:
+                        RecordDepthTestCompareOp(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.StencilTestEnableAndStencilOp:
+                        RecordStencilTestAndOp(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.LineWidth:
+                        RecordLineWidth(api, commandBuffer);
+                        break;
+                    case DirtyFlags.RasterDiscard:
+                        RecordRasterizationDiscard(extendedState2Api, commandBuffer);
+                        break;
+                    case DirtyFlags.LogicOp:
+                        RecordLogicOp(extendedState2Api, commandBuffer);
+                        break;
+                    case DirtyFlags.PatchControlPoints:
+                        RecordPatchControlPoints(extendedState2Api, commandBuffer);
+                        break;
+                    case DirtyFlags.PrimitiveRestart:
+                        RecordPrimitiveRestartEnable(gd, commandBuffer);
+                        break;
+                    case DirtyFlags.PrimitiveTopology:
+                        RecordPrimitiveTopology(extendedStateApi, commandBuffer);
+                        break;
+                    case DirtyFlags.DepthBiasEnable:
+                        RecordDepthBiasEnable(extendedState2Api, commandBuffer);
+                        break;
+                }
 
                 dirtyFlags &= ~currentFlag;
             }
