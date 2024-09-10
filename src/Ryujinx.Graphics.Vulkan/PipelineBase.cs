@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
@@ -640,14 +641,32 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (texture is TextureView srcTexture)
             {
-                var oldCullMode = _supportExtDynamic ? DynamicState.CullMode : _newState.CullMode;
-                var oldStencilTestEnable = _supportExtDynamic ? DynamicState.StencilTestEnable : _newState.StencilTestEnable;
-                var oldDepthTestEnable = _supportExtDynamic ? DynamicState.DepthTestEnable : _newState.DepthTestEnable;
-                var oldDepthWriteEnable = _supportExtDynamic ? DynamicState.DepthWriteEnable : _newState.DepthWriteEnable;
-                var oldTopology = _supportExtDynamic ? DynamicState.Topology : _newState.Topology;
-                var oldTopologyClass = _newState.Topology;
-                var oldViewports = DynamicState.Viewports;
-                var oldViewportsCount = _supportExtDynamic ? DynamicState.ViewportsCount : _newState.ViewportsCount;
+                CullModeFlags oldCullMode;
+                bool oldStencilTestEnable;
+                bool oldDepthTestEnable;
+                bool oldDepthWriteEnable;
+                Silk.NET.Vulkan.PrimitiveTopology oldTopology;
+                Array16<Silk.NET.Vulkan.Viewport> oldViewports = DynamicState.Viewports;
+                uint oldViewportsCount;
+
+                if (_supportExtDynamic)
+                {
+                    oldCullMode = DynamicState.CullMode;
+                    oldStencilTestEnable = DynamicState.StencilTestEnable;
+                    oldDepthTestEnable = DynamicState.DepthTestEnable;
+                    oldDepthWriteEnable = DynamicState.DepthWriteEnable;
+                    oldTopology = DynamicState.Topology;
+                    oldViewportsCount = DynamicState.ViewportsCount;
+                }
+                else
+                {
+                    oldCullMode = _newState.CullMode;
+                    oldStencilTestEnable = _newState.StencilTestEnable;
+                    oldDepthTestEnable = _newState.DepthTestEnable;
+                    oldDepthWriteEnable = _newState.DepthWriteEnable;
+                    oldTopology = _newState.Topology;
+                    oldViewportsCount = _newState.ViewportsCount;
+                }
 
                 if (_supportExtDynamic)
                 {
@@ -661,9 +680,9 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.StencilTestEnable = false;
                     _newState.DepthTestEnable = false;
                     _newState.DepthWriteEnable = false;
-                }
 
-                SignalStateChange();
+                    SignalStateChange();
+                }
 
                 Gd.HelperShader.DrawTexture(
                     Gd,
@@ -673,13 +692,10 @@ namespace Ryujinx.Graphics.Vulkan
                     srcRegion,
                     dstRegion);
 
+                _newState.Topology = oldTopology;
+
                 if (_supportExtDynamic)
                 {
-                    if (oldTopologyClass != _newState.Topology)
-                    {
-                        _newState.Topology = oldTopology;
-                    }
-
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
@@ -692,7 +708,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.DepthTestEnable = oldDepthTestEnable;
                     _newState.DepthWriteEnable = oldDepthWriteEnable;
                     _newState.ViewportsCount = oldViewportsCount;
-                    _newState.Topology = oldTopology;
                 }
 
                 DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
@@ -832,7 +847,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (_supportExtDynamic2)
             {
                 DynamicState.SetDepthBiasEnable(depthBiasEnable);
-                changed = true;
             }
             else if (_newState.DepthBiasEnable != depthBiasEnable)
             {
@@ -843,7 +857,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (depthBiasEnable)
             {
                 DynamicState.SetDepthBias(factor, units, clamp);
-                changed = true;
             }
 
             if (changed)
@@ -888,10 +901,11 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.DepthTestEnable = depthTest.TestEnable;
                 _newState.DepthWriteEnable = depthTest.WriteEnable;
                 _newState.DepthCompareOp = depthTest.Func.Convert();
+
+                SignalStateChange();
             }
 
             UpdatePassDepthStencil();
-            SignalStateChange();
         }
 
         public void SetFaceCulling(bool enable, Face face)
@@ -903,9 +917,9 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
-            }
 
-            SignalStateChange();
+                SignalStateChange();
+            }
         }
 
         public void SetFrontFace(FrontFace frontFace)
@@ -917,9 +931,9 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _newState.FrontFace = frontFace.Convert();
-            }
 
-            SignalStateChange();
+                SignalStateChange();
+            }
         }
 
         public void SetImage(ShaderStage stage, int binding, ITexture image, Format imageFormat)
@@ -962,8 +976,6 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 DynamicState.SetLineWidth(Gd.Capabilities.SupportsWideLines ? width : 1.0f);
             }
-
-            SignalStateChange();
         }
 
         public void SetLogicOpState(bool enable, LogicalOp op)
@@ -1007,9 +1019,9 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _newState.PatchControlPoints = (uint)vertices;
-            }
 
-            SignalStateChange();
+                SignalStateChange();
+            }
 
             // TODO: Default levels (likely needs emulation on shaders?)
         }
@@ -1033,10 +1045,11 @@ namespace Ryujinx.Graphics.Vulkan
             else
             {
                 _newState.PrimitiveRestartEnable = enable;
+
+                SignalStateChange();
             }
 
             // TODO: What to do about the index?
-            SignalStateChange();
         }
 
         public void SetPrimitiveTopology(PrimitiveTopology topology)
@@ -1045,18 +1058,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             var vkTopology = Gd.TopologyRemap(topology).Convert();
 
+            _newState.Topology = vkTopology;
+
             if (_supportExtDynamic)
             {
-                if ((_newState.Topology != vkTopology))
-                {
-                    _newState.Topology = vkTopology;
-                }
-
                 DynamicState.SetPrimitiveTopology(vkTopology);
-            }
-            else
-            {
-                _newState.Topology = vkTopology;
             }
 
             SignalStateChange();
@@ -1074,7 +1080,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.PipelineLayout = internalProgram.PipelineLayout;
             _newState.HasTessellationControlShader = internalProgram.HasTessellationControlShader;
-            _newState.StagesCount = internalProgram.IsCompute ? 1 : (uint)stages.Length;
+            _newState.StagesCount = (uint)stages.Length;
 
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
@@ -1104,15 +1110,16 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetRasterizerDiscard(bool discard)
         {
-            if (!_supportExtDynamic2)
-            {
-                _newState.RasterizerDiscardEnable = discard;
-            }
-            else
+            if (_supportExtDynamic2)
             {
                 DynamicState.SetRasterizerDiscard(discard);
             }
-            SignalStateChange();
+            else
+            {
+                _newState.RasterizerDiscardEnable = discard;
+
+                SignalStateChange();
+            }
 
             if (!discard && Gd.IsQualcommProprietary)
             {
@@ -1195,11 +1202,6 @@ namespace Ryujinx.Graphics.Vulkan
                 ClearScissor = regions[0];
             }
 
-            if (!_supportExtDynamic)
-            {
-                _newState.ScissorsCount = (uint)count;
-            }
-
             DynamicState.ScissorsCount = count;
 
             for (int i = 0; i < count; i++)
@@ -1211,7 +1213,12 @@ namespace Ryujinx.Graphics.Vulkan
                 DynamicState.SetScissor(i, new Rect2D(offset, extent));
             }
 
-            SignalStateChange();
+            if (!_supportExtDynamic)
+            {
+                _newState.ScissorsCount = (uint)count;
+
+                SignalStateChange();
+            }
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1228,6 +1235,8 @@ namespace Ryujinx.Graphics.Vulkan
                     stencilTest.FrontDpFail.Convert(),
                     stencilTest.FrontFunc.Convert(),
                     stencilTest.TestEnable);
+
+                UpdatePassDepthStencil();
             }
             else
             {
@@ -1240,6 +1249,9 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.StencilFrontDepthFailOp = stencilTest.FrontDpFail.Convert();
                 _newState.StencilFrontCompareOp = stencilTest.FrontFunc.Convert();
                 _newState.StencilTestEnable = stencilTest.TestEnable;
+
+                UpdatePassDepthStencil();
+                SignalStateChange();
             }
 
             DynamicState.SetStencilMask((uint)stencilTest.BackFuncMask,
@@ -1248,9 +1260,6 @@ namespace Ryujinx.Graphics.Vulkan
                 (uint)stencilTest.FrontFuncMask,
                 (uint)stencilTest.FrontMask,
                 (uint)stencilTest.FrontFuncRef);
-
-            UpdatePassDepthStencil();
-            SignalStateChange();
         }
 
         public void SetStorageBuffers(ReadOnlySpan<BufferAssignment> buffers)
@@ -1472,11 +1481,6 @@ namespace Ryujinx.Graphics.Vulkan
                 return Math.Clamp(value, 0f, 1f);
             }
 
-            if (!_supportExtDynamic)
-            {
-                _newState.ViewportsCount = (uint)count;
-            }
-
             DynamicState.ViewportsCount = (uint)count;
 
             for (int i = 0; i < count; i++)
@@ -1492,7 +1496,12 @@ namespace Ryujinx.Graphics.Vulkan
                     Clamp(viewport.DepthFar)));
             }
 
-            SignalStateChange();
+            if (!_supportExtDynamic)
+            {
+                _newState.ViewportsCount = (uint)count;
+
+                SignalStateChange();
+            }
         }
 
         public void SwapBuffer(Auto<DisposableBuffer> from, Auto<DisposableBuffer> to)
@@ -1757,7 +1766,14 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             // Stencil test being enabled doesn't necessarily mean a write, but it's not critical to check.
-            _passWritesDepthStencil |= _supportExtDynamic ? (DynamicState.DepthTestEnable && DynamicState.DepthWriteEnable) || DynamicState.StencilTestEnable : (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
+            if (_supportExtDynamic)
+            {
+                _passWritesDepthStencil |= (DynamicState.DepthTestEnable && DynamicState.DepthWriteEnable) || DynamicState.StencilTestEnable;
+            }
+            else
+            {
+                _passWritesDepthStencil |= (_newState.DepthTestEnable && _newState.DepthWriteEnable) || _newState.StencilTestEnable;
+            }
         }
 
         private bool RecreateGraphicsPipelineIfNeeded()

@@ -258,8 +258,6 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _supportsFeedBackLoopDynamicState;
         private uint _blendEnables;
 
-
-
         public void Initialize(HardwareCapabilities capabilities)
         {
             HasTessellationControlShader = false;
