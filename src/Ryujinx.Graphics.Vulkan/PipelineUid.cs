@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public bool Equals(ref PipelineUid other)
         {
-            if (!Unsafe.As<ulong, Vector128<byte>>(ref Id2).Equals(Unsafe.As<ulong, Vector128<byte>>(ref other.Id2)))
+            if (!Unsafe.As<ulong, Vector256<byte>>(ref Id0).Equals(Unsafe.As<ulong, Vector256<byte>>(ref other.Id0)))
             {
                 return false;
             }
