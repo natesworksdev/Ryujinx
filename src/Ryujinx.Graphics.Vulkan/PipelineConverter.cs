@@ -215,8 +215,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
                 pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
-                pipeline.DepthBiasEnable = ((state.BiasEnable != 0) &&
-                    (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0));
+                pipeline.DepthBiasEnable = (state.BiasEnable != 0) &&
+                    (state.DepthBiasFactor != 0 && state.DepthBiasUnits != 0);
             }
 
             if (!extendedDynamicState2.ExtendedDynamicState2LogicOp)

@@ -3,7 +3,6 @@ using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using System;
 
-
 namespace Ryujinx.Graphics.Vulkan
 {
     struct PipelineDynamicState
@@ -74,7 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
             FrontFace = 1 << 7,
             DepthTestBool = 1 << 8,
             DepthTestCompareOp = 1 << 9,
-            StencilTestEnableandStencilOp = 1 << 10,
+            StencilTestEnableAndStencilOp = 1 << 10,
             LineWidth = 1 << 11,
             RasterDiscard = 1 << 12,
             LogicOp = 1 << 13,
@@ -203,7 +202,6 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetLineWidth(float width)
         {
             _lineWidth = width;
-
             _dirty |= DirtyFlags.LineWidth;
         }
 
@@ -412,7 +410,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Api.CmdSetStencilReference(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontReference);
         }
 
-        private readonly void RecordStencilTestandOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
+        private readonly void RecordStencilTestAndOp(ExtExtendedDynamicState api, CommandBuffer commandBuffer)
         {
             api.CmdSetStencilTestEnable(commandBuffer, StencilTestEnable);
 
@@ -431,7 +429,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (gd.Capabilities.SupportsExtendedDynamicState)
             {
-
                 gd.ExtendedDynamicStateApi.CmdSetViewportWithCount(commandBuffer, ViewportsCount,
                     Viewports.AsSpan());
             }
@@ -491,7 +488,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             primitiveRestartEnable &= topologySupportsRestart;
 
-            //Cannot disable primitiveRestartEnable for these Topologies on MacOS
+            // Cannot disable primitiveRestartEnable for these Topologies on MacOS.
             if (gd.IsMoltenVk)
             {
                 primitiveRestartEnable = true;

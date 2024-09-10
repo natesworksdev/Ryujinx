@@ -94,7 +94,6 @@ namespace Ryujinx.Graphics.Vulkan
         private FeedbackLoopAspects _feedbackLoop;
         private bool _passWritesDepthStencil;
 
-
         private readonly PipelineColorBlendAttachmentState[] _storedBlend;
         public ulong DrawCount { get; private set; }
         public bool RenderPassActive { get; private set; }
@@ -1249,7 +1248,6 @@ namespace Ryujinx.Graphics.Vulkan
                 (uint)stencilTest.FrontFuncMask,
                 (uint)stencilTest.FrontMask,
                 (uint)stencilTest.FrontFuncRef);
-
 
             UpdatePassDepthStencil();
             SignalStateChange();
