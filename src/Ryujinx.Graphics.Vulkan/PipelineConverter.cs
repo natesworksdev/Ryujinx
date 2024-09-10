@@ -180,7 +180,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (!extendedDynamicState)
             {
                 pipeline.DepthCompareOp = state.DepthTest.Func.Convert();
-                pipeline.CullMode = state.CullEnable ? state.CullMode.Convert() : CullModeFlags.None;
+                pipeline.CullMode = state.CullMode.Convert();
 
                 pipeline.DepthTestEnable = state.DepthTest.TestEnable;
                 pipeline.DepthWriteEnable = state.DepthTest.WriteEnable;

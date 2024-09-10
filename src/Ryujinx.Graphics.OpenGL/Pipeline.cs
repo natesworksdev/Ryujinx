@@ -915,11 +915,11 @@ namespace Ryujinx.Graphics.OpenGL
             _depthTestEnable = depthTest.TestEnable;
         }
 
-        public void SetFaceCulling(bool enable, Face face)
+        public void SetFaceCulling(Face face)
         {
-            _cullEnable = enable;
+            _cullEnable = face != Face.None;
 
-            if (!enable)
+            if (!_cullEnable)
             {
                 GL.Disable(EnableCap.CullFace);
                 return;

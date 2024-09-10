@@ -51,7 +51,6 @@ namespace Ryujinx.Graphics.GAL
         public StencilTestDescriptor StencilTest;
         public FrontFace FrontFace;
         public Face CullMode;
-        public bool CullEnable;
 
         public PolygonModeMask BiasEnable;
 

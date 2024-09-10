@@ -908,15 +908,15 @@ namespace Ryujinx.Graphics.Vulkan
             UpdatePassDepthStencil();
         }
 
-        public void SetFaceCulling(bool enable, Face face)
+        public void SetFaceCulling(Face face)
         {
             if (_supportExtDynamic)
             {
-                DynamicState.SetCullMode(enable ? face.Convert() : CullModeFlags.None);
+                DynamicState.SetCullMode(face.Convert());
             }
             else
             {
-                _newState.CullMode = enable ? face.Convert() : CullModeFlags.None;
+                _newState.CullMode = face.Convert();
 
                 SignalStateChange();
             }

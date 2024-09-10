@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.GAL
         void SetDepthMode(DepthMode mode);
         void SetDepthTest(DepthTestDescriptor depthTest);
 
-        void SetFaceCulling(bool enable, Face face);
+        void SetFaceCulling(Face face);
 
         void SetFrontFace(FrontFace frontFace);
 

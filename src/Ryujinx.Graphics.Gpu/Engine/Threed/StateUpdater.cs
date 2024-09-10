@@ -1198,9 +1198,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             var yControl = _state.State.YControl;
             var face = _state.State.FaceState;
 
-            _pipeline.CullEnable = face.CullEnable;
-            _pipeline.CullMode = face.CullFace;
-            _context.Renderer.Pipeline.SetFaceCulling(face.CullEnable, face.CullFace);
+            if (face.CullEnable)
+            {
+                _pipeline.CullMode = face.CullFace;
+                _context.Renderer.Pipeline.SetFaceCulling(face.CullFace);
+            }
+            else
+            {
+                _pipeline.CullMode = Face.None;
+                _context.Renderer.Pipeline.SetFaceCulling(Face.None);
+            }
 
             UpdateFrontFace(yControl, face.FrontFace);
         }

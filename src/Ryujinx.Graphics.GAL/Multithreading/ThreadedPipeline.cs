@@ -165,9 +165,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetFaceCulling(bool enable, Face face)
+        public void SetFaceCulling(Face face)
         {
-            _renderer.New<SetFaceCullingCommand>().Set(enable, face);
+            _renderer.New<SetFaceCullingCommand>().Set(face);
             _renderer.QueueCommand();
         }
 

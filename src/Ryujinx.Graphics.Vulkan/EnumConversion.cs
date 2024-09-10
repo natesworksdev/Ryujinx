@@ -238,6 +238,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Face.Back => CullModeFlags.BackBit,
                 Face.Front => CullModeFlags.FrontBit,
                 Face.FrontAndBack => CullModeFlags.FrontAndBack,
+                Face.None => CullModeFlags.None,
                 _ => LogInvalidAndReturn(face, nameof(Face), CullModeFlags.BackBit),
             };
         }

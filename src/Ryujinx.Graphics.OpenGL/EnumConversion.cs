@@ -2,6 +2,7 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using GL = OpenTK.Graphics.ES11.GL;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -334,6 +335,8 @@ namespace Ryujinx.Graphics.OpenGL
                     return CullFaceMode.Front;
                 case Face.FrontAndBack:
                     return CullFaceMode.FrontAndBack;
+                case Face.None:
+                    return (CullFaceMode)All.None;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");
