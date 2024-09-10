@@ -13,6 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Effects\Shaders\AreaScaling.glsl" />
+    <None Remove="Effects\Shaders\AreaScaling.spv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Effects\Shaders\AreaScaling.glsl" />
+    <EmbeddedResource Include="Effects\Shaders\AreaScaling.spv" />
     <EmbeddedResource Include="Effects\Textures\SmaaAreaTexture.bin" />
     <EmbeddedResource Include="Effects\Textures\SmaaSearchTexture.bin" />
     <EmbeddedResource Include="Effects\Shaders\FsrScaling.spv" />

@@ -375,6 +375,17 @@ namespace Ryujinx.Graphics.OpenGL
 
                         RecreateUpscalingTexture();
                         break;
+                    case ScalingFilter.Area:
+                        if (_scalingFilter is not AreaScalingFilter)
+                        {
+                            _scalingFilter?.Dispose();
+                            _scalingFilter = new AreaScalingFilter(_renderer);
+                        }
+                        _isLinear = false;
+                        _scalingFilter.Level = _scalingFilterLevel;
+
+                        RecreateUpscalingTexture();
+                        break;
                 }
             }
         }

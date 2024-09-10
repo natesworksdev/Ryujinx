@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
 {
@@ -9,6 +10,15 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             var shader = GL.CreateShader(shaderType);
             GL.ShaderSource(shader, shaderCode);
             GL.CompileShader(shader);
+
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out int isCompiled);
+            if (isCompiled == 0)
+            {
+                string log = GL.GetShaderInfoLog(shader);
+                Logger.Error?.Print(LogClass.Gpu, $"Failed to compile effect shader:\n\n{log}\n");
+                GL.DeleteShader(shader);
+                return 0;
+            }
 
             var program = GL.CreateProgram();
             GL.AttachShader(program, shader);
@@ -25,6 +35,15 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             var shader = GL.CreateShader(shaderType);
             GL.ShaderSource(shader, shaders.Length, shaders, (int[])null);
             GL.CompileShader(shader);
+
+            GL.GetShader(shader, ShaderParameter.CompileStatus, out int isCompiled);
+            if (isCompiled == 0)
+            {
+                string log = GL.GetShaderInfoLog(shader);
+                Logger.Error?.Print(LogClass.Gpu, $"Failed to compile effect shader:\n\n{log}\n");
+                GL.DeleteShader(shader);
+                return 0;
+            }
 
             var program = GL.CreateProgram();
             GL.AttachShader(program, shader);

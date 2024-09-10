@@ -568,6 +568,15 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _scalingFilter.Level = _scalingFilterLevel;
                         break;
+                    case ScalingFilter.Area:
+                        if (_scalingFilter is not AreaScalingFilter)
+                        {
+                            _scalingFilter?.Dispose();
+                            _scalingFilter = new AreaScalingFilter(_gd, _device);
+                        }
+
+                        _scalingFilter.Level = _scalingFilterLevel;
+                        break;
                 }
             }
         }
