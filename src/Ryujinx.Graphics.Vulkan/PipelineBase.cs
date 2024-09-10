@@ -1378,7 +1378,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             int count = Math.Min(Constants.MaxVertexBuffers, vertexBuffers.Length);
 
-            _newState.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, 0, VertexInputRate.Vertex);
+            _newState.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, _supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31) ? null : 0, VertexInputRate.Vertex);
 
             int validCount = 1;
 
@@ -1407,7 +1407,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _newState.Internal.VertexBindingDescriptions[descriptorIndex] = new VertexInputBindingDescription(
                             (uint)binding,
-                            (uint)vertexBuffer.Stride,
+                            _supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31) ? null : (uint)vertexBuffer.Stride,
                             inputRate);
 
                         int vbSize = vertexBuffer.Buffer.Size;

@@ -71,7 +71,10 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _buffer = autoBuffer;
 
-                        state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)stride;
+                        if (!gd.Capabilities.SupportsExtendedDynamicState)
+                        {
+                            state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)stride;
+                        }
                     }
 
                     return;
@@ -79,8 +82,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 autoBuffer = gd.BufferManager.GetBuffer(cbs.CommandBuffer, _handle, false, out int size);
 
-                // The original stride must be reapplied in case it was rewritten.
-                state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)_stride;
+                if (!gd.Capabilities.SupportsExtendedDynamicState)
+                {
+                    // The original stride must be reapplied in case it was rewritten.
+                    state.Internal.VertexBindingDescriptions[DescriptorIndex].Stride = (uint)_stride;
+                }
 
                 if (_offset >= size)
                 {

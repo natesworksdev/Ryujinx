@@ -256,7 +256,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             int descriptorIndex = 1;
-            pipeline.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, 0, VertexInputRate.Vertex);
+            pipeline.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, extendedDynamicState && (!gd.IsMoltenVk || gd.SupportsMTL31) ? null : 0, VertexInputRate.Vertex);
 
             for (int i = 0; i < vbCount; i++)
             {
@@ -276,7 +276,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // TODO: Support divisor > 1
                     pipeline.Internal.VertexBindingDescriptions[descriptorIndex++] = new VertexInputBindingDescription(
                         (uint)i + 1,
-                        (uint)alignedStride,
+                        extendedDynamicState && (!gd.IsMoltenVk || gd.SupportsMTL31) ? null : (uint)alignedStride,
                         inputRate);
                 }
             }

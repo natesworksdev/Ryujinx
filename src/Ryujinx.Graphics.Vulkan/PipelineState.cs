@@ -466,7 +466,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             bool isMoltenVk = gd.IsMoltenVk;
 
-            if (isMoltenVk)
+            if (isMoltenVk && !_supportsExtDynamicState)
             {
                 UpdateVertexAttributeDescriptions(gd);
             }
@@ -480,7 +480,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineVertexInputStateCreateInfo,
                     VertexAttributeDescriptionCount = VertexAttributeDescriptionsCount,
-                    PVertexAttributeDescriptions = isMoltenVk ? pVertexAttributeDescriptions2 : pVertexAttributeDescriptions,
+                    PVertexAttributeDescriptions = isMoltenVk && !_supportsExtDynamicState ? pVertexAttributeDescriptions2 : pVertexAttributeDescriptions,
                     VertexBindingDescriptionCount = VertexBindingDescriptionsCount,
                     PVertexBindingDescriptions = pVertexBindingDescriptions,
                 };
