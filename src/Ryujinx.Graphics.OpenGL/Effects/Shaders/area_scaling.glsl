@@ -14,49 +14,6 @@ layout( location=9 ) uniform float dstY1;
 layout( location=10 ) uniform float scaleX;
 layout( location=11 ) uniform float scaleY;
 
-vec2 GetResolution()
-{
-    return vec2(abs(srcX1 - srcX0), abs(srcY1 - srcY0));
-}
-
-vec2 GetInvResolution()
-{
-    return vec2(1.0) / GetResolution();
-}
-
-vec2 GetWindowResolution()
-{
-    return vec2(abs(dstX1 - dstX0), abs(dstY1 - dstY0));
-}
-
-vec2 GetInvWindowResolution()
-{
-    return vec2(1.0) / GetWindowResolution();
-}
-
-/***** COLOR SAMPLING *****/
-
-// Non filtered sample (nearest neighbor)
-vec4 QuickSample(vec2 uv)
-{
-#if 0 // Test sampling range
-    const float threshold = 0.00000001;
-    vec2 xy = uv.xy * GetResolution();
-    // Sampling outside the valid range, draw in yellow
-    if (xy.x < (srcX0 - threshold) || xy.x >(srcX1 + threshold) || xy.y < (srcY0 - threshold) || xy.y >(srcY1 + threshold))
-        return vec4(1.0, 1.0, 0.0, 1);
-    // Sampling at the edges, draw in purple
-    if (xy.x < srcX0 + 1.0 || xy.x >(srcX1 - 1.0) || xy.y < srcY0 + 1.0 || xy.y >(srcY1 - 1.0))
-        return vec4(0.5, 0, 0.5, 1);
-#endif
-    return texture(Source, uv);
-}
-vec4 QuickSampleByPixel(vec2 xy)
-{
-    vec2 uv = vec2(xy * GetInvResolution());
-    return QuickSample(uv);
-}
-
 /***** Area Sampling *****/
 
 // By Sam Belliveau and Filippo Tarpini. Public Domain license.
@@ -68,9 +25,9 @@ vec4 QuickSampleByPixel(vec2 xy)
 vec4 AreaSampling(vec2 xy)
 {
     // Determine the sizes of the source and target images.
-    vec2 source_size = GetResolution();
-    vec2 target_size = GetWindowResolution();
-    vec2 inverted_target_size = GetInvWindowResolution();
+    vec2 source_size = vec2(abs(srcX1 - srcX0), abs(srcY1 - srcY0));
+    vec2 target_size = vec2(abs(dstX1 - dstX0), abs(dstY1 - dstY0));
+    vec2 inverted_target_size = vec2(1.0) / target_size;
 
     // Compute the top-left and bottom-right corners of the target pixel box.
     vec2 t_beg = floor(xy - vec2(dstX0 < dstX1 ? dstX0 : dstX1, dstY0 < dstY1 ? dstY0 : dstY1));
@@ -81,8 +38,8 @@ vec4 AreaSampling(vec2 xy)
     vec2 end = t_end * inverted_target_size * source_size;
 
     // Compute the top-left and bottom-right corners of the pixel box.
-    vec2 f_beg = floor(beg);
-    vec2 f_end = floor(end);
+    ivec2 f_beg = ivec2(beg);
+    ivec2 f_end = ivec2(end);
 
     // Compute how much of the start and end pixels are covered horizontally & vertically.
     float area_w = 1.0 - fract(beg.x);
@@ -99,39 +56,32 @@ vec4 AreaSampling(vec2 xy)
     // Initialize the color accumulator.
     vec4 avg_color = vec4(0.0, 0.0, 0.0, 0.0);
 
-    // Prevents rounding errors due to the coordinates flooring above
-    const vec2 offset = vec2(0.5, 0.5);
-
     // Accumulate corner pixels.
-    avg_color += area_nw * QuickSampleByPixel(vec2(f_beg.x, f_beg.y) + offset);
-    avg_color += area_ne * QuickSampleByPixel(vec2(f_end.x, f_beg.y) + offset);
-    avg_color += area_sw * QuickSampleByPixel(vec2(f_beg.x, f_end.y) + offset);
-    avg_color += area_se * QuickSampleByPixel(vec2(f_end.x, f_end.y) + offset);
+    avg_color += area_nw * texelFetch(Source, ivec2(f_beg.x, f_beg.y), 0);
+    avg_color += area_ne * texelFetch(Source, ivec2(f_end.x, f_beg.y), 0);
+    avg_color += area_sw * texelFetch(Source, ivec2(f_beg.x, f_end.y), 0);
+    avg_color += area_se * texelFetch(Source, ivec2(f_end.x, f_end.y), 0);
 
     // Determine the size of the pixel box.
     int x_range = int(f_end.x - f_beg.x - 0.5);
     int y_range = int(f_end.y - f_beg.y - 0.5);
 
     // Accumulate top and bottom edge pixels.
-    for (int ix = 0; ix < x_range; ++ix)
+    for (int x = f_beg.x + 1; x <= f_beg.x + x_range; ++x)
     {
-        float x = f_beg.x + 1.0 + float(ix);
-        avg_color += area_n * QuickSampleByPixel(vec2(x, f_beg.y) + offset);
-        avg_color += area_s * QuickSampleByPixel(vec2(x, f_end.y) + offset);
+        avg_color += area_n * texelFetch(Source, ivec2(x, f_beg.y), 0);
+        avg_color += area_s * texelFetch(Source, ivec2(x, f_end.y), 0);
     }
 
     // Accumulate left and right edge pixels and all the pixels in between.
-    for (int iy = 0; iy < y_range; ++iy)
+    for (int y = f_beg.y + 1; y <= f_beg.y + y_range; ++y)
     {
-        float y = f_beg.y + 1.0 + float(iy);
+        avg_color += area_w * texelFetch(Source, ivec2(f_beg.x, y), 0);
+        avg_color += area_e * texelFetch(Source, ivec2(f_end.x, y), 0);
 
-        avg_color += area_w * QuickSampleByPixel(vec2(f_beg.x, y) + offset);
-        avg_color += area_e * QuickSampleByPixel(vec2(f_end.x, y) + offset);
-
-        for (int ix = 0; ix < x_range; ++ix)
+        for (int x = f_beg.x + 1; x <= f_beg.x + x_range; ++x)
         {
-            float x = f_beg.x + 1.0 + float(ix);
-            avg_color += QuickSampleByPixel(vec2(x, y) + offset);
+            avg_color += texelFetch(Source, ivec2(x, y), 0);
         }
     }
 
