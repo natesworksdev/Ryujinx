@@ -16,17 +16,9 @@ namespace Ryujinx.Graphics.Vulkan.Effects
         private PipelineHelperShader _pipeline;
         private ISampler _sampler;
         private ShaderCollection _scalingProgram;
-        private float _sharpeningLevel = 1;
         private Device _device;
 
-        public float Level
-        {
-            get => _sharpeningLevel;
-            set
-            {
-                _sharpeningLevel = MathF.Max(0.01f, value);
-            }
-        }
+        public float Level { get; set; }
 
         public AreaScalingFilter(VulkanRenderer renderer, Device device)
         {

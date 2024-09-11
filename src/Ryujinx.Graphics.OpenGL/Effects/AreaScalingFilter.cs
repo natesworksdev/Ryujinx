@@ -16,7 +16,6 @@ namespace Ryujinx.Graphics.OpenGL.Effects
         private int _srcX1Uniform;
         private int _srcY0Uniform;
         private int _scalingShaderProgram;
-        private float _scale = 1;
         private int _srcY1Uniform;
         private int _dstX0Uniform;
         private int _dstX1Uniform;
@@ -25,14 +24,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
         private int _scaleXUniform;
         private int _scaleYUniform;
 
-        public float Level
-        {
-            get => _scale;
-            set
-            {
-                _scale = MathF.Max(0.01f, value);
-            }
-        }
+        public float Level { get; set; }
 
         public AreaScalingFilter(OpenGLRenderer renderer)
         {
