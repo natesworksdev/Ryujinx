@@ -340,7 +340,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             /// <returns>True if any used entries of the pool might have been modified, false otherwise</returns>
             public bool SamplerPoolModified()
             {
-                return SamplerPool.WasModified(ref _samplerPoolSequence);
+                return SamplerPool != null && SamplerPool.WasModified(ref _samplerPoolSequence);
             }
         }
 
@@ -516,12 +516,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
 
                 // Check if any of our cached samplers changed on the pool.
-                foreach ((int samplerId, (Sampler sampler, SamplerDescriptor descriptor)) in SamplerIds)
+                if (SamplerPool != null)
                 {
-                    if (SamplerPool.GetCachedItem(samplerId) != sampler ||
-                        (sampler == null && SamplerPool.IsValidId(samplerId) && !SamplerPool.GetDescriptorRef(samplerId).Equals(descriptor)))
+                    foreach ((int samplerId, (Sampler sampler, SamplerDescriptor descriptor)) in SamplerIds)
                     {
-                        return true;
+                        if (SamplerPool.GetCachedItem(samplerId) != sampler ||
+                            (sampler == null && SamplerPool.IsValidId(samplerId) && !SamplerPool.GetDescriptorRef(samplerId).Equals(descriptor)))
+                        {
+                            return true;
+                        }
                     }
                 }
 
@@ -566,7 +569,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int stageIndex,
             int textureBufferIndex,
             SamplerIndex samplerIndex,
-            TextureBindingInfo bindingInfo)
+            in TextureBindingInfo bindingInfo)
         {
             Update(texturePool, samplerPool, stage, stageIndex, textureBufferIndex, isImage: false, samplerIndex, bindingInfo);
         }
@@ -579,7 +582,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">Shader stage index where the array is used</param>
         /// <param name="textureBufferIndex">Texture constant buffer index</param>
         /// <param name="bindingInfo">Array binding information</param>
-        public void UpdateImageArray(TexturePool texturePool, ShaderStage stage, int stageIndex, int textureBufferIndex, TextureBindingInfo bindingInfo)
+        public void UpdateImageArray(TexturePool texturePool, ShaderStage stage, int stageIndex, int textureBufferIndex, in TextureBindingInfo bindingInfo)
         {
             Update(texturePool, null, stage, stageIndex, textureBufferIndex, isImage: true, SamplerIndex.ViaHeaderIndex, bindingInfo);
         }
@@ -603,7 +606,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int textureBufferIndex,
             bool isImage,
             SamplerIndex samplerIndex,
-            TextureBindingInfo bindingInfo)
+            in TextureBindingInfo bindingInfo)
         {
             if (IsDirectHandleType(bindingInfo.Handle))
             {
@@ -623,7 +626,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stage">Shader stage where the array is used</param>
         /// <param name="isImage">Whether the array is a image or texture array</param>
         /// <param name="bindingInfo">Array binding information</param>
-        private void UpdateFromPool(TexturePool texturePool, SamplerPool samplerPool, ShaderStage stage, bool isImage, TextureBindingInfo bindingInfo)
+        private void UpdateFromPool(TexturePool texturePool, SamplerPool samplerPool, ShaderStage stage, bool isImage, in TextureBindingInfo bindingInfo)
         {
             CacheEntry entry = GetOrAddEntry(texturePool, samplerPool, bindingInfo, isImage, out bool isNewEntry);
 
@@ -638,11 +641,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (isImage)
                 {
-                    _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, entry.ImageArray);
+                    SetImageArray(stage, bindingInfo, entry.ImageArray);
                 }
                 else
                 {
-                    _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, entry.TextureArray);
+                    SetTextureArray(stage, bindingInfo, entry.TextureArray);
                 }
 
                 return;
@@ -708,11 +711,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                             format = texture.Format;
                         }
 
-                        _channel.BufferManager.SetBufferTextureStorage(entry.ImageArray, hostTexture, texture.Range, bindingInfo, index, format);
+                        _channel.BufferManager.SetBufferTextureStorage(stage, entry.ImageArray, hostTexture, texture.Range, bindingInfo, index, format);
                     }
                     else
                     {
-                        _channel.BufferManager.SetBufferTextureStorage(entry.TextureArray, hostTexture, texture.Range, bindingInfo, index, format);
+                        _channel.BufferManager.SetBufferTextureStorage(stage, entry.TextureArray, hostTexture, texture.Range, bindingInfo, index, format);
                     }
                 }
                 else if (isImage)
@@ -737,14 +740,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 entry.ImageArray.SetFormats(0, formats);
                 entry.ImageArray.SetImages(0, textures);
 
-                _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, entry.ImageArray);
+                SetImageArray(stage, bindingInfo, entry.ImageArray);
             }
             else
             {
                 entry.TextureArray.SetSamplers(0, samplers);
                 entry.TextureArray.SetTextures(0, textures);
 
-                _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, entry.TextureArray);
+                SetTextureArray(stage, bindingInfo, entry.TextureArray);
             }
         }
 
@@ -767,7 +770,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int textureBufferIndex,
             bool isImage,
             SamplerIndex samplerIndex,
-            TextureBindingInfo bindingInfo)
+            in TextureBindingInfo bindingInfo)
         {
             (textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(bindingInfo.CbufSlot, textureBufferIndex);
 
@@ -800,11 +803,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (isImage)
                     {
-                        _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, entry.ImageArray);
+                        SetImageArray(stage, bindingInfo, entry.ImageArray);
                     }
                     else
                     {
-                        _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, entry.TextureArray);
+                        SetTextureArray(stage, bindingInfo, entry.TextureArray);
                     }
 
                     return;
@@ -829,11 +832,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (isImage)
                     {
-                        _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, entry.ImageArray);
+                        SetImageArray(stage, bindingInfo, entry.ImageArray);
                     }
                     else
                     {
-                        _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, entry.TextureArray);
+                        SetTextureArray(stage, bindingInfo, entry.TextureArray);
                     }
 
                     return;
@@ -899,13 +902,19 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                Sampler sampler = samplerPool?.Get(samplerId);
-
                 entry.TextureIds[textureId] = (texture, descriptor);
-                entry.SamplerIds[samplerId] = (sampler, samplerPool?.GetDescriptorRef(samplerId) ?? default);
 
                 ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
-                ISampler hostSampler = sampler?.GetHostSampler(texture);
+                ISampler hostSampler = null;
+
+                if (!isImage && bindingInfo.Target != Target.TextureBuffer)
+                {
+                    Sampler sampler = samplerPool?.Get(samplerId);
+
+                    entry.SamplerIds[samplerId] = (sampler, samplerPool?.GetDescriptorRef(samplerId) ?? default);
+
+                    hostSampler = sampler?.GetHostSampler(texture);
+                }
 
                 Format format = bindingInfo.Format;
 
@@ -921,11 +930,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                             format = texture.Format;
                         }
 
-                        _channel.BufferManager.SetBufferTextureStorage(entry.ImageArray, hostTexture, texture.Range, bindingInfo, index, format);
+                        _channel.BufferManager.SetBufferTextureStorage(stage, entry.ImageArray, hostTexture, texture.Range, bindingInfo, index, format);
                     }
                     else
                     {
-                        _channel.BufferManager.SetBufferTextureStorage(entry.TextureArray, hostTexture, texture.Range, bindingInfo, index, format);
+                        _channel.BufferManager.SetBufferTextureStorage(stage, entry.TextureArray, hostTexture, texture.Range, bindingInfo, index, format);
                     }
                 }
                 else if (isImage)
@@ -950,14 +959,50 @@ namespace Ryujinx.Graphics.Gpu.Image
                 entry.ImageArray.SetFormats(0, formats);
                 entry.ImageArray.SetImages(0, textures);
 
-                _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, entry.ImageArray);
+                SetImageArray(stage, bindingInfo, entry.ImageArray);
             }
             else
             {
                 entry.TextureArray.SetSamplers(0, samplers);
                 entry.TextureArray.SetTextures(0, textures);
 
-                _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, entry.TextureArray);
+                SetTextureArray(stage, bindingInfo, entry.TextureArray);
+            }
+        }
+
+        /// <summary>
+        /// Updates a texture array binding on the host.
+        /// </summary>
+        /// <param name="stage">Shader stage where the array is used</param>
+        /// <param name="bindingInfo">Array binding information</param>
+        /// <param name="array">Texture array</param>
+        private void SetTextureArray(ShaderStage stage, in TextureBindingInfo bindingInfo, ITextureArray array)
+        {
+            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex && _context.Capabilities.MaximumExtraSets != 0)
+            {
+                _context.Renderer.Pipeline.SetTextureArraySeparate(stage, bindingInfo.Set, array);
+            }
+            else
+            {
+                _context.Renderer.Pipeline.SetTextureArray(stage, bindingInfo.Binding, array);
+            }
+        }
+
+        /// <summary>
+        /// Updates a image array binding on the host.
+        /// </summary>
+        /// <param name="stage">Shader stage where the array is used</param>
+        /// <param name="bindingInfo">Array binding information</param>
+        /// <param name="array">Image array</param>
+        private void SetImageArray(ShaderStage stage, in TextureBindingInfo bindingInfo, IImageArray array)
+        {
+            if (bindingInfo.Set >= _context.Capabilities.ExtraSetBaseIndex && _context.Capabilities.MaximumExtraSets != 0)
+            {
+                _context.Renderer.Pipeline.SetImageArraySeparate(stage, bindingInfo.Set, array);
+            }
+            else
+            {
+                _context.Renderer.Pipeline.SetImageArray(stage, bindingInfo.Binding, array);
             }
         }
 
@@ -973,7 +1018,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private CacheEntry GetOrAddEntry(
             TexturePool texturePool,
             SamplerPool samplerPool,
-            TextureBindingInfo bindingInfo,
+            in TextureBindingInfo bindingInfo,
             bool isImage,
             out bool isNew)
         {
@@ -1015,7 +1060,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private CacheEntryFromBuffer GetOrAddEntry(
             TexturePool texturePool,
             SamplerPool samplerPool,
-            TextureBindingInfo bindingInfo,
+            in TextureBindingInfo bindingInfo,
             bool isImage,
             ref BufferBounds textureBufferBounds,
             out bool isNew)
@@ -1077,6 +1122,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                 nextNode = nextNode.Next;
                 _cacheFromBuffer.Remove(toRemove.Value.Key);
                 _lruCache.Remove(toRemove);
+
+                if (toRemove.Value.Key.IsImage)
+                {
+                    toRemove.Value.ImageArray.Dispose();
+                }
+                else
+                {
+                    toRemove.Value.TextureArray.Dispose();
+                }
             }
         }
 
@@ -1088,11 +1142,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             List<CacheEntryFromPoolKey> keysToRemove = null;
 
-            foreach (CacheEntryFromPoolKey key in _cacheFromPool.Keys)
+            foreach ((CacheEntryFromPoolKey key, CacheEntry entry) in _cacheFromPool)
             {
                 if (key.MatchesPool(pool))
                 {
                     (keysToRemove ??= new()).Add(key);
+
+                    if (key.IsImage)
+                    {
+                        entry.ImageArray.Dispose();
+                    }
+                    else
+                    {
+                        entry.TextureArray.Dispose();
+                    }
                 }
             }
 

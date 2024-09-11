@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
@@ -10,6 +11,7 @@ using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Modules;
+using Ryujinx.UI.App.Common;
 using Ryujinx.UI.Common;
 using Ryujinx.UI.Common.Configuration;
 using Ryujinx.UI.Common.Helper;
@@ -133,7 +135,14 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             if (!string.IsNullOrEmpty(contentPath))
             {
-                await ViewModel.LoadApplication(contentPath, false, "Mii Applet");
+                ApplicationData applicationData = new()
+                {
+                    Name = "miiEdit",
+                    Id = 0x0100000000001009,
+                    Path = contentPath,
+                };
+
+                await ViewModel.LoadApplication(applicationData, ViewModel.IsFullScreen || ViewModel.StartGamesInFullscreen);
             }
         }
 
@@ -208,6 +217,40 @@ namespace Ryujinx.Ava.UI.Views.Main
             else
             {
                 await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogUninstallFileTypesErrorMessage]);
+            }
+        }
+
+        private async void ChangeWindowSize_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                int height;
+                int width;
+
+                switch (item.Tag)
+                {
+                    case "720":
+                        height = 720;
+                        width = 1280;
+                        break;
+
+                    case "1080":
+                        height = 1080;
+                        width = 1920;
+                        break;
+
+                    default:
+                        throw new ArgumentNullException($"Invalid Tag for {item}");
+                }
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ViewModel.WindowState = WindowState.Normal;
+
+                    height += (int)Window.StatusBarHeight + (int)Window.MenuBarHeight;
+
+                    Window.Arrange(new Rect(Window.Position.X, Window.Position.Y, width, height));
+                });
             }
         }
 

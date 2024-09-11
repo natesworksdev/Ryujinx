@@ -174,6 +174,11 @@ namespace Ryujinx.Input.HLE
         {
             lock (_lock)
             {
+                foreach (InputConfig inputConfig in _inputConfig)
+                {
+                    _controllers[(int)inputConfig.PlayerIndex]?.GamepadDriver?.Clear();
+                }
+
                 _blockInputUpdates = false;
             }
         }
@@ -231,11 +236,6 @@ namespace Ryujinx.Input.HLE
                         var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
 
                         motionState = (controller.GetHLEMotionState(), altMotionState);
-
-                        if (_enableKeyboard)
-                        {
-                            hleKeyboardInput = controller.GetHLEKeyboardInput();
-                        }
                     }
                     else
                     {
@@ -255,6 +255,11 @@ namespace Ryujinx.Input.HLE
 
                         hleMotionStates.Add(motionState.Item2);
                     }
+                }
+
+                if (!_blockInputUpdates && _enableKeyboard)
+                {
+                    hleKeyboardInput = NpadController.GetHLEKeyboardInput(_keyboardDriver);
                 }
 
                 _device.Hid.Npads.Update(hleInputStates);

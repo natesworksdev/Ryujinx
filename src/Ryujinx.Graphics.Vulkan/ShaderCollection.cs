@@ -23,7 +23,12 @@ namespace Ryujinx.Graphics.Vulkan
         public bool IsCompute { get; }
         public bool HasTessellationControlShader => (Stages & (1u << 3)) != 0;
 
+        public bool UpdateTexturesWithoutTemplate { get; }
+
         public uint Stages { get; }
+
+        public PipelineStageFlags IncoherentBufferWriteStages { get; }
+        public PipelineStageFlags IncoherentTextureWriteStages { get; }
 
         public ResourceBindingSegment[][] ClearSegments { get; }
         public ResourceBindingSegment[][] BindingSegments { get; }
@@ -127,8 +132,12 @@ namespace Ryujinx.Graphics.Vulkan
             Stages = stages;
 
             ClearSegments = BuildClearSegments(sets);
-            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages);
+            BindingSegments = BuildBindingSegments(resourceLayout.SetUsages, out bool usesBufferTextures);
             Templates = BuildTemplates(usePushDescriptors);
+            (IncoherentBufferWriteStages, IncoherentTextureWriteStages) = BuildIncoherentStages(resourceLayout.SetUsages);
+
+            // Updating buffer texture bindings using template updates crashes the Adreno driver on Windows.
+            UpdateTexturesWithoutTemplate = gd.IsQualcommProprietary && usesBufferTextures;
 
             _compileTask = Task.CompletedTask;
             _firstBackgroundUse = false;
@@ -280,8 +289,10 @@ namespace Ryujinx.Graphics.Vulkan
             return segments;
         }
 
-        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        private static ResourceBindingSegment[][] BuildBindingSegments(ReadOnlyCollection<ResourceUsageCollection> setUsages, out bool usesBufferTextures)
         {
+            usesBufferTextures = false;
+
             ResourceBindingSegment[][] segments = new ResourceBindingSegment[setUsages.Count][];
 
             for (int setIndex = 0; setIndex < setUsages.Count; setIndex++)
@@ -294,6 +305,11 @@ namespace Ryujinx.Graphics.Vulkan
                 for (int index = 0; index < setUsages[setIndex].Usages.Count; index++)
                 {
                     ResourceUsage usage = setUsages[setIndex].Usages[index];
+
+                    if (usage.Type == ResourceType.BufferTexture)
+                    {
+                        usesBufferTextures = true;
+                    }
 
                     if (currentUsage.Binding + currentCount != usage.Binding ||
                         currentUsage.Type != usage.Type ||
@@ -363,6 +379,73 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return templates;
+        }
+
+        private PipelineStageFlags GetPipelineStages(ResourceStages stages)
+        {
+            PipelineStageFlags result = 0;
+
+            if ((stages & ResourceStages.Compute) != 0)
+            {
+                result |= PipelineStageFlags.ComputeShaderBit;
+            }
+
+            if ((stages & ResourceStages.Vertex) != 0)
+            {
+                result |= PipelineStageFlags.VertexShaderBit;
+            }
+
+            if ((stages & ResourceStages.Fragment) != 0)
+            {
+                result |= PipelineStageFlags.FragmentShaderBit;
+            }
+
+            if ((stages & ResourceStages.Geometry) != 0)
+            {
+                result |= PipelineStageFlags.GeometryShaderBit;
+            }
+
+            if ((stages & ResourceStages.TessellationControl) != 0)
+            {
+                result |= PipelineStageFlags.TessellationControlShaderBit;
+            }
+
+            if ((stages & ResourceStages.TessellationEvaluation) != 0)
+            {
+                result |= PipelineStageFlags.TessellationEvaluationShaderBit;
+            }
+
+            return result;
+        }
+
+        private (PipelineStageFlags Buffer, PipelineStageFlags Texture) BuildIncoherentStages(ReadOnlyCollection<ResourceUsageCollection> setUsages)
+        {
+            PipelineStageFlags buffer = PipelineStageFlags.None;
+            PipelineStageFlags texture = PipelineStageFlags.None;
+
+            foreach (var set in setUsages)
+            {
+                foreach (var range in set.Usages)
+                {
+                    if (range.Write)
+                    {
+                        PipelineStageFlags stages = GetPipelineStages(range.Stages);
+
+                        switch (range.Type)
+                        {
+                            case ResourceType.Image:
+                                texture |= stages;
+                                break;
+                            case ResourceType.StorageBuffer:
+                            case ResourceType.BufferImage:
+                                buffer |= stages;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return (buffer, texture);
         }
 
         private async Task BackgroundCompilation()
@@ -602,6 +685,21 @@ namespace Ryujinx.Graphics.Vulkan
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(int setIndex, out bool isNew)
         {
             return _plce.GetNewDescriptorSetCollection(setIndex, out isNew);
+        }
+
+        public Auto<DescriptorSetCollection> GetNewManualDescriptorSetCollection(CommandBufferScoped cbs, int setIndex, out int cacheIndex)
+        {
+            return _plce.GetNewManualDescriptorSetCollection(cbs, setIndex, out cacheIndex);
+        }
+
+        public void UpdateManualDescriptorSetCollectionOwnership(CommandBufferScoped cbs, int setIndex, int cacheIndex)
+        {
+            _plce.UpdateManualDescriptorSetCollectionOwnership(cbs, setIndex, cacheIndex);
+        }
+
+        public void ReleaseManualDescriptorSetCollection(int setIndex, int cacheIndex)
+        {
+            _plce.ReleaseManualDescriptorSetCollection(setIndex, cacheIndex);
         }
 
         public bool HasSameLayout(ShaderCollection other)

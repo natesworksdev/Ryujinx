@@ -8,6 +8,7 @@ using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -39,6 +40,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly MultiRangeList<Texture> _textures;
         private readonly HashSet<Texture> _partiallyMappedTextures;
 
+        private readonly ReaderWriterLockSlim _texturesLock;
+
         private Texture[] _textureOverlaps;
         private OverlapInfo[] _overlapInfo;
 
@@ -56,6 +59,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _textures = new MultiRangeList<Texture>();
             _partiallyMappedTextures = new HashSet<Texture>();
+
+            _texturesLock = new ReaderWriterLockSlim();
 
             _textureOverlaps = new Texture[OverlapsBufferInitialCapacity];
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
@@ -75,9 +80,15 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             MultiRange unmapped = ((MemoryManager)sender).GetPhysicalRegions(e.Address, e.Size);
 
-            lock (_textures)
+            _texturesLock.EnterReadLock();
+
+            try
             {
                 overlapCount = _textures.FindOverlaps(unmapped, ref overlaps);
+            }
+            finally
+            {
+                _texturesLock.ExitReadLock();
             }
 
             if (overlapCount > 0)
@@ -217,7 +228,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool UpdateMapping(Texture texture, MultiRange range)
         {
             // There cannot be an existing texture compatible with this mapping in the texture cache already.
-            int overlapCount = _textures.FindOverlaps(range, ref _textureOverlaps);
+            int overlapCount;
+
+            _texturesLock.EnterReadLock();
+
+            try
+            {
+                overlapCount = _textures.FindOverlaps(range, ref _textureOverlaps);
+            }
+            finally
+            {
+                _texturesLock.ExitReadLock();
+            }
 
             for (int i = 0; i < overlapCount; i++)
             {
@@ -231,11 +253,20 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            _textures.Remove(texture);
+            _texturesLock.EnterWriteLock();
 
-            texture.ReplaceRange(range);
+            try
+            {
+                _textures.Remove(texture);
 
-            _textures.Add(texture);
+                texture.ReplaceRange(range);
+
+                _textures.Add(texture);
+            }
+            finally
+            {
+                _texturesLock.ExitWriteLock();
+            }
 
             return true;
         }
@@ -437,13 +468,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             int gobBlocksInY = dsState.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = dsState.MemoryLayout.UnpackGobBlocksInZ();
 
+            layered &= size.UnpackIsLayered();
+
             Target target;
 
-            if (dsState.MemoryLayout.UnpackIsTarget3D())
-            {
-                target = Target.Texture3D;
-            }
-            else if ((samplesInX | samplesInY) != 1)
+            if ((samplesInX | samplesInY) != 1)
             {
                 target = size.Depth > 1 && layered
                     ? Target.Texture2DMultisampleArray
@@ -611,10 +640,16 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int sameAddressOverlapsCount;
 
-            lock (_textures)
+            _texturesLock.EnterReadLock();
+
+            try
             {
                 // Try to find a perfect texture match, with the same address and parameters.
                 sameAddressOverlapsCount = _textures.FindOverlaps(address, ref _textureOverlaps);
+            }
+            finally
+            {
+                _texturesLock.ExitReadLock();
             }
 
             Texture texture = null;
@@ -698,9 +733,15 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (info.Target != Target.TextureBuffer)
             {
-                lock (_textures)
+                _texturesLock.EnterReadLock();
+
+                try
                 {
                     overlapsCount = _textures.FindOverlaps(range.Value, ref _textureOverlaps);
+                }
+                finally
+                {
+                    _texturesLock.ExitReadLock();
                 }
             }
 
@@ -1025,9 +1066,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _cache.Add(texture);
             }
 
-            lock (_textures)
+            _texturesLock.EnterWriteLock();
+
+            try
             {
                 _textures.Add(texture);
+            }
+            finally
+            {
+                _texturesLock.ExitWriteLock();
             }
 
             if (partiallyMapped)
@@ -1091,7 +1138,19 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return null;
             }
 
-            int addressMatches = _textures.FindOverlaps(address, ref _textureOverlaps);
+            int addressMatches;
+
+            _texturesLock.EnterReadLock();
+
+            try
+            {
+                addressMatches = _textures.FindOverlaps(address, ref _textureOverlaps);
+            }
+            finally
+            {
+                _texturesLock.ExitReadLock();
+            }
+
             Texture textureMatch = null;
 
             for (int i = 0; i < addressMatches; i++)
@@ -1232,9 +1291,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The texture to be removed</param>
         public void RemoveTextureFromCache(Texture texture)
         {
-            lock (_textures)
+            _texturesLock.EnterWriteLock();
+
+            try
             {
                 _textures.Remove(texture);
+            }
+            finally
+            {
+                _texturesLock.ExitWriteLock();
             }
 
             lock (_partiallyMappedTextures)
@@ -1324,12 +1389,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Dispose()
         {
-            lock (_textures)
+            _texturesLock.EnterReadLock();
+
+            try
             {
                 foreach (Texture texture in _textures)
                 {
                     texture.Dispose();
                 }
+            }
+            finally
+            {
+                _texturesLock.ExitReadLock();
             }
         }
     }
