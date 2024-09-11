@@ -21,8 +21,6 @@ namespace Ryujinx.Graphics.OpenGL.Effects
         private int _dstX1Uniform;
         private int _dstY0Uniform;
         private int _dstY1Uniform;
-        private int _scaleXUniform;
-        private int _scaleYUniform;
 
         public float Level { get; set; }
 
@@ -58,8 +56,6 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             _dstX1Uniform = GL.GetUniformLocation(_scalingShaderProgram, "dstX1");
             _dstY0Uniform = GL.GetUniformLocation(_scalingShaderProgram, "dstY0");
             _dstY1Uniform = GL.GetUniformLocation(_scalingShaderProgram, "dstY1");
-            _scaleXUniform = GL.GetUniformLocation(_scalingShaderProgram, "scaleX");
-            _scaleYUniform = GL.GetUniformLocation(_scalingShaderProgram, "scaleY");
         }
 
         public void Run(
@@ -82,10 +78,6 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             int dispatchY = (height + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 
             // Scaling pass
-            float srcWidth = Math.Abs(source.X2 - source.X1);
-            float srcHeight = Math.Abs(source.Y2 - source.Y1);
-            float scaleX = srcWidth / view.Width;
-            float scaleY = srcHeight / view.Height;
             GL.UseProgram(_scalingShaderProgram);
             view.Bind(0);
             GL.Uniform1(_inputUniform, 0);
@@ -98,8 +90,6 @@ namespace Ryujinx.Graphics.OpenGL.Effects
             GL.Uniform1(_dstX1Uniform, (float)destination.X2);
             GL.Uniform1(_dstY0Uniform, (float)destination.Y1);
             GL.Uniform1(_dstY1Uniform, (float)destination.Y2);
-            GL.Uniform1(_scaleXUniform, scaleX);
-            GL.Uniform1(_scaleYUniform, scaleY);
             GL.DispatchCompute(dispatchX, dispatchY, 1);
 
             GL.UseProgram(previousProgram);

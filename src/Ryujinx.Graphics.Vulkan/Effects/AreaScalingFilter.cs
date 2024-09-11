@@ -70,11 +70,6 @@ namespace Ryujinx.Graphics.Vulkan.Effects
             _pipeline.SetProgram(_scalingProgram);
             _pipeline.SetTextureAndSampler(ShaderStage.Compute, 1, view, _sampler);
 
-            float srcWidth = Math.Abs(source.X2 - source.X1);
-            float srcHeight = Math.Abs(source.Y2 - source.Y1);
-            float scaleX = srcWidth / view.Width;
-            float scaleY = srcHeight / view.Height;
-
             ReadOnlySpan<float> dimensionsBuffer = stackalloc float[]
             {
                 source.X1,
@@ -85,8 +80,6 @@ namespace Ryujinx.Graphics.Vulkan.Effects
                 destination.X2,
                 destination.Y1,
                 destination.Y2,
-                scaleX,
-                scaleY,
             };
 
             int rangeSize = dimensionsBuffer.Length * sizeof(float);

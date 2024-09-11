@@ -11,8 +11,6 @@ layout( location=6 ) uniform float dstX0;
 layout( location=7 ) uniform float dstX1;
 layout( location=8 ) uniform float dstY0;
 layout( location=9 ) uniform float dstY1;
-layout( location=10 ) uniform float scaleX;
-layout( location=11 ) uniform float scaleY;
 
 /***** Area Sampling *****/
 

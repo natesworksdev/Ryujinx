@@ -13,8 +13,6 @@ layout( binding = 2 ) uniform dimensions{
  float dstX1;
  float dstY0;
  float dstY1;
- float scaleX;
- float scaleY;
 };
 
 /***** Area Sampling *****/
