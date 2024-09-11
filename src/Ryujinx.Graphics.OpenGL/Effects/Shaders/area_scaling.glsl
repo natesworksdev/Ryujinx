@@ -115,5 +115,5 @@ void main()
     }
 
     vec4 outColor = AreaSampling(loc);
-    imageStore(imgOutput, ivec2(translateDest(loc)), outColor);
+    imageStore(imgOutput, ivec2(translateDest(loc)), vec4(outColor.rgb, 1));
 }
