@@ -103,12 +103,19 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= BufferUsageFlags.IndirectBufferBit;
             }
 
+            var externalMemoryBuffer = new ExternalMemoryBufferCreateInfo
+            {
+                SType = StructureType.ExternalMemoryBufferCreateInfo,
+                HandleTypes = ExternalMemoryHandleTypeFlags.HostAllocationBitExt,
+            };
+
             var bufferCreateInfo = new BufferCreateInfo
             {
                 SType = StructureType.BufferCreateInfo,
                 Size = (ulong)size,
                 Usage = usage,
                 SharingMode = SharingMode.Exclusive,
+                PNext = &externalMemoryBuffer,
             };
 
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
@@ -165,10 +172,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (TryGetBuffer(range.Handle, out var existingHolder))
                 {
-                    // Since this buffer now also owns the memory from the referenced buffer,
-                    // we pin it to ensure the memory location will not change.
-                    existingHolder.Pin();
-
                     (var memory, var offset) = existingHolder.GetDeviceMemoryAndOffset();
 
                     memoryBinds[index] = new SparseMemoryBind()
@@ -218,7 +221,7 @@ namespace Ryujinx.Graphics.Vulkan
                     PBufferBinds = &bufferBind
                 };
 
-                gd.Api.QueueBindSparse(gd.Queue, 1, bindSparseInfo, default).ThrowOnError();
+                gd.Api.QueueBindSparse(gd.Queue, 1, in bindSparseInfo, default).ThrowOnError();
             }
 
             var holder = new BufferHolder(gd, _device, buffer, (int)size, storageAllocations);
@@ -235,10 +238,9 @@ namespace Ryujinx.Graphics.Vulkan
             int size,
             bool sparseCompatible = false,
             BufferAllocationType baseType = BufferAllocationType.HostMapped,
-            BufferHandle storageHint = default,
             bool forceMirrors = false)
         {
-            return CreateWithHandle(gd, size, out _, sparseCompatible, baseType, storageHint, forceMirrors);
+            return CreateWithHandle(gd, size, out _, sparseCompatible, baseType, forceMirrors);
         }
 
         public BufferHandle CreateWithHandle(
@@ -247,10 +249,9 @@ namespace Ryujinx.Graphics.Vulkan
             out BufferHolder holder,
             bool sparseCompatible = false,
             BufferAllocationType baseType = BufferAllocationType.HostMapped,
-            BufferHandle storageHint = default,
             bool forceMirrors = false)
         {
-            holder = Create(gd, size, forConditionalRendering: false, sparseCompatible, baseType, storageHint);
+            holder = Create(gd, size, forConditionalRendering: false, sparseCompatible, baseType);
             if (holder == null)
             {
                 return BufferHandle.Null;
@@ -387,31 +388,13 @@ namespace Ryujinx.Graphics.Vulkan
             int size,
             bool forConditionalRendering = false,
             bool sparseCompatible = false,
-            BufferAllocationType baseType = BufferAllocationType.HostMapped,
-            BufferHandle storageHint = default)
+            BufferAllocationType baseType = BufferAllocationType.HostMapped)
         {
             BufferAllocationType type = baseType;
-            BufferHolder storageHintHolder = null;
 
             if (baseType == BufferAllocationType.Auto)
             {
-                if (gd.IsSharedMemory)
-                {
-                    baseType = BufferAllocationType.HostMapped;
-                    type = baseType;
-                }
-                else
-                {
-                    type = size >= BufferHolder.DeviceLocalSizeThreshold ? BufferAllocationType.DeviceLocal : BufferAllocationType.HostMapped;
-                }
-
-                if (storageHint != BufferHandle.Null)
-                {
-                    if (TryGetBuffer(storageHint, out storageHintHolder))
-                    {
-                        type = storageHintHolder.DesiredType;
-                    }
-                }
+                type = BufferAllocationType.HostMapped;
             }
 
             (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) =
@@ -420,11 +403,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (buffer.Handle != 0)
             {
                 var holder = new BufferHolder(gd, _device, buffer, allocation, size, baseType, resultType);
-
-                if (storageHintHolder != null)
-                {
-                    holder.InheritMetrics(storageHintHolder);
-                }
 
                 return holder;
             }

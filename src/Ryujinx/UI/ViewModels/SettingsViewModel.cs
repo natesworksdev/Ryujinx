@@ -131,6 +131,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
+        public bool RememberWindowState { get; set; }
         public int HideCursor { get; set; }
         public bool EnableDockedMode { get; set; }
         public bool EnableKeyboard { get; set; }
@@ -390,12 +391,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
+            RememberWindowState = config.RememberWindowState;
             HideCursor = (int)config.HideCursor.Value;
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
 
-            BaseStyleIndex = config.UI.BaseStyle == "Light" ? 0 : 1;
+            BaseStyleIndex = config.UI.BaseStyle.Value switch
+            {
+                "Auto" => 0,
+                "Light" => 1,
+                "Dark" => 2,
+                _ => 0
+            };
 
             // Input
             EnableDockedMode = config.System.EnableDockedMode;
@@ -410,10 +418,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             Language = (int)config.System.Language.Value;
             TimeZone = config.System.TimeZone;
 
-            DateTime currentDateTime = DateTime.Now;
-
+            DateTime currentHostDateTime = DateTime.Now;
+            TimeSpan systemDateTimeOffset = TimeSpan.FromSeconds(config.System.SystemTimeOffset);
+            DateTime currentDateTime = currentHostDateTime.Add(systemDateTimeOffset);
             CurrentDate = currentDateTime.Date;
-            CurrentTime = currentDateTime.TimeOfDay.Add(TimeSpan.FromSeconds(config.System.SystemTimeOffset));
+            CurrentTime = currentDateTime.TimeOfDay;
 
             EnableVsync = config.Graphics.EnableVsync;
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
@@ -474,6 +483,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
             config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
             config.ShowConfirmExit.Value = ShowConfirmExit;
+            config.RememberWindowState.Value = RememberWindowState;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
 
             if (_directoryChanged)
@@ -482,7 +492,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                 config.UI.GameDirs.Value = gameDirs;
             }
 
-            config.UI.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
+            config.UI.BaseStyle.Value = BaseStyleIndex switch
+            {
+                0 => "Auto",
+                1 => "Light",
+                2 => "Dark",
+                _ => "Auto"
+            };
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;

@@ -61,7 +61,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             BufferCount++;
 
-            if (access.HasFlag(GAL.BufferAccess.FlushPersistent))
+            var memType = access & GAL.BufferAccess.MemoryTypeMask;
+
+            if (memType == GAL.BufferAccess.HostMemory)
             {
                 BufferHandle handle = Buffer.CreatePersistent(size);
 
@@ -73,11 +75,6 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return Buffer.Create(size);
             }
-        }
-
-        public BufferHandle CreateBuffer(int size, GAL.BufferAccess access, BufferHandle storageHint)
-        {
-            return CreateBuffer(size, access);
         }
 
         public BufferHandle CreateBuffer(nint pointer, int size)
@@ -148,6 +145,7 @@ namespace Ryujinx.Graphics.OpenGL
             return new Capabilities(
                 api: TargetApi.OpenGL,
                 vendorName: GpuVendor,
+                memoryType: SystemMemoryType.BackendManaged,
                 hasFrontFacingBug: intelWindows,
                 hasVectorIndexingBug: amdWindows,
                 needsFragmentOutputSpecialization: false,
@@ -161,6 +159,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,
                 supportsR4G4B4A4Format: true,
+                supportsScaledVertexFormats: true,
                 supportsSnormBufferTextureFormat: false,
                 supports5BitComponentFormat: true,
                 supportsSparseBuffer: false,
@@ -175,7 +174,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
                 supportsCubemapView: true,
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
-                supportsScaledVertexFormats: true,
+                supportsQuads: HwCapabilities.SupportsQuads,
                 supportsSeparateSampler: false,
                 supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
                 supportsShaderBarrierDivergence: !(intelWindows || intelUnix),
@@ -188,6 +187,12 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
                 supportsDepthClipControl: true,
+                uniformBufferSetIndex: 0,
+                storageBufferSetIndex: 1,
+                textureSetIndex: 2,
+                imageSetIndex: 3,
+                extraSetBaseIndex: 0,
+                maximumExtraSets: 0,
                 maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?
                 maximumStorageBuffersPerStage: 16,
                 maximumTexturesPerStage: 32,
