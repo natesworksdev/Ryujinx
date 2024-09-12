@@ -790,9 +790,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             ulong totalMemory = 0;
 
-            PhysicalDeviceMemoryProperties memoryProperties;
 
-            Api.GetPhysicalDeviceMemoryProperties(_physicalDevice.PhysicalDevice, out memoryProperties);
+            Api.GetPhysicalDeviceMemoryProperties(_physicalDevice.PhysicalDevice, out PhysicalDeviceMemoryProperties memoryProperties);
 
             for (int i = 0; i < memoryProperties.MemoryHeapCount; i++)
             {
