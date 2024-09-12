@@ -78,9 +78,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Creates a new instance of the automatic deletion cache.
         /// </summary>
-        public AutoDeleteCache(GpuContext _Context)
+        public AutoDeleteCache(GpuContext context)
         {
-            _context = _Context;
+            _context = context;
 
             _textures = new LinkedList<Texture>();
 
