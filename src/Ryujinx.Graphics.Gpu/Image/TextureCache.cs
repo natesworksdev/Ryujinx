@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             _textureOverlaps = new Texture[OverlapsBufferInitialCapacity];
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
 
-            _cache = new AutoDeleteCache();
+            _cache = new AutoDeleteCache(_context);
         }
 
         /// <summary>

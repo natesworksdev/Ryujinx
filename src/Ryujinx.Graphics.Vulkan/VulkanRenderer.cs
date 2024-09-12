@@ -781,7 +781,30 @@ namespace Ryujinx.Graphics.Vulkan
                 shaderSubgroupSize: (int)Capabilities.SubgroupSize,
                 storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment,
                 textureBufferOffsetAlignment: (int)limits.MinTexelBufferOffsetAlignment,
-                gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0);
+                gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0,
+                maximumGpuMemory: GetTotalGPUMemory());
+        }
+
+        public ulong GetTotalGPUMemory(){
+
+            ulong totalMemory = 0;
+
+            PhysicalDeviceMemoryProperties memoryProperties;
+
+            Api.GetPhysicalDeviceMemoryProperties(_physicalDevice.PhysicalDevice, out memoryProperties);
+
+            for (int i = 0; i < memoryProperties.MemoryHeapCount; i++)
+            {
+                var heap = memoryProperties.MemoryHeaps[i];
+                if ((heap.Flags & MemoryHeapFlags.DeviceLocalBit) == MemoryHeapFlags.DeviceLocalBit)
+                {
+                    totalMemory += heap.Size;
+                }
+            }
+
+            Logger.Info?.Print(LogClass.Gpu, $"GPU Memory: {totalMemory / (1024 * 1024)} MB");
+
+            return totalMemory;
         }
 
         public HardwareInfo GetHardwareInfo()
