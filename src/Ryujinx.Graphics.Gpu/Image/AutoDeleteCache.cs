@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly GpuContext _context;
 
         /// <summary>
-        /// Gets MaxTextureCapacity dynamically.
+        /// Gets MaxTextureCapacity Dynamically
         /// </summary>
         private ulong GetMaxTextureCapacity() {
             Capabilities capabilities = _context.Capabilities;
@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             } 
             else
             {
-                return capabilities.MaximumGpuMemory / 2;
+                return (ulong)(capabilities.MaximumGpuMemory * 0.50);
             }
         }
 
