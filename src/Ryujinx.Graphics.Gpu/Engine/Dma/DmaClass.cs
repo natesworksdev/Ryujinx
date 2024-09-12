@@ -307,6 +307,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                     if (source != null && source.Height == yCount)
                     {
+                        source.SynchronizeMemory();
+
                         var target = memoryManager.Physical.TextureCache.FindOrCreateTexture(
                             memoryManager,
                             source.Info.FormatInfo,
@@ -318,7 +320,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                             dst.MemoryLayout.UnpackGobBlocksInY(),
                             dst.MemoryLayout.UnpackGobBlocksInZ());
 
-                        target.SynchronizeMemory();
+                        if (source.ScaleFactor != target.ScaleFactor)
+                        {
+                            target.PropagateScale(source);
+                        }
+
                         source.HostTexture.CopyTo(target.HostTexture, 0, 0);
                         target.SignalModified();
                         return;
