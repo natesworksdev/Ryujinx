@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using System.Collections;
 using System.Collections.Generic;
-using Ryujinx.Common.Logging;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -56,19 +55,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         private HashSet<ShortTextureCacheEntry> _shortCache;
 
         private readonly Dictionary<TextureDescriptor, ShortTextureCacheEntry> _shortCacheLookup;
-        
+
         private readonly GpuContext _context;
 
         /// <summary>
         /// Gets MaxTextureCapacity Dynamically
         /// </summary>
-        private ulong GetMaxTextureCapacity() {
+        private ulong GetMaxTextureCapacity()
+        {
             Capabilities capabilities = _context.Capabilities;
 
             if (capabilities.MaximumGpuMemory <= 0)
             {
                 return 1024L * 1024 * 1024;
-            } 
+            }
             else
             {
                 return (ulong)(capabilities.MaximumGpuMemory * 0.50);

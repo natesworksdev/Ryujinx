@@ -785,7 +785,8 @@ namespace Ryujinx.Graphics.Vulkan
                 maximumGpuMemory: GetTotalGPUMemory());
         }
 
-        public ulong GetTotalGPUMemory(){
+        public ulong GetTotalGPUMemory()
+        {
 
             ulong totalMemory = 0;
 
