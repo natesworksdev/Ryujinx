@@ -495,11 +495,8 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthClampEnable = DepthClampEnable,
                 };
 
-                if (isMoltenVk)
-                {
-                    // When widelines feature is not supported it must be 1.0f. 
-                    rasterizationState.LineWidth = 1.0f;
-                }
+                // When widelines feature is not supported it must be 1.0f, this will be ignored if Line Width dynamic state is supported
+                rasterizationState.LineWidth = 1.0f;
 
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
@@ -661,9 +658,26 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                if (_supportsFeedBackLoopDynamicState)
+                PipelineCreateFlags pipelineCreateFlags = 0;
+
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
                 {
-                    dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
+                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
+
+                    if ((aspects & FeedbackLoopAspects.Color) != 0)
+                    {
+                        pipelineCreateFlags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
+                    }
+
+                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
+                    {
+                        pipelineCreateFlags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
+                    }
+
+                    if (_supportsFeedBackLoopDynamicState && pipelineCreateFlags != 0)
+                    {
+                        dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
+                    }
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
@@ -677,6 +691,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
                     StageCount = StagesCount,
+                    Flags = pipelineCreateFlags,
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,
                     PInputAssemblyState = &inputAssemblyState,
@@ -689,21 +704,6 @@ namespace Ryujinx.Graphics.Vulkan
                     Layout = PipelineLayout,
                     RenderPass = renderPass,
                 };
-
-                if (gd.Capabilities.SupportsAttachmentFeedbackLoop && !_supportsFeedBackLoopDynamicState)
-                {
-                    FeedbackLoopAspects aspects = FeedbackLoopAspects;
-
-                    if ((aspects & FeedbackLoopAspects.Color) != 0)
-                    {
-                        pipelineCreateInfo.Flags |= PipelineCreateFlags.CreateColorAttachmentFeedbackLoopBitExt;
-                    }
-
-                    if ((aspects & FeedbackLoopAspects.Depth) != 0)
-                    {
-                        pipelineCreateInfo.Flags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
-                    }
-                }
 
                 if (!gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints)
                 {
