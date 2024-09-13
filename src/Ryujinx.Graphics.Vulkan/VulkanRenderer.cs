@@ -423,7 +423,7 @@ namespace Ryujinx.Graphics.Vulkan
                 properties.Limits.FramebufferStencilSampleCounts;
 
             // Temporarily disable this, can be added back at a later date, make it easy to re-enable. 
-            // Disabled because currently causing Device Lost error on nVidia. 
+            // Disabled because currently causing Device Lost error on NVIDIA. 
             featuresExtendedDynamicState2.ExtendedDynamicState2PatchControlPoints = false;
 
             Capabilities = new HardwareCapabilities(

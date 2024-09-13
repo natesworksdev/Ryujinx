@@ -393,14 +393,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (gd.Capabilities.SupportsExtendedDynamicState)
                 {
-
-                    gd.ExtendedDynamicStateApi.CmdSetScissorWithCount(commandBuffer, (uint)ScissorsCount,
-                        _scissors.AsSpan());
+                    gd.ExtendedDynamicStateApi.CmdSetScissorWithCount(commandBuffer, (uint)ScissorsCount, _scissors.AsSpan());
                 }
                 else
                 {
-                    gd.Api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount,
-                        _scissors.AsSpan());
+                    gd.Api.CmdSetScissor(commandBuffer, 0, (uint)ScissorsCount, _scissors.AsSpan());
                 }
             }
         }
@@ -419,10 +416,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             api.CmdSetStencilTestEnable(commandBuffer, StencilTestEnable);
 
-            api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backFailOp, _backPassOp,
-                _backDepthFailOp, _backCompareOp);
-            api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontFailOp, _frontPassOp,
-                _frontDepthFailOp, _frontCompareOp);
+            api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceBackBit, _backFailOp, _backPassOp, _backDepthFailOp, _backCompareOp);
+            api.CmdSetStencilOp(commandBuffer, StencilFaceFlags.FaceFrontBit, _frontFailOp, _frontPassOp, _frontDepthFailOp, _frontCompareOp);
         }
 
         private void RecordViewport(VulkanRenderer gd, CommandBuffer commandBuffer)
@@ -434,13 +429,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (gd.Capabilities.SupportsExtendedDynamicState)
             {
-                gd.ExtendedDynamicStateApi.CmdSetViewportWithCount(commandBuffer, ViewportsCount,
-                    Viewports.AsSpan());
+                gd.ExtendedDynamicStateApi.CmdSetViewportWithCount(commandBuffer, ViewportsCount, Viewports.AsSpan());
             }
             else
             {
-                gd.Api.CmdSetViewport(commandBuffer, 0, ViewportsCount,
-                    Viewports.AsSpan());
+                gd.Api.CmdSetViewport(commandBuffer, 0, ViewportsCount, Viewports.AsSpan());
             }
         }
 

@@ -335,8 +335,6 @@ namespace Ryujinx.Graphics.OpenGL
                     return CullFaceMode.Front;
                 case Face.FrontAndBack:
                     return CullFaceMode.FrontAndBack;
-                case Face.None:
-                    return (CullFaceMode)All.None;
             }
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");

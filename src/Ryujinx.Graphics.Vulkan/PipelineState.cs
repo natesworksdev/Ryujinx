@@ -7,7 +7,6 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct PipelineState : IDisposable
     {
-        private const int RequiredSubgroupSize = 32;
         private const int MaxDynamicStatesCount = 23;
 
         public PipelineUid Internal;
@@ -406,10 +405,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PrimitiveRestartEnable &= topologySupportsRestart;
             }
 
-            if (_supportsExtDynamicState && (Topology != PrimitiveTopology.LineList ||
-                                             Topology != PrimitiveTopology.TriangleStrip ||
-                                             Topology != PrimitiveTopology.PointList ||
-                                             Topology != PrimitiveTopology.PatchList))
+            if (_supportsExtDynamicState)
             {
                 Topology = Topology.ConvertToClass();
             }
