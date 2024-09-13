@@ -2,7 +2,6 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
-using GL = OpenTK.Graphics.ES11.GL;
 
 namespace Ryujinx.Graphics.OpenGL
 {
