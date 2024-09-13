@@ -493,10 +493,9 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
                     DepthClampEnable = DepthClampEnable,
+                    // When widelines feature is not supported it must be 1.0f, this will be ignored if Line Width dynamic state is supported
+                    LineWidth = 1.0f,
                 };
-
-                // When widelines feature is not supported it must be 1.0f, this will be ignored if Line Width dynamic state is supported
-                rasterizationState.LineWidth = 1.0f;
 
                 var viewportState = new PipelineViewportStateCreateInfo
                 {
