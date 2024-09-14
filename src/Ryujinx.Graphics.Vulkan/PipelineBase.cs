@@ -1704,6 +1704,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (Gd.Capabilities.SupportsDynamicAttachmentFeedbackLoop)
                 {
+                    _newState.FeedbackLoopDynamicState = true;
                     DynamicState.SetFeedbackLoop(aspects);
                 }
                 else if (Gd.Capabilities.SupportsAttachmentFeedbackLoop)

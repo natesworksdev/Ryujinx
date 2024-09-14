@@ -246,6 +246,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public bool HasTessellationControlShader;
+        public bool FeedbackLoopDynamicState;
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
         public PipelineLayout PipelineLayout;
         public SpecData SpecializationData;
@@ -659,7 +660,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 PipelineCreateFlags pipelineCreateFlags = 0;
 
-                if (gd.Capabilities.SupportsAttachmentFeedbackLoop)
+                if (gd.Capabilities.SupportsAttachmentFeedbackLoop && !_supportsFeedBackLoopDynamicState)
                 {
                     FeedbackLoopAspects aspects = FeedbackLoopAspects;
 
@@ -672,11 +673,12 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         pipelineCreateFlags |= PipelineCreateFlags.CreateDepthStencilAttachmentFeedbackLoopBitExt;
                     }
+                }
 
-                    if (_supportsFeedBackLoopDynamicState && pipelineCreateFlags != 0)
-                    {
-                        dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
-                    }
+                if (_supportsFeedBackLoopDynamicState && FeedbackLoopDynamicState)
+                {
+                    dynamicStates[dynamicStatesCount++] = DynamicState.AttachmentFeedbackLoopEnableExt;
+                    FeedbackLoopDynamicState = false;
                 }
 
                 var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo
