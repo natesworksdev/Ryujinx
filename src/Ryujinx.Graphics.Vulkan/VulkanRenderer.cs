@@ -787,9 +787,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ulong GetTotalGPUMemory()
         {
-
             ulong totalMemory = 0;
-
 
             Api.GetPhysicalDeviceMemoryProperties(_physicalDevice.PhysicalDevice, out PhysicalDeviceMemoryProperties memoryProperties);
 

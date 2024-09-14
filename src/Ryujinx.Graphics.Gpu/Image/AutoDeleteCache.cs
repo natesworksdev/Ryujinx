@@ -47,6 +47,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private const int MinCountForDeletion = 32;
         private const int MaxCapacity = 2048;
+        private const ulong DefaultTextureSizeCapacity = 1024 * 1024 * 1024;
+        private const float MemoryScaleFactor = 0.50f;
 
         private readonly LinkedList<Texture> _textures;
         private ulong _totalSize;
@@ -63,16 +65,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private ulong GetMaxTextureCapacity()
         {
-            Capabilities capabilities = _context.Capabilities;
+            ulong maxMemory = _context.Capabilities.MaximumGpuMemory;
 
-            if (capabilities.MaximumGpuMemory <= 0)
+            if (maxMemory > 0)
             {
-                return 1024L * 1024 * 1024;
+                return (ulong)(maxMemory * MemoryScaleFactor);
             }
-            else
-            {
-                return (ulong)(capabilities.MaximumGpuMemory * 0.50);
-            }
+
+            return DefaultTextureSizeCapacity;
         }
 
         /// <summary>
