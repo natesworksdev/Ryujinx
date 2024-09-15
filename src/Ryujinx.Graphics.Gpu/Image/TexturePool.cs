@@ -278,6 +278,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The texture descriptor with the given ID</returns>
         public ref readonly TextureDescriptor GetForBinding(int id, Format format, out Texture texture)
         {
+            if ((uint)id >= Items.Length)
+            {
+                texture = null;
+                return ref _defaultDescriptor;
+            }
+
             ref readonly TextureDescriptor descriptor = ref GetInternal(id, out texture);
 
             if (texture != null && format != 0 && texture.Format != format)
