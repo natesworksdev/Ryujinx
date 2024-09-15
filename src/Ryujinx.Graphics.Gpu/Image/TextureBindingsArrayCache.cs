@@ -673,7 +673,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    ref readonly TextureDescriptor descriptor = ref texturePool.GetForBinding(index, bindingInfo.Format, out texture);
+                    ref readonly TextureDescriptor descriptor = ref texturePool.GetForBinding(index, bindingInfo.FormatInfo, out texture);
 
                     if (texture != null)
                     {
@@ -867,7 +867,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     samplerId = TextureHandle.UnpackSamplerId(packedId);
                 }
 
-                ref readonly TextureDescriptor descriptor = ref texturePool.GetForBinding(textureId, bindingInfo.Format, out Texture texture);
+                ref readonly TextureDescriptor descriptor = ref texturePool.GetForBinding(textureId, bindingInfo.FormatInfo, out Texture texture);
 
                 if (texture != null)
                 {

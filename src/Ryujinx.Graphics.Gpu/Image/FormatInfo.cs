@@ -8,6 +8,11 @@ namespace Ryujinx.Graphics.Gpu.Image
     readonly struct FormatInfo
     {
         /// <summary>
+        /// An invalid texture format.
+        /// </summary>
+        public static FormatInfo Invalid { get; } = new(0, 0, 0, 0, 0);
+
+        /// <summary>
         /// A default, generic RGBA8 texture format.
         /// </summary>
         public static FormatInfo Default { get; } = new(Format.R8G8B8A8Unorm, 1, 1, 4, 4);

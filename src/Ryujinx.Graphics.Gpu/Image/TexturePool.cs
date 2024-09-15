@@ -274,9 +274,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This method assumes that the pool has been manually synchronized before doing binding.
         /// </remarks>
         /// <param name="id">ID of the texture. This is effectively a zero-based index</param>
+        /// <param name="formatInfo">Texture format information</param>
         /// <param name="texture">The texture with the given ID</param>
         /// <returns>The texture descriptor with the given ID</returns>
-        public ref readonly TextureDescriptor GetForBinding(int id, Format format, out Texture texture)
+        public ref readonly TextureDescriptor GetForBinding(int id, FormatInfo formatInfo, out Texture texture)
         {
             if ((uint)id >= Items.Length)
             {
@@ -286,24 +287,24 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             ref readonly TextureDescriptor descriptor = ref GetInternal(id, out texture);
 
-            if (texture != null && format != 0 && texture.Format != format)
+            if (texture != null && formatInfo.Format != 0 && texture.Format != formatInfo.Format)
             {
                 if (!_aliasLists.TryGetValue(texture, out TextureAliasList aliasList))
                 {
                     _aliasLists.Add(texture, aliasList = new TextureAliasList());
                 }
 
-                texture = aliasList.Find(format);
+                texture = aliasList.Find(formatInfo.Format);
 
                 if (texture == null)
                 {
                     TextureInfo info = GetInfo(descriptor, out int layerSize);
-                    info = ChangeFormat(info, format);
+                    info = ChangeFormat(info, formatInfo);
                     texture = PhysicalMemory.TextureCache.FindOrCreateTexture(_channel.MemoryManager, TextureSearchFlags.ForSampler, info, layerSize);
 
                     if (texture != null)
                     {
-                        aliasList.Add(format, texture);
+                        aliasList.Add(formatInfo.Format, texture);
                     }
                 }
             }
@@ -746,25 +747,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information</param>
         /// <param name="dstFormat">New format</param>
         /// <returns>Texture information with the new format</returns>
-        private static TextureInfo ChangeFormat(in TextureInfo info, Format dstFormat)
+        private static TextureInfo ChangeFormat(in TextureInfo info, FormatInfo dstFormat)
         {
-            int dstBpp = FormatTable.GetImageFormatBytesPerPixel(dstFormat);
-
-            if (dstBpp == 0)
-            {
-                // We don't support the format. Should never happen in practice.
-
-                return info;
-            }
-
-            FormatInfo dstFormatInfo = new FormatInfo(dstFormat, 1, 1, dstBpp, FormatTable.GetImageFormatComponents(dstFormat));
-
             int width = info.Width;
 
-            if (info.FormatInfo.BytesPerPixel != dstBpp)
+            if (info.FormatInfo.BytesPerPixel != dstFormat.BytesPerPixel)
             {
                 int stride = width * info.FormatInfo.BytesPerPixel;
-                width = stride / dstBpp;
+                width = stride / dstFormat.BytesPerPixel;
             }
 
             return new TextureInfo(
@@ -781,7 +771,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 info.GobBlocksInZ,
                 info.GobBlocksInTileX,
                 info.Target,
-                dstFormatInfo,
+                dstFormat,
                 info.DepthStencilMode,
                 info.SwizzleR,
                 info.SwizzleG,

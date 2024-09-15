@@ -616,7 +616,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (!poolModified &&
                     state.TextureHandle == textureId &&
-                    state.ImageFormat == bindingInfo.Format &&
+                    state.ImageFormat == bindingInfo.FormatInfo.Format &&
                     state.CachedTexture != null &&
                     state.CachedTexture.InvalidatedSequence == state.InvalidatedSequence)
                 {
@@ -643,9 +643,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
 
                 state.TextureHandle = textureId;
-                state.ImageFormat = bindingInfo.Format;
+                state.ImageFormat = bindingInfo.FormatInfo.Format;
 
-                ref readonly TextureDescriptor descriptor = ref pool.GetForBinding(textureId, bindingInfo.Format, out Texture texture);
+                ref readonly TextureDescriptor descriptor = ref pool.GetForBinding(textureId, bindingInfo.FormatInfo, out Texture texture);
 
                 specStateMatches &= specState.MatchesImage(stage, index, descriptor);
 
