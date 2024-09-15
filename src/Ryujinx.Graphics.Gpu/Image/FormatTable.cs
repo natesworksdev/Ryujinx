@@ -711,5 +711,120 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             return result;
         }
+
+        /// <summary>
+        /// Gets the bytes per pixel for a image compatible format.
+        /// </summary>
+        /// <param name="format">Format</param>
+        /// <returns>Bytes per pixel, or zero if the format is not a image compatible format</returns>
+        public static int GetImageFormatBytesPerPixel(Format format)
+        {
+            switch (format)
+            {
+                case Format.R8Unorm:
+                case Format.R8Snorm:
+                case Format.R8Uint:
+                case Format.R8Sint:
+                    return 1;
+                case Format.R16Float:
+                case Format.R16Unorm:
+                case Format.R16Snorm:
+                case Format.R16Uint:
+                case Format.R16Sint:
+                case Format.R8G8Unorm:
+                case Format.R8G8Snorm:
+                case Format.R8G8Uint:
+                case Format.R8G8Sint:
+                    return 2;
+                case Format.R32Float:
+                case Format.R32Uint:
+                case Format.R32Sint:
+                case Format.R16G16Float:
+                case Format.R16G16Unorm:
+                case Format.R16G16Snorm:
+                case Format.R16G16Uint:
+                case Format.R16G16Sint:
+                case Format.R8G8B8A8Unorm:
+                case Format.R8G8B8A8Snorm:
+                case Format.R8G8B8A8Uint:
+                case Format.R8G8B8A8Sint:
+                case Format.R10G10B10A2Unorm:
+                case Format.R10G10B10A2Uint:
+                case Format.R11G11B10Float:
+                    return 4;
+                case Format.R32G32Float:
+                case Format.R32G32Uint:
+                case Format.R32G32Sint:
+                case Format.R16G16B16A16Float:
+                case Format.R16G16B16A16Unorm:
+                case Format.R16G16B16A16Snorm:
+                case Format.R16G16B16A16Uint:
+                case Format.R16G16B16A16Sint:
+                    return 8;
+                case Format.R32G32B32A32Float:
+                case Format.R32G32B32A32Uint:
+                case Format.R32G32B32A32Sint:
+                    return 16;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets the amount of components (RGBA) for a image compatible format.
+        /// </summary>
+        /// <param name="format">Format</param>
+        /// <returns>Number of components (from 1 to 4), or zero if the format is not a image compatible format</returns>
+        public static int GetImageFormatComponents(Format format)
+        {
+            switch (format)
+            {
+                case Format.R8Unorm:
+                case Format.R8Snorm:
+                case Format.R8Uint:
+                case Format.R8Sint:
+                case Format.R16Float:
+                case Format.R16Unorm:
+                case Format.R16Snorm:
+                case Format.R16Uint:
+                case Format.R16Sint:
+                case Format.R32Float:
+                case Format.R32Uint:
+                case Format.R32Sint:
+                    return 1;
+                case Format.R8G8Unorm:
+                case Format.R8G8Snorm:
+                case Format.R8G8Uint:
+                case Format.R8G8Sint:
+                case Format.R16G16Float:
+                case Format.R16G16Unorm:
+                case Format.R16G16Snorm:
+                case Format.R16G16Uint:
+                case Format.R16G16Sint:
+                case Format.R32G32Float:
+                case Format.R32G32Uint:
+                case Format.R32G32Sint:
+                    return 2;
+                case Format.R11G11B10Float:
+                    return 3;
+                case Format.R8G8B8A8Unorm:
+                case Format.R8G8B8A8Snorm:
+                case Format.R8G8B8A8Uint:
+                case Format.R8G8B8A8Sint:
+                case Format.R10G10B10A2Unorm:
+                case Format.R10G10B10A2Uint:
+                case Format.R16G16B16A16Float:
+                case Format.R16G16B16A16Unorm:
+                case Format.R16G16B16A16Snorm:
+                case Format.R16G16B16A16Uint:
+                case Format.R16G16B16A16Sint:
+                case Format.R32G32B32A32Float:
+                case Format.R32G32B32A32Uint:
+                case Format.R32G32B32A32Sint:
+                    return 4;
+            }
+
+            return 0;
+        }
     }
 }

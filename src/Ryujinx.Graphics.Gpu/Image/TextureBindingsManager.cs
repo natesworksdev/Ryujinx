@@ -629,7 +629,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         cachedTexture.SignalModified();
                     }
 
-                    Format format = bindingInfo.Format == 0 ? cachedTexture.Format : bindingInfo.Format;
+                    Format format = cachedTexture.Format; // bindingInfo.Format == 0 ? cachedTexture.Format : bindingInfo.Format;
 
                     if (state.ImageFormat != format ||
                         ((usageFlags & TextureUsageFlags.NeedsScaleValue) != 0 &&
@@ -648,7 +648,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 state.TextureHandle = textureId;
 
-                ref readonly TextureDescriptor descriptor = ref pool.GetForBinding(textureId, out Texture texture);
+                ref readonly TextureDescriptor descriptor = ref pool.GetForBinding(textureId, bindingInfo.Format, out Texture texture);
 
                 specStateMatches &= specState.MatchesImage(stage, index, descriptor);
 
@@ -660,7 +660,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Buffers are frequently re-created to accommodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
 
-                    Format format = bindingInfo.Format;
+                    Format format = 0; // bindingInfo.Format;
 
                     if (format == 0 && texture != null)
                     {
@@ -689,7 +689,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         state.Texture = hostTexture;
 
-                        Format format = bindingInfo.Format;
+                        Format format = 0; // bindingInfo.Format;
 
                         if (format == 0 && texture != null)
                         {
