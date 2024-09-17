@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.GPFifo;
+using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.Synchronization;
@@ -44,6 +45,8 @@ namespace Ryujinx.Graphics.Gpu
         /// Presentation window.
         /// </summary>
         public Window Window { get; }
+
+        public DiskTextureStorage DiskTextureStorage { get; }
 
         /// <summary>
         /// Internal sequence number, used to avoid needless resource data updates
@@ -122,6 +125,8 @@ namespace Ryujinx.Graphics.Gpu
             Synchronization = new SynchronizationManager();
 
             Window = new Window(this);
+
+            DiskTextureStorage = new DiskTextureStorage();
 
             HostInitalized = new ManualResetEvent(false);
             _gpuReadyEvent = new ManualResetEvent(false);
@@ -282,6 +287,8 @@ namespace Ryujinx.Graphics.Gpu
             {
                 physicalMemory.ShaderCache.Initialize(cancellationToken);
             }
+
+            DiskTextureStorage.Initialize();
 
             _gpuReadyEvent.Set();
         }

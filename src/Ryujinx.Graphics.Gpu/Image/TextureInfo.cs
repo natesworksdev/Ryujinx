@@ -208,6 +208,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets the number of layers or depth of the texture.
+        /// Returns 1 for non-array textures, 6 for cubemap textures, and layer faces for cubemap array textures.
+        /// </summary>
+        /// <returns>The number of texture layers or depth</returns>
+        public int GetDepthOrLayers()
+        {
+            return GetDepthOrLayers(Target, DepthOrLayers);
+        }
+
+        /// <summary>
         /// Gets the number of layers of the texture.
         /// Returns 1 for non-array textures, 6 for cubemap textures, and layer faces for cubemap array textures.
         /// </summary>
@@ -217,6 +227,33 @@ namespace Ryujinx.Graphics.Gpu.Image
         public static int GetLayers(Target target, int depthOrLayers)
         {
             if (target == Target.Texture2DArray || target == Target.Texture2DMultisampleArray)
+            {
+                return depthOrLayers;
+            }
+            else if (target == Target.CubemapArray)
+            {
+                return depthOrLayers * 6;
+            }
+            else if (target == Target.Cubemap)
+            {
+                return 6;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of layers or depth of the texture.
+        /// Returns 1 for non-array textures, 6 for cubemap textures, and layer faces for cubemap array textures.
+        /// </summary>
+        /// <param name="target">Texture target</param>
+        /// <param name="depthOrLayers">Texture layers if the is a array texture, depth for 3D textures, ignored otherwise</param>
+        /// <returns>The number of texture layers or depth</returns>
+        public static int GetDepthOrLayers(Target target, int depthOrLayers)
+        {
+            if (target == Target.Texture2DArray || target == Target.Texture2DMultisampleArray || target == Target.Texture3D)
             {
                 return depthOrLayers;
             }

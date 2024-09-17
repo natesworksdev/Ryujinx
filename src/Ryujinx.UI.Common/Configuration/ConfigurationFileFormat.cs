@@ -15,7 +15,7 @@ namespace Ryujinx.UI.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 51;
+        public const int CurrentVersion = 52;
 
         /// <summary>
         /// Version of the configuration file format
@@ -68,9 +68,29 @@ namespace Ryujinx.UI.Common.Configuration
         public int ScalingFilterLevel { get; set; }
 
         /// <summary>
-        /// Dumps shaders in this local directory
+        /// Directory to save the game shaders.
         /// </summary>
         public string GraphicsShadersDumpPath { get; set; }
+
+        /// <summary>
+        /// Directory to save the game textures, if texture dumping is enabled.
+        /// </summary>
+        public string GraphicsTexturesDumpPath { get; set; }
+
+        /// <summary>
+        /// File format used to dump textures.
+        /// </summary>
+        public TextureFileFormat GraphicsTexturesDumpFileFormat { get; set; }
+
+        /// <summary>
+        /// Enables texture dumping.
+        /// </summary>
+        public bool GraphicsEnableTextureDump { get; set; }
+
+        /// <summary>
+        /// Enables real-time texture editing.
+        /// </summary>
+        public bool GraphicsEnableTextureRealTimeEdit { get; set; }
 
         /// <summary>
         /// Enables printing debug log messages

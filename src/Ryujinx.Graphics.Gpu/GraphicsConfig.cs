@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Title id of the current running game.
-        /// Used by the shader cache.
+        /// Used by the shader cache and texture dumping.
         /// </summary>
         public static string TitleId;
 
@@ -72,6 +72,26 @@ namespace Ryujinx.Graphics.Gpu
         /// Enables or disables color space passthrough, if available.
         /// </summary>
         public static bool EnableColorSpacePassthrough = false;
+
+        /// <summary>
+        /// Base directory used to write the game textures, if texture dump is enabled.
+        /// </summary>
+        public static string TextureDumpPath;
+
+        /// <summary>
+        /// Indicates if textures should be saved using the PNG file format. If disabled, textures are saved as DDS.
+        /// </summary>
+        public static bool TextureDumpFormatPng;
+
+        /// <summary>
+        /// Enables dumping textures to file.
+        /// </summary>
+        public static bool EnableTextureDump;
+
+        /// <summary>
+        /// Monitors dumped texture files for change and applies them in real-time if enabled.
+        /// </summary>
+        public static bool EnableTextureRealTimeEdit;
     }
 #pragma warning restore CA2211
 }

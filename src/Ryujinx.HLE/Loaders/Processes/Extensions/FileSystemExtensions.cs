@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
 
             // Don't use PTC if ExeFS files have been replaced.
             bool enablePtc = device.System.EnablePtc && !modLoadResult.Modified;
-            if (!enablePtc)
+            if (modLoadResult.Modified)
             {
                 Logger.Warning?.Print(LogClass.Ptc, "Detected unsupported ExeFs modifications. PTC disabled.");
             }
@@ -104,6 +104,9 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             // Initialize GPU.
             Graphics.Gpu.GraphicsConfig.TitleId = $"{programId:x16}";
             device.Gpu.HostInitalized.Set();
+
+            // Load texture replacements.
+            device.Configuration.VirtualFileSystem.ModLoader.ApplyTextureMods(programId, device.Gpu);
 
             if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
             {
