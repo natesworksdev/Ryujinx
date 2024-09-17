@@ -800,8 +800,6 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            Logger.Info?.Print(LogClass.Gpu, $"GPU Memory: {totalMemory / (1024 * 1024)} MB");
-
             return totalMemory;
         }
 
@@ -886,6 +884,7 @@ namespace Ryujinx.Graphics.Vulkan
         private void PrintGpuInformation()
         {
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
+            Logger.Notice.Print(LogClass.Gpu, $"GPU Memory: {GetTotalGPUMemory() / (1024 * 1024)} MiB");
         }
 
         public void Initialize(GraphicsDebugLevel logLevel)
