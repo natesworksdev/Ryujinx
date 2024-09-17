@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.GAL
         PinnedSpan<byte> GetData(int layer, int level);
 
         /// <summary>
-        /// Sets the texture data. The data passed as a <see cref="MemoryOwner{T}" /> will be disposed when
+        /// Sets the texture data. The data passed as a <see cref="MemoryOwner{Byte}" /> will be disposed when
         /// the operation completes.
         /// </summary>
         /// <param name="data">Texture data bytes</param>
