@@ -281,7 +281,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     }
                     break;
                 case AtomOp.Exch:
-                    res = context.AtomicSwap(storageKind, e0, e1, value);
+                    if (type == AtomSize.S32 || type == AtomSize.U32)
+                    {
+                        res = context.AtomicSwap(storageKind, e0, e1, value);
+                    }
+                    else
+                    {
+                        context.TranslatorContext.GpuAccessor.Log($"Invalid reduction type: {type}.");
+                    }
                     break;
                 default:
                     context.TranslatorContext.GpuAccessor.Log($"Invalid atomic operation: {op}.");
