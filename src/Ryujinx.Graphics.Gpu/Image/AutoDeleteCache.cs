@@ -1,4 +1,4 @@
-using Ryujinx.Common.Logging;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private const int MinCountForDeletion = 32;
         private const int MaxCapacity = 2048;
-        private const ulong DefaultTextureSizeCapacity = 1UL * 1024 * 1024 * 1024;
+        private const ulong MinTextureSizeCapacity = 512 * 1024 * 1024;
         private const ulong MaxTextureSizeCapacity = 4UL * 1024 * 1024 * 1024;
         private const float MemoryScaleFactor = 0.50f;
         private ulong _maxCacheMemoryUsage = 0;
@@ -65,12 +65,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Initialize(GpuContext context)
         {
-            var maxMemory = (ulong)(context.Capabilities.MaximumGpuMemory * MemoryScaleFactor);
+            var CacheMemory = (ulong)(context.Capabilities.MaximumGpuMemory * MemoryScaleFactor);
 
-            _maxCacheMemoryUsage = maxMemory == 0 ?
-            DefaultTextureSizeCapacity :
-            maxMemory > MaxTextureSizeCapacity ?
-            MaxTextureSizeCapacity : maxMemory;
+            _maxCacheMemoryUsage = Math.Clamp(CacheMemory, MinTextureSizeCapacity, MaxTextureSizeCapacity);
         }
 
         /// <summary>
