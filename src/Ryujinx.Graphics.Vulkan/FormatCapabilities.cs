@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Vulkan
             return (formatFeatureFlags & flags) == flags;
         }
 
-        public VkFormat ConvertToVkFormat(Format srcFormat, bool storageFeatureFlagRequired)
+        public VkFormat ConvertToVkFormat(Format srcFormat)
         {
             var format = FormatTable.GetFormat(srcFormat);
 
@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Vulkan
                 requiredFeatures |= FormatFeatureFlags.ColorAttachmentBit;
             }
 
-            if (srcFormat.IsImageCompatible() && storageFeatureFlagRequired)
+            if (srcFormat.IsImageCompatible())
             {
                 requiredFeatures |= FormatFeatureFlags.StorageImageBit;
             }
