@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly Dictionary<TextureDescriptor, ShortTextureCacheEntry> _shortCacheLookup;
 
         /// <summary>
-        /// Gets MaxTextureCapacity Dynamically
+        /// Initializes the cache, setting the maximum texture capacity for the specified GPU context.
         /// </summary>
         public void Initialize(GpuContext context)
         {
