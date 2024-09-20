@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     }
                 }
 
-                // If all sources but one are all undefined, we can assume that the one
+                // If all sources but one are undefined, we can assume that the one
                 // that is not undefined is the right one.
 
                 if (undefCount == phiNode.SourcesCount - 1)
