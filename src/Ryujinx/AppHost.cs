@@ -1288,7 +1288,7 @@ namespace Ryujinx.Ava
                 state = KeyboardHotkeyState.VolumeDown;
             }
 
-            foreach (var cycle in ConfigurationState.Instance.Hid.Hotkeys.Value.CycleControllers.Select((value, index) => (value, index)))
+            foreach (var cycle in ConfigurationState.Instance.Hid.Hotkeys.Value.CycleControllers?.Select((value, index) => (value, index)) ?? [])
             {
                 if (_keyboardInterface.IsPressed((Key)cycle.value))
                 {
