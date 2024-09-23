@@ -677,7 +677,7 @@ namespace Ryujinx.Graphics.Vulkan
                     oldStencilTestEnable = _newState.StencilTestEnable;
                     oldDepthTestEnable = _newState.DepthTestEnable;
                     oldDepthWriteEnable = _newState.DepthWriteEnable;
-                    oldTopology = _newState.Topology;
+                    oldTopology = _topology;
                     oldViewportsCount = _newState.ViewportsCount;
                 }
 
@@ -705,14 +705,13 @@ namespace Ryujinx.Graphics.Vulkan
                     srcRegion,
                     dstRegion);
 
-                _newState.Topology = oldTopology;
+                SetPrimitiveTopology(oldTopology);
 
                 if (_supportExtDynamic)
                 {
                     DynamicState.SetCullMode(oldCullMode);
                     DynamicState.SetStencilTest(oldStencilTestEnable);
                     DynamicState.SetDepthTestBool(oldDepthTestEnable, oldDepthWriteEnable);
-                    DynamicState.SetPrimitiveTopology(oldTopology);
                 }
                 else
                 {
@@ -949,9 +948,9 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetImage(ShaderStage stage, int binding, ITexture image, Format imageFormat)
+        public void SetImage(ShaderStage stage, int binding, ITexture image)
         {
-            _descriptorSetUpdater.SetImage(Cbs, stage, binding, image, imageFormat);
+            _descriptorSetUpdater.SetImage(Cbs, stage, binding, image);
         }
 
         public void SetImage(int binding, Auto<DisposableImageView> image)
