@@ -693,8 +693,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.StencilTestEnable = false;
                     _newState.DepthTestEnable = false;
                     _newState.DepthWriteEnable = false;
-
-                    SignalStateChange();
                 }
 
                 Gd.HelperShader.DrawTexture(
@@ -896,7 +894,7 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        public void SetDepthTest(DepthTestDescriptor depthTest)
+        public void SetDepthTest(DepthTestDescriptor depthTest, bool signalChange = true)
         {
             if (_supportExtDynamic)
             {
@@ -912,7 +910,10 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.DepthWriteEnable = depthTest.WriteEnable;
                 _newState.DepthCompareOp = depthTest.Func.Convert();
 
-                SignalStateChange();
+                if (signalChange)
+                {
+                    SignalStateChange();
+                }
             }
 
             UpdatePassDepthStencil();
@@ -1062,7 +1063,7 @@ namespace Ryujinx.Graphics.Vulkan
             // TODO: What to do about the index?
         }
 
-        public void SetPrimitiveTopology(PrimitiveTopology topology)
+        public void SetPrimitiveTopology(PrimitiveTopology topology, bool signalChange = true)
         {
             _topology = topology;
 
@@ -1075,10 +1076,13 @@ namespace Ryujinx.Graphics.Vulkan
                 DynamicState.SetPrimitiveTopology(vkTopology);
             }
 
-            SignalStateChange();
+            if (signalChange)
+            {
+                SignalStateChange();
+            }
         }
 
-        public void SetProgram(IProgram program)
+        public void SetProgram(IProgram program, bool signalChange = true)
         {
             var internalProgram = (ShaderCollection)program;
             var stages = internalProgram.GetInfos();
@@ -1094,7 +1098,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             stages.CopyTo(_newState.Stages.AsSpan()[..stages.Length]);
 
-            SignalStateChange();
+            if (signalChange)
+            {
+                SignalStateChange();
+            }
 
             if (internalProgram.IsCompute)
             {
@@ -1139,7 +1146,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask)
+        public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask, bool signalChange = true)
         {
             int count = Math.Min(Constants.MaxRenderTargets, componentMask.Length);
             int writtenAttachments = 0;
@@ -1179,7 +1186,10 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                SignalStateChange();
+                if (signalChange)
+                {
+                    SignalStateChange();
+                }
 
                 if (writtenAttachments != _writtenAttachmentCount)
                 {
@@ -1203,7 +1213,7 @@ namespace Ryujinx.Graphics.Vulkan
             SetRenderTargetsInternal(colors, depthStencil, Gd.IsTBDR);
         }
 
-        public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
+        public void SetScissors(ReadOnlySpan<Rectangle<int>> regions, bool signalChange = true)
         {
             int maxScissors = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
             int count = Math.Min(maxScissors, regions.Length);
@@ -1227,7 +1237,10 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _newState.ScissorsCount = (uint)count;
 
-                SignalStateChange();
+                if (signalChange)
+                {
+                    SignalStateChange();
+                }
             }
         }
 
@@ -1514,7 +1527,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void SetViewports(ReadOnlySpan<Viewport> viewports)
+        public void SetViewports(ReadOnlySpan<Viewport> viewports, bool signalChange = true)
         {
             int maxViewports = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
             int count = Math.Min(maxViewports, viewports.Length);
@@ -1543,7 +1556,10 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _newState.ViewportsCount = (uint)count;
 
-                SignalStateChange();
+                if (signalChange)
+                {
+                    SignalStateChange();
+                }
             }
         }
 
