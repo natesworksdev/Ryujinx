@@ -76,6 +76,8 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly BufferState[] _transformFeedbackBuffers;
         private readonly VertexBufferState[] _vertexBuffers;
         private ulong _vertexBuffersDirty;
+        private readonly int[] _vertexBufferBindings;
+        private bool _bindingsSet;
         protected Rectangle<int> ClearScissor;
 
         private readonly VertexBufferUpdater _vertexBufferUpdater;
@@ -134,6 +136,17 @@ namespace Ryujinx.Graphics.Vulkan
             _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
 
             _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
+
+            _vertexBufferBindings = new int[Constants.MaxVertexBuffers];
+
+            for (int i = 0; i < Constants.MaxVertexBuffers; i++)
+            {
+                _vertexBufferBindings[i] = i + 1;
+            }
+
+            _bindingsSet = false;
+
+            _newState.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, _supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31) ? null : 0, VertexInputRate.Vertex);
 
             _newState.Initialize(gd.Capabilities);
         }
@@ -1378,12 +1391,22 @@ namespace Ryujinx.Graphics.Vulkan
         {
             int count = Math.Min(Constants.MaxVertexBuffers, vertexBuffers.Length);
 
-            _newState.Internal.VertexBindingDescriptions[0] = new VertexInputBindingDescription(0, _supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31) ? null : 0, VertexInputRate.Vertex);
-
             int validCount = 1;
+
+            if (!_bindingsSet)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    _newState.Internal.VertexBindingDescriptions[_vertexBufferBindings[i]] = new VertexInputBindingDescription((uint)_vertexBufferBindings[i]);
+                }
+
+                _bindingsSet = true;
+            }
 
             BufferHandle lastHandle = default;
             Auto<DisposableBuffer> lastBuffer = default;
+            bool vertexBindingDescriptionChanged = false;
+            bool vertexDescriptionCountChanged = false;
 
             for (int i = 0; i < count; i++)
             {
@@ -1402,13 +1425,28 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (vb != null)
                     {
-                        int binding = i + 1;
+                        //int binding = _vertexBufferBindings[i];
                         int descriptorIndex = validCount++;
 
-                        _newState.Internal.VertexBindingDescriptions[descriptorIndex] = new VertexInputBindingDescription(
-                            (uint)binding,
-                            _supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31) ? null : (uint)vertexBuffer.Stride,
-                            inputRate);
+                        if (_supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31))
+                        {
+                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate)
+                            {
+                                _newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate = inputRate;
+
+                                vertexBindingDescriptionChanged = true;
+                            }
+                        }
+                        else
+                        {
+                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate || _newState.Internal.VertexBindingDescriptions[descriptorIndex].Stride != vertexBuffer.Stride)
+                            {
+                                _newState.Internal.VertexBindingDescriptions[descriptorIndex].Stride = (uint)vertexBuffer.Stride;
+                                _newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate = inputRate;
+
+                                vertexBindingDescriptionChanged = true;
+                            }
+                        }
 
                         int vbSize = vertexBuffer.Buffer.Size;
 
@@ -1424,7 +1462,7 @@ namespace Ryujinx.Graphics.Vulkan
                             }
                         }
 
-                        ref var buffer = ref _vertexBuffers[binding];
+                        ref var buffer = ref _vertexBuffers[_vertexBufferBindings[i]];
                         int oldScalarAlign = buffer.AttributeScalarAlignment;
 
                         if (Gd.Capabilities.VertexBufferAlignment < 2 &&
@@ -1441,7 +1479,7 @@ namespace Ryujinx.Graphics.Vulkan
                                     vbSize,
                                     vertexBuffer.Stride);
 
-                                buffer.BindVertexBuffer(Gd, Cbs, (uint)binding, ref _newState, _vertexBufferUpdater);
+                                buffer.BindVertexBuffer(Gd, Cbs, (uint)_vertexBufferBindings[i], ref _newState, _vertexBufferUpdater);
                             }
                         }
                         else
@@ -1457,7 +1495,7 @@ namespace Ryujinx.Graphics.Vulkan
                                 vbSize,
                                 vertexBuffer.Stride);
 
-                            _vertexBuffersDirty |= 1UL << binding;
+                            _vertexBuffersDirty |= 1UL << _vertexBufferBindings[i];
                         }
 
                         buffer.AttributeScalarAlignment = oldScalarAlign;
@@ -1467,8 +1505,16 @@ namespace Ryujinx.Graphics.Vulkan
 
             _vertexBufferUpdater.Commit(Cbs);
 
-            _newState.VertexBindingDescriptionsCount = (uint)validCount;
-            SignalStateChange();
+            if (_newState.VertexBindingDescriptionsCount != validCount)
+            {
+                _newState.VertexBindingDescriptionsCount = (uint)validCount;
+                vertexDescriptionCountChanged = true;
+            }
+
+            if (vertexDescriptionCountChanged || vertexBindingDescriptionChanged)
+            {
+                SignalStateChange();
+            }
         }
 
         public void SetViewports(ReadOnlySpan<Viewport> viewports)

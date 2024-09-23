@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly bool HasDepthStencil => ((Id1 >> 63) & 0x1) != 0UL;
 
         public Array32<VertexInputAttributeDescription> VertexAttributeDescriptions;
-        public Array33<VertexInputBindingDescription> VertexBindingDescriptions;
+        public Array32<VertexInputBindingDescription> VertexBindingDescriptions;
         public Array8<PipelineColorBlendAttachmentState> ColorBlendAttachmentState;
         public Array9<Format> AttachmentFormats;
         public uint AttachmentIntegerFormatMask;
