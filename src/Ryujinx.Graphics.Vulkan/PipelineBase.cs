@@ -658,7 +658,7 @@ namespace Ryujinx.Graphics.Vulkan
                 bool oldStencilTestEnable;
                 bool oldDepthTestEnable;
                 bool oldDepthWriteEnable;
-                Silk.NET.Vulkan.PrimitiveTopology oldTopology;
+                PrimitiveTopology oldTopology;
                 Array16<Silk.NET.Vulkan.Viewport> oldViewports = DynamicState.Viewports;
                 uint oldViewportsCount;
 
@@ -668,7 +668,7 @@ namespace Ryujinx.Graphics.Vulkan
                     oldStencilTestEnable = DynamicState.StencilTestEnable;
                     oldDepthTestEnable = DynamicState.DepthTestEnable;
                     oldDepthWriteEnable = DynamicState.DepthWriteEnable;
-                    oldTopology = DynamicState.Topology;
+                    oldTopology = _topology;
                     oldViewportsCount = DynamicState.ViewportsCount;
                 }
                 else
@@ -705,8 +705,6 @@ namespace Ryujinx.Graphics.Vulkan
                     srcRegion,
                     dstRegion);
 
-                SetPrimitiveTopology(oldTopology);
-
                 if (_supportExtDynamic)
                 {
                     DynamicState.SetCullMode(oldCullMode);
@@ -722,9 +720,9 @@ namespace Ryujinx.Graphics.Vulkan
                     _newState.ViewportsCount = oldViewportsCount;
                 }
 
-                DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
+                SetPrimitiveTopology(oldTopology);
 
-                SignalStateChange();
+                DynamicState.SetViewports(ref oldViewports, oldViewportsCount);
             }
         }
 
