@@ -108,8 +108,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
                 {
                     outputEvents |= PollEventTypeMask.Error;
 
-                    // TODO: Check ProxyClient.Connected and ProxyClient.IsBound when implemented.
-                    //       See ManagedSocketPollManager
+                    if (!socket.ProxyClient.Connected || !socket.ProxyClient.IsBound)
+                    {
+                        outputEvents |= PollEventTypeMask.Disconnected;
+                    }
                 }
 
                 if (eventDict[SelectMode.SelectRead].Contains(socket))
