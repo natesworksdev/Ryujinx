@@ -450,6 +450,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
         public void Disconnect()
         {
             ProxyClient.Disconnect();
+            ProxyClient.RequestCommand = 0;
         }
 
         public LinuxError Shutdown(BsdSocketShutdownFlags how)
@@ -469,6 +470,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
         public void Close()
         {
             ProxyClient.Close();
+            ProxyClient.RequestCommand = 0;
         }
     }
 }
