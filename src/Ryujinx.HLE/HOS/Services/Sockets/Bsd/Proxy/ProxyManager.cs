@@ -1,4 +1,5 @@
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Proxy
 {
     public static class ProxyManager
     {
-        private static readonly Dictionary<string, EndPoint> _proxyEndpoints = new();
+        private static readonly ConcurrentDictionary<string, EndPoint> _proxyEndpoints = new();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string GetKey(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
@@ -46,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Proxy
 
         public static bool Remove(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
         {
-            return _proxyEndpoints.Remove(GetKey(addressFamily, socketType, protocolType));
+            return _proxyEndpoints.Remove(GetKey(addressFamily, socketType, protocolType), out _);
         }
     }
 }
