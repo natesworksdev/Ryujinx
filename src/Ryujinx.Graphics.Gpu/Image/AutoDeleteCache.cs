@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <remarks>
         /// For OpenGL this defaults to OpenGLTextureSizeCapacity.
         /// </remarks>
-        /// <param name="context"> The GPU context that the cache belongs to</param>
+        /// <param name="context">The GPU context that the cache belongs to</param>
         public void Initialize(GpuContext context)
         {
             var CacheMemory = (ulong)(context.Capabilities.MaximumGpuMemory * MemoryScaleFactor);
