@@ -176,6 +176,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl
 
                 receiveSize = ProxyClient.ReceiveFrom(proxyBuffer, WinSockHelper.ConvertBsdSocketFlags(flags), ref temp);
 
+                proxyBuffer[..receiveSize].CopyTo(buffer);
+
                 remoteEndPoint = (IPEndPoint)temp;
                 result = LinuxError.SUCCESS;
             }
