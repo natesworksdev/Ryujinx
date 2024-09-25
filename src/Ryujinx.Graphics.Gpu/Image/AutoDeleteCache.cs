@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _maxCacheMemoryUsage = Math.Clamp(CacheMemory, MinTextureSizeCapacity, MaxTextureSizeCapacity);
 
-            if (CacheMemory == 0)
+            if (context.Capabilities.MaximumGpuMemory == 0)
             {
                 _maxCacheMemoryUsage = DefaultTextureSizeCapacity;
             }
