@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             var cacheMemory = (ulong)(context.Capabilities.MaximumGpuMemory * MemoryScaleFactor);
 
-            _maxCacheMemoryUsage = Math.Clamp(CacheMemory, MinTextureSizeCapacity, MaxTextureSizeCapacity);
+            _maxCacheMemoryUsage = Math.Clamp(cacheMemory, MinTextureSizeCapacity, MaxTextureSizeCapacity);
 
             if (context.Capabilities.MaximumGpuMemory == 0)
             {
