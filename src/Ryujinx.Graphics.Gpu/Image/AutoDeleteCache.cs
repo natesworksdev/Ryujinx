@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -50,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private const int MaxCapacity = 2048;
         private const ulong MinTextureSizeCapacity = 512 * 1024 * 1024;
         private const ulong MaxTextureSizeCapacity = 4UL * 1024 * 1024 * 1024;
-        private const ulong OpenGLTextureSizeCapacity = 1UL * 1024 * 1024 * 1024;
+        private const ulong DefaultTextureSizeCapacity = 1UL * 1024 * 1024 * 1024;
         private const float MemoryScaleFactor = 0.50f;
         private ulong _maxCacheMemoryUsage = 0;
 
@@ -66,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Initializes the cache, setting the maximum texture capacity for the specified GPU context.
         /// </summary>
         /// <remarks>
-        /// For OpenGL this defaults to OpenGLTextureSizeCapacity.
+        /// If the backend GPU has 0 memory capacity, the cache size defaults to `DefaultTextureSizeCapacity`.
         /// </remarks>
         /// <param name="context">The GPU context that the cache belongs to</param>
         public void Initialize(GpuContext context)
@@ -75,9 +74,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _maxCacheMemoryUsage = Math.Clamp(CacheMemory, MinTextureSizeCapacity, MaxTextureSizeCapacity);
 
-            if (context.Capabilities.Api == TargetApi.OpenGL)
+            if (CacheMemory == 0)
             {
-                _maxCacheMemoryUsage = OpenGLTextureSizeCapacity;
+                _maxCacheMemoryUsage = DefaultTextureSizeCapacity;
             }
         }
 
