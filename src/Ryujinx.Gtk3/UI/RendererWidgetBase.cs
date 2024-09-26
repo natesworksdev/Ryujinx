@@ -7,6 +7,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
+using Ryujinx.Horizon;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -365,7 +366,6 @@ namespace Ryujinx.UI
             }
 
             NpadManager.Initialize(device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
-            TouchScreenManager.Initialize(device);
         }
 
         private unsafe void Renderer_ScreenCaptured(object sender, ScreenCaptureImageInfo e)
@@ -738,7 +738,7 @@ namespace Ryujinx.UI
                 TouchScreenManager.Update(false);
             }
 
-            Device.Hid.DebugPad.Update();
+            HorizonStatic.Hid.DebugPad.Update();
 
             return true;
         }
