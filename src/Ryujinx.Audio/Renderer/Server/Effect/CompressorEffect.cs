@@ -62,6 +62,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
             UpdateUsageStateForCommandGeneration();
 
             Parameter.Status = UsageState.Enabled;
+            Parameter.StatisticsReset = false;
         }
 
         public override void InitializeResultState(ref EffectResultState state)
