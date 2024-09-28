@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Audio.Renderer.Parameter.Effect
 {
     /// <summary>
-    /// Effect result state for <seealso cref="Common.EffectType.Limiter"/>.
+    /// Effect result state for <seealso cref="Common.EffectType.Compressor"/>.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CompressorStatistics
