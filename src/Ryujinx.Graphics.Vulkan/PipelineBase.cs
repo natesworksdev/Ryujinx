@@ -76,7 +76,6 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly BufferState[] _transformFeedbackBuffers;
         private readonly VertexBufferState[] _vertexBuffers;
         private ulong _vertexBuffersDirty;
-        private readonly int[] _vertexBufferBindings;
         private bool _bindingsSet;
         protected Rectangle<int> ClearScissor;
 
@@ -136,13 +135,6 @@ namespace Ryujinx.Graphics.Vulkan
             _supportExtDynamic = gd.Capabilities.SupportsExtendedDynamicState;
 
             _supportExtDynamic2 = gd.Capabilities.SupportsExtendedDynamicState2.ExtendedDynamicState2;
-
-            _vertexBufferBindings = new int[Constants.MaxVertexBuffers];
-
-            for (int i = 0; i < Constants.MaxVertexBuffers; i++)
-            {
-                _vertexBufferBindings[i] = i + 1;
-            }
 
             _bindingsSet = false;
 
@@ -1407,7 +1399,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 for (int i = 0; i < count; i++)
                 {
-                    _newState.Internal.VertexBindingDescriptions[_vertexBufferBindings[i]] = new VertexInputBindingDescription((uint)_vertexBufferBindings[i]);
+                    _newState.Internal.VertexBindingDescriptions[i] = new VertexInputBindingDescription((uint)i);
                 }
 
                 _bindingsSet = true;
@@ -1435,7 +1427,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (vb != null)
                     {
-                        //int binding = _vertexBufferBindings[i];
                         int descriptorIndex = validCount++;
 
                         if (_supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31))
@@ -1472,7 +1463,7 @@ namespace Ryujinx.Graphics.Vulkan
                             }
                         }
 
-                        ref var buffer = ref _vertexBuffers[_vertexBufferBindings[i]];
+                        ref var buffer = ref _vertexBuffers[i];
                         int oldScalarAlign = buffer.AttributeScalarAlignment;
 
                         if (Gd.Capabilities.VertexBufferAlignment < 2 &&
@@ -1489,7 +1480,7 @@ namespace Ryujinx.Graphics.Vulkan
                                     vbSize,
                                     vertexBuffer.Stride);
 
-                                buffer.BindVertexBuffer(Gd, Cbs, (uint)_vertexBufferBindings[i], ref _newState, _vertexBufferUpdater);
+                                buffer.BindVertexBuffer(Gd, Cbs, (uint)i, ref _newState, _vertexBufferUpdater);
                             }
                         }
                         else
@@ -1505,7 +1496,7 @@ namespace Ryujinx.Graphics.Vulkan
                                 vbSize,
                                 vertexBuffer.Stride);
 
-                            _vertexBuffersDirty |= 1UL << _vertexBufferBindings[i];
+                            _vertexBuffersDirty |= 1UL << i;
                         }
 
                         buffer.AttributeScalarAlignment = oldScalarAlign;
