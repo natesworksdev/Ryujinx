@@ -63,5 +63,17 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
 
             Parameter.Status = UsageState.Enabled;
         }
+
+        public override void InitializeResultState(ref EffectResultState state)
+        {
+            ref CompressorStatistics statistics = ref MemoryMarshal.Cast<byte, CompressorStatistics>(state.SpecificData)[0];
+
+            statistics.Reset(Parameter.ChannelCount);
+        }
+
+        public override void UpdateResultState(ref EffectResultState destState, ref EffectResultState srcState)
+        {
+            destState = srcState;
+        }
     }
 }
