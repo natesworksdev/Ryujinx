@@ -9,8 +9,19 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CompressorStatistics
     {
+        /// <summary>
+        /// Maximum input mean value since last reset.
+        /// </summary>
         public float MaximumMean;
+
+        /// <summary>
+        /// Minimum output gain since last reset.
+        /// </summary>
         public float MinimumGain;
+
+        /// <summary>
+        /// Last processed input sample, per channel.
+        /// </summary>
         public Array6<float> LastSamples;
 
         /// <summary>
