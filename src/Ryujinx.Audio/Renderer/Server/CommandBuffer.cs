@@ -587,8 +587,8 @@ namespace Ryujinx.Audio.Renderer.Server
         /// Generate a new <see cref="CompressorCommand"/>.
         /// </summary>
         /// <param name="bufferOffset">The target buffer offset.</param>
-        /// <param name="parameter">The limiter parameter.</param>
-        /// <param name="state">The limiter state.</param>
+        /// <param name="parameter">The compressor parameter.</param>
+        /// <param name="state">The compressor state.</param>
         /// <param name="effectResultState">The DSP effect result state.</param>
         /// <param name="isEnabled">Set to true if the effect should be active.</param>
         /// <param name="nodeId">The node id associated to this command.</param>
