@@ -104,8 +104,8 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
 
                 parameter.MixBufferVolume.CopyTo(MixBufferVolume);
 
-                bool resetPrevVoume = isPrevVolumeResetSupported ? parameter.ResetPrevVolume : !IsUsed && parameter.IsUsed;
-                if (resetPrevVoume)
+                bool resetPrevVolume = isPrevVolumeResetSupported ? parameter.ResetPrevVolume : !IsUsed && parameter.IsUsed;
+                if (resetPrevVolume)
                 {
                     MixBufferVolume.CopyTo(PreviousMixBufferVolume);
 

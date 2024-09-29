@@ -111,8 +111,8 @@ namespace Ryujinx.Audio.Renderer.Server.Splitter
 
                 _biquadFilters = parameter.BiquadFilters;
 
-                bool resetPrevVoume = isPrevVolumeResetSupported ? parameter.ResetPrevVolume : !IsUsed && parameter.IsUsed;
-                if (resetPrevVoume)
+                bool resetPrevVolume = isPrevVolumeResetSupported ? parameter.ResetPrevVolume : !IsUsed && parameter.IsUsed;
+                if (resetPrevVolume)
                 {
                     MixBufferVolume.CopyTo(PreviousMixBufferVolume);
 
