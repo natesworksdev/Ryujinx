@@ -67,9 +67,9 @@ namespace Ryujinx.UI.Windows
             OpenHelper.OpenUrl("https://discordapp.com/invite/N2FmfVc");
         }
 
-        private void TwitterButton_Pressed(object sender, ButtonPressEventArgs args)
+        private void XButton_Pressed(object sender, ButtonPressEventArgs args)
         {
-            OpenHelper.OpenUrl("https://twitter.com/RyujinxEmu");
+            OpenHelper.OpenUrl("https://x.com/RyujinxEmu");
         }
 
         private void ContributorsButton_Pressed(object sender, ButtonPressEventArgs args)

@@ -33,10 +33,10 @@ namespace Ryujinx.UI.Windows
         private EventBox _discordEventBox;
         private Image _discordLogo;
         private Label _discordLabel;
-        private EventBox _twitterEventBox;
-        private Box _twitterBox;
-        private Image _twitterLogo;
-        private Label _twitterLabel;
+        private EventBox _xEventBox;
+        private Box _xBox;
+        private Image _xLogo;
+        private Label _xLabel;
         private Separator _separator;
         private Box _rightBox;
         private Label _aboutLabel;
@@ -297,31 +297,31 @@ namespace Ryujinx.UI.Windows
             };
 
             //
-            // _twitterEventBox
+            // _xEventBox
             //
-            _twitterEventBox = new EventBox()
+            _xEventBox = new EventBox()
             {
-                TooltipText = "Click to open the Ryujinx Twitter page in your default browser.",
+                TooltipText = "Click to open the Ryujinx X page in your default browser.",
             };
-            _twitterEventBox.ButtonPressEvent += TwitterButton_Pressed;
+            _xEventBox.ButtonPressEvent += XButton_Pressed;
 
             //
-            // _twitterBox
+            // _xBox
             //
-            _twitterBox = new Box(Orientation.Vertical, 0);
+            _xBox = new Box(Orientation.Vertical, 0);
 
             //
-            // _twitterLogo
+            // _xLogo
             //
-            _twitterLogo = new Image(new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_Twitter_Light.png", 30, 30))
+            _xLogo = new Image(new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.UI.Common.Resources.Logo_X_Light.png", 30, 30))
             {
                 Margin = 10,
             };
 
             //
-            // _twitterLabel
+            // _xLabel
             //
-            _twitterLabel = new Label("Twitter")
+            _xLabel = new Label("X")
             {
                 Justify = Justification.Center,
             };
@@ -470,14 +470,14 @@ namespace Ryujinx.UI.Windows
             _discordBox.Add(_discordLabel);
             _discordEventBox.Add(_discordBox);
 
-            _twitterBox.Add(_twitterLogo);
-            _twitterBox.Add(_twitterLabel);
-            _twitterEventBox.Add(_twitterBox);
+            _xBox.Add(_xLogo);
+            _xBox.Add(_xLabel);
+            _xEventBox.Add(_xBox);
 
             _socialBox.Add(_patreonEventBox);
             _socialBox.Add(_githubEventBox);
             _socialBox.Add(_discordEventBox);
-            _socialBox.Add(_twitterEventBox);
+            _socialBox.Add(_xEventBox);
 
             _changelogEventBox.Add(_changelogLinkLabel);
 

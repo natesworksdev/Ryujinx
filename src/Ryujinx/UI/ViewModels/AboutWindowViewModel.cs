@@ -18,7 +18,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         private Bitmap _githubLogo;
         private Bitmap _discordLogo;
         private Bitmap _patreonLogo;
-        private Bitmap _twitterLogo;
+        private Bitmap _xLogo;
 
         private string _version;
         private string _supporters;
@@ -53,12 +53,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public Bitmap TwitterLogo
+        public Bitmap XLogo
         {
-            get => _twitterLogo;
+            get => _xLogo;
             set
             {
-                _twitterLogo = value;
+                _xLogo = value;
                 OnPropertyChanged();
             }
         }
@@ -109,7 +109,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             GithubLogo = LoadBitmap($"{basePath}Logo_GitHub_{themeSuffix}?assembly=Ryujinx.UI.Common");
             DiscordLogo = LoadBitmap($"{basePath}Logo_Discord_{themeSuffix}?assembly=Ryujinx.UI.Common");
             PatreonLogo = LoadBitmap($"{basePath}Logo_Patreon_{themeSuffix}?assembly=Ryujinx.UI.Common");
-            TwitterLogo = LoadBitmap($"{basePath}Logo_Twitter_{themeSuffix}?assembly=Ryujinx.UI.Common");
+            XLogo = LoadBitmap($"{basePath}Logo_X_{themeSuffix}?assembly=Ryujinx.UI.Common");
         }
 
         private Bitmap LoadBitmap(string uri)
