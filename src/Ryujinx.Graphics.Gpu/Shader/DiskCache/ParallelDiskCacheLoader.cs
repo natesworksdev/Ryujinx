@@ -363,7 +363,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                             }
                         }
 
-                        Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {_programList.Count} shaders successfully.");
+                        Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {packagedShaders} shaders successfully.");
                     }
                     else
                     {
@@ -406,6 +406,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 PrimitiveTopology.Quads => PrimitiveTopology.Quads,
                 PrimitiveTopology.QuadStrip => PrimitiveTopology.QuadStrip,
                 PrimitiveTopology.LineLoop => PrimitiveTopology.LineLoop,
+                _ => PrimitiveTopology.TriangleStrip,
             };
         }
 
