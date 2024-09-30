@@ -313,9 +313,9 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void DeleteAll()
         {
-            foreach (var mod in Mods)
+            while (Mods.Count > 0)
             {
-                Delete(mod);
+                Delete(Mods[0]);
             }
 
             Mods.Clear();
