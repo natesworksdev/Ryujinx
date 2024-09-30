@@ -181,10 +181,26 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private static void EmitOutputsInitialization(EmitterContext context, AttributeUsage attributeUsage, IGpuAccessor gpuAccessor, ShaderStage stage)
         {
-            // Compute has no output attributes, and fragment is the last stage, so we
-            // don't need to initialize outputs on those stages.
-            if (stage == ShaderStage.Compute || stage == ShaderStage.Fragment)
+            // Compute has no output attributes, so we
+            // don't need to initialize outputs on that stage.
+            if (stage == ShaderStage.Compute)
             {
+                return;
+            }
+
+            if (stage == ShaderStage.Fragment)
+            {
+                // Fragment is the last stage, so we don't need to
+                // initialize outputs unless we're using DSB, in which
+                // we need to make sure the ouput has a valid value.
+                if (gpuAccessor.QueryGraphicsState().DualSourceBlendEnable)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        context.Store(StorageKind.Output, IoVariable.FragmentOutputColor, null, Const(1), Const(i), ConstF(0));
+                    }
+                }
+
                 return;
             }
 
