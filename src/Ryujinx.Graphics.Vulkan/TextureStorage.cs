@@ -77,6 +77,8 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             _info = info;
 
+            bool isMsImageStorageSupported = gd.Capabilities.SupportsShaderStorageImageMultisample || !info.Target.IsMultisample();
+
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
@@ -91,7 +93,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var sampleCountFlags = ConvertToSampleCountFlags(gd.Capabilities.SupportedSampleCounts, (uint)info.Samples);
 
-            var usage = GetImageUsage(info.Format, info.Target, gd.Capabilities);
+            var usage = GetImageUsage(info.Format, gd.Capabilities, isMsImageStorageSupported, true);
 
             var flags = ImageCreateFlags.CreateMutableFormatBit | ImageCreateFlags.CreateExtendedUsageBit;
 
@@ -305,7 +307,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static ImageUsageFlags GetImageUsage(Format format, Target target, in HardwareCapabilities capabilities)
+        public static ImageUsageFlags GetImageUsage(Format format, in HardwareCapabilities capabilities, bool isMsImageStorageSupported, bool extendedUsage)
         {
             var usage = DefaultUsageFlags;
 
@@ -318,9 +320,7 @@ namespace Ryujinx.Graphics.Vulkan
                 usage |= ImageUsageFlags.ColorAttachmentBit;
             }
 
-            bool supportsMsStorage = capabilities.SupportsShaderStorageImageMultisample;
-
-            if (format.IsImageCompatible() && (supportsMsStorage || !target.IsMultisample()))
+            if ((format.IsImageCompatible() && isMsImageStorageSupported) || extendedUsage)
             {
                 usage |= ImageUsageFlags.StorageBit;
             }
