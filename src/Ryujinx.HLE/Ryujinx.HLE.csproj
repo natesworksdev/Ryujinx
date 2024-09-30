@@ -32,6 +32,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Debugger\GdbXml\aarch64-core.xml" />
+    <None Remove="Debugger\GdbXml\aarch64-fpu.xml" />
+    <None Remove="Debugger\GdbXml\arm-core.xml" />
+    <None Remove="Debugger\GdbXml\arm-neon.xml" />
+    <None Remove="Debugger\GdbXml\target64.xml" />
+    <None Remove="Debugger\GdbXml\target32.xml" />
     <None Remove="Homebrew.npdm" />
     <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Logo_Ryujinx.png" />
     <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
@@ -41,6 +47,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Debugger\GdbXml\aarch64-core.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\aarch64-fpu.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\arm-core.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\arm-neon.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\target64.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\target32.xml" />
     <EmbeddedResource Include="Homebrew.npdm" />
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Logo_Ryujinx.png" />
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />

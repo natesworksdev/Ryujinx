@@ -1,5 +1,6 @@
 using ARMeilleure.State;
 using Ryujinx.Cpu;
+using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -17,9 +18,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public bool IsAarch32 { get => false; set { } }
 
+        public ulong ThreadUid { get; set; }
+
         public bool Running { get; private set; } = true;
 
         private readonly ulong[] _x = new ulong[32];
+
+        public ulong DebugPc { get; set; }
 
         public ulong GetX(int index) => _x[index];
         public void SetX(int index, ulong value) => _x[index] = value;
@@ -28,6 +33,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public void SetV(int index, V128 value) { }
 
         public void RequestInterrupt()
+        {
+        }
+
+        public void RequestDebugStep()
         {
         }
 

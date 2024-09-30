@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Debugger;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -11,6 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ExceptionCallback = Ryujinx.Cpu.ExceptionCallback;
+using ExceptionCallbackNoArgs = Ryujinx.Cpu.ExceptionCallbackNoArgs;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -89,6 +92,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public IVirtualMemoryManager CpuMemory => Context.AddressSpace;
 
         public HleProcessDebugger Debugger { get; private set; }
+        public IDebuggableProcess DebugInterface { get; private set; }
+        protected int debugState = (int)DebugState.Running;
 
         public KProcess(KernelContext context, bool allowCodeMemoryForJit = false) : base(context)
         {
@@ -110,6 +115,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _threads = new LinkedList<KThread>();
 
             Debugger = new HleProcessDebugger(this);
+            DebugInterface = new DebuggerInterface(this);
         }
 
         public Result InitializeKip(
@@ -680,6 +686,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 SetState(newState);
 
+                if (KernelContext.Device.Configuration.DebuggerSuspendOnStart && IsApplication)
+                {
+                    mainThread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                    debugState = (int)DebugState.Stopped;
+                }
+
                 result = mainThread.Start();
 
                 if (result != Result.Success)
@@ -728,9 +740,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public IExecutionContext CreateExecutionContext()
         {
+            ExceptionCallback breakCallback = null;
+            ExceptionCallbackNoArgs stepCallback = null;
+
+            if (KernelContext.Device.Configuration.EnableGdbStub)
+            {
+                breakCallback = KernelContext.Device.Debugger.BreakHandler;
+                stepCallback = KernelContext.Device.Debugger.StepHandler;
+            }
+
             return Context?.CreateExecutionContext(new ExceptionCallbacks(
                 InterruptHandler,
-                null,
+                breakCallback,
+                stepCallback,
                 KernelContext.SyscallHandler.SvcCall,
                 UndefinedInstructionHandler));
         }
@@ -1174,6 +1196,155 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsSvcPermitted(int svcId)
         {
             return Capabilities.IsSvcPermitted(svcId);
+        }
+
+        private class DebuggerInterface : IDebuggableProcess
+        {
+            private Barrier StepBarrier;
+            private readonly KProcess _parent;
+            private readonly KernelContext _kernelContext;
+            private KThread steppingThread;
+
+            public DebuggerInterface(KProcess p)
+            {
+                _parent = p;
+                _kernelContext = p.KernelContext;
+                StepBarrier = new(2);
+            }
+
+            public void DebugStop()
+            {
+                if (Interlocked.CompareExchange(ref _parent.debugState, (int)DebugState.Stopping,
+                        (int)DebugState.Running) != (int)DebugState.Running)
+                {
+                    return;
+                }
+
+                _kernelContext.CriticalSection.Enter();
+                lock (_parent._threadingLock)
+                {
+                    foreach (KThread thread in _parent._threads)
+                    {
+                        thread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                        thread.Context.RequestInterrupt();
+                        thread.DebugHalt.WaitOne();
+                    }
+                }
+
+                _parent.debugState = (int)DebugState.Stopped;
+                _kernelContext.CriticalSection.Leave();
+            }
+
+            public void DebugContinue()
+            {
+                if (Interlocked.CompareExchange(ref _parent.debugState, (int)DebugState.Running,
+                        (int)DebugState.Stopped) != (int)DebugState.Stopped)
+                {
+                    return;
+                }
+
+                _kernelContext.CriticalSection.Enter();
+                lock (_parent._threadingLock)
+                {
+                    foreach (KThread thread in _parent._threads)
+                    {
+                        thread.Resume(ThreadSchedState.ThreadPauseFlag);
+                    }
+                }
+                _kernelContext.CriticalSection.Leave();
+            }
+
+            public bool DebugStep(KThread target)
+            {
+                if (_parent.debugState != (int)DebugState.Stopped)
+                {
+                    return false;
+                }
+                _kernelContext.CriticalSection.Enter();
+                steppingThread = target;
+                bool waiting = target.MutexOwner != null || target.WaitingSync || target.WaitingInArbitration;
+                target.Context.RequestDebugStep();
+                if (waiting)
+                {
+                    lock (_parent._threadingLock)
+                    {
+                        foreach (KThread thread in _parent._threads)
+                        {
+                            thread.Resume(ThreadSchedState.ThreadPauseFlag);
+                        }
+                    }
+                }
+                else
+                {
+                    target.Resume(ThreadSchedState.ThreadPauseFlag);
+                }
+                _kernelContext.CriticalSection.Leave();
+
+                StepBarrier.SignalAndWait();
+
+                _kernelContext.CriticalSection.Enter();
+                steppingThread = null;
+                if (waiting)
+                {
+                    lock (_parent._threadingLock)
+                    {
+                        foreach (KThread thread in _parent._threads)
+                        {
+                            thread.Suspend(ThreadSchedState.ThreadPauseFlag);
+                        }
+                    }
+                }
+                else
+                {
+                    target.Suspend(ThreadSchedState.ThreadPauseFlag);
+                }
+                _kernelContext.CriticalSection.Leave();
+                StepBarrier.SignalAndWait();
+                return true;
+            }
+
+            public DebugState GetDebugState()
+            {
+                return (DebugState)_parent.debugState;
+            }
+
+            public ulong[] GetThreadUids()
+            {
+                lock (_parent._threadingLock)
+                {
+                    var threads = _parent._threads.Where(x => !x.TerminationRequested).ToArray();
+                    return threads.Select(x => x.ThreadUid).ToArray();
+                }
+            }
+
+            public KThread GetThread(ulong threadUid)
+            {
+                lock (_parent._threadingLock)
+                {
+                    var threads = _parent._threads.Where(x => !x.TerminationRequested).ToArray();
+                    return threads.FirstOrDefault(x => x.ThreadUid == threadUid);
+                }
+            }
+
+            public void DebugInterruptHandler(IExecutionContext ctx)
+            {
+                _kernelContext.CriticalSection.Enter();
+                bool stepping = steppingThread != null;
+                _kernelContext.CriticalSection.Leave();
+                if (stepping)
+                {
+                    StepBarrier.SignalAndWait();
+                    StepBarrier.SignalAndWait();
+                }
+                _parent.InterruptHandler(ctx);
+            }
+
+            public IVirtualMemoryManager CpuMemory { get { return _parent.CpuMemory; } }
+
+            public void InvalidateCacheRegion(ulong address, ulong size)
+            {
+                _parent.Context.InvalidateCacheRegion(address, size);
+            }
         }
     }
 }

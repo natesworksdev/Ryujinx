@@ -387,6 +387,21 @@ namespace Ryujinx.UI.Common.Configuration
         public bool UseHypervisor { get; set; }
 
         /// <summary>
+        /// Enables or disables the GDB stub
+        /// </summary>
+        public bool EnableGdbStub { get; set; }
+
+        /// <summary>
+        /// Which TCP port should the GDB stub listen on
+        /// </summary>
+        public ushort GdbStubPort { get; set; }
+
+        /// <summary>
+        /// Suspend execution when starting an application
+        /// </summary>
+        public bool DebuggerSuspendOnStart { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

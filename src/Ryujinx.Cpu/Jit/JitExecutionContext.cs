@@ -1,5 +1,7 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using System.Threading;
+using ExecutionContext = ARMeilleure.State.ExecutionContext;
 
 namespace Ryujinx.Cpu.Jit
 {
@@ -54,6 +56,13 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
+        public ulong ThreadUid
+        {
+            get => _impl.ThreadUid;
+            set => _impl.ThreadUid = value;
+        }
+
+        /// <inheritdoc/>
         public bool Running => _impl.Running;
 
         private readonly ExceptionCallbacks _exceptionCallbacks;
@@ -65,6 +74,7 @@ namespace Ryujinx.Cpu.Jit
                 counter,
                 InterruptHandler,
                 BreakHandler,
+                StepHandler,
                 SupervisorCallHandler,
                 UndefinedHandler);
 
@@ -93,6 +103,11 @@ namespace Ryujinx.Cpu.Jit
             _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
         }
 
+        private void StepHandler(ExecutionContext context)
+        {
+            _exceptionCallbacks.StepCallback?.Invoke(this);
+        }
+
         private void SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
         {
             _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
@@ -107,6 +122,16 @@ namespace Ryujinx.Cpu.Jit
         public void RequestInterrupt()
         {
             _impl.RequestInterrupt();
+        }
+
+        /// <inheritdoc/>
+        public void RequestDebugStep() => _impl.RequestDebugStep();
+
+        /// <inheritdoc/>
+        public ulong DebugPc
+        {
+            get => _impl.DebugPc;
+            set => _impl.DebugPc = value;
         }
 
         /// <inheritdoc/>

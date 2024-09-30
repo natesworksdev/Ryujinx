@@ -1,5 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Debugger;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
@@ -114,6 +115,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private readonly object _activityOperationLock = new();
 
+        internal readonly ManualResetEvent DebugHalt = new(false);
+
         public KThread(KernelContext context) : base(context)
         {
             WaitSyncObjects = new KSynchronizationObject[MaxWaitSyncObjects];
@@ -202,8 +205,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
 
             Context.TpidrroEl0 = (long)_tlsAddress;
+            Context.DebugPc = _entrypoint;
 
             ThreadUid = KernelContext.NewThreadUid();
+            Context.ThreadUid = ThreadUid;
 
             HostThread.Name = customThreadStart != null ? $"HLE.OsThread.{ThreadUid}" : $"HLE.GuestThread.{ThreadUid}";
 
@@ -307,7 +312,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             KernelContext.CriticalSection.Enter();
 
-            if (Owner != null && Owner.PinnedThreads[KernelStatic.GetCurrentThread().CurrentCore] == this)
+            KThread currentThread = KernelStatic.GetCurrentThread();
+
+            if (Owner != null && currentThread != null && Owner.PinnedThreads[currentThread.CurrentCore] == this)
             {
                 Owner.UnpinThread(this);
             }
@@ -362,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             ThreadSchedState state = PrepareForTermination();
 
-            if (state != ThreadSchedState.TerminationPending)
+            if (KernelStatic.GetCurrentThread() == this && state != ThreadSchedState.TerminationPending)
             {
                 KernelContext.Synchronization.WaitFor(new KSynchronizationObject[] { this }, -1, out _);
             }
@@ -1248,6 +1255,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private void ThreadStart()
         {
             _schedulerWaitEvent.WaitOne();
+            DebugHalt.Reset();
             KernelStatic.SetKernelContext(KernelContext, this);
 
             if (_customThreadStart != null)

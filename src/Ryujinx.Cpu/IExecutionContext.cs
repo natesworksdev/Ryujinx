@@ -1,5 +1,6 @@
 using ARMeilleure.State;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Cpu
 {
@@ -45,6 +46,11 @@ namespace Ryujinx.Cpu
         /// Indicates whenever the CPU is running 64-bit (AArch64 mode) or 32-bit (AArch32 mode) code.
         /// </summary>
         bool IsAarch32 { get; set; }
+
+        /// <summary>
+        /// Thread UID.
+        /// </summary>
+        public ulong ThreadUid { get; set; }
 
         /// <summary>
         /// Indicates whenever the CPU is still running code.
@@ -108,5 +114,23 @@ namespace Ryujinx.Cpu
         /// If you only need to pause the thread temporarily, use <see cref="RequestInterrupt"/> instead.
         /// </remarks>
         void StopRunning();
+
+        /// <summary>
+        /// Requests the thread to stop running temporarily and call <see cref="ExceptionCallbacks.InterruptCallback"/>.
+        /// </summary>
+        /// <remarks>
+        /// The thread might not pause immediately.
+        /// One must not assume that guest code is no longer being executed by the thread after calling this function.
+        /// After single stepping, the thread should call call <see cref="ExceptionCallbacks.StepCallback"/>.
+        /// </remarks>
+        void RequestDebugStep();
+
+        /// <summary>
+        /// Current Program Counter (for debugging).
+        /// </summary>
+        /// <remarks>
+        /// PC register for the debugger. Must not be accessed while the thread isn't stopped for debugging.
+        /// </remarks>
+        ulong DebugPc { get; set; }
     }
 }

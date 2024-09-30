@@ -30,6 +30,11 @@ namespace Ryujinx.Cpu
         public readonly ExceptionCallback BreakCallback;
 
         /// <summary>
+        /// Handler for CPU software interrupts caused by single-stepping.
+        /// </summary>
+        public readonly ExceptionCallbackNoArgs StepCallback;
+
+        /// <summary>
         /// Handler for CPU software interrupts caused by the Arm SVC instruction.
         /// </summary>
         public readonly ExceptionCallback SupervisorCallback;
@@ -47,16 +52,19 @@ namespace Ryujinx.Cpu
         /// </remarks>
         /// <param name="interruptCallback">Handler for CPU interrupts triggered using <see cref="IExecutionContext.RequestInterrupt"/></param>
         /// <param name="breakCallback">Handler for CPU software interrupts caused by the Arm BRK instruction</param>
+        /// <param name="stepCallback">Handler for CPU software interrupts caused by single-stepping</param>
         /// <param name="supervisorCallback">Handler for CPU software interrupts caused by the Arm SVC instruction</param>
         /// <param name="undefinedCallback">Handler for CPU software interrupts caused by any undefined Arm instruction</param>
         public ExceptionCallbacks(
             ExceptionCallbackNoArgs interruptCallback = null,
             ExceptionCallback breakCallback = null,
+            ExceptionCallbackNoArgs stepCallback = null,
             ExceptionCallback supervisorCallback = null,
             ExceptionCallback undefinedCallback = null)
         {
             InterruptCallback = interruptCallback;
             BreakCallback = breakCallback;
+            StepCallback = stepCallback;
             SupervisorCallback = supervisorCallback;
             UndefinedCallback = undefinedCallback;
         }

@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu.AppleHv
 
         uint Fpcr { get; set; }
         uint Fpsr { get; set; }
-
+        ulong ThreadUid { get; set; }
         ulong GetX(int index);
         void SetX(int index, ulong value);
 
@@ -39,5 +39,8 @@ namespace Ryujinx.Cpu.AppleHv
                 SetV(i, context.GetV(i));
             }
         }
+
+        void RequestInterrupt();
+        bool GetAndClearInterruptRequested();
     }
 }

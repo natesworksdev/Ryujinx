@@ -18,6 +18,8 @@ namespace Ryujinx.Cpu.AppleHv
 
         public bool IsAarch32 { get; set; }
 
+        public ulong ThreadUid { get; set; }
+
         private readonly ulong[] _x;
         private readonly V128[] _v;
 
@@ -45,6 +47,15 @@ namespace Ryujinx.Cpu.AppleHv
         public void SetV(int index, V128 value)
         {
             _v[index] = value;
+        }
+
+        public void RequestInterrupt()
+        {
+        }
+
+        public bool GetAndClearInterruptRequested()
+        {
+            return false;
         }
     }
 }

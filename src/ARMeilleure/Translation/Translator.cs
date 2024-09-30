@@ -140,7 +140,25 @@ namespace ARMeilleure.Translation
 
             NativeInterface.RegisterThread(context, Memory, this);
 
-            if (Optimizations.UseUnmanagedDispatchLoop)
+            if (Optimizations.EnableDebugging)
+            {
+                context.DebugPc = address;
+                do
+                {
+                    if (Interlocked.CompareExchange(ref context.ShouldStep, 0, 1) == 1)
+                    {
+                        context.DebugPc = Step(context, context.DebugPc);
+                        context.StepHandler();
+                    }
+                    else
+                    {
+                        context.DebugPc = ExecuteSingle(context, context.DebugPc);
+                    }
+                    context.CheckInterrupt();
+                }
+                while (context.Running && context.DebugPc != 0);
+            }
+            else if (Optimizations.UseUnmanagedDispatchLoop)
             {
                 Stubs.DispatchLoop(context.NativeContextPtr, address);
             }
@@ -196,7 +214,7 @@ namespace ARMeilleure.Translation
             return nextAddr;
         }
 
-        public ulong Step(State.ExecutionContext context, ulong address)
+        private ulong Step(State.ExecutionContext context, ulong address)
         {
             TranslatedFunction func = Translate(address, context.ExecutionMode, highCq: false, singleStep: true);
 
@@ -249,7 +267,7 @@ namespace ARMeilleure.Translation
                 Stubs,
                 address,
                 highCq,
-                _ptc.State != PtcState.Disabled,
+                _ptc.State != PtcState.Disabled && !Optimizations.EnableDebugging,
                 mode: Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
@@ -382,9 +400,8 @@ namespace ARMeilleure.Translation
 
                 if (block.Exit)
                 {
-                    // Left option here as it may be useful if we need to return to managed rather than tail call in
-                    // future. (eg. for debug)
-                    bool useReturns = false;
+                    // Return to managed rather than tail call.
+                    bool useReturns = Optimizations.EnableDebugging;
 
                     InstEmitFlowHelper.EmitVirtualJump(context, Const(block.Address), isReturn: useReturns);
                 }
