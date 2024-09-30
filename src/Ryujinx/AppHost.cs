@@ -872,7 +872,8 @@ namespace Ryujinx.Ava
                                                  ConfigurationState.Instance.System.AudioVolume,
                                                  ConfigurationState.Instance.System.UseHypervisor,
                                                  ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                                                 ConfigurationState.Instance.Multiplayer.Mode);
+                                                 ConfigurationState.Instance.Multiplayer.Mode,
+                                                 () => Stop());
 
             Device = new Switch(configuration);
         }
@@ -1092,7 +1093,12 @@ namespace Ryujinx.Ava
 
             if (shouldExit)
             {
-                Stop();
+                Device.System.RequestExit();
+                Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    Stop();
+                });
             }
         }
 

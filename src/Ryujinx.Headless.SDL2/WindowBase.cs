@@ -221,7 +221,12 @@ namespace Ryujinx.Headless.SDL2
                         break;
 
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
-                        Exit();
+                        Device.System.RequestExit();
+                        /*
+                        SDL2Driver.Instance.AddTimer(5000, () => {
+                            Exit();
+                        });
+                        */
                         break;
                 }
             }
