@@ -1086,7 +1086,7 @@ namespace ARMeilleure.Instructions
         {
             return FPMaxFpscrImpl(value1, value2, standardFpscr == 1);
         }
-        
+
         private static float FPMaxFpscrImpl(float value1, float value2, bool standardFpscr)
         {
             ExecutionContext context = NativeInterface.GetContext();
