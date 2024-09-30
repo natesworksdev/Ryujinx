@@ -888,6 +888,7 @@ namespace Ryujinx.UI.Common.Configuration
                         DpadLeft = Key.Left,
                         DpadRight = Key.Right,
                         ButtonMinus = Key.Minus,
+                        ButtonScreenshot = Key.Unbound, // keyboard already has a default screenshot configured via ConfigurationState.Hid.Hotkeys.Screenshot, so no gamepad mapping needed
                         ButtonL = Key.E,
                         ButtonZl = Key.Q,
                         ButtonSl = Key.Unbound,
@@ -1117,6 +1118,7 @@ namespace Ryujinx.UI.Common.Configuration
                             DpadLeft = Key.Left,
                             DpadRight = Key.Right,
                             ButtonMinus = Key.Minus,
+                            ButtonScreenshot = Key.Unbound, // keyboard already has a default screenshot configured via ConfigurationState.Hid.Hotkeys.Screenshot, so no gamepad mapping needed
                             ButtonL = Key.E,
                             ButtonZl = Key.Q,
                             ButtonSl = Key.Unbound,

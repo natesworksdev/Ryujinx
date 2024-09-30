@@ -311,6 +311,36 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                <!-- Screenshot -->
+                <Border
+                    BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                    BorderThickness="1"
+                    IsVisible="{Binding IsLeft}"
+                    Margin="0,5,0,0"
+                    CornerRadius="5">
+                    <StackPanel
+                        Margin="10"
+                        Orientation="Vertical">
+                        <!-- Raw Screenshot -->
+                        <StackPanel
+                            Margin="0,0,0,4"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,10,0"
+                                Width="120"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="{locale:Locale ControllerSettingsRawScreenshot}"
+                                ToolTip.Tip="{locale:Locale ControllerSettingsRawScreenshotTooltip}"
+                                TextAlignment="Center" />
+                            <ToggleButton Name="ButtonScreenshot">
+                                <TextBlock
+                                    Text="{Binding Config.ButtonScreenshot, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
             <!-- Triggers & Side Buttons -->
             <StackPanel

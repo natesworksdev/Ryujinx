@@ -84,6 +84,9 @@ namespace Ryujinx.Ava.UI.Views.Input
                                     case "ButtonMinus":
                                         viewModel.Config.ButtonMinus = buttonValue.AsHidType<GamepadInputId>();
                                         break;
+                                    case "ButtonScreenshot":
+                                        viewModel.Config.ButtonScreenshot = buttonValue.AsHidType<GamepadInputId>();
+                                        break;
                                     case "LeftStickButton":
                                         viewModel.Config.LeftStickButton = buttonValue.AsHidType<GamepadInputId>();
                                         break;

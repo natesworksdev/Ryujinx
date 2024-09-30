@@ -234,6 +234,8 @@
   "ControllerSettingsDPadDown": "Down",
   "ControllerSettingsDPadLeft": "Left",
   "ControllerSettingsDPadRight": "Right",
+  "ControllerSettingsRawScreenshot": "Raw Screenshot",
+  "ControllerSettingsRawScreenshotTooltip": "Takes a screenshot without any watermarks etc.",
   "ControllerSettingsStickButton": "Button",
   "ControllerSettingsStickUp": "Up",
   "ControllerSettingsStickDown": "Down",
