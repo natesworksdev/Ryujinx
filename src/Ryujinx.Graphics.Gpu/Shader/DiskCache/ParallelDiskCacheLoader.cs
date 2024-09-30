@@ -345,12 +345,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                                 {
                                     currentPipelineState.PatchControlPoints = 0;
                                 }
-
-                                currentPipelineState = program.SpecializationState.PipelineState.Value;
                             }
 
-
-                            if (currentPipelineState.Equals(previousPipelineState) || !_context.Capabilities.SupportsExtendedDynamicState)
+                            if (!currentPipelineState.Equals(previousPipelineState) || !_context.Capabilities.SupportsExtendedDynamicState || !program.SpecializationState.PipelineState.HasValue)
                             {
                                 _hostStorage.AddShader(_context, program, binaryCode, streams);
 
