@@ -49,7 +49,7 @@ jobs:
         run: python -m pip install PyYAML lxml
 
       - name: Restore Nuget packages
-        # With .NET 8.0.100, Microsoft.NET.ILLink.Tasks isn't restored by default and only seems to appears when publishing.
+        # With .NET 8.0.100, Microsoft.NET.ILLink.Tasks isn't restored by default and only seems to appear when publishing.
         # So we just publish to grab the dependencies
         run: |
           dotnet publish -c Release -r linux-x64 Ryujinx/${{ env.RYUJINX_PROJECT_FILE }} --self-contained
