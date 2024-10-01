@@ -90,6 +90,13 @@ You can quickly access it on Windows by holding shift in File Explorer, then rig
 Then type the following command: `dotnet build -c Release -o build`
 the built files will be found in the newly created build directory.
 
+If you want to create a self-contained build, which includes the .NET runtime, you can use the following command:
+`dotnet publish -c Release -o build --self-contained` . Please note that this may require administrative privileges for the command prompt. 
+
+You can also add appropriate Runtime Identifier (RID) for your target platform
+example: `dotnet publish -c Release -o build --self-contained -r <RID>` 
+
+
 Ryujinx system files are stored in the `Ryujinx` folder.
 This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
