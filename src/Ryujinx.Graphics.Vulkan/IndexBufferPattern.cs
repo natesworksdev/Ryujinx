@@ -47,28 +47,6 @@ namespace Ryujinx.Graphics.Vulkan
             return primitiveCount * OffsetIndex.Length;
         }
 
-        public IEnumerable<int> GetIndexMapping(int indexCount)
-        {
-            int primitiveCount = GetPrimitiveCount(indexCount);
-            int index = BaseIndex;
-
-            for (int i = 0; i < primitiveCount; i++)
-            {
-                if (RepeatStart)
-                {
-                    // Used for triangle fan
-                    yield return 0;
-                }
-
-                for (int j = RepeatStart ? 1 : 0; j < OffsetIndex.Length; j++)
-                {
-                    yield return index + OffsetIndex[j];
-                }
-
-                index += IndexStride;
-            }
-        }
-
         public BufferHandle GetRepeatingBuffer(int vertexCount, out int indexCount)
         {
             int primitiveCount = GetPrimitiveCount(vertexCount);
