@@ -1,7 +1,7 @@
 name: Build job
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 env:
   POWERSHELL_TELEMETRY_OPTOUT: 1
