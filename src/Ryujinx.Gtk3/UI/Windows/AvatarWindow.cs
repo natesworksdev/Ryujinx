@@ -6,6 +6,7 @@ using LibHac.FsSystem;
 using LibHac.Ncm;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Microsoft.IO;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.UI.Common.Configuration;
@@ -136,7 +137,7 @@ namespace Ryujinx.UI.Windows
                         romfs.OpenFile(ref file.Ref, ("/" + item.FullPath).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                         using MemoryStream stream = MemoryStreamManager.Shared.GetStream();
-                        using MemoryStream streamPng = MemoryStreamManager.Shared.GetStream();
+                        using RecyclableMemoryStream streamPng = MemoryStreamManager.Shared.GetStream();
                         file.Get.AsStream().CopyTo(stream);
 
                         stream.Position = 0;
@@ -167,7 +168,7 @@ namespace Ryujinx.UI.Windows
 
         private byte[] ProcessImage(byte[] data)
         {
-            using MemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
+            using RecyclableMemoryStream streamJpg = MemoryStreamManager.Shared.GetStream();
 
             using var avatarImage = SKBitmap.Decode(data);
             using var surface = SKSurface.Create(avatarImage.Info);
@@ -229,7 +230,7 @@ namespace Ryujinx.UI.Windows
             Close();
         }
 
-        private static byte[] DecompressYaz0(Stream stream)
+        private static byte[] DecompressYaz0(MemoryStream stream)
         {
             using BinaryReader reader = new(stream);
 
