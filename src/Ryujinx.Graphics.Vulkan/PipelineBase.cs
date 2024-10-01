@@ -1439,7 +1439,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         if (_supportExtDynamic && (!Gd.IsMoltenVk || Gd.SupportsMTL31))
                         {
-                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate || 
+                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate ||
                                 _newState.Internal.VertexBindingDescriptions[descriptorIndex].Binding != _vertexBufferBindings[i])
                             {
                                 _newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate = inputRate;
@@ -1450,8 +1450,8 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                         else
                         {
-                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate || 
-                                _newState.Internal.VertexBindingDescriptions[descriptorIndex].Stride != vertexBuffer.Stride || 
+                            if (_newState.Internal.VertexBindingDescriptions[descriptorIndex].InputRate != inputRate ||
+                                _newState.Internal.VertexBindingDescriptions[descriptorIndex].Stride != vertexBuffer.Stride ||
                                 _newState.Internal.VertexBindingDescriptions[descriptorIndex].Binding != _vertexBufferBindings[i])
                             {
                                 _newState.Internal.VertexBindingDescriptions[descriptorIndex].Binding = (uint)_vertexBufferBindings[i];
