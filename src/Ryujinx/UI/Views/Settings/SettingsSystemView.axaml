@@ -100,9 +100,6 @@
                                 <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageSpanish}" />
                             </ComboBoxItem>
                             <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageChinese}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
                                 <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageKorean}" />
                             </ComboBoxItem>
                             <ComboBoxItem>
@@ -113,9 +110,6 @@
                             </ComboBoxItem>
                             <ComboBoxItem>
                                 <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageRussian}" />
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageTaiwanese}" />
                             </ComboBoxItem>
                             <ComboBoxItem>
                                 <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageBritishEnglish}" />
