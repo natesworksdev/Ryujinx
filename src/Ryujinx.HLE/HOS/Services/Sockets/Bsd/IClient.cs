@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Impl;
+using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Proxy;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using Ryujinx.Memory;
 using System;
@@ -20,6 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             EventFileDescriptorPollManager.Instance,
             ManagedSocketPollManager.Instance,
+            ManagedProxySocketPollManager.Instance,
         };
 
         private BsdContext _context;
@@ -95,10 +97,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 }
             }
 
-            ISocket newBsdSocket = new ManagedSocket(netDomain, (SocketType)type, protocol)
-            {
-                Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking),
-            };
+            ISocket newBsdSocket = ProxyManager.GetSocket(netDomain, (SocketType)type, protocol);
+            newBsdSocket.Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking);
 
             LinuxError errno = LinuxError.SUCCESS;
 
