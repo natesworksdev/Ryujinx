@@ -22,6 +22,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly CancellationToken _cancellationToken;
         private readonly Action<ShaderCacheState, int, int> _stateChangeCallback;
 
+        private readonly HashSet<ProgramPipelineState> _pipelineStateSet = new();
+
         /// <summary>
         /// Indicates if the cache should be loaded.
         /// </summary>
@@ -302,7 +304,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         using var streams = _hostStorage.GetOutputStreams(_context);
 
                         int packagedShaders = 0;
-                        ProgramPipelineState previousPipelineState = default;
                         ProgramPipelineState currentPipelineState = default;
 
                         foreach (var kv in _programList)
@@ -333,7 +334,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                                     currentPipelineState.PrimitiveRestartEnable = false;
                                     currentPipelineState.BiasEnable = 0;
                                     currentPipelineState.RasterizerDiscard = false;
-
                                 }
 
                                 if (_context.Capabilities.SupportsLogicOpDynamicState)
@@ -347,19 +347,20 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                                 }
                             }
 
-                            if (!currentPipelineState.Equals(previousPipelineState) || !_context.Capabilities.SupportsExtendedDynamicState || !program.SpecializationState.PipelineState.HasValue)
+                            if (!_pipelineStateSet.Contains(currentPipelineState) ||
+                                !_context.Capabilities.SupportsExtendedDynamicState ||
+                                !program.SpecializationState.PipelineState.HasValue)
                             {
                                 _hostStorage.AddShader(_context, program, binaryCode, streams);
 
                                 _stateChangeCallback(ShaderCacheState.Packaging, ++packagedShaders, _programList.Count);
-                            }
 
-                            if (_context.Capabilities.SupportsExtendedDynamicState)
-                            {
-                                previousPipelineState = currentPipelineState;
+                                if (_context.Capabilities.SupportsExtendedDynamicState)
+                                {
+                                    _pipelineStateSet.Add(currentPipelineState);
+                                }
                             }
                         }
-
                         Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {packagedShaders} shaders successfully.");
                     }
                     else
