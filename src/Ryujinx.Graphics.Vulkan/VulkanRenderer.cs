@@ -812,7 +812,26 @@ namespace Ryujinx.Graphics.Vulkan
                 shaderSubgroupSize: (int)Capabilities.SubgroupSize,
                 storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment,
                 textureBufferOffsetAlignment: (int)limits.MinTexelBufferOffsetAlignment,
-                gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0);
+                gatherBiasPrecision: IsIntelWindows || IsAmdWindows ? (int)Capabilities.SubTexelPrecisionBits : 0,
+                maximumGpuMemory: GetTotalGPUMemory());
+        }
+
+        private ulong GetTotalGPUMemory()
+        {
+            ulong totalMemory = 0;
+
+            Api.GetPhysicalDeviceMemoryProperties(_physicalDevice.PhysicalDevice, out PhysicalDeviceMemoryProperties memoryProperties);
+
+            for (int i = 0; i < memoryProperties.MemoryHeapCount; i++)
+            {
+                var heap = memoryProperties.MemoryHeaps[i];
+                if ((heap.Flags & MemoryHeapFlags.DeviceLocalBit) == MemoryHeapFlags.DeviceLocalBit)
+                {
+                    totalMemory += heap.Size;
+                }
+            }
+
+            return totalMemory;
         }
 
         public HardwareInfo GetHardwareInfo()
@@ -896,6 +915,7 @@ namespace Ryujinx.Graphics.Vulkan
         private void PrintGpuInformation()
         {
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
+            Logger.Notice.Print(LogClass.Gpu, $"GPU Memory: {GetTotalGPUMemory() / (1024 * 1024)} MiB");
         }
 
         public void Initialize(GraphicsDebugLevel logLevel)
