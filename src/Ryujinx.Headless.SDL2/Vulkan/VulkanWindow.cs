@@ -29,16 +29,30 @@ namespace Ryujinx.Headless.SDL2.Vulkan
 
         protected override void InitializeRenderer()
         {
+            int width = DefaultWidth;
+            int height = DefaultHeight;
+
             if (IsExclusiveFullscreen)
             {
-                Renderer?.Window.SetSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
-                MouseDriver.SetClientSize(ExclusiveFullscreenWidth, ExclusiveFullscreenHeight);
+                width = ExclusiveFullscreenWidth;
+                height = ExclusiveFullscreenHeight;
             }
-            else
+            else if (IsFullscreen)
             {
-                Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
-                MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
+                // NOTE: grabbing the main display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
+                if (SDL_GetDisplayBounds(DisplayId, out SDL_Rect displayBounds) < 0)
+                {
+                    Logger.Warning?.Print(LogClass.Application, $"Could not retrieve display bounds: {SDL_GetError()}");
+                }
+                else
+                {
+                    width = displayBounds.w;
+                    height = displayBounds.h;
+                }
             }
+
+            Renderer?.Window.SetSize(width, height);
+            MouseDriver.SetClientSize(width, height);
         }
 
         private static void BasicInvoke(Action action)

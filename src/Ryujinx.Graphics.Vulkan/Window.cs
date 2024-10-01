@@ -10,8 +10,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class Window : WindowBase, IDisposable
     {
-        private const int SurfaceWidth = 1280;
-        private const int SurfaceHeight = 720;
+        private uint _surfaceWidth = 1280;
+        private uint _surfaceHeight = 720;
 
         private readonly VulkanRenderer _gd;
         private readonly SurfaceKHR _surface;
@@ -295,15 +295,15 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
+        public Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)
         {
             if (capabilities.CurrentExtent.Width != uint.MaxValue)
             {
                 return capabilities.CurrentExtent;
             }
 
-            uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, SurfaceWidth));
-            uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, SurfaceHeight));
+            uint width = Math.Max(capabilities.MinImageExtent.Width, Math.Min(capabilities.MaxImageExtent.Width, _surfaceWidth));
+            uint height = Math.Max(capabilities.MinImageExtent.Height, Math.Min(capabilities.MaxImageExtent.Height, _surfaceHeight));
 
             return new Extent2D(width, height);
         }
@@ -630,8 +630,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public override void SetSize(int width, int height)
         {
-            // We don't need to use width and height as we can get the size from the surface.
-            _swapchainIsDirty = true;
+            if (width > 0 && height > 0)
+            {
+                _surfaceWidth = (uint)width;
+                _surfaceHeight = (uint)height;
+
+                _swapchainIsDirty = true;
+            }
         }
 
         public override void ChangeVSyncMode(bool vsyncEnabled)
