@@ -9,10 +9,12 @@
 </h1>
 
 <p align="center">
-  Mirror of the Ryujinx open-source Nintendo Switch emulator, created by gdkchan, written in C#. It has been removed from github recently and this is a replica of it's state before being deleted with only readme changes. [Learn more](https://www.reddit.com/r/pcgaming/comments/1ftvp49/ryujinx_a_nintendo_switch_emulator_has_ceased/)
+  Mirror of the Ryujinx open-source Nintendo Switch emulator, created by gdkchan, written in C#. It has been removed from github recently and this is a replica of it's state before being deleted with only readme changes.<a href= "https://www.reddit.com/r/pcgaming/comments/1ftvp49/ryujinx_a_nintendo_switch_emulator_has_ceased/">Learn more</a>
   
   This emulator aims at providing excellent accuracy and performance, a user-friendly interface and consistent builds.
+  
   It was written from scratch and development on the project began in September 2017.
+  
   Ryujinx is available on Github under the <a href="https://github.com/natesworksdev/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>.
   <br />
 </p>
