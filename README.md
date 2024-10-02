@@ -12,13 +12,13 @@
   Ryujinx is an open-source Nintendo Switch emulator, created by gdkchan, written in C#.
   This emulator aims at providing excellent accuracy and performance, a user-friendly interface and consistent builds.
   It was written from scratch and development on the project began in September 2017.
-  Ryujinx is available on Github under the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>.
+  Ryujinx is available on Github under the <a href="https://github.com/natesworksdev/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>.
   <br />
 </p>
 
 <p align="center">
-    <a href="https://github.com/Ryujinx/Ryujinx/actions/workflows/release.yml">
-        <img src="https://github.com/Ryujinx/Ryujinx/actions/workflows/release.yml/badge.svg"
+    <a href="https://github.com/natesworksdev/Ryujinx/actions/workflows/release.yml">
+        <img src="https://github.com/natesworksdev/Ryujinx/actions/workflows/release.yml/badge.svg"
             alt="">
     </a>
     <a href="https://crwd.in/ryujinx">
@@ -31,7 +31,7 @@
     </a>
     <br>
     <br>
-    <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/public/assets/images/shell.png">
+    <img src="https://raw.githubusercontent.com/natesworksdev/Ryujinx-Website/master/public/assets/images/shell.png">
 </p>
 
 ## Compatibility
@@ -39,7 +39,7 @@
 As of May 2024, Ryujinx has been tested on approximately 4,300 titles;
 over 4,100 boot past menus and into gameplay, with roughly 3,550 of those being considered playable.
 
-You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues).
+You can check out the compatibility list [here](https://github.com/natesworksdev/Ryujinx-Games-List/issues).
 
 Anyone is free to submit a new game test or update an existing game test entry;
 simply follow the new issue template and testing guidelines, or post as a reply to the applicable game issue.
@@ -50,10 +50,10 @@ Use the search function to see if a game has been tested already!
 To run this emulator, your PC must be equipped with at least 8GiB of RAM;
 failing to meet this requirement may result in a poor gameplay experience or unexpected crashes.
 
-See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
+See our [Setup & Configuration Guide](https://github.com/natesworksdev/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
 For our Local Wireless (LDN) builds, see our [Multiplayer: Local Play/Local Wireless Guide
-](https://github.com/Ryujinx/Ryujinx/wiki/Multiplayer-(LDN-Local-Wireless)-Guide).
+](https://github.com/natesworksdev/Ryujinx/wiki/Multiplayer-(LDN-Local-Wireless)-Guide).
 
 Avalonia UI comes with translations for various languages. See [Crowdin](https://crwd.in/ryujinx) for more information.
 
@@ -62,7 +62,7 @@ Avalonia UI comes with translations for various languages. See [Crowdin](https:/
 These builds are compiled automatically for each commit on the master branch.
 While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken**.
 
-If you want to see details on updates to the emulator, you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
+If you want to see details on updates to the emulator, you can visit our [Changelog](https://github.com/natesworksdev/Ryujinx/wiki/Changelog).
 
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
@@ -138,7 +138,7 @@ This folder is located in the user folder, which can be accessed by clicking `Op
 ## Contact
 
 If you have contributions, suggestions, need emulator support or just want to get in touch with the team, join our [Discord server](https://discord.com/invite/Ryujinx).
-You may also review our [FAQ](https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions).
+You may also review our [FAQ](https://github.com/natesworksdev/Ryujinx/wiki/Frequently-Asked-Questions).
 
 ## Donations
 
